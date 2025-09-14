@@ -1,0 +1,101 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "VCareer.Application": {
+      "path": "src/VCareer.Application/VCareer.Application.abppkg",
+      "folder": "src"
+    },
+    "VCareer.Application.Tests": {
+      "path": "test/VCareer.Application.Tests/VCareer.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "VCareer.Domain.Shared": {
+      "path": "src/VCareer.Domain.Shared/VCareer.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "VCareer.Application.Contracts": {
+      "path": "src/VCareer.Application.Contracts/VCareer.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "VCareer.HttpApi": {
+      "path": "src/VCareer.HttpApi/VCareer.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "VCareer.HttpApi.Client": {
+      "path": "src/VCareer.HttpApi.Client/VCareer.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "VCareer.EntityFrameworkCore.Tests": {
+      "path": "test/VCareer.EntityFrameworkCore.Tests/VCareer.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "VCareer.EntityFrameworkCore": {
+      "path": "src/VCareer.EntityFrameworkCore/VCareer.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "VCareer.TestBase": {
+      "path": "test/VCareer.TestBase/VCareer.TestBase.abppkg",
+      "folder": "test"
+    },
+    "VCareer.Domain.Tests": {
+      "path": "test/VCareer.Domain.Tests/VCareer.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "VCareer.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/VCareer.HttpApi.Client.ConsoleTestApp/VCareer.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "VCareer.DbMigrator": {
+      "path": "src/VCareer.DbMigrator/VCareer.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "VCareer.HttpApi.Host": {
+      "path": "src/VCareer.HttpApi.Host/VCareer.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "VCareer.Domain": {
+      "path": "src/VCareer.Domain/VCareer.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
