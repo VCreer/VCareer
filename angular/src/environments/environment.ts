@@ -9,6 +9,7 @@ const oAuthConfig = {
   responseType: 'code',
   scope: 'offline_access VCareer',
   requireHttps: true,
+  skipIssuerCheck: true,
 };
 
 export const environment = {

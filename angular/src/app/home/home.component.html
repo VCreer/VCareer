@@ -1,3 +1,10 @@
+<!-- Login Success Notification -->
+<div *ngIf="showLoginSuccessMessage" class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+  <i class="fa fa-check-circle me-2"></i>
+  <strong>Thành công!</strong> Bạn đã đăng nhập thành công.
+  <button type="button" class="btn-close" (click)="showLoginSuccessMessage = false" aria-label="Close"></button>
+</div>
+
 <div class="row mb-3">
   <div class="col-xl-6 col-12 d-flex">
     <div class="card h-lg-100 w-100 overflow-hidden">
