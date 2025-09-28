@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { customAuthGuard } from './guards/custom-auth.guard';
 
 // Định nghĩa các route của ứng dụng
 export const APP_ROUTES: Routes = [
@@ -12,16 +11,14 @@ export const APP_ROUTES: Routes = [
     path: 'account/register',
     loadComponent: () => import('./register/register.component').then(c => c.RegisterComponent),
   },
-  // Fallback routes
+  // Direct routes
   {
     path: 'login',
-    redirectTo: '/account/login',
-    pathMatch: 'full'
+    loadComponent: () => import('./login/login.component').then(c => c.LoginComponent),
   },
   {
     path: 'register', 
-    redirectTo: '/account/register',
-    pathMatch: 'full'
+    loadComponent: () => import('./register/register.component').then(c => c.RegisterComponent),
   },
   {
     path: '',

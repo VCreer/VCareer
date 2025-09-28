@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -21,16 +21,28 @@ export class CustomAuthService {
     return false;
   }
 
-  // Xử lý đăng nhập
-  login(credentials: any): Observable<any> {
-    // Mô phỏng đăng nhập - thay thế bằng API call thực tế
+  // Xử lý đăng nhập (Mock - chỉ hiển thị UI)
+  login(credentials: { username: string, password: string, rememberMe: boolean }): Observable<any> {
     return new Observable(observer => {
       setTimeout(() => {
-        // Để demo, luôn trả về thành công
-        // Trong ứng dụng thực, gọi API backend ở đây
+        // Mock success - chỉ để test UI
         observer.next({
           isSuccess: true,
           data: { user: credentials.username }
+        });
+        observer.complete();
+      }, 1000);
+    });
+  }
+
+  // Xử lý đăng ký (Mock - chỉ hiển thị UI)
+  register(userData: { firstName: string, lastName: string, email: string, username: string, password: string, termsAgreement: boolean }): Observable<any> {
+    return new Observable(observer => {
+      setTimeout(() => {
+        // Mock success - chỉ để test UI
+        observer.next({
+          isSuccess: true,
+          data: { user: userData.username }
         });
         observer.complete();
       }, 1000);
@@ -41,10 +53,24 @@ export class CustomAuthService {
   logout() {
     // TODO: Implement real logout logic
     this.router.navigate(['/account/login']);
-    return new Observable(observer => {
-      observer.next(true);
-      observer.complete();
-    });
+    return of(true);
   }
 
+  // Lấy thông tin user hiện tại
+  getCurrentUser() {
+    // TODO: Implement real user info
+    return null;
+  }
+
+  // Lấy access token
+  getAccessToken() {
+    // TODO: Implement real token management
+    return null;
+  }
+
+  // Refresh token
+  refreshToken() {
+    // TODO: Implement real token refresh
+    return of(null);
+  }
 }

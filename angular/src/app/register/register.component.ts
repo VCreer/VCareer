@@ -159,18 +159,32 @@ export class RegisterComponent {
       this.isLoading = true;
       const { firstName, lastName, email, username, password, termsAgreement } = this.registerForm.value;
       
-      // TODO: Thực hiện logic đăng ký
-      console.log('Dữ liệu đăng ký:', { firstName, lastName, email, username, password, termsAgreement });
-      
-      // Mô phỏng API call
-      setTimeout(() => {
-        this.isLoading = false;
-        this.showSuccessMessage = true;
-        // Hiển thị thông báo thành công trong 3 giây trước khi chuyển đến login
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 3000);
-      }, 2000);
+      // Sử dụng CustomAuthService để đăng ký
+      this.customAuthService.register({
+        firstName,
+        lastName,
+        email,
+        username,
+        password,
+        termsAgreement
+      }).subscribe({
+        next: (result) => {
+          this.isLoading = false;
+          if (result.isSuccess) {
+            this.showSuccessMessage = true;
+            // Hiển thị thông báo thành công trong 3 giây trước khi chuyển đến login
+            setTimeout(() => {
+              this.router.navigate(['/login']);
+            }, 3000);
+          } else {
+            console.error('Đăng ký thất bại:', result.error);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Đăng ký thất bại:', error);
+        }
+      });
     } else {
       const firstErrorField = Object.keys(this.registerForm.controls).find(key =>
         this.registerForm.get(key)?.invalid
