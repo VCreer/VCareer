@@ -5,24 +5,24 @@ export const APP_ROUTES: Routes = [
   // Custom Account routes thay thế ABP Account module
   {
     path: 'account/login',
-    loadComponent: () => import('./login/login.component').then(c => c.LoginComponent),
+    loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent),
   },
   {
     path: 'account/register',
-    loadComponent: () => import('./register/register.component').then(c => c.RegisterComponent),
+    loadComponent: () => import('./features/auth/register/register.component').then(c => c.RegisterComponent),
   },
   // Direct routes
   {
     path: 'login',
-    loadComponent: () => import('./login/login.component').then(c => c.LoginComponent),
+    loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent),
   },
   {
     path: 'register', 
-    loadComponent: () => import('./register/register.component').then(c => c.RegisterComponent),
+    loadComponent: () => import('./features/auth/register/register.component').then(c => c.RegisterComponent),
   },
   {
     path: 'forgot-password',
-    loadComponent: () => import('./forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
   },
   {
     path: '',
@@ -31,7 +31,7 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./home/home.component').then(c => c.HomeComponent),
+        loadComponent: () => import('./features/dashboard/home.component').then(c => c.HomeComponent),
       },
       // {
       //   path: 'account',

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { LocalizationPipe } from '@abp/ng.core';
 import { Router } from '@angular/router';
-import { CustomAuthService } from '../services/custom-auth.service';
+import { CustomAuthService } from '../../core/services/custom-auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
