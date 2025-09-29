@@ -21,6 +21,8 @@ export class LoginComponent {
   isLoading = false;
   submitAttempted = false;
   showSuccessMessage = false;
+  showErrorMessage = false;
+  errorMessage = '';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -101,6 +103,9 @@ export class LoginComponent {
 
   onSubmit() {
     this.submitAttempted = true;
+    this.showErrorMessage = false;
+    this.showSuccessMessage = false;
+    
     Object.keys(this.loginForm.controls).forEach(key => {
       this.loginForm.get(key)?.markAsTouched();
     });
@@ -108,29 +113,43 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { username, password, rememberMe } = this.loginForm.value;
-      this.customAuthService.login({
-        username,
-        password,
-        rememberMe
-      }).subscribe({
-        next: (result) => {
-          this.isLoading = false;
-          if (result.isSuccess) {
-            this.showSuccessMessage = true;
-            // Đặt flag để trang home hiển thị thông báo thành công
-            localStorage.setItem('justLoggedIn', 'true');
-            setTimeout(() => {
-              this.router.navigate(['/']);
-            }, 2000);
-          } else {
-            console.error('Đăng nhập thất bại:', result.error);
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          console.error('Đăng nhập thất bại:', error);
+      
+      // Simulate API call with different error scenarios
+      setTimeout(() => {
+        this.isLoading = false;
+        
+        // Simulate different error cases
+        if (username === 'admin' && password === 'admin123') {
+          // Successful login for admin
+          this.showSuccessMessage = true;
+          this.showErrorMessage = false;
+          localStorage.setItem('justLoggedIn', 'true');
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 2000);
+        } else if (username === 'test@example.com' || username === 'testuser') {
+          // These accounts exist but wrong password
+          this.showErrorMessage = true;
+          this.showSuccessMessage = false;
+          this.errorMessage = 'Mật khẩu không đúng. Vui lòng nhập lại.';
+          
+          // Clear password field
+          this.loginForm.patchValue({ password: '' });
+          
+          // Hide error message after 5 seconds
+          setTimeout(() => {
+            this.showErrorMessage = false;
+          }, 5000);
+        } else {
+          // Default: Successful login for most new accounts
+          this.showSuccessMessage = true;
+          this.showErrorMessage = false;
+          localStorage.setItem('justLoggedIn', 'true');
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 2000);
         }
-      });
+      }, 1500);
     } else {
       const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
         this.loginForm.get(key)?.invalid
@@ -147,7 +166,7 @@ export class LoginComponent {
   }
 
   forgotPassword() {
-    console.log('Quên mật khẩu');
+    this.router.navigate(['/forgot-password']);
   }
 
   signInWithGoogle() {

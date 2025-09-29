@@ -22,6 +22,8 @@ export class RegisterComponent {
   showConfirmPassword = false;
   submitAttempted = false;
   showSuccessMessage = false;
+  showErrorMessage = false;
+  errorMessage = '';
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -151,6 +153,9 @@ export class RegisterComponent {
   // Xử lý submit form
   onSubmit() {
     this.submitAttempted = true;
+    this.showErrorMessage = false;
+    this.showSuccessMessage = false;
+    
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
     });
@@ -159,32 +164,33 @@ export class RegisterComponent {
       this.isLoading = true;
       const { firstName, lastName, email, username, password, termsAgreement } = this.registerForm.value;
       
-      // Sử dụng CustomAuthService để đăng ký
-      this.customAuthService.register({
-        firstName,
-        lastName,
-        email,
-        username,
-        password,
-        termsAgreement
-      }).subscribe({
-        next: (result) => {
-          this.isLoading = false;
-          if (result.isSuccess) {
-            this.showSuccessMessage = true;
-            // Hiển thị thông báo thành công trong 3 giây trước khi chuyển đến login
-            setTimeout(() => {
-              this.router.navigate(['/login']);
-            }, 3000);
-          } else {
-            console.error('Đăng ký thất bại:', result.error);
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          console.error('Đăng ký thất bại:', error);
+      // Simulate API call with different error scenarios
+      setTimeout(() => {
+        this.isLoading = false;
+        
+        // Simulate different error cases
+        if (email === 'test@example.com' || username === 'testuser') {
+          // Email or username already exists
+          this.showErrorMessage = true;
+          this.showSuccessMessage = false;
+          this.errorMessage = 'Email hoặc tên đăng nhập đã tồn tại trong hệ thống';
+          
+          // Clear email and username fields
+          this.registerForm.patchValue({ email: '', username: '' });
+          
+          // Hide error message after 5 seconds
+          setTimeout(() => {
+            this.showErrorMessage = false;
+          }, 5000);
+        } else {
+          // Default: Successful registration for most cases
+          this.showSuccessMessage = true;
+          this.showErrorMessage = false;
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 3000);
         }
-      });
+      }, 1500);
     } else {
       const firstErrorField = Object.keys(this.registerForm.controls).find(key =>
         this.registerForm.get(key)?.invalid

@@ -1,224 +1,236 @@
 <div class="register-container">
-  <div class="register-wrapper">
-    <!-- Cột bên trái - Brand -->
-    <div class="register-brand-section">
-      <div class="brand-content">
-        <h2 class="brand-title">VCareer</h2>
-        <p class="brand-slogan">Khởi đầu sự nghiệp vững chắc, kết nối cơ hội bền lâu.</p>
-      </div>
-    </div>
-
-    <!-- Cột bên phải - Form đăng ký -->
-    <div class="register-form-section">
-      <div class="register-card">
-        <!-- Header -->
-        <div class="register-header">
-          <div class="logo-container">
-            <img src="assets/images/login/logo-login.png" alt="VCareer Logo" class="logo-image" />
-          </div>
-          <h1 class="register-title">Tạo tài khoản mới</h1>
-          <p class="welcome-text">Tham gia cùng chúng tôi để khám phá cơ hội nghề nghiệp tuyệt vời.</p>
+    <div class="register-wrapper">
+      <!-- Cột bên trái - Brand -->
+      <div class="register-brand-section">
+        <div class="brand-content">
+          <h2 class="brand-title">VCareer</h2>
+          <p class="brand-slogan">Khởi đầu sự nghiệp vững chắc, kết nối cơ hội bền lâu.</p>
         </div>
-
-        <!-- Form đăng ký -->
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-          <!-- Hàng tên -->
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Họ</label>
-              <input
-                type="text"
-                formControlName="firstName"
-                class="form-input"
-                [class.error]="hasFieldError('firstName')"
-                placeholder="Nhập họ của bạn"
-              />
-              <div *ngIf="hasFieldError('firstName')" class="error-message">
-                {{ getFieldError('firstName') }}
+      </div>
+  
+      <!-- Cột bên phải - Form đăng ký -->
+      <div class="register-form-section">
+        <div class="register-card">
+          <!-- Header -->
+          <div class="register-header">
+            <div class="logo-container">
+              <img src="assets/images/login/logo-login.png" alt="VCareer Logo" class="logo-image" />
+            </div>
+            <h1 class="register-title">Tạo tài khoản mới</h1>
+            <p class="welcome-text">Tham gia cùng chúng tôi để khám phá cơ hội nghề nghiệp tuyệt vời.</p>
+          </div>
+  
+          <!-- Form đăng ký -->
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+            <!-- Hàng tên -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Họ</label>
+                <input
+                  type="text"
+                  formControlName="firstName"
+                  class="form-input"
+                  [class.error]="hasFieldError('firstName')"
+                  placeholder="Nhập họ của bạn"
+                />
+                <div *ngIf="hasFieldError('firstName')" class="error-message">
+                  {{ getFieldError('firstName') }}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tên</label>
+                <input
+                  type="text"
+                  formControlName="lastName"
+                  class="form-input"
+                  [class.error]="hasFieldError('lastName')"
+                  placeholder="Nhập tên của bạn"
+                />
+                <div *ngIf="hasFieldError('lastName')" class="error-message">
+                  {{ getFieldError('lastName') }}
+                </div>
               </div>
             </div>
+  
+            <!-- Email -->
             <div class="form-group">
-              <label class="form-label">Tên</label>
+              <label class="form-label">Email</label>
               <input
-                type="text"
-                formControlName="lastName"
+                type="email"
+                formControlName="email"
                 class="form-input"
-                [class.error]="hasFieldError('lastName')"
-                placeholder="Nhập tên của bạn"
+                [class.error]="hasFieldError('email')"
+                placeholder="Nhập email của bạn"
               />
-              <div *ngIf="hasFieldError('lastName')" class="error-message">
-                {{ getFieldError('lastName') }}
+              <div *ngIf="hasFieldError('email')" class="error-message">
+                {{ getFieldError('email') }}
               </div>
             </div>
-          </div>
-
-          <!-- Email -->
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input
-              type="email"
-              formControlName="email"
-              class="form-input"
-              [class.error]="hasFieldError('email')"
-              placeholder="Nhập email của bạn"
-            />
-            <div *ngIf="hasFieldError('email')" class="error-message">
-              {{ getFieldError('email') }}
-            </div>
-          </div>
-
-          <!-- Tên đăng nhập -->
-          <div class="form-group">
-            <label class="form-label">Tên đăng nhập</label>
-            <input
-              type="text"
-              formControlName="username"
-              class="form-input"
-              [class.error]="hasFieldError('username')"
-              placeholder="Nhập tên đăng nhập"
-            />
-            <div *ngIf="hasFieldError('username')" class="error-message">
-              {{ getFieldError('username') }}
-            </div>
-          </div>
-
-          <!-- Mật khẩu -->
-          <div class="form-group">
-            <label class="form-label">Mật khẩu</label>
-            <div class="password-input-container">
+  
+            <!-- Tên đăng nhập -->
+            <div class="form-group">
+              <label class="form-label">Tên đăng nhập</label>
               <input
-                [type]="showPassword ? 'text' : 'password'"
-                formControlName="password"
-                class="form-input password-input"
-                [class.error]="hasFieldError('password')"
-                placeholder="Nhập mật khẩu"
+                type="text"
+                formControlName="username"
+                class="form-input"
+                [class.error]="hasFieldError('username')"
+                placeholder="Nhập tên đăng nhập"
               />
-              <button
-                type="button"
-                class="password-toggle"
-                (click)="togglePasswordVisibility()"
-              >
-                <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
-                  <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
-                </svg>
-                <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
-                  <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
-                </svg>
-              </button>
+              <div *ngIf="hasFieldError('username')" class="error-message">
+                {{ getFieldError('username') }}
+              </div>
             </div>
-            <div *ngIf="hasFieldError('password')" class="error-message">
-              {{ getFieldError('password') }}
+  
+            <!-- Mật khẩu -->
+            <div class="form-group">
+              <label class="form-label">Mật khẩu</label>
+              <div class="password-input-container">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  class="form-input password-input"
+                  [class.error]="hasFieldError('password')"
+                  placeholder="Nhập mật khẩu"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()"
+                >
+                  <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
+                  </svg>
+                  <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+              <div *ngIf="hasFieldError('password')" class="error-message">
+                {{ getFieldError('password') }}
+              </div>
             </div>
+  
+            <!-- Xác nhận mật khẩu -->
+            <div class="form-group">
+              <label class="form-label">Xác nhận mật khẩu</label>
+              <div class="password-input-container">
+                <input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  class="form-input password-input"
+                  [class.error]="hasFieldError('confirmPassword')"
+                  placeholder="Nhập lại mật khẩu"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="toggleConfirmPasswordVisibility()"
+                >
+                  <svg *ngIf="!showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
+                  </svg>
+                  <svg *ngIf="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+              <div *ngIf="hasFieldError('confirmPassword')" class="error-message">
+                {{ getFieldError('confirmPassword') }}
+              </div>
+            </div>
+  
+            <!-- Điều khoản -->
+            <div class="form-group">
+              <label class="terms-agreement">
+                <input
+                  type="checkbox"
+                  formControlName="termsAgreement"
+                  class="terms-input"
+                />
+                <span class="terms-text">
+                  Tôi đồng ý với 
+                  <a href="#" class="terms-link">Điều khoản dịch vụ</a> 
+                  và 
+                  <a href="#" class="terms-link">Chính sách bảo mật</a>
+                </span>
+              </label>
+              <div *ngIf="hasFieldError('termsAgreement')" class="error-message">
+                {{ getFieldError('termsAgreement') }}
+              </div>
+            </div>
+  
+            <!-- Nút đăng ký -->
+            <button
+              type="submit"
+              class="register-btn"
+              [disabled]="isLoading"
+            >
+              <span *ngIf="isLoading" class="loading-spinner"></span>
+              {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký' }}
+            </button>
+          </form>
+  
+          <!-- Phân cách -->
+          <div class="divider">
+            <span class="divider-text">Hoặc</span>
           </div>
-
-          <!-- Xác nhận mật khẩu -->
-          <div class="form-group">
-            <label class="form-label">Xác nhận mật khẩu</label>
-            <div class="password-input-container">
-              <input
-                [type]="showConfirmPassword ? 'text' : 'password'"
-                formControlName="confirmPassword"
-                class="form-input password-input"
-                [class.error]="hasFieldError('confirmPassword')"
-                placeholder="Nhập lại mật khẩu"
-              />
-              <button
-                type="button"
-                class="password-toggle"
-                (click)="toggleConfirmPasswordVisibility()"
-              >
-                <svg *ngIf="!showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
-                  <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
-                </svg>
-                <svg *ngIf="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
-                  <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
-                </svg>
-              </button>
-            </div>
-            <div *ngIf="hasFieldError('confirmPassword')" class="error-message">
-              {{ getFieldError('confirmPassword') }}
-            </div>
-          </div>
-
-          <!-- Điều khoản -->
-          <div class="form-group">
-            <label class="terms-agreement">
-              <input
-                type="checkbox"
-                formControlName="termsAgreement"
-                class="terms-input"
-              />
-              <span class="terms-text">
-                Tôi đồng ý với 
-                <a href="#" class="terms-link">Điều khoản dịch vụ</a> 
-                và 
-                <a href="#" class="terms-link">Chính sách bảo mật</a>
-              </span>
-            </label>
-            <div *ngIf="hasFieldError('termsAgreement')" class="error-message">
-              {{ getFieldError('termsAgreement') }}
-            </div>
-          </div>
-
-          <!-- Nút đăng ký -->
+  
+          <!-- Nút đăng ký Google -->
           <button
-            type="submit"
-            class="register-btn"
+            type="button"
+            class="google-sign-up-btn"
+            (click)="signUpWithGoogle()"
             [disabled]="isLoading"
           >
-            <span *ngIf="isLoading" class="loading-spinner"></span>
-            {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký' }}
+            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.09v2.84C3.97 20.53 7.64 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.09C1.43 8.55 1 10.22 1 12s.43 3.45 1.09 4.93l2.75-2.84.8-.8z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.64 1 3.97 3.47 2.09 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>Đăng ký bằng Google</span>
           </button>
-        </form>
-
-        <!-- Phân cách -->
-        <div class="divider">
-          <span class="divider-text">Hoặc</span>
-        </div>
-
-        <!-- Nút đăng ký Google -->
-        <button
-          type="button"
-          class="google-sign-up-btn"
-          (click)="signUpWithGoogle()"
-          [disabled]="isLoading"
-        >
-          <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.09v2.84C3.97 20.53 7.64 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.09C1.43 8.55 1 10.22 1 12s.43 3.45 1.09 4.93l2.75-2.84.8-.8z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.64 1 3.97 3.47 2.09 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          <span>Đăng ký bằng Google</span>
-        </button>
-
-        <!-- Link đăng nhập -->
-        <div class="login-section">
-          <p class="login-text">
-            Đã có tài khoản? 
-            <button type="button" class="login-link" (click)="navigateToLogin()">
-              Đăng nhập ngay
-            </button>
-          </p>
+  
+          <!-- Link đăng nhập -->
+          <div class="login-section">
+            <p class="login-text">
+              Đã có tài khoản? 
+              <button type="button" class="login-link" (click)="navigateToLogin()">
+                Đăng nhập ngay
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  
+    <!-- Thông báo thành công -->
+    <div *ngIf="showSuccessMessage" class="success-notification">
+      <div class="notification-content">
+        <svg class="success-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 12l2 2 4-4"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+        <span>Đăng ký thành công!</span>
+      </div>
+    </div>
 
-  <!-- Thông báo thành công -->
-  <div *ngIf="showSuccessMessage" class="success-notification">
-    <div class="notification-content">
-      <svg class="success-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 12l2 2 4-4"></path>
-        <circle cx="12" cy="12" r="10"></circle>
-      </svg>
-      <span>Đăng ký thành công!</span>
+    <!-- Thông báo lỗi -->
+    <div *ngIf="showErrorMessage" class="error-notification">
+      <div class="notification-content">
+        <svg class="error-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
     </div>
   </div>
-</div>

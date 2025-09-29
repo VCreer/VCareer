@@ -21,6 +21,10 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./register/register.component').then(c => c.RegisterComponent),
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/main-layout.component').then(c => c.MainLayoutComponent),
     children: [
