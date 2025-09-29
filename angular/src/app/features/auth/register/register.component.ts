@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CustomAuthService } from '../services/custom-auth.service';
+import { CustomAuthService } from '../../../core/services/custom-auth.service';
 
 @Component({
   selector: 'app-register',
