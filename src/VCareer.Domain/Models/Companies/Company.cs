@@ -21,6 +21,11 @@ namespace VCareer.Models.Companies
         public int CompanySize { get; set; }
         public int IndustryId { get; set; }
         public int FoundedYear { get; set; }
+        public string LogoUrl { get; set; }
+        public string LegalDocumentUrl { get; set; }
+        public string CoverImageUrl { get; set; }
+        public string WebsiteUrl { get; set; }
+        public string CultureVideoUrl { get; set; }
         public DateTime VerifyAt { get; set; }
 
         public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }

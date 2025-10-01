@@ -76,7 +76,7 @@ namespace VCareer.Migrations
                     b.ToTable("AppBooks", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.Company", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.Company", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -110,6 +110,10 @@ namespace VCareer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CoverImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("CreationTime");
@@ -117,6 +121,10 @@ namespace VCareer.Migrations
                     b.Property<Guid?>("CreatorId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("CreatorId");
+
+                    b.Property<string>("CultureVideoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("DeleterId")
                         .HasColumnType("uniqueidentifier")
@@ -159,6 +167,14 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<string>("LegalDocumentUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
@@ -168,12 +184,16 @@ namespace VCareer.Migrations
                     b.Property<DateTime>("VerifyAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("WebsiteUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Companies", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.CompanyIndustry", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.CompanyIndustry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -197,7 +217,7 @@ namespace VCareer.Migrations
                     b.ToTable("CompanyIndustries", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.Industry", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.Industry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -362,6 +382,9 @@ namespace VCareer.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CompanyId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -414,6 +437,10 @@ namespace VCareer.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CompanyId1");
 
                     b.ToTable("RecruiterProfile", (string)null);
                 });
@@ -2275,15 +2302,15 @@ namespace VCareer.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.CompanyIndustry", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.CompanyIndustry", b =>
                 {
-                    b.HasOne("VCareer.Models.Company.Company", "Company")
+                    b.HasOne("VCareer.Models.Companies.Company", "Company")
                         .WithMany("CompanyIndustries")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VCareer.Models.Company.Industry", "Industry")
+                    b.HasOne("VCareer.Models.Companies.Industry", "Industry")
                         .WithMany("CompanyIndustries")
                         .HasForeignKey("IndustryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2318,11 +2345,25 @@ namespace VCareer.Migrations
 
             modelBuilder.Entity("VCareer.Models.Users.RecruiterProfile", b =>
                 {
+                    b.HasOne("VCareer.Models.Companies.Company", null)
+                        .WithMany("RecruiterProfiles")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.Companies.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithOne()
                         .HasForeignKey("VCareer.Models.Users.RecruiterProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Company");
 
                     b.Navigation("User");
                 });
@@ -2478,12 +2519,14 @@ namespace VCareer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.Company", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.Company", b =>
                 {
                     b.Navigation("CompanyIndustries");
+
+                    b.Navigation("RecruiterProfiles");
                 });
 
-            modelBuilder.Entity("VCareer.Models.Company.Industry", b =>
+            modelBuilder.Entity("VCareer.Models.Companies.Industry", b =>
                 {
                     b.Navigation("CompanyIndustries");
                 });

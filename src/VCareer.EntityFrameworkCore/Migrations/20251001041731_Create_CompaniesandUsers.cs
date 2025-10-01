@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateAuthenTableUpdate : Migration
+    public partial class Create_CompaniesandUsers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -60,6 +60,11 @@ namespace VCareer.Migrations
                     CompanySize = table.Column<int>(type: "int", nullable: false),
                     IndustryId = table.Column<int>(type: "int", nullable: false),
                     FoundedYear = table.Column<int>(type: "int", nullable: false),
+                    LogoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LegalDocumentUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CoverImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WebsiteUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CultureVideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     VerifyAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
@@ -128,6 +133,7 @@ namespace VCareer.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     IsLead = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false),
+                    CompanyId1 = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
@@ -148,7 +154,13 @@ namespace VCareer.Migrations
                         principalTable: "AbpUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
+                    table.ForeignKey(
+                        name: "FK_RecruiterProfile_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                                  });
 
             migrationBuilder.CreateTable(
                 name: "CompanyIndustries",
@@ -186,6 +198,16 @@ namespace VCareer.Migrations
                 name: "IX_CompanyIndustries_IndustryId",
                 table: "CompanyIndustries",
                 column: "IndustryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecruiterProfile_CompanyId",
+                table: "RecruiterProfile",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecruiterProfile_CompanyId1",
+                table: "RecruiterProfile",
+                column: "CompanyId1");
         }
 
         /// <inheritdoc />
@@ -204,10 +226,10 @@ namespace VCareer.Migrations
                 name: "RecruiterProfile");
 
             migrationBuilder.DropTable(
-                name: "Companies");
+                name: "Industries");
 
             migrationBuilder.DropTable(
-                name: "Industries");
+                name: "Companies");
         }
     }
 }

@@ -15,8 +15,8 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using VCareer.Models.Company;
 using VCareer.Models.Users;
+using VCareer.Models.Companies;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -129,6 +129,7 @@ public class VCareerDbContext :
             .WithOne()
             .HasForeignKey<RecruiterProfile>(x => x.UserId)
             .IsRequired();
+
         });
 
         builder.Entity<Company>(c =>
@@ -143,6 +144,11 @@ public class VCareerDbContext :
             c.Property(x => x.Id)
               .ValueGeneratedOnAdd()
               .UseIdentityColumn();
+
+            c.HasMany(x => x.RecruiterProfiles)
+            .WithOne()
+            .HasForeignKey(x => x.CompanyId)
+            .IsRequired();
         });
 
         builder.Entity<Industry>(c =>
