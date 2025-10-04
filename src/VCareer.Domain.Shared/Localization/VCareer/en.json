@@ -32,6 +32,9 @@
     "Permission:Books.Create": "Creating new books",
     "Permission:Books.Edit": "Editing the books",
     "Permission:Books.Delete": "Deleting the books",
+    "Permission:Profile": "Profile Management",
+    "Permission:Profile.UpdatePersonalInfo": "Updating personal information",
+    "Permission:Profile.ChangePassword": "Changing password",
     "Menu:Home": "Home",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome"

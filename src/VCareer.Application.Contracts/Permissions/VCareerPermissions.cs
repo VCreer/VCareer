@@ -12,6 +12,13 @@ public static class VCareerPermissions
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class Profile
+    {
+        public const string Default = GroupName + ".Profile";
+        public const string UpdatePersonalInfo = Default + ".UpdatePersonalInfo";
+        public const string ChangePassword = Default + ".ChangePassword";
+    }
     
     //Add your own permission names. Example:
     //public const string MyPermission1 = GroupName + ".MyPermission1";

@@ -15,6 +15,11 @@ public class VCareerPermissionDefinitionProvider : PermissionDefinitionProvider
         booksPermission.AddChild(VCareerPermissions.Books.Create, L("Permission:Books.Create"));
         booksPermission.AddChild(VCareerPermissions.Books.Edit, L("Permission:Books.Edit"));
         booksPermission.AddChild(VCareerPermissions.Books.Delete, L("Permission:Books.Delete"));
+
+        var profilePermission = myGroup.AddPermission(VCareerPermissions.Profile.Default, L("Permission:Profile"));
+        profilePermission.AddChild(VCareerPermissions.Profile.UpdatePersonalInfo, L("Permission:Profile.UpdatePersonalInfo"));
+        profilePermission.AddChild(VCareerPermissions.Profile.ChangePassword, L("Permission:Profile.ChangePassword"));
+        
         //Define your own permissions here. Example:
         //myGroup.AddPermission(VCareerPermissions.MyPermission1, L("Permission:MyPermission1"));
     }
