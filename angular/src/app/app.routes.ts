@@ -45,6 +45,12 @@ export const APP_ROUTES: Routes = [
     path: 'recruiter/reset-password',
     loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
+  
+  // Admin routes
+  {
+    path: 'admin/login',
+    loadComponent: () => import('./features/auth/admin-login/admin-login.component').then(c => c.AdminLoginComponent),
+  },
   // Legacy routes - redirect to candidate routes
   {
     path: 'login',
