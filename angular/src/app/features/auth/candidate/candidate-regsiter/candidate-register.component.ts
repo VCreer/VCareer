@@ -2,14 +2,14 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CustomAuthService } from '../../../core/services/custom-auth.service';
+import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  templateUrl: './candidate-register.component.html',
+  styleUrls: ['./candidate-register.component.scss']
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);

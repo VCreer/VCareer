@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -19,7 +19,8 @@ export class ForgotPasswordComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -40,7 +41,7 @@ export class ForgotPasswordComponent implements OnInit {
       
       const email = this.forgotPasswordForm.get('email')?.value;
       
-      // Simulate API call with different scenarios
+      // Simulate API call to send OTP
       setTimeout(() => {
         this.isLoading = false;
         
@@ -56,14 +57,22 @@ export class ForgotPasswordComponent implements OnInit {
             this.showErrorMessage = false;
           }, 5000);
         } else {
-          // Email exists - show success
+          // Email exists - send OTP and redirect to OTP verification
           this.showSuccessMessage = true;
           this.showErrorMessage = false;
           
-          // Hide success message after 5 seconds
+          // Store email for OTP verification
+          localStorage.setItem('reset_email', email);
+          
+          // Redirect to OTP verification page after 2 seconds
           setTimeout(() => {
-            this.showSuccessMessage = false;
-          }, 5000);
+            const currentUrl = this.router.url;
+            if (currentUrl.includes('/recruiter/')) {
+              this.router.navigate(['/recruiter/verify-otp']);
+            } else {
+              this.router.navigate(['/candidate/verify-otp']);
+            }
+          }, 2000);
         }
       }, 2000);
     } else {
@@ -104,11 +113,21 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/login']);
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('/recruiter/')) {
+      this.router.navigate(['/recruiter/login']);
+    } else {
+      this.router.navigate(['/candidate/login']);
+    }
   }
 
   navigateToRegister(): void {
-    this.router.navigate(['/register']);
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('/recruiter/')) {
+      this.router.navigate(['/recruiter/register']);
+    } else {
+      this.router.navigate(['/candidate/register']);
+    }
   }
 
   // Reset form when error occurs
