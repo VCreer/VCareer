@@ -1,0 +1,75 @@
+<div class="verify-otp-container">
+  <div class="verify-otp-wrapper">
+    <!-- Header -->
+    <div class="verify-otp-header">
+      <div class="logo-container">
+        <img src="assets/images/login/logo-login.png" alt="VCareer Logo" class="logo-image" />
+      </div>
+      <h1 class="verify-otp-title">Nhập mã xác thực</h1>
+      <p class="verify-otp-description">
+        Chúng tôi đã gửi mã xác thực đến <strong>{{ email }}</strong>
+      </p>
+    </div>
+
+    <!-- OTP Input Fields -->
+    <div class="otp-input-container">
+      <div class="otp-inputs">
+        <div class="otp-input-wrapper" *ngFor="let i of [0,1,2,3,4,5]">
+          <input
+            type="text"
+            class="otp-input"
+            maxlength="1"
+            [value]="otpValues[i]"
+            (keydown)="onKeyDown($event, i)"
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Resend OTP -->
+    <div class="resend-section">
+      <p class="resend-text">Không nhận được mã? <a href="#" (click)="resendOtp()" class="resend-link">Nhấn để gửi lại</a></p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button type="button" class="cancel-btn" (click)="navigateToLogin()">
+        Hủy
+      </button>
+      <button 
+        type="button" 
+        class="verify-btn"
+        (click)="onSubmit()"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="isLoading" class="loading-spinner"></span>
+        {{ isLoading ? 'Đang xác thực...' : 'Xác thực' }}
+      </button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="showSuccessMessage" class="notification success-notification">
+      <div class="notification-content">
+        <i class="fas fa-check-circle"></i>
+        <span>Mã OTP đã được xác thực thành công!</span>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="showErrorMessage" class="notification error-notification">
+      <div class="notification-content">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div *ngIf="showToast" class="toast-notification" [ngClass]="'toast-' + toastType">
+  <div class="toast-content">
+    <i class="toast-icon" [ngClass]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

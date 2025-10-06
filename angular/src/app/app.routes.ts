@@ -2,27 +2,56 @@ import { Routes } from '@angular/router';
 
 // Định nghĩa các route của ứng dụng
 export const APP_ROUTES: Routes = [
-  // Custom Account routes thay thế ABP Account module
+  // Candidate routes
   {
-    path: 'account/login',
-    loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent),
+    path: 'candidate/login',
+    loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login.component').then(c => c.LoginComponent),
   },
   {
-    path: 'account/register',
-    loadComponent: () => import('./features/auth/register/register.component').then(c => c.RegisterComponent),
+    path: 'candidate/register',
+    loadComponent: () => import('./features/auth/candidate/candidate-regsiter/candidate-register.component').then(c => c.RegisterComponent),
   },
-  // Direct routes
+  {
+    path: 'candidate/forget-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+  },
+  {
+    path: 'candidate/verify-otp',
+    loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+  },
+  
+  // Recruiter routes
+  {
+    path: 'recruiter/login',
+    loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login.component').then(c => c.RecruiterLoginComponent),
+  },
+  {
+    path: 'recruiter/forgot-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+  },
+  {
+    path: 'recruiter/register',
+    loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register.component').then(c => c.RecruiterRegisterComponent),
+  },
+  {
+    path: 'recruiter/verify-otp',
+    loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+  },
+  // Legacy routes - redirect to candidate routes
   {
     path: 'login',
-    loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent),
+    redirectTo: '/candidate/login',
+    pathMatch: 'full'
   },
   {
-    path: 'register', 
-    loadComponent: () => import('./features/auth/register/register.component').then(c => c.RegisterComponent),
+    path: 'register',
+    redirectTo: '/candidate/register',
+    pathMatch: 'full'
   },
   {
     path: 'forgot-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+    redirectTo: '/candidate/forget-password',
+    pathMatch: 'full'
   },
   {
     path: '',

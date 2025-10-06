@@ -2,16 +2,16 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CustomAuthService } from '../../../core/services/custom-auth.service';
+import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-recruiter-login',
   standalone: true,
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  templateUrl: './recruiter-login.component.html',
+  styleUrls: ['./recruiter-login.component.scss'],
   imports: [ReactiveFormsModule, CommonModule]
 })
-export class LoginComponent {
+export class RecruiterLoginComponent {
   private customAuthService = inject(CustomAuthService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -26,11 +26,10 @@ export class LoginComponent {
 
   constructor() {
     this.loginForm = this.fb.group({
-      username: ['', [
+      email: ['', [
         Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(50),
-        this.emailOrUsernameValidator
+        Validators.email,
+        Validators.maxLength(255)
       ]],
       password: ['', [
         Validators.required,
@@ -41,19 +40,13 @@ export class LoginComponent {
     });
   }
 
-  // Validator cho email hoặc username
-  emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
+  // Validator cho email công ty
+  emailValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-
-    if (emailRegex.test(value) || usernameRegex.test(value)) {
-      return null;
-    }
-
-    return { invalidFormat: true };
+    return emailRegex.test(value) ? null : { invalidEmail: true };
   }
 
   togglePasswordVisibility() {
@@ -68,29 +61,27 @@ export class LoginComponent {
     const errors = field.errors;
 
     if (errors['required']) {
-      return fieldName === 'username' ? 'Tên đăng nhập hoặc email là bắt buộc' : 'Mật khẩu là bắt buộc';
+      return fieldName === 'email' ? 'Email công ty là bắt buộc' : 'Mật khẩu là bắt buộc';
+    }
+
+    if (errors['email']) {
+      return 'Email công ty không hợp lệ';
     }
 
     if (errors['minlength']) {
       const requiredLength = errors['minlength'].requiredLength;
-      if (fieldName === 'username') {
-        return `Tên đăng nhập phải có ít nhất ${requiredLength} ký tự`;
-      } else {
-        return `Mật khẩu phải có ít nhất ${requiredLength} ký tự`;
-      }
+      return `Mật khẩu phải có ít nhất ${requiredLength} ký tự`;
     }
 
     if (errors['maxlength']) {
       const requiredLength = errors['maxlength'].requiredLength;
-      if (fieldName === 'username') {
-        return `Tên đăng nhập không được quá ${requiredLength} ký tự`;
-      } else {
-        return `Mật khẩu không được quá ${requiredLength} ký tự`;
-      }
+      return fieldName === 'email' 
+        ? `Email không được quá ${requiredLength} ký tự`
+        : `Mật khẩu không được quá ${requiredLength} ký tự`;
     }
 
-    if (errors['invalidFormat']) {
-      return 'Vui lòng nhập email hợp lệ hoặc tên đăng nhập (chỉ chữ, số, gạch ngang, gạch dưới)';
+    if (errors['invalidEmail']) {
+      return 'Email công ty không hợp lệ';
     }
 
     return '';
@@ -112,22 +103,22 @@ export class LoginComponent {
 
     if (this.loginForm.valid) {
       this.isLoading = true;
-      const { username, password, rememberMe } = this.loginForm.value;
+      const { email, password, rememberMe } = this.loginForm.value;
       
       // Simulate API call with different error scenarios
       setTimeout(() => {
         this.isLoading = false;
         
         // Simulate different error cases
-        if (username === 'admin' && password === 'admin123') {
-          // Successful login for admin
+        if (email === 'admin@company.com' && password === 'admin123') {
+          // Successful login for admin recruiter
           this.showSuccessMessage = true;
           this.showErrorMessage = false;
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
-            this.router.navigate(['/']);
+            this.router.navigate(['/recruiter/dashboard']);
           }, 2000);
-        } else if (username === 'test@example.com' || username === 'testuser') {
+        } else if (email === 'test@company.com' || email === 'testrecruiter') {
           // These accounts exist but wrong password
           this.showErrorMessage = true;
           this.showSuccessMessage = false;
@@ -141,12 +132,12 @@ export class LoginComponent {
             this.showErrorMessage = false;
           }, 5000);
         } else {
-          // Default: Successful login for most new accounts
+          // Default: Successful login for most new recruiter accounts
           this.showSuccessMessage = true;
           this.showErrorMessage = false;
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
-            this.router.navigate(['/']);
+            this.router.navigate(['/recruiter/dashboard']);
           }, 2000);
         }
       }, 1500);
@@ -162,14 +153,18 @@ export class LoginComponent {
   }
 
   navigateToSignUp() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/recruiter/register']);
   }
 
   forgotPassword() {
-    this.router.navigate(['/forgot-password']);
+    this.router.navigate(['/recruiter/forgot-password']);
   }
 
   signInWithGoogle() {
     console.log('Đăng nhập bằng Google');
+  }
+
+  goToSelector() {
+    this.router.navigate(['/auth/selector']);
   }
 }
