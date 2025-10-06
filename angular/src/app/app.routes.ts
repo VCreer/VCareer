@@ -19,6 +19,10 @@ export const APP_ROUTES: Routes = [
     path: 'candidate/verify-otp',
     loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
+  {
+    path: 'candidate/reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+  },
   
   // Recruiter routes
   {
@@ -36,6 +40,10 @@ export const APP_ROUTES: Routes = [
   {
     path: 'recruiter/verify-otp',
     loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+  },
+  {
+    path: 'recruiter/reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   // Legacy routes - redirect to candidate routes
   {

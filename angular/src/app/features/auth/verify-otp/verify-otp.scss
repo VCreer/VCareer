@@ -169,35 +169,6 @@
   100% { transform: rotate(360deg); }
 }
 
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  max-width: 400px;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.3s ease-out;
-}
-
-.notification-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 15px 20px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.success-notification {
-  background: #10b981;
-  color: white;
-}
-
-.error-notification {
-  background: #ef4444;
-  color: white;
-}
 
 @keyframes slideIn {
   from {
@@ -261,15 +232,13 @@
 }
 
 .toast-success {
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
+  background: #10B981;
+  color: white;
 }
 
 .toast-error {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
+  background: #EF4444;
+  color: white;
 }
 
 .toast-content {

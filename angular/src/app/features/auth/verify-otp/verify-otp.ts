@@ -11,9 +11,6 @@ import { CommonModule } from '@angular/common';
 })
 export class VerifyOtpComponent implements OnInit {
   isLoading = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
   email = '';
   otpValues: string[] = ['', '', '', '', '', ''];
   showToast = false;
@@ -49,8 +46,7 @@ export class VerifyOtpComponent implements OnInit {
       // console.log(`Array updated: [${this.otpValues.join('')}]`);
       
       // Clear any previous error messages
-      this.showErrorMessage = false;
-      this.errorMessage = '';
+      this.showToast = false;
       
       // Auto focus next input
       if (index < 5) {
@@ -95,8 +91,6 @@ export class VerifyOtpComponent implements OnInit {
     
     // Check if all 6 digits are filled
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-      this.showErrorMessage = true;
-      this.errorMessage = 'Vui lòng nhập đầy đủ 6 chữ số';
       this.showToastMessage('Vui lòng nhập đầy đủ 6 chữ số', 'error');
       return;
     }
@@ -104,8 +98,6 @@ export class VerifyOtpComponent implements OnInit {
     if (otp.length === 6 && /^\d{6}$/.test(otp)) {
       console.log(`Valid OTP submitted: "${otp}"`);
       this.isLoading = true;
-      this.showErrorMessage = false;
-      this.showSuccessMessage = false;
       
       // Simulate API call to verify OTP
       setTimeout(() => {
@@ -114,8 +106,6 @@ export class VerifyOtpComponent implements OnInit {
         // Simulate OTP verification
         if (otp === '123456') {
           // OTP is correct
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
           this.showToastMessage('Xác thực thành công!', 'success');
           
           // Redirect to reset password page after 2 seconds
@@ -129,15 +119,7 @@ export class VerifyOtpComponent implements OnInit {
           }, 2000);
         } else {
           // OTP is incorrect
-          this.showErrorMessage = true;
-          this.showSuccessMessage = false;
-          this.errorMessage = 'Mã OTP không đúng';
           this.showToastMessage('Mã OTP không đúng. Vui lòng thử lại.', 'error');
-          
-          // Hide error message after 5 seconds
-          setTimeout(() => {
-            this.showErrorMessage = false;
-          }, 5000);
         }
       }, 2000);
     }
@@ -145,18 +127,11 @@ export class VerifyOtpComponent implements OnInit {
 
   resendOtp(): void {
     this.isLoading = true;
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
     
     // Simulate resend OTP
     setTimeout(() => {
       this.isLoading = false;
-      this.showSuccessMessage = true;
-      
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        this.showSuccessMessage = false;
-      }, 3000);
+      this.showToastMessage('Mã OTP mới đã được gửi!', 'success');
     }, 1500);
   }
 
