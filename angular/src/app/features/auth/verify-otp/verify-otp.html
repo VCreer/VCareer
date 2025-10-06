@@ -48,28 +48,21 @@
       </button>
     </div>
 
-    <!-- Success Message -->
-    <div *ngIf="showSuccessMessage" class="notification success-notification">
-      <div class="notification-content">
-        <i class="fas fa-check-circle"></i>
-        <span>Mã OTP đã được xác thực thành công!</span>
-      </div>
-    </div>
-
-    <!-- Error Message -->
-    <div *ngIf="showErrorMessage" class="notification error-notification">
-      <div class="notification-content">
-        <i class="fas fa-exclamation-circle"></i>
-        <span>{{ errorMessage }}</span>
-      </div>
-    </div>
   </div>
 </div>
 
 <!-- Toast Notification -->
 <div *ngIf="showToast" class="toast-notification" [ngClass]="'toast-' + toastType">
   <div class="toast-content">
-    <i class="toast-icon" [ngClass]="toastType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+    <svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="toastType === 'success'">
+      <path d="M9 12l2 2 4-4"></path>
+      <circle cx="12" cy="12" r="10"></circle>
+    </svg>
+    <svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="toastType === 'error'">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="15" y1="9" x2="9" y2="15"></line>
+      <line x1="9" y1="9" x2="15" y2="15"></line>
+    </svg>
     <span class="toast-message">{{ toastMessage }}</span>
   </div>
 </div>
