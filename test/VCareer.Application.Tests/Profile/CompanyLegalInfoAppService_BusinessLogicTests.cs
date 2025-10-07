@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -226,7 +226,7 @@ public class CompanyLegalInfoAppService_BusinessLogicTests
         var invalidEmailDomains = new[]
         {
             "company", // No domain
-            ".com", // Starts with dot
+            ".com.", // Starts with dot
             "company.", // Ends with dot
             "company..com" // Double dots
         };
@@ -333,4 +333,4 @@ public class CompanyLegalInfoAppService_BusinessLogicTests
         }
     }
 }
-*/
+

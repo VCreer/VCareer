@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using VCareer.Models.Companies;
 
 namespace VCareer.Profile;
@@ -173,4 +173,3 @@ public static class CompanyLegalInfoTestDataHelper
         return company;
     }
 }
-*/

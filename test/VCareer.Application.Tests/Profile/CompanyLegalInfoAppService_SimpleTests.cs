@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using System.Threading.Tasks;
 using NSubstitute;
 using Shouldly;
@@ -592,4 +592,4 @@ public class CompanyLegalInfoAppService_SimpleTests
         }
     }
 }
-*/
+
