@@ -1,21 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { 
+  InputFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss'],
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule, 
+    RouterModule,
+    InputFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class ForgotPasswordComponent implements OnInit {
   forgotPasswordForm!: FormGroup;
   isLoading = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'error';
 
   constructor(
     private fb: FormBuilder,
@@ -33,11 +45,20 @@ export class ForgotPasswordComponent implements OnInit {
     });
   }
 
+  showToastMessage(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
   onSubmit(): void {
     if (this.forgotPasswordForm.valid) {
       this.isLoading = true;
-      this.showErrorMessage = false;
-      this.showSuccessMessage = false;
+      // Clear any previous messages
       
       const email = this.forgotPasswordForm.get('email')?.value;
       
@@ -48,18 +69,13 @@ export class ForgotPasswordComponent implements OnInit {
         // Simulate API call with different scenarios
         if (email === 'test@example.com' || email === 'testuser') {
           // Email doesn't exist
-          this.showErrorMessage = true;
-          this.showSuccessMessage = false;
-          this.errorMessage = 'Email không tồn tại';
+          this.showToastMessage('Email không tồn tại', 'error');
           
           // Hide error message after 5 seconds
-          setTimeout(() => {
-            this.showErrorMessage = false;
-          }, 5000);
+          // Error message will auto-hide via toast
         } else {
           // Email exists - send OTP and redirect to OTP verification
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Mã OTP đã được gửi đến email của bạn!', 'success');
           
           // Store email for OTP verification
           localStorage.setItem('reset_email', email);
@@ -89,7 +105,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   hasFieldError(fieldName: string): boolean {
     const field = this.forgotPasswordForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    return !!(field && field.invalid && field.touched);
   }
 
   getFieldError(fieldName: string): string {
@@ -133,8 +149,6 @@ export class ForgotPasswordComponent implements OnInit {
   // Reset form when error occurs
   resetForm(): void {
     this.forgotPasswordForm.reset();
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
-    this.errorMessage = '';
+    // Clear any previous messages
   }
 }

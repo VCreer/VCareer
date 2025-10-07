@@ -3,13 +3,26 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { 
+  InputFieldComponent, 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   templateUrl: './candidate-login.component.html',
   styleUrls: ['./candidate-login.component.scss'],
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule,
+    InputFieldComponent,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class LoginComponent {
   private customAuthService = inject(CustomAuthService);
@@ -17,12 +30,11 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
 
   loginForm: FormGroup;
-  showPassword = false;
   isLoading = false;
   submitAttempted = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'error';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -56,8 +68,14 @@ export class LoginComponent {
     return { invalidFormat: true };
   }
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
+  showToastMessage(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
   }
 
   // Lấy thông báo lỗi cho field
@@ -103,8 +121,7 @@ export class LoginComponent {
 
   onSubmit() {
     this.submitAttempted = true;
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
+      // Clear any previous messages
     
     Object.keys(this.loginForm.controls).forEach(key => {
       this.loginForm.get(key)?.markAsTouched();
@@ -121,29 +138,25 @@ export class LoginComponent {
         // Simulate different error cases
         if (username === 'admin' && password === 'admin123') {
           // Successful login for admin
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
             this.router.navigate(['/']);
           }, 2000);
         } else if (username === 'test@example.com' || username === 'testuser') {
           // These accounts exist but wrong password
-          this.showErrorMessage = true;
-          this.showSuccessMessage = false;
-          this.errorMessage = 'Mật khẩu không đúng. Vui lòng nhập lại.';
+          this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
           
           // Clear password field
           this.loginForm.patchValue({ password: '' });
           
           // Hide error message after 5 seconds
           setTimeout(() => {
-            this.showErrorMessage = false;
+            // Clear error message
           }, 5000);
         } else {
           // Default: Successful login for most new accounts
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
             this.router.navigate(['/']);
@@ -170,6 +183,7 @@ export class LoginComponent {
   }
 
   signInWithGoogle() {
+    // TODO: Implement Google Sign-in
     console.log('Đăng nhập bằng Google');
   }
 }

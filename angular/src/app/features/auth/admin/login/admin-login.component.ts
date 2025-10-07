@@ -1,18 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { 
+  InputFieldComponent, 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent, 
+  LogoSectionComponent 
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    RouterModule,
+    InputFieldComponent,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent,
+    LogoSectionComponent
+  ],
   templateUrl: './admin-login.component.html',
   styleUrls: ['./admin-login.component.scss']
 })
 export class AdminLoginComponent implements OnInit {
   adminLoginForm!: FormGroup;
-  showPassword: boolean = false;
   isLoading: boolean = false;
   showToast: boolean = false;
   toastMessage: string = '';
@@ -29,14 +44,33 @@ export class AdminLoginComponent implements OnInit {
 
   initializeForm(): void {
     this.adminLoginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      username: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        this.emailOrUsernameValidator
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(100)
+      ]]
     });
   }
 
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+  // Validator cho email hoặc username
+  emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    
+    if (emailRegex.test(value) || usernameRegex.test(value)) {
+      return null;
+    }
+    
+    return { invalidFormat: true };
   }
 
   getFieldError(fieldName: string): string {
@@ -45,11 +79,14 @@ export class AdminLoginComponent implements OnInit {
       if (field.errors['required']) {
         return `${this.getFieldLabel(fieldName)} là bắt buộc`;
       }
-      if (field.errors['email']) {
-        return 'Email không hợp lệ';
-      }
       if (field.errors['minlength']) {
-        return `${this.getFieldLabel(fieldName)} phải có ít nhất 6 ký tự`;
+        return `${this.getFieldLabel(fieldName)} phải có ít nhất ${field.errors['minlength'].requiredLength} ký tự`;
+      }
+      if (field.errors['maxlength']) {
+        return `${this.getFieldLabel(fieldName)} không được vượt quá ${field.errors['maxlength'].requiredLength} ký tự`;
+      }
+      if (field.errors['invalidFormat']) {
+        return `${this.getFieldLabel(fieldName)} không đúng định dạng`;
       }
     }
     return '';
@@ -57,7 +94,7 @@ export class AdminLoginComponent implements OnInit {
 
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      email: 'Email',
+      username: 'Tên đăng nhập',
       password: 'Mật khẩu'
     };
     return labels[fieldName] || fieldName;
@@ -77,14 +114,13 @@ export class AdminLoginComponent implements OnInit {
     if (this.adminLoginForm.valid) {
       this.isLoading = true;
       const formData = this.adminLoginForm.value;
-      console.log('Admin login data:', formData);
       
       // Simulate API call
       setTimeout(() => {
         this.isLoading = false;
         
         // Mock admin credentials
-        if (formData.email === 'admin@vcareer.com' && formData.password === 'admin123') {
+        if (formData.username === 'admin' && formData.password === 'admin123') {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           
           // Redirect to admin dashboard after 2 seconds
@@ -92,7 +128,7 @@ export class AdminLoginComponent implements OnInit {
             this.router.navigate(['/admin/dashboard']);
           }, 2000);
         } else {
-          this.showToastMessage('Email hoặc mật khẩu không đúng!', 'error');
+          this.showToastMessage('Tên đăng nhập hoặc mật khẩu không đúng!', 'error');
         }
       }, 2000);
     } else {

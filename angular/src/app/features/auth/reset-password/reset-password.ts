@@ -2,13 +2,24 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   templateUrl: './reset-password.html',
   styleUrls: ['./reset-password.scss'],
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class ResetPasswordComponent implements OnInit {
   resetPasswordForm: FormGroup;
@@ -17,8 +28,6 @@ export class ResetPasswordComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType = 'success'; // 'success' | 'error'
-  showPassword = false;
-  showConfirmPassword = false;
 
   constructor(
     private router: Router,
@@ -78,20 +87,13 @@ export class ResetPasswordComponent implements OnInit {
     return null;
   }
 
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+  // Password visibility is now handled by PasswordFieldComponent
 
   onSubmit(): void {
     if (this.resetPasswordForm.valid) {
       this.isLoading = true;
 
       const formData = this.resetPasswordForm.value;
-      console.log('Reset password data:', formData);
 
       // Simulate API call
       setTimeout(() => {
@@ -115,9 +117,12 @@ export class ResetPasswordComponent implements OnInit {
 
   navigateToLogin(): void {
     const currentUrl = this.router.url;
+    console.log('Current URL:', currentUrl);
     if (currentUrl.includes('/recruiter/')) {
+      console.log('Navigating to recruiter login');
       this.router.navigate(['/recruiter/login']);
     } else {
+      console.log('Navigating to candidate login');
       this.router.navigate(['/candidate/login']);
     }
   }

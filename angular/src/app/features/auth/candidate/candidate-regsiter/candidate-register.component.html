@@ -25,126 +25,63 @@
             <!-- Hàng tên -->
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Họ</label>
-                <input
-                  type="text"
-                  formControlName="firstName"
-                  class="form-input"
-                  [class.error]="hasFieldError('firstName')"
+                <app-input-field
+                  label="Họ"
                   placeholder="Nhập họ của bạn"
-                />
-                <div *ngIf="hasFieldError('firstName')" class="error-message">
-                  {{ getFieldError('firstName') }}
-                </div>
+                  [error]="getFieldError('firstName')"
+                  [required]="true"
+                  formControlName="firstName"
+                ></app-input-field>
               </div>
               <div class="form-group">
-                <label class="form-label">Tên</label>
-                <input
-                  type="text"
-                  formControlName="lastName"
-                  class="form-input"
-                  [class.error]="hasFieldError('lastName')"
+                <app-input-field
+                  label="Tên"
                   placeholder="Nhập tên của bạn"
-                />
-                <div *ngIf="hasFieldError('lastName')" class="error-message">
-                  {{ getFieldError('lastName') }}
-                </div>
+                  [error]="getFieldError('lastName')"
+                  [required]="true"
+                  formControlName="lastName"
+                ></app-input-field>
               </div>
             </div>
   
             <!-- Email -->
-            <div class="form-group">
-              <label class="form-label">Email</label>
-              <input
-                type="email"
-                formControlName="email"
-                class="form-input"
-                [class.error]="hasFieldError('email')"
-                placeholder="Nhập email của bạn"
-              />
-              <div *ngIf="hasFieldError('email')" class="error-message">
-                {{ getFieldError('email') }}
-              </div>
-            </div>
+            <app-input-field
+              label="Email"
+              placeholder="Nhập email của bạn"
+              type="email"
+              icon="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4ZM22 6L12 13L2 6"
+              [error]="getFieldError('email')"
+              [required]="true"
+              formControlName="email"
+            ></app-input-field>
   
             <!-- Tên đăng nhập -->
-            <div class="form-group">
-              <label class="form-label">Tên đăng nhập</label>
-              <input
-                type="text"
-                formControlName="username"
-                class="form-input"
-                [class.error]="hasFieldError('username')"
-                placeholder="Nhập tên đăng nhập"
-              />
-              <div *ngIf="hasFieldError('username')" class="error-message">
-                {{ getFieldError('username') }}
-              </div>
-            </div>
+            <app-input-field
+              label="Tên đăng nhập"
+              placeholder="Nhập tên đăng nhập"
+              icon="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
+              [error]="getFieldError('username')"
+              [required]="true"
+              formControlName="username"
+            ></app-input-field>
   
             <!-- Mật khẩu -->
-            <div class="form-group">
-              <label class="form-label">Mật khẩu</label>
-              <div class="password-input-container">
-                <input
-                  [type]="showPassword ? 'text' : 'password'"
-                  formControlName="password"
-                  class="form-input password-input"
-                  [class.error]="hasFieldError('password')"
-                  placeholder="Nhập mật khẩu"
-                />
-                <button
-                  type="button"
-                  class="password-toggle"
-                  (click)="togglePasswordVisibility()"
-                >
-                  <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
-                  </svg>
-                  <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
-                    <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
-                  </svg>
-                </button>
-              </div>
-              <div *ngIf="hasFieldError('password')" class="error-message">
-                {{ getFieldError('password') }}
-              </div>
-            </div>
+            <app-password-field
+              label="Mật khẩu"
+              placeholder="Nhập mật khẩu"
+              [error]="getFieldError('password')"
+              [required]="true"
+              formControlName="password"
+            ></app-password-field>
   
             <!-- Xác nhận mật khẩu -->
-            <div class="form-group">
-              <label class="form-label">Xác nhận mật khẩu</label>
-              <div class="password-input-container">
-                <input
-                  [type]="showConfirmPassword ? 'text' : 'password'"
-                  formControlName="confirmPassword"
-                  class="form-input password-input"
-                  [class.error]="hasFieldError('confirmPassword')"
-                  placeholder="Nhập lại mật khẩu"
-                />
-                <button
-                  type="button"
-                  class="password-toggle"
-                  (click)="toggleConfirmPasswordVisibility()"
-                >
-                  <svg *ngIf="!showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6B7280" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="2"/>
-                  </svg>
-                  <svg *ngIf="showConfirmPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12A18.45 18.45 0 0 1 5.06 5.06L17.94 17.94Z" stroke="#6B7280" stroke-width="2"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4C19 4 23 12 23 12A18.5 18.5 0 0 1 19.1 19.76L9.9 4.24Z" stroke="#6B7280" stroke-width="2"/>
-                    <line x1="1" y1="1" x2="23" y2="23" stroke="#6B7280" stroke-width="2"/>
-                  </svg>
-                </button>
-              </div>
-              <div *ngIf="hasFieldError('confirmPassword')" class="error-message">
-                {{ getFieldError('confirmPassword') }}
-              </div>
-            </div>
+            <app-password-field
+              label="Xác nhận mật khẩu"
+              placeholder="Nhập lại mật khẩu"
+              [error]="getFieldError('confirmPassword')"
+              [required]="true"
+              formControlName="confirmPassword"
+            ></app-password-field>
   
             <!-- Điều khoản -->
             <div class="form-group">
@@ -167,14 +104,15 @@
             </div>
   
             <!-- Nút đăng ký -->
-            <button
-              type="submit"
-              class="register-btn"
-              [disabled]="isLoading"
+            <app-button
+              type="primary"
+              size="medium"
+              [fullWidth]="true"
+              buttonType="submit"
+              [loading]="isLoading"
             >
-              <span *ngIf="isLoading" class="loading-spinner"></span>
-              {{ isLoading ? 'Đang đăng ký...' : 'Đăng ký' }}
-            </button>
+              Đăng ký
+            </app-button>
           </form>
   
           <!-- Phân cách -->
@@ -183,8 +121,8 @@
           </div>
   
           <!-- Nút đăng ký Google -->
-          <button
-            type="button"
+          <button 
+            type="button" 
             class="google-sign-up-btn"
             (click)="signUpWithGoogle()"
             [disabled]="isLoading"
@@ -211,26 +149,11 @@
       </div>
     </div>
   
-    <!-- Thông báo thành công -->
-    <div *ngIf="showSuccessMessage" class="success-notification">
-      <div class="notification-content">
-        <svg class="success-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 12l2 2 4-4"></path>
-          <circle cx="12" cy="12" r="10"></circle>
-        </svg>
-        <span>Đăng ký thành công!</span>
-      </div>
-    </div>
-  
-    <!-- Thông báo lỗi -->
-    <div *ngIf="showErrorMessage" class="error-notification">
-      <div class="notification-content">
-        <svg class="error-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="15" y1="9" x2="9" y2="15"></line>
-          <line x1="9" y1="9" x2="15" y2="15"></line>
-        </svg>
-        <span>{{ errorMessage }}</span>
-      </div>
-    </div>
+    <!-- Toast Notification -->
+    <app-toast-notification
+      [show]="showToast"
+      [message]="toastMessage"
+      [type]="toastType"
+      (close)="showToast = false"
+    ></app-toast-notification>
   </div>

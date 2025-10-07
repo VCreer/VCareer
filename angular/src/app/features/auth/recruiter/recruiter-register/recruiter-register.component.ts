@@ -3,13 +3,26 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { 
+  InputFieldComponent, 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-recruiter-register',
   standalone: true,
   templateUrl: './recruiter-register.component.html',
   styleUrls: ['./recruiter-register.component.scss'],
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule,
+    InputFieldComponent,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class RecruiterRegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -18,12 +31,10 @@ export class RecruiterRegisterComponent implements OnInit {
 
   registerForm!: FormGroup;
   isLoading = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
   submitAttempted = false;
-  showPassword = false;
-  showConfirmPassword = false;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'error';
 
   ngOnInit(): void {
     this.initializeForm();
@@ -106,6 +117,16 @@ export class RecruiterRegisterComponent implements OnInit {
     return labels[fieldName] || fieldName;
   }
 
+  showToastMessage(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
   hasFieldError(fieldName: string): boolean {
     const field = this.registerForm.get(fieldName);
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
@@ -113,8 +134,7 @@ export class RecruiterRegisterComponent implements OnInit {
 
   onSubmit() {
     this.submitAttempted = true;
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
+    // Clear any previous messages
     
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
@@ -130,27 +150,20 @@ export class RecruiterRegisterComponent implements OnInit {
       this.http.post('/api/mock/auth/recruiter/register', apiData).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          this.showSuccessMessage = true;
+          this.showToastMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
           setTimeout(() => {
             this.router.navigate(['/recruiter/dashboard']);
           }, 2000);
         },
         error: (error) => {
           this.isLoading = false;
-          this.showErrorMessage = true;
-          this.errorMessage = error.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
+          this.showToastMessage(error.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
         }
       });
     }
   }
 
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
-
-  toggleConfirmPassword() {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+  // Password visibility is now handled by PasswordFieldComponent
 
   navigateToLogin() {
     this.router.navigate(['/recruiter/login']);
@@ -160,11 +173,12 @@ export class RecruiterRegisterComponent implements OnInit {
     this.router.navigate(['/recruiter/login']);
   }
 
-  goToSelector() {
-    this.router.navigate(['/auth/selector']);
+  signInWithGoogle() {
+    // TODO: Implement Google Sign-in
+    console.log('Đăng ký bằng Google');
   }
 
-  signInWithGoogle() {
-    console.log('Đăng ký bằng Google');
+  goToSelector() {
+    this.router.navigate(['/auth/selector']);
   }
 }

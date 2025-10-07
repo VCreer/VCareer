@@ -1,25 +1,27 @@
-.admin-login-container {
+// Container chính
+.login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
 }
 
 .login-wrapper {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   display: flex;
-  max-width: 1000px;
   width: 100%;
-  min-height: 600px;
+  height: 100vh;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
 }
 
-// === LEFT COLUMN - LOGO/IMAGE ===
-.left-column {
+// Phần logo bên trái
+.login-image-section {
   flex: 1;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   display: flex;
@@ -28,17 +30,6 @@
   padding: 60px 40px;
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
-  }
 }
 
 .logo-section {
@@ -49,8 +40,8 @@
 }
 
 .logo-image {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
   margin-bottom: 24px;
   filter: brightness(0) invert(1);
@@ -71,37 +62,43 @@
   color: white;
 }
 
-// === RIGHT COLUMN - LOGIN FORM ===
-.right-column {
+// Phần form bên phải
+.login-form-section {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 40px;
-  background: #ffffff;
+  padding: 0;
+  background: white;
 }
 
-.login-form-container {
+.login-card {
   width: 100%;
   max-width: 400px;
+  padding: 40px;
+  background: white;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-.form-header {
+// === HEADER ===
+.login-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.form-title {
+.welcome-title {
   font-size: 28px;
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 8px 0;
 }
 
-.form-subtitle {
+.welcome-text {
   font-size: 16px;
   color: #6b7280;
   margin: 0;
+  line-height: 1.5;
 }
 
 // === FORM STYLES ===
@@ -114,29 +111,22 @@
 }
 
 .form-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
 }
 
-.input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  color: #9ca3af;
-  z-index: 1;
+.label-icon {
+  flex-shrink: 0;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 16px 12px 40px;
+  padding: 12px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 16px;
@@ -157,6 +147,12 @@
   &::placeholder {
     color: #9ca3af;
   }
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .password-toggle {
@@ -191,71 +187,6 @@
   gap: 4px;
 }
 
-// === FORM OPTIONS ===
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: #374151;
-
-  input[type="checkbox"] {
-    display: none;
-  }
-
-  .checkmark {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #d1d5db;
-    border-radius: 4px;
-    margin-right: 8px;
-    position: relative;
-    transition: all 0.2s ease;
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 4px;
-      top: 1px;
-      width: 4px;
-      height: 8px;
-      border: solid white;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-  }
-
-  input[type="checkbox"]:checked + .checkmark {
-    background: #3b82f6;
-    border-color: #3b82f6;
-
-    &::after {
-      opacity: 1;
-    }
-  }
-}
-
-.forgot-password-link {
-  color: #3b82f6;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #2563eb;
-    text-decoration: underline;
-  }
-}
 
 // === LOGIN BUTTON ===
 .login-btn {
@@ -302,34 +233,6 @@
   100% { transform: rotate(360deg); }
 }
 
-// === BACK TO HOME ===
-.back-to-home {
-  text-align: center;
-  margin-top: 32px;
-}
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #3b82f6;
-  }
-}
-
-.back-icon {
-  transition: transform 0.2s ease;
-}
-
-.back-link:hover .back-icon {
-  transform: translateX(-2px);
-}
 
 // === TOAST NOTIFICATION ===
 .toast-notification {
@@ -389,59 +292,45 @@
 @media (max-width: 768px) {
   .login-wrapper {
     flex-direction: column;
+  }
+
+  .login-image-section {
+    min-height: 40vh;
+    flex: none;
+  }
+
+  .login-form-section {
+    flex: 1;
+    padding: 20px;
+  }
+
+  .login-card {
+    padding: 20px;
     max-width: 100%;
-    margin: 0;
-    border-radius: 0;
-    min-height: 100vh;
   }
 
-  .left-column {
-    padding: 40px 20px;
-    min-height: 300px;
-  }
-
-  .logo-image {
-    width: 80px;
-    height: 80px;
-  }
-
-  .logo-text {
-    font-size: 28px;
-  }
-
-  .logo-subtitle {
-    font-size: 16px;
-  }
-
-  .right-column {
-    padding: 40px 20px;
-  }
-
-  .form-title {
+  .welcome-title {
     font-size: 24px;
+  }
+
+  .welcome-text {
+    font-size: 14px;
   }
 }
 
 @media (max-width: 480px) {
-  .admin-login-container {
-    padding: 0;
+  .login-card {
+    padding: 16px;
   }
 
-  .left-column {
-    padding: 30px 16px;
-    min-height: 250px;
-  }
-
-  .right-column {
-    padding: 30px 16px;
-  }
-
-  .form-title {
+  .welcome-title {
     font-size: 22px;
   }
 
-  .form-subtitle {
-    font-size: 14px;
+  .form-options {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
   }
 }
 
@@ -466,10 +355,6 @@
   }
 }
 
-.login-form-container {
+.login-card {
   animation: fadeInUp 0.6s ease-out;
-}
-
-.logo-section {
-  animation: fadeInUp 0.8s ease-out;
 }

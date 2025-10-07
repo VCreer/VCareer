@@ -3,13 +3,26 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { 
+  InputFieldComponent, 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-recruiter-login',
   standalone: true,
   templateUrl: './recruiter-login.component.html',
   styleUrls: ['./recruiter-login.component.scss'],
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule,
+    InputFieldComponent,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class RecruiterLoginComponent {
   private customAuthService = inject(CustomAuthService);
@@ -17,12 +30,11 @@ export class RecruiterLoginComponent {
   private fb = inject(FormBuilder);
 
   loginForm: FormGroup;
-  showPassword = false;
   isLoading = false;
   submitAttempted = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'error';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -49,9 +61,7 @@ export class RecruiterLoginComponent {
     return emailRegex.test(value) ? null : { invalidEmail: true };
   }
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-  }
+  // Password visibility is now handled by PasswordFieldComponent
 
   // Lấy thông báo lỗi cho field
   getFieldError(fieldName: string): string {
@@ -92,10 +102,19 @@ export class RecruiterLoginComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
+  showToastMessage(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
   onSubmit() {
     this.submitAttempted = true;
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
+    // Clear any previous messages
     
     Object.keys(this.loginForm.controls).forEach(key => {
       this.loginForm.get(key)?.markAsTouched();
@@ -112,29 +131,20 @@ export class RecruiterLoginComponent {
         // Simulate different error cases
         if (email === 'admin@company.com' && password === 'admin123') {
           // Successful login for admin recruiter
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
             this.router.navigate(['/recruiter/dashboard']);
           }, 2000);
         } else if (email === 'test@company.com' || email === 'testrecruiter') {
           // These accounts exist but wrong password
-          this.showErrorMessage = true;
-          this.showSuccessMessage = false;
-          this.errorMessage = 'Mật khẩu không đúng. Vui lòng nhập lại.';
+          this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
           
           // Clear password field
           this.loginForm.patchValue({ password: '' });
-          
-          // Hide error message after 5 seconds
-          setTimeout(() => {
-            this.showErrorMessage = false;
-          }, 5000);
         } else {
           // Default: Successful login for most new recruiter accounts
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
             this.router.navigate(['/recruiter/dashboard']);
@@ -161,6 +171,7 @@ export class RecruiterLoginComponent {
   }
 
   signInWithGoogle() {
+    // TODO: Implement Google Sign-in
     console.log('Đăng nhập bằng Google');
   }
 
