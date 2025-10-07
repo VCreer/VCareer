@@ -35,6 +35,12 @@
     "Permission:Profile": "Profile Management",
     "Permission:Profile.UpdatePersonalInfo": "Updating personal information",
     "Permission:Profile.ChangePassword": "Changing password",
+    "Permission:Profile.SubmitLegalInformation": "Submitting legal information",
+    "Permission:Profile.UpdateLegalInformation": "Updating legal information",
+    "Permission:Profile.UploadSupportingDocument": "Uploading supporting documents",
+    "Permission:Profile.UpdateSupportingDocument": "Updating supporting documents",
+    "Permission:Profile.DeleteSupportingDocument": "Deleting supporting documents",
+    "Permission:Profile.DownloadSupportingDocument": "Downloading supporting documents",
     "Menu:Home": "Home",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome"

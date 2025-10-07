@@ -19,6 +19,12 @@ public class VCareerPermissionDefinitionProvider : PermissionDefinitionProvider
         var profilePermission = myGroup.AddPermission(VCareerPermissions.Profile.Default, L("Permission:Profile"));
         profilePermission.AddChild(VCareerPermissions.Profile.UpdatePersonalInfo, L("Permission:Profile.UpdatePersonalInfo"));
         profilePermission.AddChild(VCareerPermissions.Profile.ChangePassword, L("Permission:Profile.ChangePassword"));
+        profilePermission.AddChild(VCareerPermissions.Profile.SubmitLegalInformation, L("Permission:Profile.SubmitLegalInformation"));
+        profilePermission.AddChild(VCareerPermissions.Profile.UpdateLegalInformation, L("Permission:Profile.UpdateLegalInformation"));
+        profilePermission.AddChild(VCareerPermissions.Profile.UploadSupportingDocument, L("Permission:Profile.UploadSupportingDocument"));
+        profilePermission.AddChild(VCareerPermissions.Profile.UpdateSupportingDocument, L("Permission:Profile.UpdateSupportingDocument"));
+        profilePermission.AddChild(VCareerPermissions.Profile.DeleteSupportingDocument, L("Permission:Profile.DeleteSupportingDocument"));
+        profilePermission.AddChild(VCareerPermissions.Profile.DownloadSupportingDocument, L("Permission:Profile.DownloadSupportingDocument"));
         
         //Define your own permissions here. Example:
         //myGroup.AddPermission(VCareerPermissions.MyPermission1, L("Permission:MyPermission1"));
