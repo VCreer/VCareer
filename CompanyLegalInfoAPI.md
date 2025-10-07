@@ -255,3 +255,4 @@ curl -X PUT "https://api.vcareer.com/api/profile/company-legal-info/1/files?busi
 4. Drop các bảng cũ (sau khi test)
 
 API này đã được tối ưu hóa theo đúng cấu trúc tham khảo của bạn! 🎯
+
