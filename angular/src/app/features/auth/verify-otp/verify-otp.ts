@@ -1,21 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-verify-otp',
   standalone: true,
   templateUrl: './verify-otp.html',
   styleUrls: ['./verify-otp.scss'],
-  imports: [CommonModule]
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    ToastNotificationComponent
+  ]
 })
 export class VerifyOtpComponent implements OnInit {
   isLoading = false;
+  isResending = false;
   email = '';
   otpValues: string[] = ['', '', '', '', '', ''];
   showToast = false;
   toastMessage = '';
-  toastType = 'success'; // 'success' | 'error'
+  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private router: Router
@@ -34,29 +43,22 @@ export class VerifyOtpComponent implements OnInit {
     }
   }
 
-
   onKeyDown(event: any, index: number): void {
-    console.log(`onKeyDown - Index: ${index}, Key: "${event.key}"`);
-    
     // Handle number input
     if (event.key >= '0' && event.key <= '9') {
-      console.log(`Number key pressed: "${event.key}" at index ${index}`);
       // Update the array directly
       this.otpValues[index] = event.key;
-      // console.log(`Array updated: [${this.otpValues.join('')}]`);
       
       // Clear any previous error messages
       this.showToast = false;
       
       // Auto focus next input
       if (index < 5) {
-        console.log(`Auto-focusing to next input (index ${index + 1})`);
         setTimeout(() => {
           const allInputs = document.querySelectorAll('.otp-input');
           const nextInput = allInputs[index + 1] as HTMLInputElement;
           if (nextInput) {
             nextInput.focus();
-            console.log(`Focused next input at index ${index + 1}`);
           }
         }, 100);
       }
@@ -64,22 +66,18 @@ export class VerifyOtpComponent implements OnInit {
     
     // Handle backspace
     if (event.key === 'Backspace') {
-      console.log(`Backspace pressed on index ${index}, current value: "${this.otpValues[index]}"`);
       if (this.otpValues[index]) {
         // If current field has value, clear it
         this.otpValues[index] = '';
         event.target.value = '';
-        console.log(`Cleared current field (index ${index})`);
       } else if (index > 0) {
         // If current field is empty, move to previous field and clear it
-        console.log(`Moving to previous field (index ${index - 1})`);
         const allInputs = document.querySelectorAll('.otp-input');
         const prevInput = allInputs[index - 1] as HTMLInputElement;
         if (prevInput) {
           this.otpValues[index - 1] = '';
           prevInput.value = '';
           prevInput.focus();
-          console.log(`Cleared and focused previous field`);
         }
       }
     }
@@ -87,7 +85,6 @@ export class VerifyOtpComponent implements OnInit {
 
   onSubmit(): void {
     const otp = this.otpValues.join('');
-    console.log(`onSubmit - OTP: "${otp}", Length: ${otp.length}, Array: [${this.otpValues.join(', ')}]`);
     
     // Check if all 6 digits are filled
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
@@ -96,7 +93,6 @@ export class VerifyOtpComponent implements OnInit {
     }
     
     if (otp.length === 6 && /^\d{6}$/.test(otp)) {
-      console.log(`Valid OTP submitted: "${otp}"`);
       this.isLoading = true;
       
       // Simulate API call to verify OTP
@@ -126,11 +122,11 @@ export class VerifyOtpComponent implements OnInit {
   }
 
   resendOtp(): void {
-    this.isLoading = true;
+    this.isResending = true;
     
     // Simulate resend OTP
     setTimeout(() => {
-      this.isLoading = false;
+      this.isResending = false;
       this.showToastMessage('Mã OTP mới đã được gửi!', 'success');
     }, 1500);
   }

@@ -3,11 +3,24 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { 
+  InputFieldComponent, 
+  PasswordFieldComponent, 
+  ButtonComponent, 
+  ToastNotificationComponent 
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule,
+    InputFieldComponent,
+    PasswordFieldComponent,
+    ButtonComponent,
+    ToastNotificationComponent
+  ],
   templateUrl: './candidate-register.component.html',
   styleUrls: ['./candidate-register.component.scss']
 })
@@ -18,12 +31,10 @@ export class RegisterComponent {
 
   registerForm: FormGroup;
   isLoading = false;
-  showPassword = false;
-  showConfirmPassword = false;
   submitAttempted = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'error';
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -101,6 +112,16 @@ export class RegisterComponent {
     return password.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
+  showToastMessage(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
   // Lấy thông báo lỗi cho field
   getFieldError(fieldName: string): string {
     const field = this.registerForm.get(fieldName);
@@ -140,21 +161,12 @@ export class RegisterComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
-  // Chuyển đổi hiển thị mật khẩu
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-  }
-
-  // Chuyển đổi hiển thị xác nhận mật khẩu
-  toggleConfirmPasswordVisibility() {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+  // Password visibility is now handled by PasswordFieldComponent
 
   // Xử lý submit form
   onSubmit() {
     this.submitAttempted = true;
-    this.showErrorMessage = false;
-    this.showSuccessMessage = false;
+    // Clear any previous messages
     
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
@@ -171,24 +183,18 @@ export class RegisterComponent {
         // Simulate different error cases
         if (email === 'test@example.com' || username === 'testuser') {
           // Email or username already exists
-          this.showErrorMessage = true;
-          this.showSuccessMessage = false;
-          this.errorMessage = 'Email hoặc tên đăng nhập đã tồn tại trong hệ thống';
+          this.showToastMessage('Email hoặc tên đăng nhập đã tồn tại trong hệ thống', 'error');
           
           // Clear email and username fields
           this.registerForm.patchValue({ email: '', username: '' });
           
-          // Hide error message after 5 seconds
-          setTimeout(() => {
-            this.showErrorMessage = false;
-          }, 5000);
+          // Error message will auto-hide via toast
         } else {
           // Default: Successful registration for most cases
-          this.showSuccessMessage = true;
-          this.showErrorMessage = false;
+          this.showToastMessage('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
           setTimeout(() => {
-            this.router.navigate(['/login']);
-          }, 3000);
+            this.router.navigate(['/candidate/login']);
+          }, 2000);
         }
       }, 1500);
     } else {
@@ -209,6 +215,7 @@ export class RegisterComponent {
 
   // Đăng ký bằng Google
   signUpWithGoogle() {
+    // TODO: Implement Google Sign-up
     console.log('Đăng ký bằng Google');
   }
 }

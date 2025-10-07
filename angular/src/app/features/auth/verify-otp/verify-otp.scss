@@ -95,14 +95,54 @@
 }
 
 .resend-link {
+  background: none;
+  border: none;
   color: #3B82F6;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
   
   &:hover {
     color: #1D4ED8;
     text-decoration: underline;
   }
+  
+  &:disabled {
+    color: #9CA3AF;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+}
+
+.back-to-login {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: #3B82F6;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    color: #1D4ED8;
+    text-decoration: underline;
+  }
+}
+
+.back-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .action-buttons {

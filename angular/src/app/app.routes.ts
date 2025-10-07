@@ -49,7 +49,7 @@ export const APP_ROUTES: Routes = [
   // Admin routes
   {
     path: 'admin/login',
-    loadComponent: () => import('./features/auth/admin-login/admin-login.component').then(c => c.AdminLoginComponent),
+    loadComponent: () => import('./features/auth/admin/login/admin-login.component').then(c => c.AdminLoginComponent),
   },
   // Legacy routes - redirect to candidate routes
   {
