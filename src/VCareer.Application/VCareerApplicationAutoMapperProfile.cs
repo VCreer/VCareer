@@ -1,6 +1,8 @@
 using AutoMapper;
 using VCareer.Books;
 using VCareer.Profile;
+using VCareer.Models.Users;
+using VCareer.Models.Companies;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 
@@ -15,7 +17,11 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
 
         // Profile mappings
         CreateMap<IdentityUser, ProfileDto>();
-        
+            
+        // Company Legal Info mappings (using Company entity)
+        CreateMap<Company, CompanyLegalInfoDto>();
+        CreateMap<SubmitCompanyLegalInfoDto, Company>();
+        CreateMap<UpdateCompanyLegalInfoDto, Company>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations
