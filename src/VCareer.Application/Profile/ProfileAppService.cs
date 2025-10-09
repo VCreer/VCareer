@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -26,10 +26,13 @@ namespace VCareer.Profile
             _currentUser = currentUser;
         }
 
+        //ádadad
+
         [Authorize(VCareerPermissions.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
+            
             
             if (user == null)
             {
@@ -40,7 +43,7 @@ namespace VCareer.Profile
             user.Name = input.Name;
             user.Surname = input.Surname;
 
-            // Update Email using IdentityUserManager method
+            // nếu inpuit email khác email hiện tại của user
             if (!string.IsNullOrEmpty(input.Email) && user.Email != input.Email)
             {
                 var emailResult = await _userManager.SetEmailAsync(user, input.Email);
@@ -77,6 +80,8 @@ namespace VCareer.Profile
             }
         }
 
+
+        //ádada
         [Authorize(VCareerPermissions.Profile.ChangePassword)]
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
@@ -101,8 +106,10 @@ namespace VCareer.Profile
             {
                 throw new UserFriendlyException($"Failed to change password: {string.Join(", ", result.Errors)}");
             }
-        }
+        } 
 
+
+        //ádad
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());

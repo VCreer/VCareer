@@ -1,6 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using VCareer.Books;
+using VCareer.Models.Companies;
+using VCareer.Models.Job;
+using VCareer.Models.Users;
+using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -10,13 +14,11 @@ using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using VCareer.Models.Users;
-using VCareer.Models.Companies;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -36,6 +38,10 @@ public class VCareerDbContext :
     public DbSet<CandidateProfile> CandidateProfiles { get; set; }
     public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
+    public DbSet<District> Districts { get; set; }
+    public DbSet<Province> Provinces { get; set; }
+    public DbSet<Job_Category> JobCategories { get; set; }
+    public DbSet<Job_Posting> JobPostings { get; set; }
 
 
     #region Entities from the modules
@@ -89,6 +95,131 @@ public class VCareerDbContext :
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
 
+
+
+
+        //-----------fluent api cho province-----------
+
+        builder.Entity<Province>(b =>
+        {
+            b.ToTable("Provinces");
+            b.ConfigureByConvention();
+
+            b.HasMany(x => x.Districts).WithOne(x => x.Province).HasForeignKey(x => x.ProvinceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        //-----------fluent api cho disstrict------------
+
+        builder.Entity<District>(b =>
+        {
+            b.ToTable("Districts");
+            b.ConfigureByConvention();
+
+            b.HasOne(x => x.Province).WithMany(x => x.Districts).HasForeignKey(x => x.ProvinceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        //-----------fluent api cho job_category--------------
+
+        builder.Entity<Job_Category>(b =>
+   {
+       b.ToTable("JobCategories");
+       b.ConfigureByConvention();
+       b.Property(x => x.Name).HasMaxLength(1000).IsRequired();
+       b.Property(x => x.Slug).HasMaxLength(1000).IsRequired();
+       b.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+       b.Property(x => x.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").ValueGeneratedOnUpdate();
+       b.Property(x => x.IsActive).HasDefaultValue(false);
+       b.HasOne(x => x.Parent).WithMany(x => x.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
+       b.HasMany(x => x.JobPostings).WithOne(x => x.JobCategory).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
+   });
+
+        //-----------fluent api cho job_posting----------
+
+        /*
+         //hinhf anhr
+        public string Image { get; set; }
+
+        
+     
+        // mức lương nhỏ nhất
+        public decimal? SalaryMin { get; set; }
+        // mức lương lớn nhất
+        public decimal? SalaryMax { get; set; }
+
+        //hình thức làm việc 
+        public string EmploymentType { get; set; } // Enum: Full-time, Part-time, Contract, Internship
+
+        
+
+       
+
+      
+
+      
+
+        //sua ngay
+        public DateTime UpdatedAt { get; set; }
+
+        //hạn kết thúc
+        public DateTime? ExpiresAt { get; set; }
+
+        //trạng thái
+        public string Status { get; set; } // Enum: Draft, Open, Closed
+
+        //Số người nộp hồ sơ
+        public int AppllyCount { get; set; }
+
+        //tính chất công việc : gấp hay không
+        public bool IsUrgent { get; set; } // Thêm tính chất gấp
+
+        //id cua recurtier 
+        public Guid RecuterId { get; set; }
+
+        //id cua jobcategroy 
+        public Guid JobCategoryId { get; set; }
+
+        //chuyên môn của jbo là gì 
+        public virtual Job_Category JobCategory { get; set; }
+
+        //thuộc về recuiter nào
+        public virtual RecruiterProfile RecruiterProfile { get; set; }
+
+         
+         */ //mô tả
+
+
+
+        builder.Entity<Job_Posting>(b =>
+            {
+                b.ToTable("JobPostings");
+                b.ConfigureByConvention();
+                b.Property(x => x.Title).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Slug).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Description).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Requirements).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.WorkTime).HasMaxLength(200).IsRequired();
+                b.Property(x => x.WorkLocation).HasMaxLength(200).IsRequired();
+                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.PostedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                b.Property(x => x.Keywords).HasMaxLength(200);
+                b.Property(x => x.Tags).HasMaxLength(200);
+                b.Property(x => x.SalaryDeal).HasDefaultValue(false);
+                b.Property(x => x.IsUrgent).HasDefaultValue(false);
+                b.Property(x => x.AppllyCount).HasDefaultValue(0);
+                b.HasOne(x => x.JobCategory).WithMany(x => x.JobPostings).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(x => x.RecruiterProfile).WithMany().HasForeignKey(x => x.RecuterId).OnDelete(DeleteBehavior.Cascade);
+               
+            });
+
+
+
+
+
+
+
+        //-----------fluent api cho book-------------
         builder.Entity<Book>(b =>
         {
             b.ToTable(VCareerConsts.DbTablePrefix + "Books",
@@ -97,6 +228,7 @@ public class VCareerDbContext :
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
         });
 
+        //-----------fluent api cho employye-------------
         builder.Entity<EmployeeProfile>(e =>
         {
             e.ToTable("EmployeeProfiles");
@@ -108,7 +240,7 @@ public class VCareerDbContext :
             .IsRequired();
         });
 
-
+        //-----------fluent api cho candidate-------------
         builder.Entity<CandidateProfile>(e =>
         {
             e.ToTable("CandidateProfile");
@@ -119,6 +251,8 @@ public class VCareerDbContext :
             .HasForeignKey<CandidateProfile>(x => x.UserId)
             .IsRequired();
         });
+
+        //-----------fluent api cho recuiter------------
 
         builder.Entity<RecruiterProfile>(e =>
         {
@@ -135,6 +269,8 @@ public class VCareerDbContext :
         .HasForeignKey(x => x.CompanyId)
         .OnDelete(DeleteBehavior.Restrict);
         });
+
+        //-----------fluent api cho company-------------
 
         builder.Entity<Company>(c =>
         {
@@ -164,11 +300,13 @@ public class VCareerDbContext :
             c.Property(x => x.RepresentativeIdCardFile).HasMaxLength(500);
             c.Property(x => x.OtherSupportFile).HasMaxLength(500);
             c.Property(x => x.LegalVerificationStatus).HasMaxLength(50);
-            
+
             // Unique constraints
             c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
             c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
         });
+
+        //-----------fluent api cho industry-------
 
         builder.Entity<Industry>(c =>
         {
@@ -183,6 +321,8 @@ public class VCareerDbContext :
                  .ValueGeneratedOnAdd()
                  .UseIdentityColumn();
         });
+
+        //-----------fluent api cho companyIndistry---------
 
         builder.Entity<CompanyIndustry>(ci =>
         {
