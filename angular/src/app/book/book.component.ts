@@ -1,20 +1,21 @@
 import {
   FormGroup,
-  FormBuilder, 
-  Validators, 
-  FormsModule, 
-  ReactiveFormsModule
+  FormBuilder,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe, CurrencyPipe, formatDate } from '@angular/common';
 import { NgbDatepickerModule, NgbDateStruct, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+// import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+// import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import {
   ListService,
-  PagedResultDto, 
-  LocalizationPipe, 
-  PermissionDirective, 
-  AutofocusDirective
+  PagedResultDto,
+  LocalizationPipe,
+  PermissionDirective,
+  AutofocusDirective,
 } from '@abp/ng.core';
 import {
   ConfirmationService,
@@ -22,7 +23,7 @@ import {
   NgxDatatableDefaultDirective,
   NgxDatatableListDirective,
   ModalCloseDirective,
-  ModalComponent
+  ModalComponent,
 } from '@abp/ng.theme.shared';
 import { BookService, BookDto, bookTypeOptions } from '../proxy/books';
 
@@ -33,7 +34,7 @@ import { BookService, BookDto, bookTypeOptions } from '../proxy/books';
     FormsModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
-    NgxDatatableModule,
+    // NgxDatatableModule,
     NgbDropdownModule,
     ModalComponent,
     AutofocusDirective,
@@ -43,7 +44,7 @@ import { BookService, BookDto, bookTypeOptions } from '../proxy/books';
     ModalCloseDirective,
     LocalizationPipe,
     DatePipe,
-    CurrencyPipe
+    CurrencyPipe,
   ],
   providers: [ListService],
 })
