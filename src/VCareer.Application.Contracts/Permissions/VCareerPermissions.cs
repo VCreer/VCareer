@@ -18,6 +18,7 @@ public static class VCareerPermissions
         public const string Default = GroupName + ".Profile";
         public const string UpdatePersonalInfo = Default + ".UpdatePersonalInfo";
         public const string ChangePassword = Default + ".ChangePassword";
+        public const string DeleteAccount = Default + ".DeleteAccount";
         public const string SubmitLegalInformation = Default + ".SubmitLegalInformation";
         public const string UpdateLegalInformation = Default + ".UpdateLegalInformation";
         public const string UploadSupportingDocument = Default + ".UploadSupportingDocument";
