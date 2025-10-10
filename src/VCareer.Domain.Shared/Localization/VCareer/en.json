@@ -35,6 +35,7 @@
     "Permission:Profile": "Profile Management",
     "Permission:Profile.UpdatePersonalInfo": "Updating personal information",
     "Permission:Profile.ChangePassword": "Changing password",
+    "Permission:Profile.DeleteAccount": "Deleting account",
     "Permission:Profile.SubmitLegalInformation": "Submitting legal information",
     "Permission:Profile.UpdateLegalInformation": "Updating legal information",
     "Permission:Profile.UploadSupportingDocument": "Uploading supporting documents",

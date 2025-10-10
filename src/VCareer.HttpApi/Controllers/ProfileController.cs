@@ -54,5 +54,17 @@ namespace VCareer.Profile
             await _profileAppService.ChangePasswordAsync(input);
             return NoContent();
         }
+
+        /// <summary>
+        /// Soft deletes the current user's account
+        /// </summary>
+        /// <returns>No content</returns>
+        [HttpDelete("account")]
+        [Authorize(VCareerPermissions.Profile.DeleteAccount)]
+        public async Task<IActionResult> DeleteAccountAsync()
+        {
+            await _profileAppService.DeleteAccountAsync();
+            return NoContent();
+        }
     }
 }

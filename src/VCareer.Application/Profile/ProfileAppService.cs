@@ -144,7 +144,41 @@ namespace VCareer.Profile
             };
         }
 
-        
+        [Authorize(VCareerPermissions.Profile.DeleteAccount)]
+        public async Task DeleteAccountAsync()
+        {
+            var userId = _currentUser.GetId();
+            var user = await _userManager.GetByIdAsync(userId);
+            
+            if (user == null)
+            {
+                throw new UserFriendlyException("User not found.");
+            }
+
+            // 1. Soft delete IdentityUser
+            await _userManager.DeleteAsync(user);
+
+            // 2. Soft delete CandidateProfile (nếu có)
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (candidate != null)
+            {
+                await _candidateProfileRepository.DeleteAsync(candidate);
+            }
+
+            // 3. Soft delete EmployeeProfile (nếu có)
+            var employee = await _employeeProfileRepository.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (employee != null)
+            {
+                await _employeeProfileRepository.DeleteAsync(employee);
+            }
+
+            // 4. Soft delete RecruiterProfile (nếu có)
+            var recruiter = await _recruiterProfileRepository.FirstOrDefaultAsync(r => r.UserId == userId);
+            if (recruiter != null)
+            {
+                await _recruiterProfileRepository.DeleteAsync(recruiter);
+            }
+        }
 
         /// <summary>
         /// Update profile dựa trên UserId - tự động detect Candidate/Employee/Recruiter
