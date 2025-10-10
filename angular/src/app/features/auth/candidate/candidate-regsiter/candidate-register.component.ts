@@ -74,7 +74,6 @@ export class RegisterComponent {
     }, { validators: this.passwordMatchValidator });
   }
 
-  // Validator cho tên (chỉ chữ cái và khoảng trắng)
   nameValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -82,7 +81,6 @@ export class RegisterComponent {
     return nameRegex.test(value) ? null : { invalidName: true };
   }
 
-  // Validator cho username (chỉ chữ, số, gạch ngang, gạch dưới)
   usernameValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -90,7 +88,6 @@ export class RegisterComponent {
     return usernameRegex.test(value) ? null : { invalidUsername: true };
   }
 
-  // Validator cho độ mạnh mật khẩu
   passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -102,7 +99,6 @@ export class RegisterComponent {
     return passwordValid ? null : { passwordStrength: true };
   }
 
-  // Validator kiểm tra mật khẩu khớp
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
@@ -122,7 +118,6 @@ export class RegisterComponent {
     }, 3000);
   }
 
-  // Lấy thông báo lỗi cho field
   getFieldError(fieldName: string): string {
     const field = this.registerForm.get(fieldName);
     if (!field || !field.errors || !field.touched) return '';
@@ -141,7 +136,6 @@ export class RegisterComponent {
     return '';
   }
 
-  // Lấy label cho field
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       'firstName': 'Họ',
@@ -155,18 +149,13 @@ export class RegisterComponent {
     return labels[fieldName] || fieldName;
   }
 
-  // Kiểm tra field có lỗi không
   hasFieldError(fieldName: string): boolean {
     const field = this.registerForm.get(fieldName);
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
-  // Password visibility is now handled by PasswordFieldComponent
-
-  // Xử lý submit form
   onSubmit() {
     this.submitAttempted = true;
-    // Clear any previous messages
     
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
@@ -176,21 +165,13 @@ export class RegisterComponent {
       this.isLoading = true;
       const { firstName, lastName, email, username, password, termsAgreement } = this.registerForm.value;
       
-      // Simulate API call with different error scenarios
       setTimeout(() => {
         this.isLoading = false;
         
-        // Simulate different error cases
         if (email === 'test@example.com' || username === 'testuser') {
-          // Email or username already exists
           this.showToastMessage('Email hoặc tên đăng nhập đã tồn tại trong hệ thống', 'error');
-          
-          // Clear email and username fields
           this.registerForm.patchValue({ email: '', username: '' });
-          
-          // Error message will auto-hide via toast
         } else {
-          // Default: Successful registration for most cases
           this.showToastMessage('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
           setTimeout(() => {
             this.router.navigate(['/candidate/login']);
@@ -208,14 +189,11 @@ export class RegisterComponent {
     }
   }
 
-  // Chuyển đến trang đăng nhập
   navigateToLogin() {
     this.router.navigate(['/login']);
   }
 
-  // Đăng ký bằng Google
   signUpWithGoogle() {
-    // TODO: Implement Google Sign-up
     console.log('Đăng ký bằng Google');
   }
 }

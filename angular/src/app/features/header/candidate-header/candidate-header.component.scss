@@ -1,0 +1,261 @@
+.candidate-header {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+.header-container {
+  width: 100%;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  gap: 20px;
+}
+
+.logo-section {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  .logo-image {
+    height: 80px;
+    width: 290px;
+    object-fit: contain;
+  }
+}
+
+.nav-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  
+  &.desktop-nav {
+    display: flex;
+  }
+  
+  &.mobile-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #e5e7eb;
+    
+    &.open {
+      display: block;
+    }
+  }
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 40px;
+  flex-wrap: nowrap;
+  
+  .mobile-nav & {
+    flex-direction: column;
+    gap: 0;
+    padding: 20px;
+  }
+}
+
+.nav-item {
+  .nav-link {
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px 0;
+    position: relative;
+    
+    &:hover {
+      color: #0F83BA;
+    }
+    
+    &.active {
+      color: #0F83BA;
+      font-weight: 600;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #3B82F6;
+        border-radius: 1px;
+      }
+    }
+    
+    .mobile-nav & {
+      display: block;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.active::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.recruiter-btn {
+  background: #F3F4F6;
+  color: #0F83BA;
+  border: 1px solid #E5E7EB;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background: #E5E7EB;
+    border-color: #D1D5DB;
+  }
+}
+
+.login-btn {
+  background: transparent;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+  }
+}
+
+.register-btn {
+  background: #0F83BA;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background: #0A6B96;
+    transform: translateY(-1px);
+  }
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #f3f4f6;
+  }
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    color: #374151;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 16px;
+    height: 60px;
+  }
+  
+  .nav-menu.desktop-nav {
+    display: none;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  .logo-section .logo-image {
+    height: 70px;
+    width: 253px;
+  }
+  
+  .auth-actions {
+    gap: 8px;
+  }
+  
+  .recruiter-btn,
+  .login-btn,
+  .register-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 12px;
+  }
+  
+  .logo-section .logo-image {
+    height: 60px;
+    width: 217px;
+  }
+  
+  .recruiter-btn,
+  .login-btn,
+  .register-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .mobile-auth {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #E5E7EB;
+  }
+}

@@ -47,7 +47,7 @@ export class ResetPasswordComponent implements OnInit {
   ngOnInit(): void {
     this.email = localStorage.getItem('reset_email') || '';
     if (!this.email) {
-      // Redirect to appropriate login based on current route
+      // Điều hướng đến trang đăng nhập phù hợp dựa trên route hiện tại
       const currentUrl = this.router.url;
       if (currentUrl.includes('/recruiter/')) {
         this.router.navigate(['/recruiter/login']);
@@ -95,17 +95,17 @@ export class ResetPasswordComponent implements OnInit {
 
       const formData = this.resetPasswordForm.value;
 
-      // Simulate API call
+      // Mô phỏng API call
       setTimeout(() => {
         this.isLoading = false;
         
-        // Mock success - in real app, send to backend
+        // Mô phỏng thành công - trong ứng dụng thực, gửi đến backend
         this.showToastMessage('Mật khẩu đã được đặt lại thành công!', 'success');
         
-        // Clear form
+        // Xóa form
         this.resetPasswordForm.reset();
         
-        // Redirect to login immediately after 2 seconds
+        // Điều hướng đến trang đăng nhập ngay sau 2 giây
         setTimeout(() => {
           this.navigateToLogin();
         }, 2000);
@@ -132,7 +132,7 @@ export class ResetPasswordComponent implements OnInit {
     this.toastType = type;
     this.showToast = true;
     
-    // Auto hide after 3 seconds
+    // Tự động ẩn sau 3 giây
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
