@@ -64,6 +64,11 @@ export class CandidateHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
+  navigateToProfile() {
+    this.router.navigate(['/candidate/profile']);
+    this.closeMobileMenu();
+  }
+
   toggleMobileMenu() {
     this.isMenuOpen = !this.isMenuOpen;
   }
