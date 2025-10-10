@@ -1,8 +1,24 @@
 import { Routes } from '@angular/router';
 
-// Định nghĩa các route của ứng dụng
 export const APP_ROUTES: Routes = [
-  // Candidate routes
+  // Root route - Candidate Homepage
+  {
+    path: '',
+    loadComponent: () => import('./layout/candidate-layout.component').then(c => c.CandidateLayoutComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage.component').then(c => c.CandidateHomepageComponent),
+      },
+      {
+        path: 'home',
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage.component').then(c => c.CandidateHomepageComponent),
+      }
+    ]
+  },
+
+  // Auth routes (standalone - no layout)
   {
     path: 'candidate/login',
     loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login.component').then(c => c.LoginComponent),
@@ -24,18 +40,17 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
-  // Recruiter routes
   {
     path: 'recruiter/login',
     loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login.component').then(c => c.RecruiterLoginComponent),
   },
   {
-    path: 'recruiter/forgot-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
-  },
-  {
     path: 'recruiter/register',
     loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register.component').then(c => c.RecruiterRegisterComponent),
+  },
+  {
+    path: 'recruiter/forgot-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'recruiter/verify-otp',
@@ -46,12 +61,12 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
-  // Admin routes
   {
     path: 'admin/login',
     loadComponent: () => import('./features/auth/admin/login/admin-login.component').then(c => c.AdminLoginComponent),
   },
-  // Legacy routes - redirect to candidate routes
+
+  // Legacy redirects
   {
     path: 'login',
     redirectTo: '/candidate/login',
@@ -67,31 +82,18 @@ export const APP_ROUTES: Routes = [
     redirectTo: '/candidate/forget-password',
     pathMatch: 'full'
   },
+
+  // ABP routes
   {
-    path: '',
-    loadComponent: () => import('./layout/main-layout.component').then(c => c.MainLayoutComponent),
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/home.component').then(c => c.HomeComponent),
-      },
-      // {
-      //   path: 'account',
-      //   loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
-      // }, // Comment ABP Account routes
-      {
-        path: 'identity',
-        loadChildren: () => import('@abp/ng.identity').then(c => c.createRoutes()),
-      },
-      {
-        path: 'tenant-management',
-        loadChildren: () => import('@abp/ng.tenant-management').then(c => c.createRoutes()),
-      },
-      {
-        path: 'setting-management',
-        loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
-      },
-    ]
+    path: 'identity',
+    loadChildren: () => import('@abp/ng.identity').then(c => c.createRoutes()),
+  },
+  {
+    path: 'tenant-management',
+    loadChildren: () => import('@abp/ng.tenant-management').then(c => c.createRoutes()),
+  },
+  {
+    path: 'setting-management',
+    loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
   },
 ];

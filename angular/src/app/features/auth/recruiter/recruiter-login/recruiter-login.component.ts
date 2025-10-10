@@ -52,7 +52,6 @@ export class RecruiterLoginComponent {
     });
   }
 
-  // Validator cho email công ty
   emailValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -61,9 +60,6 @@ export class RecruiterLoginComponent {
     return emailRegex.test(value) ? null : { invalidEmail: true };
   }
 
-  // Password visibility is now handled by PasswordFieldComponent
-
-  // Lấy thông báo lỗi cho field
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
     if (!field || !field.errors || !field.touched) return '';
@@ -114,7 +110,6 @@ export class RecruiterLoginComponent {
 
   onSubmit() {
     this.submitAttempted = true;
-    // Clear any previous messages
     
     Object.keys(this.loginForm.controls).forEach(key => {
       this.loginForm.get(key)?.markAsTouched();
@@ -124,26 +119,19 @@ export class RecruiterLoginComponent {
       this.isLoading = true;
       const { email, password, rememberMe } = this.loginForm.value;
       
-      // Simulate API call with different error scenarios
       setTimeout(() => {
         this.isLoading = false;
         
-        // Simulate different error cases
         if (email === 'admin@company.com' && password === 'admin123') {
-          // Successful login for admin recruiter
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
             this.router.navigate(['/recruiter/dashboard']);
           }, 2000);
         } else if (email === 'test@company.com' || email === 'testrecruiter') {
-          // These accounts exist but wrong password
           this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
-          
-          // Clear password field
           this.loginForm.patchValue({ password: '' });
         } else {
-          // Default: Successful login for most new recruiter accounts
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
           setTimeout(() => {
@@ -171,7 +159,6 @@ export class RecruiterLoginComponent {
   }
 
   signInWithGoogle() {
-    // TODO: Implement Google Sign-in
     console.log('Đăng nhập bằng Google');
   }
 

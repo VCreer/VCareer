@@ -1,0 +1,123 @@
+<header class="candidate-header">
+  <div class="header-container">
+    <!-- Logo -->
+    <div class="logo-section" (click)="navigateToHome()">
+      <img src="assets/images/logo/logo.png" alt="VCareer" class="logo-image">
+    </div>
+
+    <!-- Desktop Navigation Menu -->
+    <nav class="nav-menu desktop-nav">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a (click)="navigateToHome()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
+            Trang chủ
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToJobs()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/candidate/jobs')">
+            Việc làm
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToCompanies()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/candidate/companies')">
+            Công ty
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToAbout()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/about')">
+            Về chúng tôi
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToContact()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/contact')">
+            Liên hệ
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Auth Buttons -->
+    <div class="auth-actions">
+      <button class="login-btn" (click)="navigateToLogin()">
+        Đăng nhập
+      </button>
+      <button class="register-btn" (click)="navigateToRegister()">
+        Đăng ký
+      </button>
+      <button class="recruiter-btn" (click)="navigateToRecruiter()">
+        Đăng tuyển & tìm hồ sơ
+      </button>
+      
+      <!-- Mobile Menu Toggle -->
+      <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation Menu -->
+  <nav class="nav-menu mobile-nav" [class.open]="isMenuOpen">
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a (click)="navigateToHome()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
+          Trang chủ
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToJobs()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/candidate/jobs')">
+          Việc làm
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToCompanies()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/candidate/companies')">
+          Công ty
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToAbout()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/about')">
+          Về chúng tôi
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToContact()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/contact')">
+          Liên hệ
+        </a>
+      </li>
+      <li class="nav-item mobile-auth">
+        <button class="login-btn" (click)="navigateToLogin()">
+          Đăng nhập
+        </button>
+        <button class="register-btn" (click)="navigateToRegister()">
+          Đăng ký
+        </button>
+        <button class="recruiter-btn" (click)="navigateToRecruiter()">
+          Đăng tuyển & tìm hồ sơ
+        </button>
+      </li>
+    </ul>
+  </nav>
+</header>

@@ -134,7 +134,6 @@ export class RecruiterRegisterComponent implements OnInit {
 
   onSubmit() {
     this.submitAttempted = true;
-    // Clear any previous messages
     
     Object.keys(this.registerForm.controls).forEach(key => {
       this.registerForm.get(key)?.markAsTouched();
@@ -144,7 +143,6 @@ export class RecruiterRegisterComponent implements OnInit {
       this.isLoading = true;
       const formData = this.registerForm.value;
       
-      // Remove confirmPassword from API data
       const { confirmPassword, ...apiData } = formData;
       
       this.http.post('/api/mock/auth/recruiter/register', apiData).subscribe({
@@ -163,8 +161,6 @@ export class RecruiterRegisterComponent implements OnInit {
     }
   }
 
-  // Password visibility is now handled by PasswordFieldComponent
-
   navigateToLogin() {
     this.router.navigate(['/recruiter/login']);
   }
@@ -174,7 +170,6 @@ export class RecruiterRegisterComponent implements OnInit {
   }
 
   signInWithGoogle() {
-    // TODO: Implement Google Sign-in
     console.log('Đăng ký bằng Google');
   }
 
