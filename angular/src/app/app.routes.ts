@@ -14,6 +14,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'home',
         loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage.component').then(c => c.CandidateHomepageComponent),
+      },
+      {
+        path: 'candidate/profile',
+        loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile.component').then(c => c.CandidateProfileComponent),
       }
     ]
   },
