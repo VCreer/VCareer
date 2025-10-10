@@ -36,6 +36,7 @@ public class VCareerDbContext :
     public DbSet<CandidateProfile> CandidateProfiles { get; set; }
     public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
+    public DbSet<CurriculumVitae> CVs { get; set; }
 
 
     #region Entities from the modules
@@ -168,6 +169,46 @@ public class VCareerDbContext :
             // Unique constraints
             c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
             c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
+        });
+
+        builder.Entity<CurriculumVitae>(cv =>
+        {
+            cv.ToTable("CVs");
+            cv.ConfigureByConvention();
+            
+            // Foreign key relationship với CandidateProfile
+            cv.HasOne(x => x.Candidate)
+              .WithMany()
+              .HasForeignKey(x => x.CandidateId)
+              .OnDelete(DeleteBehavior.Restrict);
+
+            // Foreign key relationship với IdentityUser
+            cv.HasOne(x => x.User)
+              .WithMany()
+              .HasForeignKey(x => x.CandidateId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+            // Field configurations
+            cv.Property(x => x.CVName).IsRequired().HasMaxLength(255);
+            cv.Property(x => x.CVType).IsRequired().HasMaxLength(50);
+            cv.Property(x => x.Status).IsRequired().HasMaxLength(50);
+            cv.Property(x => x.FullName).HasMaxLength(255);
+            cv.Property(x => x.Email).HasMaxLength(256);
+            cv.Property(x => x.PhoneNumber).HasMaxLength(20);
+            cv.Property(x => x.Address).HasMaxLength(500);
+            cv.Property(x => x.CareerObjective).HasMaxLength(1000);
+            cv.Property(x => x.OriginalFileName).HasMaxLength(255);
+            cv.Property(x => x.FileUrl).HasMaxLength(500);
+            cv.Property(x => x.FileType).HasMaxLength(50);
+            cv.Property(x => x.Description).HasMaxLength(1000);
+            cv.Property(x => x.Interests).HasMaxLength(1000);
+
+            // Indexes
+            cv.HasIndex(x => x.CandidateId);
+            cv.HasIndex(x => x.CVType);
+            cv.HasIndex(x => x.Status);
+            cv.HasIndex(x => x.IsDefault);
+            cv.HasIndex(x => x.IsPublic);
         });
 
         builder.Entity<Industry>(c =>
