@@ -42,6 +42,8 @@ public class VCareerDbContext :
     public DbSet<Province> Provinces { get; set; }
     public DbSet<Job_Category> JobCategories { get; set; }
     public DbSet<Job_Posting> JobPostings { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<JobPostingTag> JobPostingTags { get; set; }
 
 
     #region Entities from the modules
@@ -96,7 +98,46 @@ public class VCareerDbContext :
         builder.ConfigureBlobStoring();
 
 
+        //-----------fluent api cho tag -----------
 
+        builder.Entity<Tag>(b =>
+        {
+            b.ToTable("Tags");
+            b.ConfigureByConvention();
+
+            // Properties
+            b.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            b.Property(x => x.Slug).HasMaxLength(200).IsRequired();
+
+            // Unique index for Name
+            b.HasIndex(x => x.Name).IsUnique(); // Đảm bảo tag name unique
+
+            // Relationships
+            b.HasMany(x => x.JobPostingTags)
+             .WithOne(x => x.Tag)
+             .HasForeignKey(x => x.TagId)
+             .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi tag bị xóa
+        });
+
+
+        //-----------fluent api cho jobPostingTag -----------
+
+        builder.Entity<JobPostingTag>(b =>
+        {
+            b.ToTable("JobPostingTags");
+            b.HasKey(x => new { x.JobPostingId, x.TagId }); // Composite key
+
+            // Relationships
+            b.HasOne(x => x.JobPosting)
+             .WithMany(x => x.JobPostingTags)
+             .HasForeignKey(x => x.JobPostingId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.Tag)
+             .WithMany(x => x.JobPostingTags)
+             .HasForeignKey(x => x.TagId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
 
         //-----------fluent api cho province-----------
 
@@ -135,89 +176,46 @@ public class VCareerDbContext :
 
         //-----------fluent api cho job_posting----------
 
-        /*
-         //hinhf anhr
-        public string Image { get; set; }
-
-        
-     
-        // mức lương nhỏ nhất
-        public decimal? SalaryMin { get; set; }
-        // mức lương lớn nhất
-        public decimal? SalaryMax { get; set; }
-
-        //hình thức làm việc 
-        public string EmploymentType { get; set; } // Enum: Full-time, Part-time, Contract, Internship
-
-        
-
-       
-
-      
-
-      
-
-        //sua ngay
-        public DateTime UpdatedAt { get; set; }
-
-        //hạn kết thúc
-        public DateTime? ExpiresAt { get; set; }
-
-        //trạng thái
-        public string Status { get; set; } // Enum: Draft, Open, Closed
-
-        //Số người nộp hồ sơ
-        public int AppllyCount { get; set; }
-
-        //tính chất công việc : gấp hay không
-        public bool IsUrgent { get; set; } // Thêm tính chất gấp
-
-        //id cua recurtier 
-        public Guid RecuterId { get; set; }
-
-        //id cua jobcategroy 
-        public Guid JobCategoryId { get; set; }
-
-        //chuyên môn của jbo là gì 
-        public virtual Job_Category JobCategory { get; set; }
-
-        //thuộc về recuiter nào
-        public virtual RecruiterProfile RecruiterProfile { get; set; }
-
-         
-         */ //mô tả
-
-
-
         builder.Entity<Job_Posting>(b =>
-            {
-                b.ToTable("JobPostings");
-                b.ConfigureByConvention();
-                b.Property(x => x.Title).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.Slug).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.Description).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.Requirements).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.WorkTime).HasMaxLength(200).IsRequired();
-                b.Property(x => x.WorkLocation).HasMaxLength(200).IsRequired();
-                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-                b.Property(x => x.PostedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                b.Property(x => x.Keywords).HasMaxLength(200);
-                b.Property(x => x.Tags).HasMaxLength(200);
-                b.Property(x => x.SalaryDeal).HasDefaultValue(false);
-                b.Property(x => x.IsUrgent).HasDefaultValue(false);
-                b.Property(x => x.AppllyCount).HasDefaultValue(0);
-                b.HasOne(x => x.JobCategory).WithMany(x => x.JobPostings).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
-                b.HasOne(x => x.RecruiterProfile).WithMany().HasForeignKey(x => x.RecuterId).OnDelete(DeleteBehavior.Cascade);
-               
-            });
+          {
+              b.ToTable("JobPostings");
+              b.ConfigureByConvention();
+              b.Property(x => x.Title).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.Slug).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.Description).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.Requirements).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.WorkTime).HasMaxLength(200).IsRequired();
+              b.Property(x => x.WorkLocation).HasMaxLength(200).IsRequired();
+              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
+              b.Property(x => x.PostedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+              b.Property(x => x.Keywords).HasMaxLength(200);
+
+              b.Property(x => x.SalaryDeal).HasDefaultValue(false);
+              b.Property(x => x.IsUrgent).HasDefaultValue(false);
+              b.Property(x => x.AppllyCount).HasDefaultValue(0);
+              b.HasOne(x => x.JobCategory).WithMany(x => x.JobPostings).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
+              b.HasOne(x => x.RecruiterProfile).WithMany().HasForeignKey(x => x.RecuterId).OnDelete(DeleteBehavior.Cascade);
 
 
+              // Relationships
+              b.HasOne(x => x.JobCategory)
+               .WithMany(x => x.JobPostings)
+               .HasForeignKey(x => x.JobCategoryId)
+               .OnDelete(DeleteBehavior.Cascade); // Xóa job khi category bị xóa
 
+              b.HasOne(x => x.RecruiterProfile)
+               .WithMany(x => x.JobPostings)
+               .HasForeignKey(x => x.RecuterId)
+               .OnDelete(DeleteBehavior.Cascade); // Xóa job khi recruiter profile bị xóa
 
+              b.HasMany(x => x.JobPostingTags)
+               .WithOne(x => x.JobPosting)
+               .HasForeignKey(x => x.JobPostingId)
+               .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
 
-
+          });
 
         //-----------fluent api cho book-------------
         builder.Entity<Book>(b =>
@@ -268,6 +266,14 @@ public class VCareerDbContext :
         .WithMany(c => c.RecruiterProfiles)
         .HasForeignKey(x => x.CompanyId)
         .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
+            e.HasMany(x => x.JobPostings)
+             .WithOne(x => x.RecruiterProfile)
+             .HasForeignKey(x => x.RecuterId)
+             .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
         });
 
         //-----------fluent api cho company-------------

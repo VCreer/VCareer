@@ -51,7 +51,8 @@ namespace VCareer.Models.Job
         public Boolean SalaryDeal { get; set; } = false;
 
         public string Keywords { get; set; }
-        public string Tags { get; set; } // JSON tags (e.g., '["livestream", "nghỉ thứ 7"]')
+
+
         // nagyf tạo
         public DateTime PostedAt { get; set; }
 
@@ -81,6 +82,12 @@ namespace VCareer.Models.Job
 
         //thuộc về recuiter nào
         public virtual RecruiterProfile RecruiterProfile { get; set; }
+
+        //danh sách các tag của job
+        public virtual ICollection<JobPostingTag> JobPostingTags { get; set; } = new List<JobPostingTag>();
+
+        // method để lấy các tag của job )))) sao nó lại ở đây nhỉ ???
+        public List<string> GetTags() => JobPostingTags.Select(t => t.Tag.Name).ToList();
 
         // tên tỉnh
         public virtual string Province
