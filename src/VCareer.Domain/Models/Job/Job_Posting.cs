@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Model;
 using VCareer.Models.Companies;
 using VCareer.Models.Users;
 using Volo.Abp.Domain.Entities.Auditing;
@@ -12,7 +14,7 @@ namespace VCareer.Models.Job
 {
     public class Job_Posting : FullAuditedAggregateRoot<Guid>
     {
-        //hinhf anhr
+        //hinhf ảnh
         public string Image { get; set; }
 
         // tiêu đề
@@ -31,7 +33,7 @@ namespace VCareer.Models.Job
         public decimal? SalaryMax { get; set; }
 
         //hình thức làm việc 
-        public string EmploymentType { get; set; } // Enum: Full-time, Part-time, Contract, Internship
+        public EmploymentTye EmploymentType { get; set; } // Enum: Full-time, Part-time, Contract, Internship
 
         //sô năm kinh nghiệm nhỏ nhất
         public int? ExperienceYearsMin { get; set; }
@@ -60,7 +62,7 @@ namespace VCareer.Models.Job
         public DateTime? ExpiresAt { get; set; }
 
         //trạng thái
-        public string Status { get; set; } // Enum: Draft, Open, Closed
+        public JobStatus Status { get; set; } // Enum: Draft, Open, Closed
 
         //Số người nộp hồ sơ
         public int AppllyCount { get; set; }

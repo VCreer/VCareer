@@ -22,7 +22,7 @@ namespace VCareer.Models.Job
         //nagy sửa
         public DateTime UpdatedAt { get; set; }
         //trang thia
-        public Boolean IsActive { get; set; }
+        public bool IsActive { get; set; }
         //category cha của nó
         public virtual Job_Category Parent { get; set; }
         //nó có nhiều  chuyên môn
