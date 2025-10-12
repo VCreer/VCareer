@@ -1,4 +1,4 @@
-<header class="candidate-header">
+<header class="recruiter-header">
   <div class="header-container">
     <!-- Logo -->
     <div class="logo-section" (click)="navigateToHome()">
@@ -9,38 +9,38 @@
     <nav class="nav-menu desktop-nav">
       <ul class="nav-list">
         <li class="nav-item">
-          <a (click)="navigateToHome()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
-            {{ translate('header.home') }}
-          </a>
-        </li>
-        <li class="nav-item">
-          <a (click)="navigateToJobs()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/candidate/jobs')">
-            {{ translate('header.jobs') }}
-          </a>
-        </li>
-        <li class="nav-item">
-          <a (click)="navigateToCompanies()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/candidate/companies')">
-            {{ translate('header.companies') }}
-          </a>
-        </li>
-        <li class="nav-item">
           <a (click)="navigateToAbout()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/about')">
-            {{ translate('header.about') }}
+            {{ translate('recruiter.about') }}
           </a>
         </li>
         <li class="nav-item">
-          <a (click)="navigateToContact()" 
+          <a (click)="navigateToServices()" 
              class="nav-link" 
-             [class.active]="isActiveRoute('/contact')">
-            {{ translate('header.contact') }}
+             [class.active]="isActiveRoute('/services')">
+            {{ translate('recruiter.services') }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToPricing()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/pricing')">
+            {{ translate('recruiter.pricing') }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToSupport()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/support')">
+            {{ translate('recruiter.support') }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a (click)="navigateToBlog()" 
+             class="nav-link" 
+             [class.active]="isActiveRoute('/blog')">
+            {{ translate('recruiter.blog') }}
           </a>
         </li>
       </ul>
@@ -54,18 +54,16 @@
         (languageChange)="onLanguageChange($event)">
       </app-language-toggle>
 
-      <!-- Auth Buttons -->
-      <div class="auth-actions">
-        <button class="login-btn" (click)="navigateToLogin()">
-          {{ translate('header.login') }}
-        </button>
-        <button class="register-btn" (click)="navigateToRegister()">
-          {{ translate('header.register') }}
-        </button>
-        <button class="recruiter-btn" (click)="navigateToRecruiter()">
-          {{ translate('header.post_job') }}
-        </button>
-      </div>
+
+      <!-- Login Button -->
+      <button class="login-btn" (click)="navigateToLogin()">
+        {{ translate('header.login') }}
+      </button>
+
+      <!-- Post Job Button -->
+      <button class="post-job-btn" (click)="navigateToPostJob()">
+        {{ translate('recruiter.post_job') }}
+      </button>
       
       <!-- Mobile Menu Toggle -->
       <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
@@ -82,38 +80,38 @@
   <nav class="nav-menu mobile-nav" [class.open]="isMenuOpen">
     <ul class="nav-list">
       <li class="nav-item">
-        <a (click)="navigateToHome()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
-          {{ translate('header.home') }}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a (click)="navigateToJobs()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/candidate/jobs')">
-          {{ translate('header.jobs') }}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a (click)="navigateToCompanies()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/candidate/companies')">
-          {{ translate('header.companies') }}
-        </a>
-      </li>
-      <li class="nav-item">
         <a (click)="navigateToAbout()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/about')">
-          {{ translate('header.about') }}
+          {{ translate('recruiter.about') }}
         </a>
       </li>
       <li class="nav-item">
-        <a (click)="navigateToContact()" 
+        <a (click)="navigateToServices()" 
            class="nav-link" 
-           [class.active]="isActiveRoute('/contact')">
-          {{ translate('header.contact') }}
+           [class.active]="isActiveRoute('/services')">
+          {{ translate('recruiter.services') }}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToPricing()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/pricing')">
+          {{ translate('recruiter.pricing') }}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToSupport()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/support')">
+          {{ translate('recruiter.support') }}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a (click)="navigateToBlog()" 
+           class="nav-link" 
+           [class.active]="isActiveRoute('/blog')">
+          {{ translate('recruiter.blog') }}
         </a>
       </li>
       <li class="nav-item mobile-auth">
@@ -124,11 +122,8 @@
         <button class="login-btn" (click)="navigateToLogin()">
           {{ translate('header.login') }}
         </button>
-        <button class="register-btn" (click)="navigateToRegister()">
-          {{ translate('header.register') }}
-        </button>
-        <button class="recruiter-btn" (click)="navigateToRecruiter()">
-          {{ translate('header.post_job') }}
+        <button class="post-job-btn" (click)="navigateToPostJob()">
+          {{ translate('recruiter.post_job') }}
         </button>
       </li>
     </ul>
