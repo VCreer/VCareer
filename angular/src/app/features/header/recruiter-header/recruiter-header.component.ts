@@ -8,13 +8,13 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle.component';
 
 @Component({
-  selector: 'app-candidate-header',
+  selector: 'app-recruiter-header',
   standalone: true,
   imports: [CommonModule, LanguageToggleComponent],
-  templateUrl: './candidate-header.component.html',
-  styleUrls: ['./candidate-header.component.scss']
+  templateUrl: './recruiter-header.component.html',
+  styleUrls: ['./recruiter-header.component.scss']
 })
-export class CandidateHeaderComponent implements OnInit {
+export class RecruiterHeaderComponent implements OnInit {
   currentRoute = '';
   isMenuOpen = false;
   selectedLanguage = 'vi';
@@ -44,54 +44,50 @@ export class CandidateHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  navigateToJobs() {
-    this.router.navigate(['/candidate/jobs']);
-    this.closeMobileMenu();
-  }
-
-  navigateToCompanies() {
-    this.router.navigate(['/candidate/companies']);
-    this.closeMobileMenu();
-  }
-
   navigateToAbout() {
     this.router.navigate(['/about']);
     this.closeMobileMenu();
   }
 
-  navigateToContact() {
-    this.router.navigate(['/contact']);
+  navigateToServices() {
+    this.router.navigate(['/services']);
+    this.closeMobileMenu();
+  }
+
+  navigateToPricing() {
+    this.router.navigate(['/pricing']);
+    this.closeMobileMenu();
+  }
+
+  navigateToSupport() {
+    this.router.navigate(['/support']);
+    this.closeMobileMenu();
+  }
+
+  navigateToBlog() {
+    this.router.navigate(['/blog']);
     this.closeMobileMenu();
   }
 
   navigateToLogin() {
-    this.router.navigate(['/candidate/login']);
+    this.router.navigate(['/recruiter/login']);
     this.closeMobileMenu();
   }
 
   // Method để xử lý đăng nhập thành công
   onLoginSuccess() {
-    this.navigationService.loginAsCandidate();
+    this.navigationService.loginAsRecruiter();
     this.closeMobileMenu();
   }
 
-  navigateToRegister() {
-    this.router.navigate(['/candidate/register']);
+  navigateToPostJob() {
+    this.router.navigate(['/recruiter/post-job']);
     this.closeMobileMenu();
   }
 
-  navigateToRecruiter() {
-    console.log('🚀 navigateToRecruiter() called');
-    // Chuyển sang recruiter header và navigate đến recruiter (vcareer.com/recruiter)
-    this.headerTypeService.switchToRecruiter();
-    console.log('✅ Header switched to recruiter');
-    this.router.navigate(['/recruiter']);
-    console.log('✅ Navigated to /recruiter');
-    this.closeMobileMenu();
-  }
 
-  navigateToProfile() {
-    this.router.navigate(['/candidate/profile']);
+  navigateToDashboard() {
+    this.router.navigate(['/recruiter/dashboard']);
     this.closeMobileMenu();
   }
 
@@ -103,15 +99,15 @@ export class CandidateHeaderComponent implements OnInit {
     this.isMenuOpen = false;
   }
 
-  isActiveRoute(route: string): boolean {
-    return this.currentRoute === route || this.currentRoute.startsWith(route);
-  }
-
   onLanguageChange(lang: string) {
     this.selectedLanguage = lang;
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  isActiveRoute(route: string): boolean {
+    return this.currentRoute === route || this.currentRoute.startsWith(route);
   }
 }

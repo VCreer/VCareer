@@ -65,6 +65,19 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
+  // Recruiter main route
+  {
+    path: 'recruiter',
+    loadComponent: () => import('./layout/candidate-layout.component').then(c => c.CandidateLayoutComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage.component').then(c => c.RecruiterHomepageComponent),
+      }
+    ]
+  },
+  
   {
     path: 'admin/login',
     loadComponent: () => import('./features/auth/admin/login/admin-login.component').then(c => c.AdminLoginComponent),

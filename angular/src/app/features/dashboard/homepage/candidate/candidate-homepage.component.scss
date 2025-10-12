@@ -1,7 +1,5 @@
 .candidate-homepage {
   min-height: 100vh;
-  background: #000000;
-  padding-top: 80px; /* Thêm padding để tránh bị che bởi header fixed */
 }
 
 /* Hero Section */
@@ -13,6 +11,7 @@
   justify-content: center;
   color: white;
   overflow: hidden;
+  padding-top: 80px; /* Thêm padding để tránh bị che bởi header fixed */
 }
 
 .hero-background {
