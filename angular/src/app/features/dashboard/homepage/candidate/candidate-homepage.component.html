@@ -1,184 +1,55 @@
 <div class="candidate-homepage">
   <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-background"></div>
-    <div class="hero-content">
-      <div class="hero-text">
-        <h1>Tìm công việc mơ ước của bạn ngay hôm nay!</h1>
-        <p>Kết nối Tài năng với Cơ hội: Cánh cổng dẫn đến Thành công trong Sự nghiệp</p>
-      </div>
-      
-      <!-- Search Bar -->
-      <div class="search-container">
-        <div class="search-form">
-          <div class="search-field">
-            <input 
-              type="text" 
-              [(ngModel)]="searchForm.jobTitle"
-              placeholder="Chức danh công việc hoặc công ty"
-              class="search-input"
-            >
-          </div>
-          <div class="search-field">
-            <select [(ngModel)]="searchForm.location" class="search-select">
-              <option value="">Chọn vị trí</option>
-              <option value="hanoi">Hà Nội</option>
-              <option value="hcm">TP. Hồ Chí Minh</option>
-              <option value="danang">Đà Nẵng</option>
-            </select>
-          </div>
-          <div class="search-field">
-            <select [(ngModel)]="searchForm.category" class="search-select">
-              <option value="">Chọn danh mục</option>
-              <option value="it">Công nghệ thông tin</option>
-              <option value="marketing">Marketing</option>
-              <option value="finance">Tài chính</option>
-            </select>
-          </div>
-          <button class="search-btn" (click)="onSearch()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            Tìm kiếm việc làm
-          </button>
-        </div>
-      </div>
+  <app-hero-section
+    [backgroundImage]="'assets/images/home/candidate-home/hero-background.png'"
+    [title]="'Tìm công việc mơ ước của bạn ngay hôm nay!'"
+    [subtitle]="'Kết nối Tài năng với Cơ hội: Cánh cổng dẫn đến Thành công trong Sự nghiệp'"
+    [showSearchForm]="true"
+    (searchJobs)="onSearch($event)">
+  </app-hero-section>
 
-      <!-- Statistics -->
-      <div class="stats-container">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ stats.jobs }}</div>
-            <div class="stat-label">Việc làm</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ stats.candidates }}</div>
-            <div class="stat-label">Ứng cử viên</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 21h18"></path>
-              <path d="M5 21V7l8-4v18"></path>
-              <path d="M19 21V11l-6-4"></path>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ stats.companies }}</div>
-            <div class="stat-label">Các công ty</div>
-          </div>
-        </div>
-      </div>
+  <!-- Job Listings -->
+  <app-job-listings
+    [jobListings]="jobListings"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    [selectedFilter]="selectedFilter"
+    (pageChange)="onPageChange($event)"
+    (jobClick)="onJobClick($event)"
+    (filterChange)="onFilterChange($event)"
+    (locationChange)="onLocationChange($event)">
+  </app-job-listings>
 
-    </div>
-  </section>
+  <!-- Category Section -->
+  <app-category-section
+    [categories]="getCurrentPageCategories()"
+    [currentPage]="currentCategoryPage"
+    [totalPages]="totalCategoryPages"
+    (pageChange)="onCategoryPageChange($event)"
+    (categoryClick)="onCategoryClick($event)">
+  </app-category-section>
 
-  <!-- Company Logos Section -->
-  <!-- <section class="company-logos-section">
-    <div class="company-logos-container">
-      <div class="company-logos-scroll">
-        <div class="company-logo">Viettel</div>
-        <div class="company-logo">MB</div>
-        <div class="company-logo">VINFAST</div>
-        <div class="company-logo">Viettel</div>
-        <div class="company-logo">MB</div>
-        <div class="company-logo">VINFAST</div>
-      </div>
-    </div>
-  </section> -->
+  <!-- About Us Section -->
+  <app-about-us
+    [image]="'assets/images/home/candidate-home/team-thumbs-up.png'"
+    [title]="'Cuộc sống tốt đẹp bắt đầu từ một công ty tốt'"
+    [description]="'Ultricies purus dolor viverra mi laoreet at cursus justo. Ultrices purus diam egestas amet faucibus tempor blandit. Elit velit mauris aliquam est diam. Leo sagittis consectetur diam morbi erat aenean. Vulputate praesent congue faucibus in euismod feugiat euismod volutpat.'"
+    [primaryButtonText]="'Tìm Kiếm Việc Làm'"
+    [secondaryButtonText]="'Tìm hiểu thêm'"
+    (primaryButtonClick)="searchJobs()"
+    (secondaryButtonClick)="learnMore()">
+  </app-about-us>
 
-  <!-- Job Listings Section -->
-  <section class="job-listings-section">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-title">
-          <h2>Việc Làm Gần Đây Có Sẵn</h2>
-          <p>At eu lobortis pretium tincidunt amet lacus ut aenean aliquet.....</p>
-        </div>
-        <a href="#" class="view-all-link" (click)="viewAllJobs()">Xem tất cả</a>
-      </div>
+  <!-- Statistics Section -->
+  <app-statistics [statistics]="statisticsData">
+  </app-statistics>
 
-      <div class="job-listings">
-        <div class="job-card" *ngFor="let job of jobListings">
-          <div class="job-card-header">
-            <span class="time-tag">{{ job.timePosted }}</span>
-            <button 
-              class="bookmark-btn" 
-              [class.bookmarked]="job.isBookmarked"
-              (click)="toggleBookmark(job.id)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="job-content">
-            <h3 class="job-title">{{ job.title }}</h3>
-            <p class="company-name">{{ job.company }}</p>
-            
-            <div class="job-details">
-              <div class="detail-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                  <line x1="8" y1="21" x2="16" y2="21"></line>
-                  <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
-                <span>{{ job.industry }}</span>
-              </div>
-              
-              <div class="detail-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12,6 12,12 16,14"></polyline>
-                </svg>
-                <span>{{ job.type }}</span>
-              </div>
-              
-              <div class="detail-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="1" x2="12" y2="23"></line>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-                <span>{{ job.salary }}</span>
-              </div>
-              
-              <div class="detail-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>{{ job.location }}</span>
-              </div>
-            </div>
-            
-            <button class="job-details-btn" (click)="viewJobDetails(job.id)">
-              Chi Tiết Công Việc
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- Future Hero Section -->
+  <app-future-hero
+    [image]="'assets/images/home/candidate-home/nghe-nghiep-khac-nhau.png'"
+    [title]="'Tạo dựng một tương lai tốt đẹp hơn cho chính bạn'"
+    [description]="'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scelerisque rhoncus.'"
+    [buttonText]="'Tìm Kiếm Việc Làm'"
+    (buttonClick)="searchJobs()">
+  </app-future-hero>
 </div>

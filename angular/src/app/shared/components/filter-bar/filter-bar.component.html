@@ -1,0 +1,55 @@
+<div class="filter-bar">
+  <div class="filter-dropdown" (click)="toggleFilterDropdown()">
+    <span class="filter-icon">☰</span>
+    <span class="filter-selected">Lọc theo: {{ selectedFilter }}</span>
+    <span class="dropdown-arrow">▼</span>
+    
+    <div class="filter-options" *ngIf="showFilterDropdown">
+      <div class="filter-option" [class.active]="selectedFilter==='Địa điểm'" (click)="selectFilter('Địa điểm')">
+        Địa điểm
+        <span class="checkmark" *ngIf="selectedFilter==='Địa điểm'">✓</span>
+      </div>
+      <div class="filter-option" [class.active]="selectedFilter==='Mức lương'" (click)="selectFilter('Mức lương')">
+        Mức lương
+        <span class="checkmark" *ngIf="selectedFilter==='Mức lương'">✓</span>
+      </div>
+      <div class="filter-option" [class.active]="selectedFilter==='Kinh nghiệm'" (click)="selectFilter('Kinh nghiệm')">
+        Kinh nghiệm
+        <span class="checkmark" *ngIf="selectedFilter==='Kinh nghiệm'">✓</span>
+      </div>
+      <div class="filter-option" [class.active]="selectedFilter==='Ngành nghề'" (click)="selectFilter('Ngành nghề')">
+        Ngành nghề
+        <span class="checkmark" *ngIf="selectedFilter==='Ngành nghề'">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-navigation">
+    <button class="nav-btn prev-btn" (click)="scrollLeft()" [disabled]="currentIndex === 0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15,18 9,12 15,6"></polyline>
+      </svg>
+    </button>
+    
+    <div class="filter-tags" #tagsRef>
+      <div 
+        class="location-tag" 
+        *ngFor="let option of displayedOptions"
+        [class.active]="selectedLocation === option.name"
+        (click)="selectLocation(option.name)"
+      >
+        {{ option.name }}
+      </div>
+    </div>
+    
+    <button class="nav-btn next-btn" (click)="scrollRight()" [disabled]="currentIndex >= currentFilterOptions.length - visibleCount">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9,18 15,12 9,6"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
+</div>

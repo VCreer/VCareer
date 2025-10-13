@@ -1,0 +1,11 @@
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item" *ngFor="let stat of statistics">
+        <div class="stat-number">{{ stat.number }}</div>
+        <h3>{{ stat.title }}</h3>
+        <p>{{ stat.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

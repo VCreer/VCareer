@@ -31,5 +31,10 @@ export const environment = {
   remoteEnv: {
     url: '/getEnvConfig',
     mergeStrategy: 'deepmerge'
-  }
+  },
+  // API Configuration for Production
+  apiUrl: 'https://api.vcareer.com',
+  useMockApi: false,
+  mockDelay: 0,
+  debug: false,
 } as Environment;

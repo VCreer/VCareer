@@ -29,4 +29,9 @@ export const environment = {
       rootNamespace: 'AbpAccountPublic',
     },
   },
+  // API Configuration
+  apiUrl: 'http://localhost:3000/api',
+  useMockApi: true,
+  mockDelay: 1000,
+  debug: true,
 } as Environment;

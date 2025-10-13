@@ -1,0 +1,14 @@
+<section class="future-hero-section">
+  <div class="container">
+    <div class="future-hero-content">
+      <div class="future-hero-text">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+        <button class="btn-primary" (click)="onButtonClick()">{{ buttonText }}</button>
+      </div>
+      <div class="future-hero-image">
+        <img [src]="image" [alt]="title" />
+      </div>
+    </div>
+  </div>
+</section>
