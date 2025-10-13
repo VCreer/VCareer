@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 /**
- * Mock Job Service - Xử lý các API liên quan đến công việc
+ * Mock Job Service - Xử lý các API liên quan đến việc làm
  * Bao gồm: Get Jobs, Create Job
  */
 @Injectable({
@@ -11,87 +11,65 @@ import { HttpResponse } from '@angular/common/http';
 })
 export class JobMockService {
 
-  /**
-   * Mock get jobs - Lấy danh sách công việc
-   * @returns Observable của jobs response
-   */
-  mockGetJobs(): Observable<HttpResponse<any>> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const mockJobs = [
-          {
-            id: 1,
-            title: 'Frontend Developer',
-            company: 'Tech Corp',
-            location: 'Hồ Chí Minh',
-            salary: '15-25 triệu',
-            type: 'Full-time',
-            description: 'Tìm kiếm Frontend Developer có kinh nghiệm React, Angular',
-            requirements: ['React', 'Angular', 'JavaScript', 'HTML/CSS'],
-            postedDate: '2024-01-15'
-          },
-          {
-            id: 2,
-            title: 'Backend Developer',
-            company: 'StartupXYZ',
-            location: 'Hà Nội',
-            salary: '20-30 triệu',
-            type: 'Full-time',
-            description: 'Tìm kiếm Backend Developer có kinh nghiệm Node.js, Python',
-            requirements: ['Node.js', 'Python', 'Database', 'API'],
-            postedDate: '2024-01-14'
-          },
-          {
-            id: 3,
-            title: 'Full Stack Developer',
-            company: 'Digital Agency',
-            location: 'Đà Nẵng',
-            salary: '18-28 triệu',
-            type: 'Full-time',
-            description: 'Tìm kiếm Full Stack Developer toàn diện',
-            requirements: ['React', 'Node.js', 'Database', 'DevOps'],
-            postedDate: '2024-01-13'
-          }
-        ];
+  private mockJobs = [
+    {
+      id: 1,
+      title: 'Senior Frontend Developer',
+      company: 'TechCorp Vietnam',
+      location: 'Hồ Chí Minh',
+      salary: '25-35 triệu',
+      type: 'Full-time',
+      industry: 'Công nghệ thông tin',
+      description: 'Chúng tôi đang tìm kiếm một Senior Frontend Developer...',
+      requirements: ['3+ năm kinh nghiệm React', 'TypeScript', 'Redux'],
+      benefits: ['Bảo hiểm y tế', 'Lương tháng 13', 'Nghỉ phép có lương'],
+      timeAgo: '2 giờ trước',
+      isBookmarked: false
+    },
+    {
+      id: 2,
+      title: 'Marketing Manager',
+      company: 'Digital Agency',
+      location: 'Hà Nội',
+      salary: '20-30 triệu',
+      type: 'Full-time',
+      industry: 'Marketing',
+      description: 'Tìm kiếm Marketing Manager có kinh nghiệm...',
+      requirements: ['5+ năm kinh nghiệm marketing', 'Google Ads', 'Facebook Ads'],
+      benefits: ['Thưởng KPI', 'Đào tạo nâng cao', 'Môi trường năng động'],
+      timeAgo: '4 giờ trước',
+      isBookmarked: true
+    }
+  ];
 
-        observer.next(new HttpResponse({
-          status: 200,
-          body: {
-            success: true,
-            data: mockJobs,
-            total: mockJobs.length
-          }
-        }));
-        observer.complete();
-      }, 1000);
-    });
+  /**
+   * Mock get jobs - Lấy danh sách việc làm
+   */
+  mockGetJobs(): Observable<any> {
+    return of({
+      success: true,
+      data: this.mockJobs,
+      total: this.mockJobs.length
+    }).pipe(delay(800));
   }
 
   /**
-   * Mock create job - Tạo công việc mới
-   * @param jobData - Thông tin công việc
-   * @returns Observable của create job response
+   * Mock create job - Tạo việc làm mới
    */
-  mockCreateJob(jobData: any): Observable<HttpResponse<any>> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const newJob = {
-          id: Date.now(),
-          ...jobData,
-          postedDate: new Date().toISOString().split('T')[0],
-          status: 'active'
-        };
-
-        observer.next(new HttpResponse({
-          status: 201,
-          body: {
-            success: true,
-            message: 'Công việc đã được tạo thành công',
-            data: newJob
-          }
-        }));
-        observer.complete();
-      }, 2000);
-    });
+  mockCreateJob(jobData: any): Observable<any> {
+    const newJob = {
+      id: this.mockJobs.length + 1,
+      ...jobData,
+      timeAgo: 'Vừa đăng',
+      isBookmarked: false
+    };
+    
+    this.mockJobs.unshift(newJob);
+    
+    return of({
+      success: true,
+      data: newJob,
+      message: 'Việc làm đã được tạo thành công'
+    }).pipe(delay(1200));
   }
 }

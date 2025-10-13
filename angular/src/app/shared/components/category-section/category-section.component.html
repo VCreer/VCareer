@@ -1,0 +1,29 @@
+<section class="category-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Duyệt theo danh mục</h2>
+      <div class="category-navigation">
+        <button class="nav-btn prev-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,18 9,12 15,6"></polyline>
+          </svg>
+        </button>
+        <button class="nav-btn next-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div class="category-grid">
+      <div class="category-card" *ngFor="let category of categories" (click)="onCategoryClick(category.id)">
+        <div class="category-icon">
+          <img [src]="category.image" [alt]="category.name" />
+        </div>
+        <h3 class="category-name">{{ category.name }}</h3>
+        <p class="job-count">{{ category.jobCount | number }} việc làm</p>
+      </div>
+    </div>
+  </div>
+</section>
