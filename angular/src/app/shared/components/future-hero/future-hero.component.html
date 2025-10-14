@@ -2,12 +2,12 @@
   <div class="container">
     <div class="future-hero-content">
       <div class="future-hero-text">
-        <h2>{{ title }}</h2>
-        <p>{{ description }}</p>
-        <button class="btn-primary" (click)="onButtonClick()">{{ buttonText }}</button>
+        <h2>{{ translate(title) }}</h2>
+        <p>{{ translate(description) }}</p>
+        <button class="btn-primary" (click)="onButtonClick()">{{ translate(buttonText) }}</button>
       </div>
       <div class="future-hero-image">
-        <img [src]="image" [alt]="title" />
+        <img [src]="image" [alt]="translate(title)" />
       </div>
     </div>
   </div>

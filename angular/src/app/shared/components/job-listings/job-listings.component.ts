@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FilterBarComponent } from '../filter-bar/filter-bar.component';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification.component';
+import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-job-listings',
@@ -57,4 +58,7 @@ export class JobListingsComponent {
   onLocationChange(location: string) {
     this.locationChange.emit(location);
   }
+
+  constructor(private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 }

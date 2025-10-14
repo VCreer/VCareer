@@ -5,11 +5,11 @@
         <img [src]="image" [alt]="title" />
       </div>
       <div class="about-text">
-        <h2>{{ title }}</h2>
-        <p>{{ description }}</p>
+        <h2>{{ translate(title) }}</h2>
+        <p>{{ translate(description) }}</p>
         <div class="about-buttons">
-          <button class="btn-primary" (click)="onPrimaryClick()">{{ primaryButtonText }}</button>
-          <button class="btn-secondary" (click)="onSecondaryClick()">{{ secondaryButtonText }}</button>
+          <button class="btn-primary" (click)="onPrimaryClick()">{{ translate(primaryButtonText) }}</button>
+          <button class="btn-secondary" (click)="onSecondaryClick()">{{ translate(secondaryButtonText) }}</button>
         </div>
       </div>
     </div>

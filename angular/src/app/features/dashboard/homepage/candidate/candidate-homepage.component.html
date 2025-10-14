@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <app-hero-section
     [backgroundImage]="'assets/images/home/candidate-home/hero-background.png'"
-    [title]="'Tìm công việc mơ ước của bạn ngay hôm nay!'"
-    [subtitle]="'Kết nối Tài năng với Cơ hội: Cánh cổng dẫn đến Thành công trong Sự nghiệp'"
+    [title]="'homepage.title'"
+    [subtitle]="'homepage.subtitle'"
     [showSearchForm]="true"
     (searchJobs)="onSearch($event)">
   </app-hero-section>
@@ -32,10 +32,10 @@
   <!-- About Us Section -->
   <app-about-us
     [image]="'assets/images/home/candidate-home/team-thumbs-up.png'"
-    [title]="'Cuộc sống tốt đẹp bắt đầu từ một công ty tốt'"
-    [description]="'Ultricies purus dolor viverra mi laoreet at cursus justo. Ultrices purus diam egestas amet faucibus tempor blandit. Elit velit mauris aliquam est diam. Leo sagittis consectetur diam morbi erat aenean. Vulputate praesent congue faucibus in euismod feugiat euismod volutpat.'"
-    [primaryButtonText]="'Tìm Kiếm Việc Làm'"
-    [secondaryButtonText]="'Tìm hiểu thêm'"
+    [title]="'about.title'"
+    [description]="'about.description'"
+    [primaryButtonText]="'cta.find_jobs'"
+    [secondaryButtonText]="'cta.learn_more'"
     (primaryButtonClick)="searchJobs()"
     (secondaryButtonClick)="learnMore()">
   </app-about-us>
@@ -47,9 +47,9 @@
   <!-- Future Hero Section -->
   <app-future-hero
     [image]="'assets/images/home/candidate-home/nghe-nghiep-khac-nhau.png'"
-    [title]="'Tạo dựng một tương lai tốt đẹp hơn cho chính bạn'"
-    [description]="'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scelerisque rhoncus.'"
-    [buttonText]="'Tìm Kiếm Việc Làm'"
+    [title]="'future.title'"
+    [description]="'future.description'"
+    [buttonText]="'cta.find_jobs'"
     (buttonClick)="searchJobs()">
   </app-future-hero>
 </div>

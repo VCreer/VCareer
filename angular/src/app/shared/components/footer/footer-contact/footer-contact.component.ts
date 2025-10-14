@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../../../core/services/translation.service';
 
 @Component({
   selector: 'app-footer-contact',
@@ -15,6 +16,9 @@ export class FooterContactComponent {
   reload(): void {
     window.location.reload();
   }
+
+  constructor(private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 }
 
 

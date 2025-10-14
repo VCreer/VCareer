@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../../../core/services/translation.service';
 
 export interface FooterLink { label: string; url: string; }
 
@@ -13,6 +14,8 @@ export interface FooterLink { label: string; url: string; }
 export class FooterLinkColumnComponent {
   @Input() title = '';
   @Input() links: FooterLink[] = [];
+  constructor(private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 }
 
 
