@@ -5,6 +5,7 @@ export { JobService } from './job.service';
 export { UserService } from './user.service';
 export { CompanyService } from './company.service';
 export { FilterService } from './filter.service';
+export { FooterService } from './footer.service';
 
 // API Configuration
 export { ApiConfigService } from '../api-config.service';
@@ -15,3 +16,4 @@ export * from './job.service';
 export * from './user.service';
 export * from './company.service';
 export * from './filter.service';
+export * from './footer.service';
