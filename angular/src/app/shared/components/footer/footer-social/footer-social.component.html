@@ -1,5 +1,5 @@
 <div class="footer-social">
-  <span class="title">Cộng đồng VCareer</span>
+  <span class="title">{{ translate('footer.community') }}</span>
   <div class="icons">
     <a *ngFor="let s of socialLinks" [href]="s.url" [attr.aria-label]="s.label">
       <svg *ngIf="s.label === 'Facebook'" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

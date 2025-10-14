@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, ViewChild, ElementRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FilterOptionsService, FilterOption } from '../../../core/services/filter-options.service';
+import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-filter-bar',
@@ -26,7 +27,8 @@ export class FilterBarComponent implements OnInit {
 
   @ViewChild('tagsRef') tagsRef?: ElementRef<HTMLDivElement>;
 
-  constructor(private filterOptionsService: FilterOptionsService) {}
+  constructor(private filterOptionsService: FilterOptionsService, private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 
   ngOnInit() {
     this.loadFilterOptions();

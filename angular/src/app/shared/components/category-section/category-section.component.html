@@ -1,7 +1,7 @@
 <section class="category-section">
   <div class="container">
     <div class="section-header">
-      <h2>Duyệt theo danh mục</h2>
+      <h2>{{ translate('home.browse_categories') }}</h2>
       <div class="category-navigation">
         <button class="nav-btn prev-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -21,8 +21,8 @@
         <div class="category-icon">
           <img [src]="category.image" [alt]="category.name" />
         </div>
-        <h3 class="category-name">{{ category.name }}</h3>
-        <p class="job-count">{{ category.jobCount | number }} việc làm</p>
+        <h3 class="category-name">{{ translate(category.name) }}</h3>
+        <p class="job-count">{{ category.jobCount | number }} {{ translate('homepage.stats.jobs') }}</p>
       </div>
     </div>
   </div>

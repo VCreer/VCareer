@@ -1,24 +1,24 @@
 <div class="filter-bar">
   <div class="filter-dropdown" (click)="toggleFilterDropdown()">
     <span class="filter-icon">☰</span>
-    <span class="filter-selected">Lọc theo: {{ selectedFilter }}</span>
+    <span class="filter-selected">{{ translate('filter.by') || 'Lọc theo:' }} {{ translate(selectedFilter) }}</span>
     <span class="dropdown-arrow">▼</span>
     
     <div class="filter-options" *ngIf="showFilterDropdown">
       <div class="filter-option" [class.active]="selectedFilter==='Địa điểm'" (click)="selectFilter('Địa điểm')">
-        Địa điểm
+        {{ translate('filter.location') || 'Địa điểm' }}
         <span class="checkmark" *ngIf="selectedFilter==='Địa điểm'">✓</span>
       </div>
       <div class="filter-option" [class.active]="selectedFilter==='Mức lương'" (click)="selectFilter('Mức lương')">
-        Mức lương
+        {{ translate('filter.salary') || 'Mức lương' }}
         <span class="checkmark" *ngIf="selectedFilter==='Mức lương'">✓</span>
       </div>
       <div class="filter-option" [class.active]="selectedFilter==='Kinh nghiệm'" (click)="selectFilter('Kinh nghiệm')">
-        Kinh nghiệm
+        {{ translate('filter.experience') || 'Kinh nghiệm' }}
         <span class="checkmark" *ngIf="selectedFilter==='Kinh nghiệm'">✓</span>
       </div>
       <div class="filter-option" [class.active]="selectedFilter==='Ngành nghề'" (click)="selectFilter('Ngành nghề')">
-        Ngành nghề
+        {{ translate('filter.category') || 'Ngành nghề' }}
         <span class="checkmark" *ngIf="selectedFilter==='Ngành nghề'">✓</span>
       </div>
     </div>
@@ -38,7 +38,7 @@
         [class.active]="selectedLocation === option.name"
         (click)="selectLocation(option.name)"
       >
-        {{ option.name }}
+        {{ translate(option.name) }}
       </div>
     </div>
     

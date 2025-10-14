@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../../../core/services/translation.service';
 
 export interface SocialLink { icon: string; url: string; label: string; }
 
@@ -12,6 +13,8 @@ export interface SocialLink { icon: string; url: string; label: string; }
 })
 export class FooterSocialComponent {
   @Input() socialLinks: SocialLink[] = [];
+  constructor(private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 }
 
 

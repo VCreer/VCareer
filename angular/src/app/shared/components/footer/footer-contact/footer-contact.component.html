@@ -1,12 +1,12 @@
 <div class="footer-contact">
   <div class="brand" (click)="reload()">
     <img src="assets/images/logo/logo.png" alt="VCareer" />
-    <p class="tagline">Tiếp lợi thế - Nối thành công</p>
+    <p class="tagline">{{ translate('footer.tagline') }}</p>
   </div>
   
   <div class="contact">
-    <div class="row"><span class="label">Hotline:</span> <a href="tel:{{hotline}}">{{ hotline }}</a></div>
-    <div class="row"><span class="label">Email:</span> <a [href]="'mailto:' + email">{{ email }}</a></div>
+    <div class="row"><span class="label">{{ translate('common.hotline') }}</span> <a href="tel:{{hotline}}">{{ hotline }}</a></div>
+    <div class="row"><span class="label">{{ translate('common.email') }}</span> <a [href]="'mailto:' + email">{{ email }}</a></div>
   </div>
   <div class="store-badges">
     <img src="assets/images/footer/app-store-badge.png" alt="App Store" />

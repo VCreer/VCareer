@@ -49,18 +49,18 @@ export class CandidateHomepageComponent implements OnInit {
   statisticsData = [
     {
       number: '12k+',
-      title: 'Khách hàng trên toàn thế giới',
-      description: 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.'
+      title: 'stats.customers_title',
+      description: 'stats.customers_desc'
     },
     {
       number: '20k+',
-      title: 'Sơ yếu lý lịch đang hoạt động',
-      description: 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.'
+      title: 'stats.resumes_title',
+      description: 'stats.resumes_desc'
     },
     {
       number: '18k+',
-      title: 'Các công ty',
-      description: 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.'
+      title: 'stats.companies_title',
+      description: 'stats.companies_desc'
     }
   ];
 

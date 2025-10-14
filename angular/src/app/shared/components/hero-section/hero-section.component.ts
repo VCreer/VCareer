@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-hero-section',
@@ -25,4 +26,7 @@ export class HeroSectionComponent {
   onSearch() {
     this.searchJobs.emit(this.searchForm);
   }
+
+  constructor(private translationService: TranslationService) {}
+  translate(key: string): string { return this.translationService.translate(key); }
 }
