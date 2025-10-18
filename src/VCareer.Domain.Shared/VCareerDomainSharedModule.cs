@@ -33,6 +33,7 @@ public class VCareerDomainSharedModule : AbpModule
     {
         VCareerGlobalFeatureConfigurator.Configure();
         VCareerModuleExtensionConfigurator.Configure();
+     
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)

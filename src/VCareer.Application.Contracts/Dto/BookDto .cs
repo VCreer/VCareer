@@ -1,7 +1,8 @@
 ﻿using System;
+using VCareer.Books;
 using Volo.Abp.Application.Dtos;
 
-namespace VCareer.Books;
+namespace VCareer.Dto;
 
 public class BookDto : AuditedEntityDto<Guid>
 {

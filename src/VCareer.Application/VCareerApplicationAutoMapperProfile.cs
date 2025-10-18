@@ -1,5 +1,7 @@
 using AutoMapper;
-using VCareer.Books;
+using VCareer.Dto;
+using VCareer.IServices.Books;
+using VCareer.Models;
 
 namespace VCareer;
 

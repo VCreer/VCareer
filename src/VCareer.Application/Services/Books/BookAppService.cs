@@ -8,8 +8,11 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using System.Linq.Dynamic.Core;
+using VCareer.IServices.Books;
+using VCareer.Dto;
+using VCareer.Models;
 
-namespace VCareer.Books;
+namespace VCareer.Services.Books;
 
 [Authorize(VCareerPermissions.Books.Default)]
 public class BookAppService : ApplicationService, IBookAppService

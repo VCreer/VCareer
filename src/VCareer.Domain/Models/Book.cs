@@ -1,7 +1,8 @@
 ﻿using System;
+using VCareer.Books;
 using Volo.Abp.Domain.Entities.Auditing;
 
-namespace VCareer.Books;
+namespace VCareer.Models;
 
 public class Book : AuditedAggregateRoot<Guid>
 {
