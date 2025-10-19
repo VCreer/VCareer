@@ -18,6 +18,15 @@ export class CandidateHeaderComponent implements OnInit {
   currentRoute = '';
   isMenuOpen = false;
   selectedLanguage = 'vi';
+  isLoggedIn = false;
+  showProfileMenu = false;
+  expandedSections = {
+    jobManagement: true,
+    cvManagement: true,
+    emailSettings: false,
+    personalSecurity: false,
+    upgradeAccount: false
+  };
 
   constructor(
     private router: Router,
@@ -36,6 +45,11 @@ export class CandidateHeaderComponent implements OnInit {
     // Subscribe to language changes
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
+    });
+
+    // Subscribe to authentication state changes
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isLoggedIn = isLoggedIn;
     });
   }
 
@@ -109,9 +123,28 @@ export class CandidateHeaderComponent implements OnInit {
 
   onLanguageChange(lang: string) {
     this.selectedLanguage = lang;
+    this.translationService.setLanguage(lang);
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+
+  toggleSection(section: string) {
+    this.expandedSections[section as keyof typeof this.expandedSections] = 
+      !this.expandedSections[section as keyof typeof this.expandedSections];
+  }
+
+  logout() {
+    this.navigationService.logout();
+    this.showProfileMenu = false;
+  }
+
+  onProfileMouseLeave() {
+    // Delay để user có thể di chuột vào menu
+    setTimeout(() => {
+      this.showProfileMenu = false;
+    }, 300);
   }
 }
