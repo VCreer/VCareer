@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>Current user's profile information</returns>
         [HttpGet]
-        [Authorize(VCareerPermissions.Profile.Default)]
+        [Authorize(VCareerPermission.Profile.Default)]
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             return await _profileAppService.GetCurrentUserProfileAsync();
@@ -35,7 +36,7 @@ namespace VCareer.Profile
         /// <param name="input">Personal information to update</param>
         /// <returns>No content</returns>
         [HttpPut("personal-info")]
-        [Authorize(VCareerPermissions.Profile.UpdatePersonalInfo)]
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task<IActionResult> UpdatePersonalInfoAsync([FromBody] UpdatePersonalInfoDto input)
         {
             await _profileAppService.UpdatePersonalInfoAsync(input);
@@ -48,7 +49,7 @@ namespace VCareer.Profile
         /// <param name="input">Password change information</param>
         /// <returns>No content</returns>
         [HttpPut("change-password")]
-        [Authorize(VCareerPermissions.Profile.ChangePassword)]
+        [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto input)
         {
             await _profileAppService.ChangePasswordAsync(input);
@@ -60,7 +61,7 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>No content</returns>
         [HttpDelete("account")]
-        [Authorize(VCareerPermissions.Profile.DeleteAccount)]
+        [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task<IActionResult> DeleteAccountAsync()
         {
             await _profileAppService.DeleteAccountAsync();

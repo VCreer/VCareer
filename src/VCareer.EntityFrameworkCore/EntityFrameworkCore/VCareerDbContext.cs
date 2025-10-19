@@ -43,11 +43,7 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-    public DbSet<Company> Companies { get; set; }
-    public DbSet<Industry> Industries { get; set; }
-    public DbSet<CandidateProfile> CandidateProfiles { get; set; }
-    public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
-    public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
+   
     public DbSet<CurriculumVitae> CVs { get; set; }
 
 

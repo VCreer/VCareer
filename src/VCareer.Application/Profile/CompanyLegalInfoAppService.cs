@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using VCareer.Models.Companies;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -13,7 +14,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-    [Authorize(VCareerPermissions.Profile.Default)]
+    [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly IRepository<Company, int> _companyRepository;
@@ -27,7 +28,7 @@ namespace VCareer.Profile
             _currentUser = currentUser;
         }
 
-        [Authorize(VCareerPermissions.Profile.SubmitLegalInformation)]
+        [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync(SubmitCompanyLegalInfoDto input)
         {
             // Check if tax code already exists
@@ -80,7 +81,7 @@ namespace VCareer.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
-        [Authorize(VCareerPermissions.Profile.UpdateLegalInformation)]
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -165,7 +166,7 @@ namespace VCareer.Profile
             return ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
         }
 
-        [Authorize(VCareerPermissions.Profile.DeleteSupportingDocument)]
+        [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
         public async Task DeleteCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -192,7 +193,7 @@ namespace VCareer.Profile
             await _companyRepository.UpdateAsync(company);
         }
 
-        [Authorize(VCareerPermissions.Profile.UpdateLegalInformation)]
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null, 
             string taxCertificateFile = null, string representativeIdCardFile = null, string otherSupportFile = null)
         {
