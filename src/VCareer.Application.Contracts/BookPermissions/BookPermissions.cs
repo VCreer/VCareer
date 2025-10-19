@@ -1,8 +1,8 @@
 namespace VCareer.Permissions;
 
-public static class VCareerPermissions
+public static class BookPermissions
 {
-    public const string GroupName = "VCareer";
+    public const string GroupName = "Book_Test_Permissions";
 
 
     public static class Books

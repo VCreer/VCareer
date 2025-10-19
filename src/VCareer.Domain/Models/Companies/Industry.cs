@@ -10,6 +10,6 @@ namespace VCareer.Models.Companies
     public class Industry : Entity<int>
     {
         public string Name { get; set; }
-        public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }
+        public ICollection<CompanyIndustry> CompanyIndustries { get;private set; }
     }
 }

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
-using VCareer.Books;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -15,6 +14,11 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using VCareer.Models.Users;
+using VCareer.Models.Companies;
+using VCareer.Models.IpAddress;
+using VCareer.Models;
+using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
 
@@ -36,7 +40,17 @@ public class VCareerDbContext :
     public DbSet<CandidateProfile> CandidateProfiles { get; set; }
     public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
+    public DbSet<IpAddress> IpAddresses { get; set; }
+    public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<Industry> Industries { get; set; }
+    public DbSet<CandidateProfile> CandidateProfiles { get; set; }
+    public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
+    public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
     public DbSet<CurriculumVitae> CVs { get; set; }
+
+
 
 
     #region Entities from the modules
@@ -248,6 +262,135 @@ public class VCareerDbContext :
 
         });
 
+
+        builder.Entity<EmployeeProfile>(e =>
+        {
+            e.ToTable("EmployeeProfiles");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.UserId);
+            e.HasOne(x => x.User)
+            .WithOne()
+            .HasForeignKey<EmployeeProfile>(x => x.UserId)
+            .IsRequired();
+        });
+
+
+        builder.Entity<CandidateProfile>(e =>
+        {
+            e.ToTable("CandidateProfile");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.UserId);
+            e.HasOne(x => x.User)
+            .WithOne()
+            .HasForeignKey<CandidateProfile>(x => x.UserId)
+            .IsRequired();
+        });
+
+        builder.Entity<RecruiterProfile>(e =>
+        {
+            e.ToTable("RecruiterProfile");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.UserId);
+            e.HasOne(x => x.User)
+            .WithOne()
+            .HasForeignKey<RecruiterProfile>(x => x.UserId)
+            .IsRequired();
+
+        });
+
+        builder.Entity<Company>(c =>
+        {
+            c.ToTable("Companies");
+            c.ConfigureByConvention();
+            c.HasMany(x => x.CompanyIndustries)
+            .WithOne()
+            .HasForeignKey(x => x.CompanyId)
+            .IsRequired();
+            c.HasKey(x => x.Id);
+            c.Property(x => x.Id)
+              .ValueGeneratedOnAdd()
+              .UseIdentityColumn();
+
+            c.HasMany(x => x.RecruiterProfiles)
+            .WithOne()
+            .HasForeignKey(x => x.CompanyId)
+            .IsRequired();
+        });
+
+        builder.Entity<Industry>(c =>
+        {
+            c.ToTable("Industries");
+            c.ConfigureByConvention();
+            c.HasMany(x => x.CompanyIndustries)
+            .WithOne()
+            .HasForeignKey(x => x.IndustryId)
+            .IsRequired();
+            c.HasKey(x => x.Id);
+            c.Property(x => x.Id)
+                 .ValueGeneratedOnAdd()
+                 .UseIdentityColumn();
+        });
+
+        builder.Entity<CompanyIndustry>(ci =>
+        {
+            ci.ToTable("CompanyIndustries");
+            ci.ConfigureByConvention();
+            ci.Property(x => x.Id)
+                  .ValueGeneratedOnAdd()
+                  .UseIdentityColumn();
+            ci.HasKey(x => x.Id);
+            ci.HasIndex(x => new { x.CompanyId, x.IndustryId })
+      .IsUnique();
+
+            ci.HasOne(ci => ci.Company)
+         .WithMany(c => c.CompanyIndustries)
+         .HasForeignKey(ci => ci.CompanyId)
+         .OnDelete(DeleteBehavior.Cascade);
+
+            ci.HasOne(ci => ci.Industry)
+                .WithMany(i => i.CompanyIndustries)
+                .HasForeignKey(ci => ci.IndustryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+        });
+
+        builder.Entity<IpAddress>(i =>
+        {
+            i.ToTable("IpAddresses");
+            i.ConfigureByConvention();
+            i.HasKey(x => x.Id);
+            i.Property(x => x.Id)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn();
+
+            i.HasMany(x => x.EmployeeIpAdresses)
+                .WithOne(e => e.IpAddress)
+                .HasForeignKey(e => e.IpAdressId)
+                .IsRequired();
+        });
+
+        builder.Entity<EmployeeIpAddress>(e =>
+        {
+            e.ToTable("EmployeeIpAddresses");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn();
+
+            e.HasOne(x => x.EmployeeProfile)
+            .WithMany()
+            .HasForeignKey(x => x.EmployeeId)
+            .IsRequired();
+        });
+
+        builder.Entity<RefreshToken>(b =>
+        {
+            b.ToTable("AppRefreshTokens");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Token).IsRequired().HasMaxLength(256);
+            b.HasIndex(x => x.Token).IsUnique();
+        });
 
     }
 }
