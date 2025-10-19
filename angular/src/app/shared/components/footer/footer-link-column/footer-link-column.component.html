@@ -1,0 +1,10 @@
+<div class="footer-col">
+  <h4 class="footer-col-title">{{ translate(title) }}</h4>
+  <ul class="footer-links">
+    <li class="footer-link" *ngFor="let link of links">
+      <a [href]="link.url">{{ translate(link.label) }}</a>
+    </li>
+  </ul>
+</div>
+
+
