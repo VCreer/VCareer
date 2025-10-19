@@ -20,8 +20,7 @@ export class NavigationService {
   loginAsCandidate() {
     this.isLoggedInSubject.next(true);
     this.userRoleSubject.next('candidate');
-    // Sau khi đăng nhập, redirect đến /jobs
-    this.router.navigate(['/jobs']);
+    // Không navigate tự động, để component tự quyết định
   }
 
   // Đăng nhập recruiter

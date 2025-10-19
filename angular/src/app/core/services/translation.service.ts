@@ -23,6 +23,25 @@ export class TranslationService {
       'header.login': 'Đăng nhập',
       'header.register': 'Đăng ký',
       'header.post_job': 'Đăng tuyển & tìm hồ sơ',
+      'header.are_you_recruiter': 'Bạn là nhà tuyển dụng?',
+      'header.post_job_now': 'Đăng tuyển ngay',
+      
+      // Profile Menu
+      'profile.verified_account': 'Tài khoản đã xác thực',
+      'profile.job_management': 'Quản lý tìm việc',
+      'profile.saved_jobs': 'Việc làm đã lưu',
+      'profile.applied_jobs': 'Việc làm đã ứng tuyển',
+      'profile.suitable_jobs': 'Việc làm phù hợp với bạn',
+      'profile.job_suggestions': 'Cài đặt gợi ý việc làm',
+      'profile.cv_management': 'Quản lý CV & Cover letter',
+      'profile.my_cv': 'CV của tôi',
+      'profile.my_cover_letter': 'Cover Letter của tôi',
+      'profile.recruiters_connect': 'Nhà tuyển dụng muốn kết nối với bạn',
+      'profile.recruiters_view': 'Nhà tuyển dụng xem hồ sơ',
+      'profile.email_settings': 'Cài đặt email & thông báo',
+      'profile.personal_security': 'Cá nhân & Bảo mật',
+      'profile.upgrade_account': 'Nâng cấp tài khoản',
+      'profile.logout': 'Đăng xuất',
       
       // Recruiter Header
       'recruiter.about': 'Giới thiệu',
@@ -107,6 +126,25 @@ export class TranslationService {
       'header.login': 'Login',
       'header.register': 'Register',
       'header.post_job': 'Post Job & Find Resumes',
+      'header.are_you_recruiter': 'Are you a recruiter?',
+      'header.post_job_now': 'Post a job now',
+      
+      // Profile Menu
+      'profile.verified_account': 'Verified account',
+      'profile.job_management': 'Job search management',
+      'profile.saved_jobs': 'Saved jobs',
+      'profile.applied_jobs': 'Applied jobs',
+      'profile.suitable_jobs': 'Jobs suitable for you',
+      'profile.job_suggestions': 'Job suggestion settings',
+      'profile.cv_management': 'CV & Cover letter management',
+      'profile.my_cv': 'My CV',
+      'profile.my_cover_letter': 'My Cover Letter',
+      'profile.recruiters_connect': 'Recruiters want to connect with you',
+      'profile.recruiters_view': 'Recruiters view profile',
+      'profile.email_settings': 'Email & notification settings',
+      'profile.personal_security': 'Personal & Security',
+      'profile.upgrade_account': 'Upgrade account',
+      'profile.logout': 'Logout',
       
       // Recruiter Header
       'recruiter.about': 'About',

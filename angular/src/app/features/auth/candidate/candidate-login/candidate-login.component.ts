@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -26,6 +27,7 @@ import {
 })
 export class LoginComponent {
   private customAuthService = inject(CustomAuthService);
+  private navigationService = inject(NavigationService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
@@ -133,7 +135,7 @@ export class LoginComponent {
         
         if (username === 'admin' && password === 'admin123') {
           this.showToastMessage('Đăng nhập thành công!', 'success');
-          localStorage.setItem('justLoggedIn', 'true');
+          this.navigationService.loginAsCandidate();
           setTimeout(() => {
             this.router.navigate(['/']);
           }, 2000);
@@ -142,7 +144,7 @@ export class LoginComponent {
           this.loginForm.patchValue({ password: '' });
         } else {
           this.showToastMessage('Đăng nhập thành công!', 'success');
-          localStorage.setItem('justLoggedIn', 'true');
+          this.navigationService.loginAsCandidate();
           setTimeout(() => {
             this.router.navigate(['/']);
           }, 2000);
