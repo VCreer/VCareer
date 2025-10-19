@@ -17,11 +17,11 @@ namespace VCareer.Permission
             var group = context.AddGroup(VCareerPermission.GroupName, L("Permission:VCareer"));
 
             var files = group.AddPermission(VCareerPermission.Files.Default, L("Permission:Files"));
-            files.AddChild(VCareerPermission.Files.View, L("Permission:View"));
-            files.AddChild(VCareerPermission.Files.Update, L("Permission:Update"));
-            files.AddChild(VCareerPermission.Files.Upload, L("Permission:Upload"));
-            files.AddChild(VCareerPermission.Files.Delete, L("Permission:Delete"));
-            files.AddChild(VCareerPermission.Files.Download, L("Permission:Dowload"));
+            files.AddChild(VCareerPermission.Files.View, L("Permission:File.View"));
+            files.AddChild(VCareerPermission.Files.Update, L("Permission:File.Update"));
+            files.AddChild(VCareerPermission.Files.Upload, L("Permission:File.Upload"));
+            files.AddChild(VCareerPermission.Files.Delete, L("Permission:File.Delete"));
+            files.AddChild(VCareerPermission.Files.Download, L("Permission:File.Dowload"));
 
         }
 

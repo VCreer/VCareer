@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VCareer.Models.File
+namespace VCareer.IServices.IPermisionServices
 {
-    public class File
+    public class IPermissionServices
     {
 
     }

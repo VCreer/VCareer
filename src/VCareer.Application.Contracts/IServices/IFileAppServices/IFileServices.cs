@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace VCareer.IServices.IFileServices
 {
-    class IFileServices
+    class IFileAppServices
     {
-        public Task<UpLoadFileDto> UploadFile();
+      /*  public Task<UpLoadFileDto> UploadFile();*/
     }
 }

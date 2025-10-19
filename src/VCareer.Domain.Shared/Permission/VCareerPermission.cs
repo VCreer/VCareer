@@ -18,34 +18,5 @@ namespace VCareer.Permission
             public const string Delete = Default + ".Delete";
             public const string Update = Default + ".Update";
         }
-
-        public static class Users
-        {
-            public const string Default = GroupName + ".Users";
-            public const string View = Default + ".View";
-            public const string Create = Default + ".Create";
-            public const string Update = Default + ".Update";
-            public const string Delete = Default + ".Delete";
-        }
-
-        public static class Roles
-        {
-            public const string Default = GroupName + ".Roles";
-            public const string View = Default + ".View";
-            public const string Create = Default + ".Create";
-            public const string Update = Default + ".Update";
-            public const string Delete = Default + ".Delete";
-        }
-
-        public static class Permissions
-        {
-            public const string Default = GroupName + ".Permissions";
-            public const string View = Default + ".View";
-            public const string Create = Default + ".Create";
-            public const string Update = Default + ".Update";
-            public const string Delete = Default + ".Delete";
-        }
-
-
     }
 }

@@ -1,5 +1,5 @@
-﻿using Abp.Authorization;
-using Abp.Dependency;
+﻿using Volo.Abp.Authorization;
+using Volo.Abp.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,7 @@ using Volo.Abp.PermissionManagement;
 
 namespace VCareer.DataSeedContributers
 {
+    //đoạn này đang không cần thiết, cứ tạo role bằng UI
     public class VCareerDataSeedContributor : IDataSeedContributor, ITransientDependency
     {
         private readonly IdentityRoleManager _roleManager;
