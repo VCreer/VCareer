@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -14,7 +15,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-    [Authorize(VCareerPermissions.Profile.Default)]
+    [Authorize(VCareerPermission.Profile.Default)]
     public class ProfileAppService : VCareerAppService, IProfileAppService
     {
         private readonly IdentityUserManager _userManager;
@@ -37,7 +38,7 @@ namespace VCareer.Profile
             _recruiterProfileRepository = recruiterProfileRepository;
         }
 
-        [Authorize(VCareerPermissions.Profile.UpdatePersonalInfo)]
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
@@ -83,7 +84,7 @@ namespace VCareer.Profile
             }
         }
 
-        [Authorize(VCareerPermissions.Profile.ChangePassword)]
+        [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
@@ -144,7 +145,7 @@ namespace VCareer.Profile
             };
         }
 
-        [Authorize(VCareerPermissions.Profile.DeleteAccount)]
+        [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
             var userId = _currentUser.GetId();

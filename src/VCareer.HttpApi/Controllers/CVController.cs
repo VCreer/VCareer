@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ namespace VCareer.CV
         /// <param name="input">Thông tin CV online</param>
         /// <returns>CV đã tạo</returns>
         [HttpPost("online")]
-        [Authorize(VCareerPermissions.CV.CreateOnline)]
+        [Authorize(VCareerPermission.CV.CreateOnline)]
         public async Task<CVDto> CreateCVOnlineAsync([FromBody] CreateCVOnlineDto input)
         {
             return await _cvAppService.CreateCVOnlineAsync(input);
@@ -39,7 +40,7 @@ namespace VCareer.CV
         /// <param name="input">Thông tin CV upload</param>
         /// <returns>CV đã upload</returns>
         [HttpPost("upload")]
-        [Authorize(VCareerPermissions.CV.Upload)]
+        [Authorize(VCareerPermission.CV.Upload)]
         public async Task<CVDto> UploadCVAsync([FromBody] UploadCVDto input)
         {
             return await _cvAppService.UploadCVAsync(input);
@@ -52,7 +53,7 @@ namespace VCareer.CV
         /// <param name="input">Thông tin update</param>
         /// <returns>CV đã update</returns>
         [HttpPut("{id}")]
-        [Authorize(VCareerPermissions.CV.Update)]
+        [Authorize(VCareerPermission.CV.Update)]
         public async Task<CVDto> UpdateCVAsync(Guid id, [FromBody] UpdateCVDto input)
         {
             return await _cvAppService.UpdateCVAsync(id, input);
@@ -64,7 +65,7 @@ namespace VCareer.CV
         /// <param name="id">CV ID</param>
         /// <returns>CV information</returns>
         [HttpGet("{id}")]
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<CVDto> GetCVAsync(Guid id)
         {
             return await _cvAppService.GetCVAsync(id);
@@ -76,7 +77,7 @@ namespace VCareer.CV
         /// <param name="input">Filter và pagination</param>
         /// <returns>Danh sách CV</returns>
         [HttpGet]
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<PagedResultDto<CVDto>> GetCVListAsync([FromQuery] GetCVListDto input)
         {
             return await _cvAppService.GetCVListAsync(input);
@@ -87,7 +88,7 @@ namespace VCareer.CV
         /// </summary>
         /// <returns>CV mặc định</returns>
         [HttpGet("default")]
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<CVDto> GetDefaultCVAsync()
         {
             return await _cvAppService.GetDefaultCVAsync();
@@ -99,7 +100,7 @@ namespace VCareer.CV
         /// <param name="input">CV ID</param>
         /// <returns>No content</returns>
         [HttpPut("set-default")]
-        [Authorize(VCareerPermissions.CV.SetDefault)]
+        [Authorize(VCareerPermission.CV.SetDefault)]
         public async Task<IActionResult> SetDefaultCVAsync([FromBody] SetDefaultCVDto input)
         {
             await _cvAppService.SetDefaultCVAsync(input);
@@ -112,7 +113,7 @@ namespace VCareer.CV
         /// <param name="input">CV ID và trạng thái public</param>
         /// <returns>No content</returns>
         [HttpPut("set-public")]
-        [Authorize(VCareerPermissions.CV.SetPublic)]
+        [Authorize(VCareerPermission.CV.SetPublic)]
         public async Task<IActionResult> SetPublicCVAsync([FromBody] SetPublicCVDto input)
         {
             await _cvAppService.SetPublicCVAsync(input);
@@ -125,7 +126,7 @@ namespace VCareer.CV
         /// <param name="id">CV ID</param>
         /// <returns>No content</returns>
         [HttpDelete("{id}")]
-        [Authorize(VCareerPermissions.CV.Delete)]
+        [Authorize(VCareerPermission.CV.Delete)]
         public async Task<IActionResult> DeleteCVAsync(Guid id)
         {
             await _cvAppService.DeleteCVAsync(id);

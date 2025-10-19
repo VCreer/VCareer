@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
@@ -13,7 +14,7 @@ using Volo.Abp.Users;
 
 namespace VCareer.CV
 {
-    [Authorize(VCareerPermissions.CV.Default)]
+    [Authorize(VCareerPermission.CV.Default)]
     public class CVAppService : VCareerAppService, ICVAppService
     {
         private readonly IRepository<CurriculumVitae, Guid> _cvRepository;
@@ -30,7 +31,7 @@ namespace VCareer.CV
             _currentUser = currentUser;
         }
 
-        [Authorize(VCareerPermissions.CV.CreateOnline)]
+        [Authorize(VCareerPermission.CV.CreateOnline)]
         public async Task<CVDto> CreateCVOnlineAsync(CreateCVOnlineDto input)
         {
             var userId = _currentUser.GetId();
@@ -79,7 +80,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.Upload)]
+        [Authorize(VCareerPermission.CV.Upload)]
         public async Task<CVDto> UploadCVAsync(UploadCVDto input)
         {
             var userId = _currentUser.GetId();
@@ -119,7 +120,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.Update)]
+        [Authorize(VCareerPermission.CV.Update)]
         public async Task<CVDto> UpdateCVAsync(Guid id, UpdateCVDto input)
         {
             var userId = _currentUser.GetId();
@@ -188,7 +189,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<CVDto> GetCVAsync(Guid id)
         {
             var userId = _currentUser.GetId();
@@ -202,7 +203,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<PagedResultDto<CVDto>> GetCVListAsync(GetCVListDto input)
         {
             var userId = _currentUser.GetId();
@@ -240,7 +241,7 @@ namespace VCareer.CV
             );
         }
 
-        [Authorize(VCareerPermissions.CV.Get)]
+        [Authorize(VCareerPermission.CV.Get)]
         public async Task<CVDto> GetDefaultCVAsync()
         {
             var userId = _currentUser.GetId();
@@ -254,7 +255,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.SetDefault)]
+        [Authorize(VCareerPermission.CV.SetDefault)]
         public async Task SetDefaultCVAsync(SetDefaultCVDto input)
         {
             var userId = _currentUser.GetId();
@@ -279,7 +280,7 @@ namespace VCareer.CV
             await _cvRepository.UpdateAsync(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.SetPublic)]
+        [Authorize(VCareerPermission.CV.SetPublic)]
         public async Task SetPublicCVAsync(SetPublicCVDto input)
         {
             var userId = _currentUser.GetId();
@@ -295,7 +296,7 @@ namespace VCareer.CV
             await _cvRepository.UpdateAsync(cv);
         }
 
-        [Authorize(VCareerPermissions.CV.Delete)]
+        [Authorize(VCareerPermission.CV.Delete)]
         public async Task DeleteCVAsync(Guid id)
         {
             var userId = _currentUser.GetId();
