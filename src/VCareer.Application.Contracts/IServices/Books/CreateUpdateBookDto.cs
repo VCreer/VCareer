@@ -1,7 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using VCareer.Books;
 
-namespace VCareer.Books;
+namespace VCareer.IServices.Books;
 
 public class CreateUpdateBookDto
 {

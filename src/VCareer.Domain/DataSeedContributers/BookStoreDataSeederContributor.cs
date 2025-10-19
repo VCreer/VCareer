@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using VCareer.Books;
+using VCareer.Models;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer;
+namespace VCareer.DataSeedContributers;
 
 public class VCareerDataSeederContributor
     : IDataSeedContributor, ITransientDependency

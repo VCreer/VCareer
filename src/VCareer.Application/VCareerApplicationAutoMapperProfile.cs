@@ -6,6 +6,9 @@ using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
+using VCareer.Dto;
+using VCareer.IServices.Books;
+using VCareer.Models;
 
 namespace VCareer;
 

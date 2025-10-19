@@ -1,8 +1,9 @@
 ﻿using System;
+using VCareer.Dto;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
-namespace VCareer.Books;
+namespace VCareer.IServices.Books;
 
 public interface IBookAppService :
     ICrudAppService< //Defines CRUD methods
