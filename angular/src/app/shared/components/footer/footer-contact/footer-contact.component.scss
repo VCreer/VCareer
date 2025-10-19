@@ -1,0 +1,22 @@
+.footer-contact {
+  display: grid;
+  gap: 16px;
+  .brand {
+    display: grid;
+    gap: 8px;
+    cursor: pointer;
+    img { height: 96px; }
+    .tagline { color: #111827; font-weight: 600; }
+  }
+
+  @media (max-width: 992px) {
+    .brand { img { height: 84px; } }
+  }
+  @media (max-width: 768px) {
+    .brand { img { height: 72px; } }
+  }
+  .badges, .store-badges { display: flex; gap: 12px; img { height: 36px; } }
+  .contact { .row { color: #374151; } .label { color: #6b7280; margin-right: 8px; } a { color: #0F83BA; text-decoration: none; } }
+}
+
+
