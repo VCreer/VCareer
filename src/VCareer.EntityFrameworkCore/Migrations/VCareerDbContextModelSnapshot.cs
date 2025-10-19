@@ -234,6 +234,111 @@ namespace VCareer.Migrations
                     b.ToTable("Industries", (string)null);
                 });
 
+            modelBuilder.Entity("VCareer.Models.IpAddress.EmployeeIpAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EmployeeProfileUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<int>("IpAdressId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("EmployeeProfileUserId");
+
+                    b.HasIndex("IpAdressId");
+
+                    b.ToTable("EmployeeIpAddresses", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.IpAddress.IpAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IpAddresses", (string)null);
+                });
+
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -2321,6 +2426,29 @@ namespace VCareer.Migrations
                     b.Navigation("Industry");
                 });
 
+            modelBuilder.Entity("VCareer.Models.IpAddress.EmployeeIpAddress", b =>
+                {
+                    b.HasOne("VCareer.Models.Users.EmployeeProfile", "EmployeeProfile")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.Users.EmployeeProfile", null)
+                        .WithMany("EmployeeIpAdresses")
+                        .HasForeignKey("EmployeeProfileUserId");
+
+                    b.HasOne("VCareer.Models.IpAddress.IpAddress", "IpAddress")
+                        .WithMany("EmployeeIpAdresses")
+                        .HasForeignKey("IpAdressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EmployeeProfile");
+
+                    b.Navigation("IpAddress");
+                });
+
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
                 {
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
@@ -2529,6 +2657,16 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Companies.Industry", b =>
                 {
                     b.Navigation("CompanyIndustries");
+                });
+
+            modelBuilder.Entity("VCareer.Models.IpAddress.IpAddress", b =>
+                {
+                    b.Navigation("EmployeeIpAdresses");
+                });
+
+            modelBuilder.Entity("VCareer.Models.Users.EmployeeProfile", b =>
+                {
+                    b.Navigation("EmployeeIpAdresses");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>

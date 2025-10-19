@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using VCareer.Localization;
 using VCareer.MultiTenancy;
@@ -17,6 +17,8 @@ using Volo.Abp.Emailing;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.MailKit;
+
 
 namespace VCareer;
 
@@ -29,12 +31,14 @@ namespace VCareer;
     typeof(AbpPermissionManagementDomainIdentityModule),
     typeof(AbpPermissionManagementDomainOpenIddictModule),
     typeof(AbpSettingManagementDomainModule),
-    typeof(AbpEmailingModule),
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
-    typeof(BlobStoringDatabaseDomainModule)
-    )]
+    typeof(BlobStoringDatabaseDomainModule),
+    typeof(AbpEmailingModule),
+    typeof(AbpMailKitModule)
+
+     )]
 public class VCareerDomainModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -45,8 +49,11 @@ public class VCareerDomainModule : AbpModule
         });
 
 
+
+        // đây là đoạn code sẽ chạy nếu dự án đang trong quá trình debug 
+        //đoạn dưới là nếu đang trong quá trình debug mặc định sẽ ko gửi mail mà sẽ gửi log bằng nullEmailSender
 #if DEBUG
-        context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
+        //  context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
     }
 }

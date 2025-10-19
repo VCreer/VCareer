@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
-using VCareer.Books;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -17,6 +16,9 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.IpAddress;
+using VCareer.Models;
+using VCareer.Models.Token;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -36,6 +38,10 @@ public class VCareerDbContext :
     public DbSet<CandidateProfile> CandidateProfiles { get; set; }
     public DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
+    public DbSet<IpAddress> IpAddresses { get; set; }
+    public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
 
     #region Entities from the modules
@@ -186,6 +192,44 @@ public class VCareerDbContext :
                 .HasForeignKey(ci => ci.IndustryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+        });
+
+        builder.Entity<IpAddress>(i =>
+        {
+            i.ToTable("IpAddresses");
+            i.ConfigureByConvention();
+            i.HasKey(x => x.Id);
+            i.Property(x => x.Id)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn();
+
+            i.HasMany(x => x.EmployeeIpAdresses)
+                .WithOne(e => e.IpAddress)
+                .HasForeignKey(e => e.IpAdressId)
+                .IsRequired();
+        });
+
+        builder.Entity<EmployeeIpAddress>(e =>
+        {
+            e.ToTable("EmployeeIpAddresses");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn();
+
+            e.HasOne(x => x.EmployeeProfile)
+            .WithMany()
+            .HasForeignKey(x => x.EmployeeId)
+            .IsRequired();
+        });
+
+        builder.Entity<RefreshToken>(b =>
+        {
+            b.ToTable("AppRefreshTokens");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Token).IsRequired().HasMaxLength(256);
+            b.HasIndex(x => x.Token).IsUnique();
         });
 
     }
