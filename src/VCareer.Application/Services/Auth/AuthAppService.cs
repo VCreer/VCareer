@@ -37,7 +37,7 @@ namespace VCareer.Services.Auth
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
 
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer,IdentityRoleManager roleManager)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -47,7 +47,7 @@ namespace VCareer.Services.Auth
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
         }
-             public async Task ForgotPasswordAsync(ForgotPasswordDto input)
+        public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
@@ -69,10 +69,11 @@ namespace VCareer.Services.Auth
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
 
-            var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, true);
+            // nếu đặt true ở hàm check pass thì nếu đăng nhập sai thì sẽ tạm thời kháo tài khoản 
+            var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-           await _signInManager.SignInAsync(user, true);
+            await _signInManager.SignInAsync(user, true);
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
@@ -82,17 +83,33 @@ namespace VCareer.Services.Auth
             var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken);
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
-            if (user == null)
+            if (user != null)
             {
-                user = new IdentityUser(id: Guid.NewGuid(), userName: payload.Email, email: payload.Email);
-            }
+                user = new IdentityUser(id: Guid.NewGuid(), userName: payload.Email, email: payload.Email)
+                {
+                    IsExternal = true,
+                };
 
+                var result = await _identityManager.CreateAsync(user);
+                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            }
             return await _tokenGenerator.CreateTokenAsync(user);
+        }
+
+        public async Task LogOutAllDeviceAsync()
+        {
+            if (!_currentUser.IsAuthenticated) return;
+            var userId = _currentUser.GetId();
+
+            var user = await _identityManager.FindByIdAsync(userId.ToString());
+            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            await _identityManager.UpdateSecurityStampAsync(user);
         }
 
         public async Task LogOutAsync()
         {
-           if(!_currentUser.IsAuthenticated) return;
+            if (!_currentUser.IsAuthenticated) return;
             var userId = _currentUser.GetId();
 
             var user = await _identityManager.FindByIdAsync(userId.ToString());
@@ -112,7 +129,8 @@ namespace VCareer.Services.Auth
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
             // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
-            if (input.Role != null) {
+            if (input.Role != null)
+            {
                 var role = await _roleManager.FindByNameAsync(input.Role);
                 if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
                 result = await _identityManager.AddToRoleAsync(newUser, role.Name);
