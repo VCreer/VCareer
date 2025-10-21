@@ -84,7 +84,9 @@
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="!loading && cvs.length === 0">
-    <div class="empty-icon">📄</div>
+    <div class="empty-icon">
+      <img src="assets/images/cv-management/no-cv.png" alt="No CV" class="no-cv-image">
+    </div>
     <h3 class="empty-title">{{ translate('cv_management.no_cv_title') }}</h3>
     <p class="empty-description">{{ translate('cv_management.no_cv_description') }}</p>
     <app-button 
@@ -100,4 +102,35 @@
     <div class="loading-spinner"></div>
     <p>{{ translate('cv_management.loading') }}</p>
   </div>
+
+  <!-- Download CV Modal -->
+  <app-download-cv-modal
+    *ngIf="showDownloadModal"
+    (close)="onCloseDownloadModal()"
+    (downloadWithoutLogo)="onDownloadWithoutLogo()"
+    (downloadFree)="onDownloadFree()">
+  </app-download-cv-modal>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Confirm Delete Modal -->
+  <app-confirm-delete-modal
+    *ngIf="showConfirmDeleteModal"
+    (close)="onCloseConfirmDeleteModal()"
+    (confirm)="onConfirmDelete()">
+  </app-confirm-delete-modal>
+
+  <!-- Rename CV Modal -->
+  <app-rename-cv-modal
+    *ngIf="showRenameModal"
+    [currentName]="currentCvName"
+    (close)="onCloseRenameModal()"
+    (rename)="onRename($event)">
+  </app-rename-cv-modal>
 </div>

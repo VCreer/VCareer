@@ -2,12 +2,16 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Cv } from '../../../proxy/api/cv.service';
 import { ButtonComponent } from '../button/button.component';
+import { DownloadCvModal } from '../download-cv-modal/download-cv-modal';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification.component';
+import { ConfirmDeleteModal } from '../confirm-delete-modal/confirm-delete-modal';
+import { RenameCvModal } from '../rename-cv-modal/rename-cv-modal';
 import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-cv-list',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, DownloadCvModal, ToastNotificationComponent, ConfirmDeleteModal, RenameCvModal],
   templateUrl: './cv-list.component.html',
   styleUrls: ['./cv-list.component.scss']
 })
@@ -24,6 +28,17 @@ export class CvListComponent {
 
   hoveredCvId: string | null = null;
   showMoreMenu: string | null = null;
+  showDownloadModal = false;
+  showConfirmDeleteModal = false;
+  showRenameModal = false;
+  cvToDelete: string | null = null;
+  cvToRename: string | null = null;
+  currentCvName: string = '';
+  
+  // Toast notification properties
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
 
   constructor(private translationService: TranslationService) {}
 
@@ -61,17 +76,14 @@ export class CvListComponent {
   }
 
   onDeleteCv(cvId: string) {
-    this.cvDeleted.emit(cvId);
+    this.cvToDelete = cvId;
+    this.showConfirmDeleteModal = true;
   }
 
   onCreateCv() {
     this.createCv.emit();
   }
 
-  onDownloadCv(cvId: string) {
-    // Emit download event
-    console.log('Download CV:', cvId);
-  }
 
   onPushToTop(cvId: string) {
     // Emit push to top event
@@ -93,12 +105,75 @@ export class CvListComponent {
   }
 
   onRenameCv(cvId: string) {
-    // Emit rename event
-    console.log('Rename CV:', cvId);
+    const cv = this.cvs.find(c => c.id === cvId);
+    if (cv) {
+      this.cvToRename = cvId;
+      this.currentCvName = cv.title || '';
+      this.showRenameModal = true;
+    }
   }
 
   onToggleStar(cvId: string) {
     console.log('Toggle star for CV:', cvId);
     this.cvSetDefault.emit(cvId);
+  }
+
+  onDownloadCv(cvId: string) {
+    this.showDownloadModal = true;
+    console.log('Download CV:', cvId);
+  }
+
+  onCloseDownloadModal() {
+    this.showDownloadModal = false;
+  }
+
+  onDownloadWithoutLogo() {
+    console.log('Download CV without logo');
+    this.showDownloadModal = false;
+  }
+
+  onDownloadFree() {
+    console.log('Download CV free');
+    this.showDownloadModal = false;
+  }
+
+  showSuccessToast(messageKey: string) {
+    this.toastMessage = this.translate(messageKey);
+    this.toastType = 'success';
+    this.showToast = true;
+  }
+
+  onToastClose() {
+    this.showToast = false;
+  }
+
+  onCloseConfirmDeleteModal() {
+    this.showConfirmDeleteModal = false;
+    this.cvToDelete = null;
+  }
+
+  onConfirmDelete() {
+    if (this.cvToDelete) {
+      this.cvDeleted.emit(this.cvToDelete);
+      this.showSuccessToast('cv_management.delete_success');
+      this.showConfirmDeleteModal = false;
+      this.cvToDelete = null;
+    }
+  }
+
+  onCloseRenameModal() {
+    this.showRenameModal = false;
+    this.cvToRename = null;
+    this.currentCvName = '';
+  }
+
+  onRename(newName: string) {
+    if (this.cvToRename && newName.trim()) {
+      this.cvUpdated.emit(this.cvToRename);
+      this.showSuccessToast('cv_management.rename_success');
+      this.showRenameModal = false;
+      this.cvToRename = null;
+      this.currentCvName = '';
+    }
   }
 }
