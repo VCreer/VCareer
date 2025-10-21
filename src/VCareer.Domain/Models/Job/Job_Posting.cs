@@ -14,86 +14,219 @@ namespace VCareer.Models.Job
 {
     public class Job_Posting : FullAuditedAggregateRoot<Guid>
     {
-        //hinhf ảnh
+        #region Basic Information
+
+        /// <summary>
+        /// Hình ảnh đại diện
+        /// </summary>
         public string Image { get; set; }
 
-        // tiêu đề
+        /// <summary>
+        /// Tiêu đề công việc
+        /// </summary>
         public string Title { get; set; }
-        //đường dân
+
+        /// <summary>
+        /// Slug cho URL (SEO-friendly)
+        /// </summary>
         public string Slug { get; set; }
-        //mô tả
+
+        /// <summary>
+        /// Mô tả công việc (HTML)
+        /// </summary>
         public string Description { get; set; }
-        //yêu cầu ứng viên
+
+        /// <summary>
+        /// Yêu cầu ứng viên (HTML)
+        /// </summary>
         public string Requirements { get; set; }
-        //quyền lợi ứng viên
+
+        /// <summary>
+        /// Quyền lợi ứng viên (HTML)
+        /// </summary>
         public string Benefits { get; set; }
-        // mức lương nhỏ nhất
+
+        #endregion
+
+        #region Salary Information
+
+        /// <summary>
+        /// Mức lương tối thiểu (VNĐ)
+        /// </summary>
         public decimal? SalaryMin { get; set; }
-        // mức lương lớn nhất
+
+        /// <summary>
+        /// Mức lương tối đa (VNĐ)
+        /// </summary>
         public decimal? SalaryMax { get; set; }
 
-        //hình thức làm việc 
-        public EmploymentTye EmploymentType { get; set; } // Enum: Full-time, Part-time, Contract, Internship
+        /// <summary>
+        /// Lương có thể thỏa thuận
+        /// </summary>
+        public bool SalaryDeal { get; set; } = false;
 
-        //sô năm kinh nghiệm nhỏ nhất
+        #endregion
+
+        #region Work Details
+
+        /// <summary>
+        /// Hình thức làm việc (Full-time, Part-time, Intern, etc.)
+        /// </summary>
+        public EmploymentTye EmploymentType { get; set; }
+
+        /// <summary>
+        /// Cấp bậc vị trí
+        /// </summary>
+        public PositionTye PositionType { get; set; }
+
+        /// <summary>
+        /// Số năm kinh nghiệm tối thiểu
+        /// </summary>
         public int? ExperienceYearsMin { get; set; }
 
-        //số năm kinh nghiệm lớn nhất
+        /// <summary>
+        /// Số năm kinh nghiệm tối đa
+        /// </summary>
         public int? ExperienceYearsMax { get; set; }
 
-        //thời gian làm việc
-        public string WorkTime { get; set; }
+        #endregion
 
-        //địa điểm làm việc
+        #region Work Time
+
+        /// <summary>
+        /// Thời gian làm việc bắt đầu (giờ trong ngày)
+        /// VD: 08:00
+        /// </summary>
+        public TimeSpan? WorkTimeStart { get; set; }
+
+        /// <summary>
+        /// Thời gian làm việc kết thúc (giờ trong ngày)
+        /// VD: 17:00
+        /// </summary>
+        public TimeSpan? WorkTimeEnd { get; set; }
+
+        /// <summary>
+        /// Thời gian làm việc có thể thỏa thuận
+        /// </summary>
+        public bool TimeDeal { get; set; } = false;
+
+        #endregion
+
+        #region Location
+
+        /// <summary>
+        /// Địa chỉ cụ thể nơi làm việc
+        /// </summary>
         public string WorkLocation { get; set; }
 
-        //Lương có thỏa thuận hay khong 
-        public Boolean SalaryDeal { get; set; } = false;
+        /// <summary>
+        /// ID Tỉnh/Thành phố
+        /// </summary>
+        public int ProvinceId { get; set; }
 
-        public string Keywords { get; set; }
+        /// <summary>
+        /// ID Quận/Huyện
+        /// </summary>
+        public int DistrictId { get; set; }
+
+        /// <summary>
+        /// Navigation property - Tỉnh/Thành phố
+        /// </summary>
 
 
-        // nagyf tạo
-        public DateTime PostedAt { get; set; }
+        #endregion
 
-        //sua ngay
-        public DateTime UpdatedAt { get; set; }
+        #region Status & Dates
 
-        //hạn kết thúc
+        /// <summary>
+        /// Trạng thái bài đăng
+        /// </summary>
+        public JobStatus Status { get; set; }
+
+        /// <summary>
+        /// Ngày đăng (dùng CreationTime từ base class)
+        /// </summary>
+        public DateTime PostedAt
+        {
+            get => CreationTime;
+            set => CreationTime = value;
+        }
+
+        /// <summary>
+        /// Ngày hết hạn
+        /// </summary>
         public DateTime? ExpiresAt { get; set; }
 
-        //trạng thái
-        public JobStatus Status { get; set; } // Enum: Draft, Open, Closed
+        /// <summary>
+        /// Tính chất công việc gấp
+        /// </summary>
+        public bool IsUrgent { get; set; } = false;
 
-        //Số người nộp hồ sơ
-        public int AppllyCount { get; set; }
+        #endregion
 
-        //tính chất công việc : gấp hay không
-        public bool IsUrgent { get; set; } // Thêm tính chất gấp
+        #region Statistics
 
-        //id cua recurtier 
-        public Guid RecuterId { get; set; }
+        /// <summary>
+        /// Số lượng ứng viên đã nộp hồ sơ
+        /// </summary>
+        public int ApplyCount { get; set; } = 0;
 
-        //id cua jobcategroy 
+        #endregion
+
+        #region Foreign Keys
+
+        /// <summary>
+        /// ID Nhà tuyển dụng
+        /// </summary>
+        public Guid RecruiterId { get; set; }
+
+        /// <summary>
+        /// ID Ngành nghề
+        /// </summary>
         public Guid JobCategoryId { get; set; }
 
-        //chuyên môn của jbo là gì 
-        public virtual Job_Category JobCategory { get; set; }
+        #endregion
 
-        //thuộc về recuiter nào
+        #region Navigation Properties
+
+        /// <summary>
+        /// Navigation property - Nhà tuyển dụng
+        /// </summary>
         public virtual RecruiterProfile RecruiterProfile { get; set; }
 
-        //danh sách các tag của job
+        /// <summary>
+        /// Navigation property - Ngành nghề
+        /// </summary>
+        public virtual Job_Category JobCategory { get; set; }
+
+        /// <summary>
+        /// Navigation property - Danh sách tags
+        /// </summary>
         public virtual ICollection<JobPostingTag> JobPostingTags { get; set; } = new List<JobPostingTag>();
 
-        // method để lấy các tag của job )))) sao nó lại ở đây nhỉ ???
-        public List<string> GetTags() => JobPostingTags.Select(t => t.Tag.Name).ToList();
+        #endregion
 
-        // tên tỉnh
-        public virtual string Province
-        { get; set; }
-        // tên phường
-        public virtual string District { get; set; }
+        #region Helper Methods
+
+        /// <summary>
+        /// Check xem job có còn hạn không
+        /// </summary>
+        public bool IsExpired()
+        {
+            return ExpiresAt.HasValue && ExpiresAt.Value < DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Check xem job có active không
+        /// </summary>
+        public bool IsActive()
+        {
+            return Status == JobStatus.Open && !IsExpired();
+        }
+
+        #endregion
+
+
 
     }
 }

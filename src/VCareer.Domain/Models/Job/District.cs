@@ -16,12 +16,13 @@ namespace VCareer.Models.Job
 
         // thuộc tỉnh nào
         public virtual Province Province { get; set; }
-
-
-
-
-
-
-
     }
+
+
+
+
+
+
+
+
 }

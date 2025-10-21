@@ -8,33 +8,31 @@ using Volo.Abp.Domain.Repositories;
 
 namespace VCareer.Repositories
 {
+    /// <summary>
+    /// Repository cho Job_Category - Chỉ tương tác database, trả về Entity
+    /// </summary>
     public interface IJobCategoryRepository : IRepository<Job_Category, Guid>
     {
-        /// <summary>
-        /// Lấy root categories (không có parent)
-        /// </summary>
-        Task<List<Job_Category>> GetRootCategoriesAsync();
 
-        /// <summary>
-        /// Lấy children của một category
-        /// </summary>
-        Task<List<Job_Category>> GetChildrenAsync(Guid parentId);
+        // lấy toàn bộ  cây category
+        Task<List<Job_Category>> GetFullCategoryTreeAsync();
 
-        /// <summary>
-        /// Lấy toàn bộ cây category (3 cấp)
-        /// </summary>
-        Task<List<Job_Category>> GetCategoryTreeAsync();
 
-       
+        // lấy string path của 1 category , chác chắn nó sẽ là category cấp 3
+        Task<string> GetStringPath(Guid categoryId);
 
-        /// <summary>
-        /// Lấy path từ root đến category hiện tại
-        /// </summary>
-        Task<List<Job_Category>> GetCategoryPathAsync(Guid categoryId);
 
-        /// <summary>
-        /// Lấy tất cả descendants của một category (bao gồm con, cháu)
-        /// </summary>
-        Task<List<Guid>> GetAllDescendantIdsAsync(Guid categoryId);
+        // trả về danh sách các category khi mà tìm kiếm
+        Task<List<Job_Category>> SearchCategoriesByPathAsync(string keyword);
+
+
+        // tìm các category con của 1 category id
+        Task<List<Guid>> GetAllChildrenCategoryIdsAsync(Guid categoryId);
+
+
+
+
+
+
     }
 }

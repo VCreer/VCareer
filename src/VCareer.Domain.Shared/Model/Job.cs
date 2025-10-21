@@ -10,12 +10,13 @@ namespace VCareer.Model
     // enum laoi hinh cong viec
     public enum EmploymentTye
     {
-        FullTime,
-        PartTime,
-        Contract,
-        Intership
+        BanThoiGian,
+        ToanThoiGian,
+        ThucTap,
+        Khac
 
     }
+
     //enum cho job status
     public enum JobStatus
     {
@@ -23,8 +24,23 @@ namespace VCareer.Model
         Open,
         Closed
     }
+
+    public enum PositionTye
+    {
+        Nhanvien,
+        Truongnhom,
+        Truongphong_phophong,
+        Quanli_giamsat,
+        Truongchinhanh,
+        PhoGiamDoc,
+        GiamDoc,
+        ThucTapSinh
+
+    }
+
+
     public class Job
     {
-        
+
     }
 }
