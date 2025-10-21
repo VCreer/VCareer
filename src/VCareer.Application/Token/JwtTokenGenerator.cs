@@ -115,20 +115,14 @@ namespace VCareer.Jwt
         {
 
             var tokens = await _refreshtokenRepository.GetListAsync(token => token.UserId == user.Id && token.IsRevoked == false);
-            if (tokens.Any())
-            {
-                foreach (var token in tokens) {
+            if (tokens.Any()) return;
+            
+                foreach (var token in tokens)
+                {
                     token.IsRevoked = true;
-                    await _refreshtokenRepository.UpdateAsync(token);
                 }
-              
-
-            }
+            await _refreshtokenRepository.UpdateManyAsync(tokens);
         }
 
-        private string CreateRandomToken()
-        {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        }
-    }
+          }
 }
