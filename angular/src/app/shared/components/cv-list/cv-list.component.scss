@@ -461,6 +461,12 @@
   .empty-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
+    
+    .no-cv-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+    }
   }
 
   .empty-title {

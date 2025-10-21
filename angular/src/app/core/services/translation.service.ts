@@ -102,10 +102,36 @@ export class TranslationService {
     'cv_management.set_default_failed': 'Đặt CV làm mặc định thất bại',
     'cv_management.download': 'Tải về',
     'cv_management.push_to_top': 'Đẩy top',
+
+    // Download CV Modal
+    'download_cv.title': 'Tải CV',
+    'download_cv.without_logo_title': 'Tải CV không kèm biểu tượng @VCareer',
+    'download_cv.without_logo_description': 'Không giới hạn lượt tải, số CV và số mẫu thiết kế trong vòng 24 giờ.',
+    'download_cv.without_logo_button': 'Tải CV không có biểu tượng',
+    'download_cv.free_title': 'Tải CV miễn phí',
+    'download_cv.free_description': 'Kèm biểu tượng @VCareer',
+      'download_cv.free_button': 'Tải CV miễn phí',
+      'download_cv.success_without_logo': 'Tải CV không kèm biểu tượng thành công!',
+      'download_cv.success_free': 'Tải CV miễn phí thành công!',
     'cv_management.copy_link': 'Sao chép liên kết',
     'cv_management.share_facebook': 'Chia sẻ trên Facebook',
     'cv_management.create_copy': 'Tạo bản sao',
-    'cv_management.rename': 'Đổi tên',
+      'cv_management.rename': 'Đổi tên',
+      'cv_management.rename_success': 'Đổi tên CV thành công!',
+      'cv_management.delete_success': 'Xóa CV thành công!',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Xác nhận',
+      'confirm_delete.message': 'Bạn chắc chắn muốn xóa CV này?',
+      'confirm_delete.cancel': 'Hủy',
+      'confirm_delete.delete': 'Xóa',
+      
+      // Rename CV Modal
+      'rename_cv.title': 'Đổi tên CV',
+      'rename_cv.placeholder': 'Nhập tên CV mới',
+      'rename_cv.hint': 'Tên CV (Ví dụ: CV Marketing, CV Lập trình, CV ứng tuyển công ty...)',
+      'rename_cv.cancel': 'Hủy bỏ',
+      'rename_cv.update': 'Cập nhật',
     
     // Profile Sidebar
     'profile_sidebar.welcome_back': 'Chào bạn trở lại',
@@ -286,10 +312,36 @@ export class TranslationService {
       'cv_management.set_default_failed': 'Failed to set CV as default',
       'cv_management.download': 'Download',
       'cv_management.push_to_top': 'Push to top',
+
+      // Download CV Modal
+      'download_cv.title': 'Download CV',
+      'download_cv.without_logo_title': 'Download CV without @VCareer logo',
+      'download_cv.without_logo_description': 'Unlimited downloads, CVs and design templates within 24 hours.',
+      'download_cv.without_logo_button': 'Download CV without logo',
+      'download_cv.free_title': 'Free download',
+      'download_cv.free_description': 'With @VCareer logo',
+      'download_cv.free_button': 'Free download',
+      'download_cv.success_without_logo': 'Download CV without logo successful!',
+      'download_cv.success_free': 'Free download successful!',
       'cv_management.copy_link': 'Copy link',
       'cv_management.share_facebook': 'Share on Facebook',
       'cv_management.create_copy': 'Create copy',
       'cv_management.rename': 'Rename',
+      'cv_management.rename_success': 'CV renamed successfully!',
+      'cv_management.delete_success': 'CV deleted successfully!',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Confirm',
+      'confirm_delete.message': 'Are you sure you want to delete this CV?',
+      'confirm_delete.cancel': 'Cancel',
+      'confirm_delete.delete': 'Delete',
+      
+      // Rename CV Modal
+      'rename_cv.title': 'Rename CV',
+      'rename_cv.placeholder': 'Enter new CV name',
+      'rename_cv.hint': 'CV Name (Example: CV Marketing, CV Programming, CV company application...)',
+      'rename_cv.cancel': 'Cancel',
+      'rename_cv.update': 'Update',
       
       // Profile Sidebar
       'profile_sidebar.welcome_back': 'Welcome back',
