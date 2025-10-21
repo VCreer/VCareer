@@ -8,12 +8,16 @@ using Volo.Abp.Users;
 
 namespace VCareer.Security
 {
-    public class CustomCurrentUser : CurrentUser
+    //class này để custom user để thêm các trường động vào claims rồi sau đố có thể truy xuất ra mà ko cần tạo thêm  cột
+    public class CustomCurrentUser // : CurrentUser
     {
-        public CustomCurrentUser(ICurrentPrincipalAccessor principalAccessor) : base(principalAccessor)
+     /*   public CustomCurrentUser(ICurrentPrincipalAccessor principalAccessor)
+            : base(principalAccessor)
         {
-        }
+        }*/
 
-        public string Department => FindClaim("Department").Value;
+        //đây chỉ là để làm mẫu , cách dùng :CurrentUser.Department.
+   //     public string? Department => FindClaim("Department")?.Value;
     }
+
 }
