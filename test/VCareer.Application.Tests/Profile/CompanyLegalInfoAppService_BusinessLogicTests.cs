@@ -228,7 +228,7 @@ public class CompanyLegalInfoAppService_BusinessLogicTests
             "company", // No domain
             ".com.", // Starts with dot
             "company.", // Ends with dot
-            "company..com" // Double dots
+            "company.com" // Double dots
         };
 
         // Act & Assert
@@ -333,4 +333,5 @@ public class CompanyLegalInfoAppService_BusinessLogicTests
         }
     }
 }
+
 

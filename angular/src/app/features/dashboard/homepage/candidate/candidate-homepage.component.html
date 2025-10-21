@@ -1,0 +1,55 @@
+<div class="candidate-homepage">
+  <!-- Hero Section -->
+  <app-hero-section
+    [backgroundImage]="'assets/images/home/candidate-home/hero-background.png'"
+    [title]="'homepage.title'"
+    [subtitle]="'homepage.subtitle'"
+    [showSearchForm]="true"
+    (searchJobs)="onSearch($event)">
+  </app-hero-section>
+
+  <!-- Job Listings -->
+  <app-job-listings
+    [jobListings]="jobListings"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    [selectedFilter]="selectedFilter"
+    (pageChange)="onPageChange($event)"
+    (jobClick)="onJobClick($event)"
+    (filterChange)="onFilterChange($event)"
+    (locationChange)="onLocationChange($event)">
+  </app-job-listings>
+
+  <!-- Category Section -->
+  <app-category-section
+    [categories]="getCurrentPageCategories()"
+    [currentPage]="currentCategoryPage"
+    [totalPages]="totalCategoryPages"
+    (pageChange)="onCategoryPageChange($event)"
+    (categoryClick)="onCategoryClick($event)">
+  </app-category-section>
+
+  <!-- About Us Section -->
+  <app-about-us
+    [image]="'assets/images/home/candidate-home/team-thumbs-up.png'"
+    [title]="'about.title'"
+    [description]="'about.description'"
+    [primaryButtonText]="'cta.find_jobs'"
+    [secondaryButtonText]="'cta.learn_more'"
+    (primaryButtonClick)="searchJobs()"
+    (secondaryButtonClick)="learnMore()">
+  </app-about-us>
+
+  <!-- Statistics Section -->
+  <app-statistics [statistics]="statisticsData">
+  </app-statistics>
+
+  <!-- Future Hero Section -->
+  <app-future-hero
+    [image]="'assets/images/home/candidate-home/nghe-nghiep-khac-nhau.png'"
+    [title]="'future.title'"
+    [description]="'future.description'"
+    [buttonText]="'cta.find_jobs'"
+    (buttonClick)="searchJobs()">
+  </app-future-hero>
+</div>

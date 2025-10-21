@@ -1,0 +1,451 @@
+.candidate-homepage {
+  min-height: 100vh;
+  padding-bottom: 60px;
+  max-width: 100%;
+  overflow-x: hidden;
+  
+  // Ensure all child components are contained
+  > * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+// Container styles
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+// Statistics container (for hero section)
+.stats-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-bottom: 40px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.stat-card {
+  text-align: center;
+  color: white;
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+  }
+}
+
+// Filter Bar - Exact match to image
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 0 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 12px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  .filter-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+    flex-shrink: 0;
+    font-size: 14px;
+
+    &:hover {
+      border-color: #0F83BA;
+    }
+
+    .filter-icon {
+      font-size: 16px;
+      color: #6b7280;
+    }
+
+    .filter-selected {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .dropdown-arrow {
+      font-size: 12px;
+      color: #6b7280;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .filter-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      margin-top: 4px;
+
+      .filter-option {
+        padding: 10px 14px;
+        font-size: 14px;
+        color: #374151;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f3f4f6;
+        }
+
+        &:first-child {
+          border-radius: 6px 6px 0 0;
+        }
+
+        &:last-child {
+          border-radius: 0 0 6px 6px;
+        }
+      }
+    }
+  }
+
+  .filter-navigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    max-width: calc(100% - 200px);
+    min-width: 0;
+    
+    @media (max-width: 768px) {
+      max-width: 100%;
+    }
+
+    .nav-btn {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:hover:not(:disabled) {
+        background: #e9ecef;
+        border-color: #0F83BA;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      svg {
+        color: #6b7280;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .filter-tags {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      flex: 1;
+      padding: 0 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      max-width: 100%;
+      min-width: 0;
+      
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      .location-tag {
+        background: #f8f9fa;
+        color: #495057;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+        border: 1px solid #e9ecef;
+        font-weight: 500;
+
+        &:hover {
+          background: #e9ecef;
+          border-color: #0F83BA;
+        }
+
+        &.active {
+          background: #0F83BA;
+          color: white;
+          border-color: #0F83BA;
+        }
+      }
+    }
+  }
+
+  .loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f4f6;
+      border-top: 2px solid #0F83BA;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Job Listings Section
+.job-listings-section {
+  padding: 40px 0;
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+    
+    .view-all-link {
+      color: #0F83BA;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.job-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+  max-width: 100%;
+  overflow-x: hidden;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.job-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  // Featured job border (green/teal line)
+  &.featured-1 {
+    border-left: 4px solid #10b981;
+  }
+  
+  &.featured-2 {
+    border-left: 4px solid #14b8a6;
+  }
+
+  .job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .time-tag {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .bookmark-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #d1d5db;
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #ef4444;
+      }
+    }
+  }
+
+  .job-content {
+    .job-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .company-name {
+      color: #6b7280;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .job-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+
+      .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #6b7280;
+
+        .detail-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
+
+    .job-details-btn {
+      background: #0F83BA;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+
+      &:hover {
+        background: #0a6b96;
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  .page-btn {
+    background: #0F83BA;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #0a6b96;
+    }
+
+    &:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+  }
+
+  .page-info {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+}

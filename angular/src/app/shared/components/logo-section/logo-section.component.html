@@ -1,0 +1,11 @@
+<div class="logo-section">
+  <img 
+    [src]="logoUrl" 
+    [alt]="logoAlt" 
+    class="logo-image" 
+    [style.width.px]="logoSize"
+    [style.height.px]="logoSize"
+  />
+  <h1 class="logo-text" [style.font-size.px]="titleSize">{{ title }}</h1>
+  <p *ngIf="subtitle" class="logo-subtitle" [style.font-size.px]="subtitleSize">{{ subtitle }}</p>
+</div>
