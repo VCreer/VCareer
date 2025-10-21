@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -15,11 +15,13 @@ import { LanguageToggleComponent } from '../../../shared/components/language-tog
   styleUrls: ['./candidate-header.component.scss']
 })
 export class CandidateHeaderComponent implements OnInit {
+  @ViewChild('notificationContainer', { static: false }) notificationContainer?: ElementRef<HTMLElement>;
   currentRoute = '';
   isMenuOpen = false;
   selectedLanguage = 'vi';
   isLoggedIn = false;
   showProfileMenu = false;
+  showNotificationMenu = false;
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
@@ -146,5 +148,37 @@ export class CandidateHeaderComponent implements OnInit {
     setTimeout(() => {
       this.showProfileMenu = false;
     }, 300);
+  }
+
+  toggleNotificationMenu() {
+    this.showNotificationMenu = !this.showNotificationMenu;
+    if (this.showNotificationMenu) {
+      this.showProfileMenu = false; // Đóng profile menu khi mở notification
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as Node;
+    // Đóng menu nếu click ngoài khu vực notification
+    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
+      this.showNotificationMenu = false;
+    }
+  }
+
+  markAllAsRead() {
+    // Logic đánh dấu tất cả thông báo đã đọc
+    console.log('Đánh dấu tất cả thông báo đã đọc');
+    this.showNotificationMenu = false;
+  }
+
+  navigateToPersonalInfo() {
+    this.router.navigate(['/candidate/profile']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToCvManagement() {
+    this.router.navigate(['/candidate/cv-management']);
+    this.showProfileMenu = false;
   }
 }

@@ -26,13 +26,13 @@
 
 // Button Types
 .btn-primary {
-  background: #3b82f6;
+  background: #0F83BA;
   color: white;
 
   &:hover:not(:disabled):not(.loading) {
-    background: #2563eb;
+    background: #0A6B96;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 25px rgba(15, 131, 186, 0.3);
   }
 }
 

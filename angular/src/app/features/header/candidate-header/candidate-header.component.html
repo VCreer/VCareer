@@ -70,13 +70,37 @@
       <!-- Logged In State -->
       <div class="user-actions" *ngIf="isLoggedIn">
         <!-- Notifications -->
-        <button class="notification-btn" title="Thông báo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          <span class="notification-badge">1</span>
-        </button>
+        <div class="notification-container" #notificationContainer>
+          <button class="notification-btn" (click)="toggleNotificationMenu()" title="Thông báo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge">1</span>
+          </button>
+
+          <!-- Notification Menu Dropdown -->
+          <div class="notification-menu" *ngIf="showNotificationMenu">
+            <!-- Header -->
+            <div class="notification-header">
+              <h3 class="notification-title">{{ translate('notifications.title') }}</h3>
+              <button class="mark-read-btn" (click)="markAllAsRead()">
+                {{ translate('notifications.mark_all_read') }}
+              </button>
+            </div>
+
+            <!-- Notification Items -->
+            <div class="notification-items">
+              <!-- Sample notification item -->
+              <div class="notification-item">
+                <div class="notification-content">
+                  <h4 class="notification-text">{{ translate('notifications.sample_text') }}</h4>
+                  <span class="notification-date">15/10/2025</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Profile Container -->
         <div class="profile-container" (mouseenter)="showProfileMenu = true" (mouseleave)="onProfileMouseLeave()">
@@ -151,65 +175,78 @@
                   <polyline points="6,9 12,15 18,9"></polyline>
                 </svg>
               </div>
-              <div class="section-content" *ngIf="expandedSections.cvManagement">
-                <div class="menu-item">{{ translate('profile.my_cv') }}</div>
-                <div class="menu-item">{{ translate('profile.my_cover_letter') }}</div>
-                <div class="menu-item">{{ translate('profile.recruiters_connect') }}</div>
-                <div class="menu-item">{{ translate('profile.recruiters_view') }}</div>
-              </div>
+                          <div class="section-content" *ngIf="expandedSections.cvManagement">
+                            <div class="menu-item" (click)="navigateToCvManagement()">{{ translate('profile.my_cv') }}</div>
+                            <div class="menu-item">{{ translate('profile.my_cover_letter') }}</div>
+                            <div class="menu-item">{{ translate('profile.recruiters_connect') }}</div>
+                            <div class="menu-item">{{ translate('profile.recruiters_view') }}</div>
+                          </div>
             </div>
 
-            <!-- Cài đặt email & thông báo -->
-            <div class="menu-section" (click)="toggleSection('emailSettings')">
-              <div class="section-header">
-                <div class="section-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-                  </svg>
-                  <span class="notification-dot"></span>
-                </div>
-                <span class="section-title">{{ translate('profile.email_settings') }}</span>
-                <svg class="section-chevron" [class.rotated]="expandedSections.emailSettings" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6,9 12,15 18,9"></polyline>
-                </svg>
-              </div>
-            </div>
+                        <!-- Cài đặt email & thông báo -->
+                        <div class="menu-section" (click)="toggleSection('emailSettings')">
+                          <div class="section-header">
+                            <div class="section-icon">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                              </svg>
+                              <span class="notification-dot"></span>
+                            </div>
+                            <span class="section-title">{{ translate('profile.email_settings') }}</span>
+                            <svg class="section-chevron" [class.rotated]="expandedSections.emailSettings" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                          </div>
+                          <div class="section-content" *ngIf="expandedSections.emailSettings">
+                            <div class="menu-item">{{ translate('profile.job_notification_settings') }}</div>
+                            <div class="menu-item">{{ translate('profile.email_reception_settings') }}</div>
+                          </div>
+                        </div>
 
-            <!-- Cá nhân & Bảo mật -->
-            <div class="menu-section" (click)="toggleSection('personalSecurity')">
-              <div class="section-header">
-                <div class="section-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <span class="notification-dot"></span>
-                </div>
-                <span class="section-title">{{ translate('profile.personal_security') }}</span>
-                <svg class="section-chevron" [class.rotated]="expandedSections.personalSecurity" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6,9 12,15 18,9"></polyline>
-                </svg>
-              </div>
-            </div>
+                        <!-- Cá nhân & Bảo mật -->
+                        <div class="menu-section" (click)="toggleSection('personalSecurity')">
+                          <div class="section-header">
+                            <div class="section-icon">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                              </svg>
+                              <span class="notification-dot"></span>
+                            </div>
+                            <span class="section-title">{{ translate('profile.personal_security') }}</span>
+                            <svg class="section-chevron" [class.rotated]="expandedSections.personalSecurity" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                          </div>
+                          <div class="section-content" *ngIf="expandedSections.personalSecurity">
+                            <div class="menu-item" (click)="navigateToPersonalInfo()">{{ translate('profile.personal_info_settings') }}</div>
+                            <div class="menu-item">{{ translate('profile.security_settings') }}</div>
+                            <div class="menu-item">{{ translate('profile.change_password') }}</div>
+                          </div>
+                        </div>
 
-            <!-- Nâng cấp tài khoản -->
-            <div class="menu-section" (click)="toggleSection('upgradeAccount')">
-              <div class="section-header">
-                <div class="section-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <span class="notification-dot"></span>
-                </div>
-                <span class="section-title">{{ translate('profile.upgrade_account') }}</span>
-                <svg class="section-chevron" [class.rotated]="expandedSections.upgradeAccount" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6,9 12,15 18,9"></polyline>
-                </svg>
-              </div>
-            </div>
+                        <!-- Nâng cấp tài khoản -->
+                        <div class="menu-section" (click)="toggleSection('upgradeAccount')">
+                          <div class="section-header">
+                            <div class="section-icon">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                              </svg>
+                              <span class="notification-dot"></span>
+                            </div>
+                            <span class="section-title">{{ translate('profile.upgrade_account') }}</span>
+                            <svg class="section-chevron" [class.rotated]="expandedSections.upgradeAccount" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                          </div>
+                          <div class="section-content" *ngIf="expandedSections.upgradeAccount">
+                            <div class="menu-item">{{ translate('profile.upgrade_vip_account') }}</div>
+                            <div class="menu-item">{{ translate('profile.activate_gift') }}</div>
+                          </div>
+                        </div>
           </div>
 
           <!-- Logout Button -->

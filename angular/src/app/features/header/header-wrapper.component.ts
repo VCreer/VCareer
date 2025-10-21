@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { HeaderTypeService, HeaderType } from '../../core/services/header-type.service';
+import { NavigationService } from '../../core/services/navigation.service';
 import { CandidateHeaderComponent } from './candidate-header/candidate-header.component';
 import { RecruiterHeaderComponent } from './recruiter-header/recruiter-header.component';
 
@@ -51,13 +52,17 @@ export class HeaderWrapperComponent implements OnInit {
 
   constructor(
     private headerTypeService: HeaderTypeService,
+    private navigationService: NavigationService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    // Set header type based on current URL
+    // Set header type based on current URL and login state
     const currentUrl = this.router.url;
-    if (currentUrl.startsWith('/recruiter')) {
+    const isLoggedIn = this.navigationService.isLoggedIn();
+    const userRole = this.navigationService.getCurrentRole();
+    
+    if (currentUrl.startsWith('/recruiter') || userRole === 'recruiter') {
       this.headerTypeService.switchToRecruiter();
     } else {
       this.headerTypeService.switchToCandidate();
