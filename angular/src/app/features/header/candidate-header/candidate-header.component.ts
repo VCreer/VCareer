@@ -56,7 +56,7 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToHome() {
-    window.location.reload();
+    this.router.navigate(['/']);
     this.closeMobileMenu();
   }
 
@@ -120,6 +120,10 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   isActiveRoute(route: string): boolean {
+    if (route === '/') {
+      // Chỉ active khi đúng là trang chủ hoặc /home
+      return this.currentRoute === '/' || this.currentRoute === '/home';
+    }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
   }
 
