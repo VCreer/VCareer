@@ -14,6 +14,7 @@ using VCareer.Models.Token;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.Uow;
 
 namespace VCareer.Jwt
 {
@@ -109,14 +110,19 @@ namespace VCareer.Jwt
             };
         }
 
+        [UnitOfWork]
         public async Task CancleAsync(IdentityUser user)
         {
 
-            var token = await _refreshtokenRepository.FindAsync(token => token.UserId == user.Id && token.IsRevoked == false);
-            if (token != null)
+            var tokens = await _refreshtokenRepository.GetListAsync(token => token.UserId == user.Id && token.IsRevoked == false);
+            if (tokens.Any())
             {
-                token.IsRevoked = true;
-                await _refreshtokenRepository.UpdateAsync(token);
+                foreach (var token in tokens) {
+                    token.IsRevoked = true;
+                    await _refreshtokenRepository.UpdateAsync(token);
+                }
+              
+
             }
         }
 
