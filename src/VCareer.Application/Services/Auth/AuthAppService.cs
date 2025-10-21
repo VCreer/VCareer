@@ -17,9 +17,11 @@ using Volo.Abp.Emailing;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.AspNetCore;
 using Volo.Abp.TextTemplating;
+using Volo.Abp.Uow;
 using Volo.Abp.Users;
 using static Volo.Abp.UI.Navigation.DefaultMenuNames.Application;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
+
 
 
 
@@ -32,9 +34,10 @@ namespace VCareer.Services.Auth
         private readonly ITokenGenerator _tokenGenerator;
         private readonly CurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
+        private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
 
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer,IdentityRoleManager roleManager)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -42,9 +45,9 @@ namespace VCareer.Services.Auth
             _currentUser = currentUser;
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
+            _roleManager = roleManager;
         }
-
-        public async Task ForgotPasswordAsync(ForgotPasswordDto input)
+             public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
@@ -64,10 +67,12 @@ namespace VCareer.Services.Auth
         public async Task<TokenResponseDto> LoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
-            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+            if (user == null) throw new UserFriendlyException("Email not found");
 
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, true);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
+
+           await _signInManager.SignInAsync(user, true);
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
@@ -87,20 +92,34 @@ namespace VCareer.Services.Auth
 
         public async Task LogOutAsync()
         {
+           if(!_currentUser.IsAuthenticated) return;
             var userId = _currentUser.GetId();
+
             var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
             await _tokenGenerator.CancleAsync(user);
         }
 
+        [UnitOfWork]
         public async Task RegisterAsync(RegisterDto input)
         {
-            var user = _identityManager.FindByEmailAsync(input.Email);
-            if (user != null) throw new UserFriendlyException("Email already exist");
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
 
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            await _identityManager.CreateAsync(newUser, input.Password);
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+            // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
+            if (input.Role != null) {
+                var role = await _roleManager.FindByNameAsync(input.Role);
+                if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            }
+
+            await CurrentUnitOfWork.SaveChangesAsync();
         }
 
         public async Task ResetPasswordAsync(ResetPasswordDto input)

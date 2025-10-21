@@ -12,5 +12,8 @@ namespace VCareer.Constants.ErrorCodes
         public const string UserNotFound = "11";
         public const string ResetPasswordFailed = "12";
         public const string UserAlreadyExist = "13";
+        public const string RoleNotFound = "14";
+        public const string RegisterFailed = "15";
+        public const string AddRoleFail = "16";
     }
 }
