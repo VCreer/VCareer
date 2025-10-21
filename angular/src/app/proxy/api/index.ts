@@ -6,6 +6,7 @@ export { UserService } from './user.service';
 export { CompanyService } from './company.service';
 export { FilterService } from './filter.service';
 export { FooterService } from './footer.service';
+export { CvService } from './cv.service';
 
 // API Configuration
 export { ApiConfigService } from '../api-config.service';
@@ -17,3 +18,7 @@ export * from './user.service';
 export * from './company.service';
 export * from './filter.service';
 export * from './footer.service';
+export * from './cv.service';
+
+// Mock Services
+export * from '../mock-api/services';

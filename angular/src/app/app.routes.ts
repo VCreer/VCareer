@@ -18,6 +18,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/profile',
         loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile.component').then(c => c.CandidateProfileComponent),
+      },
+      {
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/cv-management/candidate/cv-management.component').then(c => c.CvManagementComponent),
       }
     ]
   },

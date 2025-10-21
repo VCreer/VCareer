@@ -9,3 +9,4 @@ export { ProfileAvatarComponent } from './profile-avatar/profile-avatar.componen
 export { ProfileFormComponent } from './profile-form/profile-form.component';
 export { FormInputComponent } from './form-input/form-input.component';
 export { FileUploadComponent } from './file-upload/file-upload.component';
+export { CvListComponent } from './cv-list/cv-list.component';
