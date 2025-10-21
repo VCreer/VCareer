@@ -19,6 +19,7 @@ namespace VCareer.IServices.IAuth
         public Task ResetPasswordAsync(ResetPasswordDto input);
 
         public Task LogOutAsync();
+        public Task LogOutAllDeviceAsync();
 
     }
 }
