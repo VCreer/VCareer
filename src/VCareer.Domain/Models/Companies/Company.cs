@@ -27,7 +27,7 @@ namespace VCareer.Models.Companies
         public string WebsiteUrl { get; set; }
         public string CultureVideoUrl { get; set; }
         public DateTime VerifyAt { get; set; }
-        
+
         // Legal Information fields (gộp từ CompanyLegalInfo)
         public string TaxCode { get; set; }
         public string BusinessLicenseNumber { get; set; }
@@ -47,6 +47,6 @@ namespace VCareer.Models.Companies
         public DateTime? LegalReviewedAt { get; set; } // Thời gian duyệt
 
         public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }
-        public ICollection<RecruiterProfile> RecruiterProfiles { get; private set; } = new List<RecruiterProfile>();
+        public ICollection<RecruiterProfile> RecruiterProfiles { get; private set; } = new List<RecruiterProfile>(); 
     }
 }

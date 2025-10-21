@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Models.IpAddress;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Identity;
 
@@ -16,5 +17,6 @@ namespace VCareer.Models.Users
         public bool IsSuperAdmin { get; set; }
         public bool Status { get; set; }
         public IdentityUser User { get; set; }
+        public ICollection<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     }
 }

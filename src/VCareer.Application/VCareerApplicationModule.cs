@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using VCareer.Jwt;
+using VCareer.Security;
+using Microsoft.Extensions.DependencyInjection;
 using VCareer.Job.Search;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
@@ -6,8 +9,10 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.Users;
 
 namespace VCareer;
 
@@ -19,6 +24,7 @@ namespace VCareer;
     typeof(AbpIdentityApplicationModule),
     typeof(AbpAccountApplicationModule),
     typeof(AbpTenantManagementApplicationModule),
+    typeof(Volo.Abp.Identity.AspNetCore.AbpIdentityAspNetCoreModule), //tu them 
     typeof(AbpSettingManagementApplicationModule)
     )]
 public class VCareerApplicationModule : AbpModule
@@ -30,7 +36,15 @@ public class VCareerApplicationModule : AbpModule
             options.AddMaps<VCareerApplicationModule>();
 
         });
+        //  ConfigureClaims(); // đang chưa làm rõ logic claims động
 
-        context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
+    }
+    private void ConfigureClaims()
+    {
+        // đăng kí claims contributer
+        Configure<AbpClaimsPrincipalFactoryOptions>(options =>
+        {
+            options.Contributors.Add<VCareerClaimContributer>();
+        });
     }
 }

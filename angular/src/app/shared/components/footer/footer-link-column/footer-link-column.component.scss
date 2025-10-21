@@ -1,0 +1,10 @@
+.footer-col {
+  .footer-col-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; color: #111827; }
+  .footer-links {
+    list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;
+    .footer-link a { color: #4b5563; text-decoration: none; }
+    .footer-link a:hover { color: #0F83BA; }
+  }
+}
+
+

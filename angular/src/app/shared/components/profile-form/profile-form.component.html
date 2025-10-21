@@ -1,0 +1,217 @@
+<form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+  <div class="form-sections">
+    <!-- Thông tin cá nhân -->
+    <div class="form-section">
+      <h3 class="section-title">Thông tin cá nhân</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName" class="form-label">Tên *</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            formControlName="firstName" 
+            class="form-input"
+            [class.error]="getFieldError('firstName')"
+            placeholder="Nhập tên của bạn"
+          >
+          <span class="error-message" *ngIf="getFieldError('firstName')">
+            {{ getFieldError('firstName') }}
+          </span>
+        </div>
+        
+        <div class="form-group">
+          <label for="lastName" class="form-label">Họ *</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            formControlName="lastName" 
+            class="form-input"
+            [class.error]="getFieldError('lastName')"
+            placeholder="Nhập họ của bạn"
+          >
+          <span class="error-message" *ngIf="getFieldError('lastName')">
+            {{ getFieldError('lastName') }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email" class="form-label">Email *</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            class="form-input"
+            [class.error]="getFieldError('email')"
+            placeholder="Nhập email của bạn"
+          >
+          <span class="error-message" *ngIf="getFieldError('email')">
+            {{ getFieldError('email') }}
+          </span>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone" class="form-label">Số điện thoại *</label>
+          <input 
+            type="tel" 
+            id="phone" 
+            formControlName="phone" 
+            class="form-input"
+            [class.error]="getFieldError('phone')"
+            placeholder="Nhập số điện thoại"
+          >
+          <span class="error-message" *ngIf="getFieldError('phone')">
+            {{ getFieldError('phone') }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dateOfBirth" class="form-label">Ngày sinh</label>
+          <input 
+            type="date" 
+            id="dateOfBirth" 
+            formControlName="dateOfBirth" 
+            class="form-input"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="gender" class="form-label">Giới tính</label>
+          <select id="gender" formControlName="gender" class="form-select">
+            <option value="">Chọn giới tính</option>
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+            <option value="other">Khác</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Địa chỉ -->
+    <div class="form-section">
+      <h3 class="section-title">Địa chỉ</h3>
+      <div class="form-group">
+        <label for="address" class="form-label">Địa chỉ</label>
+        <textarea 
+          id="address" 
+          formControlName="address" 
+          class="form-textarea"
+          placeholder="Nhập địa chỉ chi tiết"
+          rows="3"
+        ></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city" class="form-label">Thành phố</label>
+          <input 
+            type="text" 
+            id="city" 
+            formControlName="city" 
+            class="form-input"
+            placeholder="Nhập thành phố"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="country" class="form-label">Quốc gia</label>
+          <input 
+            type="text" 
+            id="country" 
+            formControlName="country" 
+            class="form-input"
+            placeholder="Nhập quốc gia"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Giới thiệu bản thân -->
+    <div class="form-section">
+      <h3 class="section-title">Giới thiệu bản thân</h3>
+      <div class="form-group">
+        <label for="bio" class="form-label">Tiểu sử</label>
+        <textarea 
+          id="bio" 
+          formControlName="bio" 
+          class="form-textarea"
+          placeholder="Viết một vài dòng giới thiệu về bản thân..."
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Liên kết mạng xã hội -->
+    <div class="form-section">
+      <h3 class="section-title">Liên kết mạng xã hội</h3>
+      <div class="form-group">
+        <label for="website" class="form-label">Website cá nhân</label>
+        <input 
+          type="url" 
+          id="website" 
+          formControlName="website" 
+          class="form-input"
+          [class.error]="getFieldError('website')"
+          placeholder="https://example.com"
+        >
+        <span class="error-message" *ngIf="getFieldError('website')">
+          {{ getFieldError('website') }}
+        </span>
+      </div>
+      
+      <div class="form-group">
+        <label for="linkedin" class="form-label">LinkedIn</label>
+        <input 
+          type="url" 
+          id="linkedin" 
+          formControlName="linkedin" 
+          class="form-input"
+          [class.error]="getFieldError('linkedin')"
+          placeholder="https://linkedin.com/in/username"
+        >
+        <span class="error-message" *ngIf="getFieldError('linkedin')">
+          {{ getFieldError('linkedin') }}
+        </span>
+      </div>
+      
+      <div class="form-group">
+        <label for="github" class="form-label">GitHub</label>
+        <input 
+          type="url" 
+          id="github" 
+          formControlName="github" 
+          class="form-input"
+          [class.error]="getFieldError('github')"
+          placeholder="https://github.com/username"
+        >
+        <span class="error-message" *ngIf="getFieldError('github')">
+          {{ getFieldError('github') }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="form-actions">
+    <button 
+      type="button" 
+      class="cancel-button"
+      (click)="onCancelClick()"
+      [disabled]="isLoading"
+    >
+      Hủy
+    </button>
+    
+    <button 
+      type="submit" 
+      class="save-button"
+      [disabled]="profileForm.invalid || isLoading"
+    >
+      <div *ngIf="isLoading" class="loading-spinner"></div>
+      <span>{{ isLoading ? 'Đang lưu...' : 'Lưu thay đổi' }}</span>
+    </button>
+  </div>
+</form>

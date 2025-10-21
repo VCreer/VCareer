@@ -1,0 +1,65 @@
+<div class="job-listings-section">
+  <div class="section-header">
+    <h2>{{ translate('home.recent_jobs') }}</h2>
+    <a href="#" class="view-all-link">{{ translate('common.view_all') }}</a>
+  </div>
+  
+  <!-- Filter Bar -->
+  <app-filter-bar
+    [selectedFilter]="selectedFilter"
+    (filterChange)="onFilterChange($event)"
+    (locationChange)="onLocationChange($event)">
+  </app-filter-bar>
+  
+  <div class="job-listings-grid">
+    <div class="job-card" *ngFor="let job of jobListings">
+      <div class="job-card-body">
+        <img class="job-image" loading="lazy" [src]="job.image || defaultLogo" alt="logo" (error)="onImgError($event)" />
+        <div class="job-content">
+          <h3 class="job-title" (click)="onJobClick(job.id)">{{ job.title }}</h3>
+          <p class="company-name">{{ job.company }}</p>
+        </div>
+        <div class="job-meta">
+          <div class="job-tags">
+            <span class="detail-text">{{ translate(job.salary) }}</span>
+            <span class="detail-text">{{ translate(job.location) }}</span>
+          </div>
+          <button class="heart-btn" [class.active]="job.isBookmarked" (click)="toggleBookmark(job)">♡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false"
+  ></app-toast-notification>
+  
+  <div class="pagination">
+    <button 
+      class="page-btn" 
+      (click)="onPageChange(currentPage - 1)"
+      [disabled]="currentPage === 1"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15,18 9,12 15,6"></polyline>
+      </svg>
+    </button>
+    <span class="page-info">
+      <span class="current-page">{{ currentPage }}</span>
+      <span class="total-pages"> / {{ totalPages }} {{ translate('pagination.pages') }}</span>
+    </span>
+    <button 
+      class="page-btn" 
+      (click)="onPageChange(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9,18 15,12 9,6"></polyline>
+      </svg>
+    </button>
+  </div>
+</div>

@@ -26,5 +26,11 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>Current user's profile information</returns>
         Task<ProfileDto> GetCurrentUserProfileAsync();
+
+        /// <summary>
+        /// Soft deletes the current user's account
+        /// </summary>
+        /// <returns>Task representing the asynchronous operation</returns>
+        Task DeleteAccountAsync();
     }
 }

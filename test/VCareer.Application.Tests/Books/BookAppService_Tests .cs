@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Shouldly;
+using VCareer.IServices.Books;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Modularity;
 using Volo.Abp.Validation;

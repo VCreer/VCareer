@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp.AspNetCore.Mvc;
 
@@ -26,7 +27,7 @@ namespace VCareer.Profile
         /// <param name="input">Company legal information to submit</param>
         /// <returns>Created company legal information</returns>
         [HttpPost]
-        [Authorize(VCareerPermissions.Profile.SubmitLegalInformation)]
+        [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync([FromBody] SubmitCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.SubmitCompanyLegalInfoAsync(input);
@@ -39,7 +40,7 @@ namespace VCareer.Profile
         /// <param name="input">Updated company legal information</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}")]
-        [Authorize(VCareerPermissions.Profile.UpdateLegalInformation)]
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, [FromBody] UpdateCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.UpdateCompanyLegalInfoAsync(id, input);
@@ -86,7 +87,7 @@ namespace VCareer.Profile
         /// <param name="otherSupportFile">Other support file URL</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}/files")]
-        [Authorize(VCareerPermissions.Profile.UpdateLegalInformation)]
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, 
             [FromQuery] string businessLicenseFile = null,
             [FromQuery] string taxCertificateFile = null,
@@ -103,7 +104,7 @@ namespace VCareer.Profile
         /// <param name="id">Company ID</param>
         /// <returns>No content</returns>
         [HttpDelete("{id}")]
-        [Authorize(VCareerPermissions.Profile.DeleteSupportingDocument)]
+        [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
         public async Task<IActionResult> DeleteCompanyLegalInfoAsync(int id)
         {
             await _companyLegalInfoAppService.DeleteCompanyLegalInfoAsync(id);

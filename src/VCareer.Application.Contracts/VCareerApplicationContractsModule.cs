@@ -15,12 +15,15 @@ namespace VCareer;
     typeof(AbpIdentityApplicationContractsModule),
     typeof(AbpAccountApplicationContractsModule),
     typeof(AbpTenantManagementApplicationContractsModule),
-    typeof(AbpPermissionManagementApplicationContractsModule)
+    typeof(AbpPermissionManagementApplicationContractsModule),
+     typeof(Volo.Abp.Identity.AspNetCore.AbpIdentityAspNetCoreModule) //tu them
 )]
 public class VCareerApplicationContractsModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         VCareerDtoExtensions.Configure();
+        
+
     }
 }

@@ -1,12 +1,14 @@
 import { RoutesService, eLayoutType } from '@abp/ng.core';
 import { inject, provideAppInitializer } from '@angular/core';
 
+// Provider cho cấu hình route
 export const APP_ROUTE_PROVIDER = [
   provideAppInitializer(() => {
     configureRoutes();
   }),
 ];
 
+// Cấu hình các route cho menu
 function configureRoutes() {
   const routes = inject(RoutesService);
   routes.add([
@@ -16,13 +18,6 @@ function configureRoutes() {
         iconClass: 'fas fa-home',
         order: 1,
         layout: eLayoutType.application,
-      },
-      {
-        path: '/books',
-        name: '::Menu:Books',
-        iconClass: 'fas fa-book',
-        layout: eLayoutType.application,
-        requiredPolicy: 'VCareer.Books',
       },
   ]);
 }

@@ -593,3 +593,4 @@ public class CompanyLegalInfoAppService_SimpleTests
     }
 }
 
+
