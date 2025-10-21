@@ -180,23 +180,21 @@ public class VCareerDbContext :
           {
               b.ToTable("JobPostings");
               b.ConfigureByConvention();
-              b.Property(x => x.Title).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.Slug).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.Description).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.Requirements).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.WorkTime).HasMaxLength(200).IsRequired();
-              b.Property(x => x.WorkLocation).HasMaxLength(200).IsRequired();
-              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.Benefits).HasMaxLength(2000).IsRequired();
-              b.Property(x => x.PostedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-              b.Property(x => x.Keywords).HasMaxLength(200);
+
+              b.HasKey(j => j.Id);
+
+
+              b.Property(j => j.Title).IsRequired().HasMaxLength(256);
+              b.Property(j => j.Slug).IsRequired().HasMaxLength(300);
+              b.Property(j => j.Image).HasMaxLength(500);
+              b.Property(j => j.Description).HasMaxLength(5000);
+              b.Property(j => j.Requirements).HasMaxLength(5000);
+              b.Property(j => j.Benefits).HasMaxLength(5000);
+              b.Property(j => j.WorkLocation).HasMaxLength(500);
 
               b.Property(x => x.SalaryDeal).HasDefaultValue(false);
               b.Property(x => x.IsUrgent).HasDefaultValue(false);
-              b.Property(x => x.AppllyCount).HasDefaultValue(0);
-              b.HasOne(x => x.JobCategory).WithMany(x => x.JobPostings).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
-              b.HasOne(x => x.RecruiterProfile).WithMany().HasForeignKey(x => x.RecuterId).OnDelete(DeleteBehavior.Cascade);
+              b.Property(x => x.ApplyCount).HasDefaultValue(0);
 
 
               // Relationships
@@ -207,7 +205,7 @@ public class VCareerDbContext :
 
               b.HasOne(x => x.RecruiterProfile)
                .WithMany(x => x.JobPostings)
-               .HasForeignKey(x => x.RecuterId)
+               .HasForeignKey(x => x.RecruiterId)
                .OnDelete(DeleteBehavior.Cascade); // Xóa job khi recruiter profile bị xóa
 
               b.HasMany(x => x.JobPostingTags)
@@ -272,7 +270,7 @@ public class VCareerDbContext :
 
             e.HasMany(x => x.JobPostings)
              .WithOne(x => x.RecruiterProfile)
-             .HasForeignKey(x => x.RecuterId)
+             .HasForeignKey(x => x.RecruiterId)
              .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
         });
 

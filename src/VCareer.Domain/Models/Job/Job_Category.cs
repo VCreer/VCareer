@@ -21,7 +21,7 @@ namespace VCareer.Models.Job
         public DateTime CreatedAt { get; set; }
         //nagy sửa
         public DateTime UpdatedAt { get; set; }
-        //trang thia
+        //trang thai
         public bool IsActive { get; set; }
         //category cha của nó
         public virtual Job_Category Parent { get; set; }
