@@ -1,37 +1,49 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using VCareer.BlobStoring;
+using VCareer.Constants.FileConstant;
 using VCareer.Models.Users;
 using VCareer.Permission;
-using VCareer.Permissions;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
 namespace VCareer.CV
 {
-    [Authorize(VCareerPermission.CV.Default)]
+    /*[Authorize(VCareerPermission.CV.Default)]*/
     public class CVAppService : VCareerAppService, ICVAppService
     {
         private readonly IRepository<CurriculumVitae, Guid> _cvRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly IBlobContainer<CvContainer> _cvBlobContainer;
+        private readonly IdentityUserManager _userManager;
 
         public CVAppService(
             IRepository<CurriculumVitae, Guid> cvRepository,
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IBlobContainer<CvContainer> cvBlobContainer,
+            IdentityUserManager userManager)
         {
             _cvRepository = cvRepository;
             _candidateProfileRepository = candidateProfileRepository;
             _currentUser = currentUser;
+            _cvBlobContainer = cvBlobContainer;
+            _userManager = userManager;
         }
 
-        [Authorize(VCareerPermission.CV.CreateOnline)]
+        /*[Authorize(VCareerPermission.CV.CreateOnline)]*/
         public async Task<CVDto> CreateCVOnlineAsync(CreateCVOnlineDto input)
         {
             var userId = _currentUser.GetId();
@@ -56,7 +68,6 @@ namespace VCareer.CV
                 Email = input.Email,
                 PhoneNumber = input.PhoneNumber,
                 DateOfBirth = input.DateOfBirth,
-                Gender = input.Gender,
                 Address = input.Address,
                 CareerObjective = input.CareerObjective,
                 WorkExperience = input.WorkExperience,
@@ -120,6 +131,97 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
+        /*[Authorize(VCareerPermission.CV.Upload)]*/
+        public async Task<CVDto> SimpleUploadCVAsync(IFormFile file)
+        {
+            // For development when auth is disabled, use a default user ID
+            var userId = _currentUser.GetId();
+            /*if (userId == null || userId == Guid.Empty)
+            {
+                var firstUser = await _userManager.Users.FirstOrDefaultAsync();
+                if (firstUser == null)
+                {
+                    throw new UserFriendlyException("No users found in database. Please create a user first.");
+                }
+                userId = firstUser.Id;
+            }*/
+
+            // Kiểm tra user có phải candidate không
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Chỉ có candidate mới có thể upload CV.");
+            }
+
+            // Validate file
+            if (file == null || file.Length == 0)
+            {
+                throw new UserFriendlyException("Vui lòng chọn file CV để upload.");
+            }
+
+            // Validate file size
+            if (!CvUploadConstants.IsValidFileSize(file.Length))
+            {
+                throw new UserFriendlyException($"File quá lớn. Kích thước tối đa cho phép là {CvUploadConstants.MaxFileSize / (1024 * 1024)}MB.");
+            }
+
+            // Validate file extension
+            if (!CvUploadConstants.IsValidFileExtension(file.FileName))
+            {
+                throw new UserFriendlyException($"Định dạng file không được hỗ trợ. Chỉ chấp nhận các file: {string.Join(", ", CvUploadConstants.AllowedExtensions)}");
+            }
+
+            // Validate MIME type
+            if (!CvUploadConstants.IsValidMimeType(file.ContentType))
+            {
+                throw new UserFriendlyException($"Loại file không được hỗ trợ. Chỉ chấp nhận: {string.Join(", ", CvUploadConstants.AllowedMimeTypes)}");
+            }
+
+            try
+            {
+                // Generate unique file name
+                var fileName = CvUploadConstants.GenerateFileName(file.FileName);
+                
+                // Upload file to blob storage using CV container
+                using var stream = file.OpenReadStream();
+                await _cvBlobContainer.SaveAsync(fileName, stream);
+
+                // Get file URL for CV container
+                var fileUrl = $"/api/files/cv/{fileName}";
+                
+                // Tạo CV upload
+                var cv = new CurriculumVitae
+                {
+                    CandidateId = candidate.UserId,
+                    CVName = Path.GetFileNameWithoutExtension(file.FileName), // Use original file name without extension
+                    CVType = "Upload",
+                    Status = "Published",
+                    IsDefault = false,
+                    IsPublic = false, // Default to private
+                    OriginalFileName = file.FileName,
+                    FileUrl = fileUrl,
+                    FileSize = file.Length,
+                    FileType = file.ContentType,
+                    Description = $"CV được upload từ file: {file.FileName}"
+                };
+
+                // Nếu đây là CV đầu tiên của candidate, set làm mặc định
+                var existingCVs = await _cvRepository.GetListAsync(c => c.CandidateId == candidate.UserId);
+                if (!existingCVs.Any())
+                {
+                    cv.IsDefault = true;
+                }
+
+                await _cvRepository.InsertAsync(cv);
+
+                return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Có lỗi xảy ra khi upload file: {ex.Message}");
+            }
+        }
+
         [Authorize(VCareerPermission.CV.Update)]
         public async Task<CVDto> UpdateCVAsync(Guid id, UpdateCVDto input)
         {
@@ -147,9 +249,6 @@ namespace VCareer.CV
             
             if (input.DateOfBirth.HasValue)
                 cv.DateOfBirth = input.DateOfBirth;
-            
-            if (input.Gender.HasValue)
-                cv.Gender = input.Gender;
             
             if (!string.IsNullOrEmpty(input.Address))
                 cv.Address = input.Address;
@@ -189,7 +288,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermission.CV.Get)]
+        /*[Authorize(VCareerPermission.CV.Get)]*/
         public async Task<CVDto> GetCVAsync(Guid id)
         {
             var userId = _currentUser.GetId();
@@ -203,7 +302,7 @@ namespace VCareer.CV
             return ObjectMapper.Map<CurriculumVitae, CVDto>(cv);
         }
 
-        [Authorize(VCareerPermission.CV.Get)]
+       /* [Authorize(VCareerPermission.CV.Get)]*/
         public async Task<PagedResultDto<CVDto>> GetCVListAsync(GetCVListDto input)
         {
             var userId = _currentUser.GetId();

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VCareer.Permission;
 using VCareer.Permissions;
@@ -12,7 +14,7 @@ namespace VCareer.CV
 {
     [ApiController]
     [Route("api/cv")]
-    [Authorize]
+    /*[Authorize]*/
     public class CVController : AbpControllerBase
     {
         private readonly ICVAppService _cvAppService;
@@ -28,7 +30,7 @@ namespace VCareer.CV
         /// <param name="input">Thông tin CV online</param>
         /// <returns>CV đã tạo</returns>
         [HttpPost("online")]
-        [Authorize(VCareerPermission.CV.CreateOnline)]
+        /*[Authorize(VCareerPermission.CV.CreateOnline)]*/
         public async Task<CVDto> CreateCVOnlineAsync([FromBody] CreateCVOnlineDto input)
         {
             return await _cvAppService.CreateCVOnlineAsync(input);
@@ -44,6 +46,18 @@ namespace VCareer.CV
         public async Task<CVDto> UploadCVAsync([FromBody] UploadCVDto input)
         {
             return await _cvAppService.UploadCVAsync(input);
+        }
+
+        /// <summary>
+        /// Upload CV file đơn giản (chỉ cần file, không cần input fields)
+        /// </summary>
+        /// <param name="file">File CV</param>
+        /// <returns>CV đã upload</returns>
+        [HttpPost("simple-upload")]
+        /*[Authorize(VCareerPermission.CV.Upload)]*/
+        public async Task<CVDto> SimpleUploadCVAsync(IFormFile file)
+        {
+            return await _cvAppService.SimpleUploadCVAsync(file);
         }
 
         /// <summary>
@@ -65,10 +79,28 @@ namespace VCareer.CV
         /// <param name="id">CV ID</param>
         /// <returns>CV information</returns>
         [HttpGet("{id}")]
-        [Authorize(VCareerPermission.CV.Get)]
+        /*[Authorize(VCareerPermission.CV.Get)]*/
         public async Task<CVDto> GetCVAsync(Guid id)
         {
             return await _cvAppService.GetCVAsync(id);
+        }
+
+        /// <summary>
+        /// Get danh sách CV của current user theo loại
+        /// </summary>
+        /// <param name="cvType">Loại CV: Online hoặc Upload</param>
+        /// <returns>Danh sách CV theo loại</returns>
+        [HttpGet("by-type/{cvType}")]
+        /*[Authorize(VCareerPermission.CV.Get)]*/
+        public async Task<List<CVDto>> GetCVsByTypeAsync(string cvType)
+        {
+            var input = new GetCVListDto
+            {
+                CVType = cvType,
+                MaxResultCount = 1000 // Get all CVs of this type
+            };
+            var result = await _cvAppService.GetCVListAsync(input);
+            return result.Items.ToList();
         }
 
         /// <summary>
@@ -77,7 +109,7 @@ namespace VCareer.CV
         /// <param name="input">Filter và pagination</param>
         /// <returns>Danh sách CV</returns>
         [HttpGet]
-        [Authorize(VCareerPermission.CV.Get)]
+        /*[Authorize(VCareerPermission.CV.Get)]*/
         public async Task<PagedResultDto<CVDto>> GetCVListAsync([FromQuery] GetCVListDto input)
         {
             return await _cvAppService.GetCVListAsync(input);

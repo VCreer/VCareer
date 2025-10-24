@@ -57,6 +57,8 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\files\candidate\cv\" />
+    <Folder Include="wwwroot\files\cv\host\cv\" />
+    <Folder Include="wwwroot\files\host\default\" />
     <Folder Include="wwwroot\files\recruiter\" />
   </ItemGroup>
 

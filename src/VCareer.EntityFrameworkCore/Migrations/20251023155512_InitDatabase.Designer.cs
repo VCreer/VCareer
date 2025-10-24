@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251010042539_Added_CurriculumVitae")]
-    partial class Added_CurriculumVitae
+    [Migration("20251023155512_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,7 @@ namespace VCareer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("VCareer.Books.Book", b =>
+            modelBuilder.Entity("VCareer.Models.Book", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -299,6 +299,138 @@ namespace VCareer.Migrations
                     b.ToTable("Industries", (string)null);
                 });
 
+            modelBuilder.Entity("VCareer.Models.IpAddress.EmployeeIpAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EmployeeProfileUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<int>("IpAdressId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("EmployeeProfileUserId");
+
+                    b.HasIndex("IpAdressId");
+
+                    b.ToTable("EmployeeIpAddresses", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.IpAddress.IpAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IpAddresses", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.Token.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpireAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("AppRefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -376,17 +508,14 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("CVName")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("CVType")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -394,12 +523,10 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CareerObjective")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Certificates")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -429,16 +556,13 @@ namespace VCareer.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Education")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -451,25 +575,18 @@ namespace VCareer.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("FileType")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FileUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<bool?>("Gender")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Interests")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -486,7 +603,6 @@ namespace VCareer.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Languages")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastModificationTime")
@@ -498,30 +614,24 @@ namespace VCareer.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("OriginalFileName")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Projects")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Skills")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("WorkExperience")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -2547,12 +2657,35 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Companies.Industry", "Industry")
                         .WithMany("CompanyIndustries")
                         .HasForeignKey("IndustryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
 
                     b.Navigation("Industry");
+                });
+
+            modelBuilder.Entity("VCareer.Models.IpAddress.EmployeeIpAddress", b =>
+                {
+                    b.HasOne("VCareer.Models.Users.EmployeeProfile", "EmployeeProfile")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.Users.EmployeeProfile", null)
+                        .WithMany("EmployeeIpAdresses")
+                        .HasForeignKey("EmployeeProfileUserId");
+
+                    b.HasOne("VCareer.Models.IpAddress.IpAddress", "IpAddress")
+                        .WithMany("EmployeeIpAdresses")
+                        .HasForeignKey("IpAdressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EmployeeProfile");
+
+                    b.Navigation("IpAddress");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
@@ -2568,12 +2701,6 @@ namespace VCareer.Migrations
 
             modelBuilder.Entity("VCareer.Models.Users.CurriculumVitae", b =>
                 {
-                    b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "Candidate")
                         .WithMany()
                         .HasForeignKey("CandidateId")
@@ -2581,8 +2708,6 @@ namespace VCareer.Migrations
                         .IsRequired();
 
                     b.Navigation("Candidate");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.EmployeeProfile", b =>
@@ -2782,6 +2907,16 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Companies.Industry", b =>
                 {
                     b.Navigation("CompanyIndustries");
+                });
+
+            modelBuilder.Entity("VCareer.Models.IpAddress.IpAddress", b =>
+                {
+                    b.Navigation("EmployeeIpAdresses");
+                });
+
+            modelBuilder.Entity("VCareer.Models.Users.EmployeeProfile", b =>
+                {
+                    b.Navigation("EmployeeIpAdresses");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>

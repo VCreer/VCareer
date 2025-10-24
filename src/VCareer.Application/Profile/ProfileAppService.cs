@@ -15,7 +15,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-    [Authorize(VCareerPermission.Profile.Default)]
+    /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class ProfileAppService : VCareerAppService, IProfileAppService
     {
         private readonly IdentityUserManager _userManager;
@@ -38,7 +38,7 @@ namespace VCareer.Profile
             _recruiterProfileRepository = recruiterProfileRepository;
         }
 
-        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
+        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
