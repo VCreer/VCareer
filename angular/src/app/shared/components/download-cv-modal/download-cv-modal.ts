@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
-import { ToastNotificationComponent } from '../toast-notification/toast-notification.component';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 
 @Component({
   selector: 'app-download-cv-modal',

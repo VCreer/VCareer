@@ -4,24 +4,24 @@ export const APP_ROUTES: Routes = [
   // Root route - Candidate Homepage
   {
     path: '',
-    loadComponent: () => import('./layout/candidate-layout.component').then(c => c.CandidateLayoutComponent),
+    loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
     children: [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage.component').then(c => c.CandidateHomepageComponent),
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
       },
       {
         path: 'home',
-        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage.component').then(c => c.CandidateHomepageComponent),
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
       },
       {
         path: 'candidate/profile',
-        loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile.component').then(c => c.CandidateProfileComponent),
+        loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
       },
       {
         path: 'candidate/cv-management',
-        loadComponent: () => import('./features/cv-management/candidate/cv-management.component').then(c => c.CvManagementComponent),
+        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
       }
     ]
   },
@@ -29,15 +29,15 @@ export const APP_ROUTES: Routes = [
   // Auth routes (standalone - no layout)
   {
     path: 'candidate/login',
-    loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login.component').then(c => c.LoginComponent),
+    loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login').then(c => c.LoginComponent),
   },
   {
     path: 'candidate/register',
-    loadComponent: () => import('./features/auth/candidate/candidate-regsiter/candidate-register.component').then(c => c.RegisterComponent),
+    loadComponent: () => import('./features/auth/candidate/candidate-regsiter/candidate-register').then(c => c.RegisterComponent),
   },
   {
     path: 'candidate/forget-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'candidate/verify-otp',
@@ -50,15 +50,15 @@ export const APP_ROUTES: Routes = [
   
   {
     path: 'recruiter/login',
-    loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login.component').then(c => c.RecruiterLoginComponent),
+    loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
   },
   {
     path: 'recruiter/register',
-    loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register.component').then(c => c.RecruiterRegisterComponent),
+    loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register').then(c => c.RecruiterRegisterComponent),
   },
   {
     path: 'recruiter/forgot-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'recruiter/verify-otp',
@@ -72,19 +72,19 @@ export const APP_ROUTES: Routes = [
   // Recruiter main route
   {
     path: 'recruiter',
-    loadComponent: () => import('./layout/candidate-layout.component').then(c => c.CandidateLayoutComponent),
+    loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
     children: [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage.component').then(c => c.RecruiterHomepageComponent),
+        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
       }
     ]
   },
   
   {
     path: 'admin/login',
-    loadComponent: () => import('./features/auth/admin/login/admin-login.component').then(c => c.AdminLoginComponent),
+    loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
   },
 
   // Legacy redirects
