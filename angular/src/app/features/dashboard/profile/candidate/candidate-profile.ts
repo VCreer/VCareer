@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
 // import { FormInputComponent, FileUploadComponent } from '../../../shared/components';
 
 @Component({
@@ -50,7 +51,11 @@ export class CandidateProfileComponent implements OnInit {
   // Validation
   errors: any = {};
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(
+    private router: Router, 
+    private http: HttpClient,
+    private uploadedCvService: UploadedCvService
+  ) {}
 
   ngOnInit() {
     // Load profile data từ API hoặc localStorage
@@ -185,6 +190,14 @@ export class CandidateProfileComponent implements OnInit {
           if (response.success) {
             this.cvFileName = response.data.fileName;
             this.showSuccessMessage(response.message);
+            
+            // Add to uploaded CVs service
+            const uploadedCv = {
+              name: response.data.fileName,
+              uploadDate: new Date().toLocaleString('vi-VN'),
+              isStarred: false
+            };
+            this.uploadedCvService.addUploadedCv(uploadedCv);
           }
         },
         error: (error) => {
