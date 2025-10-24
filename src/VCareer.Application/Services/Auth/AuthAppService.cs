@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
 using VCareer.IServices.IAuth;
+using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -36,8 +38,9 @@ namespace VCareer.Services.Auth
         private readonly IEmailSender _emailSender;
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
+        private readonly GoogleOptions _googleOptions;
 
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager, IOptions<GoogleOptions> googleOptions)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -46,6 +49,7 @@ namespace VCareer.Services.Auth
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
+            _googleOptions = googleOptions.Value;
         }
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
@@ -80,7 +84,9 @@ namespace VCareer.Services.Auth
 
         public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken);
+            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings { 
+            Audience = new[] { _googleOptions.ClientId }
+            });
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
             if (user != null)

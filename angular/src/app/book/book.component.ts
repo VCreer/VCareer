@@ -24,7 +24,9 @@ import {
   ModalCloseDirective,
   ModalComponent
 } from '@abp/ng.theme.shared';
-import { BookService, BookDto, bookTypeOptions } from '../proxy/books';
+import {  bookTypeOptions } from '../proxy/books';
+import { BookService} from '../proxy/services/books'
+import { BookDto} from '../proxy/dto'
 
 @Component({
   selector: 'app-book',

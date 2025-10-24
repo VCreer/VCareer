@@ -1,5 +1,6 @@
 import { authGuard, permissionGuard } from '@abp/ng.core';
 import { Routes } from '@angular/router';
+import { EmployeeLoginComponent } from './Auth/Employee/login/login';
 
 export const APP_ROUTES: Routes = [
   {
@@ -28,4 +29,8 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./book/book.component').then(c => c.BookComponent),
     canActivate: [authGuard, permissionGuard],
   },
+ {
+   path: 'admin/login', component: EmployeeLoginComponent 
+  },
 ];
+
