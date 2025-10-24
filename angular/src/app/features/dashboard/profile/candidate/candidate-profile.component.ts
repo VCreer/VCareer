@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ProfileService, UpdatePersonalInfoDto, ProfileDto } from '../../../../proxy/api/profile.service';
 // import { FormInputComponent, FileUploadComponent } from '../../../shared/components';
 
 @Component({
@@ -50,7 +51,7 @@ export class CandidateProfileComponent implements OnInit {
   // Validation
   errors: any = {};
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient, private profileService: ProfileService) {}
 
   ngOnInit() {
     // Load profile data từ API hoặc localStorage
@@ -60,16 +61,30 @@ export class CandidateProfileComponent implements OnInit {
   loadProfileData() {
     this.isLoading = true;
     
-    this.http.get('/api/profile').subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.profileData = { ...this.profileData, ...response.data };
-        }
+    this.profileService.getCurrentUserProfile().subscribe({
+      next: (profile: ProfileDto) => {
+        // Map backend ProfileDto to frontend profileData
+        this.profileData = {
+          fullName: `${profile.name || ''} ${profile.surname || ''}`.trim(),
+          email: profile.email || '',
+          phone: profile.phoneNumber || '',
+          dateOfBirth: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : '',
+          gender: profile.gender ? 'male' : 'female', // Convert boolean to string
+          address: profile.address || profile.location || '',
+          city: profile.location || '',
+          country: 'Việt Nam', // Default value
+          bio: profile.bio || '',
+          website: '',
+          linkedin: '',
+          github: '',
+          avatarUrl: ''
+        };
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading profile:', error);
         this.isLoading = false;
+        this.showErrorMessage('Không thể tải thông tin profile');
       }
     });
   }
@@ -88,15 +103,32 @@ export class CandidateProfileComponent implements OnInit {
 
     this.isSaving = true;
     
-    this.http.put('/api/profile', profileData).subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.profileData = { ...this.profileData, ...response.data };
-          this.showSuccessMessage(response.message);
-        } else {
-          this.errors = response.errors || {};
-          this.showErrorMessage(response.message);
-        }
+    // Map frontend profileData to backend UpdatePersonalInfoDto
+    const updateData: UpdatePersonalInfoDto = {
+      name: profileData.fullName.split(' ')[0] || '',
+      surname: profileData.fullName.split(' ').slice(1).join(' ') || '',
+      email: profileData.email,
+      phoneNumber: profileData.phone,
+      bio: profileData.bio,
+      dateOfBirth: profileData.dateOfBirth ? new Date(profileData.dateOfBirth) : undefined,
+      gender: profileData.gender === 'male' ? true : false, // Convert string to boolean
+      location: profileData.location || profileData.address
+    };
+    
+    this.profileService.updatePersonalInfo(updateData).subscribe({
+      next: (updatedProfile: ProfileDto) => {
+        // Update local profileData with response
+        this.profileData = {
+          ...this.profileData,
+          fullName: `${updatedProfile.name || ''} ${updatedProfile.surname || ''}`.trim(),
+          email: updatedProfile.email || '',
+          phone: updatedProfile.phoneNumber || '',
+          dateOfBirth: updatedProfile.dateOfBirth ? new Date(updatedProfile.dateOfBirth).toISOString().split('T')[0] : '',
+          gender: updatedProfile.gender ? 'male' : 'female',
+          address: updatedProfile.address || updatedProfile.location || '',
+          bio: updatedProfile.bio || ''
+        };
+        this.showSuccessMessage('Cập nhật thông tin thành công!');
         this.isSaving = false;
       },
       error: (error) => {

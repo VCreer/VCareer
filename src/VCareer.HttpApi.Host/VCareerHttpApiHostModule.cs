@@ -212,14 +212,23 @@ public class VCareerHttpApiHostModule : AbpModule
 
     private void ConfigureBlobStorings(ServiceConfigurationContext context)
     {
-    Configure<AbpBlobStoringOptions>(options => {
-        options.Containers.ConfigureDefault(container =>
-        {
-            container.UseFileSystem(fileSystem => { 
-            fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files"); //doan nay sau phai check lai
+        Configure<AbpBlobStoringOptions>(options => {
+            // Default container
+            options.Containers.ConfigureDefault(container =>
+            {
+                container.UseFileSystem(fileSystem => { 
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files");
+                });
+            });
+            
+            // CV container - riêng biệt cho CV files
+            options.Containers.Configure("cv", container =>
+            {
+                container.UseFileSystem(fileSystem => { 
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files/cv");
+                });
             });
         }); 
-        });
     }
 
 

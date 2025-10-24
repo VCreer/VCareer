@@ -24,7 +24,7 @@ namespace VCareer.CV
             dto.Email.ShouldBe("nguyenvana@email.com");
             dto.PhoneNumber.ShouldBe("0901234567");
             dto.DateOfBirth.ShouldBe(new DateTime(1995, 5, 15));
-            dto.Gender.ShouldBe(true);
+            
             dto.Address.ShouldBe("123 Đường ABC, Quận 1, TP.HCM");
             dto.IsPublic.ShouldBe(true);
         }

@@ -14,8 +14,8 @@ using VCareer.Models;
 
 namespace VCareer.Services.Books;
 
-[Authorize(BookPermissions.Books.Default)]
-public class BookAppService : ApplicationService, IBookAppService
+/*[Authorize(BookPermissions.Books.Default)]
+*/public class BookAppService : ApplicationService, IBookAppService
 {
     private readonly IRepository<Book, Guid> _repository;
 
