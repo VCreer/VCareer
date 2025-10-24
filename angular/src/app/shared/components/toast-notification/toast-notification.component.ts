@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './toast-notification.component.html',
   styleUrls: ['./toast-notification.component.scss']
 })
-export class ToastNotificationComponent implements OnInit, OnDestroy {
+export class ToastNotificationComponent implements OnInit, OnDestroy, OnChanges {
   @Input() show: boolean = false;
   @Input() message: string = '';
   @Input() type: 'success' | 'error' | 'warning' | 'info' = 'info';
@@ -18,6 +18,21 @@ export class ToastNotificationComponent implements OnInit, OnDestroy {
   private timeoutId?: number;
 
   ngOnInit(): void {
+    this.startTimeout();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['show'] && this.show) {
+      this.startTimeout();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearTimeout();
+  }
+
+  private startTimeout(): void {
+    this.clearTimeout();
     if (this.show && this.duration > 0) {
       this.timeoutId = window.setTimeout(() => {
         this.closeToast();
@@ -25,9 +40,10 @@ export class ToastNotificationComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  private clearTimeout(): void {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
+      this.timeoutId = undefined;
     }
   }
 

@@ -80,6 +80,13 @@ export class CvListComponent {
     this.showConfirmDeleteModal = true;
   }
 
+  onRenameCv(cvId: string) {
+    this.cvToRename = cvId;
+    const cv = this.cvs.find(c => c.id === cvId);
+    this.currentCvName = cv ? cv.title : '';
+    this.showRenameModal = true;
+  }
+
   onCreateCv() {
     this.createCv.emit();
   }
@@ -104,14 +111,6 @@ export class CvListComponent {
     window.open(facebookUrl, '_blank');
   }
 
-  onRenameCv(cvId: string) {
-    const cv = this.cvs.find(c => c.id === cvId);
-    if (cv) {
-      this.cvToRename = cvId;
-      this.currentCvName = cv.title || '';
-      this.showRenameModal = true;
-    }
-  }
 
   onToggleStar(cvId: string) {
     console.log('Toggle star for CV:', cvId);
@@ -137,15 +136,6 @@ export class CvListComponent {
     this.showDownloadModal = false;
   }
 
-  showSuccessToast(messageKey: string) {
-    this.toastMessage = this.translate(messageKey);
-    this.toastType = 'success';
-    this.showToast = true;
-  }
-
-  onToastClose() {
-    this.showToast = false;
-  }
 
   onCloseConfirmDeleteModal() {
     this.showConfirmDeleteModal = false;
@@ -169,11 +159,31 @@ export class CvListComponent {
 
   onRename(newName: string) {
     if (this.cvToRename && newName.trim()) {
+      // Update the CV name in the local array immediately
+      const cv = this.cvs.find(c => c.id === this.cvToRename);
+      if (cv) {
+        cv.title = newName.trim();
+      }
+      
       this.cvUpdated.emit(this.cvToRename);
       this.showSuccessToast('cv_management.rename_success');
       this.showRenameModal = false;
       this.cvToRename = null;
       this.currentCvName = '';
     }
+  }
+
+  private showSuccessToast(message: string) {
+    this.toastMessage = this.translate(message);
+    this.toastType = 'success';
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
+  onToastClose() {
+    this.showToast = false;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -10,7 +10,7 @@ import { TranslationService } from '../../../core/services/translation.service';
   templateUrl: './rename-cv-modal.html',
   styleUrl: './rename-cv-modal.scss'
 })
-export class RenameCvModal {
+export class RenameCvModal implements OnInit {
   @Input() currentName: string = '';
   @Output() close = new EventEmitter<void>();
   @Output() rename = new EventEmitter<string>();

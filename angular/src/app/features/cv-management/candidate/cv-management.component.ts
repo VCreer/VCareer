@@ -6,6 +6,10 @@ import { ToastNotificationComponent } from '../../../shared/components/toast-not
 import { CvListComponent } from '../../../shared/components/cv-list/cv-list.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ProfilePictureEditModal } from '../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
+import { UploadCvModal } from '../../../shared/components/upload-cv-modal/upload-cv-modal';
+import { DownloadCvModal } from '../../../shared/components/download-cv-modal/download-cv-modal';
+import { RenameCvModal } from '../../../shared/components/rename-cv-modal/rename-cv-modal';
+import { UploadedCvCard } from '../../../shared/components/uploaded-cv-card/uploaded-cv-card';
 import { CvService, Cv } from '../../../proxy/api/cv.service';
 
 @Component({
@@ -16,7 +20,11 @@ import { CvService, Cv } from '../../../proxy/api/cv.service';
     ToastNotificationComponent,
     CvListComponent,
     ButtonComponent,
-    ProfilePictureEditModal
+    ProfilePictureEditModal,
+    UploadCvModal,
+    DownloadCvModal,
+    RenameCvModal,
+    UploadedCvCard
   ],
   templateUrl: './cv-management.component.html',
   styleUrls: ['./cv-management.component.scss']
@@ -29,6 +37,11 @@ export class CvManagementComponent implements OnInit {
   cvs: Cv[] = [];
   loading = false;
   showProfilePictureModal = false;
+  showUploadCvModal = false;
+  showDownloadModal = false;
+  showRenameModal = false;
+  cvToRename: any = null;
+  uploadedCvs: any[] = [];
 
   constructor(
     private router: Router,
@@ -62,8 +75,24 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCreateCv() {
-    this.showToastMessage(this.translate('cv_management.creating_cv'), 'info');
-    this.router.navigate(['/candidate/cv-management/create']);
+    console.log('onCreateCv called');
+    this.showUploadCvModal = true;
+  }
+
+  onCloseUploadCvModal() {
+    this.showUploadCvModal = false;
+  }
+
+  onUploadCv(file: File) {
+    // Simulate upload success and add to uploaded CVs
+    const uploadedCv = {
+      name: file.name,
+      uploadDate: new Date().toLocaleString('vi-VN'),
+      isStarred: false
+    };
+    this.uploadedCvs.push(uploadedCv);
+    this.showToastMessage(this.translate('upload_cv.upload_success'), 'success');
+    this.showUploadCvModal = false;
   }
 
   viewCv(cvId: string) {
@@ -137,6 +166,10 @@ export class CvManagementComponent implements OnInit {
     }, 3000);
   }
 
+  onToastClose() {
+    this.showToast = false;
+  }
+
   // Profile Picture Modal methods
   openProfilePictureModal() {
     this.showProfilePictureModal = true;
@@ -147,15 +180,75 @@ export class CvManagementComponent implements OnInit {
   }
 
   onProfilePictureChange() {
-    console.log('Handle profile picture change logic');
     this.showToastMessage(this.translate('profile_picture_edit.change_success'), 'success');
     this.closeProfilePictureModal();
   }
 
   onProfilePictureDelete() {
-    console.log('Handle profile picture delete logic');
     this.showToastMessage(this.translate('profile_picture_edit.delete_success'), 'success');
     this.closeProfilePictureModal();
+  }
+
+  // CV Card methods for uploaded CVs
+  onCvDownload() {
+    this.showDownloadModal = true;
+  }
+
+  onCvToggleStar(cv: any) {
+    cv.isStarred = !cv.isStarred;
+  }
+
+  onCvCopyLink() {
+    this.showToastMessage(this.translate('cv_card.copy_link_success'), 'success');
+  }
+
+  onCvRename(cv: any) {
+    this.cvToRename = cv;
+    this.showRenameModal = true;
+  }
+
+  onCvDelete(cv: any) {
+    this.showToastMessage(this.translate('cv_card.delete_success'), 'success');
+    // Remove from uploadedCvs array
+    this.uploadedCvs = this.uploadedCvs.filter(uploadedCv => uploadedCv.name !== cv.name);
+  }
+
+  onCvShareFacebook() {
+    this.showToastMessage(this.translate('cv_card.share_facebook_success'), 'success');
+  }
+
+  // Download modal methods
+  onCloseDownloadModal() {
+    this.showDownloadModal = false;
+  }
+
+  onDownloadWithoutLogo() {
+    this.showToastMessage(this.translate('download_cv.success_without_logo'), 'success');
+    this.showDownloadModal = false;
+  }
+
+  onDownloadFree() {
+    this.showToastMessage(this.translate('download_cv.success_free'), 'success');
+    this.showDownloadModal = false;
+  }
+
+  // Rename modal methods
+  onCloseRenameModal() {
+    this.showRenameModal = false;
+    this.cvToRename = null;
+  }
+
+  onRename(newName: string) {
+    if (this.cvToRename && newName.trim()) {
+      this.cvToRename.name = newName.trim();
+      this.showToastMessage(this.translate('cv_card.rename_success'), 'success');
+      this.showRenameModal = false;
+      this.cvToRename = null;
+    }
+  }
+
+  trackByCvName(index: number, cv: any): string {
+    return cv.name;
   }
 }
 

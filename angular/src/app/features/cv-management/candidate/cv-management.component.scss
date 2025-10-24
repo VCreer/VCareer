@@ -42,6 +42,12 @@
   align-items: start;
 }
 
+.cv-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 
 .cv-list-header {
   display: flex;
@@ -482,6 +488,106 @@
   .cv-header {
     .page-title {
       font-size: 1.75rem;
+    }
+  }
+}
+
+// Upload CV Section
+.upload-cv-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .upload-cv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .upload-cv-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .btn {
+      background: #0F83BA;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: #0A6B96;
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .upload-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+
+    .upload-empty-icon {
+      margin-bottom: 1rem;
+      
+      .upload-no-cv-image {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        opacity: 0.6;
+      }
+    }
+
+    .upload-empty-message {
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .uploaded-cvs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .uploaded-cv-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .cv-info {
+      margin-top: 1rem;
+      width: 100%;
+
+      .cv-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 0.5rem 0;
+        word-break: break-word;
+      }
+
+      .cv-date {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+      }
     }
   }
 }
