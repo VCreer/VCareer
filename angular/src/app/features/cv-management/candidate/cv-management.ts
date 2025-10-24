@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../core/services/translation.service';
+import { UploadedCvService, UploadedCv } from '../../../core/services/uploaded-cv.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { CvListComponent } from '../../../shared/components/cv-list/cv-list';
 import { ButtonComponent } from '../../../shared/components/button/button';
@@ -41,12 +42,13 @@ export class CvManagementComponent implements OnInit {
   showDownloadModal = false;
   showRenameModal = false;
   cvToRename: any = null;
-  uploadedCvs: any[] = [];
+  uploadedCvs: UploadedCv[] = [];
 
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private cvService: CvService
+    private cvService: CvService,
+    private uploadedCvService: UploadedCvService
   ) {}
 
   ngOnInit() {
@@ -54,6 +56,11 @@ export class CvManagementComponent implements OnInit {
       this.selectedLanguage = lang;
     });
     this.loadCvs();
+    
+    // Subscribe to uploaded CVs service
+    this.uploadedCvService.uploadedCvs$.subscribe(cvs => {
+      this.uploadedCvs = cvs;
+    });
   }
 
   loadCvs() {
@@ -85,12 +92,12 @@ export class CvManagementComponent implements OnInit {
 
   onUploadCv(file: File) {
     // Simulate upload success and add to uploaded CVs
-    const uploadedCv = {
+    const uploadedCv: UploadedCv = {
       name: file.name,
       uploadDate: new Date().toLocaleString('vi-VN'),
       isStarred: false
     };
-    this.uploadedCvs.push(uploadedCv);
+    this.uploadedCvService.addUploadedCv(uploadedCv);
     this.showToastMessage(this.translate('upload_cv.upload_success'), 'success');
     this.showUploadCvModal = false;
   }
@@ -209,8 +216,8 @@ export class CvManagementComponent implements OnInit {
 
   onCvDelete(cv: any) {
     this.showToastMessage(this.translate('cv_card.delete_success'), 'success');
-    // Remove from uploadedCvs array
-    this.uploadedCvs = this.uploadedCvs.filter(uploadedCv => uploadedCv.name !== cv.name);
+    // Remove from uploadedCvs service
+    this.uploadedCvService.removeUploadedCv(cv.name);
   }
 
   onCvShareFacebook() {
