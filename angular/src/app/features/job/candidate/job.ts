@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../core/services/translation.service';
 import { JobFilterComponent } from '../../../shared/components/job-filter/job-filter';
 import { JobListComponent } from '../../../shared/components/job-list/job-list';
+import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
 
 @Component({
   selector: 'app-job',
@@ -13,7 +14,8 @@ import { JobListComponent } from '../../../shared/components/job-list/job-list';
     CommonModule,
     FormsModule,
     JobFilterComponent,
-    JobListComponent
+    JobListComponent,
+    JobListDetailComponent
   ],
   templateUrl: './job.html',
   styleUrls: ['./job.scss']
@@ -27,6 +29,7 @@ export class JobComponent implements OnInit {
   selectedCategory: string = '';
   selectedLocation: string = '';
   currentFilters: any = {};
+  selectedJob: any = null;
 
   constructor(
     private router: Router,
@@ -52,6 +55,9 @@ export class JobComponent implements OnInit {
   }
 
   onFilterChange(filterParams: any) {
+    // Reset selected job when changing filters to return to initial state
+    this.selectedJob = null;
+    
     this.currentFilters = filterParams;
     console.log('Filter changed:', filterParams);
     
@@ -88,6 +94,9 @@ export class JobComponent implements OnInit {
   }
 
   onSearch(): void {
+    // Reset selected job when searching to return to initial state
+    this.selectedJob = null;
+    
     const searchParams = {
       position: this.searchPosition,
       category: this.selectedCategory,
@@ -103,10 +112,14 @@ export class JobComponent implements OnInit {
   }
 
   onCategoryChange(event: any): void {
+    // Reset selected job when changing category to return to initial state
+    this.selectedJob = null;
     this.selectedCategory = event.target.value;
   }
 
   onLocationChange(event: any): void {
+    // Reset selected job when changing location to return to initial state
+    this.selectedJob = null;
     this.selectedLocation = event.target.value;
   }
 
@@ -114,4 +127,49 @@ export class JobComponent implements OnInit {
     this.searchPosition = event.target.value;
   }
 
+  onClearPosition(): void {
+    // Reset selected job when clearing position to return to initial state
+    this.selectedJob = null;
+    this.searchPosition = '';
+    
+    // Trigger search to reload job list
+    const searchParams = {
+      position: '',
+      category: this.selectedCategory,
+      location: this.selectedLocation,
+      ...this.currentFilters
+    };
+    
+    if (this.jobListComponent) {
+      this.jobListComponent.applySearch(searchParams);
+    }
+  }
+
+  onQuickView(job: any) {
+    this.selectedJob = job;
+  }
+
+  onCloseDetail() {
+    this.selectedJob = null;
+  }
+
+  onViewDetail(job: any) {
+    console.log('View detail:', job);
+    // Navigate to full job detail page
+    this.router.navigate(['/candidate/job-detail']);
+  }
+
+  onApply(job: any) {
+    console.log('Apply to job:', job);
+    // Handle apply logic
+  }
+
+  onJobClick(job: any) {
+    // Navigate to job detail page when clicking on job card
+    this.router.navigate(['/candidate/job-detail']);
+  }
+
+  onJobHidden() {
+    this.selectedJob = null;
+  }
 }

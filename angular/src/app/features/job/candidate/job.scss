@@ -65,6 +65,21 @@
           font-size: 0.8rem;
           pointer-events: none;
         }
+
+        .clear-icon {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6b7280;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: color 0.2s;
+          
+          &:hover {
+            color: #ef4444;
+          }
+        }
       }
       
       .search-btn {
@@ -102,6 +117,11 @@
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 2rem;
+  transition: all 0.3s ease;
+  
+  &.show-detail-job {
+    grid-template-columns: 1fr 2fr;
+  }
   
   .filter-column {
     display: flex;
@@ -129,6 +149,10 @@
   .job-list-column {
     // Job list styles will be handled by job-list component
   }
+
+  .job-detail-column {
+    // Job detail styles will be handled by job-list-detail component
+  }
 }
 
 // Responsive Design
@@ -136,6 +160,10 @@
   .main-content {
     grid-template-columns: 1fr;
     gap: 1rem;
+    
+    &.show-detail-job {
+      grid-template-columns: 1fr;
+    }
     
     .filter-column {
       order: 2;

@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
@@ -11,8 +11,12 @@ import { ToastNotificationComponent } from '../toast-notification/toast-notifica
   styleUrls: ['./job-list.scss']
 })
 export class JobListComponent implements OnInit {
+  @Input() selectedJobId: number | null = null;
   @Output() searchJobs = new EventEmitter<any>();
   @Output() pageChange = new EventEmitter<number>();
+  @Output() quickView = new EventEmitter<any>();
+  @Output() jobClick = new EventEmitter<any>();
+  @Output() jobHidden = new EventEmitter<void>();
 
   selectedLanguage: string = 'vi';
   currentPage = 1;
@@ -38,7 +42,31 @@ export class JobListComponent implements OnInit {
       locationKey: 'job_data.location_long_an',
       experienceKey: 'job_data.experience_5_years',
       salaryKey: 'job_data.salary_negotiable',
-      tags: ['Giám đốc sản xuất', 'Xây dựng', 'Sản xuất', 'Tài chính']
+      tags: ['Giám đốc sản xuất', 'Xây dựng', 'Sản xuất', 'Tài chính'],
+      description: [
+        'Thiết lập và chạy quảng cáo trên các nền tảng Facebook, Google và TikTok.',
+        'Đề xuất ý tưởng sáng tạo để làm mới nội dung quảng cáo.',
+        'Phân tích số liệu và báo cáo kết quả theo tuần/tháng.'
+      ],
+      requirements: [
+        'Tốt nghiệp Cao đẳng/Đại học chuyên ngành tiếng trung, marketing...',
+        'Thành thạo tiếng Trung 4 kỹ năng từ HSK 4',
+        'Có kinh nghiệm trong ngành MKT, tiếng Trung, thích chơi game',
+        'Tư duy logic, nhạy bén với số liệu, có thể chịu áp lực cao trong công việc.',
+        'Tinh thần trách nhiệm cao, làm việc cần thận, tỉ mỉ, nhạy bén với số liệu'
+      ],
+      benefits: [
+        'Phụ cấp thực tập: 5.000.000/ tháng',
+        'Thưởng cá nhân theo từng tháng dựa trên mức độ hiệu quả của quảng cáo.',
+        'Các chế độ lương, thưởng, phúc lợi theo quy định của pháp luật hiện hành.',
+        'Được cung cấp thiết bị làm việc hoặc phụ cấp phí hao mòn tài sản.',
+        'Môi trường làm việc trẻ trung, năng động thoải mái. Có đồ ăn vặt mỗi ngày.'
+      ],
+      workLocation: [
+        '- Hồ Chí Minh: 78 Đường số 65, Phường Tân Hưng, Quận 7',
+        '- Hồ Chí Minh: Quận 2'
+      ],
+      workingHours: []
     },
     {
       id: 2,
@@ -298,7 +326,8 @@ export class JobListComponent implements OnInit {
 
   onJobClick(job: any) {
     console.log('Job clicked:', job);
-    // Navigate to job detail page
+    // Emit job click event to parent component
+    this.jobClick.emit(job);
   }
 
   onSaveJob(job: any) {
@@ -306,9 +335,9 @@ export class JobListComponent implements OnInit {
     // Handle save job logic - toggle saved state
     job.isSaved = !job.isSaved;
     if (job.isSaved) {
-      this.showSuccessToast(`${this.translate('job_list.save_success')}: ${this.translate(job.titleKey)}`);
+      this.showSuccessToast('Đã lưu công việc vào danh sách yêu thích');
     } else {
-      this.showSuccessToast(`${this.translate('job_list.unsave_success')}: ${this.translate(job.titleKey)}`);
+      this.showSuccessToast('Đã bỏ lưu công việc khỏi danh sách yêu thích');
     }
   }
 
@@ -319,8 +348,8 @@ export class JobListComponent implements OnInit {
 
   onQuickView(job: any) {
     console.log('Quick view job:', job);
-    // Handle quick view logic - open job detail modal or navigate to job detail page
-    // TODO: Open quick view modal or navigate to job detail page
+    // Emit quick view event
+    this.quickView.emit(job);
   }
 
   hideJob(job: any) {
@@ -337,8 +366,13 @@ export class JobListComponent implements OnInit {
       this.filteredJobs.splice(indexInFiltered, 1);
     }
     
-    this.showSuccessToast(`${this.translate('job_list.hide_success')}: ${this.translate(job.titleKey)}`);
+    this.showSuccessToast(this.translate('job_list.hide_success'));
     this.calculateTotalPages(); // Recalculate total pages after removing job
+    
+    // If the hidden job is the currently selected job, emit event to reset selection
+    if (this.selectedJobId === job.id) {
+      this.jobHidden.emit();
+    }
   }
 
   onPageChange(page: number) {
@@ -356,5 +390,9 @@ export class JobListComponent implements OnInit {
 
   onToastClose() {
     this.showToast = false;
+  }
+
+  showQuickViewButton(): boolean {
+    return this.selectedJobId === null;
   }
 }
