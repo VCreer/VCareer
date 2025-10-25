@@ -8,7 +8,7 @@ import {
   ButtonComponent, 
   ToastNotificationComponent, 
   LogoSectionComponent 
-} from '../../../shared/components';
+} from '../../../../shared/components';
 
 @Component({
   selector: 'app-employee-login',

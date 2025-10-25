@@ -27,12 +27,53 @@ function configureRoutes() {
       requiredPolicy: 'VCareer.Books',
     },
     {
-      path: '/admin/login',
-      name: '::Menu:AdminLogin',
+      path: '/employee/login',
+      name: '::Menu:Employee Login',
       layout: eLayoutType.empty,
-      order: 0,
+      order: 2,
     },
-  
+      {
+      path: '/candidate/login',
+      name: '::Menu:Candidate Login',
+      layout: eLayoutType.empty,
+      order: 3,
+    },
+      {
+      path: '/candidate/register',
+      name: '::Menu:Candidate Register',
+      layout: eLayoutType.empty,
+      order: 4,
+    },
+      {
+      path: '/recruiter/login',
+      name: '::Menu:Recruiter Login',
+      layout: eLayoutType.empty,
+      order: 5,
+    },
+       {
+      path: '/recruiter/register',
+      name: '::Menu:Recruiter Login',
+      layout: eLayoutType.empty,
+      order: 6,
+    },
+       {
+      path: '/common/forgot-password',
+      name: '::Menu:Forgot Password',
+      layout: eLayoutType.empty,
+      order: 7,
+    },
+      {
+      path: '/common/reset-password',
+      name: '::Menu:Reset Password',
+      layout: eLayoutType.empty,
+      order: 8,
+    },
+      {
+      path: '/common/verify-otp',
+      name: '::Menu:Verify Otp',
+      layout: eLayoutType.empty,
+      order: 9,
+    },
 
   ]);
 }
