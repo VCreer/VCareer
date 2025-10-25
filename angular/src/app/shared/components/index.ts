@@ -10,3 +10,5 @@ export { ProfileFormComponent } from './profile-form/profile-form';
 export { FormInputComponent } from './form-input/form-input';
 export { FileUploadComponent } from './file-upload/file-upload';
 export { CvListComponent } from './cv-list/cv-list';
+export { JobFilterComponent } from './job-filter/job-filter';
+export { JobListComponent } from './job-list/job-list';

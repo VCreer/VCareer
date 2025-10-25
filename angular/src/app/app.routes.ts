@@ -22,6 +22,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/cv-management',
         loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
+      {
+        path: 'candidate/job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
       }
     ]
   },

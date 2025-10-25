@@ -61,7 +61,7 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToJobs() {
-    this.router.navigate(['/candidate/jobs']);
+    this.router.navigate(['/candidate/job']);
     this.closeMobileMenu();
   }
 

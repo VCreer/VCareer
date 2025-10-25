@@ -48,6 +48,125 @@ export class TranslationService {
       'profile.upgrade_account': 'Nâng cấp tài khoản',
       'profile.upgrade_vip_account': 'Nâng cấp tài khoản VIP',
       'profile.activate_gift': 'Kích hoạt quà tặng',
+      
+      // Job Page
+      'job_page.title': 'Việc làm',
+      'job_page.category_placeholder': 'Danh mục Nghề',
+      'job_page.categories.it': 'Công nghệ thông tin',
+      'job_page.categories.marketing': 'Marketing',
+      'job_page.categories.accounting': 'Kế toán',
+      'job_page.position_placeholder': 'Vị trí tuyển dụng',
+      'job_page.location_placeholder': 'Địa điểm',
+      'job_page.locations.hanoi': 'Hà Nội',
+      'job_page.locations.hcm': 'TP. Hồ Chí Minh',
+      'job_page.locations.danang': 'Đà Nẵng',
+      'job_page.search_button': 'Tìm kiếm',
+      
+      // Job Filter
+      'job_filter.title': 'Lọc nâng cao',
+      'job_filter.category_title': 'Theo danh mục nghề',
+      'job_filter.category.all': 'Tất cả',
+      'job_filter.category.it': 'Công nghệ thông tin',
+      'job_filter.category.marketing': 'Marketing',
+      'job_filter.category.sales': 'Kinh doanh',
+      'job_filter.category.hr': 'Nhân sự',
+      'job_filter.category.finance': 'Tài chính',
+      'job_filter.category.design': 'Thiết kế',
+      'job_filter.category.production': 'Sản xuất',
+      'job_filter.experience_title': 'Kinh nghiệm',
+      'job_filter.experience.all': 'Tất cả',
+      'job_filter.experience.under1': 'Dưới 1 năm',
+      'job_filter.experience.none': 'Không yêu cầu',
+      'job_filter.experience.1year': '1 năm',
+      'job_filter.experience.2years': '2 năm',
+      'job_filter.experience.3years': '3 năm',
+      'job_filter.experience.4years': '4 năm',
+      'job_filter.experience.5years': '5 năm',
+      'job_filter.experience.over5': 'Trên 5 năm',
+      'job_filter.level_title': 'Cấp bậc',
+      'job_filter.level.all': 'Tất cả',
+      'job_filter.level.staff': 'Nhân viên',
+      'job_filter.level.team-lead': 'Trưởng nhóm',
+      'job_filter.level.head-department': 'Trưởng/Phó phòng',
+      'job_filter.level.manager': 'Quản lý / Giám sát',
+      'job_filter.level.branch-manager': 'Trưởng chi nhánh',
+      'job_filter.level.deputy-director': 'Phó giám đốc',
+      'job_filter.level.director': 'Giám đốc',
+      'job_filter.level.intern': 'Thực tập sinh',
+      
+      // Work Type Filter
+      'job_filter.work_type_title': 'Hình thức làm việc',
+      'job_filter.work_type.all': 'Tất cả',
+      'job_filter.work_type.full_time': 'Toàn thời gian',
+      'job_filter.work_type.part_time': 'Bán thời gian',
+      'job_filter.work_type.internship': 'Thực tập',
+      'job_filter.work_type.other': 'Khác',
+      
+      // Salary Filter
+      'job_filter.salary_title': 'Mức lương',
+      'job_filter.salary.all': 'Tất cả',
+      'job_filter.salary.under_10': 'Dưới 10 triệu',
+      'job_filter.salary.10_15': '10 - 15 triệu',
+      'job_filter.salary.15_20': '15 - 20 triệu',
+      'job_filter.salary.20_25': '20 - 25 triệu',
+      'job_filter.salary.25_30': '25 - 30 triệu',
+      'job_filter.salary.30_50': '30 - 50 triệu',
+      'job_filter.salary.over_50': 'Trên 50 triệu',
+      'job_filter.salary.negotiable': 'Thoả thuận',
+      
+      'job_filter.clear_filters': 'Xóa lọc',
+      
+      // Job List
+      'job_list.quick_view': 'Xem nhanh',
+      'job_list.hide_job': 'Mắt ẩn tin tuyển dụng',
+      'job_list.load_more': 'Xem thêm việc làm',
+      'job_list.hide_success': 'Đã ẩn tin tuyển dụng thành công',
+      'job_list.save_success': 'Đã lưu tin tuyển dụng thành công',
+      'job_list.unsave_success': 'Đã bỏ lưu tin tuyển dụng',
+      'job_list.quick_view_detail': 'Đang xem chi tiết',
+      'job_list.no_jobs_found': 'Chưa tìm thấy việc làm phù hợp với yêu cầu của bạn',
+      
+      // Job Data
+      'job_data.factory_director': 'Giám đốc nhà máy, thu nhập hấp dẫn 30 - 50 triệu/tháng có thể thoả thuận',
+      'job_data.general_accountant': 'Kế toán tổng hợp',
+      'job_data.digital_marketing_specialist': 'Chuyên viên Marketing số',
+      'job_data.full_stack_developer': 'Lập trình viên Full Stack',
+      'job_data.senior_software_engineer': 'Kỹ sư phần mềm cấp cao',
+      'job_data.product_manager': 'Trưởng phòng Sản phẩm',
+      'job_data.ux_ui_designer': 'Thiết kế UX/UI',
+      'job_data.data_analyst': 'Chuyên viên phân tích dữ liệu',
+      
+      'job_data.company_ibs': 'CÔNG TY CỔ PHẦN IBS',
+      'job_data.company_draho': 'CÔNG TY TNHH DRAHO',
+      'job_data.company_benavi': 'CÔNG TY TNHH BENAVI',
+      'job_data.company_tech': 'CÔNG TY CỔ PHẦN TECH',
+      'job_data.company_tech_solutions': 'CÔNG TY TNHH TECH SOLUTIONS',
+      'job_data.company_innovation': 'CÔNG TY TNHH INNOVATION',
+      'job_data.company_design_studio': 'CÔNG TY TNHH DESIGN STUDIO',
+      'job_data.company_data_insights': 'CÔNG TY TNHH DATA INSIGHTS',
+      
+      'job_data.location_long_an': 'Long An',
+      'job_data.location_hanoi': 'Hà Nội',
+      'job_data.location_hcmc': 'Thành phố Hồ Chí Minh',
+      'job_data.location_da_nang': 'Đà Nẵng',
+      
+      'job_data.experience_5_years': '5 năm',
+      'job_data.experience_no_requirement': 'Không yêu cầu',
+      'job_data.experience_2_years': '2 năm',
+      'job_data.experience_3_years': '3 năm',
+      'job_data.experience_4_years': '4 năm',
+      
+      'job_data.salary_negotiable': 'Thoả thuận',
+      'job_data.salary_9_20_million': '9 - 20 triệu',
+      'job_data.salary_12_20_million': '12 - 20 triệu',
+      'job_data.salary_45_80_million': '45 - 80 triệu',
+      'job_data.salary_25_40_million': '25 - 40 triệu',
+      'job_data.salary_30_50_million': '30 - 50 triệu',
+      'job_data.salary_15_25_million': '15 - 25 triệu',
+      'job_data.salary_18_30_million': '18 - 30 triệu',
+
+      // Pagination
+      'pagination.pages': 'trang',
       'profile.logout': 'Đăng xuất',
       
       // Notifications
@@ -208,9 +327,6 @@ export class TranslationService {
       'homepage.stats.candidates': 'Ứng viên',
       'homepage.stats.success': 'Thành công'
       ,
-      // Pagination
-      'pagination.pages': 'trang'
-      ,
       // Stats
       'stats.customers_title': 'Khách hàng trên toàn thế giới',
       'stats.customers_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.',
@@ -289,6 +405,126 @@ export class TranslationService {
       'profile.upgrade_account': 'Upgrade account',
       'profile.upgrade_vip_account': 'Upgrade VIP account',
       'profile.activate_gift': 'Activate gift',
+      
+      // Job Page
+      'job_page.title': 'Jobs',
+      'job_page.category_placeholder': 'Job Category',
+      'job_page.categories.it': 'Information Technology',
+      'job_page.categories.marketing': 'Marketing',
+      'job_page.categories.accounting': 'Accounting',
+      'job_page.position_placeholder': 'Job Position',
+      'job_page.location_placeholder': 'Location',
+      'job_page.locations.hanoi': 'Hanoi',
+      'job_page.locations.hcm': 'Ho Chi Minh City',
+      'job_page.locations.danang': 'Da Nang',
+      'job_page.search_button': 'Search',
+      
+      // Job Filter
+      'job_filter.title': 'Advanced Filter',
+      'job_filter.category_title': 'Job Categories',
+      'job_filter.category.all': 'All',
+      'job_filter.category.it': 'Information Technology',
+      'job_filter.category.marketing': 'Marketing',
+      'job_filter.category.sales': 'Sales',
+      'job_filter.category.hr': 'Human Resources',
+      'job_filter.category.finance': 'Finance',
+      'job_filter.category.design': 'Design',
+      'job_filter.category.production': 'Production',
+      'job_filter.experience_title': 'Experience',
+      'job_filter.experience.all': 'All',
+      'job_filter.experience.under1': 'Under 1 year',
+      'job_filter.experience.none': 'No requirement',
+      'job_filter.experience.1year': '1 year',
+      'job_filter.experience.2years': '2 years',
+      'job_filter.experience.3years': '3 years',
+      'job_filter.experience.4years': '4 years',
+      'job_filter.experience.5years': '5 years',
+      'job_filter.experience.over5': 'Over 5 years',
+      'job_filter.level_title': 'Level',
+      'job_filter.level.all': 'All',
+      'job_filter.level.staff': 'Employee',
+      'job_filter.level.team-lead': 'Team Leader',
+      'job_filter.level.head-department': 'Head/Deputy Head',
+      'job_filter.level.manager': 'Manager / Supervisor',
+      'job_filter.level.branch-manager': 'Branch Manager',
+      'job_filter.level.deputy-director': 'Deputy Director',
+      'job_filter.level.director': 'Director',
+      'job_filter.level.intern': 'Intern',
+      
+      // Work Type Filter
+      'job_filter.work_type_title': 'Work Type',
+      'job_filter.work_type.all': 'All',
+      'job_filter.work_type.full_time': 'Full-time',
+      'job_filter.work_type.part_time': 'Part-time',
+      'job_filter.work_type.internship': 'Internship',
+      'job_filter.work_type.other': 'Other',
+      
+      // Salary Filter
+      'job_filter.salary_title': 'Salary Level',
+      'job_filter.salary.all': 'All',
+      'job_filter.salary.under_10': 'Under 10 million',
+      'job_filter.salary.10_15': '10 - 15 million',
+      'job_filter.salary.15_20': '15 - 20 million',
+      'job_filter.salary.20_25': '20 - 25 million',
+      'job_filter.salary.25_30': '25 - 30 million',
+      'job_filter.salary.30_50': '30 - 50 million',
+      'job_filter.salary.over_50': 'Over 50 million',
+      'job_filter.salary.negotiable': 'Negotiable',
+      
+      'job_filter.clear_filters': 'Clear Filters',
+      
+      // Job List
+      'job_list.quick_view': 'Quick View',
+      'job_list.hide_job': 'Hide Job Posting',
+      'job_list.load_more': 'Load More Jobs',
+      'job_list.hide_success': 'Job posting hidden successfully',
+      'job_list.save_success': 'Job posting saved successfully',
+      'job_list.unsave_success': 'Job posting unsaved',
+      'job_list.quick_view_detail': 'Viewing details',
+      'job_list.no_jobs_found': 'No jobs found matching your requirements',
+      
+      // Job Data
+      'job_data.factory_director': 'Factory Director, Attractive Income 30 - 50 Million/Month Negotiable',
+      'job_data.general_accountant': 'General Accountant',
+      'job_data.digital_marketing_specialist': 'Digital Marketing Specialist',
+      'job_data.full_stack_developer': 'Full Stack Developer',
+      'job_data.senior_software_engineer': 'Senior Software Engineer',
+      'job_data.product_manager': 'Product Manager',
+      'job_data.ux_ui_designer': 'UX/UI Designer',
+      'job_data.data_analyst': 'Data Analyst',
+      
+      'job_data.company_ibs': 'IBS JOINT STOCK COMPANY',
+      'job_data.company_draho': 'DRAHO CO., LTD.',
+      'job_data.company_benavi': 'BENAVI CO., LTD.',
+      'job_data.company_tech': 'TECH JOINT STOCK COMPANY',
+      'job_data.company_tech_solutions': 'TECH SOLUTIONS INC.',
+      'job_data.company_innovation': 'INNOVATION CORP.',
+      'job_data.company_design_studio': 'DESIGN STUDIO',
+      'job_data.company_data_insights': 'DATA INSIGHTS LTD.',
+      
+      'job_data.location_long_an': 'Long An',
+      'job_data.location_hanoi': 'Hanoi',
+      'job_data.location_hcmc': 'Ho Chi Minh City',
+      'job_data.location_da_nang': 'Da Nang',
+      
+      'job_data.experience_5_years': '5 years',
+      'job_data.experience_no_requirement': 'No requirement',
+      'job_data.experience_2_years': '2 years',
+      'job_data.experience_3_years': '3 years',
+      'job_data.experience_4_years': '4 years',
+      
+      'job_data.salary_negotiable': 'Negotiable',
+      'job_data.salary_9_20_million': '9 - 20 million',
+      'job_data.salary_12_20_million': '12 - 20 million',
+      'job_data.salary_45_80_million': '45 - 80 million',
+      'job_data.salary_25_40_million': '25 - 40 million',
+      'job_data.salary_30_50_million': '30 - 50 million',
+      'job_data.salary_15_25_million': '15 - 25 million',
+      'job_data.salary_18_30_million': '18 - 30 million',
+
+      // Pagination
+      'pagination.pages': 'pages',
+      
       'profile.logout': 'Logout',
       
       // Notifications
@@ -448,9 +684,6 @@ export class TranslationService {
       'homepage.stats.companies': 'Companies',
       'homepage.stats.candidates': 'Candidates',
       'homepage.stats.success': 'Success'
-      ,
-      // Pagination
-      'pagination.pages': 'pages'
       ,
       // Stats
       'stats.customers_title': 'Global customers',

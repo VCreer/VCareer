@@ -1,0 +1,94 @@
+<div class="job-filter">
+  <div class="filter-header">
+    <h3 class="filter-title">
+      <i class="fa fa-filter"></i>
+      {{ translate('job_filter.title') }}
+    </h3>
+  </div>
+  
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <div class="filter-content">
+    <!-- Work Type -->
+    <div class="filter-section">
+      <h4 class="section-title">{{ translate('job_filter.work_type_title') }}:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let workType of workTypes">
+          <input 
+            type="radio"
+            name="workType"
+            [value]="workType.value"
+            [checked]="workType.checked"
+            (change)="onWorkTypeChange(workType)">
+          <span class="radio-label">{{ translate('job_filter.work_type.' + workType.value) }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Experience -->
+    <div class="filter-section">
+      <h4 class="section-title">{{ translate('job_filter.experience_title') }}:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let level of experienceLevels">
+          <input 
+            type="radio"
+            name="experience"
+            [value]="level.value"
+            [checked]="level.checked"
+            (change)="onExperienceChange(level)">
+          <span class="radio-label">{{ translate('job_filter.experience.' + level.value) }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Job Level -->
+    <div class="filter-section">
+      <h4 class="section-title">{{ translate('job_filter.level_title') }}:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let level of jobLevels">
+          <input 
+            type="radio"
+            name="jobLevel"
+            [value]="level.value"
+            [checked]="level.checked"
+            (change)="onJobLevelChange(level)">
+          <span class="radio-label">{{ translate('job_filter.level.' + level.value) }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Salary -->
+    <div class="filter-section">
+      <h4 class="section-title">{{ translate('job_filter.salary_title') }}:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let salary of salaries">
+          <input 
+            type="radio"
+            name="salary"
+            [value]="salary.value"
+            [checked]="salary.checked"
+            (change)="onSalaryChange(salary)">
+          <span class="radio-label">{{ translate('job_filter.salary.' + salary.value) }}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
