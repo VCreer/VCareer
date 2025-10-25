@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using VCareer.Model;
 using Volo.Abp.Application.Dtos;
 
-namespace VCareer.Job
+namespace VCareer.Dto.Job
 {
 
     public class JobSearchInputDto : PagedAndSortedResultRequestDto
@@ -18,9 +18,9 @@ namespace VCareer.Job
         public List<int>? DistrictIds { get; set; } // List DistrictIds (nhiều, thuộc province hoặc không)
 
 
-        public EmploymentTye? EmploymentType { get; set; }
+        public EmploymentType? EmploymentType { get; set; }
 
-        public PositionTye? PositionType { get; set; }
+        public PositionType? PositionType { get; set; }
 
         public decimal? SalaryMin { get; set; }
         public decimal? SalaryMax { get; set; }
@@ -34,19 +34,45 @@ namespace VCareer.Job
     // cây category 
     public class CategoryTreeDto
     {
-
-
+        /// <summary>
+        /// ID danh mục
+        /// </summary>
         public Guid CategoryId { get; set; }
 
-
+        /// <summary>
+        /// Tên danh mục
+        /// </summary>
         public string CategoryName { get; set; }
 
-        public List<CategoryTreeDto> Children { get; set; }
+        /// <summary>
+        /// Slug cho URL
+        /// </summary>
+        public string Slug { get; set; }
 
+        /// <summary>
+        /// Mô tả danh mục
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Số lượng job trong danh mục này
+        /// </summary>
+        public int JobCount { get; set; }
+
+        /// <summary>
+        /// Danh sách danh mục con
+        /// </summary>
+        public List<CategoryTreeDto> Children { get; set; } = new List<CategoryTreeDto>();
+
+        /// <summary>
+        /// Đường dẫn đầy đủ từ root đến node này
+        /// </summary>
         public string FullPath { get; set; }
 
-
-
+        /// <summary>
+        /// Có phải là leaf node không
+        /// </summary>
+        public bool IsLeaf { get; set; }
     }
 
 
@@ -101,10 +127,10 @@ namespace VCareer.Job
 
 
         // hình thức làm việc
-        public EmploymentTye EmploymentType { get; set; }
+        public EmploymentType EmploymentType { get; set; }
 
         //chức vụ
-        public PositionTye PositionType { get; set; }
+        public PositionType PositionType { get; set; }
 
 
 
@@ -141,17 +167,48 @@ namespace VCareer.Job
 
     public class ProvinceDto
     {
+        /// <summary>
+        /// ID tỉnh/thành phố
+        /// </summary>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Tên tỉnh/thành phố
+        /// </summary>
         public string Name { get; set; }
 
-        public List<DistrictDto> ListDistrict { get; set; }
+        /// <summary>
+        /// Mã tỉnh/thành phố
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Danh sách quận/huyện
+        /// </summary>
+        public List<DistrictDto> Districts { get; set; } = new List<DistrictDto>();
     }
 
     public class DistrictDto
     {
+        /// <summary>
+        /// ID quận/huyện
+        /// </summary>
         public int Id { get; set; }
-        public string NameDistrict { get; set; }
 
+        /// <summary>
+        /// Tên quận/huyện
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Mã quận/huyện
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// ID tỉnh/thành phố
+        /// </summary>
+        public int ProvinceId { get; set; }
     }
 
 

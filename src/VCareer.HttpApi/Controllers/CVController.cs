@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VCareer.CV;
 using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
 
-namespace VCareer.CV
+namespace VCareer.Controllers
 {
     [ApiController]
     [Route("api/cv")]

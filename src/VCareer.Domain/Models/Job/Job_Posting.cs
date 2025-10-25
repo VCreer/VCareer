@@ -72,12 +72,12 @@ namespace VCareer.Models.Job
         /// <summary>
         /// Hình thức làm việc (Full-time, Part-time, Intern, etc.)
         /// </summary>
-        public EmploymentTye EmploymentType { get; set; }
+        public EmploymentType EmploymentType { get; set; }
 
         /// <summary>
         /// Cấp bậc vị trí
         /// </summary>
-        public PositionTye PositionType { get; set; }
+        public PositionType PositionType { get; set; }
 
         /// <summary>
         /// Số năm kinh nghiệm tối thiểu

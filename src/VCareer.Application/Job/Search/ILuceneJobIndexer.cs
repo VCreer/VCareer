@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Dto.Job;
 using VCareer.Models.Job;
 
 namespace VCareer.Job.Search

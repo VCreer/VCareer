@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using VCareer.Models.Job;
 using Volo.Abp.Domain.Repositories;
@@ -9,30 +7,43 @@ using Volo.Abp.Domain.Repositories;
 namespace VCareer.Repositories
 {
     /// <summary>
-    /// Repository cho Job_Category - Chỉ tương tác database, trả về Entity
+    /// Repository interface cho Job_Category - Chỉ tương tác database, trả về Entity
     /// </summary>
     public interface IJobCategoryRepository : IRepository<Job_Category, Guid>
     {
 
-        // lấy toàn bộ  cây category
+        // lấy fu danh sách caegopry 
         Task<List<Job_Category>> GetFullCategoryTreeAsync();
 
 
-        // lấy string path của 1 category , chác chắn nó sẽ là category cấp 3
+
+        // lấy full ath của 1 category
         Task<string> GetStringPath(Guid categoryId);
 
 
-        // trả về danh sách các category khi mà tìm kiếm
+
+        /// <summary>
+        /// Tìm kiếm category theo keyword trong path
+        /// Trả về danh sách các leaf categories có path chứa keyword
+        /// </summary>
+        /// <param name="keyword">Từ khóa tìm kiếm</param>
+        /// <returns>Danh sách leaf categories phù hợp</returns>
         Task<List<Job_Category>> SearchCategoriesByPathAsync(string keyword);
 
 
-        // tìm các category con của 1 category id
+
+        // lấy tất cả id node cuối của 1 category id
         Task<List<Guid>> GetAllChildrenCategoryIdsAsync(Guid categoryId);
 
 
+        // update số lượng job của 1 caegory
+        Task UpdateJobCountAsync(Guid categoryId, int jobCount);
 
-
-
-
+        /// <summary>
+        /// Lấy category theo ID với children đã load
+        /// </summary>
+        /// <param name="categoryId">ID của category</param>
+        /// <returns>Category entity với children</returns>
+        Task<Job_Category> GetWithChildrenAsync(Guid categoryId);
     }
 }

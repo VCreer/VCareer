@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Dto.Job;
 using Volo.Abp.Application.Services;
 
 namespace VCareer.Job.JobPosting.ISerices

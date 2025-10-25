@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
 using VCareer.Models.Job;
@@ -11,44 +10,80 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace VCareer.Repositories.Job
 {
+    /// <summary>
+    /// Repository cho Location (Province và District)
+    /// Dùng để:
+    /// 1. Lấy danh sách provinces/districts cho home page (cây dữ liệu)
+    /// 2. Validate provinceId và districtId từ FE
+    /// </summary>
     public class LocationRepository : EfCoreRepository<VCareerDbContext, Province, int>, ILocationRepository
     {
-        public LocationRepository(IDbContextProvider<VCareerDbContext> dbContextProvider) : base(dbContextProvider) { }
+        private readonly IDistrictRepository _districtRepository;
 
-        // trar veef full danh sách cả tỉnh kèm danh sách huyện
-        public async Task<List<Province>> GetAllProvincesAsync()
+        public LocationRepository(
+            IDbContextProvider<VCareerDbContext> dbContextProvider,
+            IDistrictRepository districtRepository) : base(dbContextProvider)
         {
-            var dbContext = await GetDbContextAsync();
-            var province = await dbContext.Provinces.Include(x => x.Districts).ToListAsync();
-            return province;
+            _districtRepository = districtRepository;
         }
 
 
-        // search theo tên
-        public async Task<List<Province>> SearchProvincesByNameAsync(string searchTerm)
+        public async Task<List<Province>> GetFullProvincesAsync()
         {
-
             var dbContext = await GetDbContextAsync();
-            if (string.IsNullOrEmpty(searchTerm))
+
+            return await dbContext.Provinces
+                .Include(p => p.Districts.Where(d => d.IsActive))
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+
+        public async Task<List<Province>> SearchProvincesAsync(string searchTerm)
+        {
+            var dbContext = await GetDbContextAsync();
+
+            // Nếu search term trống, trả về tất cả
+            if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await dbContext.Provinces.ToListAsync();
+                return await GetFullProvincesAsync();
             }
 
+            var normalizedSearchTerm = searchTerm.Trim().ToLower();
 
-            var province = await dbContext.Provinces.Include(x => x.Districts).Where(x => x.Name.Trim().ToLower().Contains(searchTerm.Trim().ToLower())).ToListAsync();
-            return province;
+            return await dbContext.Provinces
+                .Include(p => p.Districts.Where(d => d.IsActive))
+                .Where(p => p.IsActive && p.Name.ToLower().Contains(normalizedSearchTerm))
+                .OrderBy(p => p.Name)
+                .ToListAsync();
         }
 
-        //tìm kiếm theo id
-        public async Task<Province?> GetByIDAsync(int? provinceID)
-        {
-            if (provinceID == null) return null;
-            var dbContext = await GetDbContextAsync();
-            var province = await dbContext.Provinces.FirstOrDefaultAsync(x => x.Id == provinceID);
-            if (province == null) return null;
-            return province;
 
+        //public async Task<Province?> GetProvinceByIdAsync(int provinceId)
+        //{
+        //    if (provinceId <= 0)
+        //    {
+        //        return null;
+        //    }
 
-        }
+        //    var dbContext = await GetDbContextAsync();
+
+        //    return await dbContext.Provinces
+        //        .Include(p => p.Districts.Where(d => d.IsActive))
+        //        .Where(p => p.IsActive)
+        //        .FirstOrDefaultAsync(p => p.Id == provinceId);
+        //}
+
+        //public async Task<District?> GetDistrictByIdAsync(int districtId)
+        //{
+        //    if (districtId <= 0)
+        //    {
+        //        return null;
+        //    }
+
+        //    // Sử dụng DistrictRepository để tránh duplicate code
+        //    return await _districtRepository.GetByDistrictIdAsync(districtId);
+        //}
     }
 }
