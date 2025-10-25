@@ -40,12 +40,12 @@ namespace VCareer.Profile
 
         //ádadad
 
-        [Authorize(VCareerPermissions.Profile.UpdatePersonalInfo)]
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
-            
+
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -80,7 +80,7 @@ namespace VCareer.Profile
 
             // 3. Save IdentityUser changes
             var result = await _userManager.UpdateAsync(user);
-            
+
             if (!result.Succeeded)
             {
                 throw new UserFriendlyException($"Failed to update profile: {string.Join(", ", result.Errors)}");
@@ -89,11 +89,11 @@ namespace VCareer.Profile
 
 
         //ádada
-        [Authorize(VCareerPermissions.Profile.ChangePassword)]
+        [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -108,19 +108,19 @@ namespace VCareer.Profile
 
             // Change password
             var result = await _userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
-            
+
             if (!result.Succeeded)
             {
                 throw new UserFriendlyException($"Failed to change password: {string.Join(", ", result.Errors)}");
             }
-        } 
+        }
 
 
         //ádad
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -157,7 +157,7 @@ namespace VCareer.Profile
         {
             var userId = _currentUser.GetId();
             var user = await _userManager.GetByIdAsync(userId);
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -229,7 +229,7 @@ namespace VCareer.Profile
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
-        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location)> 
+        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location)>
             GetUserProfileInfoAsync(Guid userId)
         {
             // Check CandidateProfile

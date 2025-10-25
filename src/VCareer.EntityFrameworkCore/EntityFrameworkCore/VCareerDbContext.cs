@@ -19,8 +19,7 @@ using VCareer.Models.Companies;
 using VCareer.Models.IpAddress;
 using VCareer.Models;
 using VCareer.Models.Token;
-using VCareer.Models.Users;
-using VCareer.Models.Companies;
+using VCareer.Models.Job;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -43,7 +42,7 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-   
+
     public DbSet<CurriculumVitae> CVs { get; set; }
 
     public DbSet<District> Districts { get; set; }
@@ -174,13 +173,30 @@ public class VCareerDbContext :
    {
        b.ToTable("JobCategories");
        b.ConfigureByConvention();
-       b.Property(x => x.Name).HasMaxLength(1000).IsRequired();
-       b.Property(x => x.Slug).HasMaxLength(1000).IsRequired();
-       b.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-       b.Property(x => x.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").ValueGeneratedOnUpdate();
-       b.Property(x => x.IsActive).HasDefaultValue(false);
-       b.HasOne(x => x.Parent).WithMany(x => x.Children).HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Restrict);
-       b.HasMany(x => x.JobPostings).WithOne(x => x.JobCategory).HasForeignKey(x => x.JobCategoryId).OnDelete(DeleteBehavior.Cascade);
+       
+       // Properties configuration
+       b.Property(x => x.Name).HasMaxLength(200).IsRequired();
+       b.Property(x => x.Slug).HasMaxLength(250).IsRequired();
+       b.Property(x => x.Description).HasMaxLength(2000);
+       b.Property(x => x.SortOrder).HasDefaultValue(0);
+       b.Property(x => x.IsActive).HasDefaultValue(true);
+       b.Property(x => x.JobCount).HasDefaultValue(0);
+    
+       // Indexes for performance
+       b.HasIndex(x => x.Slug).IsUnique();
+       b.HasIndex(x => x.ParentId);
+       b.HasIndex(x => x.IsActive);
+       
+       // Relationships
+       b.HasOne(x => x.Parent)
+        .WithMany(x => x.Children)
+        .HasForeignKey(x => x.ParentId)
+        .OnDelete(DeleteBehavior.Restrict);
+        
+       b.HasMany(x => x.JobPostings)
+        .WithOne(x => x.JobCategory)
+        .HasForeignKey(x => x.JobCategoryId)
+        .OnDelete(DeleteBehavior.Cascade);
    });
 
         //-----------fluent api cho job_posting----------
@@ -323,7 +339,7 @@ public class VCareerDbContext :
         {
             cv.ToTable("CVs");
             cv.ConfigureByConvention();
-            
+
             // Foreign key relationship với CandidateProfile
             cv.HasOne(x => x.Candidate)
               .WithMany()

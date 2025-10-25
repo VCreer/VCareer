@@ -37,6 +37,7 @@ namespace VCareer.Services.Auth
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
 
+
         public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager)
         {
             _identityManager = identityManager;

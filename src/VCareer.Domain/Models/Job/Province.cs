@@ -9,10 +9,24 @@ namespace VCareer.Models.Job
 {
     public class Province : FullAuditedAggregateRoot<int>
     {
-        // tên tỉnh 
+        /// <summary>
+        /// Tên tỉnh/thành phố
+        /// </summary>
         public string Name { get; set; }
-        // tên phường
-        public virtual ICollection<District> Districts { get; set; }
-       
+
+        /// <summary>
+        /// Mã tỉnh/thành phố
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Trạng thái hoạt động
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Navigation property - Danh sách quận/huyện
+        /// </summary>
+        public virtual ICollection<District> Districts { get; set; } = new List<District>();
     }
 }

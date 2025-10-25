@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
-using VCareer.Jwt;
-using VCareer.Security;
 using Microsoft.Extensions.DependencyInjection;
+using VCareer.IServices.IJobServices;
+using VCareer.Job.JobPosting.Services;
 using VCareer.Job.Search;
+using VCareer.Jwt;
+using VCareer.Repositories.Job;
+using VCareer.Security;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
@@ -36,6 +39,10 @@ public class VCareerApplicationModule : AbpModule
             options.AddMaps<VCareerApplicationModule>();
 
         });
+
+        var conf = context.Services.GetConfiguration();
+        // context.Services.AddScoped<ILocationService, LocationAppService>();
+
         //  ConfigureClaims(); // đang chưa làm rõ logic claims động
 
     }
