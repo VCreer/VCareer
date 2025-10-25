@@ -40,7 +40,10 @@
               <span class="tag experience">{{ translate(job.experienceKey) }}</span>
             </div>
             <!-- Quick View Button in same row -->
-            <button class="quick-view-btn" (click)="onQuickView(job); $event.stopPropagation()">
+            <button 
+              class="quick-view-btn" 
+              *ngIf="showQuickViewButton()"
+              (click)="onQuickView(job); $event.stopPropagation()">
               {{ translate('job_list.quick_view') }} >>
             </button>
           </div>

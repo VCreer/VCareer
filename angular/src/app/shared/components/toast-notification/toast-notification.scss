@@ -44,6 +44,22 @@
   stroke: white;
 }
 
+.toast-icon-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i {
+    color: #10B981;
+    font-size: 14px;
+  }
+}
+
 .toast-message {
   font-size: 14px;
   font-weight: 500;

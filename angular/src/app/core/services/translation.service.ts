@@ -121,10 +121,21 @@ export class TranslationService {
       'job_list.hide_job': 'Mắt ẩn tin tuyển dụng',
       'job_list.load_more': 'Xem thêm việc làm',
       'job_list.hide_success': 'Đã ẩn tin tuyển dụng thành công',
-      'job_list.save_success': 'Đã lưu tin tuyển dụng thành công',
-      'job_list.unsave_success': 'Đã bỏ lưu tin tuyển dụng',
+      'job_list.save_success': 'Đã lưu công việc vào danh sách yêu thích',
+      'job_list.unsave_success': 'Đã bỏ lưu công việc khỏi danh sách yêu thích',
       'job_list.quick_view_detail': 'Đang xem chi tiết',
       'job_list.no_jobs_found': 'Chưa tìm thấy việc làm phù hợp với yêu cầu của bạn',
+      
+      // Job Detail
+      'job_detail.view_detail': 'Xem chi tiết >',
+      'job_detail.apply_now': 'Ứng tuyển ngay',
+      'job_detail.job_description': 'Mô tả công việc',
+      'job_detail.candidate_requirements': 'Yêu cầu ứng viên',
+      'job_detail.benefits': 'Quyền lợi',
+      'job_detail.work_location': 'Địa điểm làm việc',
+      'job_detail.working_hours': 'Thời gian làm việc',
+      'job_detail.save_success': 'Đã lưu công việc vào danh sách yêu thích',
+      'job_detail.unsave_success': 'Đã bỏ lưu công việc khỏi danh sách yêu thích',
       
       // Job Data
       'job_data.factory_director': 'Giám đốc nhà máy, thu nhập hấp dẫn 30 - 50 triệu/tháng có thể thoả thuận',
@@ -478,10 +489,21 @@ export class TranslationService {
       'job_list.hide_job': 'Hide Job Posting',
       'job_list.load_more': 'Load More Jobs',
       'job_list.hide_success': 'Job posting hidden successfully',
-      'job_list.save_success': 'Job posting saved successfully',
-      'job_list.unsave_success': 'Job posting unsaved',
+      'job_list.save_success': 'Job saved to favorites',
+      'job_list.unsave_success': 'Job removed from favorites',
       'job_list.quick_view_detail': 'Viewing details',
       'job_list.no_jobs_found': 'No jobs found matching your requirements',
+      
+      // Job Detail
+      'job_detail.view_detail': 'View Details >',
+      'job_detail.apply_now': 'Apply Now',
+      'job_detail.job_description': 'Job Description',
+      'job_detail.candidate_requirements': 'Candidate Requirements',
+      'job_detail.benefits': 'Benefits',
+      'job_detail.work_location': 'Work Location',
+      'job_detail.working_hours': 'Working Hours',
+      'job_detail.save_success': 'Job saved to favorites',
+      'job_detail.unsave_success': 'Job removed from favorites',
       
       // Job Data
       'job_data.factory_director': 'Factory Director, Attractive Income 30 - 50 Million/Month Negotiable',

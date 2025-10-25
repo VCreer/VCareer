@@ -23,6 +23,10 @@
             [placeholder]="translate('job_page.position_placeholder')"
             [(ngModel)]="searchPosition"
             (input)="onPositionChange($event)">
+          <i 
+            class="fa-solid fa-xmark clear-icon" 
+            *ngIf="searchPosition"
+            (click)="onClearPosition()"></i>
         </div>
         
         <div class="search-field">
@@ -46,9 +50,9 @@
 
 
   <!-- Main Content -->
-  <div class="main-content">
-    <!-- Left Column - Filter -->
-    <div class="filter-column">
+  <div class="main-content" [class.show-detail-job]="selectedJob">
+    <!-- Left Column - Filter (Hide when showing detail) -->
+    <div class="filter-column" *ngIf="!selectedJob">
       <app-job-filter (filterChange)="onFilterChange($event)"></app-job-filter>
       
       <!-- Clear Filters Button -->
@@ -59,9 +63,23 @@
       </button>
     </div>
 
-    <!-- Right Column - Job List -->
+    <!-- Middle Column - Job List -->
     <div class="job-list-column">
-      <app-job-list (searchJobs)="onSearchJobs($event)"></app-job-list>
+      <app-job-list 
+        [selectedJobId]="selectedJob?.id"
+        (searchJobs)="onSearchJobs($event)"
+        (quickView)="onQuickView($event)"
+        (jobClick)="onJobClick($event)"
+        (jobHidden)="onJobHidden()"></app-job-list>
+    </div>
+
+    <!-- Right Column - Job Detail -->
+    <div class="job-detail-column" *ngIf="selectedJob">
+      <app-job-list-detail
+        [selectedJob]="selectedJob"
+        (closeDetail)="onCloseDetail()"
+        (viewDetail)="onViewDetail($event)"
+        (applyJob)="onApply($event)"></app-job-list-detail>
     </div>
   </div>
 </div>
