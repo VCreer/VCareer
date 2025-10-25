@@ -6,6 +6,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { JobFilterComponent } from '../../../shared/components/job-filter/job-filter';
 import { JobListComponent } from '../../../shared/components/job-list/job-list';
 import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
+import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
 
 @Component({
   selector: 'app-job',
@@ -15,7 +16,8 @@ import { JobListDetailComponent } from '../../../shared/components/job-list-deta
     FormsModule,
     JobFilterComponent,
     JobListComponent,
-    JobListDetailComponent
+    JobListDetailComponent,
+    SearchHeaderComponent
   ],
   templateUrl: './job.html',
   styleUrls: ['./job.scss']

@@ -1,52 +1,29 @@
 <div class="job-page">
   <!-- Top Search Bar -->
-  <div class="search-header">
-    <div class="search-container">
-      <div class="search-title">
-        <h1 class="page-title">{{ translate('job_page.title') }}</h1>
-      </div>
-      <div class="search-row">
-        <div class="search-field">
-          <select class="category-dropdown" [(ngModel)]="selectedCategory" (change)="onCategoryChange($event)">
-            <option value="">{{ translate('job_page.category_placeholder') }}</option>
-            <option value="it">{{ translate('job_page.categories.it') }}</option>
-            <option value="marketing">{{ translate('job_page.categories.marketing') }}</option>
-            <option value="accounting">{{ translate('job_page.categories.accounting') }}</option>
-          </select>
-          <i class="fa fa-chevron-down dropdown-icon"></i>
-        </div>
-        
-        <div class="search-field">
-          <input 
-            type="text" 
-            class="position-input" 
-            [placeholder]="translate('job_page.position_placeholder')"
-            [(ngModel)]="searchPosition"
-            (input)="onPositionChange($event)">
-          <i 
-            class="fa-solid fa-xmark clear-icon" 
-            *ngIf="searchPosition"
-            (click)="onClearPosition()"></i>
-        </div>
-        
-        <div class="search-field">
-          <select class="location-dropdown" [(ngModel)]="selectedLocation" (change)="onLocationChange($event)">
-            <option value="">{{ translate('job_page.location_placeholder') }}</option>
-            <option value="long_an">{{ translate('job_data.location_long_an') }}</option>
-            <option value="hanoi">{{ translate('job_page.locations.hanoi') }}</option>
-            <option value="hcmc">{{ translate('job_page.locations.hcm') }}</option>
-            <option value="da_nang">{{ translate('job_page.locations.danang') }}</option>
-          </select>
-          <i class="fa fa-chevron-down dropdown-icon"></i>
-        </div>
-        
-        <button class="search-btn" (click)="onSearch()">
-          <i class="fa fa-search"></i>
-          {{ translate('job_page.search_button') }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-search-header
+    [pageTitle]="translate('job_page.title')"
+    [selectedCategory]="selectedCategory"
+    [selectedLocation]="selectedLocation"
+    [searchPosition]="searchPosition"
+    [categoryPlaceholder]="translate('job_page.category_placeholder')"
+    [positionPlaceholder]="translate('job_page.position_placeholder')"
+    [locationPlaceholder]="translate('job_page.location_placeholder')"
+    [searchButton]="translate('job_page.search_button')"
+    [categories]="{
+      it: translate('job_page.categories.it'),
+      marketing: translate('job_page.categories.marketing'),
+      accounting: translate('job_page.categories.accounting')
+    }"
+    [locationLongAn]="translate('job_data.location_long_an')"
+    [locationHanoi]="translate('job_page.locations.hanoi')"
+    [locationHcm]="translate('job_page.locations.hcm')"
+    [locationDanang]="translate('job_page.locations.danang')"
+    (categoryChange)="onCategoryChange($event)"
+    (locationChange)="onLocationChange($event)"
+    (positionChange)="onPositionChange($event)"
+    (search)="onSearch()"
+    (clearPosition)="onClearPosition()">
+  </app-search-header>
 
 
   <!-- Main Content -->
