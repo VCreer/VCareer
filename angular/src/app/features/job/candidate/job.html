@@ -1,0 +1,67 @@
+<div class="job-page">
+  <!-- Top Search Bar -->
+  <div class="search-header">
+    <div class="search-container">
+      <div class="search-title">
+        <h1 class="page-title">{{ translate('job_page.title') }}</h1>
+      </div>
+      <div class="search-row">
+        <div class="search-field">
+          <select class="category-dropdown" [(ngModel)]="selectedCategory" (change)="onCategoryChange($event)">
+            <option value="">{{ translate('job_page.category_placeholder') }}</option>
+            <option value="it">{{ translate('job_page.categories.it') }}</option>
+            <option value="marketing">{{ translate('job_page.categories.marketing') }}</option>
+            <option value="accounting">{{ translate('job_page.categories.accounting') }}</option>
+          </select>
+          <i class="fa fa-chevron-down dropdown-icon"></i>
+        </div>
+        
+        <div class="search-field">
+          <input 
+            type="text" 
+            class="position-input" 
+            [placeholder]="translate('job_page.position_placeholder')"
+            [(ngModel)]="searchPosition"
+            (input)="onPositionChange($event)">
+        </div>
+        
+        <div class="search-field">
+          <select class="location-dropdown" [(ngModel)]="selectedLocation" (change)="onLocationChange($event)">
+            <option value="">{{ translate('job_page.location_placeholder') }}</option>
+            <option value="long_an">{{ translate('job_data.location_long_an') }}</option>
+            <option value="hanoi">{{ translate('job_page.locations.hanoi') }}</option>
+            <option value="hcmc">{{ translate('job_page.locations.hcm') }}</option>
+            <option value="da_nang">{{ translate('job_page.locations.danang') }}</option>
+          </select>
+          <i class="fa fa-chevron-down dropdown-icon"></i>
+        </div>
+        
+        <button class="search-btn" (click)="onSearch()">
+          <i class="fa fa-search"></i>
+          {{ translate('job_page.search_button') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Left Column - Filter -->
+    <div class="filter-column">
+      <app-job-filter (filterChange)="onFilterChange($event)"></app-job-filter>
+      
+      <!-- Clear Filters Button -->
+      <button 
+        class="clear-filters-btn"
+        (click)="onClearFilters()">
+        {{ translate('job_filter.clear_filters') }}
+      </button>
+    </div>
+
+    <!-- Right Column - Job List -->
+    <div class="job-list-column">
+      <app-job-list (searchJobs)="onSearchJobs($event)"></app-job-list>
+    </div>
+  </div>
+</div>
