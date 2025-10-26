@@ -51,19 +51,28 @@ namespace VCareer.Models.Job
         #region Salary Information
 
         /// <summary>
-        /// Mức lương tối thiểu (VNĐ)
+        /// Mức lương tối thiểu (VNĐ) - Dùng để filter
         /// </summary>
         public decimal? SalaryMin { get; set; }
 
         /// <summary>
-        /// Mức lương tối đa (VNĐ)
+        /// Mức lương tối đa (VNĐ) - Dùng để filter
         /// </summary>
         public decimal? SalaryMax { get; set; }
 
         /// <summary>
-        /// Lương có thể thỏa thuận
+        /// Lương có thể thỏa thuận (checkbox)
+        /// TRUE = Hiển thị "Lương thỏa thuận"
+        /// FALSE = Hiển thị "Lương từ X đến Y triệu"
         /// </summary>
         public bool SalaryDeal { get; set; } = false;
+
+        /// <summary>
+        /// Text hiển thị lương (string đã format)
+        /// VD: "Lương thỏa thuận" hoặc "Lương từ 15 đến 30 triệu"
+        /// ⚠️ Tự động generate khi create/update job
+        /// </summary>
+        public string SalaryText { get; set; }
 
         #endregion
 
@@ -80,35 +89,20 @@ namespace VCareer.Models.Job
         public PositionType PositionType { get; set; }
 
         /// <summary>
-        /// Số năm kinh nghiệm tối thiểu
+        /// Yêu cầu kinh nghiệm (enum - đơn giản hóa)
+        /// None = Không yêu cầu, Year1 = 1 năm, Year2 = 2 năm, ..., Over10 = Trên 10 năm
         /// </summary>
-        public int? ExperienceYearsMin { get; set; }
+        public ExperienceLevel Experience { get; set; } = ExperienceLevel.None;
 
-        /// <summary>
-        /// Số năm kinh nghiệm tối đa
-        /// </summary>
-        public int? ExperienceYearsMax { get; set; }
+        public string? ExperienceText { get; set; }
+
+        public int Quantity { get; set; }
 
         #endregion
 
         #region Work Time
 
-        /// <summary>
-        /// Thời gian làm việc bắt đầu (giờ trong ngày)
-        /// VD: 08:00
-        /// </summary>
-        public TimeSpan? WorkTimeStart { get; set; }
-
-        /// <summary>
-        /// Thời gian làm việc kết thúc (giờ trong ngày)
-        /// VD: 17:00
-        /// </summary>
-        public TimeSpan? WorkTimeEnd { get; set; }
-
-        /// <summary>
-        /// Thời gian làm việc có thể thỏa thuận
-        /// </summary>
-        public bool TimeDeal { get; set; } = false;
+        public string WorkTime { get; set; }
 
         #endregion
 
@@ -222,6 +216,64 @@ namespace VCareer.Models.Job
         public bool IsActive()
         {
             return Status == JobStatus.Open && !IsExpired();
+        }
+
+        /// <summary>
+        /// Generate salary text từ SalaryDeal, SalaryMin, SalaryMax
+        /// ⚠️ Gọi method này TRƯỚC KHI LƯU vào database
+        /// </summary>
+        public void GenerateSalaryText()
+        {
+            if (SalaryDeal)
+            {
+                SalaryText = "Lương thỏa thuận";
+            }
+            else if (SalaryMin.HasValue && SalaryMax.HasValue)
+            {
+                // Convert VNĐ sang triệu
+                var minInMillion = SalaryMin.Value / 1_000_000;
+                var maxInMillion = SalaryMax.Value / 1_000_000;
+                SalaryText = $"Lương từ {minInMillion:0.#} đến {maxInMillion:0.#} triệu";
+            }
+            else if (SalaryMin.HasValue)
+            {
+                var minInMillion = SalaryMin.Value / 1_000_000;
+                SalaryText = $"Lương từ {minInMillion:0.#} triệu";
+            }
+            else if (SalaryMax.HasValue)
+            {
+                var maxInMillion = SalaryMax.Value / 1_000_000;
+                SalaryText = $"Lương lên đến {maxInMillion:0.#} triệu";
+            }
+            else
+            {
+                SalaryText = "Lương thỏa thuận";
+            }
+        }
+
+        /// <summary>
+        /// Generate experience text từ Experience enum
+        /// ⚠️ Gọi method này TRƯỚC KHI LƯU vào database
+        /// </summary>
+        public void GenerateExperienceText()
+        {
+            ExperienceText = Experience switch
+            {
+                ExperienceLevel.None => "Không yêu cầu kinh nghiệm",
+                ExperienceLevel.Under1 => "Dưới 1 năm kinh nghiệm",
+                ExperienceLevel.Year1 => "1 năm kinh nghiệm",
+                ExperienceLevel.Year2 => "2 năm kinh nghiệm",
+                ExperienceLevel.Year3 => "3 năm kinh nghiệm",
+                ExperienceLevel.Year4 => "4 năm kinh nghiệm",
+                ExperienceLevel.Year5 => "5 năm kinh nghiệm",
+                ExperienceLevel.Year6 => "6 năm kinh nghiệm",
+                ExperienceLevel.Year7 => "7 năm kinh nghiệm",
+                ExperienceLevel.Year8 => "8 năm kinh nghiệm",
+                ExperienceLevel.Year9 => "9 năm kinh nghiệm",
+                ExperienceLevel.Year10 => "10 năm kinh nghiệm",
+                ExperienceLevel.Over10 => "Trên 10 năm kinh nghiệm",
+                _ => "Không yêu cầu kinh nghiệm"
+            };
         }
 
         #endregion

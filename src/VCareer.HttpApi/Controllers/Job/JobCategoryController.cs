@@ -71,3 +71,12 @@ namespace VCareer.Controllers.Job
 
 
 
+
+
+
+
+
+
+
+
+
