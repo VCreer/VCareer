@@ -21,6 +21,7 @@ using VCareer.Models;
 using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.Applications;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -45,6 +46,8 @@ public class VCareerDbContext :
     public DbSet<RefreshToken> RefreshTokens { get; set; }
    
     public DbSet<CurriculumVitae> CVs { get; set; }
+    public DbSet<JobApplication> JobApplications { get; set; }
+    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }
 
 
 
@@ -413,6 +416,82 @@ public class VCareerDbContext :
             b.HasKey(x => x.Id);
             b.Property(x => x.Token).IsRequired().HasMaxLength(256);
             b.HasIndex(x => x.Token).IsUnique();
+        });
+
+        // JobApplication Configuration
+        builder.Entity<JobApplication>(ja =>
+        {
+            ja.ToTable("JobApplications");
+            ja.ConfigureByConvention();
+
+            // Foreign Keys
+            ja.HasOne(x => x.Candidate)
+              .WithMany()
+              .HasForeignKey(x => x.CandidateId)
+              .OnDelete(DeleteBehavior.Restrict);
+
+            ja.HasOne(x => x.Company)
+              .WithMany()
+              .HasForeignKey(x => x.CompanyId)
+              .OnDelete(DeleteBehavior.Restrict);
+
+            ja.HasOne(x => x.CV)
+              .WithMany()
+              .HasForeignKey(x => x.CVId)
+              .OnDelete(DeleteBehavior.SetNull);
+
+            // Properties
+            ja.Property(x => x.JobId).IsRequired();
+            ja.Property(x => x.CandidateId).IsRequired();
+            ja.Property(x => x.CompanyId).IsRequired();
+            ja.Property(x => x.CVType).HasMaxLength(20).IsRequired();
+            ja.Property(x => x.UploadedCVUrl).HasMaxLength(500);
+            ja.Property(x => x.UploadedCVName).HasMaxLength(255);
+            ja.Property(x => x.CandidateName).HasMaxLength(100);
+            ja.Property(x => x.CandidateEmail).HasMaxLength(100);
+            ja.Property(x => x.CandidatePhone).HasMaxLength(20);
+            ja.Property(x => x.CoverLetter).HasMaxLength(2000);
+            ja.Property(x => x.Status).HasMaxLength(20).IsRequired();
+            ja.Property(x => x.RecruiterNotes).HasMaxLength(1000);
+            ja.Property(x => x.RejectionReason).HasMaxLength(500);
+            ja.Property(x => x.InterviewLocation).HasMaxLength(200);
+            ja.Property(x => x.InterviewNotes).HasMaxLength(1000);
+            ja.Property(x => x.WithdrawalReason).HasMaxLength(500);
+
+            // Indexes
+            ja.HasIndex(x => x.JobId);
+            ja.HasIndex(x => x.CandidateId);
+            ja.HasIndex(x => x.CompanyId);
+            ja.HasIndex(x => x.CVType);
+            ja.HasIndex(x => x.Status);
+            ja.HasIndex(x => x.CreationTime);
+            ja.HasIndex(x => new { x.JobId, x.CandidateId }).IsUnique(); // Prevent duplicate applications
+        });
+
+        // ApplicationDocument Configuration
+        builder.Entity<ApplicationDocument>(ad =>
+        {
+            ad.ToTable("ApplicationDocuments");
+            ad.ConfigureByConvention();
+
+            // Foreign Key
+            ad.HasOne(x => x.Application)
+              .WithMany()
+              .HasForeignKey(x => x.ApplicationId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+            // Properties
+            ad.Property(x => x.ApplicationId).IsRequired();
+            ad.Property(x => x.DocumentName).HasMaxLength(255).IsRequired();
+            ad.Property(x => x.DocumentUrl).HasMaxLength(500).IsRequired();
+            ad.Property(x => x.DocumentType).HasMaxLength(20).IsRequired();
+            ad.Property(x => x.MimeType).HasMaxLength(100);
+            ad.Property(x => x.Description).HasMaxLength(500);
+
+            // Indexes
+            ad.HasIndex(x => x.ApplicationId);
+            ad.HasIndex(x => x.DocumentType);
+            ad.HasIndex(x => x.IsPrimary);
         });
 
     }

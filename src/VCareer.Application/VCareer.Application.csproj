@@ -24,6 +24,7 @@
     <PackageReference Include="Volo.Abp.Account.Application" Version="9.3.2" />
     <PackageReference Include="Volo.Abp.Identity.Application" Version="9.3.2" />
     <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="9.3.2" />
+    <PackageReference Include="QuestPDF" Version="2024.7.3" />
   </ItemGroup>
 
   <ItemGroup>
