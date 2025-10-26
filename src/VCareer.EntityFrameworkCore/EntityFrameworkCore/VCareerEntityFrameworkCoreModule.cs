@@ -61,6 +61,9 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             
             // Repository cho Job Category
             options.AddRepository<VCareer.Models.Job.Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
+            
+            // Repository cho Job Posting
+            options.AddRepository<VCareer.Models.Job.Job_Posting, VCareer.Repositories.Job.JobPostingRepository>();
         });
         
         // ==========================================
@@ -73,6 +76,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<ILocationRepository, LocationRepository>();
         context.Services.AddTransient<IDistrictRepository, DistrictRepository>();
         context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
+        context.Services.AddTransient<IJobPostingRepository, JobPostingRepository>();
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

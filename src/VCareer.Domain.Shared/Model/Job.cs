@@ -43,6 +43,25 @@ namespace VCareer.Model
         Consultant = 12         // Tư vấn
     }
 
+    /// <summary>
+    /// Enum cho kinh nghiệm (đơn giản hóa - chỉ 1 field duy nhất)
+    /// </summary>
+    public enum ExperienceLevel
+    {
+        None = 0,           // Không yêu cầu kinh nghiệm
+        Under1 = 1,         // Dưới 1 năm
+        Year1 = 2,          // 1 năm
+        Year2 = 3,          // 2 năm
+        Year3 = 4,          // 3 năm
+        Year4 = 5,          // 4 năm
+        Year5 = 6,          // 5 năm
+        Year6 = 7,          // 6 năm
+        Year7 = 8,          // 7 năm
+        Year8 = 9,          // 8 năm
+        Year9 = 10,         // 9 năm
+        Year10 = 11,        // 10 năm
+        Over10 = 12         // Trên 10 năm
+    }
 
     public class Job
     {
