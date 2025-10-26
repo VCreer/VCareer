@@ -175,5 +175,22 @@ namespace VCareer.CV
         {
             return await _cvAppService.GetPublicCVsByCandidateAsync(candidateId);
         }
+
+        /// <summary>
+        /// Export CV Online thành PDF
+        /// </summary>
+        /// <param name="id">CV ID</param>
+        /// <returns>PDF file</returns>
+        [HttpGet("{id}/export-pdf")]
+        /*[Authorize(VCareerPermission.CV.Get)]*/
+        public async Task<IActionResult> ExportCVToPDFAsync(Guid id)
+        {
+            var pdfBytes = await _cvAppService.ExportCVToPDFAsync(id);
+            
+            var cv = await _cvAppService.GetCVAsync(id);
+            var fileName = $"{cv.CVName ?? "CV"}_{DateTime.Now:yyyyMMdd}.pdf";
+            
+            return File(pdfBytes, "application/pdf", fileName);
+        }
     }
 }

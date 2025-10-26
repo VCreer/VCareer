@@ -88,5 +88,12 @@ namespace VCareer.CV
         /// <param name="candidateId">Candidate ID</param>
         /// <returns>Danh sách CV public</returns>
         Task<List<CVDto>> GetPublicCVsByCandidateAsync(Guid candidateId);
+
+        /// <summary>
+        /// Export CV Online thành PDF
+        /// </summary>
+        /// <param name="id">CV ID</param>
+        /// <returns>PDF file bytes</returns>
+        Task<byte[]> ExportCVToPDFAsync(Guid id);
     }
 }

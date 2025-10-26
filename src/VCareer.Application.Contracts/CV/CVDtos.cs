@@ -13,9 +13,9 @@ namespace VCareer.CV
         [StringLength(255)]
         public string CVName { get; set; }
 
-        [Required]
+        /*[Required]
         [StringLength(50)]
-        public string CVType { get; set; } // "Online"
+        public string CVType { get; set; } // "Online"*/
 
         [StringLength(1000)]
         public string CareerObjective { get; set; }

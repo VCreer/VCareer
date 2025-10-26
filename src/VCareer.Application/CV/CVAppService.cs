@@ -426,5 +426,29 @@ namespace VCareer.CV
             var cvs = await _cvRepository.GetListAsync(c => c.CandidateId == candidateId && c.IsPublic);
             return ObjectMapper.Map<List<CurriculumVitae>, List<CVDto>>(cvs);
         }
+
+        public async Task<byte[]> ExportCVToPDFAsync(Guid id)
+        {
+            var userId = _currentUser.GetId();
+            
+            // Kiểm tra CV có thuộc về current user không
+            var cv = await _cvRepository.FirstOrDefaultAsync(c => c.Id == id && c.CandidateId == userId);
+            if (cv == null)
+            {
+                throw new UserFriendlyException("CV không tồn tại hoặc không thuộc về bạn.");
+            }
+
+            // Chỉ export CV Online
+            if (cv.CVType != "Online")
+            {
+                throw new UserFriendlyException("Chỉ có thể export CV Online thành PDF.");
+            }
+
+            // Generate PDF
+            var pdfService = new CVPDFService();
+            var pdfBytes = pdfService.GeneratePDF(cv);
+
+            return pdfBytes;
+        }
     }
 }
