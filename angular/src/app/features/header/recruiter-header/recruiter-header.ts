@@ -27,25 +27,26 @@ export class RecruiterHeaderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.currentRoute = this.router.url;
+    
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
       });
 
-    // Subscribe to language changes
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
     });
   }
 
   navigateToHome() {
-    window.location.reload();
+    this.router.navigate(['/recruiter/about-us']);
     this.closeMobileMenu();
   }
 
   navigateToAbout() {
-    this.router.navigate(['/about']);
+    this.router.navigate(['/recruiter/about-us']);
     this.closeMobileMenu();
   }
 
@@ -74,7 +75,6 @@ export class RecruiterHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  // Method để xử lý đăng nhập thành công
   onLoginSuccess() {
     this.navigationService.loginAsRecruiter();
     this.closeMobileMenu();
@@ -108,6 +108,9 @@ export class RecruiterHeaderComponent implements OnInit {
   }
 
   isActiveRoute(route: string): boolean {
+    if (route === '/') {
+      return this.currentRoute === '/' || this.currentRoute === '/home';
+    }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
   }
 }

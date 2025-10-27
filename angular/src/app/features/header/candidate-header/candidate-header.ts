@@ -85,7 +85,6 @@ export class CandidateHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  // Method để xử lý đăng nhập thành công
   onLoginSuccess() {
     this.navigationService.loginAsCandidate();
     this.closeMobileMenu();
@@ -97,12 +96,8 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToRecruiter() {
-    console.log('🚀 navigateToRecruiter() called');
-    // Chuyển sang recruiter header và navigate đến recruiter (vcareer.com/recruiter)
     this.headerTypeService.switchToRecruiter();
-    console.log('✅ Header switched to recruiter');
-    this.router.navigate(['/recruiter']);
-    console.log('✅ Navigated to /recruiter');
+    this.router.navigate(['/recruiter/about-us']);
     this.closeMobileMenu();
   }
 
@@ -121,7 +116,6 @@ export class CandidateHeaderComponent implements OnInit {
 
   isActiveRoute(route: string): boolean {
     if (route === '/') {
-      // Chỉ active khi đúng là trang chủ hoặc /home
       return this.currentRoute === '/' || this.currentRoute === '/home';
     }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
@@ -148,7 +142,6 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   onProfileMouseLeave() {
-    // Delay để user có thể di chuột vào menu
     setTimeout(() => {
       this.showProfileMenu = false;
     }, 300);
@@ -157,22 +150,19 @@ export class CandidateHeaderComponent implements OnInit {
   toggleNotificationMenu() {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
-      this.showProfileMenu = false; // Đóng profile menu khi mở notification
+      this.showProfileMenu = false;
     }
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as Node;
-    // Đóng menu nếu click ngoài khu vực notification
     if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
       this.showNotificationMenu = false;
     }
   }
 
   markAllAsRead() {
-    // Logic đánh dấu tất cả thông báo đã đọc
-    console.log('Đánh dấu tất cả thông báo đã đọc');
     this.showNotificationMenu = false;
   }
 
