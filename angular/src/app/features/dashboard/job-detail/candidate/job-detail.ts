@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslationService } from '../../../core/services/translation.service';
-import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
-import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
-import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { TranslationService } from '../../../../core/services/translation.service';
+import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
+import { SearchHeaderComponent } from '../../../../shared/components/search-header/search-header';
+import { ApplyJobModalComponent } from '../../../../shared/components/apply-job-modal/apply-job-modal';
 
 @Component({
   selector: 'app-job-detail',

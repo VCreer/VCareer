@@ -2,11 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslationService } from '../../../core/services/translation.service';
-import { JobFilterComponent } from '../../../shared/components/job-filter/job-filter';
-import { JobListComponent } from '../../../shared/components/job-list/job-list';
-import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
-import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
+import { TranslationService } from '../../../../core/services/translation.service';
+import { JobFilterComponent } from '../../../../shared/components/job-filter/job-filter';
+import { JobListComponent } from '../../../../shared/components/job-list/job-list';
+import { JobListDetailComponent } from '../../../../shared/components/job-list-detail/job-list-detail';
+import { SearchHeaderComponent } from '../../../../shared/components/search-header/search-header';
 
 @Component({
   selector: 'app-job',
