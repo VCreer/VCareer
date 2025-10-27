@@ -1,0 +1,321 @@
+.job-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+// ============================================
+// ✅ SEARCH HEADER with FilterBarComponent
+// ============================================
+.search-header {
+  background-color: #0f83ba;
+  padding: 2rem 0;
+  
+  .search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 1.5rem 0;
+      text-align: center;
+    }
+    
+    .search-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      
+      .search-field {
+        flex: 1;
+        position: relative;
+        
+        select {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          background-image: none;
+        }
+
+        select, input {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          background: white;
+          
+          &:focus {
+            outline: none;
+            border-color: #0f83ba;
+            box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+          }
+        }
+        
+        .dropdown-icon {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6b7280;
+          font-size: 0.8rem;
+          pointer-events: none;
+        }
+
+        .clear-icon {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6b7280;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: color 0.2s;
+          
+          &:hover {
+            color: #ef4444;
+          }
+        }
+      }
+    }
+
+    // ✅ Filter Info (Display selected filter count)
+    .filter-info {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      
+      .filter-badge {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// ✅ Styles for FilterBar inside Search Header
+::ng-deep .search-header {
+  .filter-bar-container {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .main-search-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    
+    &:focus {
+      outline: none;
+      border-color: #0046FF;
+      box-shadow: 0 0 0 3px rgba(0, 70, 255, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+
+  .main-search-btn {
+    background-color: #0046FF;
+    color: white;
+    border: none;
+    padding: 0.875rem 2.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    
+    &:hover {
+      background-color: #0033CC;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 70, 255, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+    
+    .search-icon {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+
+// Main Content
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  transition: all 0.3s ease;
+  
+  &.show-detail-job {
+    grid-template-columns: 1fr 2fr;
+  }
+  
+  .filter-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    .clear-filters-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #6b7280;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: #e2e8f0;
+        color: #374151;
+      }
+    }
+  }
+  
+  .job-list-column {
+    // ✅ Loading State
+    .loading-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      
+      p {
+        font-size: 1.125rem;
+        color: #64748b;
+        margin: 0;
+      }
+    }
+
+    // ✅ Result Header
+    .result-header {
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      
+      p {
+        margin: 0;
+        font-size: 1rem;
+        color: #475569;
+        
+        strong {
+          color: #0f83ba;
+          font-weight: 600;
+        }
+      }
+    }
+
+    // ✅ No Results
+    .no-results {
+      text-align: center;
+      padding: 4rem 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      
+      p {
+        font-size: 1.125rem;
+        color: #94a3b8;
+        margin: 0;
+      }
+    }
+  }
+
+  .job-detail-column {
+    // Job detail styles will be handled by job-list-detail component
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    
+    &.show-detail-job {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-column {
+      order: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .job-list-column {
+      order: 1;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .search-header {
+    .search-container {
+      .search-title {
+        .page-title {
+          font-size: 2rem;
+        }
+      }
+      
+      .search-row {
+        flex-direction: column;
+        gap: 0.75rem;
+        
+        .search-field {
+          width: 100%;
+        }
+        
+        .search-btn {
+          width: 100%;
+        }
+      }
+    }
+  }
+  
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-header {
+    padding: 0.75rem 0;
+    
+    .search-container {
+      padding: 0 0.75rem;
+    }
+  }
+  
+  .info-bar {
+    padding: 0.75rem 0;
+    
+    .info-content {
+      padding: 0 0.75rem;
+    }
+  }
+}

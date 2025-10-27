@@ -68,12 +68,17 @@ export class ProfileMockService {
    */
   mockUploadCV(file: File): Observable<any> {
     const cvUrl = `assets/cv/cv-${Date.now()}.pdf`;
+    const fileName = file.name;
     this.mockProfile.cvUrl = cvUrl;
     
     return of({
       success: true,
-      data: { cvUrl },
+      data: { 
+        cvUrl,
+        fileName: fileName
+      },
       message: 'CV đã được tải lên thành công'
     }).pipe(delay(2000));
   }
+
 }

@@ -1,0 +1,60 @@
+<div class="hero-section">
+  <div class="hero-background" [style.background-image]="'url(' + backgroundImage + ')'"></div>
+  
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1>{{ translate(title) }}</h1>
+      <p>{{ translate(subtitle) }}</p>
+    </div>
+    
+    <!-- ✅ REPLACED: Dùng FilterBarComponent thay vì dropdown cũ -->
+    <div class="search-container" *ngIf="showSearchForm">
+      <app-filter-bar
+        [categories]="categories"
+        [provinces]="provinces"
+        (categorySelected)="onCategorySelected($event)"
+        (locationSelected)="onLocationSelected($event)">
+        
+        <!-- Search Input (ở giữa) -->
+        <input 
+          search-input
+          type="text" 
+          class="main-search-input hero-search-input" 
+          [placeholder]="translate('homepage.search_placeholder') || 'Tìm kiếm việc làm, công ty...'"
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="onSearch()"
+        />
+        
+        <!-- Search Button (bên phải) -->
+        <button 
+          search-button
+          class="btn-search hero-search-btn"
+          (click)="onSearch()">
+          <span class="search-label">{{ translate('homepage.search_button') || 'Tìm kiếm' }}</span>
+        </button>
+      </app-filter-bar>
+    </div>
+
+    <!-- Inline statistics row under search bar -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg>
+        </div>
+        <div class="content"><div class="num">25,850</div><div class="label">{{ translate('homepage.stats.jobs') }}</div></div>
+      </div>
+      <div class="hero-stat">
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="content"><div class="num">10,250</div><div class="label">{{ translate('homepage.stats.candidates') }}</div></div>
+      </div>
+      <div class="hero-stat">
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V12h6v9"/></svg>
+        </div>
+        <div class="content"><div class="num">18,400</div><div class="label">{{ translate('homepage.stats.companies') }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>

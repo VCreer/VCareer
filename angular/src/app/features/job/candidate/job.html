@@ -1,0 +1,114 @@
+<div class="job-page">
+  <!-- ============================================ -->
+  <!-- ✅ TOP SEARCH BAR - Using FilterBarComponent -->
+  <!-- ============================================ -->
+  <div class="search-header">
+    <div class="search-container">
+      <h1 class="page-title">{{ translate('job_page.title') }}</h1>
+      
+      <!-- ✅ FilterBarComponent (Category + Search + Location + Button) -->
+      <app-filter-bar
+        [categories]="categories"
+        [provinces]="provinces"
+        [selectedCategoryIds]="selectedCategoryIds"
+        [selectedProvinceIds]="selectedProvinceIds"
+        [selectedDistrictIds]="selectedDistrictIds"
+        (categorySelected)="onCategorySelected($event)"
+        (locationSelected)="onLocationSelected($event)"
+      >
+        <!-- Search Input -->
+        <input
+          search-input
+          type="text"
+          class="main-search-input"
+          placeholder="{{ translate('job_page.position_placeholder') }}"
+          [(ngModel)]="searchKeyword"
+        />
+
+        <!-- Search Button -->
+        <button
+          search-button
+          class="main-search-btn"
+          (click)="onMainSearch({ keyword: searchKeyword })"
+        >
+          <i class="search-icon">🔍</i>
+          {{ translate('job_page.search_button') }}
+        </button>
+      </app-filter-bar>
+
+      <!-- ✅ Display selected filter count -->
+      <div class="filter-info" *ngIf="selectedCategoryIds.length > 0 || selectedProvinceIds.length > 0">
+        <span *ngIf="selectedCategoryIds.length > 0" class="filter-badge">
+          Danh mục Nghề ({{ selectedCategoryIds.length }})
+        </span>
+        <span *ngIf="selectedProvinceIds.length > 0" class="filter-badge">
+          Tỉnh/TP ({{ selectedProvinceIds.length }})
+        </span>
+        <span *ngIf="selectedDistrictIds.length > 0" class="filter-badge">
+          Quận/Huyện ({{ selectedDistrictIds.length }})
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT: Filter + Job List + Detail -->
+  <!-- ============================================ -->
+  <div class="main-content" [class.show-detail-job]="selectedJob">
+    <!-- Left Column - Filter (Hide when showing detail) -->
+    <div class="filter-column" *ngIf="!selectedJob">
+      <app-job-filter
+        (filterChange)="onFilterChange($event)"
+      ></app-job-filter>
+      
+      <!-- Clear Filters Button -->
+      <button 
+        class="clear-filters-btn"
+        (click)="onClearFilters()">
+        {{ translate('job_filter.clear_filters') }}
+      </button>
+    </div>
+
+    <!-- Middle Column - Job List -->
+    <div class="job-list-column">
+      <!-- ✅ Loading State -->
+      <div *ngIf="isSearching" class="loading-state">
+        <p>Đang tìm kiếm việc làm...</p>
+      </div>
+
+      <!-- ✅ Job List -->
+      <div *ngIf="!isSearching">
+        <!-- Result Count -->
+        <div class="result-header" *ngIf="totalCount > 0">
+          <p>Tìm thấy <strong>{{ totalCount }}</strong> việc làm</p>
+        </div>
+
+        <!-- No Results -->
+        <div class="no-results" *ngIf="totalCount === 0">
+          <p>Không tìm thấy việc làm phù hợp</p>
+        </div>
+
+        <!-- ✅ JobListComponent with API data -->
+        <app-job-list
+          [jobs]="jobs"
+          [totalCount]="totalCount"
+          [isLoading]="isSearching"
+          [selectedJobId]="selectedJob?.id"
+          (quickView)="onQuickView($event)"
+          (jobClick)="onJobClick($event)"
+          (jobHidden)="onJobHidden()"
+        ></app-job-list>
+      </div>
+    </div>
+
+    <!-- Right Column - Job Detail -->
+    <div class="job-detail-column" *ngIf="selectedJob">
+      <app-job-list-detail
+        [selectedJob]="selectedJob"
+        (closeDetail)="onCloseDetail()"
+        (viewDetail)="onViewDetail($event)"
+        (applyJob)="onApply($event)"
+      ></app-job-list-detail>
+    </div>
+  </div>
+</div>
