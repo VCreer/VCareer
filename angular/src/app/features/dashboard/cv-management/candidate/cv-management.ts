@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslationService } from '../../../core/services/translation.service';
-import { UploadedCvService, UploadedCv } from '../../../core/services/uploaded-cv.service';
-import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
-import { CvListComponent } from '../../../shared/components/cv-list/cv-list';
-import { ButtonComponent } from '../../../shared/components/button/button';
-import { ProfilePictureEditModal } from '../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
-import { UploadCvModal } from '../../../shared/components/upload-cv-modal/upload-cv-modal';
-import { DownloadCvModal } from '../../../shared/components/download-cv-modal/download-cv-modal';
-import { RenameCvModal } from '../../../shared/components/rename-cv-modal/rename-cv-modal';
-import { UploadedCvCard } from '../../../shared/components/uploaded-cv-card/uploaded-cv-card';
-import { CvService, Cv } from '../../../proxy/api/cv.service';
+import { TranslationService } from '../../../../core/services/translation.service';
+import { UploadedCvService, UploadedCv } from '../../../../core/services/uploaded-cv.service';
+import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
+import { CvListComponent } from '../../../../shared/components/cv-list/cv-list';
+import { ButtonComponent } from '../../../../shared/components/button/button';
+import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
+import { UploadCvModal } from '../../../../shared/components/upload-cv-modal/upload-cv-modal';
+import { DownloadCvModal } from '../../../../shared/components/download-cv-modal/download-cv-modal';
+import { RenameCvModal } from '../../../../shared/components/rename-cv-modal/rename-cv-modal';
+import { UploadedCvCard } from '../../../../shared/components/uploaded-cv-card/uploaded-cv-card';
+import { CvService, Cv } from '../../../../proxy/api/cv.service';
 
 @Component({
   selector: 'app-cv-management',

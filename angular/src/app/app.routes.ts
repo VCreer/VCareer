@@ -21,15 +21,15 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'candidate/cv-management',
-        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
       },
       {
         path: 'candidate/job',
-        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+        loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
       },
       {
         path: 'candidate/job-detail',
-        loadComponent: () => import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+        loadComponent: () => import('./features/dashboard/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       }
     ]
   },
@@ -89,7 +89,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'about-us',
-        loadComponent: () => import('./features/about-us/recruiter/about-us').then(c => c.AboutUs),
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
       }
     ]
   },
