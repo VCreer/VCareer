@@ -85,6 +85,10 @@ export class MockApiInterceptor implements HttpInterceptor {
     if (url.includes('/api/profile/cv') && method === 'POST') {
       return this.profileMockService.mockUploadCV(body);
     }
+    
+    if (url.includes('/api/profile') && method === 'PUT') {
+      return this.profileMockService.mockUpdateProfile(body);
+    }
 
     // Nếu không match với mock endpoints, chuyển request đến server thật
     return next.handle(req);

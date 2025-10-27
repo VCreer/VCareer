@@ -1,0 +1,369 @@
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .job-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+.job-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+
+      .job-card-content .details-column .job-tags-row .quick-view-btn {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .job-card-content .details-column .bottom-section .action-icons .hide-icon {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+  // Two Column Layout
+  .job-card-content {
+    display: flex;
+    gap: 1rem;
+
+    // Column 1: Logo
+    .logo-column {
+      flex-shrink: 0;
+      width: 60px;
+
+      .company-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+
+    // Column 2: Details
+    .details-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .job-header {
+        margin-bottom: 0.5rem;
+
+        .job-title-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
+          
+          .job-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+            line-height: 1.4;
+            flex: 1;
+          }
+          
+          .title-salary {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0f83ba;
+            white-space: nowrap;
+            margin-left: 1rem;
+          }
+        }
+      }
+
+      .company-info {
+        margin-bottom: 0.75rem;
+
+        .company-name {
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: #374151;
+          margin: 0;
+        }
+      }
+
+      // Job Tags Row (contains tags and quick view button)
+      .job-tags-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .job-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+
+          .tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+          }
+        }
+
+        // Quick View Button styling
+        .quick-view-btn {
+          background: #0f83ba;
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          opacity: 0;
+          visibility: hidden;
+
+          &:hover {
+            background: #0c6b9a;
+            transform: translateY(-1px);
+          }
+        }
+      }
+
+      // Horizontal Divider
+      .horizontal-divider {
+        width: 100%;
+        height: 1px;
+        background: #e5e7eb;
+        margin: 1rem 0;
+      }
+
+      // Bottom Section - Action Icons positioned at bottom right
+      .bottom-section {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
+        .action-icons {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .hide-icon {
+            color: #9ca3af;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+            opacity: 0;
+            visibility: hidden;
+
+            &:hover {
+              color: #ef4444;
+              background: #fef2f2;
+            }
+          }
+
+
+          .save-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+
+            &:hover {
+              color: #0f83ba;
+            }
+
+            &.saved {
+              color: #0f83ba;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+
+  .empty-state-image {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+
+  .empty-state-text {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin: 0;
+    font-weight: 500;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+}
+
+// Pagination
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  .page-btn {
+    background: transparent;
+    border: 1px solid #0F83BA;
+    color: #0F83BA;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #0F83BA;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+
+    .current-page {
+      font-weight: 600;
+      color: #0F83BA;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .job-list {
+    .job-card {
+      padding: 1rem;
+
+        &:hover {
+          .job-card-content .details-column .job-tags-row .quick-view-btn {
+            opacity: 1;
+            visibility: visible;
+          }
+
+          .job-card-content .details-column .bottom-section .action-icons .hide-icon {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+
+      .job-card-content {
+        gap: 0.75rem;
+
+        .logo-column {
+          width: 50px;
+
+          .company-logo {
+            width: 50px;
+            height: 50px;
+          }
+        }
+
+        .details-column {
+          .job-header {
+            .job-title-row {
+              .job-title {
+                font-size: 1rem;
+              }
+              
+              .title-salary {
+                font-size: 0.8rem;
+                margin-left: 0.5rem;
+              }
+            }
+          }
+
+          .company-info {
+            .company-name {
+              font-size: 0.85rem;
+            }
+          }
+
+          .job-tags-row {
+            .job-tags {
+              .tag {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+              }
+            }
+
+            .quick-view-btn {
+              font-size: 0.75rem;
+              padding: 0.4rem 0.8rem;
+              opacity: 0;
+              visibility: hidden;
+            }
+          }
+
+          .action-icons {
+            .save-btn {
+              font-size: 1rem;
+              padding: 0.4rem;
+            }
+
+            .hide-icon {
+              font-size: 0.9rem;
+              padding: 0.4rem;
+              opacity: 0;
+              visibility: hidden;
+            }
+          }
+        }
+      }
+    }
+  }
+}

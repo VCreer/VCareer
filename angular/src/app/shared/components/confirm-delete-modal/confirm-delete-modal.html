@@ -1,0 +1,23 @@
+<div class="confirm-modal" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>{{ translate('confirm_delete.title') }}</h2>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <p>{{ translate('confirm_delete.message') }}</p>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="onClose()">
+        {{ translate('confirm_delete.cancel') }}
+      </button>
+      <button class="delete-btn" (click)="onConfirm()">
+        {{ translate('confirm_delete.delete') }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<div class="uploaded-cv-card" (click)="onCloseDropdown()">
+  <!-- Star Icon -->
+  <div class="cv-star" [class.active]="isStarred" (click)="onToggleStar()">
+    <i class="fa fa-star star-icon"></i>
+  </div>
+
+  <!-- CV Folder Icon -->
+  <div class="cv-preview-image">
+    <img src="assets/images/cv-management/folder-cv.png" alt="CV Folder" class="cv-image">
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="cv-hover-actions">
+    <button class="action-btn download-btn" (click)="onDownload()">
+      <i class="fa fa-download btn-icon"></i>
+      <span class="btn-text">{{ translate('cv_card.download') }}</span>
+    </button>
+    
+    <div class="more-menu-container">
+      <button class="action-btn more-btn" (click)="onMoreOptions(); $event.stopPropagation()">
+        <i class="fa fa-ellipsis-h btn-icon"></i>
+      </button>
+      
+      <!-- More Menu -->
+      <div class="more-menu" [class.show]="showDropdown" (click)="$event.stopPropagation()">
+        <div class="menu-item" (click)="onCopyLink()">
+          <i class="fa fa-copy menu-icon"></i>
+          <span>{{ translate('cv_card.copy_link') }}</span>
+        </div>
+        <div class="menu-item" (click)="onShareFacebook()">
+          <i class="fa fa-facebook menu-icon"></i>
+          <span>{{ translate('cv_card.share_facebook') }}</span>
+        </div>
+        <div class="menu-separator"></div>
+        <div class="menu-item" (click)="onRename()">
+          <i class="fa fa-edit menu-icon"></i>
+          <span>{{ translate('cv_card.rename') }}</span>
+        </div>
+        <div class="menu-item delete-item" (click)="onDelete()">
+          <i class="fa fa-trash menu-icon"></i>
+          <span>{{ translate('cv_card.delete') }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
