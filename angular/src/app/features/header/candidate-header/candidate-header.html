@@ -9,35 +9,35 @@
     <nav class="nav-menu desktop-nav">
       <ul class="nav-list">
         <li class="nav-item">
-          <a (click)="navigateToHome()" 
+          <a (click)="navigateToHome(); $event.preventDefault()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
             {{ translate('header.home') }}
           </a>
         </li>
         <li class="nav-item">
-          <a (click)="navigateToJobs()" 
+          <a (click)="navigateToJobs(); $event.preventDefault()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/candidate/job')">
             {{ translate('header.jobs') }}
           </a>
         </li>
         <li class="nav-item">
-          <a (click)="navigateToCompanies()" 
+          <a (click)="navigateToCompanies(); $event.preventDefault()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/candidate/companies')">
             {{ translate('header.companies') }}
           </a>
         </li>
         <li class="nav-item">
-          <a (click)="navigateToAbout()" 
+          <a (click)="navigateToAbout(); $event.preventDefault()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/about')">
             {{ translate('header.about') }}
           </a>
         </li>
         <li class="nav-item">
-          <a (click)="navigateToContact()" 
+          <a (click)="navigateToContact(); $event.preventDefault()" 
              class="nav-link" 
              [class.active]="isActiveRoute('/contact')">
             {{ translate('header.contact') }}
@@ -290,35 +290,35 @@
   <nav class="nav-menu mobile-nav" [class.open]="isMenuOpen">
     <ul class="nav-list">
       <li class="nav-item">
-        <a (click)="navigateToHome()" 
+        <a (click)="navigateToHome(); $event.preventDefault()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/') || isActiveRoute('/home')">
           {{ translate('header.home') }}
         </a>
       </li>
       <li class="nav-item">
-        <a (click)="navigateToJobs()" 
+        <a (click)="navigateToJobs(); $event.preventDefault()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/candidate/job')">
           {{ translate('header.jobs') }}
         </a>
       </li>
       <li class="nav-item">
-        <a (click)="navigateToCompanies()" 
+        <a (click)="navigateToCompanies(); $event.preventDefault()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/candidate/companies')">
           {{ translate('header.companies') }}
         </a>
       </li>
       <li class="nav-item">
-        <a (click)="navigateToAbout()" 
+        <a (click)="navigateToAbout(); $event.preventDefault()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/about')">
           {{ translate('header.about') }}
         </a>
       </li>
       <li class="nav-item">
-        <a (click)="navigateToContact()" 
+        <a (click)="navigateToContact(); $event.preventDefault()" 
            class="nav-link" 
            [class.active]="isActiveRoute('/contact')">
           {{ translate('header.contact') }}
