@@ -85,7 +85,11 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
+      },
+      {
+        path: 'about-us',
+        loadComponent: () => import('./features/about-us/recruiter/about-us').then(c => c.AboutUs),
       }
     ]
   },
