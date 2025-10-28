@@ -83,7 +83,7 @@ export class CvManagementComponent implements OnInit {
 
   onCreateCv() {
     console.log('onCreateCv called');
-    this.showUploadCvModal = true;
+    this.router.navigate(['/candidate/cv-sample']);
   }
 
   onCloseUploadCvModal() {
