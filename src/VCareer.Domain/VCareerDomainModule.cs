@@ -18,6 +18,9 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.MailKit;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using System;
 
 
 namespace VCareer;
@@ -41,11 +44,23 @@ namespace VCareer;
      )]
 public class VCareerDomainModule : AbpModule
 {
+
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        var _configuration = context.Services.GetConfiguration();
+        var lockoutConfig = _configuration.GetSection("Identity:Lockout");
+
         Configure<AbpMultiTenancyOptions>(options =>
         {
             options.IsEnabled = MultiTenancyConsts.IsEnabled;
+        });
+
+        //cấu hình phần liên quan đến lock tài khoản
+        Configure<IdentityOptions>(options =>
+        {
+            options.Lockout.AllowedForNewUsers = lockoutConfig.GetValue("AllowedForNewUsers", true);
+            options.Lockout.MaxFailedAccessAttempts = lockoutConfig.GetValue("MaxFailedAccessAttempts", 5);
+            options.Lockout.DefaultLockoutTimeSpan = lockoutConfig.GetValue("DefaultLockoutTimeSpan", TimeSpan.FromMinutes(10));
         });
 
 

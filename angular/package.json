@@ -31,7 +31,6 @@
     "@angular/platform-browser": "~20.0.0",
     "@angular/platform-browser-dynamic": "~20.0.0",
     "@angular/router": "~20.0.0",
-    "@babel/runtime": "^7.28.4",
     "@swimlane/ngx-datatable": "^22.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.0.0",
