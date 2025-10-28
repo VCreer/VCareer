@@ -20,7 +20,7 @@ namespace VCareer.IServices.IJobServices
         Task<List<ProvinceDto>> SearchProvincesByNameAsync(string searchTerm);
 
 
-        //Task<ProvinceDto> GetProvinceByIdAsync(int provinceId);
+        // Task<ProvinceDto> GetProvinceByIdAsync(int provinceId);
 
         //Task<DistrictDto> GetDistrictByIdAsync(int districtId);
 

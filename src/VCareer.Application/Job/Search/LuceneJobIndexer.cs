@@ -274,6 +274,9 @@ namespace VCareer.Job.Search
             // ========================================
             // LOCATION (Load province/district names để search)
             // ========================================
+            //doc.Add(new Int32Field("ProvinceId", job.ProvinceId, Field.Store.NO));
+            //doc.Add(new Int32Field("DistrictId", job.DistrictId, Field.Store.NO));
+
             doc.Add(new StringField("ProvinceId", job.ProvinceId.ToString(), Field.Store.NO));
             doc.Add(new StringField("DistrictId", job.DistrictId.ToString(), Field.Store.NO));
 
@@ -311,6 +314,10 @@ namespace VCareer.Job.Search
             doc.Add(new StringField("PositionType", ((int)job.PositionType).ToString(), Field.Store.NO));
             doc.Add(new StringField("IsUrgent", job.IsUrgent.ToString(), Field.Store.NO));
             doc.Add(new StringField("Status", ((int)job.Status).ToString(), Field.Store.NO));
+
+
+
+          
 
             // Dates (store as ticks để sort)
             doc.Add(new Int64Field("PostedAt", job.PostedAt.Ticks, Field.Store.NO));
@@ -409,6 +416,7 @@ namespace VCareer.Job.Search
                 foreach (var id in input.ProvinceIds)
                 {
                     provinceQuery.Add(new TermQuery(new Term("ProvinceId", id.ToString())), Occur.SHOULD);
+                   // provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
                 }
                 boolQuery.Add(provinceQuery, Occur.MUST);
             }
@@ -422,9 +430,19 @@ namespace VCareer.Job.Search
                 foreach (var id in input.DistrictIds)
                 {
                     districtQuery.Add(new TermQuery(new Term("DistrictId", id.ToString())), Occur.SHOULD);
+                   // districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
                 }
                 boolQuery.Add(districtQuery, Occur.MUST);
             }
+
+
+            // Index
+            //doc.Add(new Int32Field("ProvinceId", job.ProvinceId, Field.Store.NO));
+            //doc.Add(new Int32Field("DistrictId", job.DistrictId, Field.Store.NO));
+
+            // Search  
+            //provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
+            //districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
 
             // ========================================
             // FILTER: Salary (theo radio buttons UI)

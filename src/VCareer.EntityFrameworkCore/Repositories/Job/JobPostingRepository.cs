@@ -277,6 +277,7 @@ namespace VCareer.Repositories.Job
             return orderedJobs;
         }
 
+
         /// <summary>
         /// Lấy tất cả jobs active (cho reindex Lucene)
         /// </summary>
@@ -296,12 +297,23 @@ namespace VCareer.Repositories.Job
         /// </summary>
         public async Task IncrementViewCountAsync(Guid jobId)
         {
-            //var dbContext = await GetDbContextAsync();
+            var dbContext = await GetDbContextAsync();
 
-            // Atomic update (không cần load entity)
-            //await dbContext.Database.ExecuteSqlRawAsync(
-            //    "UPDATE JobPostings SET ViewCount = ViewCount + 1 WHERE Id = {0}",
-            //    jobId);
+            // Tìm job theo Id
+            var job = await dbContext.JobPostings
+                .FirstOrDefaultAsync(j => j.Id == jobId);
+
+            if (job == null)
+            {
+                // Không tìm thấy job → có thể log hoặc bỏ qua
+                return;
+            }
+
+            // Tăng ViewCount
+            job.ViewCount += 1;
+
+            // Cập nhật database
+            await dbContext.SaveChangesAsync();
 
 
         }

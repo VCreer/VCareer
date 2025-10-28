@@ -24,10 +24,10 @@ namespace VCareer.Repositories.Job
         /// </summary>
         Task<List<Province>> SearchProvincesAsync(string searchTerm);
 
-        ///// <summary>
-        ///// Lấy province theo ID (để validate provinceId từ FE)
-        ///// </summary>
-        //Task<Province?> GetProvinceByIdAsync(int provinceId);
+
+        // Task<string?> GetNameProvince(int provinedId);
+
+        Task<Province?> GetProvinceByIdAsync(int provinceId);
 
         ///// <summary>
         ///// Lấy district theo ID (để validate districtId từ FE)

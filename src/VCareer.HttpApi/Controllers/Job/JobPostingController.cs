@@ -22,6 +22,19 @@ namespace VCareer.Controllers.Job
             _jobPostingService = jobPostingService;
         }
 
+
+
+        //[HttpPut]
+        //[Route("viewcount/{id}")]
+        //public async Task<ActionResult> IncrementViewCountAsync(Guid id)
+        //{
+        //    await _jobPostingService.IncrementViewCountAsync(id);
+        //    return Ok("tăng view thành công");
+            
+        //}
+
+
+
         #region Search & List
         //tim kiem
         [HttpPost]
@@ -240,6 +253,9 @@ namespace VCareer.Controllers.Job
         //}
 
         // #endregion
+
+
+
     }
 }
 

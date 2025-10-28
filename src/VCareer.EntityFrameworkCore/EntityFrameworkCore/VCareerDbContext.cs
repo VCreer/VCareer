@@ -154,7 +154,21 @@ public class VCareerDbContext :
             b.ToTable("Provinces");
             b.ConfigureByConvention();
 
-            b.HasMany(x => x.Districts).WithOne(x => x.Province).HasForeignKey(x => x.ProvinceId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Districts)
+            .WithOne(x => x.Province)
+            .HasForeignKey(x => x.ProvinceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+            b.HasMany(x => x.Job_Posting)
+         .WithOne(x => x.Province)
+         .HasForeignKey(x => x.ProvinceId)
+         .OnDelete(DeleteBehavior.Cascade);
+
+
+
+
+
         });
 
         //-----------fluent api cho disstrict------------
@@ -173,7 +187,7 @@ public class VCareerDbContext :
    {
        b.ToTable("JobCategories");
        b.ConfigureByConvention();
-       
+
        // Properties configuration
        b.Property(x => x.Name).HasMaxLength(200).IsRequired();
        b.Property(x => x.Slug).HasMaxLength(250).IsRequired();
@@ -181,18 +195,18 @@ public class VCareerDbContext :
        b.Property(x => x.SortOrder).HasDefaultValue(0);
        b.Property(x => x.IsActive).HasDefaultValue(true);
        b.Property(x => x.JobCount).HasDefaultValue(0);
-    
+
        // Indexes for performance
        b.HasIndex(x => x.Slug).IsUnique();
        b.HasIndex(x => x.ParentId);
        b.HasIndex(x => x.IsActive);
-       
+
        // Relationships
        b.HasOne(x => x.Parent)
         .WithMany(x => x.Children)
         .HasForeignKey(x => x.ParentId)
         .OnDelete(DeleteBehavior.Restrict);
-        
+
        b.HasMany(x => x.JobPostings)
         .WithOne(x => x.JobCategory)
         .HasForeignKey(x => x.JobCategoryId)
@@ -237,6 +251,14 @@ public class VCareerDbContext :
                .WithOne(x => x.JobPosting)
                .HasForeignKey(x => x.JobPostingId)
                .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
+
+
+              b.HasOne(j => j.Province)
+                .WithMany(p => p.Job_Posting)
+                .HasForeignKey(j => j.ProvinceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
 
           });
 

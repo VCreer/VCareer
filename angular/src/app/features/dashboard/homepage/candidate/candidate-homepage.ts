@@ -409,14 +409,21 @@ export class CandidateHomepageComponent implements OnInit {
 
   /**
    * Event handler: Khi user chọn categories từ FilterBar
+   * ✅ AUTO NAVIGATE: Chuyển sang trang job ngay khi chọn category
    */
   onCategorySelected(categoryIds: string[]) {
     this.selectedCategoryIds = categoryIds;
     console.log('✅ Categories selected:', categoryIds);
+    
+    // ✅ AUTO NAVIGATE: Chuyển sang trang job ngay lập tức
+    if (categoryIds.length > 0) {
+      this.performJobSearch();
+    }
   }
 
   /**
    * Event handler: Khi user chọn locations từ FilterBar
+   * ✅ AUTO NAVIGATE: Chuyển sang trang job ngay khi chọn location
    */
   onLocationSelected(location: {provinceIds: number[], districtIds: number[]}) {
     this.selectedProvinceIds = location.provinceIds;
@@ -424,6 +431,12 @@ export class CandidateHomepageComponent implements OnInit {
     console.log('✅ Locations selected:');
     console.log('   - Province IDs:', location.provinceIds);
     console.log('   - District IDs:', location.districtIds);
+    
+    // ✅ AUTO NAVIGATE: Chuyển sang trang job ngay lập tức
+    const totalLocationCount = location.provinceIds.length + location.districtIds.length;
+    if (totalLocationCount > 0) {
+      this.performJobSearch();
+    }
   }
 
   onPageChange(page: number) {

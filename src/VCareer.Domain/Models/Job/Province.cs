@@ -28,5 +28,7 @@ namespace VCareer.Models.Job
         /// Navigation property - Danh sách quận/huyện
         /// </summary>
         public virtual ICollection<District> Districts { get; set; } = new List<District>();
+
+        public virtual ICollection<Job_Posting> Job_Posting { get; set; } = new List<Job_Posting>();
     }
 }
