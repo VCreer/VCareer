@@ -36,18 +36,6 @@
         </button>
       </app-filter-bar>
 
-      <!-- ✅ Display selected filter count -->
-      <div class="filter-info" *ngIf="selectedCategoryIds.length > 0 || selectedProvinceIds.length > 0">
-        <span *ngIf="selectedCategoryIds.length > 0" class="filter-badge">
-          Danh mục Nghề ({{ selectedCategoryIds.length }})
-        </span>
-        <span *ngIf="selectedProvinceIds.length > 0" class="filter-badge">
-          Tỉnh/TP ({{ selectedProvinceIds.length }})
-        </span>
-        <span *ngIf="selectedDistrictIds.length > 0" class="filter-badge">
-          Quận/Huyện ({{ selectedDistrictIds.length }})
-        </span>
-      </div>
     </div>
   </div>
 

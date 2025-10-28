@@ -28,7 +28,7 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
       },
       {
-        path: 'candidate/job-detail',
+        path: 'candidate/job-detail/:id',
         loadComponent: () => import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       }
     ]

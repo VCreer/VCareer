@@ -720,6 +720,9 @@ namespace VCareer.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("WorkLocation")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -732,6 +735,8 @@ namespace VCareer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("JobCategoryId");
+
+                    b.HasIndex("ProvinceId");
 
                     b.HasIndex("RecruiterId");
 
@@ -3223,6 +3228,12 @@ namespace VCareer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("VCareer.Models.Job.Province", "Province")
+                        .WithMany("Job_Posting")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VCareer.Models.Users.RecruiterProfile", "RecruiterProfile")
                         .WithMany("JobPostings")
                         .HasForeignKey("RecruiterId")
@@ -3230,6 +3241,8 @@ namespace VCareer.Migrations
                         .IsRequired();
 
                     b.Navigation("JobCategory");
+
+                    b.Navigation("Province");
 
                     b.Navigation("RecruiterProfile");
                 });
@@ -3483,6 +3496,8 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Job.Province", b =>
                 {
                     b.Navigation("Districts");
+
+                    b.Navigation("Job_Posting");
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>

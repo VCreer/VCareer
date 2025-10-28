@@ -9,7 +9,7 @@ import { provideTenantManagementConfig } from '@abp/ng.tenant-management/config'
 import { registerLocale } from '@abp/ng.core/locale';
 import { provideThemeLeptonX } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout } from '@abp/ng.theme.lepton-x/layouts';
-import { provideLogo, withEnvironmentOptions } from "@volo/ngx-lepton-x.core";
+import { provideLogo, withEnvironmentOptions } from '@volo/ngx-lepton-x.core';
 import { ApplicationConfig } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
       withOptions({
         environment,
         registerLocaleFn: registerLocale(),
-      }),
+      })
     ),
     provideAbpOAuth(),
     provideIdentityConfig(),
@@ -60,12 +60,12 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MockApiInterceptor,
-      multi: true
+      multi: true,
     },
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,
     //   useClass: CustomAuthService
     // }
-  ]
+  ],
 };

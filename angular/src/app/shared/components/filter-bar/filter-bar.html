@@ -8,7 +8,7 @@
     [class.active]="showCategoryDropdown"
   >
     <span class="filter-icon">☰</span>
-    <span class="filter-label">Danh mục Nghề</span>
+    <span class="filter-label">Danh mục Nghề{{ getCategoryCountText() }}</span>
     <span class="dropdown-arrow" [class.open]="showCategoryDropdown">▼</span>
   </button>
 
@@ -23,8 +23,7 @@
     (click)="toggleLocationDropdown()"
     [class.active]="showLocationDropdown"
   >
-    <span class="filter-icon">📍</span>
-    <span class="filter-label">Địa điểm</span>
+    <span class="filter-label">Địa điểm{{ getLocationCountText() }}</span>
     <span class="dropdown-arrow" [class.open]="showLocationDropdown">▼</span>
   </button>
 
@@ -173,8 +172,8 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+      </div>
+      </div>
       </div>
     </div>
 
@@ -295,11 +294,11 @@
         </div>
       </div>
     </div>
-
+    
     <!-- Footer Actions -->
     <div class="location-footer">
       <button class="location-btn-clear" (click)="clearAllLocations()">Bỏ chọn tất cả</button>
       <button class="location-btn-apply" (click)="applyLocationFilter()">Áp dụng</button>
-    </div>
+  </div>
   </div>
 </div>

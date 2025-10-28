@@ -83,6 +83,7 @@
     padding: 14px 20px;
     font-size: 16px;
     border: 2px solid #e5e7eb;
+    border-radius: 10px;
     
     &:focus {
       border-color: #0F83BA;
@@ -92,15 +93,17 @@
   
   // ✅ Hero search button styles  
   ::ng-deep .hero-search-btn {
-    padding: 14px 32px;
+    padding: 14px 28px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     background: #0F83BA;
+    border: none;
+    color: #fff;
+    border-radius: 10px;
     
     &:hover {
       background: #0c6a98;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(15, 131, 186, 0.4);
+      color: #fff;
     }
   }
 }

@@ -32,12 +32,12 @@ namespace VCareer.Dto.Job
         /// Province name (ví dụ: "Hà Nội")
         /// </summary>
         /// //dia chi lam viec
-        public string? WorkLocation { get; set; }
+       // public string? WorkLocation { get; set; }
 
         /// <summary>
         /// District name (ví dụ: "Cầu Giấy")
         /// </summary>
-        //public string? DistrictName { get; set; }
+        public string? ProvinceName { get; set; }
 
         /// <summary>
         /// Địa chỉ cụ thể

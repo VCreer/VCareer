@@ -23,11 +23,11 @@ namespace VCareer.Job.JobPosting.ISerices
         // Get related
         Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10);
 
-        
+        // tăng view
+     //   Task IncrementViewCountAsync(Guid jobId);
 
-       
 
-      
+
 
         // Indexing
         Task ReindexAllJobsAsync();

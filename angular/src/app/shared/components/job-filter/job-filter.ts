@@ -172,6 +172,7 @@ export class JobFilterComponent implements OnInit {
       employmentTypes: selectedEmploymentType && selectedEmploymentType.value !== null 
         ? [selectedEmploymentType.value] 
         : [],
+      // ✅ FIX: Check for null specifically, not falsy values (0 is falsy!)
       experienceLevel: selectedExperience && selectedExperience.value !== null 
         ? selectedExperience.value 
         : null,

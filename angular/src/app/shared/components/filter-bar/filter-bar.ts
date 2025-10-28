@@ -103,6 +103,19 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['categories'] && this.categories) {
       this.filteredCategories = [...this.categories];
       console.log('✅ FilterBar received categories:', this.categories.length);
+
+      // ✅ When category tree arrives (after navigation from Home),
+      // ensure parent checkboxes reflect currently selected leaf nodes.
+      // If @Input selectedCategoryIds is available, sync internal set first.
+      if (this.selectedCategoryIds && this.selectedCategoryIds.length > 0) {
+        this.internalSelectedCategoryIds = new Set(this.selectedCategoryIds);
+      }
+
+      const ensureIds = (this.selectedCategoryIds && this.selectedCategoryIds.length > 0)
+        ? this.selectedCategoryIds
+        : Array.from(this.internalSelectedCategoryIds);
+
+      ensureIds.forEach(id => this.selectParents(id));
     }
     if (changes['provinces'] && this.provinces) {
       this.filteredProvinces = [...this.provinces];
@@ -110,21 +123,25 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // ✅ Restore selected filters (from query params)
-    if (changes['selectedCategoryIds'] && this.internalSelectedCategoryIds) {
-      console.log('✅ Restoring selected categories:', this.internalSelectedCategoryIds);
-      this.internalSelectedCategoryIds.forEach(id => {
-        this.internalSelectedCategoryIds.add(id);
-      });
+    if (changes['selectedCategoryIds'] && this.selectedCategoryIds) {
+      console.log('✅ Restoring selected categories:', this.selectedCategoryIds);
+      // Restore selected leaf nodes
+      this.internalSelectedCategoryIds = new Set(this.selectedCategoryIds);
+      // ✅ Ensure parent levels (level 1, level 2) are also marked as selected
+      // so that level-1 checkboxes appear checked/blue when any descendant is selected
+      for (const catId of this.selectedCategoryIds) {
+        this.selectParents(catId);
+      }
     }
 
-    if (changes['selectedProvinceIds'] && this.internalSelectedProvinceIds) {
-      console.log('✅ Restoring selected provinces:', this.internalSelectedProvinceIds);
-      this.internalSelectedProvinceIds = new Set(this.internalSelectedProvinceIds);
+    if (changes['selectedProvinceIds'] && this.selectedProvinceIds) {
+      console.log('✅ Restoring selected provinces:', this.selectedProvinceIds);
+      this.internalSelectedProvinceIds = new Set(this.selectedProvinceIds);
     }
 
-    if (changes['selectedDistrictIds'] && this.internalSelectedDistrictIds) {
-      console.log('✅ Restoring selected districts:', this.internalSelectedDistrictIds);
-      this.internalSelectedDistrictIds = new Set(this.internalSelectedDistrictIds);
+    if (changes['selectedDistrictIds'] && this.selectedDistrictIds) {
+      console.log('✅ Restoring selected districts:', this.selectedDistrictIds);
+      this.internalSelectedDistrictIds = new Set(this.selectedDistrictIds);
     }
   }
 
@@ -527,6 +544,24 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   closeDropdowns() {
     this.showCategoryDropdown = false;
     this.showLocationDropdown = false;
+  }
+
+  /**
+   * Get category count text for display
+   */
+  getCategoryCountText(): string {
+    const count = this.internalSelectedCategoryIds.size;
+    return count > 0 ? ` (${count})` : '';
+  }
+
+  /**
+   * Get location count text for display
+   */
+  getLocationCountText(): string {
+    const provinceCount = this.internalSelectedProvinceIds.size;
+    const districtCount = this.internalSelectedDistrictIds.size;
+    const totalCount = provinceCount + districtCount;
+    return totalCount > 0 ? ` (${totalCount})` : '';
   }
 
   /**

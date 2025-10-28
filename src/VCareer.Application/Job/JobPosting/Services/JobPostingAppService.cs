@@ -59,12 +59,22 @@ namespace VCareer.Job.JobPosting.Services
                 var orderedJobs = jobIds
                     .Select(id => jobs.FirstOrDefault(j => j.Id == id))
                     .Where(j => j != null)
+
                     .ToList();
 
                 // Step 4: Map sang DTO
-                var jobViewDtos = orderedJobs.Select(MapToJobViewDto).ToList();
+                //var jobViewDtos = orderedJobs.Select(MapToJobViewDto).ToList();
 
-                return new PagedResultDto<JobViewDto>(jobViewDtos, jobIds.Count);
+                //return new PagedResultDto<JobViewDto>(jobViewDtos, jobIds.Count);
+
+                List<JobViewDto> list = new List<JobViewDto>();
+                foreach (var relatedJob in orderedJobs)
+                {
+                    var job = await MapToJobViewDto(relatedJob);
+                    list.Add(job);
+                }
+                return new PagedResultDto<JobViewDto>(list, jobIds.Count);
+
             }
             catch (Exception ex)
             {
@@ -92,7 +102,7 @@ namespace VCareer.Job.JobPosting.Services
             // Tăng view count
             await _jobPostingRepository.IncrementViewCountAsync(job.Id);
 
-            return MapToJobViewDetail(job);
+            return await MapToJobViewDetail(job);
         }
 
         /// <summary>
@@ -110,7 +120,7 @@ namespace VCareer.Job.JobPosting.Services
             // Tăng view count
             await _jobPostingRepository.IncrementViewCountAsync(job.Id);
 
-            return MapToJobViewDetail(job);
+            return await MapToJobViewDetail(job);
         }
 
         #endregion
@@ -124,7 +134,18 @@ namespace VCareer.Job.JobPosting.Services
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
             var relatedJobs = await _jobPostingRepository.GetRelatedJobsAsync(jobId, maxCount);
-            return relatedJobs.Select(MapToJobViewDto).ToList();
+            //   return relatedJobs.Select(MapToJobViewDto).ToList();
+
+            List<JobViewDto> list = new List<JobViewDto>();
+            foreach (var relatedJob in relatedJobs)
+            {
+                var job = await MapToJobViewDto(relatedJob);
+                list.Add(job);
+            }
+            return list;
+
+
+
         }
 
         #endregion
@@ -203,8 +224,10 @@ namespace VCareer.Job.JobPosting.Services
         /// <summary>
         /// Map Job_Posting -> JobViewDto (thông tin cơ bản cho list)
         /// </summary>
-        private JobViewDto MapToJobViewDto(Job_Posting job)
+        private async Task<JobViewDto> MapToJobViewDto(Job_Posting job)
         {
+
+            var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
             return new JobViewDto
             {
                 Id = job.Id,
@@ -214,9 +237,9 @@ namespace VCareer.Job.JobPosting.Services
                 //CompanyName = job.CompanyName,
                 SalaryText = job.SalaryText,
                 ExperienceText = job.ExperienceText,  // ✨ String (đã format sẵn)
-                WorkLocation = job.WorkLocation,
-                //CategoryName = job.JobCategory?.Name,
-                //ProvinceName = job.Province?.Name,
+                                                      //  WorkLocation = job.WorkLocation,
+                                                      //CategoryName = job.JobCategory?.Name,
+                ProvinceName = province.Name,
                 //DistrictName = job.District?.Name,
 
                 IsUrgent = job.IsUrgent,
@@ -228,8 +251,11 @@ namespace VCareer.Job.JobPosting.Services
         /// <summary>
         /// Map Job_Posting -> JobViewDetail (chi tiết đầy đủ)
         /// </summary>
-        private JobViewDetail MapToJobViewDetail(Job_Posting job)
+        private async Task<JobViewDetail> MapToJobViewDetail(Job_Posting job)
         {
+
+            var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
+
             return new JobViewDetail
             {
                 Id = job.Id,
@@ -245,7 +271,7 @@ namespace VCareer.Job.JobPosting.Services
                 Quantity = job.Quantity,
 
                 //CategoryName = job.JobCategory?.Name,
-                //ProvinceName = job.Province?.Name,
+                ProvinceName = province.Name,
                 //DistrictName = job.District?.Name,
                 WorkLocation = job.WorkLocation,
                 EmploymentType = job.EmploymentType,
@@ -253,7 +279,7 @@ namespace VCareer.Job.JobPosting.Services
                 IsUrgent = job.IsUrgent,
                 PostedAt = job.PostedAt,
                 ExpiresAt = job.ExpiresAt.Value,
-                ViewCount = 10,
+                ViewCount = job.ViewCount,
                 ApplyCount = job.ApplyCount
             };
         }
@@ -271,5 +297,11 @@ namespace VCareer.Job.JobPosting.Services
         //}
 
         #endregion
+
+
+        //public Task IncrementViewCountAsync(Guid jobId)
+        //{
+        //    return _jobPostingRepository.IncrementViewCountAsync(jobId);
+        //}
     }
 }

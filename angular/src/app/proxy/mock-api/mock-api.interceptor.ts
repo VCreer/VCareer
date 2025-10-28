@@ -60,7 +60,40 @@ export class MockApiInterceptor implements HttpInterceptor {
       return this.recruiterMockService.mockRecruiterLogin(body);
     }
 
-    // Job endpoints
+    // ============================================
+    // ✅ BYPASS: Category & Location APIs (send to REAL backend)
+    // ============================================
+    if (url.includes('/api/job-categories')) {
+      console.log('🔵 MockApiInterceptor: BYPASSING /api/job-categories - sending to REAL backend');
+      return next.handle(req);
+    }
+    
+    if (url.includes('/api/locations')) {
+      console.log('🔵 MockApiInterceptor: BYPASSING /api/locations - sending to REAL backend');
+      return next.handle(req);
+    }
+
+    // ============================================
+    // ✅ BYPASS: Job APIs to REAL backend when hitting real endpoints
+    // ============================================
+    // ⚠️ IMPORTANT: Check for /api/jobs/search FIRST (more specific)
+    if (url.includes('/api/jobs/search') && method === 'POST') {
+      console.log('🔵 MockApiInterceptor: BYPASSING /api/jobs/search - sending to REAL backend');
+      return next.handle(req);  // ✅ Send to real backend
+    }
+    
+    // ✅ Bypass GET /api/jobs/{id}
+    if (method === 'GET' && /\/api\/jobs\/[0-9a-fA-F-]+$/.test(url)) {
+      console.log('🔵 MockApiInterceptor: BYPASSING GET Job By Id - sending to REAL backend:', url);
+      return next.handle(req);
+    }
+    
+    // ✅ Bypass GET /api/jobs/{id}/related
+    if (method === 'GET' && /\/api\/jobs\/[0-9a-fA-F-]+\/related$/.test(url)) {
+      console.log('🔵 MockApiInterceptor: BYPASSING GET Related Jobs - sending to REAL backend:', url);
+      return next.handle(req);
+    }
+    
     if (url.includes('/api/jobs') && method === 'GET') {
       return this.jobMockService.mockGetJobs();
     }

@@ -20,6 +20,7 @@ namespace VCareer.Repositories.Job
     {
         private readonly IDistrictRepository _districtRepository;
 
+
         public LocationRepository(
             IDbContextProvider<VCareerDbContext> dbContextProvider,
             IDistrictRepository districtRepository) : base(dbContextProvider)
@@ -59,21 +60,29 @@ namespace VCareer.Repositories.Job
                 .ToListAsync();
         }
 
-
-        //public async Task<Province?> GetProvinceByIdAsync(int provinceId)
+        //public async Task<string?> GetNameProvince(int provinedId)
         //{
-        //    if (provinceId <= 0)
-        //    {
-        //        return null;
-        //    }
-
         //    var dbContext = await GetDbContextAsync();
-
-        //    return await dbContext.Provinces
-        //        .Include(p => p.Districts.Where(d => d.IsActive))
-        //        .Where(p => p.IsActive)
-        //        .FirstOrDefaultAsync(p => p.Id == provinceId);
+        //    var x = dbContext.Provinces.FirstOrDefault(x => x.Id == provinedId);
+        //    if (x == null) return null;
+        //    return x.Name;
         //}
+
+
+        public async Task<Province?> GetProvinceByIdAsync(int provinceId)
+        {
+            if (provinceId <= 0)
+            {
+                return null;
+            }
+
+            var dbContext = await GetDbContextAsync();
+
+            return await dbContext.Provinces
+                .Include(p => p.Districts.Where(d => d.IsActive))
+                .Where(p => p.IsActive)
+                .FirstOrDefaultAsync(p => p.Id == provinceId);
+        }
 
         //public async Task<District?> GetDistrictByIdAsync(int districtId)
         //{

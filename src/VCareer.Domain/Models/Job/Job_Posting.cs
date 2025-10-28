@@ -98,6 +98,8 @@ namespace VCareer.Models.Job
 
         public int Quantity { get; set; }
 
+        public int ViewCount { get; set; }
+
         #endregion
 
         #region Work Time
@@ -113,15 +115,7 @@ namespace VCareer.Models.Job
         /// </summary>
         public string WorkLocation { get; set; }
 
-        /// <summary>
-        /// ID Tỉnh/Thành phố
-        /// </summary>
-        public int ProvinceId { get; set; }
-
-        /// <summary>
-        /// ID Quận/Huyện
-        /// </summary>
-        public int DistrictId { get; set; }
+     
 
         /// <summary>
         /// Navigation property - Tỉnh/Thành phố
@@ -179,6 +173,17 @@ namespace VCareer.Models.Job
         /// </summary>
         public Guid JobCategoryId { get; set; }
 
+
+        /// <summary>
+        /// ID Tỉnh/Thành phố
+        /// </summary>
+        public int ProvinceId { get; set; }
+
+        /// <summary>
+        /// ID Quận/Huyện
+        /// </summary>
+        public int DistrictId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -187,6 +192,8 @@ namespace VCareer.Models.Job
         /// Navigation property - Nhà tuyển dụng
         /// </summary>
         public virtual RecruiterProfile RecruiterProfile { get; set; }
+
+        public virtual Province? Province { get; set; }
 
         /// <summary>
         /// Navigation property - Ngành nghề

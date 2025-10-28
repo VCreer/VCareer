@@ -101,9 +101,10 @@ export interface JobViewDto {
   salaryText: string;
   experienceText: string;
   categoryName?: string | null;
-  workLocation?: string | null;
+  
   isUrgent: boolean;
   postedAt: Date;
+  provinceName?: string | null;
 }
 
 /**
@@ -131,7 +132,14 @@ export class JobApiService {
    * Search jobs với filters
    */
   searchJobs(input: JobSearchInputDto): Observable<PagedResultDto<JobViewDto>> {
-    return this.http.post<PagedResultDto<JobViewDto>>(`${this.apiUrl}/search`, input);
+    const url = `${this.apiUrl}/search`;
+    console.log('\n🌐 ===== HTTP REQUEST IN SERVICE =====');
+    console.log('   Method: POST');
+    console.log('   URL:', url);
+    console.log('   Body:', input);
+    console.log('   Full API URL:', this.apiUrl);
+    
+    return this.http.post<PagedResultDto<JobViewDto>>(url, input);
   }
 
   /**

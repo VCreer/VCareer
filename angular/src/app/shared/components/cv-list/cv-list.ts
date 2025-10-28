@@ -11,9 +11,16 @@ import { TranslationService } from '../../../core/services/translation.service';
 @Component({
   selector: 'app-cv-list',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, DownloadCvModal, ToastNotificationComponent, ConfirmDeleteModal, RenameCvModal],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    DownloadCvModal,
+    ToastNotificationComponent,
+    ConfirmDeleteModal,
+    RenameCvModal,
+  ],
   templateUrl: './cv-list.html',
-  styleUrls: ['./cv-list.scss']
+  styleUrls: ['./cv-list.scss'],
 })
 export class CvListComponent {
   @Input() cvs: Cv[] = [];
@@ -34,7 +41,7 @@ export class CvListComponent {
   cvToDelete: string | null = null;
   cvToRename: string | null = null;
   currentCvName: string = '';
-  
+
   // Toast notification properties
   showToast = false;
   toastMessage = '';
@@ -91,7 +98,6 @@ export class CvListComponent {
     this.createCv.emit();
   }
 
-
   onPushToTop(cvId: string) {
     // Emit push to top event
     console.log('Push to top CV:', cvId);
@@ -110,7 +116,6 @@ export class CvListComponent {
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
     window.open(facebookUrl, '_blank');
   }
-
 
   onToggleStar(cvId: string) {
     console.log('Toggle star for CV:', cvId);
@@ -135,7 +140,6 @@ export class CvListComponent {
     console.log('Download CV free');
     this.showDownloadModal = false;
   }
-
 
   onCloseConfirmDeleteModal() {
     this.showConfirmDeleteModal = false;
@@ -164,7 +168,7 @@ export class CvListComponent {
       if (cv) {
         cv.title = newName.trim();
       }
-      
+
       this.cvUpdated.emit(this.cvToRename);
       this.showSuccessToast('cv_management.rename_success');
       this.showRenameModal = false;
@@ -177,7 +181,7 @@ export class CvListComponent {
     this.toastMessage = this.translate(message);
     this.toastType = 'success';
     this.showToast = true;
-    
+
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
