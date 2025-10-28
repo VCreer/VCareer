@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -24,10 +25,11 @@ import {
   templateUrl: './candidate-register.html',
   styleUrls: ['./candidate-register.scss']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private customAuthService = inject(CustomAuthService);
+  private googleAuthService = inject(GoogleAuthService);
 
   registerForm: FormGroup;
   isLoading = false;
@@ -72,6 +74,10 @@ export class RegisterComponent {
       ]],
       termsAgreement: [false, Validators.requiredTrue]
     }, { validators: this.passwordMatchValidator });
+  }
+
+  ngOnInit(): void {
+    this.googleAuthService.initialize();
   }
 
   nameValidator(control: AbstractControl): ValidationErrors | null {
@@ -193,7 +199,26 @@ export class RegisterComponent {
     this.router.navigate(['/login']);
   }
 
-  signUpWithGoogle() {
-    console.log('Đăng ký bằng Google');
+  async signUpWithGoogle() {
+    try {
+      this.isLoading = true;
+      
+      // Sign up with Google
+      const user = await this.googleAuthService.signInWithGoogle();
+      
+      console.log('Google user:', user);
+      
+      this.isLoading = false;
+      this.showToastMessage('Đăng ký bằng Google thành công!', 'success');
+      
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Google sign up error:', error);
+      this.isLoading = false;
+      this.showToastMessage('Đăng ký bằng Google thất bại. Vui lòng thử lại.', 'error');
+    }
   }
 }
