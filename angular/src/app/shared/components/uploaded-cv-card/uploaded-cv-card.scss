@@ -1,0 +1,246 @@
+.uploaded-cv-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 200px;
+  width: 280px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+
+    .cv-star {
+      opacity: 1;
+    }
+
+    .cv-hover-actions {
+      opacity: 1;
+    }
+  }
+
+}
+
+// Star Icon (reused from CvListComponent)
+.cv-star {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  
+  .star-icon {
+    color: #d1d5db;
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: color 0.2s ease;
+  }
+  
+  &.active .star-icon {
+    color: #fbbf24;
+  }
+  
+  &:hover .star-icon {
+    color: #fbbf24;
+  }
+}
+
+// CV Preview Image
+.cv-preview-image {
+  margin: 2rem 0 1.5rem 0;
+  display: flex;
+  justify-content: center;
+
+  .cv-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+}
+
+// Hover Actions (reused from CvListComponent)
+.cv-hover-actions {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 25px;
+  background: white;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: fit-content;
+  
+  &:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-icon {
+    font-size: 1rem;
+  }
+  
+  .btn-text {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+.download-btn {
+  &:hover {
+    background: white;
+    border-color: #3b82f6;
+    color: #3b82f6;
+  }
+}
+
+.more-btn {
+  padding: 0.75rem 1rem;
+  min-width: 3rem;
+  border-radius: 25px;
+  
+  .btn-icon {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+  
+  &:hover {
+    background: #f9fafb;
+    border-color: #f59e0b;
+    color: #f59e0b;
+  }
+}
+
+// More Menu (reused from CvListComponent)
+.more-menu-container {
+  position: relative;
+}
+
+
+.more-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &:hover {
+      background: #f9fafb;
+    }
+    
+    &.delete-item {
+      color: #dc2626;
+      
+      &:hover {
+        background: #fef2f2;
+      }
+    }
+    
+    .menu-icon {
+      font-size: 1rem;
+    }
+    
+    span:last-child {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.menu-separator {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0.5rem 0;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .uploaded-cv-card {
+    padding: 1rem;
+    min-height: 180px;
+
+    .cv-preview-image {
+      margin: 1.5rem 0 1rem 0;
+
+      .cv-image {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
+    .cv-info {
+      margin-bottom: 1rem;
+
+      .cv-name {
+        font-size: 1rem;
+      }
+    }
+
+    .cv-hover-actions {
+      .action-btn {
+        font-size: 0.8rem;
+        padding: 0.625rem 0.875rem;
+      }
+
+      .more-btn {
+        min-width: 2.5rem;
+        padding: 0.625rem 0.875rem;
+      }
+    }
+  }
+}

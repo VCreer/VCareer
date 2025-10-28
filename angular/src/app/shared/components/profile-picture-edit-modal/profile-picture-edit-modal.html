@@ -1,0 +1,28 @@
+<div class="avatar-modal" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ translate('profile_picture_edit.title') }}</h2>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Left Column - Image Preview -->
+      <div class="image-preview-section">
+        <h3>{{ translate('profile_picture_edit.preview_label') }}</h3>
+        <div class="preview-container">
+          <img [src]="previewImage || 'assets/images/default-avatar.png'" alt="Preview" class="preview-image">
+        </div>
+      </div>
+
+      <!-- Right Column - Action Buttons -->
+      <div class="action-section">
+        <div class="action-buttons">
+          <button class="change-btn" (click)="onChangePicture()">{{ translate('profile_picture_edit.change_picture') }}</button>
+          <button class="delete-btn" (click)="onDeletePicture()">{{ translate('profile_picture_edit.delete_picture') }}</button>
+          <button class="done-btn" (click)="onDone()">{{ translate('profile_picture_edit.done') }}</button>
+          <span class="cancel-link" (click)="onClose()" style="color: #dc2626 !important; text-decoration: underline !important; text-align: center !important; display: block !important; margin: 10px auto !important; cursor: pointer !important; font-size: 12px !important; width: fit-content !important;">{{ translate('profile_picture_edit.close_no_save') }}</span>
+        </div>
+        <input type="file" id="avatar-input" class="file-input" accept="image/*" (change)="onImageSelect($event)" style="display: none;">
+      </div>
+    </div>
+  </div>
+</div>

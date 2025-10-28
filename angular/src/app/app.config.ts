@@ -17,6 +17,13 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { environment } from '../environments/environment';
 import { APP_ROUTES } from './app.routes';
 import { APP_ROUTE_PROVIDER } from './route.provider';
+import { MockApiInterceptor } from './proxy/mock-api/mock-api.interceptor';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthMockService } from './proxy/mock-api/services/auth-mock.service';
+import { CandidateMockService } from './proxy/mock-api/services/candidate-mock.service';
+import { RecruiterMockService } from './proxy/mock-api/services/recruiter-mock.service';
+import { JobMockService } from './proxy/mock-api/services/job-mock.service';
+import { ProfileMockService } from './proxy/mock-api/services/profile-mock.service';
 // import { AuthService } from '@abp/ng.core';
 // import { CustomAuthService } from './services/custom-auth.service';
 
@@ -43,6 +50,19 @@ export const appConfig: ApplicationConfig = {
     // provideAccountConfig(), // Comment ABP Account module
     provideTenantManagementConfig(),
     provideAbpThemeShared(),
+    // Mock API chỉ bật khi environment.useMockApi = true
+    ...(environment.useMockApi ? [
+      AuthMockService,
+      CandidateMockService,
+      RecruiterMockService,
+      JobMockService,
+      ProfileMockService,
+      {
+        provide: HTTP_INTERCEPTORS,
+        useClass: MockApiInterceptor,
+        multi: true
+      }
+    ] : []),
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,

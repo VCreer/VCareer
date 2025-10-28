@@ -1,0 +1,156 @@
+<div class="cv-management-container">
+  <!-- Header Section -->
+  <div class="cv-header">
+    <div class="header-content">
+      <h1 class="page-title">{{ translate('cv_management.title') }}</h1>
+      <p class="page-subtitle">{{ translate('cv_management.subtitle') }}</p>
+    </div>
+  </div>
+
+      <!-- Main Content -->
+      <div class="cv-main-content">
+        <!-- Left Column - CV List and Upload Section -->
+        <div class="cv-left-column">
+          <!-- CV List -->
+          <app-cv-list
+            [cvs]="cvs"
+            [loading]="loading"
+            (cvViewed)="viewCv($event)"
+            (cvEdited)="editCv($event)"
+            (cvDuplicated)="onCvDuplicated($event)"
+            (cvSetDefault)="onSetDefault($event)"
+            (cvDeleted)="onCvDeleted($event)"
+            (cvUpdated)="onCvUpdated($event)"
+            (createCv)="onCreateCv()">
+          </app-cv-list>
+
+          <!-- Upload CV Section -->
+          <div class="upload-cv-section">
+            <div class="upload-cv-header">
+              <h2 class="upload-cv-title">{{ translate('cv_management.upload_cv_title') }}</h2>
+              <button 
+                type="button"
+                class="btn btn-primary"
+                (click)="onCreateCv()">
+                <i class="fa fa-upload"></i>
+                {{ translate('cv_management.upload_cv') }}
+              </button>
+            </div>
+            
+            <!-- Empty State for Upload -->
+            <div class="upload-empty-state" *ngIf="uploadedCvs.length === 0">
+              <div class="upload-empty-icon">
+                <img src="assets/images/cv-management/no-cv.png" alt="No CV" class="upload-no-cv-image">
+              </div>
+              <p class="upload-empty-message">{{ translate('cv_management.no_cv_uploaded') }}</p>
+            </div>
+
+            <!-- Uploaded CVs -->
+            <div class="uploaded-cvs-grid" *ngIf="uploadedCvs.length > 0">
+              <div class="uploaded-cv-item" *ngFor="let cv of uploadedCvs; trackBy: trackByCvName">
+                <app-uploaded-cv-card
+                  [isStarred]="cv.isStarred"
+                  (download)="onCvDownload()"
+                  (toggleStar)="onCvToggleStar(cv)"
+                  (copyLink)="onCvCopyLink()"
+                  (shareFacebook)="onCvShareFacebook()"
+                  (rename)="onCvRename(cv)"
+                  (delete)="onCvDelete(cv)">
+                </app-uploaded-cv-card>
+                
+                <!-- CV Info outside the card -->
+                <div class="cv-info">
+                  <h3 class="cv-name">{{ cv.name }}</h3>
+                  <p class="cv-date">{{ translate('cv_card.updated') }} {{ cv.uploadDate }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Profile Sidebar Section -->
+        <div class="profile-sidebar-section">
+          <!-- Profile Card -->
+          <div class="profile-card">
+            <div class="profile-layout">
+              <!-- Left Column - Profile Icon -->
+              <div class="profile-left-column">
+                <div class="profile-icon" (click)="openProfilePictureModal()">
+                  <i class="fa fa-camera"></i>
+                </div>
+              </div>
+              
+              <!-- Right Column - Profile Info -->
+              <div class="profile-right-column">
+                <div class="profile-info">
+                  <span class="profile-label">Profile</span>
+                  <h3>{{ translate('profile_sidebar.welcome_back') }}, Uông Hoàng Duy</h3>
+                </div>
+                
+                <div class="account-status">
+                  <span class="verified-badge">{{ translate('profile_sidebar.verified_account') }}</span>
+                </div>
+                
+                <app-button 
+                  [type]="'primary'"
+                  [size]="'small'"
+                  class="upgrade-btn">
+                  <i class="fa fa-arrow-up"></i>
+                  {{ translate('profile_sidebar.upgrade_account') }}
+                </app-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Info Card - Separate card -->
+          <div class="contact-card">
+            <p class="contact-description">{{ translate('profile_sidebar.contact_description') }}</p>
+            <div class="contact-method">
+              <i class="fa fa-envelope contact-icon"></i>
+              <span>{{ translate('profile_sidebar.email_phone') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Toast Notification -->
+      <app-toast-notification
+        [show]="showToast"
+        [message]="toastMessage"
+        [type]="toastType"
+        (close)="onToastClose()">
+      </app-toast-notification>
+
+      <!-- Profile Picture Edit Modal -->
+      <app-profile-picture-edit-modal
+        *ngIf="showProfilePictureModal"
+        (close)="closeProfilePictureModal()"
+        (changePicture)="onProfilePictureChange()"
+        (deletePicture)="onProfilePictureDelete()">
+      </app-profile-picture-edit-modal>
+
+  <!-- Upload CV Modal -->
+  <app-upload-cv-modal 
+    *ngIf="showUploadCvModal"
+    (close)="onCloseUploadCvModal()"
+    (uploadCv)="onUploadCv($event)">
+  </app-upload-cv-modal>
+
+  <!-- Download CV Modal -->
+  <app-download-cv-modal
+    *ngIf="showDownloadModal"
+    (close)="onCloseDownloadModal()"
+    (downloadWithoutLogo)="onDownloadWithoutLogo()"
+    (downloadFree)="onDownloadFree()">
+  </app-download-cv-modal>
+
+  <!-- Rename CV Modal -->
+  <app-rename-cv-modal
+    *ngIf="showRenameModal && cvToRename"
+    [currentName]="cvToRename.name"
+    (close)="onCloseRenameModal()"
+    (rename)="onRename($event)">
+  </app-rename-cv-modal>
+</div>
+
