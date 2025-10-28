@@ -14,3 +14,6 @@ export { JobFilterComponent } from './job-filter/job-filter';
 export { JobListComponent } from './job-list/job-list';
 export { SearchHeaderComponent } from './search-header/search-header';
 export { ApplyJobModalComponent } from './apply-job-modal/apply-job-modal';
+export { PdfViewerComponent } from './pdf-viewer/pdf-viewer';
+export { ModalUpdateNameCvComponent } from './modal-update-name-cv/modal-update-name-cv';
+export { ModalUpdatePhotoComponent } from './modal-update-photo/modal-update-photo';
