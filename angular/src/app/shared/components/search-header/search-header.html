@@ -1,0 +1,47 @@
+<div class="search-header">
+  <div class="search-container">
+    <div class="search-title" *ngIf="showPageTitle">
+      <h1 class="page-title">{{ pageTitle }}</h1>
+    </div>
+    <div class="search-row">
+      <div class="search-field">
+        <select class="category-dropdown" [(ngModel)]="selectedCategory" (change)="onCategoryChange($event)">
+          <option value="">{{ categoryPlaceholder }}</option>
+          <option value="it">{{ categories.it }}</option>
+          <option value="marketing">{{ categories.marketing }}</option>
+          <option value="accounting">{{ categories.accounting }}</option>
+        </select>
+        <i class="fa fa-chevron-down dropdown-icon"></i>
+      </div>
+      
+      <div class="search-field">
+        <input 
+          type="text" 
+          class="position-input" 
+          [placeholder]="positionPlaceholder"
+          [(ngModel)]="searchPosition"
+          (input)="onPositionChange($event)">
+        <i 
+          class="fa-solid fa-xmark clear-icon" 
+          *ngIf="searchPosition"
+          (click)="onClearPosition()"></i>
+      </div>
+      
+      <div class="search-field">
+        <select class="location-dropdown" [(ngModel)]="selectedLocation" (change)="onLocationChange($event)">
+          <option value="">{{ locationPlaceholder }}</option>
+          <option value="long_an">{{ locationLongAn }}</option>
+          <option value="hanoi">{{ locationHanoi }}</option>
+          <option value="hcmc">{{ locationHcm }}</option>
+          <option value="da_nang">{{ locationDanang }}</option>
+        </select>
+        <i class="fa fa-chevron-down dropdown-icon"></i>
+      </div>
+      
+      <button class="search-btn" (click)="onSearch()">
+        <i class="fa fa-search"></i>
+        {{ searchButton }}
+      </button>
+    </div>
+  </div>
+</div>

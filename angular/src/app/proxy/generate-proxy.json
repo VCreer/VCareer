@@ -873,6 +873,2390 @@
       "rootPath": "app",
       "remoteServiceName": "Default",
       "controllers": {
+        "VCareer.CV.CVAppService": {
+          "controllerName": "CV",
+          "controllerGroupName": "CV",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.CV.CVAppService",
+          "interfaces": [
+            {
+              "type": "VCareer.CV.ICVAppService",
+              "name": "ICVAppService",
+              "methods": [
+                {
+                  "name": "CreateCVOnlineAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.CreateCVOnlineDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.CreateCVOnlineDto",
+                      "typeSimple": "VCareer.CV.CreateCVOnlineDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "UploadCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.UploadCVDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.UploadCVDto",
+                      "typeSimple": "VCareer.CV.UploadCVDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "SimpleUploadCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "file",
+                      "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                      "type": "Microsoft.AspNetCore.Http.IFormFile",
+                      "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "UpdateCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.UpdateCVDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.UpdateCVDto",
+                      "typeSimple": "VCareer.CV.UpdateCVDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "GetCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "GetCVListAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.GetCVListDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.GetCVListDto",
+                      "typeSimple": "VCareer.CV.GetCVListDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>"
+                  }
+                },
+                {
+                  "name": "GetDefaultCVAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "VCareer.CV.CVDto",
+                    "typeSimple": "VCareer.CV.CVDto"
+                  }
+                },
+                {
+                  "name": "SetDefaultCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.SetDefaultCVDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.SetDefaultCVDto",
+                      "typeSimple": "VCareer.CV.SetDefaultCVDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "SetPublicCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.CV.SetPublicCVDto, VCareer.Application.Contracts",
+                      "type": "VCareer.CV.SetPublicCVDto",
+                      "typeSimple": "VCareer.CV.SetPublicCVDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteCVAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetPublicCVsByCandidateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "candidateId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
+                    "typeSimple": "[VCareer.CV.CVDto]"
+                  }
+                },
+                {
+                  "name": "ExportCVToPDFAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateCVOnlineAsyncByInput": {
+              "uniqueName": "CreateCVOnlineAsyncByInput",
+              "name": "CreateCVOnlineAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/c-vOnline",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.CreateCVOnlineDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.CreateCVOnlineDto",
+                  "typeSimple": "VCareer.CV.CreateCVOnlineDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.CreateCVOnlineDto",
+                  "typeSimple": "VCareer.CV.CreateCVOnlineDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "UploadCVAsyncByInput": {
+              "uniqueName": "UploadCVAsyncByInput",
+              "name": "UploadCVAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/upload-cV",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.UploadCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.UploadCVDto",
+                  "typeSimple": "VCareer.CV.UploadCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.UploadCVDto",
+                  "typeSimple": "VCareer.CV.UploadCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "SimpleUploadCVAsyncByFile": {
+              "uniqueName": "SimpleUploadCVAsyncByFile",
+              "name": "SimpleUploadCVAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/simple-upload-cV",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "file",
+                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "file",
+                  "name": "file",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "FormFile",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "UpdateCVAsyncByIdAndInput": {
+              "uniqueName": "UpdateCVAsyncByIdAndInput",
+              "name": "UpdateCVAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/c-v/{id}/c-v",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.UpdateCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.UpdateCVDto",
+                  "typeSimple": "VCareer.CV.UpdateCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.UpdateCVDto",
+                  "typeSimple": "VCareer.CV.UpdateCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "GetCVAsyncById": {
+              "uniqueName": "GetCVAsyncById",
+              "name": "GetCVAsync",
+              "httpMethod": "GET",
+              "url": "api/app/c-v/{id}/c-v",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "GetCVListAsyncByInput": {
+              "uniqueName": "GetCVListAsyncByInput",
+              "name": "GetCVListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/c-v/c-vList",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.GetCVListDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.GetCVListDto",
+                  "typeSimple": "VCareer.CV.GetCVListDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "CVType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsPublic",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsDefault",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "GetDefaultCVAsync": {
+              "uniqueName": "GetDefaultCVAsync",
+              "name": "GetDefaultCVAsync",
+              "httpMethod": "GET",
+              "url": "api/app/c-v/default-cV",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "SetDefaultCVAsyncByInput": {
+              "uniqueName": "SetDefaultCVAsyncByInput",
+              "name": "SetDefaultCVAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/set-default-cV",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.SetDefaultCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.SetDefaultCVDto",
+                  "typeSimple": "VCareer.CV.SetDefaultCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.SetDefaultCVDto",
+                  "typeSimple": "VCareer.CV.SetDefaultCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "SetPublicCVAsyncByInput": {
+              "uniqueName": "SetPublicCVAsyncByInput",
+              "name": "SetPublicCVAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/set-public-cV",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.SetPublicCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.SetPublicCVDto",
+                  "typeSimple": "VCareer.CV.SetPublicCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.SetPublicCVDto",
+                  "typeSimple": "VCareer.CV.SetPublicCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "DeleteCVAsyncById": {
+              "uniqueName": "DeleteCVAsyncById",
+              "name": "DeleteCVAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/c-v/{id}/c-v",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "GetPublicCVsByCandidateAsyncByCandidateId": {
+              "uniqueName": "GetPublicCVsByCandidateAsyncByCandidateId",
+              "name": "GetPublicCVsByCandidateAsync",
+              "httpMethod": "GET",
+              "url": "api/app/c-v/public-cVs-by-candidate/{candidateId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "candidateId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "candidateId",
+                  "name": "candidateId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
+                "typeSimple": "[VCareer.CV.CVDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            },
+            "ExportCVToPDFAsyncById": {
+              "uniqueName": "ExportCVToPDFAsyncById",
+              "name": "ExportCVToPDFAsync",
+              "httpMethod": "POST",
+              "url": "api/app/c-v/{id}/export-cVTo-pDF",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICVAppService"
+            }
+          }
+        },
+        "VCareer.CV.CVController": {
+          "controllerName": "CV",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.CV.CVController",
+          "interfaces": [],
+          "actions": {
+            "CreateCVOnlineAsyncByInput": {
+              "uniqueName": "CreateCVOnlineAsyncByInput",
+              "name": "CreateCVOnlineAsync",
+              "httpMethod": "POST",
+              "url": "api/cv/online",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.CreateCVOnlineDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.CreateCVOnlineDto",
+                  "typeSimple": "VCareer.CV.CreateCVOnlineDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.CreateCVOnlineDto",
+                  "typeSimple": "VCareer.CV.CreateCVOnlineDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "UploadCVAsyncByInput": {
+              "uniqueName": "UploadCVAsyncByInput",
+              "name": "UploadCVAsync",
+              "httpMethod": "POST",
+              "url": "api/cv/upload",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.UploadCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.UploadCVDto",
+                  "typeSimple": "VCareer.CV.UploadCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.UploadCVDto",
+                  "typeSimple": "VCareer.CV.UploadCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "SimpleUploadCVAsyncByFile": {
+              "uniqueName": "SimpleUploadCVAsyncByFile",
+              "name": "SimpleUploadCVAsync",
+              "httpMethod": "POST",
+              "url": "api/cv/simple-upload",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "file",
+                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "file",
+                  "name": "file",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "FormFile",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "UpdateCVAsyncByIdAndInput": {
+              "uniqueName": "UpdateCVAsyncByIdAndInput",
+              "name": "UpdateCVAsync",
+              "httpMethod": "PUT",
+              "url": "api/cv/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.UpdateCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.UpdateCVDto",
+                  "typeSimple": "VCareer.CV.UpdateCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.UpdateCVDto",
+                  "typeSimple": "VCareer.CV.UpdateCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "GetCVAsyncById": {
+              "uniqueName": "GetCVAsyncById",
+              "name": "GetCVAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "GetCVsByTypeAsyncByCvType": {
+              "uniqueName": "GetCVsByTypeAsyncByCvType",
+              "name": "GetCVsByTypeAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/by-type/{cvType}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "cvType",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "cvType",
+                  "name": "cvType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
+                "typeSimple": "[VCareer.CV.CVDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "GetCVListAsyncByInput": {
+              "uniqueName": "GetCVListAsyncByInput",
+              "name": "GetCVListAsync",
+              "httpMethod": "GET",
+              "url": "api/cv",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.GetCVListDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.GetCVListDto",
+                  "typeSimple": "VCareer.CV.GetCVListDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "CVType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsPublic",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "IsDefault",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Sorting",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "SkipCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "MaxResultCount",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.CV.CVDto>"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "GetDefaultCVAsync": {
+              "uniqueName": "GetDefaultCVAsync",
+              "name": "GetDefaultCVAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/default",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.CV.CVDto",
+                "typeSimple": "VCareer.CV.CVDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "SetDefaultCVAsyncByInput": {
+              "uniqueName": "SetDefaultCVAsyncByInput",
+              "name": "SetDefaultCVAsync",
+              "httpMethod": "PUT",
+              "url": "api/cv/set-default",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.SetDefaultCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.SetDefaultCVDto",
+                  "typeSimple": "VCareer.CV.SetDefaultCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.SetDefaultCVDto",
+                  "typeSimple": "VCareer.CV.SetDefaultCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "SetPublicCVAsyncByInput": {
+              "uniqueName": "SetPublicCVAsyncByInput",
+              "name": "SetPublicCVAsync",
+              "httpMethod": "PUT",
+              "url": "api/cv/set-public",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.CV.SetPublicCVDto, VCareer.Application.Contracts",
+                  "type": "VCareer.CV.SetPublicCVDto",
+                  "typeSimple": "VCareer.CV.SetPublicCVDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.CV.SetPublicCVDto",
+                  "typeSimple": "VCareer.CV.SetPublicCVDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "DeleteCVAsyncById": {
+              "uniqueName": "DeleteCVAsyncById",
+              "name": "DeleteCVAsync",
+              "httpMethod": "DELETE",
+              "url": "api/cv/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "GetPublicCVsByCandidateAsyncByCandidateId": {
+              "uniqueName": "GetPublicCVsByCandidateAsyncByCandidateId",
+              "name": "GetPublicCVsByCandidateAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/public/{candidateId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "candidateId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "candidateId",
+                  "name": "candidateId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
+                "typeSimple": "[VCareer.CV.CVDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            },
+            "ExportCVToPDFAsyncById": {
+              "uniqueName": "ExportCVToPDFAsyncById",
+              "name": "ExportCVToPDFAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/{id}/export-pdf",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.CVController"
+            }
+          }
+        },
+        "VCareer.Profile.CompanyLegalInfoAppService": {
+          "controllerName": "CompanyLegalInfo",
+          "controllerGroupName": "CompanyLegalInfo",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Profile.CompanyLegalInfoAppService",
+          "interfaces": [
+            {
+              "type": "VCareer.Profile.ICompanyLegalInfoAppService",
+              "name": "ICompanyLegalInfoAppService",
+              "methods": [
+                {
+                  "name": "SubmitCompanyLegalInfoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                      "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "UpdateCompanyLegalInfoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                      "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "GetCompanyLegalInfoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "GetCurrentUserCompanyLegalInfoAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "VCareer.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "GetCurrentUserCompanyLegalInfoListAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
+                    "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+                  }
+                },
+                {
+                  "name": "DeleteCompanyLegalInfoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateFileUrlsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "businessLicenseFile",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "taxCertificateFile",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "representativeIdCardFile",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "otherSupportFile",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "SubmitCompanyLegalInfoAsyncByInput": {
+              "uniqueName": "SubmitCompanyLegalInfoAsyncByInput",
+              "name": "SubmitCompanyLegalInfoAsync",
+              "httpMethod": "POST",
+              "url": "api/app/company-legal-info/submit-company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "UpdateCompanyLegalInfoAsyncByIdAndInput": {
+              "uniqueName": "UpdateCompanyLegalInfoAsyncByIdAndInput",
+              "name": "UpdateCompanyLegalInfoAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/company-legal-info/{id}/company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "GetCompanyLegalInfoAsyncById": {
+              "uniqueName": "GetCompanyLegalInfoAsyncById",
+              "name": "GetCompanyLegalInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/app/company-legal-info/{id}/company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "GetCurrentUserCompanyLegalInfoAsync": {
+              "uniqueName": "GetCurrentUserCompanyLegalInfoAsync",
+              "name": "GetCurrentUserCompanyLegalInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/app/company-legal-info/current-user-company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "GetCurrentUserCompanyLegalInfoListAsync": {
+              "uniqueName": "GetCurrentUserCompanyLegalInfoListAsync",
+              "name": "GetCurrentUserCompanyLegalInfoListAsync",
+              "httpMethod": "GET",
+              "url": "api/app/company-legal-info/current-user-company-legal-info-list",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
+                "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "DeleteCompanyLegalInfoAsyncById": {
+              "uniqueName": "DeleteCompanyLegalInfoAsyncById",
+              "name": "DeleteCompanyLegalInfoAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/company-legal-info/{id}/company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            },
+            "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile": {
+              "uniqueName": "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile",
+              "name": "UpdateFileUrlsAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/company-legal-info/{id}/file-urls",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "businessLicenseFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "taxCertificateFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "representativeIdCardFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "otherSupportFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "businessLicenseFile",
+                  "name": "businessLicenseFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "taxCertificateFile",
+                  "name": "taxCertificateFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "representativeIdCardFile",
+                  "name": "representativeIdCardFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "otherSupportFile",
+                  "name": "otherSupportFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+            }
+          }
+        },
+        "VCareer.Profile.CompanyLegalInfoController": {
+          "controllerName": "CompanyLegalInfo",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Profile.CompanyLegalInfoController",
+          "interfaces": [],
+          "actions": {
+            "SubmitCompanyLegalInfoAsyncByInput": {
+              "uniqueName": "SubmitCompanyLegalInfoAsyncByInput",
+              "name": "SubmitCompanyLegalInfoAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/company-legal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "UpdateCompanyLegalInfoAsyncByIdAndInput": {
+              "uniqueName": "UpdateCompanyLegalInfoAsyncByIdAndInput",
+              "name": "UpdateCompanyLegalInfoAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/company-legal-info/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "GetCompanyLegalInfoAsyncById": {
+              "uniqueName": "GetCompanyLegalInfoAsyncById",
+              "name": "GetCompanyLegalInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/profile/company-legal-info/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "GetCurrentUserCompanyLegalInfoAsync": {
+              "uniqueName": "GetCurrentUserCompanyLegalInfoAsync",
+              "name": "GetCurrentUserCompanyLegalInfoAsync",
+              "httpMethod": "GET",
+              "url": "api/profile/company-legal-info/current-user",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "GetCurrentUserCompanyLegalInfoListAsync": {
+              "uniqueName": "GetCurrentUserCompanyLegalInfoListAsync",
+              "name": "GetCurrentUserCompanyLegalInfoListAsync",
+              "httpMethod": "GET",
+              "url": "api/profile/company-legal-info/current-user/list",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
+                "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile": {
+              "uniqueName": "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile",
+              "name": "UpdateFileUrlsAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/company-legal-info/{id}/files",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "businessLicenseFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "taxCertificateFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "representativeIdCardFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "otherSupportFile",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "businessLicenseFile",
+                  "name": "businessLicenseFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "taxCertificateFile",
+                  "name": "taxCertificateFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "representativeIdCardFile",
+                  "name": "representativeIdCardFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "otherSupportFile",
+                  "name": "otherSupportFile",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "DeleteCompanyLegalInfoAsyncById": {
+              "uniqueName": "DeleteCompanyLegalInfoAsyncById",
+              "name": "DeleteCompanyLegalInfoAsync",
+              "httpMethod": "DELETE",
+              "url": "api/profile/company-legal-info/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            }
+          }
+        },
+        "VCareer.Profile.ProfileAppService": {
+          "controllerName": "Profile",
+          "controllerGroupName": "Profile",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Profile.ProfileAppService",
+          "interfaces": [
+            {
+              "type": "VCareer.Profile.IProfileAppService",
+              "name": "IProfileAppService",
+              "methods": [
+                {
+                  "name": "UpdatePersonalInfoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Profile.UpdatePersonalInfoDto",
+                      "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "ChangePasswordAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Profile.ChangePasswordDto",
+                      "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCurrentUserProfileAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "VCareer.Profile.ProfileDto",
+                    "typeSimple": "VCareer.Profile.ProfileDto"
+                  }
+                },
+                {
+                  "name": "DeleteAccountAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "UpdatePersonalInfoAsyncByInput": {
+              "uniqueName": "UpdatePersonalInfoAsyncByInput",
+              "name": "UpdatePersonalInfoAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/profile/personal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.IProfileAppService"
+            },
+            "ChangePasswordAsyncByInput": {
+              "uniqueName": "ChangePasswordAsyncByInput",
+              "name": "ChangePasswordAsync",
+              "httpMethod": "POST",
+              "url": "api/app/profile/change-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.IProfileAppService"
+            },
+            "GetCurrentUserProfileAsync": {
+              "uniqueName": "GetCurrentUserProfileAsync",
+              "name": "GetCurrentUserProfileAsync",
+              "httpMethod": "GET",
+              "url": "api/app/profile/current-user-profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.Profile.ProfileDto",
+                "typeSimple": "VCareer.Profile.ProfileDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.IProfileAppService"
+            },
+            "DeleteAccountAsync": {
+              "uniqueName": "DeleteAccountAsync",
+              "name": "DeleteAccountAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/profile/account",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.IProfileAppService"
+            }
+          }
+        },
+        "VCareer.Profile.ProfileController": {
+          "controllerName": "Profile",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Profile.ProfileController",
+          "interfaces": [],
+          "actions": {
+            "GetCurrentUserProfileAsync": {
+              "uniqueName": "GetCurrentUserProfileAsync",
+              "name": "GetCurrentUserProfileAsync",
+              "httpMethod": "GET",
+              "url": "api/profile",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.Profile.ProfileDto",
+                "typeSimple": "VCareer.Profile.ProfileDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "UpdatePersonalInfoAsyncByInput": {
+              "uniqueName": "UpdatePersonalInfoAsyncByInput",
+              "name": "UpdatePersonalInfoAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/personal-info",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "ChangePasswordAsyncByInput": {
+              "uniqueName": "ChangePasswordAsyncByInput",
+              "name": "ChangePasswordAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/change-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "DeleteAccountAsync": {
+              "uniqueName": "DeleteAccountAsync",
+              "name": "DeleteAccountAsync",
+              "httpMethod": "DELETE",
+              "url": "api/profile/account",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            }
+          }
+        },
         "VCareer.Services.Auth.AuthAppService": {
           "controllerName": "Auth",
           "controllerGroupName": "Auth",
@@ -923,31 +3307,6 @@
                   "name": "LoginWithGoogleAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "file",
-                      "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
-                      "type": "Microsoft.AspNetCore.Http.IFormFile",
-                      "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.CV.CVDto",
-                    "typeSimple": "VCareer.CV.CVDto"
-                  }
-                },
-                {
-                  "name": "UpdateCVAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
                       "name": "input",
                       "typeAsString": "VCareer.Dto.AuthDto.GoogleLoginDto, VCareer.Application.Contracts",
                       "type": "VCareer.Dto.AuthDto.GoogleLoginDto",
@@ -963,23 +3322,6 @@
                 },
                 {
                   "name": "ForgotPasswordAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.CV.CVDto",
-                    "typeSimple": "VCareer.CV.CVDto"
-                  }
-                },
-                {
-                  "name": "GetCVListAsync",
                   "parametersOnMethod": [
                     {
                       "name": "input",
@@ -1018,48 +3360,6 @@
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
-                  }
-                },
-                {
-                  "name": "LogOutAllDeviceAsync",
-                  "parametersOnMethod": [],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
-                },
-                {
-                  "name": "GetPublicCVsByCandidateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "candidateId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                }
-                  ],
-                  "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
-                    "typeSimple": "[VCareer.CV.CVDto]"
-                  }
-                },
-                {
-                  "name": "ExportCVToPDFAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Byte[]",
-                    "typeSimple": "[number]"
                   }
                 }
               ]
@@ -1148,51 +3448,6 @@
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "file",
-                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
-                  "type": "Microsoft.AspNetCore.Http.IFormFile",
-                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "file",
-                  "name": "file",
-                  "jsonName": null,
-                  "type": "Microsoft.AspNetCore.Http.IFormFile",
-                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "FormFile",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.CV.CVDto",
-                "typeSimple": "VCareer.CV.CVDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.CV.ICVAppService"
-            },
-            "UpdateCVAsyncByIdAndInput": {
-              "uniqueName": "UpdateCVAsyncByIdAndInput",
-              "name": "UpdateCVAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/c-v/{id}/c-v",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
                   "name": "input",
                   "typeAsString": "VCareer.Dto.AuthDto.GoogleLoginDto, VCareer.Application.Contracts",
                   "type": "VCareer.Dto.AuthDto.GoogleLoginDto",
@@ -1202,18 +3457,6 @@
                 }
               ],
               "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
                 {
                   "nameOnMethod": "input",
                   "name": "input",
@@ -1230,58 +3473,6 @@
               "returnValue": {
                 "type": "VCareer.Dto.JwtDto.TokenResponseDto",
                 "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.CV.ICVAppService"
-            },
-            "GetCVAsyncById": {
-              "uniqueName": "GetCVAsyncById",
-              "name": "GetCVAsync",
-              "httpMethod": "GET",
-              "url": "api/app/c-v/{id}/c-v",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.CV.CVDto",
-                "typeSimple": "VCareer.CV.CVDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
-            },
-            "LogOutAllDeviceAsync": {
-              "uniqueName": "LogOutAllDeviceAsync",
-              "name": "LogOutAllDeviceAsync",
-              "httpMethod": "POST",
-              "url": "api/app/auth/log-out-all-device",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
@@ -1375,24 +3566,7 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
             }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
           }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
         },
         "VCareer.Services.Books.BookAppService": {
           "controllerName": "Book",
@@ -1418,25 +3592,10 @@
                       "defaultValue": null
                     }
                   ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
                   "returnValue": {
                     "type": "VCareer.Dto.BookDto",
                     "typeSimple": "VCareer.Dto.BookDto"
                   }
-          }
                 },
                 {
                   "name": "GetListAsync",
@@ -1454,10 +3613,6 @@
                     "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>",
                     "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>"
                   }
-              ],
-              "returnValue": {
-                "type": "VCareer.CV.CVDto",
-                "typeSimple": "VCareer.CV.CVDto"
                 },
                 {
                   "name": "CreateAsync",
@@ -1475,21 +3630,7 @@
                     "type": "VCareer.Dto.BookDto",
                     "typeSimple": "VCareer.Dto.BookDto"
                   }
-              ],
-              "returnValue": {
-                "type": "VCareer.CV.CVDto",
-                "typeSimple": "VCareer.CV.CVDto"
                 },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.CV.CVController"
-            },
-            "SimpleUploadCVAsyncByFile": {
-              "uniqueName": "SimpleUploadCVAsyncByFile",
-              "name": "SimpleUploadCVAsync",
-              "httpMethod": "POST",
-              "url": "api/cv/simple-upload",
-              "supportedVersions": [],
-              "parametersOnMethod": [
                 {
                   "name": "UpdateAsync",
                   "parametersOnMethod": [
@@ -1570,7 +3711,7 @@
                 "type": "VCareer.Dto.BookDto",
                 "typeSimple": "VCareer.Dto.BookDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<VCareer.Dto.BookDto,VCareer.Dto.BookDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             },
             "GetListAsyncByInput": {
@@ -1578,43 +3719,6 @@
               "name": "GetListAsync",
               "httpMethod": "GET",
               "url": "api/app/book",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "cvType",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "cvType",
-                  "name": "cvType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.CV.CVDto>",
-                "typeSimple": "[VCareer.CV.CVDto]"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.CV.CVController"
-            },
-            "GetCVListAsyncByInput": {
-              "uniqueName": "GetCVListAsyncByInput",
-              "name": "GetCVListAsync",
-              "httpMethod": "GET",
-              "url": "api/cv",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -1627,54 +3731,6 @@
                 }
               ],
               "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "CVType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Status",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "IsPublic",
-                  "jsonName": null,
-                  "type": "System.Boolean?",
-                  "typeSimple": "boolean?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "IsDefault",
-                  "jsonName": null,
-                  "type": "System.Boolean?",
-                  "typeSimple": "boolean?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": "input"
-                },
                 {
                   "nameOnMethod": "input",
                   "name": "Sorting",
@@ -1717,21 +3773,6 @@
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.CV.CVController"
-            },
-            "GetDefaultCVAsync": {
-              "uniqueName": "GetDefaultCVAsync",
-              "name": "GetDefaultCVAsync",
-              "httpMethod": "GET",
-              "url": "api/cv/default",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "VCareer.CV.CVDto",
-                "typeSimple": "VCareer.CV.CVDto"
-              },
-              "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<VCareer.Dto.BookDto,VCareer.Dto.BookDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
             },
             "CreateAsyncByInput": {
@@ -1779,43 +3820,6 @@
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "input",
-                  "typeAsString": "VCareer.CV.SetPublicCVDto, VCareer.Application.Contracts",
-                  "type": "VCareer.CV.SetPublicCVDto",
-                  "typeSimple": "VCareer.CV.SetPublicCVDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "VCareer.CV.SetPublicCVDto",
-                  "typeSimple": "VCareer.CV.SetPublicCVDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.CV.CVController"
-            },
-            "DeleteCVAsyncById": {
-              "uniqueName": "DeleteCVAsyncById",
-              "name": "DeleteCVAsync",
-              "httpMethod": "DELETE",
-              "url": "api/cv/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
                   "name": "id",
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
@@ -1844,22 +3848,7 @@
                   "constraintTypes": [],
                   "bindingSourceId": "Path",
                   "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
                 },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.CV.CVController"
-            },
-            "GetPublicCVsByCandidateAsyncByCandidateId": {
-              "uniqueName": "GetPublicCVsByCandidateAsyncByCandidateId",
-              "name": "GetPublicCVsByCandidateAsync",
-              "httpMethod": "GET",
-              "url": "api/cv/public/{candidateId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
                 {
                   "nameOnMethod": "input",
                   "name": "input",
@@ -1916,1037 +3905,6 @@
               },
               "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
-            }
-          }
-        },
-        "VCareer.Services.User.UserServices": {
-          "controllerName": "UserServices",
-          "controllerGroupName": "UserServices",
-          "isRemoteService": true,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Services.User.UserServices",
-          "interfaces": [
-            {
-              "type": "Volo.Abp.Identity.IIdentityUserAppService",
-              "name": "IIdentityUserAppService",
-              "methods": [
-                {
-                  "name": "GetRolesAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
-                  }
-                },
-                {
-                  "name": "GetAssignableRolesAsync",
-                  "parametersOnMethod": [],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
-                  }
-                },
-                {
-                  "name": "UpdateRolesAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateRolesDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
-                },
-                {
-                  "name": "FindByUsernameAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "userName",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "FindByEmailAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "email",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "GetAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "businessLicenseFile",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "taxCertificateFile",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "representativeIdCardFile",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "otherSupportFile",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "GetListAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.GetIdentityUsersInput, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.GetIdentityUsersInput",
-                      "typeSimple": "Volo.Abp.Identity.GetIdentityUsersInput",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>"
-                  }
-                },
-                {
-                  "name": "CreateAsync",
-                  "parametersOnMethod": [
-                    {
-                  "nameOnMethod": "input",
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserCreateDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "UpdateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "DeleteAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
-                }
-              ]
-            }
-          ],
-          "actions": {
-            "GetAsyncById": {
-              "uniqueName": "GetAsyncById",
-              "name": "GetAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.GetIdentityUsersInput>"
-            },
-            "GetListAsyncByInput": {
-              "uniqueName": "GetListAsyncByInput",
-              "name": "GetListAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.GetIdentityUsersInput, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.GetIdentityUsersInput",
-                  "typeSimple": "Volo.Abp.Identity.GetIdentityUsersInput",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "businessLicenseFile",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                },
-                {
-                  "name": "taxCertificateFile",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                },
-                {
-                  "name": "representativeIdCardFile",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                },
-                {
-                  "name": "otherSupportFile",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "Filter",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-        "VCareer.Profile.CompanyLegalInfoController": {
-          "controllerName": "CompanyLegalInfo",
-          "controllerGroupName": null,
-          "isRemoteService": false,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Profile.CompanyLegalInfoController",
-          "interfaces": [],
-          "actions": {
-            "SubmitCompanyLegalInfoAsyncByInput": {
-              "uniqueName": "SubmitCompanyLegalInfoAsyncByInput",
-              "name": "SubmitCompanyLegalInfoAsync",
-              "httpMethod": "POST",
-              "url": "api/profile/company-legal-info",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "ExtraProperties",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Data.ExtraPropertyDictionary",
-                  "typeSimple": "{string:object}",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.GetIdentityUsersInput>"
-            },
-            "GetRolesAsyncById": {
-              "uniqueName": "GetRolesAsyncById",
-              "name": "GetRolesAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services/{id}/roles",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
-            },
-            "GetAssignableRolesAsync": {
-              "uniqueName": "GetAssignableRolesAsync",
-              "name": "GetAssignableRolesAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services/assignable-roles",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserCreateDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserCreateDto>"
-            },
-            "UpdateAsyncByIdAndInput": {
-              "uniqueName": "UpdateAsyncByIdAndInput",
-              "name": "UpdateAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/user-services/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
-                },
-            "LoginAsyncByInput": {
-              "uniqueName": "LoginAsyncByInput",
-              "name": "LoginAsync",
-              "httpMethod": "POST",
-              "url": "api/app/auth/login",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
-                },
-            "LoginWithGoogleAsyncByInput": {
-              "uniqueName": "LoginWithGoogleAsyncByInput",
-              "name": "LoginWithGoogleAsync",
-              "httpMethod": "POST",
-              "url": "api/app/auth/login-with-google",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Dto.AuthDto.GoogleLoginDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.AuthDto.GoogleLoginDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.GoogleLoginDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.IdentityUserUpdateDto>"
-            },
-            "DeleteAsyncById": {
-              "uniqueName": "DeleteAsyncById",
-              "name": "DeleteAsync",
-              "httpMethod": "DELETE",
-              "url": "api/app/user-services/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
-            },
-            "UpdateRolesAsyncByIdAndInput": {
-              "uniqueName": "UpdateRolesAsyncByIdAndInput",
-              "name": "UpdateRolesAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/user-services/{id}/roles",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Dto.AuthDto.ResetPasswordDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
-            }
-          }
-        },
-        "VCareer.Services.Books.BookAppService": {
-          "controllerName": "Book",
-          "controllerGroupName": "Book",
-          "isRemoteService": true,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Services.Books.BookAppService",
-          "interfaces": [
-            {
-              "type": "VCareer.IServices.Books.IBookAppService",
-              "name": "IBookAppService",
-              "methods": [
-                {
-                  "name": "GetAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.Dto.BookDto",
-                    "typeSimple": "VCareer.Dto.BookDto"
-                  }
-                },
-                {
-                  "name": "GetListAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
-                      "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                      "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>"
-                  }
-                },
-                {
-                  "name": "CreateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "VCareer.IServices.Books.CreateUpdateBookDto, VCareer.Application.Contracts",
-                      "type": "VCareer.IServices.Books.CreateUpdateBookDto",
-                      "typeSimple": "VCareer.IServices.Books.CreateUpdateBookDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.Dto.BookDto",
-                    "typeSimple": "VCareer.Dto.BookDto"
-                  }
-                },
-                {
-                  "name": "UpdateAsync",
-                  "parametersOnMethod": [
-                    {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateRolesDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
-                }
-              ]
-            }
-          ],
-          "actions": {
-            "GetAsyncById": {
-              "uniqueName": "GetAsyncById",
-              "name": "GetAsync",
-              "httpMethod": "GET",
-              "url": "api/app/book/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.BookDto",
-                "typeSimple": "VCareer.Dto.BookDto"
-                },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<VCareer.Dto.BookDto,VCareer.Dto.BookDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
-            },
-            "GetListAsyncByInput": {
-              "uniqueName": "GetListAsyncByInput",
-              "name": "GetListAsync",
-              "httpMethod": "GET",
-              "url": "api/app/book",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto, Volo.Abp.Ddd.Application.Contracts",
-                  "type": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "typeSimple": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.BookDto>"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<VCareer.Dto.BookDto,VCareer.Dto.BookDto,System.Guid,Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto>"
-            },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/book",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.IServices.Books.CreateUpdateBookDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "typeSimple": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
-            },
-            "FindByUsernameAsyncByUserName": {
-              "uniqueName": "FindByUsernameAsyncByUserName",
-              "name": "FindByUsernameAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services/find-by-username",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "userName",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.IServices.Books.CreateUpdateBookDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "typeSimple": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "userName",
-                  "name": "userName",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "typeSimple": "VCareer.IServices.Books.CreateUpdateBookDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
-            },
-            "FindByEmailAsyncByEmail": {
-              "uniqueName": "FindByEmailAsyncByEmail",
-              "name": "FindByEmailAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services/find-by-email",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "email",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "email",
-                  "name": "email",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
             }
           }
         }
@@ -5822,7 +6780,7 @@
       "genericArguments": null,
       "properties": null
     },
-    "VCareer.Dto.AuthDto.ForgotPasswordDto": {
+    "VCareer.CV.CreateCVOnlineDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -6011,7 +6969,397 @@
         }
       ]
     },
-    "VCareer.Dto.AuthDto.GoogleLoginDto": {
+    "VCareer.CV.CVDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CandidateId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CVName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CVType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsDefault",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsPublic",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FullName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DateOfBirth",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Gender",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Address",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CareerObjective",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkExperience",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Education",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Skills",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Projects",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Certificates",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Languages",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Interests",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OriginalFileName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileSize",
+          "jsonName": null,
+          "type": "System.Int64?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.CV.GetCVListDto": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CVType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsPublic",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsDefault",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.CV.SetDefaultCVDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -6019,7 +7367,7 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "IdToken",
+          "name": "CVId",
           "jsonName": null,
           "type": "System.Guid",
           "typeSimple": "string",
@@ -6266,7 +7614,7 @@
         }
       ]
     },
-    "VCareer.Dto.AuthDto.LoginDto": {
+    "VCareer.CV.UploadCVDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -6391,7 +7739,7 @@
           "regex": null
         }
       ]
-        },
+    },
     "VCareer.Dto.AuthDto.GoogleLoginDto": {
       "baseType": null,
       "isEnum": false,
@@ -6399,6 +7747,39 @@
       "enumValues": null,
       "genericArguments": null,
       "properties": [
+        {
+          "name": "IdToken",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.AuthDto.LoginDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
         {
           "name": "Password",
           "jsonName": null,
@@ -6413,27 +7794,6 @@
         }
       ]
     },
-    "VCareer.Dto.AuthDto.RegisterDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Role",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-        },
     "VCareer.Dto.AuthDto.RegisterDto": {
       "baseType": null,
       "isEnum": false,
