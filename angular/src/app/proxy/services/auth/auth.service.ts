@@ -27,6 +27,14 @@ export class AuthService {
     { apiName: this.apiName,...config });
   
 
+  logOutAllDevice = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/log-out-all-device',
+    },
+    { apiName: this.apiName,...config });
+  
+
   login = (input: LoginDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TokenResponseDto>({
       method: 'POST',

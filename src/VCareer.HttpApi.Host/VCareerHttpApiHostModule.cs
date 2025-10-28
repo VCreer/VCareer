@@ -131,6 +131,7 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureCors(context, configuration);
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
+        ConfigureGoogleOptions(configuration);
         //  ConfigureClaims();
     }
 
@@ -139,7 +140,12 @@ public class VCareerHttpApiHostModule : AbpModule
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng
     private void ConfigureJwtOptions(IConfiguration configuration)
     {
-        Configure<JwtOptions>(configuration.GetSection("Jwt"));
+        Configure<JwtOptions>(configuration.GetSection("Authentication:Jwt"));
+    }
+
+    private void ConfigureGoogleOptions(IConfiguration configuration)
+    {
+        Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {

@@ -1,0 +1,72 @@
+<div class="verify-otp-container">
+  <div class="verify-otp-wrapper">
+    <!-- Header -->
+    <div class="verify-otp-header">
+      <div class="logo-container">
+        <img src="assets/images/login/logo-login.png" alt="VCareer Logo" class="logo-image" />
+      </div>
+      <h1 class="verify-otp-title">Nhập mã xác thực</h1>
+      <p class="verify-otp-description">
+        Chúng tôi đã gửi mã xác thực đến <strong>{{ email }}</strong>
+      </p>
+    </div>
+
+    <!-- OTP Input Fields -->
+    <div class="otp-input-container">
+      <div class="otp-inputs">
+        <div class="otp-input-wrapper" *ngFor="let i of [0,1,2,3,4,5]">
+          <input
+            type="text"
+            class="otp-input"
+            maxlength="1"
+            [value]="otpValues[i]"
+            (keydown)="onKeyDown($event, i)"
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Resend OTP -->
+    <div class="resend-otp">
+      <p class="resend-text">
+        Không nhận được mã? 
+        <button type="button" class="resend-link" (click)="resendOtp()" [disabled]="isResending">
+          {{ isResending ? 'Đang gửi lại...' : 'Gửi lại' }}
+        </button>
+      </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        [fullWidth]="true"
+        buttonType="button"
+        [loading]="isLoading"
+        (click)="onSubmit()"
+      >
+        Xác thực
+      </app-button>
+    </div>
+
+    <!-- Back to Login -->
+    <div class="back-to-login">
+      <button type="button" (click)="navigateToLogin()" class="back-link">
+        <svg class="back-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"></path>
+        </svg>
+        Quay lại đăng nhập
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false"
+  ></app-toast-notification>
+</div>

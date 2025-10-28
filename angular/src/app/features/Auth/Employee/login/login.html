@@ -1,0 +1,68 @@
+<div class="login-container">
+  <div class="login-wrapper">
+    <!-- Cột bên trái - Logo -->
+    <div class="login-image-section">
+      <app-logo-section
+        logoUrl="assets/images/login/logo-login.png"
+        logoAlt="VCareer Logo"
+        title="VCareer"
+        subtitle="Hệ thống quản trị tuyển dụng"
+        [logoSize]="180"
+        [titleSize]="36"
+        [subtitleSize]="18"
+      ></app-logo-section>
+    </div>
+
+    <!-- Cột bên phải - Form đăng nhập -->
+    <div class="login-form-section">
+      <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+          <h1 class="welcome-title">Đăng nhập Admin</h1>
+          <p class="welcome-text">Chào mừng trở lại! Vui lòng đăng nhập vào hệ thống quản trị.</p>
+        </div>
+
+        <!-- Form đăng nhập -->
+        <form [formGroup]="adminLoginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Trường username -->
+          <app-input-field
+            label="Tên đăng nhập"
+            placeholder="Nhập tên đăng nhập"
+            icon="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
+            [error]="getFieldError('username')"
+            [required]="true"
+            formControlName="username"
+          ></app-input-field>
+
+          <!-- Trường mật khẩu -->
+          <app-password-field
+            label="Mật khẩu"
+            placeholder="Nhập mật khẩu"
+            [error]="getFieldError('password')"
+            [required]="true"
+            formControlName="password"
+          ></app-password-field>
+
+          <!-- Submit Button -->
+          <app-button
+            type="primary"
+            size="medium"
+            [fullWidth]="true"
+            buttonType="submit"
+            [loading]="isLoading"
+          >
+            Đăng nhập
+          </app-button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false"
+  ></app-toast-notification>
+</div>

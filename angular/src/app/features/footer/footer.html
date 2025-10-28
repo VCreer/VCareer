@@ -1,0 +1,13 @@
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <app-footer-contact [hotline]="hotline" [email]="email"></app-footer-contact>
+        <app-footer-social [socialLinks]="socialLinks"></app-footer-social>
+      </div>
+      <div class="footer-right">
+        <app-footer-link-column *ngFor="let c of columns" [title]="c.title" [links]="c.links"></app-footer-link-column>
+      </div>
+    </div>
+  </div>
+</footer>
