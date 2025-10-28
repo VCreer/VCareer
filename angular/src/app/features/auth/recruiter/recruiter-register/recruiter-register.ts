@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -28,6 +29,7 @@ export class RecruiterRegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private http = inject(HttpClient);
+  private googleAuthService = inject(GoogleAuthService);
 
   registerForm!: FormGroup;
   isLoading = false;
@@ -38,6 +40,7 @@ export class RecruiterRegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.googleAuthService.initialize();
   }
 
   private initializeForm(): void {
@@ -169,8 +172,27 @@ export class RecruiterRegisterComponent implements OnInit {
     this.router.navigate(['/recruiter/login']);
   }
 
-  signInWithGoogle() {
-    console.log('Đăng ký bằng Google');
+  async signInWithGoogle() {
+    try {
+      this.isLoading = true;
+      
+      // Sign up with Google
+      const user = await this.googleAuthService.signInWithGoogle();
+      
+      console.log('Google user:', user);
+      
+      this.isLoading = false;
+      this.showToastMessage('Đăng ký bằng Google thành công!', 'success');
+      
+      setTimeout(() => {
+        this.router.navigate(['/recruiter/dashboard']);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Google sign up error:', error);
+      this.isLoading = false;
+      this.showToastMessage('Đăng ký bằng Google thất bại. Vui lòng thử lại.', 'error');
+    }
   }
 
   goToSelector() {

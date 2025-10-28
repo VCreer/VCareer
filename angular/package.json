@@ -12,6 +12,7 @@
   },
   "private": true,
   "dependencies": {
+    "@abacritt/angularx-social-login": "^2.5.1",
     "@abp/ng.account": "~9.3.2",
     "@abp/ng.components": "~9.3.2",
     "@abp/ng.core": "~9.3.2",
