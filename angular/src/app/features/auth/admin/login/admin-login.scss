@@ -20,46 +20,19 @@
   z-index: 2;
 }
 
-// Phần logo bên trái
+// Phần ảnh bên trái
 .login-image-section {
   flex: 1;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: url('/assets/images/employee/employee.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 40px;
+  padding: 0;
   position: relative;
   overflow: hidden;
-}
-
-.logo-section {
-  text-align: center;
-  color: white;
-  z-index: 1;
-  position: relative;
-}
-
-.logo-image {
-  width: 180px;
-  height: 180px;
-  object-fit: contain;
-  margin-bottom: 24px;
-  filter: brightness(0) invert(1);
-}
-
-.logo-text {
-  font-size: 36px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  color: white;
-}
-
-.logo-subtitle {
-  font-size: 18px;
-  font-weight: 400;
-  margin: 0;
-  opacity: 0.9;
-  color: white;
 }
 
 // Phần form bên phải

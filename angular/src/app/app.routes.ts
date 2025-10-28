@@ -103,7 +103,7 @@ export const APP_ROUTES: Routes = [
   },
   
   {
-    path: 'admin/login',
+    path: 'employee/login',
     loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
   },
 

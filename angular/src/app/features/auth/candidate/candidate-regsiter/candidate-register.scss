@@ -19,70 +19,19 @@
     z-index: 2;
   }
   
-  .register-brand-section {
+  // Phần ảnh bên trái
+  .register-image-section {
     flex: 1;
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: url('/assets/images/register/register.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     position: relative;
     overflow: hidden;
-  
-    &::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-      animation: float 6s ease-in-out infinite;
-    }
-  }
-  
-  .brand-content {
-    text-align: center;
-    color: white;
-    z-index: 2;
-    position: relative;
-  }
-  
-  .brand-logo {
-    margin-bottom: 24px;
-  }
-  
-  .brand-logo-image {
-    height: 80px;
-    width: auto;
-    max-width: 200px;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-  }
-  
-  .brand-title {
-    font-size: 36px;
-    font-weight: 700;
-    margin: 0 0 16px 0;
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  
-  .brand-slogan {
-    font-size: 18px;
-    line-height: 1.6;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 400;
-  }
-  
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-20px) rotate(5deg);
-    }
   }
   
   .register-form-section {
