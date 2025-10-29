@@ -29,13 +29,15 @@ namespace VCareer.Jwt
         private readonly JwtOptions _jwtOptions;
         private readonly IRefreshtokenRepository _refreshtokenRepository;
         private readonly IdentityUserManager _userManager;
+        private readonly IdentityRoleManager _roleManager;
 
-        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager)
+        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager,IdentityRoleManager roleManager)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _jwtOptions = jwtOptions.Value;
             _refreshtokenRepository = refreshtokenRepository;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<TokenResponseDto> CreateTokenAsync(IdentityUser user)
@@ -57,10 +59,20 @@ namespace VCareer.Jwt
         {
             var identity = new ClaimsIdentity("Bearer");
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.Email, user.Email.ToString()));
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Count > 0) {
+                foreach (var role in roles) {
+
+                    identity.AddClaim(new Claim(ClaimTypes.Role,role)); 
+                }
+            }
 
             var basePrincipal = new ClaimsPrincipal(identity);
             //gắn claims tĩnh và động vào principal
-            var principal = await _claimsPrincipalFactory.CreateDynamicAsync(basePrincipal);
+            var principal = await _claimsPrincipalFactory.CreateAsync(basePrincipal);      // tạo principal với các claims tĩnh (ID, Email, Role,…)
+         //   principal = await _claimsPrincipalFactory.CreateDynamicAsync(principal); // bổ sung claims động
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

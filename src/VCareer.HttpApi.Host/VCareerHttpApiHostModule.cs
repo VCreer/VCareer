@@ -19,6 +19,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
+using VCareer.Files.BlobContainers;
 using VCareer.HealthChecks;
 using VCareer.IServices.IAuth;
 using VCareer.Jwt;
@@ -163,7 +164,7 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             options.Events = new JwtBearerEvents
             {
-                
+
                 OnTokenValidated = context =>
                 {
                     return Task.CompletedTask;
@@ -218,13 +219,41 @@ public class VCareerHttpApiHostModule : AbpModule
 
     private void ConfigureBlobStorings(ServiceConfigurationContext context)
     {
-    Configure<AbpBlobStoringOptions>(options => {
-        options.Containers.ConfigureDefault(container =>
+        Configure<AbpBlobStoringOptions>(options =>
         {
-            container.UseFileSystem(fileSystem => { 
-            fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files"); //doan nay sau phai check lai
+            options.Containers.Configure<CandidateContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Candidate");
+                });
             });
-        }); 
+
+            options.Containers.Configure<RecruiterContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Recruiter");
+                });
+            });
+
+            options.Containers.Configure<EmployeeContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Employee");
+                });
+            });
+
+            options.Containers.Configure<SystemContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/System");
+                });
+
+            });
         });
     }
 
@@ -344,5 +373,5 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseConfiguredEndpoints();
     }
 
-    
+
 }

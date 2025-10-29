@@ -886,13 +886,30 @@
               "name": "IAuthAppService",
               "methods": [
                 {
-                  "name": "RegisterAsync",
+                  "name": "CandidateRegisterAsync",
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Dto.AuthDto.RegisterDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.AuthDto.RegisterDto",
-                      "typeSimple": "VCareer.Dto.AuthDto.RegisterDto",
+                      "typeAsString": "VCareer.Dto.AuthDto.CandidateRegisterDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RecruiterRegisterAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.AuthDto.RecruiterRegisterDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -990,6 +1007,43 @@
             }
           ],
           "actions": {
+            "CandidateRegisterAsyncByInput": {
+              "uniqueName": "CandidateRegisterAsyncByInput",
+              "name": "CandidateRegisterAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/candidate-register",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.AuthDto.CandidateRegisterDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.CandidateRegisterDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
             "ForgotPasswordAsyncByInput": {
               "uniqueName": "ForgotPasswordAsyncByInput",
               "name": "ForgotPasswordAsync",
@@ -1131,18 +1185,18 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
             },
-            "RegisterAsyncByInput": {
-              "uniqueName": "RegisterAsyncByInput",
-              "name": "RegisterAsync",
+            "RecruiterRegisterAsyncByInput": {
+              "uniqueName": "RecruiterRegisterAsyncByInput",
+              "name": "RecruiterRegisterAsync",
               "httpMethod": "POST",
-              "url": "api/app/auth/register",
+              "url": "api/app/auth/recruiter-register",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Dto.AuthDto.RegisterDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.AuthDto.RegisterDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.RegisterDto",
+                  "typeAsString": "VCareer.Dto.AuthDto.RecruiterRegisterDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -1152,8 +1206,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Dto.AuthDto.RegisterDto",
-                  "typeSimple": "VCareer.Dto.AuthDto.RegisterDto",
+                  "type": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.RecruiterRegisterDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -1544,6 +1598,488 @@
               },
               "allowAnonymous": false,
               "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
+            }
+          }
+        },
+        "VCareer.Services.FileServices.FileSecurityServices": {
+          "controllerName": "FileSecurityServices",
+          "controllerGroupName": "FileSecurityServices",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.FileServices.FileSecurityServices",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.IFileServices.IFileSecurityServices",
+              "name": "IFileSecurityServices",
+              "methods": [
+                {
+                  "name": "ValidateExtension",
+                  "parametersOnMethod": [
+                    {
+                      "name": "fileName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "containerType",
+                      "typeAsString": "System.Object, System.Private.CoreLib",
+                      "type": "System.Object",
+                      "typeSimple": "object",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "ValidateSize",
+                  "parametersOnMethod": [
+                    {
+                      "name": "size",
+                      "typeAsString": "System.Int64, System.Private.CoreLib",
+                      "type": "System.Int64",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "containerType",
+                      "typeAsString": "System.Object, System.Private.CoreLib",
+                      "type": "System.Object",
+                      "typeSimple": "object",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "ValidateMimeAndMagicAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "fileStream",
+                      "typeAsString": "System.IO.Stream, System.Private.CoreLib",
+                      "type": "System.IO.Stream",
+                      "typeSimple": "System.IO.Stream",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "fileName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "ScanVirusAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "fileStream",
+                      "typeAsString": "System.IO.Stream, System.Private.CoreLib",
+                      "type": "System.IO.Stream",
+                      "typeSimple": "System.IO.Stream",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                },
+                {
+                  "name": "GenerateSafeStorageName",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "fileName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.String",
+                    "typeSimple": "string"
+                  }
+                },
+                {
+                  "name": "CheckUserQuotaAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "newFileSize",
+                      "typeAsString": "System.Int64, System.Private.CoreLib",
+                      "type": "System.Int64",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Boolean",
+                    "typeSimple": "boolean"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CheckUserQuotaAsyncByUserIdAndNewFileSize": {
+              "uniqueName": "CheckUserQuotaAsyncByUserIdAndNewFileSize",
+              "name": "CheckUserQuotaAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/check-user-quota/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "newFileSize",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "newFileSize",
+                  "name": "newFileSize",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            },
+            "GenerateSafeStorageNameByUserIdAndFileName": {
+              "uniqueName": "GenerateSafeStorageNameByUserIdAndFileName",
+              "name": "GenerateSafeStorageName",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/generate-safe-storage-name/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "fileName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "fileName",
+                  "name": "fileName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.String",
+                "typeSimple": "string"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            },
+            "ScanVirusAsyncByFileStream": {
+              "uniqueName": "ScanVirusAsyncByFileStream",
+              "name": "ScanVirusAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/scan-virus",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "fileStream",
+                  "typeAsString": "System.IO.Stream, System.Private.CoreLib",
+                  "type": "System.IO.Stream",
+                  "typeSimple": "System.IO.Stream",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "fileStream",
+                  "name": "fileStream",
+                  "jsonName": null,
+                  "type": "System.IO.Stream",
+                  "typeSimple": "System.IO.Stream",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            },
+            "ValidateExtensionByFileNameAndContainerType": {
+              "uniqueName": "ValidateExtensionByFileNameAndContainerType",
+              "name": "ValidateExtension",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/validate-extension",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "fileName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "containerType",
+                  "typeAsString": "System.Object, System.Private.CoreLib",
+                  "type": "System.Object",
+                  "typeSimple": "object",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "fileName",
+                  "name": "fileName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "containerType",
+                  "name": "containerType",
+                  "jsonName": null,
+                  "type": "System.Object",
+                  "typeSimple": "object",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            },
+            "ValidateMimeAndMagicAsyncByFileStreamAndFileName": {
+              "uniqueName": "ValidateMimeAndMagicAsyncByFileStreamAndFileName",
+              "name": "ValidateMimeAndMagicAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/validate-mime-and-magic",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "fileStream",
+                  "typeAsString": "System.IO.Stream, System.Private.CoreLib",
+                  "type": "System.IO.Stream",
+                  "typeSimple": "System.IO.Stream",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "fileName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "fileStream",
+                  "name": "fileStream",
+                  "jsonName": null,
+                  "type": "System.IO.Stream",
+                  "typeSimple": "System.IO.Stream",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "fileName",
+                  "name": "fileName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            },
+            "ValidateSizeBySizeAndContainerType": {
+              "uniqueName": "ValidateSizeBySizeAndContainerType",
+              "name": "ValidateSize",
+              "httpMethod": "POST",
+              "url": "api/app/file-security-services/validate-size",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "size",
+                  "typeAsString": "System.Int64, System.Private.CoreLib",
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "containerType",
+                  "typeAsString": "System.Object, System.Private.CoreLib",
+                  "type": "System.Object",
+                  "typeSimple": "object",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "size",
+                  "name": "size",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "containerType",
+                  "name": "containerType",
+                  "jsonName": null,
+                  "type": "System.Object",
+                  "typeSimple": "object",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Boolean",
+                "typeSimple": "boolean"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
             }
           }
         },
@@ -4933,6 +5469,119 @@
     }
   },
   "types": {
+    "System.IO.Stream": {
+      "baseType": "System.MarshalByRefObject",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CanRead",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CanWrite",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CanSeek",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CanTimeout",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Length",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Position",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReadTimeout",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WriteTimeout",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "System.MarshalByRefObject": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
     "VCareer.Books.BookType": {
       "baseType": "System.Enum",
       "isEnum": true,
@@ -4960,6 +5609,39 @@
       ],
       "genericArguments": null,
       "properties": null
+    },
+    "VCareer.Dto.AuthDto.CandidateRegisterDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Password",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
     },
     "VCareer.Dto.AuthDto.ForgotPasswordDto": {
       "baseType": null,
@@ -5036,7 +5718,7 @@
         }
       ]
     },
-    "VCareer.Dto.AuthDto.RegisterDto": {
+    "VCareer.Dto.AuthDto.RecruiterRegisterDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -5044,31 +5726,103 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "Role",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "Email",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
           "minimum": null,
           "maximum": null,
           "regex": null
         },
         {
           "name": "Password",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 10,
+          "maxLength": 12,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "City",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 150,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "District",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 150,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsCompany",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Businesshouseholdname",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

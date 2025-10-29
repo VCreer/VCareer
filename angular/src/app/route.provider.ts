@@ -52,7 +52,7 @@ function configureRoutes() {
     },
        {
       path: '/recruiter/register',
-      name: '::Menu:Recruiter Login',
+      name: '::Menu:Recruiter Register',
       layout: eLayoutType.empty,
       order: 6,
     },

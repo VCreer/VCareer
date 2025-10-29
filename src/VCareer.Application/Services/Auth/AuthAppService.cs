@@ -51,6 +51,12 @@ namespace VCareer.Services.Auth
             _roleManager = roleManager;
             _googleOptions = googleOptions.Value;
         }
+
+        public Task CandidateRegisterAsync(CandidateRegisterDto input)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -77,7 +83,7 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-            await _signInManager.SignInAsync(user, true);
+           // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
@@ -124,7 +130,12 @@ namespace VCareer.Services.Auth
             await _tokenGenerator.CancleAsync(user);
         }
 
-        [UnitOfWork]
+        public Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+        {
+            throw new NotImplementedException();
+        }
+
+     /*   [UnitOfWork]
         public async Task RegisterAsync(RegisterDto input)
         {
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
@@ -144,7 +155,7 @@ namespace VCareer.Services.Auth
             }
 
             await CurrentUnitOfWork.SaveChangesAsync();
-        }
+        }*/
 
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {

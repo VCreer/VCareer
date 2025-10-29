@@ -10,6 +10,11 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
+import { finalize } from 'rxjs/operators';
+import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
+import { TokenResponseDto } from '../../../../proxy/dto/jwt-dto/models';
+
+
 
 @Component({
   selector: 'app-login',
@@ -30,6 +35,7 @@ export class LoginComponent {
   private navigationService = inject(NavigationService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private proxyAuth = inject(ProxyAuthService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -81,7 +87,7 @@ export class LoginComponent {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
-    if (!field || !field.errors || !field.touched) return '';
+    if (!field || !field.errors || (!field.touched && !this.submitAttempted)) return '';
 
     const errors = field.errors;
 
@@ -120,46 +126,75 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    this.submitAttempted = true;
-    
-    Object.keys(this.loginForm.controls).forEach(key => {
-      this.loginForm.get(key)?.markAsTouched();
-    });
+    console.log('onSubmit called');
+  console.log('Form valid:', this.loginForm.valid);
+  this.submitAttempted = true;
 
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      const { username, password, rememberMe } = this.loginForm.value;
-      
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        if (username === 'admin' && password === 'admin123') {
-          this.showToastMessage('Đăng nhập thành công!', 'success');
-          this.navigationService.loginAsCandidate;
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 2000);
-        } else if (username === 'test@example.com' || username === 'testuser') {
-          this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
-          this.loginForm.patchValue({ password: '' });
-        } else {
-          this.showToastMessage('Đăng nhập thành công!', 'success');
-          this.navigationService.loginAsCandidate();
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 2000);
-        }
-      }, 1500);
-    } else {
-      const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
-        this.loginForm.get(key)?.invalid
-      );
-      if (firstErrorField) {
-        const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  // Đánh dấu tất cả field touched để hiện lỗi
+  Object.keys(this.loginForm.controls).forEach(key => {
+    this.loginForm.get(key)?.markAsTouched();
+  });
+
+  // Nếu form không hợp lệ → cuộn đến ô đầu tiên lỗi
+  if (!this.loginForm.valid) {
+    const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
+      this.loginForm.get(key)?.invalid
+    );
+    if (firstErrorField) {
+      const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
   }
+
+  // Form hợp lệ → gọi API
+  this.isLoading = true;
+  const { username, password } = this.loginForm.value;
+
+  // Backend yêu cầu field 'email'
+  const payload = {
+    email: username,
+    password: password,
+  };
+
+  this.proxyAuth
+    .login(payload)
+    .pipe(finalize(() => (this.isLoading = false)))
+    .subscribe({
+      next: (result: TokenResponseDto) => {
+        console.log('Login response:', result);
+        
+        const accessToken = result?.accessToken;
+        if (!accessToken) {
+          this.showToastMessage('Server không trả về token hợp lệ.', 'error');
+          return;
+        }
+
+        // Lưu token vào localStorage
+        localStorage.setItem('access_token', accessToken);
+        if (result?.refreshToken) {
+          localStorage.setItem('refresh_token', result.refreshToken);
+        }
+
+        this.showToastMessage('Đăng nhập thành công!', 'success');
+
+        // Chuyển hướng sau đăng nhập
+        this.navigationService.loginAsCandidate();
+        setTimeout(() => this.router.navigate(['/']), 800);
+      },
+      error: (err) => {
+        console.error('Login error:', err);
+        const msg =
+          err?.error?.message ||
+          err?.error?.error_description ||
+          err?.error?.error ||
+          'Đăng nhập thất bại. Vui lòng thử lại.';
+        this.showToastMessage(msg, 'error');
+      },
+    });
+}
+
+
 
   navigateToSignUp() {
     this.router.navigate(['/register']);
