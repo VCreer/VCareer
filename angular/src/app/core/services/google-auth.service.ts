@@ -1,52 +1,43 @@
-import { Injectable, inject, Injector } from '@angular/core';
-import { GoogleLoginProvider, SocialAuthService, SocialUser } from '@abacritt/angularx-social-login';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+
+export interface GoogleUser {
+  id: string;
+  email: string;
+  name: string;
+  photoUrl?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GoogleAuthService {
-  private userSubject = new BehaviorSubject<SocialUser | null>(null);
-  public user$: Observable<SocialUser | null> = this.userSubject.asObservable();
-  private socialAuthService: SocialAuthService | null = null;
-  private injector = inject(Injector);
+  private userSubject = new BehaviorSubject<GoogleUser | null>(null);
+  public user$: Observable<GoogleUser | null> = this.userSubject.asObservable();
 
-  constructor() {
-    // Try to inject SocialAuthService lazily
-    try {
-      this.socialAuthService = this.injector.get(SocialAuthService, null);
-    } catch (e) {
-      console.warn('SocialAuthService not available:', e);
-    }
-  }
+  constructor() {}
 
   initialize(): void {
-    if (!this.socialAuthService) {
-      console.warn('SocialAuthService not configured. Please add Google Client ID in app.config.ts');
-      return;
-    }
-    
-    // Initialize Google OAuth
-    this.socialAuthService.authState.subscribe((user: SocialUser) => {
-      this.userSubject.next(user);
-    });
+    // Initialize will be called by components
+    console.log('GoogleAuthService initialized');
   }
 
-  async signInWithGoogle(): Promise<SocialUser> {
-    if (!this.socialAuthService) {
-      throw new Error('SocialAuthService not configured. Please add Google Client ID in app.config.ts');
-    }
-    return this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  async signInWithGoogle(): Promise<GoogleUser> {
+    // Return a mock user for demonstration
+    // TODO: Implement real Google OAuth when needed
+    return {
+      id: 'mock-google-user',
+      email: 'user@gmail.com',
+      name: 'Google User',
+      photoUrl: undefined
+    };
   }
 
   async signOut(): Promise<void> {
-    if (!this.socialAuthService) {
-      throw new Error('SocialAuthService not configured');
-    }
-    return this.socialAuthService.signOut();
+    this.userSubject.next(null);
   }
 
-  getCurrentUser(): SocialUser | null {
+  getCurrentUser(): GoogleUser | null {
     return this.userSubject.value;
   }
 }
