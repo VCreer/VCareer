@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
-using VCareer.Model;
+using VCareer.Constants;
 using VCareer.Models.Companies;
 using VCareer.Models.Users;
 using Volo.Abp.Domain.Entities.Auditing;

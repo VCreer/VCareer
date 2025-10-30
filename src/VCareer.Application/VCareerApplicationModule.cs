@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VCareer.IServices.IJobServices;
-using VCareer.Job.JobPosting.Services;
-using VCareer.Job.Search;
 using VCareer.Jwt;
 using VCareer.Repositories.Job;
 using VCareer.Security;
+using VCareer.Services.Job.JobPosting.Services;
+using VCareer.Services.Job.Search;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;

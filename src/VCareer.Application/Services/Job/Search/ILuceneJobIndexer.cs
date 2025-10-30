@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using VCareer.Dto.Job;
 using VCareer.Models.Job;
 
-namespace VCareer.Job.Search
+namespace VCareer.Services.Job.Search
 {
     public interface ILuceneJobIndexer
     {

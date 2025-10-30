@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using VCareer.Services.Profile;
 using Volo.Abp;
 using Volo.Abp.Modularity;
 

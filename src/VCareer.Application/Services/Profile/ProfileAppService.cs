@@ -6,6 +6,7 @@ using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Profile;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
@@ -14,7 +15,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using Volo.Abp.Validation;
 
-namespace VCareer.Profile
+namespace VCareer.Services.Profile
 {
     /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class ProfileAppService : VCareerAppService, IProfileAppService

@@ -1,5 +1,5 @@
 using System;
-using VCareer.Model;
+using VCareer.Constants;
 
 namespace VCareer.Dto.Job
 {

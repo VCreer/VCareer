@@ -6,7 +6,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace VCareer.CV
+namespace VCareer.Services.CV
 {
     /// <summary>
     /// Service để generate PDF từ CV Online

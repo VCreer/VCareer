@@ -9,7 +9,7 @@ using VCareer.Models.Job;
 using VCareer.Repositories.Job;
 using Volo.Abp.Application.Services;
 
-namespace VCareer.Job.JobPosting.Services
+namespace VCareer.Services.Job.JobPosting.Services
 {
     public class TagAppService : ApplicationService, ITagAppService
     {
