@@ -6,9 +6,9 @@ import * as Iservices from './iservices';
 import * as Job from './job';
 import * as Microsoft from './microsoft';
 import * as Model from './model';
+import * as Models from './models';
 import * as Profile from './profile';
 import * as Services from './services';
-export * from './api-config.service';
-
 import * as Volo from './volo';
-export { Books, Dto, Iservices, Microsoft, Services, Volo , Profile,Cv};
+export * from './api-config.service';
+export { Books, Controllers, Cv, Dto, Iservices, Job, Microsoft, Model, Models, Profile, Services, Volo };

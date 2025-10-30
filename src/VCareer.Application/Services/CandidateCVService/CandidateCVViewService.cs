@@ -1,4 +1,4 @@
-using System;
+/*using System;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.CandidateCVDto;
@@ -33,7 +33,7 @@ namespace VCareer.Services.CandidateCVService
         /// <summary>
         /// Lấy danh sách CVs công khai
         /// </summary>
-        public async Task<ViewCandidateCVsResponseDto> GetPublicCVsAsync(ViewCandidateCVsRequestDto request)
+   *//*     public async Task<ViewCandidateCVsResponseDto> GetPublicCVsAsync(ViewCandidateCVsRequestDto request)
         {
             // Verify user là Recruiter (Leader hoặc HR Staff)
             await VerifyRecruiterAccessAsync();
@@ -120,7 +120,7 @@ namespace VCareer.Services.CandidateCVService
                 TotalPages = totalPages
             };
         }
-
+*//*
         /// <summary>
         /// Lấy chi tiết một CV
         /// </summary>
@@ -197,3 +197,4 @@ namespace VCareer.Services.CandidateCVService
     }
 }
 
+*/

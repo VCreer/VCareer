@@ -64,10 +64,11 @@ export interface JobViewDetail {
 export interface JobViewDto {
   id?: string;
   title?: string;
+  companyName?: string;
   salaryText?: string;
   experienceText?: string;
   categoryName?: string;
-  workLocation?: string;
+  provinceName?: string;
   isUrgent: boolean;
   postedAt?: string;
   expiresAt?: string;

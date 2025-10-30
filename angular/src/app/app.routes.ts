@@ -19,10 +19,10 @@ export const APP_ROUTES: Routes = [
         path: 'candidate/profile',
         loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
       },
-      {
-        path: 'candidate/cv-management',
-        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      },
+      // {
+      //   path: 'candidate/cv-management',
+      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      // },
       {
         path: 'candidate/job',
         loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
@@ -89,19 +89,22 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'about-us',
-        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
-        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage.component').then(c => c.RecruiterHomepageComponent),
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
       },
-      {
-        path: 'performance-dashboard',
-        loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
-      }
+        {
+        path: 'recruiter-homepage',
+        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+      },
+      // {
+      //   path: 'performance-dashboard',
+      //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
+      // }
     ]
   },
   
   {
     path: 'admin/login',
-    loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
+    loadComponent: () => import('./features/Auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
   },
 
   // Legacy redirects

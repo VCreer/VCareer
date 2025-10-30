@@ -22,6 +22,7 @@ using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Models.ActivityLogs;
+using VCareer.Models.Job;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;

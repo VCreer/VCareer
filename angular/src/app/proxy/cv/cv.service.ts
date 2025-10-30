@@ -3,7 +3,6 @@ import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { IFormFile } from '../microsoft/asp-net-core/http/models';
-import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -15,24 +14,24 @@ export class CVService {
   createCVOnline = (input: CreateCVOnlineDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'POST',
-      url: '/api/cv/online',
+      url: '/api/app/c-v/c-vOnline',
       body: input,
     },
     { apiName: this.apiName,...config });
   
 
   deleteCV = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
+    this.restService.request<any, void>({
       method: 'DELETE',
-      url: `/api/cv/${id}`,
+      url: `/api/app/c-v/${id}/c-v`,
     },
     { apiName: this.apiName,...config });
   
 
   exportCVToPDF = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
-      method: 'GET',
-      url: `/api/cv/${id}/export-pdf`,
+    this.restService.request<any, number[]>({
+      method: 'POST',
+      url: `/api/app/c-v/${id}/export-cVTo-pDF`,
     },
     { apiName: this.apiName,...config });
   
@@ -40,7 +39,7 @@ export class CVService {
   getCV = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'GET',
-      url: `/api/cv/${id}`,
+      url: `/api/app/c-v/${id}/c-v`,
     },
     { apiName: this.apiName,...config });
   
@@ -48,16 +47,8 @@ export class CVService {
   getCVList = (input: GetCVListDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<CVDto>>({
       method: 'GET',
-      url: '/api/cv',
+      url: '/api/app/c-v/c-vList',
       params: { cvType: input.cvType, status: input.status, isPublic: input.isPublic, isDefault: input.isDefault, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getCVsByType = (cvType: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, CVDto[]>({
-      method: 'GET',
-      url: `/api/cv/by-type/${cvType}`,
     },
     { apiName: this.apiName,...config });
   
@@ -65,7 +56,7 @@ export class CVService {
   getDefaultCV = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'GET',
-      url: '/api/cv/default',
+      url: '/api/app/c-v/default-cV',
     },
     { apiName: this.apiName,...config });
   
@@ -73,24 +64,24 @@ export class CVService {
   getPublicCVsByCandidate = (candidateId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto[]>({
       method: 'GET',
-      url: `/api/cv/public/${candidateId}`,
+      url: `/api/app/c-v/public-cVs-by-candidate/${candidateId}`,
     },
     { apiName: this.apiName,...config });
   
 
   setDefaultCV = (input: SetDefaultCVDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
-      method: 'PUT',
-      url: '/api/cv/set-default',
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/c-v/set-default-cV',
       body: input,
     },
     { apiName: this.apiName,...config });
   
 
   setPublicCV = (input: SetPublicCVDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
-      method: 'PUT',
-      url: '/api/cv/set-public',
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/c-v/set-public-cV',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -99,7 +90,7 @@ export class CVService {
   simpleUploadCV = (file: IFormFile, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'POST',
-      url: '/api/cv/simple-upload',
+      url: '/api/app/c-v/simple-upload-cV',
       body: file,
     },
     { apiName: this.apiName,...config });
@@ -108,7 +99,7 @@ export class CVService {
   updateCV = (id: string, input: UpdateCVDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'PUT',
-      url: `/api/cv/${id}`,
+      url: `/api/app/c-v/${id}/c-v`,
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -117,7 +108,7 @@ export class CVService {
   uploadCV = (input: UploadCVDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'POST',
-      url: '/api/cv/upload',
+      url: '/api/app/c-v/upload-cV',
       body: input,
     },
     { apiName: this.apiName,...config });
