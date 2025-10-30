@@ -318,6 +318,14 @@ namespace VCareer.Repositories.Job
 
         }
 
+        public async Task<string> GetNameComany(Guid job)
+        {
+            var dbContext = await GetDbContextAsync();
+            var recruiter = await dbContext.RecruiterProfiles.FirstOrDefaultAsync(x => x.JobPostings.Any(z=>z.Id == job));
+            var company = await dbContext.Companies.FirstOrDefaultAsync(x => x.Id == recruiter.CompanyId);
+            return company.CompanyName;
+        }
+
         #endregion
     }
 }

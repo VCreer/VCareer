@@ -14,7 +14,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-    [Authorize(VCareerPermission.Profile.Default)]
+  //  [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly IRepository<Company, int> _companyRepository;

@@ -1,38 +1,44 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using VCareer.Dto.Job;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Job.Search;
+using VCareer.Models.Companies;
 using VCareer.Models.Job;
+using VCareer.Models.Users;
 using VCareer.Repositories.Job;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
 
 namespace VCareer.Job.JobPosting.Services
 {
-    /// <summary>
-    /// Application Service cho Job Posting
-    /// Xử lý tìm kiếm, lấy chi tiết, related jobs, và indexing
-    /// </summary>
+
     public class JobPostingAppService : ApplicationService, IJobPostingAppService
     {
+        //private readonly IRepository<Company, int> _companyRepository;
+        //private readonly IRepository<RecruiterProfile, Guid> _recruiterRepository;
         private readonly IJobPostingRepository _jobPostingRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly ILuceneJobIndexer _luceneIndexer;
         private readonly ILogger<JobPostingAppService> _logger;
 
         public JobPostingAppService(
-            IJobPostingRepository jobPostingRepository,
-            ILuceneJobIndexer luceneIndexer,
-            ILocationRepository locationRepository,
-            ILogger<JobPostingAppService> logger)
+                //IRepository<RecruiterProfile, Guid> recruiterRepository,
+                //IRepository<Company, int> companyRepository,
+                IJobPostingRepository jobPostingRepository,
+                ILuceneJobIndexer luceneIndexer,
+                ILocationRepository locationRepository,
+                ILogger<JobPostingAppService> logger)
         {
             _jobPostingRepository = jobPostingRepository;
             _luceneIndexer = luceneIndexer;
             _logger = logger;
             _locationRepository = locationRepository;
+            //_companyRepository = companyRepository;
+            //_recruiterRepository = recruiterRepository;
         }
 
         #region Search & List
@@ -228,13 +234,17 @@ namespace VCareer.Job.JobPosting.Services
         {
 
             var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
+
+            var namecompany = await _jobPostingRepository.GetNameComany(job.Id);
+
+            
             return new JobViewDto
             {
                 Id = job.Id,
 
                 Title = job.Title,
-                //CompanyLogo = job.CompanyLogo,
-                //CompanyName = job.CompanyName,
+                // CompanyLogo = await _companyRepository.GetAsync(id),
+                CompanyName = namecompany,
                 SalaryText = job.SalaryText,
                 ExperienceText = job.ExperienceText,  // ✨ String (đã format sẵn)
                                                       //  WorkLocation = job.WorkLocation,
@@ -299,9 +309,5 @@ namespace VCareer.Job.JobPosting.Services
         #endregion
 
 
-        //public Task IncrementViewCountAsync(Guid jobId)
-        //{
-        //    return _jobPostingRepository.IncrementViewCountAsync(jobId);
-        //}
     }
 }

@@ -47,7 +47,7 @@ namespace VCareer.Controllers.Job
         /// </summary>
         /// <param name="keyword">Từ khóa tìm kiếm</param>
         /// <returns>Danh sách category tree phù hợp</returns>
-        [HttpGet]
+        [HttpPost]
         [Route("search")]
         public async Task<ActionResult<List<CategoryTreeDto>>> SearchCategoriesAsync([FromQuery] string keyword)
         {
