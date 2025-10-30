@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,8 @@ namespace VCareer.Dto.FileDto
 {
     public class UploadFileDto
     {
-    /*    public FileTypes Type{ get; set; }*/
-        public float Size { get; set; }
-        public string Name { get; set; }
+        public IFormFile File { get; set; }
+        public string ContainerType { get; set; } // Ví dụ: Avatar, Resume, Document
+        public string UserId { get; set; } // ID của người dùng tải lên
     }
 }

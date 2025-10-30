@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +16,12 @@ namespace VCareer.Services.FileServices
     public class FilePoliciesServices : ITransientDependency
     {
         private readonly IOptions<FilePolicyConfigs> _config;
+        private readonly IConfiguration _configuration;
 
-        public FilePoliciesServices(IOptions<FilePolicyConfigs> config)
+        public FilePoliciesServices(IOptions<FilePolicyConfigs> config, IConfiguration configuration)
         {
             _config = config;
+            _configuration = configuration;
         }
         // cấu trúc container là dựa trên cái file appsettings.json
         // sẽ có các cái to như candidate, recruiter, job, employee, syste
@@ -63,6 +67,12 @@ namespace VCareer.Services.FileServices
             return containerConfig.MaxSizeMB * 1024L * 1024L;
 
         }
+        public float GetMaxFileSizeMb(object containterType)
+        {
+            var containerConfig = GetContainterConfig(containterType);
+            return containerConfig.MaxSizeMB;
+
+        }
 
         public bool IsAllowedExtension(object containerType, string extension)
         {
@@ -82,7 +92,27 @@ namespace VCareer.Services.FileServices
             var containerConfig = GetContainterConfig(containerType);
             return containerConfig.AllowedExtensions;
         }
+        //vì container blob name được định nghĩa ko có phần ContainerType, mà cái hàm này mình tìm dựa trên mấy cái enum có tên là container +"ContainerType"
+        public string GetContainerName(string containerTypeName)
+        {
+            var container = containers.FirstOrDefault(c => Enum.IsDefined(c, containerTypeName));
+            if (container == null) throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
+            return container.Name.Replace("ContainerType", "");
+        }
+        public string GetStoragePath(string containerTypeName, string containerName)
+        {
+            var path = _configuration[$"FileBlobStorageConfig:{containerName}:Containers:{containerTypeName}:Path"];
+            if (string.IsNullOrEmpty(path)) throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
+            return path;
+        }
 
+        private static readonly Type[] containers = new Type[]
+        {
+        typeof(CandidateContainerType),
+        typeof(RecruiterContainerType),
+        typeof(EmployeeContainerType),
+        typeof(SystemContainerType)
+        };
 
 
     }

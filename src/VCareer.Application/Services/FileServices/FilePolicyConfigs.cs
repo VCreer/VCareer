@@ -22,7 +22,7 @@ namespace VCareer.Constants.FilePolicy
         public int MaxSizeMB { get; set; }
     }
 
-    #region Candidate / Recruiter / Employee configs
+    #region cấu trúc container lấy từ appsettings.json
 
     public class CandidateFileConfig
     {
@@ -51,7 +51,7 @@ namespace VCareer.Constants.FilePolicy
     #endregion
 
 
-    #region Enums for strongly-typed container access
+    #region các container type của các container lớn
 
     public enum CandidateContainerType
     {

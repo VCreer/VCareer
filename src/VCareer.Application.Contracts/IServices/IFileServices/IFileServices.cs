@@ -4,16 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Dto.FileDto;
 using Volo.Abp.Application.Services;
 
 namespace VCareer.IServices.IFileServices
 {
-    public interface IFileServicesa:IApplicationService
+    public interface IFileServices :IApplicationService
     {
-   /*     Task<FileDescriptorDto> UploadAsync(IFormFile file, Guid userId);
+        Task UploadAsync(UploadFileDto input);
         Task<FileDescriptorDto> DownloadAsync(string storageName);
         Task DeleteAsync(string storageName, Guid userId);
         Task<FileDescriptorDto> GetMetadataAsync(string storageName);
-        Task<FileChunkResult> UploadChunkAsync(FileChunkInput input);*/
+        Task<FileChunkResult> UploadChunkAsync(FileChunkInput input);
     }
 }
