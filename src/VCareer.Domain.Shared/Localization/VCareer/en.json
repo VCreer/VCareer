@@ -56,6 +56,12 @@
     "Permission:CV.Get": "Viewing CV",
     "Permission:CV.SetDefault": "Setting default CV",
     "Permission:CV.SetPublic": "Setting CV public/private",
+    "Permission:Dashboard": "Dashboard Management",
+    "Permission:Dashboard.ViewCompanyDashboard": "Viewing company dashboard",
+    "Permission:Dashboard.ViewStaffPerformance": "Viewing staff performance",
+    "Permission:Dashboard.ViewActivityTrend": "Viewing activity trend",
+    "Permission:Dashboard.ViewTopPerformers": "Viewing top performers",
+    "Permission:Dashboard.CompareStaffPerformance": "Comparing staff performance",
     "Menu:Home": "Home",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome"

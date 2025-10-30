@@ -1,0 +1,371 @@
+<div class="recruitment-dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">
+      <i class="fas fa-chart-line"></i>
+      Recruitment Performance Dashboard
+    </h1>
+    <p class="dashboard-subtitle">Monitor and analyze your team's recruitment performance</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="loadDashboard()">Retry</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error && companyDashboard" class="dashboard-content">
+    
+    <!-- Filter Section -->
+    <div class="filter-section card">
+      <div class="card-body">
+        <h3 class="section-title">Filters</h3>
+        <div class="filter-grid">
+          <div class="filter-item">
+            <label>Start Date</label>
+            <input 
+              type="date" 
+              [(ngModel)]="filter.startDate" 
+              class="form-control"
+            />
+          </div>
+          <div class="filter-item">
+            <label>End Date</label>
+            <input 
+              type="date" 
+              [(ngModel)]="filter.endDate" 
+              class="form-control"
+            />
+          </div>
+          <div class="filter-item">
+            <label>Sort By</label>
+            <select [(ngModel)]="filter.sortBy" class="form-control">
+              <option *ngFor="let opt of sortOptions" [value]="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>Order</label>
+            <select [(ngModel)]="filter.descending" class="form-control">
+              <option [value]="true">Descending</option>
+              <option [value]="false">Ascending</option>
+            </select>
+          </div>
+          <div class="filter-item checkbox-item">
+            <label>
+              <input 
+                type="checkbox" 
+                [(ngModel)]="filter.includeInactive"
+              />
+              Include Inactive Staff
+            </label>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary" (click)="applyFilters()">
+            <i class="fas fa-search"></i> Apply Filters
+          </button>
+          <button class="btn btn-secondary" (click)="resetFilters()">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+          <button class="btn btn-success" (click)="exportToCSV()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Mode Tabs -->
+    <div class="view-tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="viewMode === 'overview'"
+        (click)="setViewMode('overview')"
+      >
+        <i class="fas fa-dashboard"></i> Overview
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="viewMode === 'staff-list'"
+        (click)="setViewMode('staff-list')"
+      >
+        <i class="fas fa-users"></i> Staff List
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="viewMode === 'trends'"
+        (click)="setViewMode('trends')"
+      >
+        <i class="fas fa-chart-area"></i> Trends
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="viewMode === 'comparison'"
+        (click)="setViewMode('comparison')"
+      >
+        <i class="fas fa-balance-scale"></i> Compare Staff
+      </button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="viewMode === 'overview'" class="overview-section">
+      
+      <!-- Company Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card card">
+          <div class="card-icon bg-primary">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-content">
+            <h4>Total Staff</h4>
+            <p class="card-value">{{ formatNumber(companyDashboard.totalStaff) }}</p>
+            <small>{{ companyDashboard.activeStaff }} Active</small>
+          </div>
+        </div>
+
+        <div class="summary-card card">
+          <div class="card-icon bg-success">
+            <i class="fas fa-briefcase"></i>
+          </div>
+          <div class="card-content">
+            <h4>Total Jobs</h4>
+            <p class="card-value">{{ formatNumber(companyDashboard.totalJobsPosted) }}</p>
+            <small>{{ companyDashboard.totalActiveJobs }} Active</small>
+          </div>
+        </div>
+
+        <div class="summary-card card">
+          <div class="card-icon bg-info">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="card-content">
+            <h4>Candidates Approved</h4>
+            <p class="card-value">{{ formatNumber(companyDashboard.totalCandidatesApproved) }}</p>
+            <small>{{ formatPercentage(companyDashboard.overallApprovalRate) }} Rate</small>
+          </div>
+        </div>
+
+        <div class="summary-card card">
+          <div class="card-icon bg-warning">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="card-content">
+            <h4>Interviews Completed</h4>
+            <p class="card-value">{{ formatNumber(companyDashboard.totalInterviewsCompleted) }}</p>
+            <small>{{ formatPercentage(companyDashboard.overallInterviewCompletionRate) }} Rate</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Statistics -->
+      <div class="activity-stats card">
+        <div class="card-body">
+          <h3 class="section-title">Activity Statistics</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Today</span>
+              <span class="stat-value">{{ formatNumber(companyDashboard.todayActivities) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">This Week</span>
+              <span class="stat-value">{{ formatNumber(companyDashboard.thisWeekActivities) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">This Month</span>
+              <span class="stat-value">{{ formatNumber(companyDashboard.thisMonthActivities) }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Avg per Staff</span>
+              <span class="stat-value">{{ companyDashboard.averageActivitiesPerStaff.toFixed(1) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Performers -->
+      <div class="top-performers card" *ngIf="companyDashboard.topPerformers.length > 0">
+        <div class="card-body">
+          <h3 class="section-title">
+            <i class="fas fa-trophy"></i> Top Performers
+          </h3>
+          <div class="performers-grid">
+            <div 
+              *ngFor="let performer of companyDashboard.topPerformers" 
+              class="performer-card"
+            >
+              <div class="performer-header">
+                <i class="fas fa-award"></i>
+                <h4>{{ performer.category }}</h4>
+              </div>
+              <p class="performer-name">{{ performer.fullName }}</p>
+              <p class="performer-value">{{ performer.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Staff List Tab -->
+    <div *ngIf="viewMode === 'staff-list'" class="staff-list-section">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="section-title">Staff Performance Details</h3>
+          <div class="table-responsive">
+            <table class="performance-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Jobs Posted</th>
+                  <th>Active Jobs</th>
+                  <th>Candidates Approved</th>
+                  <th>Approval Rate</th>
+                  <th>Interviews</th>
+                  <th>This Month</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let staff of companyDashboard.staffPerformances">
+                  <td>
+                    <div class="staff-info">
+                      <strong>{{ staff.fullName }}</strong>
+                      <small>{{ staff.email }}</small>
+                      <span *ngIf="staff.isLead" class="badge badge-leader">Leader</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span [class]="'badge ' + getStatusBadgeClass(staff.status)">
+                      {{ getStatusText(staff.status) }}
+                    </span>
+                  </td>
+                  <td>{{ formatNumber(staff.totalJobsPosted) }}</td>
+                  <td>{{ formatNumber(staff.activeJobs) }}</td>
+                  <td>{{ formatNumber(staff.candidatesApproved) }}</td>
+                  <td [class]="getPerformanceColor(staff.approvalRate)">
+                    {{ formatPercentage(staff.approvalRate) }}
+                  </td>
+                  <td>
+                    {{ staff.interviewsCompleted }} / {{ staff.totalInterviewsScheduled }}
+                  </td>
+                  <td>{{ formatNumber(staff.thisMonthActivities) }}</td>
+                  <td>
+                    <button 
+                      class="btn btn-sm btn-outline"
+                      (click)="toggleStaffSelection(staff.userId)"
+                    >
+                      {{ isStaffSelected(staff.userId) ? 'Unselect' : 'Select' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trends Tab -->
+    <div *ngIf="viewMode === 'trends'" class="trends-section">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="section-title">Activity Trends</h3>
+          <div *ngIf="activityTrend" class="trend-chart">
+            <h4>Last 7 Days Activity</h4>
+            <div class="simple-chart">
+              <div 
+                *ngFor="let day of getLast7DaysTrend()" 
+                class="chart-bar-container"
+              >
+                <div 
+                  class="chart-bar" 
+                  [style.height.%]="(day.count / 100) * 100"
+                  [title]="day.label + ': ' + day.count"
+                >
+                  <span class="bar-value">{{ day.count }}</span>
+                </div>
+                <span class="bar-label">{{ day.label }}</span>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="!activityTrend" class="text-muted">No trend data available</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Tab -->
+    <div *ngIf="viewMode === 'comparison'" class="comparison-section">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="section-title">Staff Performance Comparison</h3>
+          
+          <div *ngIf="selectedStaffIds.length === 0" class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <p>No staff selected for comparison</p>
+            <small>Go to Staff List tab to select staff for comparison</small>
+          </div>
+
+          <div *ngIf="selectedStaffIds.length > 0" class="comparison-grid">
+            <div 
+              *ngFor="let staff of getSelectedStaffPerformances()" 
+              class="comparison-card"
+            >
+              <div class="comparison-header">
+                <h4>{{ staff.fullName }}</h4>
+                <span [class]="'badge ' + getStatusBadgeClass(staff.status)">
+                  {{ getStatusText(staff.status) }}
+                </span>
+              </div>
+              <div class="comparison-stats">
+                <div class="stat-row">
+                  <span>Jobs Posted:</span>
+                  <strong>{{ formatNumber(staff.totalJobsPosted) }}</strong>
+                </div>
+                <div class="stat-row">
+                  <span>Candidates Approved:</span>
+                  <strong>{{ formatNumber(staff.candidatesApproved) }}</strong>
+                </div>
+                <div class="stat-row">
+                  <span>Approval Rate:</span>
+                  <strong [class]="getPerformanceColor(staff.approvalRate)">
+                    {{ formatPercentage(staff.approvalRate) }}
+                  </strong>
+                </div>
+                <div class="stat-row">
+                  <span>Interviews Completed:</span>
+                  <strong>{{ formatNumber(staff.interviewsCompleted) }}</strong>
+                </div>
+                <div class="stat-row">
+                  <span>This Month Activities:</span>
+                  <strong>{{ formatNumber(staff.thisMonthActivities) }}</strong>
+                </div>
+              </div>
+              <button 
+                class="btn btn-sm btn-danger mt-3"
+                (click)="toggleStaffSelection(staff.userId)"
+              >
+                Remove from comparison
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+

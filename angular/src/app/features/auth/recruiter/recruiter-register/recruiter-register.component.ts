@@ -145,8 +145,15 @@ export class RecruiterRegisterComponent implements OnInit {
       
       const { confirmPassword, ...apiData } = formData;
       
-      this.http.post('/api/mock/auth/recruiter/register', apiData).subscribe({
-        next: (response: any) => {
+      const registerDto = {
+        userName: apiData.username,
+        emailAddress: apiData.email,
+        password: apiData.password,
+        appName: 'VCareer'
+      };
+      
+      this.http.post('/api/account/register', registerDto).subscribe({
+        next: (response) => {
           this.isLoading = false;
           this.showToastMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
           setTimeout(() => {
@@ -155,7 +162,7 @@ export class RecruiterRegisterComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.showToastMessage(error.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+          this.showToastMessage(error.error?.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
         }
       });
     }

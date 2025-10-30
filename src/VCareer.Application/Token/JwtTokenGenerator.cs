@@ -56,7 +56,19 @@ namespace VCareer.Jwt
         private async Task<string> CreateAccessTokenAsync(IdentityUser user)
         {
             var identity = new ClaimsIdentity("Bearer");
+            
+            // Thêm các claims cơ bản
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
+            identity.AddClaim(new Claim("sub", user.Id.ToString())); // ABP cần claim "sub"
+            identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName ?? ""));
+            identity.AddClaim(new Claim(ClaimTypes.Email, user.Email ?? ""));
+            
+            // Thêm roles
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, role));
+            }
 
             var basePrincipal = new ClaimsPrincipal(identity);
             //gắn claims tĩnh và động vào principal
