@@ -9,6 +9,7 @@ using VCareer.Models.Companies;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using VCareer.Dto;
+using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
 using VCareer.Application.Contracts.Applications;

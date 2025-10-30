@@ -21,6 +21,7 @@ using VCareer.Models;
 using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.ActivityLogs;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
@@ -44,8 +45,8 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-   
     public DbSet<CurriculumVitae> CVs { get; set; }
+    public DbSet<ActivityLog> ActivityLogs { get; set; }
     /*public DbSet<JobApplication> JobApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
@@ -466,6 +467,29 @@ public class VCareerDbContext :
             ja.HasIndex(x => x.Status);
             ja.HasIndex(x => x.CreationTime);
             ja.HasIndex(x => new { x.JobId, x.CandidateId }).IsUnique(); // Prevent duplicate applications
+        });
+
+        builder.Entity<ActivityLog>(a =>
+        {
+            a.ToTable("ActivityLogs");
+            a.ConfigureByConvention();
+            a.HasKey(x => x.Id);
+            
+            a.Property(x => x.UserId).IsRequired();
+            a.Property(x => x.ActivityType).IsRequired();
+            a.Property(x => x.Action).IsRequired().HasMaxLength(256);
+            a.Property(x => x.Description).HasMaxLength(2000);
+            a.Property(x => x.EntityType).HasMaxLength(128);
+            a.Property(x => x.IpAddress).HasMaxLength(64);
+            a.Property(x => x.UserAgent).HasMaxLength(512);
+            a.Property(x => x.Metadata).HasMaxLength(4000);
+            
+            // Indexes for better query performance
+            a.HasIndex(x => x.UserId);
+            a.HasIndex(x => x.ActivityType);
+            a.HasIndex(x => x.CreationTime);
+            a.HasIndex(x => new { x.UserId, x.ActivityType });
+            a.HasIndex(x => new { x.UserId, x.CreationTime });
         });
 
         // ApplicationDocument Configuration
