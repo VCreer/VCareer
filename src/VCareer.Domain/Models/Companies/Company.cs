@@ -28,6 +28,24 @@ namespace VCareer.Models.Companies
         public string CultureVideoUrl { get; set; }
         public DateTime VerifyAt { get; set; }
 
+        // Legal Information fields (gộp từ CompanyLegalInfo)
+        public string TaxCode { get; set; }
+        public string BusinessLicenseNumber { get; set; }
+        public DateTime? BusinessLicenseIssueDate { get; set; }
+        public string BusinessLicenseIssuePlace { get; set; }
+        public string LegalRepresentative { get; set; }
+        
+        // File URLs for legal documents
+        public string BusinessLicenseFile { get; set; } // Link file giấy phép kinh doanh
+        public string TaxCertificateFile { get; set; } // Link file giấy chứng nhận mã số thuế
+        public string RepresentativeIdCardFile { get; set; } // Link file CCCD người đại diện
+        public string OtherSupportFile { get; set; } // Link file phụ khác (ủy quyền, v.v.)
+        
+        // Legal verification status
+        public string LegalVerificationStatus { get; set; } // pending, approved, rejected
+        public long? LegalReviewedBy { get; set; } // Admin duyệt
+        public DateTime? LegalReviewedAt { get; set; } // Thời gian duyệt
+
         public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }
         public ICollection<RecruiterProfile> RecruiterProfiles { get; private set; } = new List<RecruiterProfile>(); 
     }

@@ -1,0 +1,73 @@
+<div class="upload-modal-overlay" (click)="onClose()">
+  <div class="upload-modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="upload-modal-header">
+      <div class="header-content">
+        <h2 class="modal-title">{{ translate('upload_cv.title') }}</h2>
+        <p class="modal-subtitle">{{ translate('upload_cv.subtitle') }}</p>
+      </div>
+      <button class="close-btn" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="upload-modal-body">
+      <div class="upload-description">
+        <p>{{ translate('upload_cv.description') }}</p>
+        <p class="benefits">{{ translate('upload_cv.benefits') }}</p>
+      </div>
+
+      <!-- File Upload Area -->
+      <div class="upload-area" 
+           *ngIf="!selectedFile"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        <div class="upload-content">
+          <div class="upload-icon">
+            <i class="fa fa-cloud-upload"></i>
+          </div>
+          <p class="upload-text">{{ translate('upload_cv.upload_instructions') }}</p>
+          <p class="upload-formats">{{ translate('upload_cv.supported_formats') }}</p>
+          <button class="select-file-btn" (click)="fileInput.click()">
+            {{ translate('upload_cv.select_cv') }}
+          </button>
+        </div>
+        <input #fileInput 
+               type="file" 
+               accept=".doc,.docx,.pdf" 
+               (change)="onFileSelect($event)"
+               style="display: none;">
+      </div>
+
+      <!-- Selected File Info -->
+      <div class="selected-file" *ngIf="selectedFile">
+        <div class="file-info">
+          <i class="fa fa-file"></i>
+          <span class="file-name">{{ selectedFile.name }}</span>
+          <span class="file-size">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</span>
+        </div>
+        <button class="remove-file-btn" (click)="removeFile()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="upload-modal-footer">
+      <button class="upload-btn" (click)="onUpload()" [disabled]="!selectedFile">
+        {{ translate('upload_cv.upload_button') }}
+      </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <app-toast-notification
+      *ngIf="showToast"
+      [message]="toastMessage"
+      [type]="toastType"
+      (close)="onToastClose()">
+    </app-toast-notification>
+  </div>
+</div>

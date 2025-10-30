@@ -84,6 +84,24 @@ namespace VCareer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BusinessLicenseFile")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("BusinessLicenseIssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BusinessLicenseIssuePlace")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("BusinessLicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("CompanyCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -171,12 +189,48 @@ namespace VCareer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("LegalRepresentative")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("LegalReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LegalReviewedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LegalVerificationStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("LogoUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OtherSupportFile")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RepresentativeIdCardFile")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
+
+                    b.Property<string>("TaxCertificateFile")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TaxCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("VerificationStatus")
                         .HasColumnType("bit");
@@ -189,6 +243,14 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BusinessLicenseNumber")
+                        .IsUnique()
+                        .HasFilter("[BusinessLicenseNumber] IS NOT NULL");
+
+                    b.HasIndex("TaxCode")
+                        .IsUnique()
+                        .HasFilter("[TaxCode] IS NOT NULL");
 
                     b.ToTable("Companies", (string)null);
                 });
@@ -441,6 +503,153 @@ namespace VCareer.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("CandidateProfile", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.Users.CurriculumVitae", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CVName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CVType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CareerObjective")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Certificates")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Education")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FileUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FullName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Interests")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Languages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("OriginalFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Projects")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Skills")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("WorkExperience")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CVType");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("IsDefault");
+
+                    b.HasIndex("IsPublic");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("CVs", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.EmployeeProfile", b =>
@@ -2499,6 +2708,17 @@ namespace VCareer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("VCareer.Models.Users.CurriculumVitae", b =>
+                {
+                    b.HasOne("VCareer.Models.Users.CandidateProfile", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Candidate");
+                });
+
             modelBuilder.Entity("VCareer.Models.Users.EmployeeProfile", b =>
                 {
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
@@ -2515,7 +2735,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Companies.Company", null)
                         .WithMany("RecruiterProfiles")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.Companies.Company", "Company")

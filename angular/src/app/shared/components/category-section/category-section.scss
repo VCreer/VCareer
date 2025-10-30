@@ -1,0 +1,118 @@
+.category-section {
+  padding: 80px 0;
+  background: #ffffff;
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+    
+    .category-navigation {
+      display: flex;
+      gap: 8px;
+      
+      .nav-btn {
+        background: #f3f4f6;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        
+        &:hover:not(:disabled) {
+          background: #e5e7eb;
+        }
+        
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        svg {
+          color: #6b7280;
+        }
+      }
+    }
+  }
+  
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .category-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .category-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f9ff;
+      border-radius: 12px;
+      
+      img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+    }
+    
+    .category-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .job-count {
+      font-size: 0.875rem;
+      color: #0F83BA;
+      font-weight: 500;
+      margin: 0;
+    }
+  }
+}

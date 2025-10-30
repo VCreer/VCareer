@@ -1,0 +1,77 @@
+<div class="download-modal" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>{{ translate('download_cv.title') }}</h2>
+      <button class="close-btn" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Left Option: Download without logo -->
+      <div class="download-option">
+        <div class="option-header">
+          <img src="assets/images/cv-management/icon-1-step-2.png" alt="Icon" class="option-image">
+          <h3>{{ translate('download_cv.without_logo_title') }}</h3>
+        </div>
+        
+        <div class="option-content-row">
+          <div class="option-preview">
+            <div class="cv-preview">
+              <div class="cv-lines">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="option-details">
+            <p class="description">{{ translate('download_cv.without_logo_description') }}</p>
+          </div>
+        </div>
+        
+        <button class="download-btn paid-btn" (click)="onDownloadWithoutLogo()">
+          <span>{{ translate('download_cv.without_logo_button') }}</span>
+          <span class="price">20.000 VNĐ</span>
+        </button>
+      </div>
+
+      <!-- Right Option: Free download -->
+      <div class="download-option">
+        <div class="option-header">
+          <img src="assets/images/cv-management/icon-img-intro.png" alt="Icon" class="option-image">
+          <h3>{{ translate('download_cv.free_title') }}</h3>
+        </div>
+        
+            <div class="option-content-row">
+              <div class="option-preview">
+                <div class="vc-logo-preview">
+                  <img src="assets/images/cv-management/cloud-dow.png" alt="Cloud Background" class="cloud-bg-image">
+                </div>
+              </div>
+              
+              <div class="option-details">
+                <p class="description">{{ translate('download_cv.free_description') }}</p>
+              </div>
+            </div>
+            
+            <button class="download-btn free-btn" (click)="onDownloadFree()">
+              {{ translate('download_cv.free_button') }}
+            </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<app-toast-notification
+  [show]="showToast"
+  [message]="toastMessage"
+  [type]="toastType"
+  (close)="onToastClose()">
+</app-toast-notification>
