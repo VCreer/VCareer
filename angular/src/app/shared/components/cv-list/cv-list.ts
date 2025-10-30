@@ -34,7 +34,7 @@ export class CvListComponent {
   cvToDelete: string | null = null;
   cvToRename: string | null = null;
   currentCvName: string = '';
-  
+
   // Toast notification properties
   showToast = false;
   toastMessage = '';
@@ -164,7 +164,7 @@ export class CvListComponent {
       if (cv) {
         cv.title = newName.trim();
       }
-      
+
       this.cvUpdated.emit(this.cvToRename);
       this.showSuccessToast('cv_management.rename_success');
       this.showRenameModal = false;
@@ -177,7 +177,7 @@ export class CvListComponent {
     this.toastMessage = this.translate(message);
     this.toastType = 'success';
     this.showToast = true;
-    
+
     setTimeout(() => {
       this.showToast = false;
     }, 3000);

@@ -11,7 +11,7 @@ namespace VCareer.Profile
 {
     [ApiController]
     [Route("api/profile/company-legal-info")]
-    [Authorize]
+    //  [Authorize]
     public class CompanyLegalInfoController : AbpControllerBase
     {
         private readonly ICompanyLegalInfoAppService _companyLegalInfoAppService;
@@ -88,13 +88,13 @@ namespace VCareer.Profile
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}/files")]
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
-        public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, 
+        public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id,
             [FromQuery] string businessLicenseFile = null,
             [FromQuery] string taxCertificateFile = null,
             [FromQuery] string representativeIdCardFile = null,
             [FromQuery] string otherSupportFile = null)
         {
-            return await _companyLegalInfoAppService.UpdateFileUrlsAsync(id, businessLicenseFile, 
+            return await _companyLegalInfoAppService.UpdateFileUrlsAsync(id, businessLicenseFile,
                 taxCertificateFile, representativeIdCardFile, otherSupportFile);
         }
 

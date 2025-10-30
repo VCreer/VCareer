@@ -4,12 +4,8 @@
     <a href="#" class="view-all-link">{{ translate('common.view_all') }}</a>
   </div>
   
-  <!-- Filter Bar -->
-  <app-filter-bar
-    [selectedFilter]="selectedFilter"
-    (filterChange)="onFilterChange($event)"
-    (locationChange)="onLocationChange($event)">
-  </app-filter-bar>
+  <!-- Filter Bar (chỉ hiển thị nếu cần) -->
+  <!-- REMOVED: Không cần filter bar ở đây nữa vì đã có ở hero-section -->
   
   <div class="job-listings-grid">
     <div class="job-card" *ngFor="let job of jobListings">

@@ -7,46 +7,32 @@
       <p>{{ translate(subtitle) }}</p>
     </div>
     
+    <!-- ✅ REPLACED: Dùng FilterBarComponent thay vì dropdown cũ -->
     <div class="search-container" *ngIf="showSearchForm">
-      <form class="search-form" (ngSubmit)="onSearch()">
-        <div class="search-field">
-          <input 
-            type="text" 
-            class="search-input" 
-            [placeholder]="translate('homepage.search_placeholder')"
-            [(ngModel)]="searchForm.jobTitle"
-            name="jobTitle"
-          />
-        </div>
+      <app-filter-bar
+        [categories]="categories"
+        [provinces]="provinces"
+        (categorySelected)="onCategorySelected($event)"
+        (locationSelected)="onLocationSelected($event)">
         
-        <div class="search-field">
-          <select 
-            class="search-select" 
-            [(ngModel)]="searchForm.location"
-            name="location"
-          >
-            <option value="">{{ translate('homepage.location_all') || 'Tất cả địa điểm' }}</option>
-            <option value="hanoi">Hà Nội</option>
-            <option value="hcm">TP. Hồ Chí Minh</option>
-            <option value="danang">Đà Nẵng</option>
-          </select>
-        </div>
+        <!-- Search Input (ở giữa) -->
+        <input 
+          search-input
+          type="text" 
+          class="main-search-input hero-search-input" 
+          [placeholder]="translate('homepage.search_placeholder') || 'Tìm kiếm việc làm, công ty...'"
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="onSearch()"
+        />
         
-        <div class="search-field">
-          <select 
-            class="search-select" 
-            [(ngModel)]="searchForm.category"
-            name="category"
-          >
-            <option value="">{{ translate('homepage.category_all') || 'Tất cả ngành nghề' }}</option>
-            <option value="it">Công nghệ thông tin</option>
-            <option value="marketing">Marketing</option>
-            <option value="sales">Kinh doanh</option>
-          </select>
-        </div>
-        
-        <button type="submit" class="search-btn">{{ translate('homepage.search_button') }}</button>
-      </form>
+        <!-- Search Button (bên phải) -->
+        <button 
+          search-button
+          class="btn-search hero-search-btn"
+          (click)="onSearch()">
+          <span class="search-label">{{ translate('homepage.search_button') || 'Tìm kiếm' }}</span>
+        </button>
+      </app-filter-bar>
     </div>
 
     <!-- Inline statistics row under search bar -->

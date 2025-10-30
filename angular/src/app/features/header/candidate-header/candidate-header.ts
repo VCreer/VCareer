@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, HostListener, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -116,6 +116,7 @@ export class CandidateHeaderComponent implements OnInit {
 
   isActiveRoute(route: string): boolean {
     if (route === '/') {
+      // Chỉ active khi đúng là trang chủ hoặc /home
       return this.currentRoute === '/' || this.currentRoute === '/home';
     }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
@@ -150,19 +151,22 @@ export class CandidateHeaderComponent implements OnInit {
   toggleNotificationMenu() {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
-      this.showProfileMenu = false;
+      this.showProfileMenu = false; // Đóng profile menu khi mở notification
     }
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as Node;
+    // Đóng menu nếu click ngoài khu vực notification
     if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
       this.showNotificationMenu = false;
     }
   }
 
   markAllAsRead() {
+    // Logic đánh dấu tất cả thông báo đã đọc
+    console.log('Đánh dấu tất cả thông báo đã đọc');
     this.showNotificationMenu = false;
   }
 
