@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
@@ -10,8 +10,13 @@ import { ToastNotificationComponent } from '../toast-notification/toast-notifica
   templateUrl: './job-list.html',
   styleUrls: ['./job-list.scss']
 })
-export class JobListComponent implements OnInit {
+export class JobListComponent implements OnInit, OnChanges {
+  // ✅ Input from parent (JobComponent)
+  @Input() jobs: any[] = []; // ✅ Receive jobs from API
+  @Input() totalCount: number = 0; // ✅ Total job count
+  @Input() isLoading: boolean = false; // ✅ Loading state
   @Input() selectedJobId: number | null = null;
+  
   @Output() searchJobs = new EventEmitter<any>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() quickView = new EventEmitter<any>();
@@ -32,8 +37,8 @@ export class JobListComponent implements OnInit {
   filteredJobs: any[] = [];
   searchParams: any = {};
   
-  // Sample job data
-  jobs = [
+  // ✅ MOCK DATA (sẽ bị override bởi @Input() jobs từ parent)
+  mockJobs = [
     {
       id: 1,
       titleKey: 'job_data.factory_director',
@@ -147,8 +152,33 @@ export class JobListComponent implements OnInit {
       this.selectedLanguage = lang;
     });
     // Initialize filteredJobs with all jobs
+    this.updateFilteredJobs();
+  }
+
+  /**
+   * ✅ Update filteredJobs khi @Input() jobs thay đổi
+   */
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['jobs'] && this.jobs) {
+      console.log('\n🔄 JobListComponent: Received new jobs from parent');
+      console.log('   📦 Jobs count:', this.jobs.length);
+      console.log('   📊 Total count:', this.totalCount);
+      console.log('   📄 Jobs data:', this.jobs);
+      
+      this.updateFilteredJobs();
+    }
+  }
+
+  /**
+   * ✅ Helper: Update filteredJobs và recalculate pagination
+   */
+  private updateFilteredJobs() {
     this.filteredJobs = [...this.jobs];
     this.calculateTotalPages();
+    
+    console.log('✅ JobListComponent: filteredJobs updated');
+    console.log('   📄 Filtered count:', this.filteredJobs.length);
+    console.log('   📑 Total pages:', this.totalPages);
   }
 
   calculateTotalPages() {

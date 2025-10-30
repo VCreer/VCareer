@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using VCareer.Model;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
@@ -32,5 +33,10 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>Task representing the asynchronous operation</returns>
         Task DeleteAccountAsync();
+
+        // lấy thông tin của 1 recruiter.  tu  userid của recruiter
+
+
+
     }
 }

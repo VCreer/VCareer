@@ -1,24 +1,31 @@
 <div class="candidate-homepage">
-  <!-- Hero Section -->
+  <!-- Hero Section - ✅ Pass categories và provinces -->
   <app-hero-section
     [backgroundImage]="'assets/images/home/candidate-home/hero-background.png'"
     [title]="'homepage.title'"
     [subtitle]="'homepage.subtitle'"
     [showSearchForm]="true"
-    (searchJobs)="onSearch($event)">
+    [categories]="categories"
+    [provinces]="provinces"
+    (searchJobs)="onSearch($event)"
+    (categorySelected)="onCategorySelected($event)"
+    (locationSelected)="onLocationSelected($event)"
+  >
   </app-hero-section>
 
   <!-- Job Listings -->
-  <app-job-listings
+  <!-- <app-job-listings
     [jobListings]="jobListings"
     [currentPage]="currentPage"
     [totalPages]="totalPages"
-    [selectedFilter]="selectedFilter"
+    [categories]="categories"
+    [provinces]="provinces"
     (pageChange)="onPageChange($event)"
     (jobClick)="onJobClick($event)"
-    (filterChange)="onFilterChange($event)"
-    (locationChange)="onLocationChange($event)">
-  </app-job-listings>
+    (categorySelected)="onCategorySelected($event)"
+    (locationSelected)="onLocationSelected($event)"
+  >
+  </app-job-listings> -->
 
   <!-- Category Section -->
   <app-category-section
@@ -26,7 +33,8 @@
     [currentPage]="currentCategoryPage"
     [totalPages]="totalCategoryPages"
     (pageChange)="onCategoryPageChange($event)"
-    (categoryClick)="onCategoryClick($event)">
+    (categoryClick)="onCategoryClick($event)"
+  >
   </app-category-section>
 
   <!-- About Us Section -->
@@ -37,19 +45,19 @@
     [primaryButtonText]="'cta.find_jobs'"
     [secondaryButtonText]="'cta.learn_more'"
     (primaryButtonClick)="searchJobs()"
-    (secondaryButtonClick)="learnMore()">
+    (secondaryButtonClick)="learnMore()"
+  >
   </app-about-us>
 
   <!-- Statistics Section -->
-  <app-statistics [statistics]="statisticsData">
-  </app-statistics>
+  <app-statistics [statistics]="statisticsData"> </app-statistics>
 
-  <!-- Future Hero Section -->
+  <!-- Future Hero Section
   <app-future-hero
     [image]="'assets/images/home/candidate-home/nghe-nghiep-khac-nhau.png'"
     [title]="'future.title'"
     [description]="'future.description'"
     [buttonText]="'cta.find_jobs'"
     (buttonClick)="searchJobs()">
-  </app-future-hero>
+  </app-future-hero> -->
 </div>

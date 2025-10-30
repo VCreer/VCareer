@@ -99,8 +99,27 @@ export const APP_ROUTES: Routes = [
     ]
   },
   
+  {
+    path: 'admin/login',
+    loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
+  },
 
-  
+  // Legacy redirects
+  {
+    path: 'login',
+    redirectTo: '/candidate/login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'register',
+    redirectTo: '/candidate/register',
+    pathMatch: 'full'
+  },
+  {
+    path: 'forgot-password',
+    redirectTo: '/candidate/forget-password',
+    pathMatch: 'full'
+  },
 
   // ABP routes
   {

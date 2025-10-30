@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
@@ -38,11 +39,14 @@ namespace VCareer.Profile
             _recruiterProfileRepository = recruiterProfileRepository;
         }
 
+        //ádadad
+
         [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
+
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -52,7 +56,7 @@ namespace VCareer.Profile
             user.Name = input.Name;
             user.Surname = input.Surname;
 
-            // Update Email using IdentityUserManager method
+            // nếu inpuit email khác email hiện tại của user
             if (!string.IsNullOrEmpty(input.Email) && user.Email != input.Email)
             {
                 var emailResult = await _userManager.SetEmailAsync(user, input.Email);
@@ -77,18 +81,20 @@ namespace VCareer.Profile
 
             // 3. Save IdentityUser changes
             var result = await _userManager.UpdateAsync(user);
-            
+
             if (!result.Succeeded)
             {
                 throw new UserFriendlyException($"Failed to update profile: {string.Join(", ", result.Errors)}");
             }
         }
 
+
+        //ádada
         [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -103,17 +109,19 @@ namespace VCareer.Profile
 
             // Change password
             var result = await _userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
-            
+
             if (!result.Succeeded)
             {
                 throw new UserFriendlyException($"Failed to change password: {string.Join(", ", result.Errors)}");
             }
         }
 
+
+        //ádad
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -145,12 +153,14 @@ namespace VCareer.Profile
             };
         }
 
+
+
         [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
             var userId = _currentUser.GetId();
             var user = await _userManager.GetByIdAsync(userId);
-            
+
             if (user == null)
             {
                 throw new UserFriendlyException("User not found.");
@@ -219,10 +229,13 @@ namespace VCareer.Profile
             throw new UserFriendlyException("Không tìm thấy thông tin profile. Vui lòng liên hệ quản trị viên.");
         }
 
+
+        // lấy thông tin của 
+
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
-        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location)> 
+        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location)>
             GetUserProfileInfoAsync(Guid userId)
         {
             // Check CandidateProfile
@@ -249,5 +262,7 @@ namespace VCareer.Profile
             // Không tìm thấy profile nào
             return ("Unknown", "", null, null, "");
         }
+
+       
     }
 }

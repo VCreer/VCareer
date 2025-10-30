@@ -1,13 +1,14 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FilterBarComponent } from '../filter-bar/filter-bar';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CategoryTreeDto } from '../../../apiTest/api/category.service';
+import { ProvinceDto } from '../../../apiTest/api/location.service';
 
 @Component({
   selector: 'app-job-listings',
   standalone: true,
-  imports: [CommonModule, FilterBarComponent, ToastNotificationComponent],
+  imports: [CommonModule, ToastNotificationComponent],  // ✅ Removed FilterBar (moved to hero-section)
   templateUrl: './job-listings.html',
   styleUrls: ['./job-listings.scss']
 })
@@ -15,11 +16,13 @@ export class JobListingsComponent {
   @Input() jobListings: any[] = [];
   @Input() currentPage = 1;
   @Input() totalPages = 1;
-  @Input() selectedFilter: string = '';
+  @Input() categories: CategoryTreeDto[] = [];  // ← NEW: Categories từ API
+  @Input() provinces: ProvinceDto[] = [];       // ← NEW: Provinces từ API
+  
   @Output() pageChange = new EventEmitter<number>();
   @Output() jobClick = new EventEmitter<number>();
-  @Output() filterChange = new EventEmitter<string>();
-  @Output() locationChange = new EventEmitter<string>();
+  @Output() categorySelected = new EventEmitter<string[]>();  // ← NEW
+  @Output() locationSelected = new EventEmitter<{provinceIds: number[], districtIds: number[]}>();  // ← NEW
 
   defaultLogo = 'assets/images/home/company-placeholder.png';
   showToast = false;
@@ -51,12 +54,12 @@ export class JobListingsComponent {
     this.jobClick.emit(jobId);
   }
 
-  onFilterChange(filter: string) {
-    this.filterChange.emit(filter);
+  onCategorySelected(categoryIds: string[]) {
+    this.categorySelected.emit(categoryIds);
   }
 
-  onLocationChange(location: string) {
-    this.locationChange.emit(location);
+  onLocationSelected(location: {provinceIds: number[], districtIds: number[]}) {
+    this.locationSelected.emit(location);
   }
 
   constructor(private translationService: TranslationService) {}
