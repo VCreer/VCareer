@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-  //  [Authorize(VCareerPermission.Profile.Default)]
+    //  [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly IRepository<Company, int> _companyRepository;
@@ -62,7 +62,7 @@ namespace VCareer.Profile
                 CompanySize = input.CompanySize,
                 IndustryId = input.IndustryId,
                 FoundedYear = input.FoundedYear,
-                
+
                 // Legal Information fields
                 TaxCode = input.TaxCode,
                 BusinessLicenseNumber = input.BusinessLicenseNumber,
@@ -80,6 +80,7 @@ namespace VCareer.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
@@ -137,6 +138,9 @@ namespace VCareer.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
+
+
+        // Long dùng hàm này để view listk
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -194,7 +198,7 @@ namespace VCareer.Profile
         }
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
-        public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null, 
+        public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
             string taxCertificateFile = null, string representativeIdCardFile = null, string otherSupportFile = null)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -207,13 +211,13 @@ namespace VCareer.Profile
             // Update only the provided file URLs
             if (!string.IsNullOrEmpty(businessLicenseFile))
                 company.BusinessLicenseFile = businessLicenseFile;
-            
+
             if (!string.IsNullOrEmpty(taxCertificateFile))
                 company.TaxCertificateFile = taxCertificateFile;
-            
+
             if (!string.IsNullOrEmpty(representativeIdCardFile))
                 company.RepresentativeIdCardFile = representativeIdCardFile;
-            
+
             if (!string.IsNullOrEmpty(otherSupportFile))
                 company.OtherSupportFile = otherSupportFile;
 
