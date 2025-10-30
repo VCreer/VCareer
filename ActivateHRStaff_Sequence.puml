@@ -1,0 +1,111 @@
+@startuml
+title Activate HR Staff - Sequence Diagram
+
+autonumber 1
+
+actor "Team Leader" as Leader
+participant "TeamManagementController" as API
+participant "TeamManagementAppService" as Service
+participant "RecruiterRepository" as RecruiterRepo
+participant "UserManager" as UserMgr
+database "Database" as DB
+
+Leader -> API : Submit activate request
+activate API
+note over Leader, API
+ActivateStaffDto:
+- StaffId
+- Reason
+- Notes
+end note
+
+API -> Service : ActivateStaffAsync(input)
+activate Service
+
+autonumber 1.1
+Service -> RecruiterRepo : GetCurrentRecruiterProfileAsync()
+activate RecruiterRepo
+
+autonumber 1.1.1
+RecruiterRepo -> DB : ExecuteQuery()
+activate DB
+return Return result
+
+autonumber 1.1.2
+return Return currentRecruiterProfile
+
+autonumber 1.2
+Service -> Service : Validate IsLeader()
+
+autonumber 1.3
+Service -> RecruiterRepo : FindAsync(staffId)
+activate RecruiterRepo
+
+autonumber 1.3.1
+RecruiterRepo -> DB : ExecuteQuery()
+activate DB
+return Return result
+
+autonumber 1.3.2
+return Return staffProfile
+
+autonumber 1.4
+Service -> Service : Validate Business Rules
+
+alt Validation Failed
+    autonumber 1.4.1
+    return Return error message
+    autonumber 1.4.2
+    return Return error message
+else Validation Success
+    autonumber 1.5
+    Service -> Service : Update staffProfile.Status = true
+    
+    autonumber 1.6
+    Service -> RecruiterRepo : UpdateAsync(staffProfile)
+    activate RecruiterRepo
+    
+    autonumber 1.6.1
+    RecruiterRepo -> DB : ExecuteQuery()
+    activate DB
+    return Return result
+    
+    autonumber 1.6.2
+    return Return updated
+    
+    autonumber 1.7
+    Service -> UserMgr : GetByIdAsync(userId)
+    activate UserMgr
+    
+    autonumber 1.7.1
+    UserMgr -> DB : ExecuteQuery()
+    activate DB
+    return Return result
+    
+    autonumber 1.7.2
+    return Return user
+    
+    autonumber 1.8
+    Service -> Service : Build response
+    note right of Service
+    Response includes:
+    - Staff info
+    - Previous status: false
+    - New status: true
+    - Action: "Activate"
+    end note
+
+    autonumber 1.9
+    return Return success message
+    
+    autonumber 1.10
+    return Return success message
+end
+
+@enduml
+
+
+
+
+
+

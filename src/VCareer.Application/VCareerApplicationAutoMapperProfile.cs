@@ -4,9 +4,11 @@ using VCareer.Profile;
 using VCareer.CV;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.ActivityLogs;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using VCareer.Dto;
+using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
 
@@ -32,6 +34,10 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<CreateCVOnlineDto, CurriculumVitae>();
         CreateMap<UploadCVDto, CurriculumVitae>();
         CreateMap<UpdateCVDto, CurriculumVitae>();
+
+        // ActivityLog mappings
+        CreateMap<ActivityLog, ActivityLogDto>()
+            .ForMember(dest => dest.ActivityTypeName, opt => opt.MapFrom(src => src.ActivityType.ToString()));
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

@@ -21,6 +21,7 @@ using VCareer.Models;
 using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.ActivityLogs;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -43,8 +44,8 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-   
     public DbSet<CurriculumVitae> CVs { get; set; }
+    public DbSet<ActivityLog> ActivityLogs { get; set; }
 
 
 
@@ -386,6 +387,29 @@ public class VCareerDbContext :
             b.HasKey(x => x.Id);
             b.Property(x => x.Token).IsRequired().HasMaxLength(256);
             b.HasIndex(x => x.Token).IsUnique();
+        });
+
+        builder.Entity<ActivityLog>(a =>
+        {
+            a.ToTable("ActivityLogs");
+            a.ConfigureByConvention();
+            a.HasKey(x => x.Id);
+            
+            a.Property(x => x.UserId).IsRequired();
+            a.Property(x => x.ActivityType).IsRequired();
+            a.Property(x => x.Action).IsRequired().HasMaxLength(256);
+            a.Property(x => x.Description).HasMaxLength(2000);
+            a.Property(x => x.EntityType).HasMaxLength(128);
+            a.Property(x => x.IpAddress).HasMaxLength(64);
+            a.Property(x => x.UserAgent).HasMaxLength(512);
+            a.Property(x => x.Metadata).HasMaxLength(4000);
+            
+            // Indexes for better query performance
+            a.HasIndex(x => x.UserId);
+            a.HasIndex(x => x.ActivityType);
+            a.HasIndex(x => x.CreationTime);
+            a.HasIndex(x => new { x.UserId, x.ActivityType });
+            a.HasIndex(x => new { x.UserId, x.CreationTime });
         });
 
     }
