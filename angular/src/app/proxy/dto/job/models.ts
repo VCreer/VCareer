@@ -1,7 +1,7 @@
-import type { ExperienceLevel } from '../../model/experience-level.enum';
+import type { ExperienceLevel } from '../../models/experience-level.enum';
 import type { SalaryFilterType } from './salary-filter-type.enum';
-import type { EmploymentType } from '../../model/employment-type.enum';
-import type { PositionType } from '../../model/position-type.enum';
+import type { EmploymentType } from '../../models/employment-type.enum';
+import type { PositionType } from '../../models/position-type.enum';
 
 export interface CategoryTreeDto {
   categoryId?: string;

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using VCareer.BlobStoring;
 using VCareer.Constants.FileConstant;
+using VCareer.CV;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using Volo.Abp;
@@ -18,7 +19,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
-namespace VCareer.CV
+namespace VCareer.Services.CV
 {
     /*[Authorize(VCareerPermission.CV.Default)]*/
     public class CVAppService : VCareerAppService, ICVAppService

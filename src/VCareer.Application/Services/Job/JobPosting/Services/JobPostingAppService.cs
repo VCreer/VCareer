@@ -5,15 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Job;
 using VCareer.Job.JobPosting.ISerices;
-using VCareer.Job.Search;
 using VCareer.Models.Companies;
 using VCareer.Models.Job;
 using VCareer.Models.Users;
 using VCareer.Repositories.Job;
+using VCareer.Services.Job.Search;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer.Job.JobPosting.Services
+namespace VCareer.Services.Job.JobPosting.Services
 {
 
     public class JobPostingAppService : ApplicationService, IJobPostingAppService

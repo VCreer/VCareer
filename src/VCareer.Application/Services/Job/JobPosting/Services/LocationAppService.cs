@@ -10,7 +10,7 @@ using VCareer.Repositories.Job;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
 
-namespace VCareer.Job.JobPosting.Services
+namespace VCareer.Services.Job.JobPosting.Services
 {
     public class LocationAppService : ApplicationService, ILocationService
     {

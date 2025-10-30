@@ -5,7 +5,7 @@ import * as Dto from './dto';
 import * as Iservices from './iservices';
 import * as Job from './job';
 import * as Microsoft from './microsoft';
-import * as Model from './model';
+import * as Model from './models';
 import * as Models from './models';
 import * as Profile from './profile';
 import * as Services from './services';

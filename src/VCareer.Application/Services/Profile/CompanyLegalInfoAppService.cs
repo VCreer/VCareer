@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Authorization;
 using VCareer.Models.Companies;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Profile;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp.Validation;
 
-namespace VCareer.Profile
+namespace VCareer.Services.Profile
 {
     //  [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService

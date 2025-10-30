@@ -17,14 +17,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Text;
 using VCareer.Dto.Job;
-using VCareer.Model;
 using VCareer.Models.Job;
 using VCareer.Repositories;
 using VCareer.Repositories.Job;
 using Volo.Abp.DependencyInjection;
 using Lucene.Net.Analysis.Util;
+using VCareer.Constants;
 
-namespace VCareer.Job.Search
+namespace VCareer.Services.Job.Search
 {
     /// <summary>
     /// Lucene Job Indexer - Xử lý full-text search cho job posting
