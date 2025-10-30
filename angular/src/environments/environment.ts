@@ -9,6 +9,7 @@ const oAuthConfig = {
   responseType: 'code',
   scope: 'offline_access VCareer',
   requireHttps: true,
+  skipIssuerCheck: true,
 };
 
 export const environment = {
@@ -28,4 +29,9 @@ export const environment = {
       rootNamespace: 'AbpAccountPublic',
     },
   },
+  // API Configuration
+  apiUrl: 'https://localhost:44385',
+  useMockApi: false,
+  mockDelay: 0,
+  debug: true,
 } as Environment;

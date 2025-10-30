@@ -1,0 +1,31 @@
+<div class="rename-modal" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>{{ translate('rename_cv.title') }}</h2>
+      <button class="close-btn" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <input 
+        type="text" 
+        [(ngModel)]="newName" 
+        class="cv-name-input"
+        placeholder="{{ translate('rename_cv.placeholder') }}">
+      <p class="hint-text">{{ translate('rename_cv.hint') }}</p>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="onClose()">
+        {{ translate('rename_cv.cancel') }}
+      </button>
+      <button class="update-btn" (click)="onRename()">
+        {{ translate('rename_cv.update') }}
+      </button>
+    </div>
+  </div>
+</div>
