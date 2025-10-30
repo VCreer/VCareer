@@ -1,5 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { IdentityUser } from '../../microsoft/asp-net-core/identity/models';
 
 @Injectable({
   providedIn: 'root',
@@ -8,11 +9,12 @@ export class FileSecurityServicesService {
   apiName = 'Default';
   
 
-  checkUserQuota = (userId: string, newFileSize: number, config?: Partial<Rest.Config>) =>
+  checkUserQuota = (user: IdentityUser, newFileSize: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, boolean>({
       method: 'POST',
-      url: `/api/app/file-security-services/check-user-quota/${userId}`,
+      url: '/api/app/file-security-services/check-user-quota',
       params: { newFileSize },
+      body: user,
     },
     { apiName: this.apiName,...config });
   
@@ -46,12 +48,11 @@ export class FileSecurityServicesService {
     { apiName: this.apiName,...config });
   
 
-  validateMimeAndMagic = (fileStream: any, fileName: string, config?: Partial<Rest.Config>) =>
+  validateMimeAndMagic = (fileStream: any, containerType: object, config?: Partial<Rest.Config>) =>
     this.restService.request<any, boolean>({
       method: 'POST',
       url: '/api/app/file-security-services/validate-mime-and-magic',
-      params: { fileName },
-      body: fileStream,
+      body: containerType,
     },
     { apiName: this.apiName,...config });
   

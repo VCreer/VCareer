@@ -1675,10 +1675,10 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "fileName",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
+                      "name": "containerType",
+                      "typeAsString": "System.Object, System.Private.CoreLib",
+                      "type": "System.Object",
+                      "typeSimple": "object",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -1734,10 +1734,10 @@
                   "name": "CheckUserQuotaAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "userId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
+                      "name": "user",
+                      "typeAsString": "Microsoft.AspNetCore.Identity.IdentityUser, Microsoft.Extensions.Identity.Stores",
+                      "type": "Microsoft.AspNetCore.Identity.IdentityUser",
+                      "typeSimple": "Microsoft.AspNetCore.Identity.IdentityUser",
                       "isOptional": false,
                       "defaultValue": null
                     },
@@ -1759,18 +1759,18 @@
             }
           ],
           "actions": {
-            "CheckUserQuotaAsyncByUserIdAndNewFileSize": {
-              "uniqueName": "CheckUserQuotaAsyncByUserIdAndNewFileSize",
+            "CheckUserQuotaAsyncByUserAndNewFileSize": {
+              "uniqueName": "CheckUserQuotaAsyncByUserAndNewFileSize",
               "name": "CheckUserQuotaAsync",
               "httpMethod": "POST",
-              "url": "api/app/file-security-services/check-user-quota/{userId}",
+              "url": "api/app/file-security-services/check-user-quota",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "userId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
+                  "name": "user",
+                  "typeAsString": "Microsoft.AspNetCore.Identity.IdentityUser, Microsoft.Extensions.Identity.Stores",
+                  "type": "Microsoft.AspNetCore.Identity.IdentityUser",
+                  "typeSimple": "Microsoft.AspNetCore.Identity.IdentityUser",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -1785,15 +1785,15 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "userId",
-                  "name": "userId",
+                  "nameOnMethod": "user",
+                  "name": "user",
                   "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
+                  "type": "Microsoft.AspNetCore.Identity.IdentityUser",
+                  "typeSimple": "Microsoft.AspNetCore.Identity.IdentityUser",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
                   "descriptorName": ""
                 },
                 {
@@ -1967,8 +1967,8 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
             },
-            "ValidateMimeAndMagicAsyncByFileStreamAndFileName": {
-              "uniqueName": "ValidateMimeAndMagicAsyncByFileStreamAndFileName",
+            "ValidateMimeAndMagicAsyncByFileStreamAndContainerType": {
+              "uniqueName": "ValidateMimeAndMagicAsyncByFileStreamAndContainerType",
               "name": "ValidateMimeAndMagicAsync",
               "httpMethod": "POST",
               "url": "api/app/file-security-services/validate-mime-and-magic",
@@ -1983,10 +1983,10 @@
                   "defaultValue": null
                 },
                 {
-                  "name": "fileName",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "name": "containerType",
+                  "typeAsString": "System.Object, System.Private.CoreLib",
+                  "type": "System.Object",
+                  "typeSimple": "object",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -2005,15 +2005,15 @@
                   "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "fileName",
-                  "name": "fileName",
+                  "nameOnMethod": "containerType",
+                  "name": "containerType",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Object",
+                  "typeSimple": "object",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
+                  "bindingSourceId": "Body",
                   "descriptorName": ""
                 }
               ],
@@ -2080,6 +2080,322 @@
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IFileServices.IFileSecurityServices"
+            }
+          }
+        },
+        "VCareer.Services.FileServices.FileServices": {
+          "controllerName": "FileServices",
+          "controllerGroupName": "FileServices",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.FileServices.FileServices",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.IFileServices.IFileServices",
+              "name": "IFileServices",
+              "methods": [
+                {
+                  "name": "UploadAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.FileDto.UploadFileDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.FileDto.UploadFileDto",
+                      "typeSimple": "VCareer.Dto.FileDto.UploadFileDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DownloadAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "storageName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.FileDto.FileDescriptorDto",
+                    "typeSimple": "VCareer.Dto.FileDto.FileDescriptorDto"
+                  }
+                },
+                {
+                  "name": "DeleteAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "storageName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetMetadataAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "storageName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.FileDto.FileDescriptorDto",
+                    "typeSimple": "VCareer.Dto.FileDto.FileDescriptorDto"
+                  }
+                },
+                {
+                  "name": "UploadChunkAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.FileDto.FileChunkInput, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.FileDto.FileChunkInput",
+                      "typeSimple": "VCareer.Dto.FileDto.FileChunkInput",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.FileDto.FileChunkResult",
+                    "typeSimple": "VCareer.Dto.FileDto.FileChunkResult"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "DeleteAsyncByStorageNameAndUserId": {
+              "uniqueName": "DeleteAsyncByStorageNameAndUserId",
+              "name": "DeleteAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/file-services",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storageName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storageName",
+                  "name": "storageName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileServices"
+            },
+            "DownloadAsyncByStorageName": {
+              "uniqueName": "DownloadAsyncByStorageName",
+              "name": "DownloadAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-services/download",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storageName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storageName",
+                  "name": "storageName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.FileDto.FileDescriptorDto",
+                "typeSimple": "VCareer.Dto.FileDto.FileDescriptorDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileServices"
+            },
+            "GetMetadataAsyncByStorageName": {
+              "uniqueName": "GetMetadataAsyncByStorageName",
+              "name": "GetMetadataAsync",
+              "httpMethod": "GET",
+              "url": "api/app/file-services/metadata",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storageName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storageName",
+                  "name": "storageName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.FileDto.FileDescriptorDto",
+                "typeSimple": "VCareer.Dto.FileDto.FileDescriptorDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileServices"
+            },
+            "UploadAsyncByInput": {
+              "uniqueName": "UploadAsyncByInput",
+              "name": "UploadAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-services/upload",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.FileDto.UploadFileDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.FileDto.UploadFileDto",
+                  "typeSimple": "VCareer.Dto.FileDto.UploadFileDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.FileDto.UploadFileDto",
+                  "typeSimple": "VCareer.Dto.FileDto.UploadFileDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileServices"
+            },
+            "UploadChunkAsyncByInput": {
+              "uniqueName": "UploadChunkAsyncByInput",
+              "name": "UploadChunkAsync",
+              "httpMethod": "POST",
+              "url": "api/app/file-services/upload-chunk",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.FileDto.FileChunkInput, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.FileDto.FileChunkInput",
+                  "typeSimple": "VCareer.Dto.FileDto.FileChunkInput",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.FileDto.FileChunkInput",
+                  "typeSimple": "VCareer.Dto.FileDto.FileChunkInput",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.FileDto.FileChunkResult",
+                "typeSimple": "VCareer.Dto.FileDto.FileChunkResult"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IFileServices.IFileServices"
             }
           }
         },
@@ -5469,6 +5785,286 @@
     }
   },
   "types": {
+    "Microsoft.AspNetCore.Http.IFormFile": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ContentType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContentDisposition",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Headers",
+          "jsonName": null,
+          "type": "{System.String:Microsoft.Extensions.Primitives.StringValues}",
+          "typeSimple": "{string:Microsoft.Extensions.Primitives.StringValues}",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Length",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "Microsoft.AspNetCore.Identity.IdentityUser": {
+      "baseType": "Microsoft.AspNetCore.Identity.IdentityUser<System.String>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": []
+    },
+    "Microsoft.AspNetCore.Identity.IdentityUser<T0>": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": [
+        "TKey"
+      ],
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "TKey",
+          "typeSimple": "TKey",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NormalizedUserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NormalizedEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EmailConfirmed",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PasswordHash",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SecurityStamp",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ConcurrencyStamp",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumberConfirmed",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TwoFactorEnabled",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LockoutEnd",
+          "jsonName": null,
+          "type": "System.DateTimeOffset?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LockoutEnabled",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AccessFailedCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "System.IO.Stream": {
       "baseType": "System.MarshalByRefObject",
       "isEnum": false,
@@ -5928,6 +6524,306 @@
           "jsonName": null,
           "type": "System.Single",
           "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.FileDto.FileChunkInput": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UploadId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChunkIndex",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalChunks",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Chunk",
+          "jsonName": null,
+          "type": "Microsoft.AspNetCore.Http.IFormFile",
+          "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OriginalFileName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.FileDto.FileChunkResult": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "IsCompleted",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StorageName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.FileDto.FileDescriptorDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "StorageName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OriginalName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Extension",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Size",
+          "jsonName": null,
+          "type": "System.Int64",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MimeType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContainerName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StoragePath",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OwnerId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UploadTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.FileDto.UploadFileDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "File",
+          "jsonName": null,
+          "type": "Microsoft.AspNetCore.Http.IFormFile",
+          "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContainerType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
