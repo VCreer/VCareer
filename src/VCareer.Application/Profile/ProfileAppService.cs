@@ -38,7 +38,7 @@ namespace VCareer.Profile
             _recruiterProfileRepository = recruiterProfileRepository;
         }
 
-        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());

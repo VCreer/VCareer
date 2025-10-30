@@ -1,4 +1,4 @@
-using System;
+/*using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using VCareer.Application.Contracts.Applications;
-using VCareer.Application.Contracts.Permissions;
+using VCareer.Application.Contracts.Permission;
 using VCareer.Controllers;
 
 namespace VCareer.HttpApi.Controllers
@@ -16,7 +16,7 @@ namespace VCareer.HttpApi.Controllers
     /// </summary>
     [ApiController]
     [Route("api/applications")]
-    [Authorize(VCareerPermissions.Application.Default)]
+    [Authorize(VCareerPermission.Application.Default)]
     public class ApplicationController : VCareerController
     {
         private readonly IApplicationAppService _applicationAppService;
@@ -161,3 +161,4 @@ namespace VCareer.HttpApi.Controllers
     }
 }
 
+*/

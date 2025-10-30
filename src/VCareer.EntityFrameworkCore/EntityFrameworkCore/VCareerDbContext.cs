@@ -21,7 +21,7 @@ using VCareer.Models;
 using VCareer.Models.Token;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
-using VCareer.Models.Applications;
+/*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -46,8 +46,8 @@ public class VCareerDbContext :
     public DbSet<RefreshToken> RefreshTokens { get; set; }
    
     public DbSet<CurriculumVitae> CVs { get; set; }
-    public DbSet<JobApplication> JobApplications { get; set; }
-    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }
+    /*public DbSet<JobApplication> JobApplications { get; set; }
+    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
 
 
@@ -419,7 +419,7 @@ public class VCareerDbContext :
         });
 
         // JobApplication Configuration
-        builder.Entity<JobApplication>(ja =>
+        /*builder.Entity<JobApplication>(ja =>
         {
             ja.ToTable("JobApplications");
             ja.ConfigureByConvention();
@@ -492,7 +492,7 @@ public class VCareerDbContext :
             ad.HasIndex(x => x.ApplicationId);
             ad.HasIndex(x => x.DocumentType);
             ad.HasIndex(x => x.IsPrimary);
-        });
+        });*/
 
     }
 }

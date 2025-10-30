@@ -163,7 +163,7 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             options.Events = new JwtBearerEvents
             {
-                
+
                 OnTokenValidated = context =>
                 {
                     return Task.CompletedTask;
@@ -222,19 +222,19 @@ public class VCareerHttpApiHostModule : AbpModule
             // Default container
             options.Containers.ConfigureDefault(container =>
             {
-                container.UseFileSystem(fileSystem => { 
+                container.UseFileSystem(fileSystem => {
                     fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files");
                 });
             });
-            
+
             // CV container - riêng biệt cho CV files
             options.Containers.Configure("cv", container =>
             {
-                container.UseFileSystem(fileSystem => { 
+                container.UseFileSystem(fileSystem => {
                     fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files/cv");
                 });
             });
-        }); 
+        });
     }
 
 
@@ -353,5 +353,5 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseConfiguredEndpoints();
     }
 
-    
+
 }

@@ -1,4 +1,4 @@
-using System;
+/*using System;
 using System.ComponentModel.DataAnnotations;
 using VCareer.Models.Companies;
 using VCareer.Models.Users;
@@ -234,3 +234,4 @@ namespace VCareer.Models.Applications
         public virtual JobApplication Application { get; set; }
     }
 }
+*/

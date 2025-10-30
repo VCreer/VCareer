@@ -2,10 +2,10 @@ using AutoMapper;
 using VCareer.Books;
 using VCareer.Profile;
 using VCareer.CV;
-using VCareer.Applications;
+using VCareer.Application;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
-using VCareer.Models.Applications;
+/*using VCareer.Models.Applications;*/
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using VCareer.Dto;
@@ -37,8 +37,8 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<UpdateCVDto, CurriculumVitae>();
 
         // Application mappings
-        CreateMap<JobApplication, ApplicationDto>();
-        CreateMap<ApplicationDocument, ApplicationDocumentDto>();
+       /* CreateMap<JobApplication, ApplicationDto>();
+        CreateMap<ApplicationDocument, ApplicationDocumentDto>();*/
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations
