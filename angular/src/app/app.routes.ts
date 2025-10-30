@@ -90,6 +90,11 @@ export const APP_ROUTES: Routes = [
       {
         path: 'about-us',
         loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage.component').then(c => c.RecruiterHomepageComponent),
+      },
+      {
+        path: 'performance-dashboard',
+        loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
       }
     ]
   },

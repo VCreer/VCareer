@@ -1,0 +1,351 @@
+@startuml Leader Recruiter Performance Dashboard - Additional Flows (Simplified)
+
+' ====================
+' TITLE & STYLE
+' ====================
+title Leader Recruiter Performance Dashboard - Additional Flows
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 15
+
+' ====================
+' PARTICIPANTS
+' ====================
+actor Leader
+participant "Angular\nComponent" as Component
+participant "Dashboard\nService" as Service
+participant "API\nController" as Controller
+participant "AppService" as AppService
+database Database
+
+' ====================
+' FLOW 1: Get Staff Performance Detail
+' ====================
+
+== Flow 1: Get Staff Performance Detail ==
+
+Leader -> Component : Click on specific staff
+activate Component
+
+Component -> Service : getStaffPerformance(staffId, filter)
+activate Service
+
+Service -> Controller : GET /api/app/recruitment-dashboard/staff/{staffId}
+activate Controller
+
+Controller -> AppService : GetStaffPerformanceAsync(staffId, filter)
+activate AppService
+
+AppService -> AppService : Verify Leader permission
+
+alt Not a Leader
+    AppService --> Controller : 403 Forbidden
+    Controller --> Service : Error
+    Service --> Component : Error
+    Component --> Leader : "Access Denied"
+else Staff from different company
+    AppService --> Controller : 403 Forbidden
+    Controller --> Service : Error
+    Service --> Component : Error
+    Component --> Leader : "Can only view staff from same company"
+else Success
+    AppService -> Database : Query activities for staffId
+    activate Database
+    Database --> AppService : List<ActivityLog>
+    deactivate Database
+    
+    AppService -> AppService : CalculateStaffPerformance(staff, activities, filter)
+    
+    note right of AppService
+      Calculate all metrics:
+      - Job statistics
+      - Candidate statistics
+      - Interview statistics
+      - Performance rates
+    end note
+    
+    AppService --> Controller : StaffPerformanceDto
+    deactivate AppService
+    
+    Controller --> Service : 200 OK + JSON
+    deactivate Controller
+    
+    Service --> Component : StaffPerformanceDto
+    deactivate Service
+    
+    Component --> Leader : Display detailed\nperformance metrics
+    deactivate Component
+end
+
+|||
+
+' ====================
+' FLOW 2: Get Activity Trend
+' ====================
+
+== Flow 2: Get Activity Trend ==
+
+Leader -> Component : View Trends tab
+activate Component
+
+Component -> Service : getActivityTrend(filter)
+activate Service
+
+Service -> Controller : GET /api/app/recruitment-dashboard/trend
+activate Controller
+
+Controller -> AppService : GetActivityTrendAsync(filter)
+activate AppService
+
+AppService -> AppService : Verify Leader permission
+
+AppService -> Database : Query all company staff IDs
+activate Database
+Database --> AppService : List<Guid> staffIds
+deactivate Database
+
+AppService -> Database : Query activities\nfor all staff in date range
+activate Database
+Database --> AppService : List<ActivityLog>
+deactivate Database
+
+AppService -> AppService : Group activities by:\n- Day (last 30 days)\n- Week\n- Month
+
+note right of AppService
+  Daily Trend:
+  Group by CreationTime.Date
+  
+  Weekly Trend:
+  Group by Week of Year
+  
+  Monthly Trend:
+  Group by Year/Month
+end note
+
+AppService --> Controller : ActivityTrendDto\n(with 3 trend arrays)
+deactivate AppService
+
+Controller --> Service : 200 OK + JSON
+deactivate Controller
+
+Service --> Component : ActivityTrendDto
+deactivate Service
+
+Component -> Component : Render chart with trend data
+
+Component --> Leader : Display trend chart\n(last 7 days bar chart)
+deactivate Component
+
+|||
+
+' ====================
+' FLOW 3: Get Top Performers
+' ====================
+
+== Flow 3: Get Top Performers ==
+
+Leader -> Component : View top performers\n(auto-loaded with dashboard)
+activate Component
+
+Component -> Service : getTopPerformers(topCount: 5, filter)
+activate Service
+
+Service -> Controller : GET /api/app/recruitment-dashboard/top-performers\n?topCount=5
+activate Controller
+
+Controller -> AppService : GetTopPerformersAsync(topCount, filter)
+activate AppService
+
+note right of AppService
+  This internally calls
+  GetCompanyDashboardAsync
+  and extracts top performers
+end note
+
+AppService -> AppService : GetCompanyDashboardAsync(filter)
+AppService -> Database : Get all staff & activities
+activate Database
+Database --> AppService : Data
+deactivate Database
+
+AppService -> AppService : Calculate all staff performances
+AppService -> AppService : CalculateTopPerformers(staffPerformances)
+
+note right of AppService
+  Top performers by:
+  1. Most Jobs Posted
+  2. Most Candidates Approved
+  3. Most Interviews Completed
+  4. Highest Approval Rate
+  5. Most Active This Month
+end note
+
+AppService --> Controller : TopPerformerDto[]\n(up to topCount items)
+deactivate AppService
+
+Controller --> Service : 200 OK + JSON
+deactivate Controller
+
+Service --> Component : TopPerformerDto[]
+deactivate Service
+
+Component --> Leader : Display top\nperformer cards
+deactivate Component
+
+|||
+
+' ====================
+' FLOW 4: Compare Staff Performance
+' ====================
+
+== Flow 4: Compare Staff Performance ==
+
+Leader -> Component : Select multiple staff\nfrom Staff List
+activate Component
+
+Component -> Component : Add staffIds to\nselectedStaffIds[]
+
+Leader -> Component : Click "Compare Staff" tab
+Component -> Component : getSelectedStaffPerformances()
+
+alt selectedStaffIds is empty
+    Component --> Leader : Display "No staff selected"
+else selectedStaffIds has items
+    Component -> Service : compareStaffPerformance(selectedStaffIds, filter)
+    activate Service
+    
+    Service -> Controller : POST /api/app/recruitment-dashboard/compare\nBody: { staffIds: [...], filter: {...} }
+    activate Controller
+    
+    Controller -> AppService : CompareStaffPerformanceAsync(staffIds, filter)
+    activate AppService
+    
+    AppService -> AppService : Verify Leader permission
+    
+    loop For each staffId in array
+        AppService -> AppService : GetStaffPerformanceAsync(staffId, filter)
+        
+        note right of AppService
+          Verify staff is in same company
+          Calculate individual performance
+        end note
+        
+        alt Staff invalid or different company
+            AppService -> AppService : Skip this staff
+        else Staff valid
+            AppService -> AppService : Add to results
+        end
+    end
+    
+    AppService --> Controller : StaffPerformanceDto[]\n(only valid staff)
+    deactivate AppService
+    
+    Controller --> Service : 200 OK + JSON
+    deactivate Controller
+    
+    Service --> Component : StaffPerformanceDto[]
+    deactivate Service
+    
+    Component -> Component : Render comparison cards\nside by side
+    
+    Component --> Leader : Display comparison view\nwith metrics for\neach selected staff
+end
+deactivate Component
+
+|||
+
+' ====================
+' FLOW 5: Apply Filters
+' ====================
+
+== Flow 5: Apply Filters ==
+
+Leader -> Component : Change filter values:\n- Start/End Date\n- Sort By\n- Include Inactive
+activate Component
+
+Leader -> Component : Click "Apply Filters"
+
+Component -> Component : Update filter object
+
+Component -> Service : getCompanyDashboard(newFilter)
+activate Service
+
+note right of Component
+  This triggers a full reload
+  of the dashboard with
+  new filter parameters
+end note
+
+Service -> Controller : GET /api/app/recruitment-dashboard/company\n+ new query params
+activate Controller
+
+Controller -> AppService : GetCompanyDashboardAsync(newFilter)
+activate AppService
+
+AppService -> Database : Query with new date range
+activate Database
+Database --> AppService : Filtered data
+deactivate Database
+
+AppService -> AppService : Calculate with new parameters
+
+AppService --> Controller : CompanyDashboardDto
+deactivate AppService
+
+Controller --> Service : 200 OK + JSON
+deactivate Controller
+
+Service --> Component : CompanyDashboardDto
+deactivate Service
+
+Component -> Component : Update all displayed data
+
+Component --> Leader : Refresh dashboard\nwith filtered data
+deactivate Component
+
+|||
+
+' ====================
+' FLOW 6: Export to CSV
+' ====================
+
+== Flow 6: Export to CSV ==
+
+Leader -> Component : Click "Export CSV" button
+activate Component
+
+Component -> Component : exportToCSV()
+
+note right of Component
+  Generate CSV from current
+  companyDashboard.staffPerformances
+  
+  No API call needed - uses
+  data already loaded in memory
+end note
+
+Component -> Component : Format data as CSV:\nHeaders + Data rows
+
+Component -> Component : Create Blob and\ndownload link
+
+Component -> Leader : Trigger browser download\n"recruitment-performance-YYYY-MM-DD.csv"
+deactivate Component
+
+Leader -> Leader : Save file to disk
+
+note over Leader, Database
+  **Key Points:**
+  - All flows require Leader Recruiter authentication
+  - Data is filtered by company automatically
+  - Most operations query ActivityLog for metrics
+  - Calculations are done server-side for accuracy
+  - Export is client-side (no API call)
+end note
+
+@enduml
+
+
+
+
+

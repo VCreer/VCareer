@@ -58,6 +58,8 @@ namespace VCareer.Jwt
         private async Task<string> CreateAccessTokenAsync(IdentityUser user)
         {
             var identity = new ClaimsIdentity("Bearer");
+            
+            // Thêm các claims cơ bản
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
             identity.AddClaim(new Claim(ClaimTypes.Email, user.Email.ToString()));
             var roles = await _userManager.GetRolesAsync(user);

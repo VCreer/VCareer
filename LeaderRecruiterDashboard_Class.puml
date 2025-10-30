@@ -1,0 +1,362 @@
+@startuml Leader Recruiter Performance Dashboard - Class Diagram
+
+' ====================
+' TITLE & STYLE
+' ====================
+title Leader Recruiter Performance Dashboard - Class Diagram
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor<<Controller>> LightBlue
+    BackgroundColor<<Service>> LightGreen
+    BackgroundColor<<DTO>> LightYellow
+    BackgroundColor<<Entity>> LightPink
+    BackgroundColor<<Repository>> LightGray
+}
+
+' ====================
+' CONTROLLER LAYER
+' ====================
+package "HttpApi Layer" {
+    class RecruitmentDashboardController <<Controller>> {
+        - _dashboardService : IRecruitmentDashboardAppService
+        + GetCompanyDashboardAsync(filter: DashboardFilterDto) : Task<CompanyDashboardDto>
+        + GetStaffPerformanceAsync(staffId: Guid, filter: DashboardFilterDto) : Task<StaffPerformanceDto>
+        + GetActivityTrendAsync(filter: DashboardFilterDto) : Task<ActivityTrendDto>
+        + GetTopPerformersAsync(topCount: int, filter: DashboardFilterDto) : Task<TopPerformerDto[]>
+        + CompareStaffPerformanceAsync(request: CompareStaffRequest) : Task<StaffPerformanceDto[]>
+    }
+    
+    class CompareStaffRequest {
+        + StaffIds : Guid[]
+        + Filter : DashboardFilterDto
+    }
+}
+
+' ====================
+' SERVICE LAYER
+' ====================
+package "Application Layer" {
+    interface IRecruitmentDashboardAppService <<Service>> {
+        + GetCompanyDashboardAsync(filter: DashboardFilterDto) : Task<CompanyDashboardDto>
+        + GetStaffPerformanceAsync(staffId: Guid, filter: DashboardFilterDto) : Task<StaffPerformanceDto>
+        + GetActivityTrendAsync(filter: DashboardFilterDto) : Task<ActivityTrendDto>
+        + GetTopPerformersAsync(topCount: int, filter: DashboardFilterDto) : Task<TopPerformerDto[]>
+        + CompareStaffPerformanceAsync(staffIds: Guid[], filter: DashboardFilterDto) : Task<StaffPerformanceDto[]>
+    }
+    
+    class RecruitmentDashboardAppService <<Service>> {
+        - _activityLogRepository : IRepository<ActivityLog, Guid>
+        - _recruiterProfileRepository : IRepository<RecruiterProfile, Guid>
+        - _userRepository : IRepository<IdentityUser, Guid>
+        - _currentUser : ICurrentUser
+        --
+        + GetCompanyDashboardAsync(filter: DashboardFilterDto) : Task<CompanyDashboardDto>
+        + GetStaffPerformanceAsync(staffId: Guid, filter: DashboardFilterDto) : Task<StaffPerformanceDto>
+        + GetActivityTrendAsync(filter: DashboardFilterDto) : Task<ActivityTrendDto>
+        + GetTopPerformersAsync(topCount: int, filter: DashboardFilterDto) : Task<TopPerformerDto[]>
+        + CompareStaffPerformanceAsync(staffIds: Guid[], filter: DashboardFilterDto) : Task<StaffPerformanceDto[]>
+        --
+        - GetCurrentRecruiterProfileAsync() : Task<RecruiterProfile>
+        - CalculateStaffPerformance(staff: RecruiterProfile, activities: List<ActivityLog>, filter: DashboardFilterDto) : StaffPerformanceDto
+        - CalculateTopPerformers(staffPerformances: List<StaffPerformanceDto>) : List<TopPerformerDto>
+        - SortStaffPerformances(staffPerformances: List<StaffPerformanceDto>, sortBy: string, descending: bool) : List<StaffPerformanceDto>
+        - GetWeekOfYear(date: DateTime) : int
+    }
+}
+
+' ====================
+' DTO LAYER
+' ====================
+package "DTOs" {
+    class DashboardFilterDto <<DTO>> {
+        + StartDate : DateTime?
+        + EndDate : DateTime?
+        + StaffId : Guid?
+        + IncludeInactive : bool
+        + SortBy : string
+        + Descending : bool
+    }
+    
+    class CompanyDashboardDto <<DTO>> {
+        + CompanyId : int
+        + CompanyName : string
+        + TotalStaff : int
+        + ActiveStaff : int
+        + TotalLeaders : int
+        --
+        + TotalJobsPosted : int
+        + TotalActiveJobs : int
+        + TotalClosedJobs : int
+        --
+        + TotalCandidatesEvaluated : int
+        + TotalCandidatesApproved : int
+        + TotalCandidatesRejected : int
+        --
+        + TotalInterviewsScheduled : int
+        + TotalInterviewsCompleted : int
+        --
+        + OverallApprovalRate : decimal
+        + OverallInterviewCompletionRate : decimal
+        + AverageActivitiesPerStaff : decimal
+        --
+        + TodayActivities : int
+        + ThisWeekActivities : int
+        + ThisMonthActivities : int
+        --
+        + StaffPerformances : List<StaffPerformanceDto>
+        + TopPerformers : List<TopPerformerDto>
+    }
+    
+    class StaffPerformanceDto <<DTO>> {
+        + UserId : Guid
+        + FullName : string
+        + Email : string
+        + IsLead : bool
+        + Status : bool
+        --
+        ' Job Statistics
+        + TotalJobsPosted : int
+        + ActiveJobs : int
+        + ClosedJobs : int
+        + DeletedJobs : int
+        --
+        ' Candidate Statistics
+        + TotalCandidatesEvaluated : int
+        + CandidatesApproved : int
+        + CandidatesRejected : int
+        + CandidatesShortlisted : int
+        --
+        ' Interview Statistics
+        + TotalInterviewsScheduled : int
+        + InterviewsCompleted : int
+        + InterviewsCancelled : int
+        --
+        ' Email Statistics
+        + TotalEmailsSent : int
+        + EmailTemplatesCreated : int
+        --
+        ' Application Statistics
+        + ApplicationsReviewed : int
+        + ApplicationsUpdated : int
+        --
+        ' Performance Metrics
+        + ApprovalRate : decimal
+        + InterviewCompletionRate : decimal
+        + AverageActivitiesPerDay : decimal
+        --
+        ' Time-based Statistics
+        + TodayActivities : int
+        + ThisWeekActivities : int
+        + ThisMonthActivities : int
+        --
+        + LastActivityDate : DateTime?
+        + LastActivityDescription : string
+    }
+    
+    class TopPerformerDto <<DTO>> {
+        + UserId : Guid
+        + FullName : string
+        + Email : string
+        + Category : string
+        + Value : int
+        + Description : string
+    }
+    
+    class ActivityTrendDto <<DTO>> {
+        + DailyTrend : List<DateActivityCountDto>
+        + WeeklyTrend : List<DateActivityCountDto>
+        + MonthlyTrend : List<DateActivityCountDto>
+    }
+    
+    class DateActivityCountDto <<DTO>> {
+        + Date : DateTime
+        + Count : int
+        + Label : string
+    }
+}
+
+' ====================
+' DOMAIN ENTITIES
+' ====================
+package "Domain Layer" {
+    class RecruiterProfile <<Entity>> {
+        + UserId : Guid
+        + CompanyId : int
+        + IsLead : bool
+        + Status : bool
+        + User : IdentityUser
+        + Company : Company
+    }
+    
+    class ActivityLog <<Entity>> {
+        + Id : Guid
+        + UserId : Guid
+        + ActivityType : ActivityType
+        + EntityId : Guid?
+        + EntityType : string
+        + Action : string
+        + Description : string
+        + IpAddress : string
+        + UserAgent : string
+        + Metadata : string
+        + CreationTime : DateTime
+    }
+    
+    enum ActivityType {
+        JobPosted = 1
+        JobUpdated = 2
+        JobClosed = 3
+        JobDeleted = 4
+        EmailSent = 10
+        EmailTemplateCreated = 11
+        CandidateEvaluated = 20
+        CandidateRejected = 21
+        CandidateApproved = 22
+        CandidateShortlisted = 23
+        InterviewScheduled = 30
+        InterviewCompleted = 31
+        InterviewCancelled = 32
+        ApplicationReviewed = 40
+        ApplicationUpdated = 41
+    }
+    
+    class Company <<Entity>> {
+        + Id : int
+        + CompanyName : string
+        + CompanyCode : string
+        + VerificationStatus : bool
+        + Status : bool
+        + RecruiterProfiles : ICollection<RecruiterProfile>
+    }
+    
+    class IdentityUser <<Entity>> {
+        + Id : Guid
+        + Name : string
+        + Surname : string
+        + Email : string
+    }
+}
+
+' ====================
+' REPOSITORY INTERFACES
+' ====================
+package "Repository Layer" {
+    interface "IRepository<ActivityLog, Guid>" as ActivityLogRepo <<Repository>> {
+        + Where(predicate) : IQueryable<ActivityLog>
+        + ToListAsync() : Task<List<ActivityLog>>
+    }
+    
+    interface "IRepository<RecruiterProfile, Guid>" as RecruiterRepo <<Repository>> {
+        + WithDetailsAsync() : Task<IQueryable<RecruiterProfile>>
+        + Include(navigation) : IQueryable<RecruiterProfile>
+        + FirstOrDefaultAsync(predicate) : Task<RecruiterProfile>
+    }
+    
+    interface "IRepository<IdentityUser, Guid>" as UserRepo <<Repository>> {
+    }
+}
+
+' ====================
+' ANGULAR COMPONENTS
+' ====================
+package "Angular Frontend" {
+    class RecruitmentPerformanceDashboardComponent {
+        - dashboardService : RecruitmentDashboardService
+        + companyDashboard : CompanyDashboardDto
+        + activityTrend : ActivityTrendDto
+        + loading : bool
+        + error : string
+        + filter : DashboardFilterDto
+        + viewMode : string
+        + selectedStaffIds : string[]
+        --
+        + ngOnInit() : void
+        + loadDashboard() : void
+        + loadActivityTrend() : void
+        + applyFilters() : void
+        + resetFilters() : void
+        + toggleStaffSelection(staffId: string) : void
+        + setViewMode(mode: string) : void
+        + exportToCSV() : void
+        + formatNumber(num: number) : string
+        + formatPercentage(num: number) : string
+    }
+    
+    class RecruitmentDashboardService {
+        - http : HttpClient
+        - apiUrl : string
+        --
+        + getCompanyDashboard(filter: DashboardFilterDto) : Observable<CompanyDashboardDto>
+        + getStaffPerformance(staffId: string, filter: DashboardFilterDto) : Observable<StaffPerformanceDto>
+        + getActivityTrend(filter: DashboardFilterDto) : Observable<ActivityTrendDto>
+        + getTopPerformers(topCount: number, filter: DashboardFilterDto) : Observable<TopPerformerDto[]>
+        + compareStaffPerformance(staffIds: string[], filter: DashboardFilterDto) : Observable<StaffPerformanceDto[]>
+    }
+}
+
+' ====================
+' RELATIONSHIPS
+' ====================
+
+' Controller -> Service
+RecruitmentDashboardController --> IRecruitmentDashboardAppService : uses
+RecruitmentDashboardController ..> CompareStaffRequest : uses
+
+' Service Implementation
+RecruitmentDashboardAppService ..|> IRecruitmentDashboardAppService : implements
+RecruitmentDashboardAppService --> ActivityLogRepo : uses
+RecruitmentDashboardAppService --> RecruiterRepo : uses
+RecruitmentDashboardAppService --> UserRepo : uses
+
+' DTOs relationships
+CompanyDashboardDto *-- StaffPerformanceDto : contains
+CompanyDashboardDto *-- TopPerformerDto : contains
+ActivityTrendDto *-- DateActivityCountDto : contains
+CompareStaffRequest --> DashboardFilterDto : uses
+
+' Service uses DTOs
+IRecruitmentDashboardAppService ..> CompanyDashboardDto : returns
+IRecruitmentDashboardAppService ..> StaffPerformanceDto : returns
+IRecruitmentDashboardAppService ..> ActivityTrendDto : returns
+IRecruitmentDashboardAppService ..> TopPerformerDto : returns
+IRecruitmentDashboardAppService ..> DashboardFilterDto : receives
+
+' Domain relationships
+RecruiterProfile --> Company : belongs to
+RecruiterProfile --> IdentityUser : has
+ActivityLog --> ActivityType : has
+
+' Angular relationships
+RecruitmentPerformanceDashboardComponent --> RecruitmentDashboardService : uses
+RecruitmentDashboardService ..> CompanyDashboardDto : receives
+RecruitmentDashboardService ..> StaffPerformanceDto : receives
+RecruitmentDashboardService ..> ActivityTrendDto : receives
+
+' Cross-layer
+RecruitmentDashboardService --> RecruitmentDashboardController : HTTP calls
+
+' Notes
+note right of RecruitmentDashboardAppService
+  Only Leader Recruiters (IsLead = true)
+  can access this service.
+  Data is filtered by company.
+end note
+
+note right of CompanyDashboardDto
+  Main DTO containing complete
+  dashboard information with
+  aggregated statistics
+end note
+
+note bottom of ActivityLog
+  Source of all performance data
+  Used to calculate metrics
+end note
+
+@enduml
+
+
+
+
+

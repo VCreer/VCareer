@@ -1,0 +1,128 @@
+@startuml
+title View HR Staff Job List - Class Diagram (Simplified)
+
+' API Layer
+class TeamManagementController {
+    + GetHrStaffJobs(staffId, input) : HrStaffJobListDto
+}
+
+' Application Layer
+class TeamManagementAppService {
+    + GetHrStaffJobsAsync(staffId, input) : HrStaffJobListDto
+}
+
+interface ITeamManagementAppService {
+    + GetHrStaffJobsAsync(staffId, input) : HrStaffJobListDto
+}
+
+' Repositories
+interface "IRepository<RecruiterProfile>" as RecruiterRepo {
+    + FindAsync(id)
+    + GetListAsync(predicate)
+}
+
+interface "IRepository<Job>" as JobRepo {
+    + GetListAsync(predicate)
+}
+
+class IdentityUserManager {
+    + GetByIdAsync(id)
+}
+
+' Domain Models
+class RecruiterProfile {
+    + Id : Guid
+    + UserId : Guid
+    + CompanyId : int
+    + IsLead : bool
+    + Status : bool
+}
+
+class Job {
+    + Id : Guid
+    + RecruiterId : Guid
+    + Title : string
+    + Status : JobStatus
+    + Location : string
+    + CreationTime : DateTime
+}
+
+enum JobStatus {
+    Draft
+    Active
+    Closed
+}
+
+class Company {
+    + Id : int
+    + CompanyName : string
+    + Status : bool
+}
+
+class IdentityUser {
+    + Id : Guid
+    + Email : string
+    + Name : string
+}
+
+' DTOs
+class HrStaffJobListDto {
+    + StaffInfo : HrStaffInfoDto
+    + Jobs : List<HrStaffJobDto>
+    + Statistics : JobStatistics
+    + TotalCount : int
+}
+
+class HrStaffInfoDto {
+    + Id : Guid
+    + Email : string
+    + Name : string
+    + IsLead : bool
+}
+
+class HrStaffJobDto {
+    + Id : Guid
+    + Title : string
+    + Status : JobStatus
+    + Location : string
+    + CreationTime : DateTime
+}
+
+class JobStatistics {
+    + TotalJobs : int
+    + ActiveJobs : int
+    + DraftJobs : int
+    + ClosedJobs : int
+}
+
+class PagedAndSortedResultRequestDto {
+    + MaxResultCount : int
+    + SkipCount : int
+    + Sorting : string
+}
+
+' Main Relationships
+TeamManagementController --> ITeamManagementAppService
+TeamManagementController ..> HrStaffJobListDto : returns
+
+TeamManagementAppService ..|> ITeamManagementAppService
+TeamManagementAppService --> RecruiterRepo
+TeamManagementAppService --> JobRepo
+TeamManagementAppService --> IdentityUserManager
+
+RecruiterRepo ..> RecruiterProfile
+JobRepo ..> Job
+IdentityUserManager ..> IdentityUser
+
+RecruiterProfile --> Company
+RecruiterProfile --> IdentityUser
+Job --> RecruiterProfile
+Job --> JobStatus
+
+HrStaffJobListDto *-- HrStaffInfoDto
+HrStaffJobListDto *-- HrStaffJobDto
+HrStaffJobListDto *-- JobStatistics
+HrStaffJobDto ..> JobStatus
+
+@enduml
+
