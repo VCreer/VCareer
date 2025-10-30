@@ -6,14 +6,21 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
-import { JobApiService } from '../../../proxy/api/job.service';
+import { JobApiService } from '../../../apiTest/api/job.service';
 
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ToastNotificationComponent, SearchHeaderComponent, ApplyJobModalComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    ToastNotificationComponent,
+    SearchHeaderComponent,
+    ApplyJobModalComponent,
+  ],
   templateUrl: './job-detail.html',
-  styleUrls: ['./job-detail.scss']
+  styleUrls: ['./job-detail.scss'],
 })
 export class JobDetailComponent implements OnInit {
   selectedLanguage: string = 'vi';
@@ -55,19 +62,19 @@ export class JobDetailComponent implements OnInit {
    */
   loadJobDetail() {
     this.isLoading = true;
-    
+
     this.jobApi.getJobById(this.jobId).subscribe({
-      next: (jobDetail) => {
+      next: jobDetail => {
         this.jobDetail = jobDetail;
         this.isLoading = false;
         console.log('✅ Job detail loaded:', jobDetail);
       },
-      error: (error) => {
+      error: error => {
         console.error('❌ Error loading job detail:', error);
         this.isLoading = false;
         this.toastMessage = 'Không thể tải chi tiết công việc';
         this.showToast = true;
-      }
+      },
     });
   }
 
@@ -105,7 +112,7 @@ export class JobDetailComponent implements OnInit {
     console.log('Search with params:', {
       category: this.selectedCategory,
       location: this.selectedLocation,
-      position: this.searchPosition
+      position: this.searchPosition,
     });
   }
 
@@ -121,11 +128,11 @@ export class JobDetailComponent implements OnInit {
     this.showApplyModal = false;
   }
 
-  onModalSubmit(data: {cvOption: string, showToast: boolean, toastMessage: string}): void {
+  onModalSubmit(data: { cvOption: string; showToast: boolean; toastMessage: string }): void {
     console.log('Submitting application with:', {
-      cvOption: data.cvOption
+      cvOption: data.cvOption,
     });
-    
+
     // Show toast notification
     if (data.showToast) {
       this.toastMessage = data.toastMessage;

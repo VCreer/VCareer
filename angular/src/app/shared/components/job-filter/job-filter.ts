@@ -3,7 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
 // ✅ Import Enums from Job API Service
-import { EmploymentType, ExperienceLevel, PositionType, SalaryFilterType } from '../../../proxy/api/job.service';
+import {
+  EmploymentType,
+  ExperienceLevel,
+  PositionType,
+  SalaryFilterType,
+} from '../../../apiTest/api/job.service';
 
 interface FilterOption {
   value: number | null;
@@ -16,13 +21,13 @@ interface FilterOption {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './job-filter.html',
-  styleUrls: ['./job-filter.scss']
+  styleUrls: ['./job-filter.scss'],
 })
 export class JobFilterComponent implements OnInit {
   @Output() filterChange = new EventEmitter<any>();
 
   selectedLanguage: string = 'vi';
-  
+
   // ============================================
   // ✅ FILTER OPTIONS (From Enums)
   // ============================================
@@ -34,9 +39,9 @@ export class JobFilterComponent implements OnInit {
     { value: EmploymentType.PartTime, label: 'Bán thời gian', checked: false },
     { value: EmploymentType.Internship, label: 'Thực tập', checked: false },
     { value: EmploymentType.Contract, label: 'Hợp đồng', checked: false },
-    { value: EmploymentType.Freelance, label: 'Freelance', checked: false }
+    { value: EmploymentType.Freelance, label: 'Freelance', checked: false },
   ];
-  
+
   // Kinh nghiệm (ExperienceLevel)
   experienceLevels: FilterOption[] = [
     { value: null, label: 'Tất cả', checked: true },
@@ -52,9 +57,9 @@ export class JobFilterComponent implements OnInit {
     { value: ExperienceLevel.Year8, label: '8 năm', checked: false },
     { value: ExperienceLevel.Year9, label: '9 năm', checked: false },
     { value: ExperienceLevel.Year10, label: '10 năm', checked: false },
-    { value: ExperienceLevel.Over10, label: 'Trên 10 năm', checked: false }
+    { value: ExperienceLevel.Over10, label: 'Trên 10 năm', checked: false },
   ];
-  
+
   // Cấp bậc (PositionType)
   positionTypes: FilterOption[] = [
     { value: null, label: 'Tất cả', checked: true },
@@ -69,7 +74,7 @@ export class JobFilterComponent implements OnInit {
     { value: PositionType.BranchManager, label: 'Trưởng chi nhánh', checked: false },
     { value: PositionType.DeputyDirector, label: 'Phó giám đốc', checked: false },
     { value: PositionType.Director, label: 'Giám đốc', checked: false },
-    { value: PositionType.Consultant, label: 'Tư vấn', checked: false }
+    { value: PositionType.Consultant, label: 'Tư vấn', checked: false },
   ];
 
   // Mức lương (SalaryFilterType)
@@ -81,7 +86,7 @@ export class JobFilterComponent implements OnInit {
     { value: SalaryFilterType.Range20To30, label: '20 - 30 triệu', checked: false },
     { value: SalaryFilterType.Range30To50, label: '30 - 50 triệu', checked: false },
     { value: SalaryFilterType.Over50, label: 'Trên 50 triệu', checked: false },
-    { value: SalaryFilterType.Deal, label: 'Thỏa thuận', checked: false }
+    { value: SalaryFilterType.Deal, label: 'Thỏa thuận', checked: false },
   ];
 
   constructor(private translationService: TranslationService) {}
@@ -104,7 +109,7 @@ export class JobFilterComponent implements OnInit {
    * Hình thức làm việc changed
    */
   onEmploymentTypeChange(option: FilterOption) {
-    this.employmentTypes.forEach(o => o.checked = false);
+    this.employmentTypes.forEach(o => (o.checked = false));
     option.checked = true;
     this.emitFilterChange();
   }
@@ -113,7 +118,7 @@ export class JobFilterComponent implements OnInit {
    * Kinh nghiệm changed
    */
   onExperienceChange(option: FilterOption) {
-    this.experienceLevels.forEach(o => o.checked = false);
+    this.experienceLevels.forEach(o => (o.checked = false));
     option.checked = true;
     this.emitFilterChange();
   }
@@ -122,7 +127,7 @@ export class JobFilterComponent implements OnInit {
    * Cấp bậc changed
    */
   onPositionTypeChange(option: FilterOption) {
-    this.positionTypes.forEach(o => o.checked = false);
+    this.positionTypes.forEach(o => (o.checked = false));
     option.checked = true;
     this.emitFilterChange();
   }
@@ -131,7 +136,7 @@ export class JobFilterComponent implements OnInit {
    * Mức lương changed
    */
   onSalaryChange(option: FilterOption) {
-    this.salaryFilters.forEach(o => o.checked = false);
+    this.salaryFilters.forEach(o => (o.checked = false));
     option.checked = true;
     this.emitFilterChange();
   }
@@ -143,11 +148,11 @@ export class JobFilterComponent implements OnInit {
     this.employmentTypes.forEach(o => {
       o.checked = o.value === null;
     });
-    
+
     this.experienceLevels.forEach(o => {
       o.checked = o.value === null;
     });
-    
+
     this.positionTypes.forEach(o => {
       o.checked = o.value === null;
     });
@@ -155,7 +160,7 @@ export class JobFilterComponent implements OnInit {
     this.salaryFilters.forEach(o => {
       o.checked = o.value === null;
     });
-    
+
     this.emitFilterChange();
   }
 
@@ -169,21 +174,18 @@ export class JobFilterComponent implements OnInit {
     const selectedSalary = this.salaryFilters.find(o => o.checked);
 
     const filters = {
-      employmentTypes: selectedEmploymentType && selectedEmploymentType.value !== null 
-        ? [selectedEmploymentType.value] 
-        : [],
+      employmentTypes:
+        selectedEmploymentType && selectedEmploymentType.value !== null
+          ? [selectedEmploymentType.value]
+          : [],
       // ✅ FIX: Check for null specifically, not falsy values (0 is falsy!)
-      experienceLevel: selectedExperience && selectedExperience.value !== null 
-        ? selectedExperience.value 
-        : null,
-      positionTypes: selectedPosition && selectedPosition.value !== null 
-        ? [selectedPosition.value] 
-        : [],
-      salaryFilter: selectedSalary && selectedSalary.value !== null 
-        ? selectedSalary.value 
-        : null
+      experienceLevel:
+        selectedExperience && selectedExperience.value !== null ? selectedExperience.value : null,
+      positionTypes:
+        selectedPosition && selectedPosition.value !== null ? [selectedPosition.value] : [],
+      salaryFilter: selectedSalary && selectedSalary.value !== null ? selectedSalary.value : null,
     };
-    
+
     console.log('🔧 JobFilter emitting:', filters);
     this.filterChange.emit(filters);
   }

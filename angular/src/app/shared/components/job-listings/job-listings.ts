@@ -2,8 +2,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { TranslationService } from '../../../core/services/translation.service';
-import { CategoryTreeDto } from '../../../proxy/api/category.service';
-import { ProvinceDto } from '../../../proxy/api/location.service';
+import { CategoryTreeDto } from '../../../apiTest/api/category.service';
+import { ProvinceDto } from '../../../apiTest/api/location.service';
 
 @Component({
   selector: 'app-job-listings',

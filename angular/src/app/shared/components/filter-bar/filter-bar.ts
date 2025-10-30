@@ -1,8 +1,20 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CategoryTreeDto, CategoryApiService } from '../../../proxy/api/category.service';
-import { ProvinceDto, DistrictDto, LocationApiService } from '../../../proxy/api/location.service';
+import { CategoryTreeDto, CategoryApiService } from '../../../apiTest/api/category.service';
+import {
+  ProvinceDto,
+  DistrictDto,
+  LocationApiService,
+} from '../../../apiTest/api/location.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -22,7 +34,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   // Input data từ parent (CandidateHomepage)
   @Input() categories: CategoryTreeDto[] = []; // Category tree từ API
   @Input() provinces: ProvinceDto[] = []; // Province tree từ API
-  
+
   // ✅ Input: Pre-selected filters (from query params)
   @Input() selectedCategoryIds: string[] = [];
   @Input() selectedProvinceIds: number[] = [];
@@ -68,20 +80,18 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     private locationApi: LocationApiService
   ) {
     // ✅ Setup debounce cho category search (300ms)
-    this.categorySearchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(keyword => {
-      this.performCategorySearch(keyword);
-    });
+    this.categorySearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(keyword => {
+        this.performCategorySearch(keyword);
+      });
 
     // ✅ Setup debounce cho location search (300ms)
-    this.locationSearchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(keyword => {
-      this.performLocationSearch(keyword);
-    });
+    this.locationSearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(keyword => {
+        this.performLocationSearch(keyword);
+      });
   }
 
   translate(key: string): string {
@@ -111,9 +121,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
         this.internalSelectedCategoryIds = new Set(this.selectedCategoryIds);
       }
 
-      const ensureIds = (this.selectedCategoryIds && this.selectedCategoryIds.length > 0)
-        ? this.selectedCategoryIds
-        : Array.from(this.internalSelectedCategoryIds);
+      const ensureIds =
+        this.selectedCategoryIds && this.selectedCategoryIds.length > 0
+          ? this.selectedCategoryIds
+          : Array.from(this.internalSelectedCategoryIds);
 
       ensureIds.forEach(id => this.selectParents(id));
     }
@@ -188,7 +199,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     // ✅ Có keyword → Xóa tree, chỉ hiển thị search results
     this.filteredCategories = []; // ← Ẩn tree khi đang search
     this.searchResults = []; // Reset search results cũ
-    
+
     // ✅ Đẩy keyword vào subject → Debounce sẽ xử lý
     this.categorySearchSubject.next(keyword);
   }
@@ -198,18 +209,18 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    */
   private performCategorySearch(keyword: string) {
     console.log('🔍 Calling Category Search API with keyword:', keyword);
-    
+
     this.categoryApi.searchCategories(keyword).subscribe({
-      next: (results) => {
+      next: results => {
         this.searchResults = results;
         this.hasSearchResults = results.length > 0;
         console.log('✅ Category search results:', results.length);
       },
-      error: (error) => {
+      error: error => {
         console.error('❌ Category search error:', error);
         this.searchResults = [];
         this.hasSearchResults = false;
-      }
+      },
     });
   }
 
@@ -374,11 +385,16 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * ✅ Chỉ emit leaf node IDs
    */
   applyCategoryFilter() {
-    console.log('🔵 Apply Category Filter - selectedCategoryIds:', Array.from(this.internalSelectedCategoryIds));
-    
+    console.log(
+      '🔵 Apply Category Filter - selectedCategoryIds:',
+      Array.from(this.internalSelectedCategoryIds)
+    );
+
     const leafIds = Array.from(this.internalSelectedCategoryIds).filter(id => {
       const category = this.findCategoryById(id);
-      console.log(`   - Checking ${id}: isLeaf=${category?.isLeaf}, name=${category?.categoryName}`);
+      console.log(
+        `   - Checking ${id}: isLeaf=${category?.isLeaf}, name=${category?.categoryName}`
+      );
       return category?.isLeaf === true;
     });
 
@@ -396,10 +412,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    */
   toggleLocationDropdown() {
     this.showLocationDropdown = !this.showLocationDropdown;
-    
+
     if (this.showLocationDropdown) {
       this.showCategoryDropdown = false; // Đóng category dropdown
-      
+
       // Load full province list khi mở dropdown
       if (this.provinces.length > 0) {
         this.filteredProvinces = [...this.provinces];
@@ -439,18 +455,18 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    */
   private performLocationSearch(keyword: string) {
     console.log('🔍 Calling Location Search API with keyword:', keyword);
-    
+
     this.locationApi.searchProvinces(keyword).subscribe({
-      next: (results) => {
+      next: results => {
         this.filteredProvinces = results;
         this.hasLocationResults = results.length > 0;
         console.log('✅ Location search results:', results.length);
       },
-      error: (error) => {
+      error: error => {
         console.error('❌ Location search error:', error);
         this.filteredProvinces = [];
         this.hasLocationResults = false;
-      }
+      },
     });
   }
 
@@ -492,8 +508,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
       this.internalSelectedDistrictIds.delete(districtId);
 
       // Nếu không còn district nào được chọn → Uncheck province
-      const hasOtherDistricts = province.districts.some(d => 
-        d.id !== districtId && this.internalSelectedDistrictIds.has(d.id)
+      const hasOtherDistricts = province.districts.some(
+        d => d.id !== districtId && this.internalSelectedDistrictIds.has(d.id)
       );
       if (!hasOtherDistricts) {
         this.internalSelectedProvinceIds.delete(provinceId);

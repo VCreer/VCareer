@@ -8,8 +8,8 @@ import { JobListComponent } from '../../../shared/components/job-list/job-list';
 import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
 import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
 // ✅ Import API Services & DTOs
-import { CategoryApiService, CategoryTreeDto } from '../../../proxy/api/category.service';
-import { LocationApiService, ProvinceDto } from '../../../proxy/api/location.service';
+import { CategoryApiService, CategoryTreeDto } from '../../../apiTest/api/category.service';
+import { LocationApiService, ProvinceDto } from '../../../apiTest/api/location.service';
 import {
   JobApiService,
   JobSearchInputDto,
@@ -19,7 +19,7 @@ import {
   ExperienceLevel,
   PositionType,
   SalaryFilterType,
-} from '../../../proxy/api/job.service';
+} from '../../../apiTest/api/job.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
