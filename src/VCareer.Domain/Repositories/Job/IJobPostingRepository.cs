@@ -60,5 +60,9 @@ namespace VCareer.Repositories.Job
         /// Tăng view count của job
         /// </summary>
         Task IncrementViewCountAsync(Guid jobId);
+
+
+        // lấy thông itn name company theo id cua job
+        Task<string> GetNameComany(Guid job);
     }
 }

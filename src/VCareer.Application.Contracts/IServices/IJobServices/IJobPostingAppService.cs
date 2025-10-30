@@ -33,5 +33,8 @@ namespace VCareer.Job.JobPosting.ISerices
         Task ReindexAllJobsAsync();
         Task IndexJobAsync(Guid jobId);
         Task RemoveJobFromIndexAsync(Guid jobId);
+
+
+       
     }
 }

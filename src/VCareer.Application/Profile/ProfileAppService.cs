@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
@@ -15,7 +16,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Profile
 {
-    [Authorize(VCareerPermission.Profile.Default)]
+    //  [Authorize(VCareerPermission.Profile.Default)]
     public class ProfileAppService : VCareerAppService, IProfileAppService
     {
         private readonly IdentityUserManager _userManager;
@@ -152,6 +153,8 @@ namespace VCareer.Profile
             };
         }
 
+
+
         [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
@@ -226,6 +229,9 @@ namespace VCareer.Profile
             throw new UserFriendlyException("Không tìm thấy thông tin profile. Vui lòng liên hệ quản trị viên.");
         }
 
+
+        // lấy thông tin của 
+
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
@@ -256,5 +262,7 @@ namespace VCareer.Profile
             // Không tìm thấy profile nào
             return ("Unknown", "", null, null, "");
         }
+
+       
     }
 }

@@ -10,7 +10,7 @@ namespace VCareer.Dto.Job
         //public string Slug { get; set; }
         public string Title { get; set; }
         //public string? CompanyLogo { get; set; }
-        //public string? CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         /// <summary>
         /// String đã format: "Lương thỏa thuận" hoặc "Lương từ X đến Y triệu"
