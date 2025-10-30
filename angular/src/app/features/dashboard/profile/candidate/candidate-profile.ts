@@ -62,7 +62,16 @@ export class CandidateProfileComponent implements OnInit {
     this.isLoading = true;
     
     // Gọi bằng native fetch để loại trừ toàn bộ Http Interceptor
-    fetch(`${environment.apis.default.url}/api/profile`, { method: 'GET' })
+    fetch(`${environment.apis.default.url}/api/profile`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include',
+      redirect: 'follow',
+      mode: 'cors'
+    })
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();

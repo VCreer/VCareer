@@ -36,7 +36,7 @@ namespace VCareer.Profile
         /// <param name="input">Personal information to update</param>
         /// <returns>No content</returns>
         [HttpPut("personal-info")]
-        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task<IActionResult> UpdatePersonalInfoAsync([FromBody] UpdatePersonalInfoDto input)
         {
             await _profileAppService.UpdatePersonalInfoAsync(input);
