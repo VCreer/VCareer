@@ -6,6 +6,6 @@ import * as Microsoft from './microsoft';
 import * as Profile from './profile';
 import * as Services from './services';
 export * from './api-config.service';
-export { Books, Cv, Dto, Iservices, Microsoft, Profile, Services };
+
 import * as Volo from './volo';
-export { Books, Dto, Iservices, Microsoft, Services, Volo };
+export { Books, Dto, Iservices, Microsoft, Services, Volo , Profile,Cv};
