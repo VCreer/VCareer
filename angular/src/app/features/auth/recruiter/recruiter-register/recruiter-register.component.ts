@@ -13,8 +13,8 @@ import {
 @Component({
   selector: 'app-recruiter-register',
   standalone: true,
-  templateUrl: './recruiter-register.component.html',
-  styleUrls: ['./recruiter-register.component.scss'],
+  templateUrl: './recruiter-register.html',
+  styleUrls: ['./recruiter-register.scss'],
   imports: [
     ReactiveFormsModule, 
     CommonModule,
