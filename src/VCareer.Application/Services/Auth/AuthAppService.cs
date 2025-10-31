@@ -140,6 +140,7 @@ namespace VCareer.Services.Auth
             await CurrentUnitOfWork.SaveChangesAsync();
         }
 
+     
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
