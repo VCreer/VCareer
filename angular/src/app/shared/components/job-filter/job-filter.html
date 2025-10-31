@@ -1,0 +1,94 @@
+﻿<div class="job-filter">
+  <div class="filter-header">
+    <h3 class="filter-title">
+      <i class="fa fa-filter"></i>
+      Lọc nâng cao
+    </h3>
+  </div>
+  
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <div class="filter-content">
+    <!-- ✅ Hình thức làm việc (EmploymentType) -->
+    <div class="filter-section">
+      <h4 class="section-title">Hình thức làm việc:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let option of employmentTypes">
+          <input 
+            type="radio"
+            name="employmentType"
+            [value]="option.value"
+            [checked]="option.checked"
+            (change)="onEmploymentTypeChange(option)">
+          <span class="radio-label">{{ option.label }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- ✅ Kinh nghiệm (ExperienceLevel) -->
+    <div class="filter-section">
+      <h4 class="section-title">Kinh nghiệm:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let option of experienceLevels">
+          <input 
+            type="radio"
+            name="experience"
+            [value]="option.value"
+            [checked]="option.checked"
+            (change)="onExperienceChange(option)">
+          <span class="radio-label">{{ option.label }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- ✅ Cấp bậc (PositionType) -->
+    <div class="filter-section">
+      <h4 class="section-title">Cấp bậc:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let option of positionTypes">
+          <input 
+            type="radio"
+            name="positionType"
+            [value]="option.value"
+            [checked]="option.checked"
+            (change)="onPositionTypeChange(option)">
+          <span class="radio-label">{{ option.label }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- ✅ Mức lương (SalaryFilterType) -->
+    <div class="filter-section">
+      <h4 class="section-title">Mức lương:</h4>
+      <div class="radio-list">
+        <label 
+          class="radio-item"
+          *ngFor="let option of salaryFilters">
+          <input 
+            type="radio"
+            name="salary"
+            [value]="option.value"
+            [checked]="option.checked"
+            (change)="onSalaryChange(option)">
+          <span class="radio-label">{{ option.label }}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>

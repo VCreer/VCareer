@@ -1,0 +1,137 @@
+<div class="cv-list-container">
+  <div class="cv-list-header">
+    <h2 class="cv-list-title">{{ translate('cv_management.cv_list_title') }}</h2>
+    <app-button 
+      [type]="'primary'"
+      [size]="'medium'"
+      (click)="onCreateCv()">
+      {{ translate('cv_management.create_cv') }}
+    </app-button>
+  </div>
+
+  <!-- CV List -->
+  <div class="cv-list" *ngIf="!loading && cvs.length > 0">
+    <div class="cv-item" *ngFor="let cv of cvs; let i = index">
+      <!-- CV Card - Only Image Box -->
+      <div class="cv-card" (mouseenter)="onCvHover(cv.id)" (mouseleave)="onCvLeave(cv.id)">
+        <!-- Star Icon (Top Right) - Always show for all CVs -->
+        <div class="cv-star" [class.show]="hoveredCvId === cv.id" [class.active]="cv.isDefault" (click)="onToggleStar(cv.id)">
+          <i class="fa fa-star star-icon"></i>
+        </div>
+
+        <!-- CV Preview Image -->
+        <div class="cv-preview-image">
+          <img [src]="cv.preview" [alt]="cv.title" class="cv-image">
+        </div>
+
+        <!-- Hover Actions -->
+        <div class="cv-hover-actions" [class.show]="hoveredCvId === cv.id">
+          <button class="action-btn download-btn" (click)="onDownloadCv(cv.id)">
+            <i class="fa fa-download btn-icon"></i>
+            <span class="btn-text">{{ translate('cv_management.download') }}</span>
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditCv(cv.id)">
+            <i class="fa fa-edit btn-icon"></i>
+            <span class="btn-text">{{ translate('cv_management.edit') }}</span>
+          </button>
+          <div class="more-menu-container">
+            <button class="action-btn more-btn" (click)="toggleMoreMenu(cv.id)">
+              <i class="fa fa-ellipsis-h btn-icon"></i>
+            </button>
+            
+            <!-- More Menu Overlay -->
+            <div class="more-menu-overlay" [class.show]="showMoreMenu === cv.id" (click)="toggleMoreMenu(cv.id)"></div>
+            
+            <!-- More Menu -->
+            <div class="more-menu" [class.show]="showMoreMenu === cv.id" (click)="$event.stopPropagation()">
+              <div class="menu-item" (click)="onPushToTop(cv.id)">
+                <i class="fa fa-arrow-up menu-icon"></i>
+                <span>{{ translate('cv_management.push_to_top') }}</span>
+              </div>
+              <div class="menu-item" (click)="onCopyLink(cv.id)">
+                <i class="fa fa-link menu-icon"></i>
+                <span>{{ translate('cv_management.copy_link') }}</span>
+              </div>
+              <div class="menu-item" (click)="onShareFacebook(cv.id)">
+                <i class="fa fa-facebook menu-icon"></i>
+                <span>{{ translate('cv_management.share_facebook') }}</span>
+              </div>
+              <div class="menu-item" (click)="onDuplicateCv(cv.id)">
+                <i class="fa fa-copy menu-icon"></i>
+                <span>{{ translate('cv_management.create_copy') }}</span>
+              </div>
+              <div class="menu-item" (click)="onRenameCv(cv.id)">
+                <i class="fa fa-edit menu-icon"></i>
+                <span>{{ translate('cv_management.rename') }}</span>
+              </div>
+              <div class="menu-item delete-item" (click)="onDeleteCv(cv.id)">
+                <i class="fa fa-trash menu-icon"></i>
+                <span>{{ translate('cv_management.delete') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CV Info - Completely outside cv-card -->
+      <div class="cv-info">
+        <h3 class="cv-title">{{ cv.title }}</h3>
+        <p class="cv-version">{{ cv.version }}</p>
+        <p class="cv-updated">{{ translate('cv_management.updated') }}: {{ cv.updatedAt }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && cvs.length === 0">
+    <div class="empty-icon">
+      <img src="assets/images/cv-management/no-cv.png" alt="No CV" class="no-cv-image">
+    </div>
+    <h3 class="empty-title">{{ translate('cv_management.no_cv_title') }}</h3>
+    <p class="empty-description">{{ translate('cv_management.no_cv_description') }}</p>
+    <app-button 
+      [type]="'primary'"
+      [size]="'medium'"
+      (click)="onCreateCv()">
+      {{ translate('cv_management.create_first_cv') }}
+    </app-button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>{{ translate('cv_management.loading') }}</p>
+  </div>
+
+  <!-- Download CV Modal -->
+  <app-download-cv-modal
+    *ngIf="showDownloadModal"
+    (close)="onCloseDownloadModal()"
+    (downloadWithoutLogo)="onDownloadWithoutLogo()"
+    (downloadFree)="onDownloadFree()">
+  </app-download-cv-modal>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Confirm Delete Modal -->
+  <app-confirm-delete-modal
+    *ngIf="showConfirmDeleteModal"
+    (close)="onCloseConfirmDeleteModal()"
+    (confirm)="onConfirmDelete()">
+  </app-confirm-delete-modal>
+
+  <!-- Rename CV Modal -->
+  <app-rename-cv-modal
+    *ngIf="showRenameModal"
+    [currentName]="currentCvName"
+    (close)="onCloseRenameModal()"
+    (rename)="onRename($event)">
+  </app-rename-cv-modal>
+
+</div>

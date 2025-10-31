@@ -12,7 +12,7 @@ namespace VCareer.Permission
         public static class Files
         {
             public const string Default = GroupName + ".Files";
-            public const string View   = Default + ".View";
+            public const string View = Default + ".View";
             public const string Upload = Default + ".Upload";
             public const string Download = Default + ".Download";
             public const string Delete = Default + ".Delete";
@@ -54,5 +54,18 @@ namespace VCareer.Permission
             public const string ViewTopPerformers = Default + ".ViewTopPerformers";
             public const string CompareStaffPerformance = Default + ".CompareStaffPerformance";
         }
+
+        /*public static class Application
+        {
+            public const string Default = GroupName + ".Application";
+            public const string Apply = Default + ".Apply";
+            public const string View = Default + ".View";
+            public const string Update = Default + ".Update";
+            public const string Delete = Default + ".Delete";
+            public const string Manage = Default + ".Manage"; // Cho nhà tuyển dụng
+            public const string Statistics = Default + ".Statistics";
+            public const string DownloadCV = Default + ".DownloadCV";
+            public const string Withdraw = Default + ".Withdraw";
+        }*/
     }
 }

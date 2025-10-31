@@ -1,0 +1,144 @@
+<div class="apply-modal" *ngIf="show" (click)="onClose()">
+  <div class="apply-modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="apply-modal-header">
+      <h2>{{ title }}</h2>
+      <button class="close-btn" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="apply-modal-body">
+      <!-- Select CV Section -->
+      <div class="apply-section">
+        <div class="section-header">
+          <img src="assets/images/apply-job-modal/apply-cv.png" alt="CV" class="cv-icon">
+          <h3>{{ translate('apply_modal.select_cv_to_apply') }}</h3>
+        </div>
+
+        <!-- Recent CV Option -->
+        <div class="cv-option" [class.selected]="selectedCVOption === 'recent'">
+          <label class="radio-label">
+            <input type="radio" name="cvOption" value="recent" [(ngModel)]="selectedCVOption">
+            <span class="radio-text">{{ translate('apply_modal.recent_cv') }}</span>
+          </label>
+          <div class="cv-details">
+            <div class="cv-file">
+              <span class="cv-name">Front-end-Uong-Hoang-Duy.pdf</span>
+              <a href="#" class="view-link">{{ translate('apply_modal.view') }}</a>
+            </div>
+            <div class="cv-info">
+              <div class="info-item">
+                <span class="label">{{ translate('apply_modal.full_name') }}</span>
+                <span class="value">Uông Hoàng Duy</span>
+              </div>
+              <div class="info-item">
+                <span class="label">{{ translate('apply_modal.email') }}</span>
+                <span class="value">duyuong0273&#64;gmail.com</span>
+              </div>
+              <div class="info-item">
+                <span class="label">{{ translate('apply_modal.phone') }}</span>
+                <span class="value">0966211316</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Select Another CV Option -->
+        <div class="cv-option" [class.selected]="selectedCVOption === 'library'">
+          <label class="radio-label">
+            <input type="radio" name="cvOption" value="library" [(ngModel)]="selectedCVOption">
+            <span class="radio-text">{{ translate('apply_modal.select_other_cv') }}</span>
+          </label>
+        </div>
+
+        <!-- Upload CV Option -->
+        <div class="cv-option upload-option" [class.selected]="selectedCVOption === 'upload'">
+          <label class="radio-label">
+            <input type="radio" name="cvOption" value="upload" [(ngModel)]="selectedCVOption">
+            <span class="radio-text">{{ translate('apply_modal.upload_cv') }}</span>
+          </label>
+                     <div class="upload-area">
+             <input type="file" id="cv-upload-input" 
+                    accept=".pdf,.doc,.docx" 
+                    style="display: none;"
+                    (change)="onFileSelected($event)">
+             
+             <!-- Default upload view (when no file is selected) -->
+             <div class="upload-default" *ngIf="!uploadedFile">
+               <i class="fa fa-cloud-upload-alt"></i>
+               <p>{{ translate('apply_modal.upload_support') }}</p>
+               <button class="upload-btn" (click)="onUploadBtnClick($event)">{{ translate('apply_modal.select_cv') }}</button>
+             </div>
+
+             <!-- File info view (when file is selected) -->
+             <div class="upload-file-info" *ngIf="uploadedFile">
+               <div class="file-info">
+                 <i class="fa fa-file-pdf"></i>
+                 <span class="file-name">{{ uploadedFile.name }}</span>
+                 <button class="remove-file-btn" (click)="removeFile()">
+                   <i class="fa fa-trash"></i>
+                 </button>
+               </div>
+               <button class="select-file-btn" (click)="onUploadBtnClick($event)">{{ translate('apply_modal.select_cv') }}</button>
+             </div>
+
+            <!-- Form Info (shown when upload option is selected) -->
+            <div class="form-info" *ngIf="selectedCVOption === 'upload'">
+              <div class="form-info-header">
+                <span class="form-info-header-title">{{ translate('apply_modal.contact_info') }}</span>
+                <span class="form-info-header-note">{{ translate('apply_modal.required_fields') }}</span>
+              </div>
+              <div class="form-info-body">
+                <div class="form-row full-width">
+                  <label class="form-label">{{ translate('apply_modal.full_name_label') }} <span class="required">*</span></label>
+                  <input type="text" 
+                         class="form-control input-sm" 
+                         [(ngModel)]="fullName" 
+                         (input)="onFieldChange()"
+                         [placeholder]="translate('apply_modal.full_name_placeholder')">
+                  <span class="error-message" *ngIf="fullNameError">{{ fullNameError }}</span>
+                </div>
+                <div class="form-row half-width">
+                  <label class="form-label">{{ translate('apply_modal.email_label') }} <span class="required">*</span></label>
+                  <input type="email" 
+                         class="form-control input-sm" 
+                         [(ngModel)]="email" 
+                         (input)="onFieldChange()"
+                         [placeholder]="translate('apply_modal.email_placeholder')">
+                  <span class="error-message" *ngIf="emailError">{{ emailError }}</span>
+                </div>
+                <div class="form-row half-width">
+                  <label class="form-label">{{ translate('apply_modal.phone_label') }} <span class="required">*</span></label>
+                  <input type="tel" 
+                         class="form-control input-sm" 
+                         [(ngModel)]="phone" 
+                         (input)="onFieldChange()"
+                         [placeholder]="translate('apply_modal.phone_placeholder')">
+                  <span class="error-message" *ngIf="phoneError">{{ phoneError }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Section -->
+      <div class="apply-section note-section">
+        <div class="note-header">
+          <i class="fa fa-exclamation-triangle"></i>
+          <h3>{{ translate('apply_modal.note') }}</h3>
+        </div>
+        <p>{{ translate('apply_modal.note_careful') }}</p>
+        <p>{{ translate('apply_modal.note_report') }}</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="apply-modal-footer">
+      <button class="btn-cancel" (click)="onClose()">{{ translate('apply_modal.cancel') }}</button>
+      <button class="btn-submit" (click)="onSubmit()">{{ translate('apply_modal.submit') }}</button>
+    </div>
+  </div>
+</div>

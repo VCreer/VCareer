@@ -1,20 +1,22 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+using VCareer.Dto;
+using VCareer.IServices.Books;
+using VCareer.Models;
 using VCareer.Permissions;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using System.Linq.Dynamic.Core;
-using VCareer.IServices.Books;
-using VCareer.Dto;
-using VCareer.Models;
 
 namespace VCareer.Services.Books;
 
 [Authorize(BookPermissions.Books.Default)]
+[RemoteService(IsEnabled = true)]
 public class BookAppService : ApplicationService, IBookAppService
 {
     private readonly IRepository<Book, Guid> _repository;

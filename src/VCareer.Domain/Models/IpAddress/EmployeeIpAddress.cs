@@ -14,5 +14,6 @@ namespace VCareer.Models.IpAddress
         public Guid EmployeeId { get; set; }
         public IpAddress IpAddress { get; set; }
         public EmployeeProfile EmployeeProfile { get; set; }
+
     }
 }

@@ -17,5 +17,7 @@ namespace VCareer.Models.Users
         public bool ProfileVisibility { get; set; }
         public bool Status { get; set; }
         public IdentityUser User { get; set; }
+        public long QuotaUsedBytes { get; set; }
+        public long MaxQuotaBytes { get; set; }
     }
 }
