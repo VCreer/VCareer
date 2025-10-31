@@ -14,6 +14,9 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
+// 🔧 Thêm using cho custom repositories
+using VCareer.Repositories.Job;
+using VCareer.Repositories;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -45,7 +48,35 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
                 /* Remove "includeAllEntities: true" to create
                  * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
+            
+            // ==========================================
+            // 🔧 ĐĂNG KÝ CUSTOM REPOSITORIES cho ABP (Manual)
+            // ==========================================
+            // ABP chỉ tự động đăng ký default repositories
+            // Custom repository implementations phải đăng ký thủ công
+            
+            // Repository cho Location (Province & District)
+            options.AddRepository<VCareer.Models.Job.Province, VCareer.Repositories.Job.LocationRepository>();
+            options.AddRepository<VCareer.Models.Job.District, VCareer.Repositories.Job.DistrictRepository>();
+            
+            // Repository cho Job Category
+            options.AddRepository<VCareer.Models.Job.Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
+            
+            // Repository cho Job Posting
+            options.AddRepository<VCareer.Models.Job.Job_Posting, VCareer.Repositories.Job.JobPostingRepository>();
         });
+        
+        // ==========================================
+        // 🔧 ĐĂNG KÝ CUSTOM REPOSITORY INTERFACES (DI Container)
+        // ==========================================
+        // ⚠️ QUAN TRỌNG: options.AddRepository<> ở trên chỉ đăng ký cho ABP Repository pattern
+        // PHẢI đăng ký thêm interface → implementation cho DI container
+        // Nếu không, khi inject ILocationRepository sẽ bị lỗi 500!
+        
+        context.Services.AddTransient<ILocationRepository, LocationRepository>();
+        context.Services.AddTransient<IDistrictRepository, DistrictRepository>();
+        context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
+        context.Services.AddTransient<IJobPostingRepository, JobPostingRepository>();
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

@@ -1,18 +1,20 @@
 using VCareer.Localization;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.Database;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
-using Volo.Abp.Validation.Localization;
 using Volo.Abp.Modularity;
+using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
-using Volo.Abp.VirtualFileSystem;
-using Volo.Abp.OpenIddict;
-using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.Validation.Localization;
+using Volo.Abp.VirtualFileSystem;
 
 namespace VCareer;
 
@@ -25,7 +27,9 @@ namespace VCareer;
     typeof(AbpIdentityDomainSharedModule),
     typeof(AbpOpenIddictDomainSharedModule),
     typeof(AbpTenantManagementDomainSharedModule),
-    typeof(BlobStoringDatabaseDomainSharedModule)
+    typeof(BlobStoringDatabaseDomainSharedModule),
+    typeof(AbpBlobStoringModule),
+    typeof(AbpBlobStoringFileSystemModule)
     )]
 public class VCareerDomainSharedModule : AbpModule
 {

@@ -1,0 +1,917 @@
+// ✅ REDESIGNED: Search bar layout với dropdown
+.filter-bar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  // ============================================
+  // LAYOUT: Category (trái) | Search (giữa) | Location (phải)
+  // ============================================
+
+  // Category dropdown trigger (bên trái)
+  .category-btn {
+    flex-shrink: 0;
+    width: 200px;
+  }
+
+  // Search input (ở giữa, expand)
+  .search-input-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    min-width: 0; // allow flex child to expand
+    
+    // Ensure the projected input fills available width
+    [search-input] {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      display: block;
+    }
+    
+    // Make the middle input stretch nicely with rounded corners matching neighbors
+    ::ng-deep .hero-search-input,
+    ::ng-deep .main-search-input {
+      border-radius: 8px;
+    }
+  }
+
+  // Location dropdown trigger (bên phải, cạnh nút search)
+  .location-btn {
+    flex-shrink: 0;
+    width: 180px;
+  }
+
+  // ============================================
+  // DROPDOWN TRIGGER BUTTONS
+  // ============================================
+  .filter-trigger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: #0f83ba;
+      background: #f0f9ff;
+    }
+
+    &.active {
+      border-color: #0f83ba;
+      background: #f0f9ff;
+      color: #0f83ba;
+    }
+
+    .filter-icon { display: none; }
+
+    .filter-label {
+      flex: 1;
+      text-align: left;
+    }
+
+    .dropdown-arrow {
+      font-size: 10px;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // ============================================
+  // DROPDOWN CONTAINER (Category & Location)
+  // ============================================
+  .filter-dropdown {
+    position: fixed !important; // ✅ FORCE fixed positioning
+    top: 150px !important; // ✅ Fixed position từ top
+    left: 50% !important; // ✅ Center horizontally
+    transform: translateX(-50%) !important;
+    margin-top: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    z-index: 999999 !important; // ✅ FORCE highest z-index
+    width: 900px;
+    max-height: 600px;
+    display: flex !important;
+    flex-direction: column;
+
+    // Header
+    .dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+
+      .dropdown-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f3f4f6;
+          color: #111827;
+        }
+      }
+    }
+
+    // Search Box
+    .search-box {
+      position: relative;
+      padding: 16px 24px;
+      border-bottom: 1px solid #e5e7eb;
+
+      .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          border-color: #0f83ba;
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 36px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #9ca3af;
+      }
+    }
+
+    // Content (2 columns)
+    .dropdown-content {
+      height: 450px; // ✅ FIX #7: Cố định chiều cao
+      max-height: 450px; // ✅ FIX #7: Không thay đổi khi scroll
+      overflow: hidden;
+    }
+
+    // Grid layout cho tree view
+    .category-tree-view,
+    .location-tree-view {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100%;
+    }
+
+    // ✅ Search results view (flat list - full width)
+    .search-results-view {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+
+      // ✅ No results state
+      .no-results {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+
+        .no-results-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+
+        .no-results-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 8px 0;
+        }
+
+        .no-results-hint {
+          font-size: 14px;
+          color: #9ca3af;
+          margin: 0;
+        }
+      }
+
+      .results-header {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .results-list {
+        flex: 1;
+        overflow-y: auto; // ✅ Scroll riêng cho list
+        padding: 8px 16px;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+
+        .search-result-item {
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 8px;
+          border: 1px solid #e5e7eb;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+          }
+
+          &.selected {
+            background: #f0f9ff;
+            border-color: #0f83ba;
+          }
+
+          .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+
+            input[type='checkbox'] {
+              margin-top: 4px;
+              width: 18px;
+              height: 18px;
+              cursor: pointer;
+              flex-shrink: 0;
+            }
+
+            .result-content {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+
+              .result-name {
+                font-size: 14px;
+                font-weight: 600;
+                color: #111827;
+              }
+
+              .result-path {
+                font-size: 12px;
+                color: #6b7280;
+                font-style: italic;
+              }
+
+              .job-count {
+                font-size: 12px;
+                color: #9ca3af;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Footer Actions
+    .dropdown-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-top: 1px solid #e5e7eb;
+
+      .btn-text {
+        background: none;
+        border: none;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f3f4f6;
+          color: #111827;
+        }
+
+        &:first-child {
+          border-radius: 8px 8px 0 0;
+      }
+
+      .btn-primary {
+        background: #0f83ba;
+        color: white;
+        border: none;
+        padding: 10px 32px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #0c6a98;
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // CATEGORY DROPDOWN SPECIFIC
+  // ============================================
+  .category-dropdown {
+    // Cột trái: Level 1 categories
+    .category-level1-list {
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+
+      .list-header {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .scrollable-list {
+        overflow-y: auto; // ✅ FIX #7: Scroll riêng
+        max-height: 380px; // ✅ FIX #7: Giới hạn chiều cao để scroll
+        flex: 1;
+        padding: 8px;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+      }
+
+      .category-item {
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f3f4f6;
+        }
+
+        &.hovered {
+          background: #f0f9ff;
+          border-left: 3px solid #0f83ba;
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #374151;
+
+          input[type='checkbox'] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+          }
+
+          .category-name {
+            flex: 1;
+            font-weight: 500;
+          }
+
+          .job-count {
+            font-size: 12px;
+            color: #9ca3af;
+          }
+
+          .arrow-right {
+            font-size: 16px;
+            color: #9ca3af;
+          }
+        }
+      }
+    }
+
+    // Cột phải: Level 2 & 3
+    .category-level23-panel {
+      overflow-y: auto; // ✅ FIX #7: Scroll riêng
+      max-height: 450px; // ✅ FIX #7: Cố định chiều cao
+      padding: 16px;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+      }
+
+      .section-header {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+
+        &.small {
+          font-size: 11px;
+          margin-top: 12px;
+        }
+      }
+
+      .level2-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .level2-item {
+          padding: 12px;
+          background: #f9fafb;
+          border-radius: 8px;
+
+          .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            cursor: pointer;
+
+            input[type='checkbox'] {
+              width: 16px;
+              height: 16px;
+              cursor: pointer;
+              flex-shrink: 0;
+            }
+
+            .category-name {
+              flex: 1;
+            }
+
+            // ✅ FIX #5: Job count cho category 2
+            .job-count {
+              font-size: 12px;
+              color: #9ca3af;
+              font-weight: 400;
+              margin-left: 4px;
+            }
+          }
+
+          // Level 3: Tags
+          .level3-tags {
+            margin-top: 12px;
+
+            .tags-container {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+              margin-top: 8px;
+
+              .tag-label {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 6px 14px;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 16px;
+                font-size: 13px;
+                color: #374151;
+                cursor: pointer;
+                transition: all 0.2s ease;
+      flex-shrink: 0;
+
+                &:hover {
+                  border-color: #0f83ba;
+                  background: #f0f9ff;
+                }
+
+                &.selected {
+                  background: #0f83ba;
+                  color: white;
+                  border-color: #0f83ba;
+
+                  .tag-count {
+                    color: rgba(255, 255, 255, 0.9);
+                  }
+                }
+
+                .tag-text {
+                  user-select: none;
+                }
+
+                // ✅ FIX #5: Job count cho leaf nodes
+                .tag-count {
+                  font-size: 11px;
+                  color: #9ca3af;
+                  font-weight: 500;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CHUNG VỚI CATEGORY
+  // ============================================
+}
+
+// ============================================
+// LOCATION DROPDOWN STYLES (RA NGOÀI CONTAINER)
+// ============================================
+.location-dropdown-wrapper {
+  position: fixed;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999;
+  width: 900px;
+  height: 600px; // ✅ CỐ ĐỊNH HEIGHT
+}
+
+.location-dropdown-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  height: 100%; // ✅ FULL HEIGHT
+  overflow: hidden; // ✅ NGĂN OVERFLOW
+
+  // Header
+  .location-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; // ✅ KHÔNG CO LẠI
+
+    .location-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+
+    .location-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+    }
+  }
+
+  // Search Box
+  .location-search-box {
+    position: relative;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; // ✅ KHÔNG CO LẠI
+
+    .location-search-input {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+
+    .location-search-icon {
+      position: absolute;
+      right: 36px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      pointer-events: none;
+    }
+  }
+
+  // Content (CỐ ĐỊNH HEIGHT)
+  .location-content {
+    flex: 1;
+    overflow: hidden;
+    min-height: 0; // ✅ CHO PHÉP FLEX SHRINK
+  }
+
+  .location-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100%; // ✅ FULL HEIGHT
+    gap: 0;
+  }
+
+  .location-empty {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+
+  // Provinces column (left)
+  .location-provinces {
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; // ✅ NGĂN OVERFLOW
+
+    .location-list-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      padding: 12px 16px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0; // ✅ KHÔNG CO LẠI
+    }
+
+    .location-scrollable {
+      overflow-y: auto;
+      flex: 1; // ✅ CHIẾM HẾT KHÔNG GIAN CÒN LẠI (thay vì max-height cố định)
+      padding: 8px;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+      }
+    }
+
+    .location-province-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover,
+      &.hovered {
+        background: #f3f4f6;
+      }
+
+      &.selected {
+        background: #eff6ff;
+      }
+
+      .location-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        width: 100%;
+
+        input[type="checkbox"] {
+          cursor: pointer;
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+
+        .location-name {
+          flex: 1;
+          font-size: 14px;
+          color: #374151;
+          font-weight: 500;
+        }
+
+        .location-count {
+          font-size: 12px;
+          color: #6b7280;
+          margin-left: auto;
+        }
+
+        .location-arrow {
+          font-size: 16px;
+          color: #9ca3af;
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+
+  // Districts column (right)
+  .location-districts {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+
+    // ✅ WRAPPER cho districts content
+    .location-district-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .location-list-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      padding: 12px 16px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0; // ✅ KHÔNG CO LẠI
+    }
+
+    .location-scrollable {
+      overflow-y: auto;
+      flex: 1; // ✅ CHIẾM HẾT KHÔNG GIAN CÒN LẠI
+      padding: 8px;
+      min-height: 0; // ✅ CHO PHÉP FLEX SHRINK
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+      }
+    }
+
+    .location-district-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+
+      &.selected {
+        background: #eff6ff;
+      }
+
+      .location-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+
+        input[type="checkbox"] {
+          cursor: pointer;
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+
+        .location-name {
+          font-size: 14px;
+          color: #374151;
+        }
+      }
+    }
+
+    // ✅ EMPTY STATE cho Districts
+    .location-districts-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: #9ca3af;
+        text-align: center;
+      }
+    }
+  }
+
+  // Footer
+  .location-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    gap: 12px;
+    flex-shrink: 0; // ✅ KHÔNG CO LẠI
+
+    .location-btn-clear {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f9fafb;
+        color: #374151;
+      }
+    }
+
+    .location-btn-apply {
+      background: #3b82f6;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
+  }
+}

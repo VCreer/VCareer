@@ -9,7 +9,7 @@ namespace VCareer.Profile
 {
     [ApiController]
     [Route("api/profile")]
-    [Authorize]
+    /*[Authorize]*/
     public class ProfileController : AbpControllerBase
     {
         private readonly IProfileAppService _profileAppService;
@@ -24,7 +24,7 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>Current user's profile information</returns>
         [HttpGet]
-        [Authorize(VCareerPermission.Profile.Default)]
+        /*[Authorize(VCareerPermission.Profile.Default)]*/
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             return await _profileAppService.GetCurrentUserProfileAsync();

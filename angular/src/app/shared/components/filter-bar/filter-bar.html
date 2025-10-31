@@ -1,0 +1,304 @@
+<div class="filter-bar-container">
+  <!-- ✅ LAYOUT: Category (trái) | Search (giữa) | Location & Search Button (phải) -->
+
+  <!-- 1. Category dropdown (bên trái) -->
+  <button
+    class="filter-trigger-btn category-btn"
+    (click)="toggleCategoryDropdown()"
+    [class.active]="showCategoryDropdown"
+  >
+    <span class="filter-icon">☰</span>
+    <span class="filter-label">Danh mục Nghề{{ getCategoryCountText() }}</span>
+    <span class="dropdown-arrow" [class.open]="showCategoryDropdown">▼</span>
+  </button>
+
+  <!-- 2. Search input wrapper (ở giữa, flex-grow) -->
+  <div class="search-input-wrapper">
+    <ng-content select="[search-input]"></ng-content>
+  </div>
+
+  <!-- 3. Location dropdown (bên phải, cạnh nút search) -->
+  <button
+    class="filter-trigger-btn location-btn"
+    (click)="toggleLocationDropdown()"
+    [class.active]="showLocationDropdown"
+  >
+    <span class="filter-label">Địa điểm{{ getLocationCountText() }}</span>
+    <span class="dropdown-arrow" [class.open]="showLocationDropdown">▼</span>
+  </button>
+
+  <!-- 4. Search button sẽ được pass từ parent -->
+  <ng-content select="[search-button]"></ng-content>
+
+  <!-- ============================================ -->
+  <!-- CATEGORY DROPDOWN (3 cấp với hover) -->
+  <!-- ============================================ -->
+  <div class="filter-dropdown category-dropdown" *ngIf="showCategoryDropdown">
+    <!-- Header -->
+    <div class="dropdown-header">
+      <h3 class="dropdown-title">Chọn Nhóm nghề, Nghề hoặc Chuyên môn</h3>
+      <button class="close-btn" (click)="closeDropdowns()">✕</button>
+    </div>
+
+    <!-- Search Input -->
+    <div class="search-box">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Nhập từ khóa tìm kiếm"
+        [(ngModel)]="categorySearchKeyword"
+        (input)="onCategorySearch()"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <!-- Content: 2 cột -->
+    <div class="dropdown-content">
+      <!-- ✅ Nếu đang search → Hiển thị flat list -->
+      <div class="search-results-view" *ngIf="isSearching()">
+        <!-- ✅ Có kết quả -->
+        <div *ngIf="hasSearchResults">
+          <div class="results-header">VỊ TRÍ CHUYÊN MÔN ({{ searchResults.length }} kết quả)</div>
+          <div class="results-list">
+            <div
+              *ngFor="let result of searchResults"
+              class="search-result-item"
+              [class.selected]="isCategorySelected(result.categoryId)"
+            >
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isCategorySelected(result.categoryId)"
+                  (change)="toggleCategorySelection(result.categoryId, $event)"
+                />
+                <div class="result-content">
+                  <span class="result-name">{{ result.categoryName }}</span>
+                  <span class="result-path">{{ result.fullPath }}</span>
+                  <span class="job-count">({{ result.jobCount }} việc)</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Không có kết quả -->
+        <div *ngIf="!hasSearchResults" class="no-results">
+          <p>Không tìm thấy kết quả phù hợp</p>
+        </div>
+      </div>
+
+      <!-- ✅ Nếu KHÔNG search → Hiển thị tree bình thường -->
+      <!-- ⚠️ PHẢI DÙNG DIV thay vì ng-container vì CSS Grid! -->
+      <div class="category-tree-view" *ngIf="!isSearching()">
+        <!-- DEBUG INFO -->
+        <div
+          *ngIf="filteredCategories.length === 0"
+          style="padding: 20px; color: #999; grid-column: 1 / -1"
+        >
+          Không có dữ liệu (filteredCategories.length = {{ filteredCategories.length }})
+        </div>
+
+        <!-- CỘT TRÁI: Danh sách Category cấp 1 -->
+        <div class="category-level1-list" *ngIf="filteredCategories.length > 0">
+          <div class="list-header">NHÓM NGHỀ ({{ filteredCategories.length }})</div>
+          <div class="scrollable-list">
+            <div
+              *ngFor="let category of filteredCategories"
+              class="category-item level1-item"
+              [class.selected]="isCategorySelected(category.categoryId)"
+              [class.hovered]="hoveredLevel1Category?.categoryId === category.categoryId"
+              (mouseenter)="onCategoryLevel1Hover(category)"
+            >
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isCategorySelected(category.categoryId)"
+                  (change)="toggleCategorySelection(category.categoryId, $event)"
+                />
+                <span class="category-name">{{ category.categoryName }}</span>
+                <span class="job-count">({{ category.jobCount }})</span>
+                <span class="arrow-right" *ngIf="category.children && category.children.length > 0"
+                  >›</span
+                >
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: Cấp 2 (NGHỀ) và Cấp 3 (VỊ TRÍ CHUYÊN MÔN) -->
+        <div class="category-level23-panel" *ngIf="hoveredLevel1Category">
+          <!-- Cấp 2: NGHỀ -->
+          <div
+            class="level2-section"
+            *ngIf="hoveredLevel1Category.children && hoveredLevel1Category.children.length > 0"
+          >
+            <div class="section-header">NGHỀ</div>
+            <div class="level2-list">
+              <div
+                *ngFor="let level2 of hoveredLevel1Category.children"
+                class="category-item level2-item"
+              >
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isCategorySelected(level2.categoryId)"
+                    (change)="toggleCategorySelection(level2.categoryId, $event)"
+                  />
+                  <span class="category-name">{{ level2.categoryName }}</span>
+                  <span class="job-count" *ngIf="level2.jobCount > 0">({{ level2.jobCount }})</span>
+                </label>
+
+                <!-- Cấp 3: VỊ TRÍ CHUYÊN MÔN (tags) -->
+                <div class="level3-tags" *ngIf="level2.children && level2.children.length > 0">
+                  <div class="section-header small">VỊ TRÍ CHUYÊN MÔN</div>
+                  <div class="tags-container">
+                    <label
+                      *ngFor="let level3 of level2.children"
+                      class="tag-label"
+                      [class.selected]="isCategorySelected(level3.categoryId)"
+                    >
+                      <input
+                        type="checkbox"
+                        [checked]="isCategorySelected(level3.categoryId)"
+                        (change)="toggleCategorySelection(level3.categoryId, $event)"
+                        style="display: none"
+                      />
+                      <span class="tag-text">{{ level3.categoryName }}</span>
+                      <span class="tag-count" *ngIf="level3.jobCount > 0"
+                        >({{ level3.jobCount }})</span
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+      </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="dropdown-footer">
+      <button class="btn-text" (click)="clearAllCategories()">Bỏ chọn tất cả</button>
+      <button class="btn-primary" (click)="applyCategoryFilter()">Chọn</button>
+    </div>
+  </div>
+
+  <!-- ✅ BỎ OVERLAY (không làm mờ background) -->
+</div>
+
+<!-- ============================================ -->
+<!-- LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CLASS CATEGORY -->
+<!-- ============================================ -->
+<div class="location-dropdown-wrapper" *ngIf="showLocationDropdown">
+  <div class="location-dropdown-container">
+    <!-- Header -->
+    <div class="location-header">
+      <h3 class="location-title">Chọn Địa điểm</h3>
+      <button class="location-close-btn" (click)="closeDropdowns()">✕</button>
+    </div>
+
+    <!-- Search Input -->
+    <div class="location-search-box">
+      <input
+        type="text"
+        class="location-search-input"
+        placeholder="Nhập tỉnh/thành phố hoặc quận/huyện"
+        [(ngModel)]="locationSearchKeyword"
+        (input)="onLocationSearch()"
+      />
+      <span class="location-search-icon">🔍</span>
+    </div>
+
+    <!-- Content: 2 cột -->
+    <div class="location-content">
+      <div class="location-grid">
+        <!-- Empty state (full width khi không có dữ liệu) -->
+        <div *ngIf="filteredProvinces.length === 0" class="location-empty">
+          <span *ngIf="locationSearchKeyword.trim().length > 0">Không có kết quả</span>
+          <span *ngIf="locationSearchKeyword.trim().length === 0">Không có địa điểm</span>
+        </div>
+
+        <!-- CỘT TRÁI: Provinces -->
+        <div class="location-provinces" *ngIf="filteredProvinces.length > 0">
+          <div class="location-list-header">TỈNH/THÀNH PHỐ ({{ filteredProvinces.length }})</div>
+          <div class="location-scrollable">
+            <div
+              *ngFor="let province of filteredProvinces"
+              class="location-province-item"
+              [class.selected]="isProvinceSelected(province.id)"
+              [class.hovered]="hoveredProvince?.id === province.id"
+              (mouseenter)="onProvinceHover(province)"
+            >
+              <label class="location-checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isProvinceSelected(province.id)"
+                  (change)="toggleProvinceSelection(province.id, $event)"
+                />
+                <span class="location-name">{{ province.name }}</span>
+                <span
+                  class="location-count"
+                  *ngIf="province.districts && province.districts.length > 0"
+                >
+                  ({{ province.districts.length }})
+                </span>
+                <span
+                  class="location-arrow"
+                  *ngIf="province.districts && province.districts.length > 0"
+                  >›</span
+                >
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: Districts (luôn hiển thị, có fixed height) -->
+        <div class="location-districts" *ngIf="filteredProvinces.length > 0">
+          <!-- Có province được hover và có districts -->
+          <div
+            class="location-district-wrapper"
+            *ngIf="hoveredProvince && hoveredProvince.districts && hoveredProvince.districts.length > 0"
+          >
+            <div class="location-list-header">QUẬN/HUYỆN - {{ hoveredProvince.name }}</div>
+            <div class="location-scrollable">
+              <div
+                *ngFor="let district of hoveredProvince.districts"
+                class="location-district-item"
+                [class.selected]="isDistrictSelected(district.id)"
+              >
+                <label class="location-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isDistrictSelected(district.id)"
+                    (change)="toggleDistrictSelection(hoveredProvince.id, district.id, $event)"
+                  />
+                  <span class="location-name">{{ district.name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state: Chưa hover hoặc province không có districts -->
+          <div
+            *ngIf="!hoveredProvince || !hoveredProvince.districts || hoveredProvince.districts.length === 0"
+            class="location-districts-empty"
+          >
+            <p *ngIf="!hoveredProvince">Vui lòng chọn Tỉnh/Thành phố</p>
+            <p
+              *ngIf="hoveredProvince && (!hoveredProvince.districts || hoveredProvince.districts.length === 0)"
+            >
+              {{ hoveredProvince.name }} không có quận/huyện
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer Actions -->
+    <div class="location-footer">
+      <button class="location-btn-clear" (click)="clearAllLocations()">Bỏ chọn tất cả</button>
+      <button class="location-btn-apply" (click)="applyLocationFilter()">Áp dụng</button>
+  </div>
+  </div>
+</div>

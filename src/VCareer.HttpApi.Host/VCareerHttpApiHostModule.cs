@@ -19,6 +19,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
+using VCareer.Files.BlobContainers;
 using VCareer.HealthChecks;
 using VCareer.IServices.IAuth;
 using VCareer.Jwt;
@@ -132,6 +133,7 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureCors(context, configuration);
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
+        ConfigureGoogleOptions(configuration);
         //  ConfigureClaims();
     }
 
@@ -140,51 +142,16 @@ public class VCareerHttpApiHostModule : AbpModule
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng
     private void ConfigureJwtOptions(IConfiguration configuration)
     {
-        Configure<JwtOptions>(configuration.GetSection("Jwt"));
+        Configure<JwtOptions>(configuration.GetSection("Authentication:Jwt"));
+    }
+
+    private void ConfigureGoogleOptions(IConfiguration configuration)
+    {
+        Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        // Xóa default claim type mappings để giữ nguyên claim types trong JWT
-        Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        
-        // Thêm JWT Bearer Authentication để validate custom JWT tokens
-        context.Services.AddAuthentication()
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                        System.Text.Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!)),
-                    NameClaimType = "sub" // Sử dụng "sub" claim cho User ID
-                };
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = context =>
-                    {
-                        return Task.CompletedTask;
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        return Task.CompletedTask;
-                    },
-                    OnChallenge = context =>
-                    {
-                        return Task.CompletedTask;
-                    }
-                };
-            });
-
-        // Forward identity authentication to JWT Bearer (ưu tiên JWT Bearer trước OpenIddict)
-        context.Services.ForwardIdentityAuthenticationForBearer(JwtBearerDefaults.AuthenticationScheme);
-
+        context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
@@ -192,6 +159,30 @@ public class VCareerHttpApiHostModule : AbpModule
 
         //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
+
+        //config event xử lý token
+        Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            options.Events = new JwtBearerEvents
+            {
+
+                OnTokenValidated = context =>
+                {
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    return Task.CompletedTask;
+                },
+                OnChallenge = context =>
+                {
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+
+
     }
 
     private void ConfigureUrls(IConfiguration configuration)
@@ -229,12 +220,40 @@ public class VCareerHttpApiHostModule : AbpModule
 
     private void ConfigureBlobStorings(ServiceConfigurationContext context)
     {
-        Configure<AbpBlobStoringOptions>(options => {
-            options.Containers.ConfigureDefault(container =>
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            options.Containers.Configure<CandidateContainer>(container =>
             {
-                container.UseFileSystem(fileSystem => {
-                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/files"); //doan nay sau phai check lai
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Candidate");
                 });
+            });
+
+            options.Containers.Configure<RecruiterContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Recruiter");
+                });
+            });
+
+            options.Containers.Configure<EmployeeContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/Employee");
+                });
+            });
+
+            options.Containers.Configure<SystemContainer>(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+
+                    fileSystem.BasePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/blobs/System");
+                });
+
             });
         });
     }
@@ -262,12 +281,6 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             options.ConventionalControllers.Create(typeof(VCareerApplicationModule).Assembly);
         });
-        
-        // Disable antiforgery validation for API endpoints (we use JWT Bearer authentication)
-        Configure<AbpAntiForgeryOptions>(options =>
-        {
-            options.AutoValidate = false; // Disable automatic antiforgery validation for all APIs
-        });
     }
 
     private static void ConfigureSwagger(ServiceConfigurationContext context, IConfiguration configuration)
@@ -278,33 +291,6 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "VCareer API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
-
-                // Cấu hình Bearer Token Authentication - Chỉ cần dán JWT token vào
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "Nhập JWT token vào ô bên dưới (KHÔNG cần thêm 'Bearer' phía trước).\r\n\r\n" +
-                                  "Ví dụ: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT"
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new List<string>()
-                    }
-                });
             });
     }
 

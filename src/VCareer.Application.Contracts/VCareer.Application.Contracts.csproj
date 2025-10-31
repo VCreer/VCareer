@@ -24,7 +24,6 @@
   
   <ItemGroup>
     <Folder Include="Dto\PermissionDto\" />
-    <Folder Include="Permissions\" />
   </ItemGroup>
 
 </Project>
