@@ -1,6 +1,7 @@
-﻿using Google.Apis.Auth;
+﻿﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
 using VCareer.IServices.IAuth;
+using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -36,8 +38,9 @@ namespace VCareer.Services.Auth
         private readonly IEmailSender _emailSender;
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
+        private readonly GoogleOptions _googleOptions;
 
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager, IOptions<GoogleOptions> googleOptions)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -46,7 +49,14 @@ namespace VCareer.Services.Auth
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
+            _googleOptions = googleOptions.Value;
         }
+
+        public Task CandidateRegisterAsync(CandidateRegisterDto input)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -73,14 +83,16 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-            await _signInManager.SignInAsync(user, true);
+           // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
 
         public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken);
+            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings { 
+            Audience = new[] { _googleOptions.ClientId }
+            });
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
             if (user != null)
@@ -118,7 +130,12 @@ namespace VCareer.Services.Auth
             await _tokenGenerator.CancleAsync(user);
         }
 
-        [UnitOfWork]
+        public Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+        {
+            throw new NotImplementedException();
+        }
+
+     /*   [UnitOfWork]
         public async Task RegisterAsync(RegisterDto input)
         {
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
@@ -138,9 +155,8 @@ namespace VCareer.Services.Auth
             }
 
             await CurrentUnitOfWork.SaveChangesAsync();
-        }
+        }*/
 
-     
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
