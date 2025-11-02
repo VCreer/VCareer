@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -24,10 +25,11 @@ import {
     ToastNotificationComponent
   ]
 })
-export class RecruiterLoginComponent {
+export class RecruiterLoginComponent implements OnInit {
   private customAuthService = inject(CustomAuthService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private googleAuthService = inject(GoogleAuthService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -50,6 +52,10 @@ export class RecruiterLoginComponent {
       ]],
       rememberMe: [false]
     });
+  }
+
+  ngOnInit(): void {
+    this.googleAuthService.initialize();
   }
 
   emailValidator(control: AbstractControl): ValidationErrors | null {
@@ -158,8 +164,28 @@ export class RecruiterLoginComponent {
     this.router.navigate(['/recruiter/forgot-password']);
   }
 
-  signInWithGoogle() {
-    console.log('Đăng nhập bằng Google');
+  async signInWithGoogle() {
+    try {
+      this.isLoading = true;
+      
+      // Sign in with Google
+      const user = await this.googleAuthService.signInWithGoogle();
+      
+      console.log('Google user:', user);
+      
+      this.isLoading = false;
+      this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
+      localStorage.setItem('justLoggedIn', 'true');
+      
+      setTimeout(() => {
+        this.router.navigate(['/recruiter/dashboard']);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      this.isLoading = false;
+      this.showToastMessage('Đăng nhập bằng Google thất bại. Vui lòng thử lại.', 'error');
+    }
   }
 
   goToSelector() {

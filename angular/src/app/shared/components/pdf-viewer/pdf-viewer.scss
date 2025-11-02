@@ -1,0 +1,40 @@
+.pdf-viewer-container {
+  position: relative;
+  overflow: auto;
+  background: white;
+  
+  .pdf-container {
+    position: relative;
+    display: block;
+    width: 100%;
+    
+    canvas {
+      display: block;
+      border: 1px solid #e0e0e0;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+    
+    .text-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      opacity: 0.2;
+      line-height: 1.0;
+      
+      ::ng-deep span {
+        color: transparent;
+        position: absolute;
+        white-space: pre;
+        cursor: text;
+        transform-origin: 0% 0%;
+        pointer-events: none;
+      }
+    }
+  }
+}
+
