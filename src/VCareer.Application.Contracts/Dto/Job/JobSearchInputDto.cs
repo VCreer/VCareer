@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using VCareer.Constants;
+using VCareer.Model;
 
 namespace VCareer.Dto.Job
 {

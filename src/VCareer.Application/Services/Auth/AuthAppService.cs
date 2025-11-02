@@ -1,6 +1,8 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -83,15 +85,16 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-           // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
+            // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
 
         public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings { 
-            Audience = new[] { _googleOptions.ClientId }
+            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _googleOptions.ClientId }
             });
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
@@ -119,6 +122,8 @@ namespace VCareer.Services.Auth
             await _identityManager.UpdateSecurityStampAsync(user);
         }
 
+
+        [Authorize]
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
@@ -135,27 +140,27 @@ namespace VCareer.Services.Auth
             throw new NotImplementedException();
         }
 
-     /*   [UnitOfWork]
-        public async Task RegisterAsync(RegisterDto input)
-        {
-            if (await _identityManager.FindByEmailAsync(input.Email) != null)
-                throw new UserFriendlyException("Email already exist");
+        /*   [UnitOfWork]
+           public async Task RegisterAsync(RegisterDto input)
+           {
+               if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                   throw new UserFriendlyException("Email already exist");
 
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            var result = await _identityManager.CreateAsync(newUser, input.Password);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+               var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+               var result = await _identityManager.CreateAsync(newUser, input.Password);
+               if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
-            if (input.Role != null)
-            {
-                var role = await _roleManager.FindByNameAsync(input.Role);
-                if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-                result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
-            }
+               // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
+               if (input.Role != null)
+               {
+                   var role = await _roleManager.FindByNameAsync(input.Role);
+                   if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                   result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+                   if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+               }
 
-            await CurrentUnitOfWork.SaveChangesAsync();
-        }*/
+               await CurrentUnitOfWork.SaveChangesAsync();
+           }*/
 
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Volo.Abp.Domain.Entities;
 
-namespace VCareer.Dto.FileDto
+namespace VCareer.Models.FileMetadata
 {
-    public class FileDescriptorDto
+    public class FileDescriptor : Entity<Guid>
     {
         public string CreatorId { get; set; }
         public string StorageName { get; set; }
@@ -19,6 +19,6 @@ namespace VCareer.Dto.FileDto
         public string StoragePath { get; set; }
         public int Status { get; set; }
         public DateTime UploadTime { get; set; }
-    }
 
+    }
 }

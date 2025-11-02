@@ -106,6 +106,7 @@ namespace VCareer.Services.FileServices
             return path;
         }
 
+     
         private static readonly Type[] containers = new Type[]
         {
         typeof(CandidateContainerType),

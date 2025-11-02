@@ -28,12 +28,12 @@ namespace VCareer.Services.FileServices
             throw new NotImplementedException();
         }
 
-        public string GenerateSafeStorageName(string userId, string fileName)
+        public string GenerateSafeStorageName(string fileName)
         {
             var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmssfff"); // hợp lệ cho file name , vì utc.now có kí tự ko hợp lệ 
             var uniqueId = Guid.NewGuid().ToString("N"); // tránh trùng
-            return $"{userId}_{timestamp}_{uniqueId}{extension}";
+            return $"{timestamp}_{uniqueId}{extension}";
         }
 
         //dùng thư viện nclam nhưng đợi làm sau
@@ -47,6 +47,8 @@ namespace VCareer.Services.FileServices
             var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
             return _policies.IsAllowedExtension(containerType, extension);
         }
+
+        public string GetMimeType(string extension) => _fileMagicValidator.GetMimeTypeFromExtension(extension);
 
         public Task<bool> ValidateMimeAndMagicAsync(Stream fileStream, object containerType)
         {

@@ -20,7 +20,7 @@ namespace VCareer.Files.FileValidator
             _filePolicyService = filePolicyService;
         }
 
-// Mimetype với magic signature
+        // Mimetype với magic signature
         private readonly Dictionary<string, byte[][]> MagicSignatures = new(){ 
      // Ảnh
     { "image/jpeg", new[] { new byte[] { 0xFF, 0xD8, 0xFF } } },
@@ -104,7 +104,7 @@ namespace VCareer.Files.FileValidator
             if (!allowedMimeTypes.Any()) throw new ArgumentException("No allowed mime types found for the this comtainter type or not support");
 
             var allowedMagicSignatures = GetMagicSignatureFromMimes(allowedMimeTypes);
-            if (allowedMagicSignatures.Count==0) throw new ArgumentException("No magic signatures found for the this comtainter type or not support");
+            if (allowedMagicSignatures.Count == 0) throw new ArgumentException("No magic signatures found for the this comtainter type or not support");
 
             byte[] header = new byte[16];
             int bytesRead = await stream.ReadAsync(header, 0, header.Length);
@@ -141,11 +141,10 @@ namespace VCareer.Files.FileValidator
             }
             return mimeTypes;
         }
-
-
-
-
-
-
+        public string GetMimeTypeFromExtension(string extension)
+        {
+            ExtentionToMimeType.TryGetValue(extension.ToLowerInvariant(), out string? mime);
+            return mime ?? "application/octet-stream"; // default mime type
+        }
     }
 }
