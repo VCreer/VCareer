@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using VCareer.Models.Token;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer.IRepositories.TokenRepository
+namespace VCareer.IRepositories.ITokenRepository
 {
     public interface IRefreshtokenRepository:IRepository<RefreshToken,Guid>
     {

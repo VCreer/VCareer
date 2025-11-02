@@ -23,6 +23,7 @@ using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
+using VCareer.Models.FileMetadata;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
@@ -46,7 +47,7 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-   
+
     public DbSet<CurriculumVitae> CVs { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     /*public DbSet<JobApplication> JobApplications { get; set; }
@@ -58,6 +59,7 @@ public class VCareerDbContext :
     public DbSet<Job_Posting> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<JobPostingTag> JobPostingTags { get; set; }
+    public DbSet<FileDescriptor> FileDescriptors { get; set; }
 
 
 
@@ -368,7 +370,7 @@ public class VCareerDbContext :
         {
             cv.ToTable("CVs");
             cv.ConfigureByConvention();
-            
+
             // Foreign key relationship với CandidateProfile
             cv.HasOne(x => x.Candidate)
               .WithMany()
@@ -389,7 +391,7 @@ public class VCareerDbContext :
             cv.Property(x => x.CandidateId).IsRequired();
             cv.Property(x => x.CVName).HasMaxLength(255).IsRequired(false);
             cv.Property(x => x.CVType).HasMaxLength(50).IsRequired(false);
-            
+
             cv.Property(x => x.Status).HasMaxLength(50).IsRequired(false);
             cv.Property(x => x.IsDefault).IsRequired();
             cv.Property(x => x.IsPublic).IsRequired();
@@ -397,7 +399,7 @@ public class VCareerDbContext :
             cv.Property(x => x.Email).HasMaxLength(256).IsRequired(false);
             cv.Property(x => x.PhoneNumber).HasMaxLength(20).IsRequired(false);
             cv.Property(x => x.DateOfBirth).IsRequired(false);
-            
+
             cv.Property(x => x.Address).HasMaxLength(500).IsRequired(false);
             cv.Property(x => x.CareerObjective).HasMaxLength(1000).IsRequired(false);
             cv.Property(x => x.WorkExperience).IsRequired(false);
@@ -598,6 +600,14 @@ public class VCareerDbContext :
             b.HasKey(x => x.Id);
             b.Property(x => x.Token).IsRequired().HasMaxLength(256);
             b.HasIndex(x => x.Token).IsUnique();
+        });
+        builder.Entity<FileDescriptor>(e =>
+        {
+            e.ToTable("FileDescriptors");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id)
+                .ValueGeneratedOnAdd();
         });
 
         // JobApplication Configuration
