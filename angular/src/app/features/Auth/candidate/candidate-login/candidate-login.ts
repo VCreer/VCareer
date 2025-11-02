@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
+import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -59,6 +60,10 @@ export class LoginComponent {
       ]],
       rememberMe: [false]
     });
+  }
+
+  ngOnInit(): void {
+    this.googleAuthService.initialize();
   }
 
   emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
@@ -204,7 +209,27 @@ export class LoginComponent {
     this.router.navigate(['/forgot-password']);
   }
 
-  signInWithGoogle() {
-    console.log('Đăng nhập bằng Google');
+  async signInWithGoogle() {
+    try {
+      this.isLoading = true;
+      
+      // Sign in with Google
+      const user = await this.googleAuthService.signInWithGoogle();
+      
+      console.log('Google user:', user);
+      
+      this.isLoading = false;
+      this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
+      this.navigationService.loginAsCandidate();
+      
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      this.isLoading = false;
+      this.showToastMessage('Đăng nhập bằng Google thất bại. Vui lòng thử lại.', 'error');
+    }
   }
 }

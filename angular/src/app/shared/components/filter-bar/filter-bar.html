@@ -176,16 +176,19 @@
       </div>
       </div>
     </div>
-
+    
     <!-- Footer Actions -->
     <div class="dropdown-footer">
       <button class="btn-text" (click)="clearAllCategories()">Bỏ chọn tất cả</button>
       <button class="btn-primary" (click)="applyCategoryFilter()">Chọn</button>
-    </div>
-  </div>
+      </div>
+      <div class="filter-option" [class.active]="selectedFilter==='Mức lương'" (click)="selectFilter('Mức lương')">
+        {{ translate('filter.salary') || 'Mức lương' }}
+        <span class="checkmark" *ngIf="selectedFilter==='Mức lương'">✓</span>
+      </div>
 
   <!-- ✅ BỎ OVERLAY (không làm mờ background) -->
-</div>
+      </div>
 
 <!-- ============================================ -->
 <!-- LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CLASS CATEGORY -->
@@ -196,7 +199,7 @@
     <div class="location-header">
       <h3 class="location-title">Chọn Địa điểm</h3>
       <button class="location-close-btn" (click)="closeDropdowns()">✕</button>
-    </div>
+      </div>
 
     <!-- Search Input -->
     <div class="location-search-box">
@@ -217,7 +220,7 @@
         <div *ngIf="filteredProvinces.length === 0" class="location-empty">
           <span *ngIf="locationSearchKeyword.trim().length > 0">Không có kết quả</span>
           <span *ngIf="locationSearchKeyword.trim().length === 0">Không có địa điểm</span>
-        </div>
+  </div>
 
         <!-- CỘT TRÁI: Provinces -->
         <div class="location-provinces" *ngIf="filteredProvinces.length > 0">
@@ -252,7 +255,7 @@
             </div>
           </div>
         </div>
-
+    
         <!-- CỘT PHẢI: Districts (luôn hiển thị, có fixed height) -->
         <div class="location-districts" *ngIf="filteredProvinces.length > 0">
           <!-- Có province được hover và có districts -->
@@ -262,11 +265,11 @@
           >
             <div class="location-list-header">QUẬN/HUYỆN - {{ hoveredProvince.name }}</div>
             <div class="location-scrollable">
-              <div
+      <div 
                 *ngFor="let district of hoveredProvince.districts"
                 class="location-district-item"
                 [class.selected]="isDistrictSelected(district.id)"
-              >
+      >
                 <label class="location-checkbox-label">
                   <input
                     type="checkbox"
@@ -276,9 +279,9 @@
                   <span class="location-name">{{ district.name }}</span>
                 </label>
               </div>
-            </div>
-          </div>
-
+      </div>
+    </div>
+    
           <!-- Empty state: Chưa hover hoặc province không có districts -->
           <div
             *ngIf="!hoveredProvince || !hoveredProvince.districts || hoveredProvince.districts.length === 0"
@@ -293,8 +296,8 @@
           </div>
         </div>
       </div>
-    </div>
-    
+  </div>
+
     <!-- Footer Actions -->
     <div class="location-footer">
       <button class="location-btn-clear" (click)="clearAllLocations()">Bỏ chọn tất cả</button>
