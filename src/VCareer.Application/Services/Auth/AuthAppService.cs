@@ -1,4 +1,4 @@
-﻿﻿using Google.Apis.Auth;
+﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
+using VCareer.Helpers;
 using VCareer.IServices.IAuth;
 using VCareer.OptionConfigs;
 using Volo.Abp;
@@ -35,17 +36,28 @@ namespace VCareer.Services.Auth
         private readonly SignInManager<Volo.Abp.Identity.IdentityUser> _signInManager;
         private readonly ITokenGenerator _tokenGenerator;
         private readonly CurrentUser _currentUser;
+        private readonly TokenClaimsHelper _tokenClaimsHelper;
         private readonly IEmailSender _emailSender;
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
         private readonly GoogleOptions _googleOptions;
 
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager, IOptions<GoogleOptions> googleOptions)
+        public AuthAppService(
+            IdentityUserManager identityManager, 
+            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
+            ITokenGenerator tokenGenerator, 
+            CurrentUser currentUser,
+            TokenClaimsHelper tokenClaimsHelper,
+            IEmailSender emailSender, 
+            ITemplateRenderer templateRenderer, 
+            IdentityRoleManager roleManager, 
+            IOptions<GoogleOptions> googleOptions)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
             _tokenGenerator = tokenGenerator;
             _currentUser = currentUser;
+            _tokenClaimsHelper = tokenClaimsHelper;
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
@@ -111,22 +123,36 @@ namespace VCareer.Services.Auth
         public async Task LogOutAllDeviceAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-            var userId = _currentUser.GetId();
+            
+            // Sử dụng TokenClaimsHelper để lấy UserId an toàn
+            var userId = _tokenClaimsHelper.GetUserIdFromToken();
+            if (userId == null || userId == Guid.Empty)
+            {
+                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
+            }
 
-            var user = await _identityManager.FindByIdAsync(userId.ToString());
+            var user = await _identityManager.FindByIdAsync(userId.Value.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
+            // Update security stamp để invalidate tất cả tokens cũ (logout tất cả devices)
             await _identityManager.UpdateSecurityStampAsync(user);
         }
 
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-            var userId = _currentUser.GetId();
+            
+            // Sử dụng TokenClaimsHelper để lấy UserId an toàn
+            var userId = _tokenClaimsHelper.GetUserIdFromToken();
+            if (userId == null || userId == Guid.Empty)
+            {
+                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
+            }
 
-            var user = await _identityManager.FindByIdAsync(userId.ToString());
+            var user = await _identityManager.FindByIdAsync(userId.Value.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
+            // Revoke tất cả refresh tokens của user (logout)
             await _tokenGenerator.CancleAsync(user);
         }
 

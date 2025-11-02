@@ -23,6 +23,7 @@ using VCareer.Repositories.Job;
 using Volo.Abp.DependencyInjection;
 using Lucene.Net.Analysis.Util;
 using VCareer.Constants;
+using VCareer.Model;
 
 namespace VCareer.Services.Job.Search
 {
