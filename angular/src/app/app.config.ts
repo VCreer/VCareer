@@ -59,18 +59,9 @@ export const appConfig: ApplicationConfig = {
     // provideAccountConfig(), // Comment ABP Account module
     provideTenantManagementConfig(),
     provideAbpThemeShared(),
-    // Mock API Services
-    AuthMockService,
-    CandidateMockService,
-    RecruiterMockService,
-    JobMockService,
-    ProfileMockService,
-    // Mock API Interceptor
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: MockApiInterceptor,
-      multi: true
-    },
+   
+  
+    
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,
