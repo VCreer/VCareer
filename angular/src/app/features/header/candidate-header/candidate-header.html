@@ -222,7 +222,7 @@
                           <div class="section-content" *ngIf="expandedSections.personalSecurity">
                             <div class="menu-item" (click)="navigateToPersonalInfo()">{{ translate('profile.personal_info_settings') }}</div>
                             <div class="menu-item">{{ translate('profile.security_settings') }}</div>
-                            <div class="menu-item">{{ translate('profile.change_password') }}</div>
+                            <div class="menu-item" (click)="navigateToChangePassword()">{{ translate('profile.change_password') }}</div>
                           </div>
                         </div>
 
