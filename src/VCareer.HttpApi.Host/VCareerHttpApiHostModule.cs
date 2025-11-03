@@ -54,6 +54,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 
+
 namespace VCareer;
 
 [DependsOn(
@@ -73,32 +74,32 @@ public class VCareerHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-     /*   var hostingEnvironment = context.Services.GetHostingEnvironment();
-        var configuration = context.Services.GetConfiguration();
+        /*   var hostingEnvironment = context.Services.GetHostingEnvironment();
+           var configuration = context.Services.GetConfiguration();
 
-        PreConfigure<OpenIddictBuilder>(builder =>
-        {
-            builder.AddValidation(options =>
-            {
-                options.AddAudiences("VCareer");
-                options.UseLocalServer();
-                options.UseAspNetCore();
-            });
-        });
+           PreConfigure<OpenIddictBuilder>(builder =>
+           {
+               builder.AddValidation(options =>
+               {
+                   options.AddAudiences("VCareer");
+                   options.UseLocalServer();
+                   options.UseAspNetCore();
+               });
+           });
 
-        if (!hostingEnvironment.IsDevelopment())
-        {
-            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-            {
-                options.AddDevelopmentEncryptionAndSigningCertificate = false;
-            });
+           if (!hostingEnvironment.IsDevelopment())
+           {
+               PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
+               {
+                   options.AddDevelopmentEncryptionAndSigningCertificate = false;
+               });
 
-            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
-            {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
-                serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
-            });
-        }*/
+               PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+               {
+                   serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
+                   serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
+               });
+           }*/
     }
 
 
@@ -154,70 +155,89 @@ public class VCareerHttpApiHostModule : AbpModule
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
+
+
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-   //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
         // Cấu hình claims principal factory options
-        // IsDynamicClaimsEnabled = true cho phép ABP load claims động từ database
-        // Điều này quan trọng khi sử dụng JWT Bearer authentication
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
+
+            // ✅ QUAN TRỌNG: Map claims từ JWT sang ABP format
+            options.ClaimsMap["sub"] = new List<string> { AbpClaimTypes.UserId };
+            options.ClaimsMap[ClaimTypes.NameIdentifier] = new List<string> { AbpClaimTypes.UserId };
+            options.ClaimsMap["role"] = new List<string> { AbpClaimTypes.Role };
+            options.ClaimsMap[ClaimTypes.Role] = new List<string> { AbpClaimTypes.Role };
+            options.ClaimsMap["email"] = new List<string> { AbpClaimTypes.Email };
+            options.ClaimsMap[ClaimTypes.Email] = new List<string> { AbpClaimTypes.Email };
+            options.ClaimsMap["preferred_username"] = new List<string> { AbpClaimTypes.UserName };
         });
 
-        //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
-        // cấu hình jwt
         context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-      .AddJwtBearer(options =>
-      {
-          var configuration = context.Services.GetConfiguration();
-          options.TokenValidationParameters = new TokenValidationParameters
-          {
-              ValidateIssuer = true,
-              ValidateAudience = true,
-              ValidateLifetime = true,
-              ValidateIssuerSigningKey = true,
-              ValidIssuer = configuration["Authentication:Jwt:Issuer"],
-              ValidAudience = configuration["Authentication:Jwt:Audience"],
-              IssuerSigningKey = new SymmetricSecurityKey(
-                  Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
-              ),
-              // Cấu hình để map claims từ JWT token vào format mà ABP CurrentUser hiểu được
-              // ABP sử dụng ClaimTypes.NameIdentifier cho UserId
-              NameClaimType = AbpClaimTypes.Name,
-              RoleClaimType = ClaimTypes.Role
-              
-          };
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration["Authentication:Jwt:Issuer"],
+                    ValidAudience = configuration["Authentication:Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
+                    ),
 
-          // Event handler để đảm bảo claims được map đúng sau khi token được validate
-          options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
-          {
-              OnTokenValidated = async context =>
-              {
-                  var principal = context.Principal;
-                  if (principal?.Identity is ClaimsIdentity identity && !identity.IsAuthenticated)
-                  {
-                      // Đảm bảo identity được đánh dấu là authenticated
-                      // Điều này quan trọng để ABP có thể sử dụng claims
-                  }
-                  await Task.CompletedTask;
-              },
-              OnAuthenticationFailed = async context =>
-              {
-                  // Log authentication failures để debug
-                  await Task.CompletedTask;
-              }
-          };
+                    // ✅ QUAN TRỌNG: Map claim types cho JWT validation
+                    NameClaimType = ClaimTypes.NameIdentifier, // Map long claim type
+                    RoleClaimType = ClaimTypes.Role
+                };
 
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
+                        if (claimsIdentity != null)
+                        {
+                            // ✅ Tìm claim NameIdentifier và thêm vào AbpClaimTypes.UserId
+                            var nameIdentifierClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                            if (nameIdentifierClaim != null)
+                            {
+                                // Remove old claim nếu có
+                                var existingClaim = claimsIdentity.FindFirst(AbpClaimTypes.UserId);
+                                if (existingClaim != null)
+                                {
+                                    claimsIdentity.RemoveClaim(existingClaim);
+                                }
 
-      });
+                                claimsIdentity.AddClaim(new Claim(AbpClaimTypes.UserId, nameIdentifierClaim.Value));
+                            }
+
+                            // Debug: In ra tất cả claims sau khi map
+                            Console.WriteLine("=== Claims after mapping ===");
+                            foreach (var claim in claimsIdentity.Claims)
+                            {
+                                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+                            }
+                        }
+                        await Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        // Log để debug
+                        Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
         context.Services.AddAuthorization();
-       
-
     }
+
 
     private void ConfigureUrls(IConfiguration configuration)
     {
@@ -402,16 +422,16 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
-        
+
         // Enable static files serving from wwwroot
         app.UseStaticFiles();
-        
+
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();
-               /* app.UseAbpOpenIddictValidation();*/
+        /* app.UseAbpOpenIddictValidation();*/
 
         if (MultiTenancyConsts.IsEnabled)
         {

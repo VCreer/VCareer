@@ -5,12 +5,14 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
-
+import { SafeUrlPipe } from '../../../../shared/pipes/safe-url.pipe';
+import { CompanyService, CompanyLegalInfoDto } from '../../../../apiTest/api/company.service';
+import { environment } from '../../../../../environments/environment';
 export interface CompanyDetail {
   id: string;
   name: string;
   fullName: string;
-  logo: string;
+  logoUrl: string;
   bannerImage?: string;
   website?: string;
   employees?: number;
@@ -37,15 +39,23 @@ export interface JobListing {
 @Component({
   selector: 'app-company-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonComponent, ToastNotificationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    ButtonComponent,
+    ToastNotificationComponent,
+    SafeUrlPipe,
+  ],
   templateUrl: './company-detail.html',
-  styleUrls: ['./company-detail.scss']
+  styleUrls: ['./company-detail.scss'],
 })
 export class CompanyDetailComponent implements OnInit {
   companyId: string = '';
   company: CompanyDetail | null = null;
   isLoading: boolean = false;
   isDescriptionExpanded: boolean = true;
+  showMapModal: boolean = false;
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
@@ -60,7 +70,8 @@ export class CompanyDetailComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private companyApi: CompanyService
   ) {}
 
   ngOnInit() {
@@ -72,32 +83,68 @@ export class CompanyDetailComponent implements OnInit {
 
   loadCompanyDetail() {
     this.isLoading = true;
-    // TODO: Load company detail from API
-    // Mock data for now
-    setTimeout(() => {
-      this.company = {
-        id: this.companyId,
-        name: 'VIETTEL',
-        fullName: 'TẬP ĐOÀN CÔNG NGHIỆP - VIỄN THÔNG QUÂN ĐỘI',
-        logo: 'assets/images/viettel-logo.png',
-        bannerImage: 'assets/images/company/viettel-banner.jpg',
-        website: 'tuyendung.viettel.vn',
-        employees: 5000,
-        followers: 6284,
-        address: 'Lô D26 khu đô thị mới Cầu Giấy, phường Yên Hoà, quận Cầu Giấy, thành phố Hà Nội, Việt Nam.',
-        mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.863981043327!2d105.8012024148839!3d21.028815685996353!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab4e0b3c8f1b%3A0x9b3e8a5d9f5f5f5f!2zVOG7qyBOaMOgbmcgdmllbnRlbA!5e0!3m2!1svi!2s!4v1234567890',
-        description: `Tập đoàn Công nghiệp - Viễn thông Quân đội (Viettel) là một trong những nhà tuyển dụng hàng đầu tại Việt Nam, với mạng lưới hoạt động rộng khắp tại nhiều quốc gia trên thế giới bao gồm châu Á, châu Mỹ và châu Phi. Với gần 70.000 nhân viên trên toàn cầu, Viettel không chỉ là một trong những tập đoàn viễn thông lớn nhất Việt Nam mà còn là một trong những công ty công nghệ hàng đầu trong khu vực.
+    const idForApi = this.companyId;
+    this.companyApi.getCompanyById(idForApi).subscribe({
+      next: (dto: CompanyLegalInfoDto) => {
+        this.company = {
+          id: String(dto.id),
+          name: dto.companyName || '',
+          fullName: dto.companyName || '',
+          logoUrl: this.getLogoUrl(dto.logoUrl),
+          bannerImage: dto.coverImageUrl ? this.buildLogoUrl(dto.coverImageUrl) : undefined,
+          website: dto.websiteUrl || undefined,
+          employees: dto.companySize || 0,
+          followers: 0,
+          address: dto.headquartersAddress || '',
+          description: dto.description || '',
+          isProCompany: true,
+          isFollowing: false,
+        };
+        this.isLoading = false;
+      },
+      error: _ => {
+        this.isLoading = false;
+      },
+    });
+  }
 
-Viettel đang đẩy mạnh đầu tư vào các lĩnh vực công nghệ cao, bao gồm nghiên cứu và phát triển các ứng dụng công nghệ số, phát triển các giải pháp công nghệ thông tin, và đặc biệt là lĩnh vực hàng không vũ trụ. Với cam kết đổi mới và phát triển bền vững, Viettel luôn chú trọng đến việc phát triển nguồn nhân lực chất lượng cao và tạo môi trường làm việc chuyên nghiệp, năng động.
+  private getBackendBaseUrl(): string {
+    const backendUrl = environment.apis?.default?.url || 'https://localhost:44385';
+    return backendUrl.replace(/\/$/, '');
+  }
 
-Tầm nhìn của Viettel là trở thành một tập đoàn công nghiệp và công nghệ đẳng cấp thế giới, góp phần đưa Việt Nam trở thành quốc gia có nền công nghệ phát triển hàng đầu trong khu vực và trên thế giới.`,
-        isProCompany: true,
-        isFollowing: false
-      };
-      this.isLoading = false;
-      // TODO: Load jobs from BE API when connected
-      // this.loadJobsFromBE();
-    }, 500);
+  getLogoUrl(logoUrl: string | undefined): string {
+    if (!logoUrl) {
+      return '/assets/images/default-company-logo.png';
+    }
+
+    // Remove single quotes if present
+    let cleanUrl = logoUrl.trim();
+    if (cleanUrl.startsWith("'") && cleanUrl.endsWith("'")) {
+      cleanUrl = cleanUrl.slice(1, -1);
+    }
+
+    // Nếu đã là full URL, return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Nếu bắt đầu bằng /, đó là relative path từ wwwroot
+    if (cleanUrl.startsWith('/')) {
+      const backendBaseUrl = this.getBackendBaseUrl();
+      return `${backendBaseUrl}${cleanUrl}`;
+    }
+  }
+
+  private buildLogoUrl(path?: string): string {
+    if (!path) return 'assets/images/default-company.png';
+    const trimmed = path.trim().replace(/^'|'$/g, '');
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    const base = (window as any).environment?.apis?.default?.url || '';
+    const backend = base || (window as any)['BACKEND_URL'] || '';
+    const normalizedBase = backend.replace(/\/$/, '');
+    if (trimmed.startsWith('/')) return `${normalizedBase}${trimmed}`;
+    return `${normalizedBase}/${trimmed}`;
   }
 
   // TODO: Implement when BE is connected
@@ -112,12 +159,14 @@ Tầm nhìn của Viettel là trở thành một tập đoàn công nghiệp và
 
   onSearchJobs() {
     if (!this.hasJobsFromBE) return;
-    
+
     // TODO: Implement search with BE API or filter local data
     this.filteredJobs = this.allJobs.filter(job => {
-      const matchesKeyword = !this.jobSearchKeyword || 
+      const matchesKeyword =
+        !this.jobSearchKeyword ||
         job.title.toLowerCase().includes(this.jobSearchKeyword.toLowerCase());
-      const matchesLocation = !this.selectedLocation || 
+      const matchesLocation =
+        !this.selectedLocation ||
         job.location.toLowerCase().includes(this.selectedLocation.toLowerCase());
       return matchesKeyword && matchesLocation;
     });
@@ -130,7 +179,7 @@ Tầm nhìn của Viettel là trở thành một tập đoàn công nghiệp và
 
   toggleFavorite(job: JobListing) {
     if (!this.hasJobsFromBE) return;
-    
+
     // TODO: Call BE API to toggle favorite
     job.isFavorite = !job.isFavorite;
     if (job.isFavorite) {
@@ -162,11 +211,14 @@ Tầm nhìn của Viettel là trở thành một tập đoàn công nghiệp và
 
   onCopyLink() {
     const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      this.showToastMessage('Đã sao chép đường dẫn', 'success');
-    }).catch(() => {
-      this.showToastMessage('Không thể sao chép đường dẫn', 'error');
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        this.showToastMessage('Đã sao chép đường dẫn', 'success');
+      })
+      .catch(() => {
+        this.showToastMessage('Không thể sao chép đường dẫn', 'error');
+      });
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning') {
@@ -200,5 +252,24 @@ Tầm nhìn của Viettel là trở thành một tập đoàn công nghiệp và
     // Nếu chưa có protocol, thêm https://
     return `https://${website}`;
   }
-}
 
+  // ===== Google Maps helpers =====
+  getMapEmbedUrl(): string {
+    if (!this.company) return '';
+    // Prefer explicit mapUrl if provided
+    if (this.company.mapUrl) return this.company.mapUrl;
+    // Build simple embed URL from address
+    const q = encodeURIComponent(this.company.address || '');
+    return `https://www.google.com/maps?q=${q}&output=embed`;
+  }
+
+  openMapModal() {
+    this.showMapModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeMapModal() {
+    this.showMapModal = false;
+    document.body.style.overflow = '';
+  }
+}

@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VCareer.Permission;
@@ -9,7 +9,7 @@ namespace VCareer.Profile
 {
     [ApiController]
     [Route("api/profile")]
-    /*[Authorize]*/
+    [Authorize]
     public class ProfileController : AbpControllerBase
     {
         private readonly IProfileAppService _profileAppService;
@@ -19,10 +19,7 @@ namespace VCareer.Profile
             _profileAppService = profileAppService;
         }
 
-        /// <summary>
-        /// Gets the current user's profile information
-        /// </summary>
-        /// <returns>Current user's profile information</returns>
+        // lấy profile hiện tại
         [HttpGet]
         /*[Authorize(VCareerPermission.Profile.Default)]*/
         public async Task<ProfileDto> GetCurrentUserProfileAsync()

@@ -118,9 +118,25 @@ namespace VCareer.Services.Profile
         }
 
 
-        //ádad
+        // lấy thông tin id hiện tại
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
+
+
+            // ✅ Debug: In ra tất cả claims
+            var claims = _currentUser.GetAllClaims();
+            foreach (var claim in claims)
+            {
+                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+            }
+
+            // ✅ Kiểm tra xem có UserId không
+            if (!_currentUser.IsAuthenticated)
+            {
+                throw new UserFriendlyException("User not authenticated.");
+            }
+
+
             var user = await _userManager.GetByIdAsync(_currentUser.GetId());
 
             if (user == null)
@@ -264,6 +280,6 @@ namespace VCareer.Services.Profile
             return ("Unknown", "", null, null, "");
         }
 
-       
+
     }
 }

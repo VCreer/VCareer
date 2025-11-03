@@ -111,11 +111,7 @@ namespace VCareer.Profile
             return NoContent();
         }
 
-        /// <summary>
-        /// Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
-        /// </summary>
-        /// <param name="jobId">Job ID</param>
-        /// <returns>Thông tin công ty bao gồm danh sách ngành nghề</returns>
+        ///lấy công ty
         [HttpGet("by-job/{jobId}")]
         public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
         {
