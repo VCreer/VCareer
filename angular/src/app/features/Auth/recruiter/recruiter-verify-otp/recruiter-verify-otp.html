@@ -1,0 +1,58 @@
+<div class="recruiter-verify-page" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="verify-container">
+    <!-- Left Section - Background Image -->
+    <div class="verify-left-section">
+    </div>
+
+    <!-- Right Section - White Background -->
+    <div class="verify-right-section">
+      <div class="right-content">
+        <!-- Greeting -->
+        <div class="greeting">
+          <p>Xin chào, <strong>{{ userName }}</strong></p>
+        </div>
+
+        <!-- Instruction -->
+        <div class="instruction">
+          <p>
+            Hãy thực hiện các bước sau để gia tăng tính bảo mật cho tài khoản của bạn 
+          </p>
+        </div>
+
+        <!-- Verification Section -->
+        <div class="verification-section">
+          <div class="verification-header">
+            <h3 class="section-title">
+              <strong>Xác thực thông tin</strong>
+            </h3>
+            <span class="completion-percentage">Hoàn thành {{ completionPercentage }}%</span>
+          </div>
+
+          <!-- Verification Steps -->
+          <div class="verification-steps">
+            <div 
+              *ngFor="let step of verificationSteps" 
+              class="verification-step"
+              [class.completed]="step.completed"
+              (click)="onStepClick(step)"
+            >
+              <div class="step-radio">
+                <i *ngIf="step.completed" class="fa fa-check-circle"></i>
+                <span *ngIf="!step.completed" class="radio-circle"></span>
+              </div>
+              <div class="step-content">
+                <span class="step-title">{{ translate(step.title) }}</span>
+              </div>
+              <i class="fa fa-chevron-right step-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Skip Link -->
+          <div class="skip-section">
+            <a (click)="onSkip()" class="skip-link">Tôi sẽ xác thực sau</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

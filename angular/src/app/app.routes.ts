@@ -19,17 +19,30 @@ export const APP_ROUTES: Routes = [
         path: 'candidate/profile',
         loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
       },
-      {
-        path: 'candidate/cv-management',
-        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      },
+      // {
+      //   path: 'candidate/cv-management',
+      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      // },
       {
         path: 'candidate/job',
-        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+        loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
       },
       {
-        path: 'candidate/job-detail/:id',
-        loadComponent: () => import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+        path: 'candidate/job-detail',
+        loadComponent: () => import('./features/dashboard/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
+      {
+        path: 'candidate/company',
+        loadComponent: () => import('./features/dashboard/company/candidate/company-listing').then(c => c.CompanyListingComponent),
+      },
+      {
+        path: 'candidate/companies',
+        redirectTo: 'candidate/company',
+        pathMatch: 'full'
+      },
+      {
+        path: 'candidate/company-detail/:id',
+        loadComponent: () => import('./features/dashboard/company-detail/candidate/company-detail').then(c => c.CompanyDetailComponent),
       }
     ]
   },
@@ -37,44 +50,44 @@ export const APP_ROUTES: Routes = [
   // Auth routes (standalone - no layout)
   {
     path: 'candidate/login',
-    loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login').then(c => c.LoginComponent),
+    loadComponent: () => import('./features/Auth/candidate/candidate-login/candidate-login').then(c => c.LoginComponent),
   },
   {
     path: 'candidate/register',
-    loadComponent: () => import('./features/auth/candidate/candidate-regsiter/candidate-register').then(c => c.RegisterComponent),
+    loadComponent: () => import('./features/Auth/candidate/candidate-regsiter/candidate-register').then(c => c.RegisterComponent),
   },
   {
     path: 'candidate/forget-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
+    loadComponent: () => import('./features/Auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'candidate/verify-otp',
-    loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+    loadComponent: () => import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'candidate/reset-password',
-    loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
   {
     path: 'recruiter/login',
-    loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
+    loadComponent: () => import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
   },
   {
     path: 'recruiter/register',
-    loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register').then(c => c.RecruiterRegisterComponent),
+    loadComponent: () => import('./features/Auth/recruiter/recruiter-register/recruiter-register').then(c => c.RecruiterRegisterComponent),
   },
   {
     path: 'recruiter/forgot-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
+    loadComponent: () => import('./features/Auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'recruiter/verify-otp',
-    loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+    loadComponent: () => import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'recruiter/reset-password',
-    loadComponent: () => import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
   // Recruiter main route
@@ -85,14 +98,34 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
-      }
+        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
+      },
+      {
+        path: 'about-us',
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
+      },
+      {
+        path: 'service',
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
+      },
+      // {
+      //   path: 'home',
+      //   loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+      // },
+      {
+        path: 'recruiter-verify',
+        loadComponent: () => import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(c => c.RecruiterVerifyOtpComponent),
+      },
+      // {
+      //   path: 'performance-dashboard',
+      //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
+      // }
     ]
   },
   
   {
     path: 'admin/login',
-    loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
+    loadComponent: () => import('./features/Auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
   },
 
   // Legacy redirects

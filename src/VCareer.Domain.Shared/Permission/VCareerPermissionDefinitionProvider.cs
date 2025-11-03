@@ -44,6 +44,23 @@ namespace VCareer.Permission
             cvPermission.AddChild(VCareerPermission.CV.SetDefault, L("Permission:CV.SetDefault"));
             cvPermission.AddChild(VCareerPermission.CV.SetPublic, L("Permission:CV.SetPublic"));
 
+            var dashboardPermission = group.AddPermission(VCareerPermission.Dashboard.Default, L("Permission:Dashboard"));
+            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewCompanyDashboard, L("Permission:Dashboard.ViewCompanyDashboard"));
+            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewStaffPerformance, L("Permission:Dashboard.ViewStaffPerformance"));
+            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewActivityTrend, L("Permission:Dashboard.ViewActivityTrend"));
+            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewTopPerformers, L("Permission:Dashboard.ViewTopPerformers"));
+            dashboardPermission.AddChild(VCareerPermission.Dashboard.CompareStaffPerformance, L("Permission:Dashboard.CompareStaffPerformance"));
+
+
+            /*var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
+            applicationPermission.AddChild(VCareerPermission.Application.Apply, L("Permission:Application.Apply"));
+            applicationPermission.AddChild(VCareerPermission.Application.View, L("Permission:Application.View"));
+            applicationPermission.AddChild(VCareerPermission.Application.Update, L("Permission:Application.Update"));
+            applicationPermission.AddChild(VCareerPermission.Application.Delete, L("Permission:Application.Delete"));
+            applicationPermission.AddChild(VCareerPermission.Application.Manage, L("Permission:Application.Manage"));
+            applicationPermission.AddChild(VCareerPermission.Application.Statistics, L("Permission:Application.Statistics"));
+            applicationPermission.AddChild(VCareerPermission.Application.DownloadCV, L("Permission:Application.DownloadCV"));
+            applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));*/
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);

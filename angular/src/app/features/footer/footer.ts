@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FooterLinkColumnComponent } from '../../shared/components/footer/footer-link-column/footer-link-column';
 import { FooterContactComponent } from '../../shared/components/footer/footer-contact/footer-contact';
 import { FooterSocialComponent } from '../../shared/components/footer/footer-social/footer-social';
-import { FooterService } from '../../proxy/api/footer.service';
+// import { FooterService } from '../../features/footer';
 
 @Component({
   selector: 'app-footer',
@@ -18,15 +18,15 @@ export class FooterComponent implements OnInit {
   columns: { title: string; links: { label: string; url: string }[] }[] = [];
   socialLinks: { icon: string; url: string; label: string }[] = [];
 
-  constructor(private footerService: FooterService) {}
+  // constructor(private footerService: FooterService) {}
 
   ngOnInit(): void {
-    this.footerService.getFooter().subscribe(data => {
-      this.columns = data.columns;
-      this.socialLinks = data.socialLinks;
-      this.hotline = data.contact.hotline;
-      this.email = data.contact.email;
-    });
+    // this.footerService.getFooter().subscribe(data => {
+    //   this.columns = data.columns;
+    //   this.socialLinks = data.socialLinks;
+    //   this.hotline = data.contact.hotline;
+    //   this.email = data.contact.email;
+    // });
   }
 }
 

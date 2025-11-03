@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, HostListener, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -66,7 +66,7 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToCompanies() {
-    this.router.navigate(['/candidate/companies']);
+    this.router.navigate(['/candidate/company']);
     this.closeMobileMenu();
   }
 
@@ -85,7 +85,6 @@ export class CandidateHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  // Method để xử lý đăng nhập thành công
   onLoginSuccess() {
     this.navigationService.loginAsCandidate();
     this.closeMobileMenu();
@@ -97,12 +96,8 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToRecruiter() {
-    console.log('🚀 navigateToRecruiter() called');
-    // Chuyển sang recruiter header và navigate đến recruiter (vcareer.com/recruiter)
     this.headerTypeService.switchToRecruiter();
-    console.log('✅ Header switched to recruiter');
-    this.router.navigate(['/recruiter']);
-    console.log('✅ Navigated to /recruiter');
+    this.router.navigate(['/recruiter/about-us']);
     this.closeMobileMenu();
   }
 
@@ -148,7 +143,6 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   onProfileMouseLeave() {
-    // Delay để user có thể di chuột vào menu
     setTimeout(() => {
       this.showProfileMenu = false;
     }, 300);

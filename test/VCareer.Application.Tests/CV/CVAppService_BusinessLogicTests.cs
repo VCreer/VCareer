@@ -229,17 +229,17 @@ namespace VCareer.CV
             var uploadCV = CVTestDataHelper.CreateTestUploadCurriculumVitae();
 
             // Act
-            onlineCV.CVType = "Online";
-            uploadCV.CVType = "Upload";
+            /*onlineCV.CVType = "Online";
+            uploadCV.CVType = "Upload";*/
 
             // Assert
             // Online CV có thể update tất cả fields
-            onlineCV.CVType.ShouldBe("Online");
+            /*onlineCV.CVType.ShouldBe("Online");*/
             onlineCV.FullName.ShouldNotBeNullOrEmpty();
             onlineCV.Email.ShouldNotBeNullOrEmpty();
 
             // Upload CV chỉ có thể update metadata, không update content
-            uploadCV.CVType.ShouldBe("Upload");
+            /*uploadCV.CVType.ShouldBe("Upload");*/
             uploadCV.FileUrl.ShouldNotBeNullOrEmpty();
             uploadCV.OriginalFileName.ShouldNotBeNullOrEmpty();
         }
@@ -300,13 +300,13 @@ namespace VCareer.CV
 
             // Act
             cv.CVName = "Test CV";
-            cv.CVType = "Online";
+            /*cv.CVType = "Online";*/
             cv.Status = "Draft";
             cv.CandidateId = Guid.NewGuid();
 
             // Assert
             cv.CVName.ShouldNotBeNullOrEmpty();
-            cv.CVType.ShouldBeOneOf("Online", "Upload");
+            /*cv.CVType.ShouldBeOneOf("Online", "Upload");*/
             cv.Status.ShouldBeOneOf("Draft", "Published", "Archived");
             cv.CandidateId.ShouldNotBe(Guid.Empty);
         }

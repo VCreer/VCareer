@@ -1,0 +1,579 @@
+.register-container {
+    min-height: 100vh;
+    background: transparent;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+  }
+  
+  .register-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+  
+  // Phần ảnh bên trái
+  .register-image-section {
+    flex: 1;
+    background: url('/assets/images/register/register.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .register-form-section {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 0;
+    background: white;
+    overflow-y: auto;
+  }
+  
+  .register-card {
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  
+  .register-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+  }
+  
+  .logo-image {
+    height: 80px;
+    width: auto;
+    max-width: 300px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  
+  .register-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 8px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .welcome-text {
+    color: #6B7280;
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  .register-form {
+    margin-bottom: 24px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+    flex: 1;
+  }
+  
+  .form-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+  
+  .label-icon {
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    background: white;
+  
+    &:focus {
+      outline: none;
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  
+    &::placeholder {
+      color: #9CA3AF;
+    }
+  
+    &.error {
+      border-color: #EF4444;
+      
+      &:focus {
+        border-color: #EF4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+  
+  .error-message {
+    color: #EF4444;
+    font-size: 11px;
+    margin-top: 2px;
+    display: block;
+    animation: slideDown 0.3s ease;
+    line-height: 1.2;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .password-input-container {
+    position: relative;
+  }
+  
+  .password-input {
+    padding-right: 48px;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  
+    &:hover {
+      background-color: #F3F4F6;
+    }
+  }
+  
+  .terms-agreement {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .terms-input {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    margin-top: 0;
+    accent-color: #3B82F6;
+    flex-shrink: 0;
+  }
+  
+  .terms-text {
+    color: #374151;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+  }
+  
+  .terms-link {
+    color: #3B82F6;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  
+    &:hover {
+      color: #1D4ED8;
+      text-decoration: underline;
+    }
+  }
+  
+  .register-btn {
+    width: 100%;
+    background: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+  
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+  
+  // Divider
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    position: relative;
+    
+    &::before {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E5E7EB;
+    }
+    
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E5E7EB;
+    }
+  }
+  
+  .divider-text {
+    padding: 0 16px;
+    color: #6B7280;
+    font-size: 14px;
+    background: white;
+  }
+  
+  // Google Sign Up Button
+  .google-sign-up-btn {
+    width: 100%;
+    background: white !important;
+    color: #374151 !important;
+    border: 1px solid #D1D5DB !important;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    box-shadow: none;
+    
+    &:hover:not(:disabled) {
+      background: #F9FAFB !important;
+      border-color: #9CA3AF !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+  
+  .google-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+  
+  // Override ABP theme styles cho register
+  .google-sign-up-btn {
+    // Override any ABP button styles
+    &.btn,
+    &.btn-primary,
+    &.btn-secondary {
+      background: white !important;
+      color: #374151 !important;
+      border: 1px solid #D1D5DB !important;
+    }
+  }
+  
+  // Đảm bảo Google button giống nhau ở cả login và register
+  .google-sign-up-btn,
+  .google-sign-in-btn {
+    background: white !important;
+    color: #374151 !important;
+    border: 1px solid #D1D5DB !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+  }
+  
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .login-section {
+    text-align: center;
+    margin-top: 24px;
+  }
+  
+  .login-text {
+    color: #6B7280;
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .login-link {
+    background: none;
+    border: none;
+    color: #3B82F6;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  
+    &:hover {
+      color: #1D4ED8;
+      text-decoration: underline;
+    }
+  }
+  
+  // Image section styles
+  .image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 80vh;
+    overflow: hidden;
+  }
+  
+  .register-hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    
+    // Fallback background nếu ảnh không load được
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  }
+  
+  // Responsive design
+  @media (max-width: 1024px) {
+    .register-wrapper {
+      flex-direction: column;
+      max-width: 600px;
+    }
+  
+    .register-form-section {
+      order: 2;
+      padding: 30px;
+    }
+  
+    .register-brand-section {
+      order: 1;
+      min-height: 40vh;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .register-form-section {
+      padding: 20px;
+    }
+  
+    .register-brand-section {
+      padding: 30px 20px;
+    }
+  
+    .brand-title {
+      font-size: 28px;
+    }
+  
+    .brand-slogan {
+      font-size: 16px;
+    }
+  
+    .brand-logo-image {
+      height: 60px;
+    }
+  
+    .register-card {
+      padding: 0;
+    }
+  
+    .register-title {
+      font-size: 24px;
+    }
+  
+    .welcome-text {
+      font-size: 14px;
+    }
+  
+    .logo-image {
+      height: 60px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .register-container {
+      padding: 0;
+    }
+  
+    .register-brand-section {
+      padding: 20px 15px;
+    }
+  
+    .brand-title {
+      font-size: 24px;
+    }
+  
+    .brand-slogan {
+      font-size: 14px;
+    }
+  
+    .brand-logo-image {
+      height: 50px;
+    }
+  
+    .register-card {
+      padding: 0;
+    }
+  
+    .logo-image {
+      height: 50px;
+    }
+  
+    .register-title {
+      font-size: 20px;
+    }
+  
+    .welcome-text {
+      font-size: 12px;
+    }
+  }
+  
+  // Success Notification
+  .success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  .notification-content {
+    background: #10B981;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    min-width: 200px;
+  }
+  
+  .success-icon {
+    flex-shrink: 0;
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  // Success notification styles
+  .success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #10B981;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    z-index: 1000;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 300px;
+  }
+  
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .success-icon {
+    flex-shrink: 0;
+    color: white;
+  }
+  
+  .notification-content span {
+    font-weight: 500;
+    font-size: 14px;
+  }

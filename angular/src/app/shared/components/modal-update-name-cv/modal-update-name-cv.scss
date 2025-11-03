@@ -1,0 +1,148 @@
+.modal-update-name-cv {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+
+  .el-dialog {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+    @media (max-width: 768px) {
+      width: 95%;
+      max-width: none;
+    }
+
+    .el-dialog__header {
+      padding: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .el-dialog__title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+
+        @media (max-width: 768px) {
+          font-size: 16px;
+        }
+      }
+
+      .el-dialog__close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #6b7280;
+        font-size: 18px;
+
+        &:hover {
+          color: #1f2937;
+        }
+      }
+    }
+
+    .el-dialog__body {
+      padding: 20px;
+      flex: 1;
+
+      .info-message {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f0f9ff;
+        border-radius: 6px;
+        margin-bottom: 20px;
+
+        i {
+          font-size: 20px;
+          color: #0ea5e9;
+        }
+
+        span {
+          font-size: 14px;
+          color: #0c4a6e;
+          line-height: 1.5;
+        }
+      }
+
+      .input-wrapper {
+        .cv-name-input {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          color: #1f2937;
+          outline: none;
+          transition: border-color 0.2s;
+
+          &:focus {
+            border-color: #0F83BA;
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+      }
+    }
+
+    .el-dialog__footer {
+      padding: 20px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+
+      button {
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        transition: all 0.2s;
+
+        @media (max-width: 768px) {
+          flex: 1;
+          padding: 10px 16px;
+        }
+
+        &.btn-secondary {
+          background: #f3f4f6;
+          color: #374151;
+
+          &:hover {
+            background: #e5e7eb;
+          }
+        }
+
+        &.btn-primary {
+          background: #0F83BA;
+          color: white;
+
+          &:hover {
+            background: #0d72a3;
+          }
+        }
+      }
+    }
+  }
+}

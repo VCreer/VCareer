@@ -25,9 +25,9 @@ namespace VCareer.Models.Users
         public string CVName { get; set; }
 
         /// <summary>
-        /// Loại CV: Online (tạo trên website) hoặc Upload (file upload)
+        /// Loại CV: Online hoặc Upload
         /// </summary>
-        public string CVType { get; set; } // "Online" hoặc "Upload"
+        public string CVType { get; set; } // "Online", "Upload"
 
         /// <summary>
         /// Trạng thái CV: Draft, Published, Archived
@@ -67,11 +67,6 @@ namespace VCareer.Models.Users
         public DateTime? DateOfBirth { get; set; }
 
         /// <summary>
-        /// Giới tính
-        /// </summary>
-        public bool? Gender { get; set; }
-
-        /// <summary>
         /// Địa chỉ
         /// </summary>
         public string Address { get; set; }
@@ -109,24 +104,24 @@ namespace VCareer.Models.Users
         /// <summary>
         /// Ngôn ngữ (JSON format)
         /// </summary>
-        public string Languages { get; set; }
+        public string? Languages { get; set; }
 
         /// <summary>
         /// Sở thích
         /// </summary>
-        public string Interests { get; set; }
+        public string? Interests { get; set; }
 
         // === THÔNG TIN CHO CV UPLOAD ===
 
         /// <summary>
         /// Tên file CV gốc
         /// </summary>
-        public string OriginalFileName { get; set; }
+        public string? OriginalFileName { get; set; }
 
         /// <summary>
         /// Đường dẫn file CV trên cloud storage
         /// </summary>
-        public string FileUrl { get; set; }
+        public string? FileUrl { get; set; }
 
         /// <summary>
         /// Kích thước file (bytes)
@@ -136,12 +131,12 @@ namespace VCareer.Models.Users
         /// <summary>
         /// Loại file (pdf, doc, docx)
         /// </summary>
-        public string FileType { get; set; }
+        public string? FileType { get; set; }
 
         /// <summary>
         /// Mô tả CV upload
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         // === NAVIGATION PROPERTIES ===
 
@@ -153,6 +148,6 @@ namespace VCareer.Models.Users
         /// <summary>
         /// User (IdentityUser)
         /// </summary>
-        public IdentityUser User { get; set; }
+        
     }
 }

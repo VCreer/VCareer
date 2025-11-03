@@ -1,0 +1,138 @@
+@startuml
+title Activate HR Staff - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "DTOs" #DDDDDD {
+    class ActivateStaffDto <<Input>> {
+        + StaffId: Guid
+        + Reason: string
+        + SendNotification: bool
+        + EffectiveDate: DateTime?
+        + Notes: string
+    }
+
+    class StaffStatusChangeDto <<Output>> {
+        + StaffId: Guid
+        + FullName: string
+        + Email: string
+        + PreviousStatus: bool
+        + NewStatus: bool
+        + Action: string
+        + Reason: string
+        + ChangeTimestamp: DateTime
+        + PerformedBy: string
+    }
+}
+
+package "Controller Layer" #LightBlue {
+    class TeamManagementController {
+        - _service: ITeamManagementAppService
+        --
+        + ActivateStaffAsync(input: ActivateStaffDto): Task<StaffStatusChangeDto>
+        + DeactivateStaffAsync(input: DeactivateStaffDto): Task<StaffStatusChangeDto>
+    }
+}
+
+package "Service Layer" #LightYellow {
+    interface ITeamManagementAppService {
+        + ActivateStaffAsync(input: ActivateStaffDto): Task<StaffStatusChangeDto>
+        + DeactivateStaffAsync(input: DeactivateStaffDto): Task<StaffStatusChangeDto>
+    }
+
+    class TeamManagementAppService {
+        - _recruiterRepo: IRepository<RecruiterProfile>
+        - _employeeRepo: IRepository<EmployeeProfile>
+        - _userManager: IdentityUserManager
+        --
+        + ActivateStaffAsync(input: ActivateStaffDto): Task<StaffStatusChangeDto>
+        + DeactivateStaffAsync(input: DeactivateStaffDto): Task<StaffStatusChangeDto>
+        + GetCurrentRecruiterProfileAsync(): Task<RecruiterProfile>
+    }
+}
+
+package "Repository Layer" #LightGreen {
+    interface "IRepository<T>" as IRepository {
+        + FindAsync(id: Guid): Task<T>
+        + UpdateAsync(entity: T): Task<T>
+        + FirstOrDefaultAsync(predicate): Task<T>
+    }
+
+    class IdentityUserManager {
+        + GetByIdAsync(userId: Guid): Task<IdentityUser>
+    }
+}
+
+package "Domain Models" #LightCoral {
+    class RecruiterProfile {
+        + Id: Guid
+        + UserId: Guid
+        + CompanyId: int
+        + IsLead: bool
+        + Status: bool
+        --
+        + User: IdentityUser
+        + Company: Company
+    }
+
+    class EmployeeProfile {
+        + Id: Guid
+        + UserId: Guid
+        + Department: string
+        + IsSuperAdmin: bool
+        + Status: bool
+        --
+        + User: IdentityUser
+    }
+
+    class IdentityUser {
+        + Id: Guid
+        + UserName: string
+        + Email: string
+        + Name: string
+        + Surname: string
+    }
+
+    class Company {
+        + Id: int
+        + Name: string
+        + Address: string
+    }
+}
+
+' Relationships - Controller to DTOs
+TeamManagementController ..> ActivateStaffDto : «use»
+TeamManagementController ..> StaffStatusChangeDto : «use»
+
+' Relationships - Controller to Service
+TeamManagementController ..> ITeamManagementAppService : «use»
+
+' Relationships - Service Implementation
+TeamManagementAppService ..|> ITeamManagementAppService : «implement»
+
+' Relationships - Service to Repository
+TeamManagementAppService ..> IRepository : «use»
+TeamManagementAppService ..> IdentityUserManager : «use»
+
+' Relationships - Service to Domain
+TeamManagementAppService ..> RecruiterProfile : «manage»
+TeamManagementAppService ..> EmployeeProfile : «manage»
+
+' Relationships - Domain Models
+RecruiterProfile --> IdentityUser : «has»
+RecruiterProfile --> Company : «belongs to»
+EmployeeProfile --> IdentityUser : «has»
+
+' Relationships - Repository to Domain
+IRepository ..> RecruiterProfile
+IRepository ..> EmployeeProfile
+IdentityUserManager ..> IdentityUser
+
+@enduml
+
+
+
+
+
+

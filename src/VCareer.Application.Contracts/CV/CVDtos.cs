@@ -13,6 +13,10 @@ namespace VCareer.CV
         [StringLength(255)]
         public string CVName { get; set; }
 
+        /*[Required]
+        [StringLength(50)]
+        public string CVType { get; set; } // "Online"*/
+
         [StringLength(1000)]
         public string CareerObjective { get; set; }
 
@@ -30,8 +34,6 @@ namespace VCareer.CV
         public string PhoneNumber { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
-
-        public bool? Gender { get; set; }
 
         [StringLength(500)]
         public string Address { get; set; }
@@ -73,13 +75,26 @@ namespace VCareer.CV
     }
 
     /// <summary>
-    /// DTO để upload CV file
+    /// DTO để upload CV file đơn giản (chỉ cần file, không cần input fields)
+    /// </summary>
+    public class SimpleUploadCVDto
+    {
+        // Không cần input fields - chỉ cần file upload
+        // File validation sẽ được xử lý trong service
+    }
+
+    /// <summary>
+    /// DTO để upload CV file (cũ - có thể giữ lại cho tương lai)
     /// </summary>
     public class UploadCVDto
     {
         [Required]
         [StringLength(255)]
         public string CVName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string CVType { get; set; } // "Upload"
 
         [Required]
         [StringLength(500)]
@@ -124,8 +139,6 @@ namespace VCareer.CV
         public string PhoneNumber { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
-
-        public bool? Gender { get; set; }
 
         [StringLength(500)]
         public string Address { get; set; }

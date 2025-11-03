@@ -2,6 +2,7 @@ import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CVDto, CreateCVOnlineDto, GetCVListDto, SetDefaultCVDto, SetPublicCVDto, UpdateCVDto, UploadCVDto } from '../cv/models';
+import type { IFormFile } from '../microsoft/asp-net-core/http/models';
 import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -28,6 +29,14 @@ export class CVService {
     { apiName: this.apiName,...config });
   
 
+  exportCVToPDF = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'GET',
+      url: `/api/cv/${id}/export-pdf`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCV = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CVDto>({
       method: 'GET',
@@ -41,6 +50,14 @@ export class CVService {
       method: 'GET',
       url: '/api/cv',
       params: { cvType: input.cvType, status: input.status, isPublic: input.isPublic, isDefault: input.isDefault, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCVsByType = (cvType: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CVDto[]>({
+      method: 'GET',
+      url: `/api/cv/by-type/${cvType}`,
     },
     { apiName: this.apiName,...config });
   
@@ -75,6 +92,15 @@ export class CVService {
       method: 'PUT',
       url: '/api/cv/set-public',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  simpleUploadCV = (file: IFormFile, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CVDto>({
+      method: 'POST',
+      url: '/api/cv/simple-upload',
+      body: file,
     },
     { apiName: this.apiName,...config });
   

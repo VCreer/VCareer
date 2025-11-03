@@ -18,6 +18,8 @@ namespace VCareer.Models.Users
         public bool Status { get; set; }
         public IdentityUser User { get; set; }
         public Company Company { get; set; }
+        public long QuotaUsedBytes { get; set; } 
+        public long MaxQuotaBytes { get; set; }
 
         //danh sách các jonPossting
         public virtual ICollection<Job_Posting> JobPostings { get; set; }

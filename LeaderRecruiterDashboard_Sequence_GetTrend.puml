@@ -1,0 +1,108 @@
+@startuml
+title Get Activity Trend - Sequence Diagram
+
+autonumber 1
+
+actor "Leader Recruiter" as Leader
+participant "RecruitmentDashboardController" as API
+participant "RecruitmentDashboardAppService" as Service
+participant "RecruiterRepository" as RecruiterRepo
+participant "ActivityLogRepository" as ActivityRepo
+database "Database" as DB
+
+Leader -> API : GET /trend
+activate API
+note over Leader, API
+DashboardFilterDto:
+- StartDate
+- EndDate
+end note
+
+API -> Service : GetActivityTrendAsync(filter)
+activate Service
+
+autonumber 1.1
+Service -> RecruiterRepo : GetCurrentRecruiterProfileAsync()
+activate RecruiterRepo
+
+autonumber 1.1.1
+RecruiterRepo -> DB : ExecuteQuery()
+activate DB
+return Return result
+
+autonumber 1.1.2
+return Return currentRecruiterProfile
+
+autonumber 1.2
+Service -> Service : Validate IsLead()
+
+alt Not a Leader
+    autonumber 1.2.1
+    return Return error message
+    autonumber 1.2.2
+    return Return 403 Forbidden
+else Is Leader
+    autonumber 1.3
+    Service -> RecruiterRepo : Get company staff IDs
+    activate RecruiterRepo
+    
+    autonumber 1.3.1
+    RecruiterRepo -> DB : ExecuteQuery()
+    activate DB
+    return Return result
+    
+    autonumber 1.3.2
+    return Return staffIds
+    
+    autonumber 1.4
+    Service -> ActivityRepo : Get all activities (filtered)
+    activate ActivityRepo
+    
+    autonumber 1.4.1
+    ActivityRepo -> DB : ExecuteQuery()
+    activate DB
+    return Return result
+    
+    autonumber 1.4.2
+    return Return activityLogs
+    
+    autonumber 1.5
+    Service -> Service : Group by daily
+    note right of Service
+    Group activities by date
+    Calculate count per day
+    Format labels
+    end note
+    
+    autonumber 1.6
+    Service -> Service : Group by weekly
+    note right of Service
+    Group activities by week
+    Calculate count per week
+    Format labels
+    end note
+    
+    autonumber 1.7
+    Service -> Service : Group by monthly
+    note right of Service
+    Group activities by month
+    Calculate count per month
+    Format labels
+    end note
+    
+    autonumber 1.8
+    Service -> Service : Build ActivityTrendDto
+    
+    autonumber 1.9
+    return Return trend data
+    
+    autonumber 1.10
+    return Return 200 OK + JSON
+end
+
+@enduml
+
+
+
+
+

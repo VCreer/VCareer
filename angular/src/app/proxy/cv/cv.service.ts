@@ -2,6 +2,7 @@ import type { CVDto, CreateCVOnlineDto, GetCVListDto, SetDefaultCVDto, SetPublic
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { IFormFile } from '../microsoft/asp-net-core/http/models';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +24,14 @@ export class CVService {
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/api/app/c-v/${id}/c-v`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  exportCVToPDF = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'POST',
+      url: `/api/app/c-v/${id}/export-cVTo-pDF`,
     },
     { apiName: this.apiName,...config });
   
@@ -74,6 +83,15 @@ export class CVService {
       method: 'POST',
       url: '/api/app/c-v/set-public-cV',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  simpleUploadCV = (file: IFormFile, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CVDto>({
+      method: 'POST',
+      url: '/api/app/c-v/simple-upload-cV',
+      body: file,
     },
     { apiName: this.apiName,...config });
   

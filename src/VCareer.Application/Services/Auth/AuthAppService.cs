@@ -1,6 +1,9 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +13,7 @@ using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
 using VCareer.IServices.IAuth;
+using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -36,9 +40,9 @@ namespace VCareer.Services.Auth
         private readonly IEmailSender _emailSender;
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
+        private readonly GoogleOptions _googleOptions;
 
-
-        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager, IOptions<GoogleOptions> googleOptions)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -47,7 +51,14 @@ namespace VCareer.Services.Auth
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
+            _googleOptions = googleOptions.Value;
         }
+
+        public Task CandidateRegisterAsync(CandidateRegisterDto input)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -74,14 +85,17 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-            await _signInManager.SignInAsync(user, true);
+            // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
 
         public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken);
+            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _googleOptions.ClientId }
+            });
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
             if (user != null)
@@ -108,6 +122,8 @@ namespace VCareer.Services.Auth
             await _identityManager.UpdateSecurityStampAsync(user);
         }
 
+
+        [Authorize]
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
@@ -119,27 +135,32 @@ namespace VCareer.Services.Auth
             await _tokenGenerator.CancleAsync(user);
         }
 
-        [UnitOfWork]
-        public async Task RegisterAsync(RegisterDto input)
+        public Task RecruiterRegisterAsync(RecruiterRegisterDto input)
         {
-            if (await _identityManager.FindByEmailAsync(input.Email) != null)
-                throw new UserFriendlyException("Email already exist");
-
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            var result = await _identityManager.CreateAsync(newUser, input.Password);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
-
-            // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
-            if (input.Role != null)
-            {
-                var role = await _roleManager.FindByNameAsync(input.Role);
-                if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-                result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
-            }
-
-            await CurrentUnitOfWork.SaveChangesAsync();
+            throw new NotImplementedException();
         }
+
+        /*   [UnitOfWork]
+           public async Task RegisterAsync(RegisterDto input)
+           {
+               if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                   throw new UserFriendlyException("Email already exist");
+
+               var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+               var result = await _identityManager.CreateAsync(newUser, input.Password);
+               if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+               // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
+               if (input.Role != null)
+               {
+                   var role = await _roleManager.FindByNameAsync(input.Role);
+                   if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                   result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+                   if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+               }
+
+               await CurrentUnitOfWork.SaveChangesAsync();
+           }*/
 
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {

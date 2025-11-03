@@ -6,6 +6,7 @@ import { HeaderTypeService, HeaderType } from '../../core/services/header-type.s
 import { NavigationService } from '../../core/services/navigation.service';
 import { CandidateHeaderComponent } from './candidate-header/candidate-header';
 import { RecruiterHeaderComponent } from './recruiter-header/recruiter-header';
+import { RecruiterHeaderManagementComponent } from './recruiter-header-management/recruiter-header-management';
 
 @Component({
   selector: 'app-header-wrapper',
@@ -13,12 +14,14 @@ import { RecruiterHeaderComponent } from './recruiter-header/recruiter-header';
   imports: [
     CommonModule,
     CandidateHeaderComponent,
-    RecruiterHeaderComponent
+    RecruiterHeaderComponent,
+    RecruiterHeaderManagementComponent
   ],
   template: `
     <div class="header-container">
       <app-candidate-header *ngIf="currentHeaderType === 'candidate'" class="header-component"></app-candidate-header>
-      <app-recruiter-header *ngIf="currentHeaderType === 'recruiter'" class="header-component"></app-recruiter-header>
+      <app-recruiter-header *ngIf="currentHeaderType === 'recruiter' && !isManagementHeader" class="header-component"></app-recruiter-header>
+      <app-recruiter-header-management *ngIf="currentHeaderType === 'recruiter' && isManagementHeader" class="header-component"></app-recruiter-header-management>
     </div>
   `,
   styles: [`
@@ -49,6 +52,7 @@ import { RecruiterHeaderComponent } from './recruiter-header/recruiter-header';
 export class HeaderWrapperComponent implements OnInit {
   currentHeaderType: HeaderType | null = 'candidate';
   isTransitioning = false;
+  isManagementHeader = false;
 
   constructor(
     private headerTypeService: HeaderTypeService,
@@ -62,11 +66,14 @@ export class HeaderWrapperComponent implements OnInit {
     const isLoggedIn = this.navigationService.isLoggedIn();
     const userRole = this.navigationService.getCurrentRole();
     
-    if (currentUrl.startsWith('/recruiter') || userRole === 'recruiter') {
-      this.headerTypeService.switchToRecruiter();
-    } else {
-      this.headerTypeService.switchToCandidate();
-    }
+    this.updateHeaderType(currentUrl, userRole);
+    
+    // Subscribe to route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.updateHeaderType(event.url, userRole);
+      });
     
     this.headerTypeService.headerType$.subscribe(headerType => {
       // Đảm bảo chỉ có một header hiển thị tại một thời điểm
@@ -78,5 +85,20 @@ export class HeaderWrapperComponent implements OnInit {
         this.isTransitioning = false;
       }, 100); // Tăng delay để đảm bảo chuyển đổi mượt mà
     });
+  }
+
+  private updateHeaderType(currentUrl: string, userRole: string | null) {
+    // Check if we should show management header for /recruiter/home or /recruiter/recruiter-verify
+    if (currentUrl === '/recruiter/home' || currentUrl.startsWith('/recruiter/home') ||
+        currentUrl === '/recruiter/recruiter-verify' || currentUrl.startsWith('/recruiter/recruiter-verify')) {
+      this.isManagementHeader = true;
+      this.headerTypeService.switchToRecruiter();
+    } else if (currentUrl.startsWith('/recruiter') || userRole === 'recruiter') {
+      this.isManagementHeader = false;
+      this.headerTypeService.switchToRecruiter();
+    } else {
+      this.isManagementHeader = false;
+      this.headerTypeService.switchToCandidate();
+    }
   }
 }

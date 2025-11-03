@@ -18,7 +18,7 @@ namespace VCareer.CV
                 Email = "nguyenvana@email.com",
                 PhoneNumber = "0901234567",
                 DateOfBirth = new DateTime(1995, 5, 15),
-                Gender = true, // Male
+                
                 Address = "123 Đường ABC, Quận 1, TP.HCM",
                 WorkExperience = @"[
                     {
@@ -84,7 +84,7 @@ namespace VCareer.CV
                 Email = "invalid-email-format", // Invalid: wrong email format
                 PhoneNumber = "invalid-phone", // Invalid: wrong phone format
                 DateOfBirth = DateTime.Now.AddDays(1), // Invalid: future date
-                Gender = true,
+                
                 Address = "123 Đường ABC",
                 WorkExperience = "Invalid JSON", // Invalid: not valid JSON
                 Education = "Invalid JSON", // Invalid: not valid JSON
@@ -144,7 +144,7 @@ namespace VCareer.CV
                 Email = "nguyenvana.updated@email.com",
                 PhoneNumber = "0901234568",
                 DateOfBirth = new DateTime(1995, 5, 15),
-                Gender = true,
+                
                 Address = "456 Đường XYZ, Quận 2, TP.HCM",
                 WorkExperience = @"[
                     {
@@ -212,7 +212,7 @@ namespace VCareer.CV
                 Email = "invalid-email", // Invalid: wrong email format
                 PhoneNumber = "invalid-phone", // Invalid: wrong phone format
                 DateOfBirth = DateTime.Now.AddDays(1), // Invalid: future date
-                Gender = true,
+                
                 Address = "456 Đường XYZ",
                 WorkExperience = "Invalid JSON", // Invalid: not valid JSON
                 Education = "Invalid JSON", // Invalid: not valid JSON
@@ -253,7 +253,7 @@ namespace VCareer.CV
             {
                 CandidateId = id,
                 CVName = "Test CV",
-                CVType = cvType,
+                /*CVType = cvType,*/
                 Status = "Draft",
                 IsDefault = false,
                 IsPublic = false,
@@ -261,7 +261,7 @@ namespace VCareer.CV
                 Email = "test@email.com",
                 PhoneNumber = "0901234567",
                 DateOfBirth = new DateTime(1995, 5, 15),
-                Gender = true,
+                
                 Address = "Test Address",
                 CareerObjective = "Test Career Objective",
                 WorkExperience = @"[{""company"":""Test Company"",""position"":""Test Position""}]",
@@ -284,7 +284,7 @@ namespace VCareer.CV
             {
                 CandidateId = id,
                 CVName = "Test Upload CV",
-                CVType = "Upload",
+                /*CVType = "Upload",*/
                 Status = "Published",
                 IsDefault = false,
                 IsPublic = false,

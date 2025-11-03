@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Dto.JwtDto;
-using VCareer.IRepositories.TokenRepository;
+using VCareer.IRepositories.ITokenRepository;
 using VCareer.IServices.IAuth;
 using VCareer.Models.Token;
 using Volo.Abp.DependencyInjection;
@@ -29,13 +29,18 @@ namespace VCareer.Jwt
         private readonly JwtOptions _jwtOptions;
         private readonly IRefreshtokenRepository _refreshtokenRepository;
         private readonly IdentityUserManager _userManager;
+        private readonly IdentityRoleManager _roleManager;
+        private readonly AbpUserClaimsPrincipalFactory _abpUserClaimsPrincipalFactory;
 
-        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager)
+        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager,IdentityRoleManager roleManager,AbpUserClaimsPrincipalFactory abpUserClaimsPrincipalFactory)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _jwtOptions = jwtOptions.Value;
             _refreshtokenRepository = refreshtokenRepository;
             _userManager = userManager;
+            _roleManager = roleManager;
+            _abpUserClaimsPrincipalFactory = abpUserClaimsPrincipalFactory;
+
         }
 
         public async Task<TokenResponseDto> CreateTokenAsync(IdentityUser user)
@@ -55,13 +60,8 @@ namespace VCareer.Jwt
 
         private async Task<string> CreateAccessTokenAsync(IdentityUser user)
         {
-            var identity = new ClaimsIdentity("Bearer");
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
-
-            var basePrincipal = new ClaimsPrincipal(identity);
-            //gắn claims tĩnh và động vào principal
-            var principal = await _claimsPrincipalFactory.CreateDynamicAsync(basePrincipal);
-
+            var principal = await _abpUserClaimsPrincipalFactory.CreateAsync(user);
+         
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
