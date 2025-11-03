@@ -30,6 +30,19 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/job-detail',
         loadComponent: () => import('./features/dashboard/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
+      {
+        path: 'candidate/company',
+        loadComponent: () => import('./features/dashboard/company/candidate/company-listing').then(c => c.CompanyListingComponent),
+      },
+      {
+        path: 'candidate/companies',
+        redirectTo: 'candidate/company',
+        pathMatch: 'full'
+      },
+      {
+        path: 'candidate/company-detail/:id',
+        loadComponent: () => import('./features/dashboard/company-detail/candidate/company-detail').then(c => c.CompanyDetailComponent),
       }
     ]
   },
