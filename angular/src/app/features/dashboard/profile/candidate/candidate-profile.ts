@@ -31,7 +31,8 @@ export class CandidateProfileComponent implements OnInit {
     phone: '',
     dateOfBirth: '',
     gender: '',
-    address: ''
+    address: '', // Địa chỉ (có thể map từ location)
+    location: '' // Location từ CandidateProfile
   };
 
   // Settings
@@ -94,7 +95,8 @@ export class CandidateProfileComponent implements OnInit {
             phone: '',
             dateOfBirth: '',
             gender: '',
-            address: ''
+            address: '',
+            location: ''
           };
           this.isLoading = false;
           return;
@@ -107,7 +109,8 @@ export class CandidateProfileComponent implements OnInit {
           phone: response.phoneNumber || '',
           dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
           gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
-          address: response.address || ''
+          address: response.location || response.address || '', // Map location từ CandidateProfile vào address field
+          location: response.location || '' // Giữ location riêng để gửi lên update
         };
         
         console.log('Mapped profile data:', this.profileData);
@@ -134,7 +137,8 @@ export class CandidateProfileComponent implements OnInit {
           phone: '',
           dateOfBirth: '',
           gender: '',
-          address: ''
+          address: '',
+          location: ''
         };
         this.isLoading = false;
         this.showErrorMessage('Không thể tải thông tin profile. Vui lòng thử lại sau.');
@@ -168,18 +172,84 @@ export class CandidateProfileComponent implements OnInit {
     }
     
     // Parse fullName to name and surname
-    const nameParts = profileData.fullName.trim().split(' ');
-    const surname = nameParts.pop() || '';
-    const name = nameParts.join(' ') || '';
+    // Đảm bảo name và surname không rỗng (required fields)
+    const nameParts = profileData.fullName.trim().split(' ').filter(part => part.length > 0);
+    if (nameParts.length === 0) {
+      this.showErrorMessage('Họ và tên không được để trống');
+      this.isSaving = false;
+      return;
+    }
+    
+    // Nếu chỉ có 1 từ, đặt vào cả name và surname để đảm bảo cả 2 đều có giá trị
+    let name = '';
+    let surname = '';
+    if (nameParts.length === 1) {
+      name = nameParts[0];
+      surname = nameParts[0];
+    } else {
+      surname = nameParts.pop() || '';
+      name = nameParts.join(' ').trim() || '';
+    }
 
-    const updateDto: UpdatePersonalInfoDto = {
-      name: name,
-      surname: surname,
-      phoneNumber: profileData.phone,
-      address: profileData.address,
-      dateOfBirth: profileData.dateOfBirth,
-      gender: profileData.gender === 'male' ? true : profileData.gender === 'female' ? false : undefined
+    // Đảm bảo name và surname không rỗng sau khi parse
+    if (!name || !surname) {
+      this.showErrorMessage('Không thể parse họ và tên. Vui lòng nhập đầy đủ họ và tên.');
+      this.isSaving = false;
+      return;
+    }
+
+    // Format dateOfBirth: nếu có giá trị, chuyển sang ISO 8601 format
+    let formattedDateOfBirth: string | undefined = undefined;
+    if (profileData.dateOfBirth) {
+      try {
+        const date = new Date(profileData.dateOfBirth);
+        if (!isNaN(date.getTime())) {
+          formattedDateOfBirth = date.toISOString();
+        }
+      } catch (e) {
+        console.warn('Invalid date format:', profileData.dateOfBirth);
+      }
+    }
+
+    // Build DTO - CHỈ gửi các fields có trong UI và có giá trị
+    // KHÔNG gửi: bio, nationality, maritalStatus (không có trong UI)
+    const updateDto: any = {
+      name: name.trim(),
+      surname: surname.trim()
     };
+
+    // Chỉ thêm optional fields nếu có giá trị
+    if (profileData.email?.trim() && profileData.email.trim().length > 0) {
+      updateDto.email = profileData.email.trim();
+    }
+
+    if (profileData.phone?.trim() && profileData.phone.trim().length > 0) {
+      updateDto.phoneNumber = profileData.phone.trim();
+    }
+
+    if (profileData.address?.trim() && profileData.address.trim().length > 0) {
+      // Location: map từ address field (vì CandidateProfile dùng Location, không dùng Address)
+      updateDto.location = profileData.address.trim();
+      // Address field (optional - không có trong CandidateProfile nhưng có thể dùng cho tương lai)
+      updateDto.address = profileData.address.trim();
+    } else if (profileData.location?.trim() && profileData.location.trim().length > 0) {
+      updateDto.location = profileData.location.trim();
+    }
+
+    if (formattedDateOfBirth) {
+      updateDto.dateOfBirth = formattedDateOfBirth;
+    }
+
+    if (profileData.gender === 'male' || profileData.gender === 'female') {
+      updateDto.gender = profileData.gender === 'male' ? true : false;
+    }
+
+    // KHÔNG gửi các fields không có trong UI:
+    // - bio (không có trong form)
+    // - nationality (không có trong form)
+    // - maritalStatus (không có trong form)
+    
+    console.log('Sending update DTO:', JSON.stringify(updateDto, null, 2));
     
     // Sử dụng HttpClient trực tiếp để đảm bảo token được thêm vào headers
     const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
@@ -197,6 +267,7 @@ export class CandidateProfileComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error saving profile:', error);
+        console.error('Error details:', error.error);
         this.isSaving = false;
         
         // Nếu lỗi 401 Unauthorized, chuyển đến trang login
@@ -207,6 +278,57 @@ export class CandidateProfileComponent implements OnInit {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
           this.router.navigate(['/candidate/login']);
+          return;
+        }
+        
+        // Xử lý lỗi 400 Bad Request với validation errors
+        if (error.status === 400) {
+          let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
+          
+          console.error('Validation error response:', error.error);
+          
+          if (error.error) {
+            // ASP.NET Core ValidationProblemDetails format
+            if (error.error.errors) {
+              // ModelState validation errors
+              const validationErrors: string[] = [];
+              Object.keys(error.error.errors).forEach(key => {
+                const fieldErrors = error.error.errors[key];
+                if (Array.isArray(fieldErrors)) {
+                  fieldErrors.forEach((err: string) => {
+                    validationErrors.push(`${key}: ${err}`);
+                  });
+                } else {
+                  validationErrors.push(`${key}: ${fieldErrors}`);
+                }
+              });
+              
+              if (validationErrors.length > 0) {
+                errorMessage = 'Lỗi validation:\n' + validationErrors.join('\n');
+                console.error('Validation errors:', validationErrors);
+              }
+            }
+            // ABP Framework format
+            else if (error.error.error?.details) {
+              const details = error.error.error.details;
+              if (Array.isArray(details) && details.length > 0) {
+                errorMessage = details.map((d: any) => d.message || d).join('\n');
+              }
+            } else if (error.error.error?.message) {
+              errorMessage = error.error.error.message;
+            } else if (typeof error.error === 'string') {
+              errorMessage = error.error;
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
+            } else if (error.error.title) {
+              errorMessage = error.error.title;
+              if (error.error.detail) {
+                errorMessage += ': ' + error.error.detail;
+              }
+            }
+          }
+          
+          this.showErrorMessage(errorMessage);
           return;
         }
         
