@@ -9,7 +9,7 @@ import { provideTenantManagementConfig } from '@abp/ng.tenant-management/config'
 import { registerLocale } from '@abp/ng.core/locale';
 import { provideThemeLeptonX } from '@abp/ng.theme.lepton-x';
 import { provideSideMenuLayout } from '@abp/ng.theme.lepton-x/layouts';
-import { provideLogo, withEnvironmentOptions } from "@volo/ngx-lepton-x.core";
+import { provideLogo, withEnvironmentOptions } from '@volo/ngx-lepton-x.core';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -18,6 +18,13 @@ import { GoogleLoginProvider, SocialAuthServiceConfig, SOCIAL_AUTH_CONFIG } from
 import { environment } from '../environments/environment';
 import { APP_ROUTES } from './app.routes';
 import { APP_ROUTE_PROVIDER } from './route.provider';
+// import { MockApiInterceptor } from './proxy/mock-api/mock-api.interceptor';
+// import { HTTP_INTERCEPTORS } from '@angular/common/http';
+// import { AuthMockService } from './proxy/mock-api/services/auth-mock.service';
+// import { CandidateMockService } from './proxy/mock-api/services/candidate-mock.service';
+// import { RecruiterMockService } from './proxy/mock-api/services/recruiter-mock.service';
+// import { JobMockService } from './proxy/mock-api/services/job-mock.service';
+// import { ProfileMockService } from './proxy/mock-api/services/profile-mock.service';
 // import { AuthService } from '@abp/ng.core';
 // import { CustomAuthService } from './services/custom-auth.service';
 
@@ -59,9 +66,18 @@ export const appConfig: ApplicationConfig = {
     // provideAccountConfig(), // Comment ABP Account module
     provideTenantManagementConfig(),
     provideAbpThemeShared(),
-   
-  
-    
+    // Mock API Services (commented out - files don't exist)
+    // AuthMockService,
+    // CandidateMockService,
+    // RecruiterMockService,
+    // JobMockService,
+    // ProfileMockService,
+    // Mock API Interceptor (commented out - file doesn't exist)
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: MockApiInterceptor,
+    //   multi: true
+    // },
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,

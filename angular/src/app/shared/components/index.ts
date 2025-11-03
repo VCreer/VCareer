@@ -18,3 +18,4 @@ export { IconButtonBadgeComponent } from './icon-button-badge/icon-button-badge'
 export { IconActionButtonComponent } from './icon-action-button/icon-action-button';
 export { NotificationMenuComponent, NotificationItem } from './notification-menu/notification-menu';
 export { SidebarComponent } from './sidebar/sidebar';
+export { EnableJobSearchModalComponent } from './enable-job-search-modal/enable-job-search-modal';
