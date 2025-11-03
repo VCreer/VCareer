@@ -94,6 +94,14 @@ export class MockApiInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
     
+    // ============================================
+    // ✅ BYPASS: Company API (send to REAL backend)
+    // ============================================
+    if (url.includes('/api/profile/company-legal-info/by-job/')) {
+      console.log('🔵 MockApiInterceptor: BYPASSING Company API - sending to REAL backend:', url);
+      return next.handle(req);
+    }
+    
     if (url.includes('/api/jobs') && method === 'GET') {
       return this.jobMockService.mockGetJobs();
     }
@@ -102,7 +110,7 @@ export class MockApiInterceptor implements HttpInterceptor {
       return this.jobMockService.mockCreateJob(body);
     }
 
-    // Profile endpoints
+    // Profile endpoints (check này phải sau company API bypass)
     if (url.includes('/api/profile') && method === 'GET') {
       return this.profileMockService.mockGetProfile();
     }

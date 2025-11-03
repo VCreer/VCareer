@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using VCareer.Model;
 
 namespace VCareer.Dto.Job
@@ -109,6 +110,16 @@ namespace VCareer.Dto.Job
         /// Lượt apply
         /// </summary>
         public int ApplyCount { get; set; }
+
+        /// <summary>
+        /// Trình độ học vấn yêu cầu
+        /// </summary>
+        public EducationLevel Education { get; set; }
+
+        /// <summary>
+        /// Chuỗi danh mục (từ cấp 1 -> cấp 3) của job hiện tại
+        /// </summary>
+        public List<CategoryItemDto> CategoryPath { get; set; } = new List<CategoryItemDto>();
     }
 }
 

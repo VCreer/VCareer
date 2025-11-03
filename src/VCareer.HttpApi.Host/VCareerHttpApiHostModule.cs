@@ -309,6 +309,10 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+        
+        // Enable static files serving from wwwroot
+        app.UseStaticFiles();
+        
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();

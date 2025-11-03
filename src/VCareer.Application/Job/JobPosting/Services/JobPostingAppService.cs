@@ -266,7 +266,7 @@ namespace VCareer.Job.JobPosting.Services
 
             var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
 
-            return new JobViewDetail
+            var detail = new JobViewDetail
             {
                 Id = job.Id,
                 Slug = job.Slug,
@@ -286,12 +286,36 @@ namespace VCareer.Job.JobPosting.Services
                 WorkLocation = job.WorkLocation,
                 EmploymentType = job.EmploymentType,
                 PositionType = job.PositionType,
+                Education = job.Education,
                 IsUrgent = job.IsUrgent,
                 PostedAt = job.PostedAt,
                 ExpiresAt = job.ExpiresAt.Value,
                 ViewCount = job.ViewCount,
                 ApplyCount = job.ApplyCount
             };
+
+            // Build category path (level 1 -> level 3)
+            if (job.JobCategory != null)
+            {
+                var items = new List<CategoryItemDto>();
+                var level3 = job.JobCategory;
+                var level2 = level3.Parent;
+                var level1 = level2?.Parent;
+
+                if (level1 != null)
+                {
+                    items.Add(new CategoryItemDto { Id = level1.Id, Name = level1.Name, Slug = level1.Slug });
+                }
+                if (level2 != null)
+                {
+                    items.Add(new CategoryItemDto { Id = level2.Id, Name = level2.Name, Slug = level2.Slug });
+                }
+                items.Add(new CategoryItemDto { Id = level3.Id, Name = level3.Name, Slug = level3.Slug });
+
+                detail.CategoryPath = items;
+            }
+
+            return detail;
         }
 
         #endregion

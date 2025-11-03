@@ -488,6 +488,15 @@
 
   .company-logo {
     margin-bottom: 1rem;
+    position: relative;
+
+    .company-logo-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
 
     .logo-box {
       width: 80px;
@@ -608,11 +617,28 @@
       gap: 0.5rem;
 
       .tag {
-        background: #f1f5f9;
-        color: #475569;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none; // remove underline
+        background: #f3f4f6; // light gray
+        color: #374151; // gray-700
+        padding: 0.35rem 0.75rem; // compact
+        border-radius: 9999px; // pill
+        font-size: 0.8125rem; // ~13px
+        line-height: 1;
+        border: 1px solid #e5e7eb; // subtle border
+        transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        cursor: pointer;
+
+        &:hover {
+          background: #e5e7eb; // darker gray on hover
+          color: #111827; // darker text
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        &:active {
+          background: #d1d5db; // pressed state
+        }
       }
     }
   }

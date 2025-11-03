@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using VCareer.Models.Companies;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Repositories.Companies;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -18,13 +19,16 @@ namespace VCareer.Profile
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly IRepository<Company, int> _companyRepository;
+        private readonly ICompanyRepository _companyCustomRepository;
         private readonly ICurrentUser _currentUser;
 
         public CompanyLegalInfoAppService(
             IRepository<Company, int> companyRepository,
+            ICompanyRepository companyCustomRepository,
             ICurrentUser currentUser)
         {
             _companyRepository = companyRepository;
+            _companyCustomRepository = companyCustomRepository;
             _currentUser = currentUser;
         }
 
@@ -226,6 +230,36 @@ namespace VCareer.Profile
             await _companyRepository.UpdateAsync(company);
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
+        }
+
+        /// <summary>
+        /// Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
+        /// </summary>
+        public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
+        {
+            // Sử dụng repository để lấy company với đầy đủ thông tin industries
+            var company = await _companyCustomRepository.GetCompanyByJobIdAsync(jobId);
+
+            if (company == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy công ty cho job này.");
+            }
+
+            // Map sang DTO và lấy danh sách industries
+            var dto = new CompanyInfoForJobDetailDto
+            {
+                Id = company.Id,
+                CompanyName = company.CompanyName,
+                LogoUrl = company.LogoUrl,
+                CompanySize = company.CompanySize,
+                HeadquartersAddress = company.HeadquartersAddress,
+                Industries = company.CompanyIndustries?
+                    .Select(ci => ci.Industry?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList() ?? new List<string>()
+            };
+
+            return dto;
         }
     }
 }

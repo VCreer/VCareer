@@ -110,5 +110,16 @@ namespace VCareer.Profile
             await _companyLegalInfoAppService.DeleteCompanyLegalInfoAsync(id);
             return NoContent();
         }
+
+        /// <summary>
+        /// Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
+        /// </summary>
+        /// <param name="jobId">Job ID</param>
+        /// <returns>Thông tin công ty bao gồm danh sách ngành nghề</returns>
+        [HttpGet("by-job/{jobId}")]
+        public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
+        {
+            return await _companyLegalInfoAppService.GetCompanyByJobIdAsync(jobId);
+        }
     }
 }

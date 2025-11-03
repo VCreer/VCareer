@@ -58,6 +58,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\files\candidate\cv\" />
     <Folder Include="wwwroot\files\recruiter\" />
+    <Folder Include="wwwroot\images\logo\logoComany\" />
   </ItemGroup>
 
 </Project>

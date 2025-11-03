@@ -115,3 +115,11 @@ export interface UpdatePersonalInfoDto {
   nationality?: string;
   maritalStatus?: string;
 }
+
+export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
+  companyName?: string;
+  logoUrl?: string;
+  companySize: number;
+  headquartersAddress?: string;
+  industries: string[];
+}

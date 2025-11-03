@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 
@@ -169,5 +170,18 @@ namespace VCareer.Profile
         public DateTime? LegalReviewedAt { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để hiển thị thông tin công ty trong trang job detail
+    /// Bao gồm danh sách ngành nghề (industries)
+    /// </summary>
+    public class CompanyInfoForJobDetailDto : EntityDto<int>
+    {
+        public string CompanyName { get; set; }
+        public string LogoUrl { get; set; }
+        public int CompanySize { get; set; }
+        public string HeadquartersAddress { get; set; }
+        public List<string> Industries { get; set; } = new List<string>(); // Danh sách tên ngành nghề
     }
 }

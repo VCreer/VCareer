@@ -31,7 +31,7 @@ export const environment = {
   },
   // API Configuration
   apiUrl: 'http://localhost:3000/api',
-  useMockApi: true,
+  useMockApi: false, // ✅ Tắt MockAPI vì đã có API thật
   mockDelay: 1000,
   debug: true,
 } as Environment;
