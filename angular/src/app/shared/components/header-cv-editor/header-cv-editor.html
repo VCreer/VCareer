@@ -1,0 +1,32 @@
+<div class="header__container">
+  <div class="header__left">
+    <div class="cv-icon">
+      <i class="fa fa-file-text"></i>
+    </div>
+    <span class="cv-name" *ngIf="!isEditingName" (click)="onNameClick()">{{ internalCvName }}</span>
+    <input 
+      type="text" 
+      class="cv-name-input" 
+      *ngIf="isEditingName" 
+      [(ngModel)]="internalCvName" 
+      (blur)="onNameBlur()" 
+      (keyup)="onNameKeyup($event)"
+      autofocus>
+  </div>
+  <div class="header__right">
+    <button class="action-button" (click)="onUndo()">
+      <i class="fa fa-undo"></i>
+    </button>
+    <button class="action-button" (click)="onRedo()">
+      <i class="fa fa-repeat"></i>
+    </button>
+    <button class="preview-button" (click)="onPreview()">
+      <i class="fa fa-eye"></i>
+      <span>{{ previewText }}</span>
+    </button>
+    <button class="save-button" (click)="onSave()">
+      <i class="fa fa-save"></i>
+      <span>{{ saveText }}</span>
+    </button>
+  </div>
+</div>

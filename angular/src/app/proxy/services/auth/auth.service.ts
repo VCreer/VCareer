@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ForgotPasswordDto, GoogleLoginDto, LoginDto, RegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
+import type { CandidateRegisterDto, ForgotPasswordDto, GoogleLoginDto, LoginDto, RecruiterRegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
 import type { TokenResponseDto } from '../../dto/jwt-dto/models';
 
 @Injectable({
@@ -8,6 +8,15 @@ import type { TokenResponseDto } from '../../dto/jwt-dto/models';
 })
 export class AuthService {
   apiName = 'Default';
+  
+
+  candidateRegister = (input: CandidateRegisterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-register',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
   
 
   forgotPassword = (input: ForgotPasswordDto, config?: Partial<Rest.Config>) =>
@@ -53,10 +62,10 @@ export class AuthService {
     { apiName: this.apiName,...config });
   
 
-  register = (input: RegisterDto, config?: Partial<Rest.Config>) =>
+  recruiterRegister = (input: RecruiterRegisterDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/auth/register',
+      url: '/api/app/auth/recruiter-register',
       body: input,
     },
     { apiName: this.apiName,...config });

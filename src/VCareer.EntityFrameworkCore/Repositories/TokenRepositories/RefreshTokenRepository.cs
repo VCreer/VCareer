@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
-using VCareer.IRepositories.TokenRepository;
+using VCareer.IRepositories.ITokenRepository;
 using VCareer.Models.Token;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;

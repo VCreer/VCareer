@@ -12,7 +12,8 @@ namespace VCareer.IServices.IAuth
 {
     public interface IAuthAppService : IApplicationService
     {
-        public Task RegisterAsync(RegisterDto input);
+        public Task CandidateRegisterAsync(CandidateRegisterDto input);
+        public Task RecruiterRegisterAsync(RecruiterRegisterDto input);
         public Task<TokenResponseDto> LoginAsync(LoginDto input);
         public Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input);
         public Task ForgotPasswordAsync(ForgotPasswordDto input);

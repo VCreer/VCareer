@@ -3,15 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
-// import { FormInputComponent, FileUploadComponent } from '../../../shared/components';
+import { ProfileService } from '../../../../proxy/profile/profile.service';
+import type { ProfileDto, UpdatePersonalInfoDto } from '../../../../proxy/profile/models';
+import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 
 @Component({
   selector: 'app-candidate-profile',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    EnableJobSearchModalComponent
   ],
   templateUrl: './candidate-profile.html',
   styleUrls: ['./candidate-profile.scss']
@@ -24,24 +28,20 @@ export class CandidateProfileComponent implements OnInit {
 
   // Dữ liệu profile
   profileData = {
-    fullName: 'Uông Hoàng Duy',
-    email: 'duyuong0273@gmail.com',
-    phone: '0966211316',
-    dateOfBirth: '1995-03-15',
-    gender: 'male',
-    address: '123 Đường ABC, Quận 1, TP. Hồ Chí Minh',
-    city: 'TP. Hồ Chí Minh',
-    country: 'Việt Nam',
-    bio: 'Tôi là một developer có kinh nghiệm với 5 năm làm việc trong lĩnh vực công nghệ thông tin. Tôi có đam mê với việc phát triển các ứng dụng web hiện đại và luôn tìm kiếm những thách thức mới.',
-    website: 'https://nguyenvana.com',
-    linkedin: 'https://linkedin.com/in/nguyenvana',
-    github: 'https://github.com/nguyenvana',
-    avatarUrl: ''
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: ''
   };
 
   // Settings
   topConnectEnabled: boolean = true;
   cvFileName: string = '';
+  jobSearchEnabled: boolean = false;
+  allowRecruiterSearch: boolean = true;
+  showEnableJobSearchModal: boolean = false;
 
   // Avatar modal
   showAvatarModal: boolean = false;
@@ -52,31 +52,89 @@ export class CandidateProfileComponent implements OnInit {
   errors: any = {};
 
   constructor(
-    private router: Router, 
-    private http: HttpClient,
-    private uploadedCvService: UploadedCvService
+    private router: Router,
+    private profileService: ProfileService,
+    private uploadedCvService: UploadedCvService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
-    // Load profile data từ API hoặc localStorage
+    // Load profile data từ API
     this.loadProfileData();
   }
 
   loadProfileData() {
     this.isLoading = true;
     
-    this.http.get('/api/profile').subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.profileData = { ...this.profileData, ...response.data };
-        }
-        this.isLoading = false;
+    // Gọi bằng native fetch để loại trừ toàn bộ Http Interceptor
+    fetch(`${environment.apis.default.url}/api/profile`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       },
-      error: (error) => {
-        console.error('Error loading profile:', error);
+      credentials: 'include',
+      redirect: 'follow',
+      mode: 'cors'
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
+        }
+        return res.json() as Promise<ProfileDto>;
+      })
+      .then((response: ProfileDto) => {
+        console.log('Profile data from API:', response);
+        console.log('Response type:', typeof response);
+        console.log('Response keys:', response ? Object.keys(response) : 'null');
+        
+        // Kiểm tra nếu response rỗng hoặc null
+        if (!response) {
+          console.warn('No profile data returned from API');
+          this.profileData = {
+            fullName: '',
+            email: '',
+            phone: '',
+            dateOfBirth: '',
+            gender: '',
+            address: ''
+          };
+          this.isLoading = false;
+          return;
+        }
+        
+        // Map dữ liệu từ API về form
+        this.profileData = {
+          fullName: `${response.name || ''} ${response.surname || ''}`.trim() || 'User',
+          email: response.email || '',
+          phone: response.phoneNumber || '',
+          dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
+          gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
+          address: response.address || ''
+        };
+        
+        console.log('Mapped profile data:', this.profileData);
+        console.log('Setting isLoading to false');
         this.isLoading = false;
-      }
-    });
+      })
+      .catch((error) => {
+        console.error('Error loading profile:', error);
+        try { console.error('Error details:', JSON.stringify(error)); } catch {}
+        // Load default data if API fails
+        this.profileData = {
+          fullName: '',
+          email: '',
+          phone: '',
+          dateOfBirth: '',
+          gender: '',
+          address: ''
+        };
+        console.log('Setting isLoading to false after error');
+        this.isLoading = false;
+        // Show error message but don't block the UI
+        console.warn('Using default data due to API error');
+      });
   }
 
   onCancelEdit() {
@@ -93,15 +151,24 @@ export class CandidateProfileComponent implements OnInit {
 
     this.isSaving = true;
     
-    this.http.put('/api/profile', profileData).subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.profileData = { ...this.profileData, ...response.data };
-          this.showSuccessMessage(response.message);
-        } else {
-          this.errors = response.errors || {};
-          this.showErrorMessage(response.message);
-        }
+    // Parse fullName to name and surname
+    const nameParts = profileData.fullName.trim().split(' ');
+    const surname = nameParts.pop() || '';
+    const name = nameParts.join(' ') || '';
+
+    const updateDto: UpdatePersonalInfoDto = {
+      name: name,
+      surname: surname,
+      phoneNumber: profileData.phone,
+      address: profileData.address,
+      dateOfBirth: profileData.dateOfBirth,
+      gender: profileData.gender === 'male' ? true : profileData.gender === 'female' ? false : undefined
+    };
+    
+    this.profileService.updatePersonalInfo(updateDto).subscribe({
+      next: (response) => {
+        this.showSuccessMessage('Cập nhật thông tin thành công!');
+        this.loadProfileData(); // Reload data
         this.isSaving = false;
       },
       error: (error) => {
@@ -152,74 +219,20 @@ export class CandidateProfileComponent implements OnInit {
     return isValid;
   }
 
-  onAvatarChange(file: File) {
-    this.isUploadingAvatar = true;
-    
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    this.http.post('/api/profile/avatar', formData).subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.profileData.avatarUrl = response.data.avatarUrl;
-          this.showSuccessMessage(response.message);
-        }
-        this.isUploadingAvatar = false;
-      },
-      error: (error) => {
-        console.error('Error uploading avatar:', error);
-        this.isUploadingAvatar = false;
-        this.showErrorMessage('Có lỗi xảy ra khi upload ảnh đại diện');
-      }
-    });
-  }
-
-  onAvatarRemove() {
-    this.profileData.avatarUrl = '';
-    this.showSuccessMessage('Ảnh đại diện đã được xóa!');
-  }
-
-  onCvUpload(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('cv', file);
-      
-      this.http.post('/api/profile/cv', formData).subscribe({
-        next: (response: any) => {
-          if (response.success) {
-            this.cvFileName = response.data.fileName;
-            this.showSuccessMessage(response.message);
-            
-            // Add to uploaded CVs service
-            const uploadedCv = {
-              name: response.data.fileName,
-              uploadDate: new Date().toLocaleString('vi-VN'),
-              isStarred: false
-            };
-            this.uploadedCvService.addUploadedCv(uploadedCv);
-          }
-        },
-        error: (error) => {
-          console.error('Error uploading CV:', error);
-          this.showErrorMessage('Có lỗi xảy ra khi upload CV');
-        }
-      });
-    }
-  }
+  // Removed avatar and CV upload functionality as per user request
 
   // Avatar modal methods
-  openAvatarModal() {
-    this.showAvatarModal = true;
-    this.selectedImage = '';
-    this.previewImage = this.profileData.avatarUrl;
-  }
+  // openAvatarModal() {
+  //   this.showAvatarModal = true;
+  //   this.selectedImage = '';
+  //   this.previewImage = this.profileData.avatarUrl;
+  // }
 
-  closeAvatarModal(event: any) {
-    if (event.target === event.currentTarget) {
-      this.showAvatarModal = false;
-    }
-  }
+  // closeAvatarModal(event: any) {
+  //   if (event.target === event.currentTarget) {
+  //     this.showAvatarModal = false;
+  //   }
+  // }
 
   triggerFileInput() {
     document.getElementById('avatar-input')?.click();
@@ -242,14 +255,14 @@ export class CandidateProfileComponent implements OnInit {
     this.previewImage = '';
   }
 
-  saveAvatar() {
-    if (this.previewImage) {
-      // Tạo file từ base64 image
-      const file = this.dataURLtoFile(this.previewImage, 'avatar.jpg');
-      this.onAvatarChange(file);
-    }
-    this.showAvatarModal = false;
-  }
+  // saveAvatar() {
+  //   if (this.previewImage) {
+  //     // Tạo file từ base64 image
+  //     const file = this.dataURLtoFile(this.previewImage, 'avatar.jpg');
+  //     this.onAvatarChange(file);
+  //   }
+  //   this.showAvatarModal = false;
+  // }
 
   private dataURLtoFile(dataurl: string, filename: string): File {
     const arr = dataurl.split(',');
@@ -333,5 +346,28 @@ export class CandidateProfileComponent implements OnInit {
     setTimeout(() => {
       toast.remove();
     }, 3000);
+  }
+
+  // Enable Job Search Modal methods
+  onToggleJobSearch() {
+    // Nếu đang bật (toggle từ ON sang OFF), chỉ cần tắt
+    if (this.jobSearchEnabled) {
+      this.jobSearchEnabled = false;
+    } else {
+      // Nếu đang tắt (toggle từ OFF sang ON), mở modal để chọn CV
+      this.showEnableJobSearchModal = true;
+    }
+  }
+
+  onCloseEnableJobSearchModal() {
+    this.showEnableJobSearchModal = false;
+  }
+
+  onEnableJobSearch(selectedCvIds: string[]) {
+    // Xử lý logic bật tìm việc với các CV đã chọn
+    console.log('Enable job search for CVs:', selectedCvIds);
+    // TODO: Gọi API để bật tìm việc với các CV đã chọn
+    this.jobSearchEnabled = true;
+    this.showSuccessMessage('Đã bật tìm việc thành công!');
   }
 }

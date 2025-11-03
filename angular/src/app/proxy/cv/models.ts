@@ -37,7 +37,6 @@ export interface CreateCVOnlineDto {
   email: string;
   phoneNumber?: string;
   dateOfBirth?: string;
-  gender?: boolean;
   address?: string;
   workExperience?: string;
   education?: string;
@@ -72,7 +71,6 @@ export interface UpdateCVDto {
   email?: string;
   phoneNumber?: string;
   dateOfBirth?: string;
-  gender?: boolean;
   address?: string;
   workExperience?: string;
   education?: string;
@@ -87,6 +85,7 @@ export interface UpdateCVDto {
 
 export interface UploadCVDto {
   cvName: string;
+  cvType: string;
   fileUrl: string;
   originalFileName: string;
   fileSize: number;

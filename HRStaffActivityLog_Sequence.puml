@@ -1,0 +1,142 @@
+@startuml
+title HR Staff Activity Log - Sequence Diagram
+
+autonumber 1
+
+actor "Team Leader" as Leader
+participant "ActivityLogController" as API
+participant "ActivityLogAppService" as Service
+participant "RecruiterRepository" as RecruiterRepo
+participant "ActivityLogRepository" as ActivityRepo
+participant "UserManager" as UserMgr
+database "Database" as DB
+
+Leader -> API : GET /api/activity-logs/staff/{staffId}
+activate API
+note over Leader, API
+Query Parameters:
+- ActivityType (Job/Email/Evaluation)
+- StartDate
+- EndDate
+- MaxResultCount
+- SkipCount
+- Sorting
+end note
+
+API -> Service : GetStaffActivityLogsAsync(staffId, input)
+activate Service
+
+autonumber 1.1
+Service -> RecruiterRepo : GetCurrentUserProfileAsync()
+activate RecruiterRepo
+
+autonumber 1.1.1
+RecruiterRepo -> DB : ExecuteQuery()
+activate DB
+return Return result
+
+autonumber 1.1.2
+return Return currentUserProfile
+
+autonumber 1.2
+Service -> Service : Validate current user is Team Leader
+
+alt Not a Team Leader
+    autonumber 1.2.1
+    return Return error: "Not authorized"
+    autonumber 1.2.2
+    return Return error message
+else Is Team Leader
+    autonumber 1.3
+    Service -> RecruiterRepo : FindAsync(staffId)
+    activate RecruiterRepo
+    
+    autonumber 1.3.1
+    RecruiterRepo -> DB : ExecuteQuery()
+    activate DB
+    return Return result
+    
+    autonumber 1.3.2
+    return Return staffMember
+    
+    autonumber 1.4
+    Service -> Service : Validate same company
+    
+    alt Different Company
+        autonumber 1.4.1
+        return Return error: "Access denied"
+        autonumber 1.4.2
+        return Return error message
+    else Same Company
+        autonumber 1.5
+        Service -> ActivityRepo : GetQueryableAsync()
+        activate ActivityRepo
+        
+        autonumber 1.5.1
+        ActivityRepo -> DB : ExecuteQuery()
+        activate DB
+        return Return queryable
+        
+        autonumber 1.5.2
+        return Return activity queryable
+        
+        autonumber 1.6
+        Service -> Service : Apply filters\n(UserId, ActivityType, DateRange)
+        
+        autonumber 1.7
+        Service -> Service : Apply sorting
+        
+        autonumber 1.8
+        Service -> ActivityRepo : ToListAsync(filtered query)
+        activate ActivityRepo
+        
+        autonumber 1.8.1
+        ActivityRepo -> DB : ExecuteQuery()
+        activate DB
+        return Return activities
+        
+        autonumber 1.8.2
+        return Return activity list
+        
+        autonumber 1.9
+        Service -> Service : Apply paging\n(Skip & Take)
+        
+        autonumber 1.10
+        Service -> Service : Count total records
+        
+        autonumber 1.11
+        Service -> UserMgr : GetByIdAsync(staffMember.UserId)
+        activate UserMgr
+        
+        autonumber 1.11.1
+        UserMgr -> DB : ExecuteQuery()
+        activate DB
+        return Return user
+        
+        autonumber 1.11.2
+        return Return staffUser
+        
+        autonumber 1.12
+        Service -> Service : Map to ActivityLogDto list
+        
+        autonumber 1.13
+        Service -> Service : Build statistics by type\n(Job, Email, Evaluation)
+        
+        autonumber 1.14
+        Service -> Service : Build ActivityLogListDto
+        
+        autonumber 1.15
+        return Return ActivityLogListDto
+        
+        autonumber 1.16
+        return Return activity log response
+    end
+end
+
+@enduml
+
+
+
+
+
+

@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
@@ -21,36 +20,40 @@ export class RecruiterHeaderComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private headerTypeService: HeaderTypeService,
     private navigationService: NavigationService,
     private translationService: TranslationService
   ) {}
 
   ngOnInit() {
+    this.currentRoute = this.router.url;
+    
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
       });
 
-    // Subscribe to language changes
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
     });
   }
 
   navigateToHome() {
-    window.location.reload();
+    this.router.navigate(['/recruiter/about-us']).then(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
     this.closeMobileMenu();
   }
 
   navigateToAbout() {
-    this.router.navigate(['/about']);
+    this.router.navigate(['/recruiter/about-us']).then(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
     this.closeMobileMenu();
   }
 
   navigateToServices() {
-    this.router.navigate(['/services']);
+    this.router.navigate(['/recruiter/service']);
     this.closeMobileMenu();
   }
 
@@ -74,14 +77,25 @@ export class RecruiterHeaderComponent implements OnInit {
     this.closeMobileMenu();
   }
 
-  // Method để xử lý đăng nhập thành công
   onLoginSuccess() {
     this.navigationService.loginAsRecruiter();
     this.closeMobileMenu();
   }
 
   navigateToPostJob() {
-    this.router.navigate(['/recruiter/post-job']);
+    if (!this.navigationService.isLoggedIn()) {
+      this.router.navigate(['/recruiter/login']);
+    } else {
+      // Route post-job chưa được implement
+      // Nếu đã verified, không làm gì (hoặc có thể navigate đến home khi route được implement)
+      // Nếu chưa verified, navigate đến verify page
+      const isVerified = this.navigationService.isVerified();
+      if (!isVerified) {
+        this.router.navigate(['/recruiter/recruiter-verify']);
+      }
+      // TODO: Navigate to /recruiter/post-job when route is implemented
+      // For now, if already verified, do nothing or show message
+    }
     this.closeMobileMenu();
   }
 
@@ -108,6 +122,9 @@ export class RecruiterHeaderComponent implements OnInit {
   }
 
   isActiveRoute(route: string): boolean {
+    if (route === '/') {
+      return this.currentRoute === '/' || this.currentRoute === '/home';
+    }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
   }
 }

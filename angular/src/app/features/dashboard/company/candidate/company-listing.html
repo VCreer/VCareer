@@ -1,0 +1,93 @@
+<div class="company-listing-page">
+  <!-- Hero Section with Billboard -->
+  <section class="hero-section">
+    <!-- Navigation Header -->
+    <div class="nav-header">
+      <div class="nav-container">
+        <button 
+          class="nav-tab" 
+          [class.active]="activeTab === 'list'"
+          (click)="setActiveTab('list')">
+          Danh sách công ty
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeTab === 'top'"
+          (click)="setActiveTab('top')">
+          Top công ty
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">Khám phá 100.000+ công ty nổi bật</h1>
+        <p class="hero-subtitle">Tra cứu thông tin công ty và tìm kiếm nơi làm việc tốt nhất dành cho bạn</p>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input 
+              type="text" 
+              class="search-input"
+              placeholder="Nhập tên công ty"
+              [(ngModel)]="searchKeyword"
+              (keyup.enter)="onSearch()">
+          </div>
+          <button class="search-button" (click)="onSearch()">
+            Tìm kiếm
+          </button>
+        </div>
+      </div>
+      
+      <!-- Billboard Image -->
+      <div class="hero-image">
+        <img src="assets/company/company-billBoard.png" alt="Company Billboard" class="billboard-image">
+      </div>
+    </div>
+  </section>
+
+  <!-- Company List Section -->
+  <section class="company-list-section">
+    <div class="container">
+      <h2 class="section-title">{{ activeTab === 'top' ? 'DANH SÁCH CÁC TOP CÔNG TY' : 'DANH SÁCH CÁC CÔNG TY NỔI BẬT' }}</h2>
+      
+      <div class="company-grid" *ngIf="paginatedCompanies.length > 0">
+        <div class="company-card" *ngFor="let company of paginatedCompanies" (click)="onCompanyClick(company.id)">
+          <div class="company-image-wrapper">
+            <img [src]="company.image" [alt]="company.name" class="company-image" onerror="this.src='assets/images/default-company.png'">
+          </div>
+          
+          <div class="company-info">
+            <div class="company-brand">
+              <span class="brand-name" [class.nura]="company.name === 'NURA'" [class.red-bg]="company.name === 'STRINGEE' || company.name === 'LOTTE'">{{ company.name }}</span>
+            </div>
+            
+            <h3 class="company-title">{{ company.fullName }}</h3>
+            
+            <p class="company-description">{{ company.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="paginatedCompanies.length === 0">
+        <p>Không tìm thấy công ty nào.</p>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalCompanies"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </section>
+</div>
+
