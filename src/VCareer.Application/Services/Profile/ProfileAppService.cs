@@ -46,7 +46,7 @@ namespace VCareer.Services.Profile
 
         //ádadad
 
-        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
+        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
@@ -97,7 +97,7 @@ namespace VCareer.Services.Profile
 
 
         //ádada
-        [Authorize(VCareerPermission.Profile.ChangePassword)]
+        /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
