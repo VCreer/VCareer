@@ -41,6 +41,23 @@ export interface CompanyInfoForJobDetailDto {
   industries: string[];
 }
 
+export interface CompanyLegalInfoDto {
+  id: number;
+  companyName: string;
+  companyCode?: string;
+  description?: string;
+  headquartersAddress?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  status?: boolean;
+  companySize?: number;
+  industryId?: number;
+  foundedYear?: number;
+  logoUrl?: string;
+  coverImageUrl?: string;
+  websiteUrl?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -134,10 +151,7 @@ export class CompanyService {
     }).pipe(delay(500));
   }
 
-  getCompanyById(id: string): Observable<Company | null> {
-    const company = this.mockCompanies.find(c => c.id === id);
-    return of(company || null).pipe(delay(300));
-  }
+  // (removed mock getCompanyById)
 
   getCompanyJobs(companyId: string): Observable<any[]> {
     // Return jobs for specific company
@@ -189,5 +203,14 @@ export class CompanyService {
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * GET /api/profile/company-legal-info/{companyId}
+   * Lấy thông tin chi tiết công ty theo CompanyId
+   */
+  getCompanyById(companyId: number | string): Observable<CompanyLegalInfoDto> {
+    const url = `${this.apiUrl}/api/profile/company-legal-info/${companyId}`;
+    return this.http.get<CompanyLegalInfoDto>(url);
   }
 }

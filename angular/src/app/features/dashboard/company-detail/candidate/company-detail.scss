@@ -453,6 +453,80 @@
     }
 
   }
+
+  .map-embed {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .map-view-btn {
+      align-self: flex-start;
+      background: #0F83BA;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover { background: #0d6fa0; }
+    }
+  }
+}
+
+// Map Modal
+.map-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.map-modal {
+  background: #fff;
+  width: min(100%, 960px);
+  height: min(85vh, 640px);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.map-modal-header {
+  padding: 12px 16px;
+  background: #0F83BA;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .map-modal-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+}
+
+.map-modal-body {
+  padding: 12px;
+  flex: 1;
 }
 
 // Box Job Listing

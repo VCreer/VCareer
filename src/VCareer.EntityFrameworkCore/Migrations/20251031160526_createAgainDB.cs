@@ -11,20 +11,23 @@ namespace VCareer.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AbpAuditLogExcelFiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpAuditLogExcelFiles", x => x.Id);
-                });
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AbpAuditLogExcelFiles]') AND type = N'U')
+BEGIN
+    CREATE TABLE [dbo].[AbpAuditLogExcelFiles](
+        [Id] uniqueidentifier NOT NULL,
+        [TenantId] uniqueidentifier NULL,
+        [FileName] nvarchar(256) NULL,
+        [CreationTime] datetime2 NOT NULL,
+        [CreatorId] uniqueidentifier NULL,
+        CONSTRAINT [PK_AbpAuditLogExcelFiles] PRIMARY KEY ([Id])
+    );
+END
+");
+
+            // Bỏ qua phần còn lại của migration khởi tạo vì DB đã có sẵn schema (sau khi merge)
+            migrationBuilder.Sql("-- skip rest of createAgainDB: database already initialized");
+            return;
 
             migrationBuilder.CreateTable(
                 name: "AbpAuditLogs",
@@ -1810,8 +1813,12 @@ namespace VCareer.Migrations
             migrationBuilder.DropTable(
                 name: "AbpAuditLogActions");
 
-            migrationBuilder.DropTable(
-                name: "AbpAuditLogExcelFiles");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[dbo].[AbpAuditLogExcelFiles]', N'U') IS NOT NULL
+BEGIN
+    DROP TABLE [dbo].[AbpAuditLogExcelFiles];
+END
+");
 
             migrationBuilder.DropTable(
                 name: "AbpBackgroundJobs");

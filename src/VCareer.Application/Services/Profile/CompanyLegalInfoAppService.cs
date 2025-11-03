@@ -33,6 +33,7 @@ namespace VCareer.Services.Profile
             _currentUser = currentUser;
         }
 
+
         [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync(SubmitCompanyLegalInfoDto input)
         {
@@ -85,6 +86,8 @@ namespace VCareer.Services.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
+
 
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
@@ -145,12 +148,15 @@ namespace VCareer.Services.Profile
 
 
 
-        // Long dùng hàm này để view listk
+
+        
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
+
 
 
         public async Task<CompanyLegalInfoDto> GetCurrentUserCompanyLegalInfoAsync()
@@ -170,6 +176,8 @@ namespace VCareer.Services.Profile
 
 
 
+
+
         public async Task<List<CompanyLegalInfoDto>> GetCurrentUserCompanyLegalInfoListAsync()
         {
             // In real scenario, you would filter by current user
@@ -177,6 +185,8 @@ namespace VCareer.Services.Profile
             var companies = await _companyRepository.GetListAsync();
             return ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
         }
+
+
 
 
 
@@ -240,6 +250,7 @@ namespace VCareer.Services.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
 
 
 
