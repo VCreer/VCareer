@@ -19,18 +19,10 @@ export const APP_ROUTES: Routes = [
         path: 'candidate/profile',
         loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
       },
-      {
-        path: 'candidate/cv-management',
-        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      },
-      {
-        path: 'candidate/cv-sample',
-        loadComponent: () => import('./features/dashboard/cv-sample/candidate/cv-sample').then(c => c.CvSampleComponent),
-      },
-      {
-        path: 'candidate/write-cv/:type',
-        loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
-      },
+      // {
+      //   path: 'candidate/cv-management',
+      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      // },
       {
         path: 'candidate/job',
         loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
@@ -46,17 +38,14 @@ export const APP_ROUTES: Routes = [
   {
     path: 'candidate/login',
     loadComponent: () => import('./features/Auth/candidate/candidate-login/candidate-login').then(c => c.LoginComponent),
-    loadComponent: () => import('./features/auth/candidate/candidate-login/candidate-login').then(c => c.LoginComponent),
   },
   {
     path: 'candidate/register',
     loadComponent: () => import('./features/Auth/candidate/candidate-regsiter/candidate-register').then(c => c.RegisterComponent),
-    loadComponent: () => import('./features/auth/candidate/candidate-regsiter/candidate-register').then(c => c.RegisterComponent),
   },
   {
     path: 'candidate/forget-password',
     loadComponent: () => import('./features/Auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'candidate/verify-otp',
@@ -70,17 +59,14 @@ export const APP_ROUTES: Routes = [
   {
     path: 'recruiter/login',
     loadComponent: () => import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
-    loadComponent: () => import('./features/auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
   },
   {
     path: 'recruiter/register',
     loadComponent: () => import('./features/Auth/recruiter/recruiter-register/recruiter-register').then(c => c.RecruiterRegisterComponent),
-    loadComponent: () => import('./features/auth/recruiter/recruiter-register/recruiter-register').then(c => c.RecruiterRegisterComponent),
   },
   {
     path: 'recruiter/forgot-password',
     loadComponent: () => import('./features/Auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(c => c.ForgotPasswordComponent),
   },
   {
     path: 'recruiter/verify-otp',
@@ -105,9 +91,17 @@ export const APP_ROUTES: Routes = [
         path: 'about-us',
         loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
       },
-        {
-        path: 'recruiter-homepage',
+      {
+        path: 'service',
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
+      },
+      {
+        path: 'home',
         loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+      },
+      {
+        path: 'recruiter-verify',
+        loadComponent: () => import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(c => c.RecruiterVerifyOtpComponent),
       },
       // {
       //   path: 'performance-dashboard',
@@ -117,8 +111,8 @@ export const APP_ROUTES: Routes = [
   },
   
   {
-    path: 'employee/login',
-    loadComponent: () => import('./features/auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
+    path: 'admin/login',
+    loadComponent: () => import('./features/Auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
   },
 
   // Legacy redirects
