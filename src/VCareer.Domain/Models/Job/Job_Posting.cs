@@ -96,6 +96,11 @@ namespace VCareer.Models.Job
 
         public string? ExperienceText { get; set; }
 
+        /// <summary>
+        /// Trình độ học vấn yêu cầu
+        /// </summary>
+        public EducationLevel Education { get; set; } = EducationLevel.Any;
+
         public int Quantity { get; set; }
 
         public int ViewCount { get; set; }

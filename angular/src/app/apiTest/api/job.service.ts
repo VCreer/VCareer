@@ -57,6 +57,18 @@ export enum ExperienceLevel {
 }
 
 /**
+ * EducationLevel enum - Match với VCareer.Model.EducationLevel
+ */
+export enum EducationLevel {
+  Any = 0,
+  HighSchool = 1,
+  College = 2,
+  University = 3,
+  Master = 4,
+  Doctor = 5
+}
+
+/**
  * SalaryFilterType enum - Match với VCareer.Dto.Job.SalaryFilterType
  */
 export enum SalaryFilterType {
@@ -115,6 +127,41 @@ export interface PagedResultDto<T> {
   totalCount: number;
 }
 
+/**
+ * Category breadcrumb item (cấp 1 -> cấp 3)
+ */
+export interface CategoryItemDto {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * JobViewDetail - Match với VCareer.Dto.Job.JobViewDetail
+ */
+export interface JobViewDetail {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  requirements: string;
+  benefits?: string | null;
+  salaryText: string;
+  experienceText: string;
+  quantity: number;
+  provinceName?: string | null;
+  workLocation?: string | null;
+  employmentType: EmploymentType;
+  positionType: PositionType;
+  education: EducationLevel;
+  isUrgent: boolean;
+  postedAt: Date;
+  expiresAt: Date;
+  viewCount: number;
+  applyCount: number;
+  categoryPath: CategoryItemDto[];
+}
+
 // ============================================
 // JOB API SERVICE
 // ============================================
@@ -154,8 +201,8 @@ export class JobApiService {
    * GET /api/jobs/{id}
    * Lấy chi tiết job theo ID
    */
-  getJobById(jobId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${jobId}`);
+  getJobById(jobId: string): Observable<JobViewDetail> {
+    return this.http.get<JobViewDetail>(`${this.apiUrl}/${jobId}`);
   }
 
   /**

@@ -1,4 +1,4 @@
-import type { CompanyLegalInfoDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from './models';
+import type { CompanyLegalInfoDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, CompanyInfoForJobDetailDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
@@ -65,6 +65,13 @@ export class CompanyLegalInfoService {
       method: 'PUT',
       url: `/api/profile/company-legal-info/${id}/files`,
       params: { businessLicenseFile, taxCertificateFile, representativeIdCardFile, otherSupportFile },
+    },
+    { apiName: this.apiName,...config });
+
+  getCompanyByJobId = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyInfoForJobDetailDto>({
+      method: 'GET',
+      url: `/api/profile/company-legal-info/by-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
 
