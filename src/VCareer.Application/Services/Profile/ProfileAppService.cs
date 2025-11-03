@@ -49,7 +49,6 @@ namespace VCareer.Services.Profile
         [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var user = await _userManager.GetByIdAsync(userId);
 
@@ -100,7 +99,6 @@ namespace VCareer.Services.Profile
         [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var user = await _userManager.GetByIdAsync(userId);
 
@@ -129,7 +127,6 @@ namespace VCareer.Services.Profile
         //ádad
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var user = await _userManager.GetByIdAsync(userId);
 
@@ -169,7 +166,6 @@ namespace VCareer.Services.Profile
         [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var user = await _userManager.GetByIdAsync(userId);
 
@@ -275,6 +271,6 @@ namespace VCareer.Services.Profile
             return ("Unknown", "", null, null, "");
         }
 
-
+       
     }
 }

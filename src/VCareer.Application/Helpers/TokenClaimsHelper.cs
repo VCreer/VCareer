@@ -1,126 +1,137 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 
 namespace VCareer.Helpers
 {
-    /// <summary>
-    /// Helper để lấy UserId từ JWT Token Claims
-    /// </summary>
     public class TokenClaimsHelper : ITransientDependency
     {
-        private readonly ICurrentPrincipalAccessor _principalAccessor;
+        private readonly ICurrentPrincipalAccessor _currentPrincipalAccessor;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<TokenClaimsHelper> _logger;
 
         public TokenClaimsHelper(
-            ICurrentPrincipalAccessor principalAccessor,
+            ICurrentPrincipalAccessor currentPrincipalAccessor,
             IHttpContextAccessor httpContextAccessor,
             ILogger<TokenClaimsHelper> logger)
         {
-            _principalAccessor = principalAccessor;
+            _currentPrincipalAccessor = currentPrincipalAccessor;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
         /// <summary>
-        /// Lấy UserId từ token claims
-        /// Ưu tiên: AbpClaimTypes.UserId > "sub" > ClaimTypes.NameIdentifier
+        /// Lấy UserId từ token (nullable, không throw exception)
         /// </summary>
-        /// <returns>UserId hoặc null nếu không tìm thấy</returns>
         public Guid? GetUserIdFromToken()
         {
-            // Thử lấy từ ICurrentPrincipalAccessor trước
-            var principal = _principalAccessor.Principal;
-            System.Collections.Generic.IEnumerable<Claim> claims = null;
+            try
+            {
+                ClaimsPrincipal? principal = null;
+                ClaimsIdentity? identity = null;
 
-            if (principal != null)
-            {
-                claims = principal.Claims;
-                _logger.LogInformation("Using ICurrentPrincipalAccessor. Claims count: {Count}", claims?.Count() ?? 0);
-            }
-            else
-            {
-                _logger.LogWarning("ICurrentPrincipalAccessor.Principal is null, trying HttpContext");
-            }
-
-            // Fallback: Thử lấy từ HttpContext
-            if (claims == null || !claims.Any())
-            {
-                var httpContext = _httpContextAccessor?.HttpContext;
-                if (httpContext != null && httpContext.User != null)
+                // Ưu tiên sử dụng ICurrentPrincipalAccessor
+                principal = _currentPrincipalAccessor.Principal;
+                if (principal != null)
                 {
-                    claims = httpContext.User.Claims;
-                    _logger.LogInformation("Using HttpContext.User. Claims count: {Count}", claims?.Count() ?? 0);
+                    identity = principal.Identity as ClaimsIdentity;
+                    if (identity != null && identity.IsAuthenticated)
+                    {
+                        _logger.LogInformation("Using ICurrentPrincipalAccessor. Claims count: {Count}", identity.Claims.Count());
+                        var userId = ExtractUserIdFromClaims(identity);
+                        if (userId.HasValue)
+                        {
+                            return userId;
+                        }
+                    }
                 }
-                else
-                {
-                    _logger.LogWarning("HttpContext.User is also null");
-                }
-            }
 
-            if (claims == null || !claims.Any())
-            {
+                // Fallback: Sử dụng IHttpContextAccessor
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    principal = _httpContextAccessor.HttpContext.User;
+                    identity = principal?.Identity as ClaimsIdentity;
+                    if (identity != null && identity.IsAuthenticated)
+                    {
+                        _logger.LogInformation("Using HttpContext. Claims count: {Count}", identity.Claims.Count());
+                        var userId = ExtractUserIdFromClaims(identity);
+                        if (userId.HasValue)
+                        {
+                            return userId;
+                        }
+                    }
+                }
+
                 _logger.LogError("No claims found from both ICurrentPrincipalAccessor and HttpContext");
                 return null;
             }
-
-            // Debug: Log tất cả claim types với level Information để dễ debug
-            var allClaimTypes = claims.Select(c => $"{c.Type}={c.Value}").ToList();
-            _logger.LogInformation("All available claims: {Claims}", string.Join("; ", allClaimTypes));
-
-            // Ưu tiên tìm theo thứ tự: AbpClaimTypes.UserId > "sub" > ClaimTypes.NameIdentifier
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == AbpClaimTypes.UserId)
-                ?? claims.FirstOrDefault(c => c.Type == "sub")
-                ?? claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                ?? claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-
-            if (userIdClaim == null)
+            catch (Exception ex)
             {
-                _logger.LogWarning("UserId claim not found. Looking for: AbpClaimTypes.UserId, 'sub', ClaimTypes.NameIdentifier");
+                _logger.LogError(ex, "Error getting UserId from token");
                 return null;
             }
-
-            if (string.IsNullOrEmpty(userIdClaim.Value))
-            {
-                _logger.LogWarning("UserId claim value is empty. Claim type: {ClaimType}", userIdClaim.Type);
-                return null;
-            }
-
-            // Guid.TryParse hỗ trợ cả uppercase và lowercase
-            var userIdValue = userIdClaim.Value.Trim();
-            _logger.LogInformation("Found userId claim: Type={Type}, Value={Value}", userIdClaim.Type, userIdValue);
-
-            if (Guid.TryParse(userIdValue, out Guid userId))
-            {
-                _logger.LogInformation("Successfully parsed userId: {UserId}", userId);
-                return userId;
-            }
-
-            _logger.LogError("Failed to parse userId from value: {Value}", userIdValue);
-            return null;
         }
 
         /// <summary>
-        /// Lấy UserId từ token claims và throw exception nếu không tìm thấy
+        /// Lấy UserId từ token (throw exception nếu không tìm thấy)
         /// </summary>
-        /// <returns>UserId</returns>
-        /// <exception cref="UnauthorizedAccessException">Nếu không tìm thấy UserId</exception>
         public Guid GetUserIdFromTokenOrThrow()
         {
             var userId = GetUserIdFromToken();
-            if (userId == null || userId == Guid.Empty)
+            if (!userId.HasValue)
             {
+                _logger.LogError("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
                 throw new UnauthorizedAccessException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
             }
-
             return userId.Value;
+        }
+
+        /// <summary>
+        /// Extract UserId từ claims, tìm theo nhiều claim types
+        /// </summary>
+        private Guid? ExtractUserIdFromClaims(ClaimsIdentity identity)
+        {
+            // Tìm theo thứ tự ưu tiên:
+            // 1. AbpClaimTypes.UserId
+            // 2. ClaimTypes.NameIdentifier  
+            // 3. "sub"
+            // 4. JwtRegisteredClaimNames.Sub
+
+            string[] claimTypes = new[]
+            {
+                AbpClaimTypes.UserId,
+                ClaimTypes.NameIdentifier,
+                "sub",
+                JwtRegisteredClaimNames.Sub
+            };
+
+            foreach (var claimType in claimTypes)
+            {
+                var claim = identity.FindFirst(claimType);
+                if (claim != null && !string.IsNullOrWhiteSpace(claim.Value))
+                {
+                    // Log để debug
+                    _logger.LogDebug("Found UserId from claim type: {ClaimType}, value: {Value}", claimType, claim.Value);
+
+                    // Try parse as Guid
+                    if (Guid.TryParse(claim.Value, out Guid userId))
+                    {
+                        return userId;
+                    }
+
+                    // Nếu không parse được, log warning
+                    _logger.LogWarning("Cannot parse UserId from claim type {ClaimType}, value: {Value}", claimType, claim.Value);
+                }
+            }
+
+            _logger.LogWarning("No valid UserId claim found in identity");
+            return null;
         }
     }
 }
-

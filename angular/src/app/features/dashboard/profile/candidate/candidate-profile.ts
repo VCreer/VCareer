@@ -61,29 +61,28 @@ export class CandidateProfileComponent implements OnInit {
   loadProfileData() {
     this.isLoading = true;
     
-    // Lấy token từ localStorage
-    // Login component lưu token với key 'access_token'
-    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
-    
-    if (!token) {
-      console.warn('No token found in localStorage');
-      this.showErrorMessage('Vui lòng đăng nhập lại');
-      this.isLoading = false;
-      this.router.navigate(['/candidate/login']);
-      return;
-    }
-
-    // Sử dụng HttpClient trực tiếp để đảm bảo token được thêm vào headers
-    const apiUrl = `${environment.apis.default.url}/api/profile`;
-    this.http.get<ProfileDto>(apiUrl, {
+    // Gọi bằng native fetch để loại trừ toàn bộ Http Interceptor
+    fetch(`${environment.apis.default.url}/api/profile`, {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    }).subscribe({
-      next: (response: ProfileDto) => {
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include',
+      redirect: 'follow',
+      mode: 'cors'
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
+        }
+        return res.json() as Promise<ProfileDto>;
+      })
+      .then((response: ProfileDto) => {
         console.log('Profile data from API:', response);
+        console.log('Response type:', typeof response);
+        console.log('Response keys:', response ? Object.keys(response) : 'null');
         
         // Kiểm tra nếu response rỗng hoặc null
         if (!response) {
@@ -102,7 +101,7 @@ export class CandidateProfileComponent implements OnInit {
         
         // Map dữ liệu từ API về form
         this.profileData = {
-          fullName: `${response.name || ''} ${response.surname || ''}`.trim() || 'User',
+          fullName: `${response.name || ''} `.trim() || 'User',
           email: response.email || '',
           phone: response.phoneNumber || '',
           dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
@@ -111,22 +110,12 @@ export class CandidateProfileComponent implements OnInit {
         };
         
         console.log('Mapped profile data:', this.profileData);
+        console.log('Setting isLoading to false');
         this.isLoading = false;
-      },
-      error: (error) => {
+      })
+      .catch((error) => {
         console.error('Error loading profile:', error);
-        
-        // Nếu lỗi 401 Unauthorized, chuyển đến trang login
-        if (error.status === 401 || error.status === 403) {
-          this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-          // Xóa cả 2 keys để đảm bảo
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
-          this.router.navigate(['/candidate/login']);
-          return;
-        }
-        
+        try { console.error('Error details:', JSON.stringify(error)); } catch {}
         // Load default data if API fails
         this.profileData = {
           fullName: '',
@@ -136,10 +125,11 @@ export class CandidateProfileComponent implements OnInit {
           gender: '',
           address: ''
         };
+        console.log('Setting isLoading to false after error');
         this.isLoading = false;
-        this.showErrorMessage('Không thể tải thông tin profile. Vui lòng thử lại sau.');
-      }
-    });
+        // Show error message but don't block the UI
+        console.warn('Using default data due to API error');
+      });
   }
 
   onCancelEdit() {
@@ -156,17 +146,6 @@ export class CandidateProfileComponent implements OnInit {
 
     this.isSaving = true;
     
-    // Lấy token từ localStorage
-    // Login component lưu token với key 'access_token'
-    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
-    
-    if (!token) {
-      this.showErrorMessage('Vui lòng đăng nhập lại');
-      this.isSaving = false;
-      this.router.navigate(['/candidate/login']);
-      return;
-    }
-    
     // Parse fullName to name and surname
     const nameParts = profileData.fullName.trim().split(' ');
     const surname = nameParts.pop() || '';
@@ -181,15 +160,7 @@ export class CandidateProfileComponent implements OnInit {
       gender: profileData.gender === 'male' ? true : profileData.gender === 'female' ? false : undefined
     };
     
-    // Sử dụng HttpClient trực tiếp để đảm bảo token được thêm vào headers
-    const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
-    this.http.put(apiUrl, updateDto, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    }).subscribe({
+    this.profileService.updatePersonalInfo(updateDto).subscribe({
       next: (response) => {
         this.showSuccessMessage('Cập nhật thông tin thành công!');
         this.loadProfileData(); // Reload data
@@ -198,18 +169,6 @@ export class CandidateProfileComponent implements OnInit {
       error: (error) => {
         console.error('Error saving profile:', error);
         this.isSaving = false;
-        
-        // Nếu lỗi 401 Unauthorized, chuyển đến trang login
-        if (error.status === 401 || error.status === 403) {
-          this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-          // Xóa cả 2 keys để đảm bảo
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
-          this.router.navigate(['/candidate/login']);
-          return;
-        }
-        
         this.showErrorMessage('Có lỗi xảy ra khi lưu thông tin');
       }
     });

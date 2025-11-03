@@ -1,7 +1,6 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,6 @@ using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
 using VCareer.Helpers;
 using VCareer.IServices.IAuth;
-using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -36,39 +34,22 @@ namespace VCareer.Services.Auth
         private readonly SignInManager<Volo.Abp.Identity.IdentityUser> _signInManager;
         private readonly ITokenGenerator _tokenGenerator;
         private readonly CurrentUser _currentUser;
-        private readonly TokenClaimsHelper _tokenClaimsHelper;
         private readonly IEmailSender _emailSender;
         private readonly IdentityRoleManager _roleManager;
         private readonly ITemplateRenderer _templateRenderer;
-        private readonly GoogleOptions _googleOptions;
+        private readonly TokenClaimsHelper _tokenClaimsHelper;
 
-        public AuthAppService(
-            IdentityUserManager identityManager, 
-            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
-            ITokenGenerator tokenGenerator, 
-            CurrentUser currentUser,
-            TokenClaimsHelper tokenClaimsHelper,
-            IEmailSender emailSender, 
-            ITemplateRenderer templateRenderer, 
-            IdentityRoleManager roleManager, 
-            IOptions<GoogleOptions> googleOptions)
+        public AuthAppService(IdentityUserManager identityManager, SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, ITokenGenerator tokenGenerator, CurrentUser currentUser, IEmailSender emailSender, ITemplateRenderer templateRenderer, IdentityRoleManager roleManager, TokenClaimsHelper tokenClaimsHelper)
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
             _tokenGenerator = tokenGenerator;
             _currentUser = currentUser;
-            _tokenClaimsHelper = tokenClaimsHelper;
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
-            _googleOptions = googleOptions.Value;
+            _tokenClaimsHelper = tokenClaimsHelper;
         }
-
-        public Task CandidateRegisterAsync(CandidateRegisterDto input)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -95,16 +76,14 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-           // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
+            await _signInManager.SignInAsync(user, true);
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
 
         public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings { 
-            Audience = new[] { _googleOptions.ClientId }
-            });
+            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken);
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
             if (user != null)
@@ -122,47 +101,28 @@ namespace VCareer.Services.Auth
 
         public async Task LogOutAllDeviceAsync()
         {
-            if (!_currentUser.IsAuthenticated) return;
-            
-            // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _tokenClaimsHelper.GetUserIdFromToken();
-            if (userId == null || userId == Guid.Empty)
-            {
-                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
-            }
+            if (!userId.HasValue) return;
 
             var user = await _identityManager.FindByIdAsync(userId.Value.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
-            // Update security stamp để invalidate tất cả tokens cũ (logout tất cả devices)
             await _identityManager.UpdateSecurityStampAsync(user);
         }
 
         public async Task LogOutAsync()
         {
-            if (!_currentUser.IsAuthenticated) return;
-            
-            // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _tokenClaimsHelper.GetUserIdFromToken();
-            if (userId == null || userId == Guid.Empty)
-            {
-                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
-            }
+            if (!userId.HasValue) return;
 
             var user = await _identityManager.FindByIdAsync(userId.Value.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
-            // Revoke tất cả refresh tokens của user (logout)
             await _tokenGenerator.CancleAsync(user);
         }
 
-        public Task RecruiterRegisterAsync(RecruiterRegisterDto input)
-        {
-            throw new NotImplementedException();
-        }
-
-     /*   [UnitOfWork]
-        public async Task RegisterAsync(RegisterDto input)
+        [UnitOfWork]
+        public async Task CandidateRegisterAsync(CandidateRegisterDto input)
         {
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
@@ -171,17 +131,41 @@ namespace VCareer.Services.Auth
             var result = await _identityManager.CreateAsync(newUser, input.Password);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            // trong trang admin ko cần phải add role , tạo user ko role để admin tự thêm role
-            if (input.Role != null)
+            // Assign CANDIDATE role
+            var role = await _roleManager.FindByNameAsync("CANDIDATE");
+            if (role != null)
             {
-                var role = await _roleManager.FindByNameAsync(input.Role);
-                if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
                 result = await _identityManager.AddToRoleAsync(newUser, role.Name);
                 if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
             }
 
             await CurrentUnitOfWork.SaveChangesAsync();
-        }*/
+        }
+
+        [UnitOfWork]
+        public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+        {
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
+
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
+            {
+                Name = input.Name,
+                PhoneNumber = input.PhoneNumber
+            };
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+            // Assign RECRUITER role
+            var role = await _roleManager.FindByNameAsync("RECRUITER");
+            if (role != null)
+            {
+                result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            }
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
 
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {

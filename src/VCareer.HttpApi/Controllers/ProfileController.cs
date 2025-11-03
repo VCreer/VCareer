@@ -24,6 +24,7 @@ namespace VCareer.Profile
         /// </summary>
         /// <returns>Current user's profile information</returns>
         [HttpGet]
+        /*[Authorize(VCareerPermission.Profile.Default)]*/
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             return await _profileAppService.GetCurrentUserProfileAsync();
