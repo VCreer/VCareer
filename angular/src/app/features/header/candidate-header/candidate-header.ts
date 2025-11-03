@@ -179,4 +179,9 @@ export class CandidateHeaderComponent implements OnInit {
     this.router.navigate(['/candidate/cv-management']);
     this.showProfileMenu = false;
   }
+
+  navigateToChangePassword() {
+    this.router.navigate(['/candidate/change-password']);
+    this.showProfileMenu = false;
+  }
 }

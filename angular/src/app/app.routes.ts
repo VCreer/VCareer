@@ -43,6 +43,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/company-detail/:id',
         loadComponent: () => import('./features/dashboard/company-detail/candidate/company-detail').then(c => c.CompanyDetailComponent),
+      },
+      {
+        path: 'candidate/change-password',
+        loadComponent: () => import('./features/dashboard/change-password/candidate/change-password').then(c => c.ChangePasswordComponent),
       }
     ]
   },
