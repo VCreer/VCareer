@@ -151,6 +151,7 @@ namespace VCareer.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
+
         public async Task<CompanyLegalInfoDto> GetCurrentUserCompanyLegalInfoAsync()
         {
             // In real scenario, you would get company from current user's profile
@@ -166,6 +167,8 @@ namespace VCareer.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
+
+
         public async Task<List<CompanyLegalInfoDto>> GetCurrentUserCompanyLegalInfoListAsync()
         {
             // In real scenario, you would filter by current user
@@ -173,6 +176,9 @@ namespace VCareer.Profile
             var companies = await _companyRepository.GetListAsync();
             return ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
         }
+
+
+
 
         [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
         public async Task DeleteCompanyLegalInfoAsync(int id)
@@ -200,6 +206,8 @@ namespace VCareer.Profile
 
             await _companyRepository.UpdateAsync(company);
         }
+
+
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
@@ -231,6 +239,8 @@ namespace VCareer.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
+
 
         /// <summary>
         /// Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
