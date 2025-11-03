@@ -16,7 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
 using VCareer.Files.BlobContainers;
@@ -44,12 +46,14 @@ using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 using Volo.Abp.Studio;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace VCareer;
 
@@ -151,7 +155,10 @@ public class VCareerHttpApiHostModule : AbpModule
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        // KHÔNG ForwardIdentityAuthenticationForBearer vì nó sẽ force tất cả JWT Bearer authentication 
+        // đi qua OpenIddict validation (không validate được custom JWT tokens)
+        // context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
@@ -160,29 +167,165 @@ public class VCareerHttpApiHostModule : AbpModule
         //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
-        //config event xử lý token
-        Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+        // Cấu hình Authorization để đảm bảo [Authorize] hoạt động đúng
+        context.Services.AddAuthorization(options =>
         {
+            // Đảm bảo default policy yêu cầu authenticated user
+            if (options.DefaultPolicy == null)
+            {
+                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            }
+        });
+
+        // Cấu hình JWT Bearer Authentication cho custom JWT tokens
+        // Đặt JWT Bearer làm default authentication scheme để validate custom JWT tokens
+        context.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            // Đảm bảo unauthenticated requests được reject
+            options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            // Đảm bảo token được save vào HttpContext để có thể access sau
+            options.SaveToken = true;
+            
+            // Lấy JwtOptions từ configuration
+            var jwtSection = configuration.GetSection("Authentication:Jwt");
+            var jwtKey = jwtSection["Key"];
+            var jwtIssuer = jwtSection["Issuer"];
+            var jwtAudience = jwtSection["Audience"];
+            
+            if (!string.IsNullOrEmpty(jwtKey) && !string.IsNullOrEmpty(jwtIssuer) && !string.IsNullOrEmpty(jwtAudience))
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtAudience,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtKey)),
+                    ValidateIssuerSigningKey = true,
+                    // Map claims cho ABP Framework
+                    NameClaimType = ClaimTypes.NameIdentifier,
+                    RoleClaimType = ClaimTypes.Role,
+                    // KHÔNG set RequireExpirationTime = false - để đảm bảo token có expiration
+                    RequireExpirationTime = true,
+                    ClockSkew = TimeSpan.Zero // Không cho phép clock skew để tránh vấn đề về thời gian
+                };
+            }
+            
             options.Events = new JwtBearerEvents
             {
-
-                OnTokenValidated = context =>
+                OnTokenValidated = async context =>
                 {
-                    return Task.CompletedTask;
+                    // Đảm bảo claims được map đúng cho ABP Framework
+                    var identity = context.Principal?.Identity as ClaimsIdentity;
+                    if (identity != null)
+                    {
+                        // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
+                        // Nếu không có, JWT Bearer sẽ không set IsAuthenticated = true
+                        if (!identity.IsAuthenticated)
+                        {
+                            // Tạo lại identity với authentication type "Bearer"
+                            var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
+                            context.Principal = new ClaimsPrincipal(newIdentity);
+                            identity = newIdentity;
+                        }
+                        
+                        // QUAN TRỌNG: Đảm bảo HttpContext.User được set
+                        if (context.HttpContext != null && context.Principal != null)
+                        {
+                            context.HttpContext.User = context.Principal;
+                        }
+                        
+                        System.Console.WriteLine($"[JWT Bearer] Token validated. IsAuthenticated: {identity.IsAuthenticated}, Claims count: {identity.Claims.Count()}");
+                        
+                        // Tìm UserId từ các claims có thể có
+                        var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
+                            ?? identity.FindFirst(ClaimTypes.NameIdentifier)
+                            ?? identity.FindFirst("sub")
+                            ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
+                        
+                        if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+                        {
+                            System.Console.WriteLine($"[JWT Bearer] Found UserId: {userId} from claim type: {userIdClaim.Type}");
+                            
+                            // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
+                            if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
+                            {
+                                identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
+                                System.Console.WriteLine($"[JWT Bearer] Added AbpClaimTypes.UserId claim: {userId}");
+                            }
+                        }
+                        else
+                        {
+                            System.Console.WriteLine("[JWT Bearer] UserId claim not found or invalid!");
+                        }
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("[JWT Bearer] Identity is null!");
+                    }
+                    
+                    await Task.CompletedTask;
                 },
                 OnAuthenticationFailed = context =>
                 {
+                    // Log lỗi authentication để debug
+                    var exception = context.Exception;
+                    // Log vào console để debug
+                    System.Console.WriteLine($"[JWT Bearer] Authentication failed: {exception?.Message}");
+                    if (exception?.InnerException != null)
+                    {
+                        System.Console.WriteLine($"[JWT Bearer] Inner exception: {exception.InnerException.Message}");
+                    }
+                    // KHÔNG handle response ở đây - để authorization middleware xử lý
+                    // Nếu handle response, sẽ trả về 200 thay vì 401
+                    return Task.CompletedTask;
+                },
+                OnMessageReceived = context =>
+                {
+                    // Debug: Kiểm tra xem token có được gửi trong header không
+                    var token = context.Token;
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        System.Console.WriteLine("[JWT Bearer] No token found in Authorization header");
+                    }
+                    else
+                    {
+                        System.Console.WriteLine($"[JWT Bearer] Token received: {token.Substring(0, Math.Min(20, token.Length))}...");
+                    }
                     return Task.CompletedTask;
                 },
                 OnChallenge = context =>
                 {
+                    // Set status code 401 cho unauthorized requests
+                    // QUAN TRỌNG: Handle response và set status code + body
+                    context.HandleResponse();
+                    context.Response.StatusCode = 401;
+                    context.Response.Headers.Append("WWW-Authenticate", "Bearer");
+                    
+                    // Đảm bảo có response body để tránh empty body
+                    var responseBody = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        error = "Unauthorized",
+                        error_description = "Authentication required. Please provide a valid token."
+                    });
+                    
+                    context.Response.ContentType = "application/json";
+                    context.Response.WriteAsync(responseBody);
+                    
                     return Task.CompletedTask;
                 }
             };
         });
-
-
-
     }
 
     private void ConfigureUrls(IConfiguration configuration)
@@ -291,6 +434,33 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "VCareer API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
+
+                // Thêm JWT Bearer Authentication vào Swagger
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\nExample: \"Bearer 12345abcdef\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
+                });
+
+                // Áp dụng security scheme cho tất cả endpoints
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
     }
 
@@ -346,7 +516,9 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();
-        app.UseAbpOpenIddictValidation();
+        // Tạm thời comment UseAbpOpenIddictValidation để test JWT Bearer authentication
+        // Nếu bạn cần OpenIddict cho các tính năng khác, có thể bật lại sau
+        // app.UseAbpOpenIddictValidation();
 
         if (MultiTenancyConsts.IsEnabled)
         {

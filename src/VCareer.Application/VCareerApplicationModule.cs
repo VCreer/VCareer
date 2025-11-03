@@ -43,6 +43,9 @@ public class VCareerApplicationModule : AbpModule
         var conf = context.Services.GetConfiguration();
         // context.Services.AddScoped<ILocationService, LocationAppService>();
 
+        // Đăng ký IHttpContextAccessor cho TokenClaimsHelper (fallback)
+        context.Services.AddHttpContextAccessor();
+
         //  ConfigureClaims(); // đang chưa làm rõ logic claims động
 
         // 🔧 ĐĂNG KÝ LUCENE INDEXER (Singleton - chỉ 1 instance duy nhất)
