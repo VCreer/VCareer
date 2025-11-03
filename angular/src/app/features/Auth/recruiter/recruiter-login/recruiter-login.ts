@@ -1,9 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
-import { GoogleAuthService } from '../../../../core/services/google-auth.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -25,11 +25,11 @@ import {
     ToastNotificationComponent
   ]
 })
-export class RecruiterLoginComponent implements OnInit {
+export class RecruiterLoginComponent {
   private customAuthService = inject(CustomAuthService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
-  private googleAuthService = inject(GoogleAuthService);
+  private navigationService = inject(NavigationService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -52,10 +52,6 @@ export class RecruiterLoginComponent implements OnInit {
       ]],
       rememberMe: [false]
     });
-  }
-
-  ngOnInit(): void {
-    this.googleAuthService.initialize();
   }
 
   emailValidator(control: AbstractControl): ValidationErrors | null {
@@ -131,18 +127,14 @@ export class RecruiterLoginComponent implements OnInit {
         if (email === 'admin@company.com' && password === 'admin123') {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
-          setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
-          }, 2000);
+          this.navigationService.loginAsRecruiter();
         } else if (email === 'test@company.com' || email === 'testrecruiter') {
           this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
           this.loginForm.patchValue({ password: '' });
         } else {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
-          setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
-          }, 2000);
+          this.navigationService.loginAsRecruiter();
         }
       }, 1500);
     } else {
@@ -164,28 +156,8 @@ export class RecruiterLoginComponent implements OnInit {
     this.router.navigate(['/recruiter/forgot-password']);
   }
 
-  async signInWithGoogle() {
-    try {
-      this.isLoading = true;
-      
-      // Sign in with Google
-      const user = await this.googleAuthService.signInWithGoogle();
-      
-      console.log('Google user:', user);
-      
-      this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
-      localStorage.setItem('justLoggedIn', 'true');
-      
-      setTimeout(() => {
-        this.router.navigate(['/recruiter/dashboard']);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Google sign in error:', error);
-      this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thất bại. Vui lòng thử lại.', 'error');
-    }
+  signInWithGoogle() {
+    console.log('Đăng nhập bằng Google');
   }
 
   goToSelector() {

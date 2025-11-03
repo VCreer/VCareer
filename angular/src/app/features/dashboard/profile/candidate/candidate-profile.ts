@@ -7,13 +7,15 @@ import { environment } from '../../../../../environments/environment';
 import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
 import type { ProfileDto, UpdatePersonalInfoDto } from '../../../../proxy/profile/models';
+import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 
 @Component({
   selector: 'app-candidate-profile',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    EnableJobSearchModalComponent
   ],
   templateUrl: './candidate-profile.html',
   styleUrls: ['./candidate-profile.scss']
@@ -37,6 +39,9 @@ export class CandidateProfileComponent implements OnInit {
   // Settings
   topConnectEnabled: boolean = true;
   cvFileName: string = '';
+  jobSearchEnabled: boolean = false;
+  allowRecruiterSearch: boolean = true;
+  showEnableJobSearchModal: boolean = false;
 
   // Avatar modal
   showAvatarModal: boolean = false;
@@ -341,5 +346,28 @@ export class CandidateProfileComponent implements OnInit {
     setTimeout(() => {
       toast.remove();
     }, 3000);
+  }
+
+  // Enable Job Search Modal methods
+  onToggleJobSearch() {
+    // Nếu đang bật (toggle từ ON sang OFF), chỉ cần tắt
+    if (this.jobSearchEnabled) {
+      this.jobSearchEnabled = false;
+    } else {
+      // Nếu đang tắt (toggle từ OFF sang ON), mở modal để chọn CV
+      this.showEnableJobSearchModal = true;
+    }
+  }
+
+  onCloseEnableJobSearchModal() {
+    this.showEnableJobSearchModal = false;
+  }
+
+  onEnableJobSearch(selectedCvIds: string[]) {
+    // Xử lý logic bật tìm việc với các CV đã chọn
+    console.log('Enable job search for CVs:', selectedCvIds);
+    // TODO: Gọi API để bật tìm việc với các CV đã chọn
+    this.jobSearchEnabled = true;
+    this.showSuccessMessage('Đã bật tìm việc thành công!');
   }
 }
