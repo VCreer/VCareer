@@ -46,7 +46,7 @@ namespace VCareer.Services.Profile
 
         //ádadad
 
-        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
+        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
@@ -96,7 +96,7 @@ namespace VCareer.Services.Profile
 
 
         //ádada
-        [Authorize(VCareerPermission.Profile.ChangePassword)]
+        /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();

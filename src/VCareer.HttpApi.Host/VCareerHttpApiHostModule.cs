@@ -282,6 +282,29 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             options.ConventionalControllers.Create(typeof(VCareerApplicationModule).Assembly);
         });
+
+        // Disable antiforgery token validation cho tất cả API controllers
+        // ABP Framework sẽ tự động validate antiforgery token cho các non-API controllers
+        Configure<AbpAntiForgeryOptions>(options =>
+        {
+            // Không validate antiforgery token cho các API controllers
+            // Các API endpoints đã có JWT Bearer authentication nên không cần antiforgery
+            options.AutoValidateFilter = type =>
+            {
+                // Nếu là API controller (namespace chứa "HttpApi" hoặc FullName chứa "HttpApi.Controllers")
+                // thì KHÔNG validate antiforgery (return false)
+                // Ngược lại, validate antiforgery (return true)
+                if (type.Namespace != null && type.Namespace.Contains("HttpApi"))
+                {
+                    return false; // Không validate cho API controllers
+                }
+                if (type.FullName != null && type.FullName.Contains("HttpApi.Controllers"))
+                {
+                    return false; // Không validate cho API controllers
+                }
+                return true; // Validate cho các controllers khác
+            };
+        });
     }
 
     private static void ConfigureSwagger(ServiceConfigurationContext context, IConfiguration configuration)
