@@ -1,0 +1,14 @@
+button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  svg {
+    flex-shrink: 0;
+  }
+  
+  span {
+    white-space: nowrap;
+  }
+}
+

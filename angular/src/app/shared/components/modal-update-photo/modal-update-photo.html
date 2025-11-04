@@ -1,0 +1,25 @@
+<div class="el-dialog__wrapper modal-update-photo">
+  <div class="el-dialog">
+    <div class="el-dialog__header">
+      <h3 class="el-dialog__title">{{ title }}</h3>
+      <button class="el-dialog__close" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="el-dialog__body">
+      <div class="upload-area" (click)="triggerFileInput()" (dragover)="onDragOver($event)" (drop)="onDrop($event)" (dragleave)="onDragLeave($event)" [class.drag-over]="isDragOver">
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+        <div *ngIf="!previewUrl">
+          <i class="fa fa-cloud-upload fa-3x"></i>
+          <p>{{ uploadInstruction }}</p>
+          <p class="note">{{ note }}</p>
+        </div>
+        <img *ngIf="previewUrl" [src]="previewUrl" alt="Preview" class="preview-image">
+      </div>
+    </div>
+    <div class="el-dialog__footer">
+      <button class="btn-secondary" (click)="onClose()">{{ cancelButtonText }}</button>
+      <button class="btn-primary" (click)="onConfirm()" [disabled]="!previewUrl">{{ confirmButtonText }}</button>
+    </div>
+  </div>
+</div>
