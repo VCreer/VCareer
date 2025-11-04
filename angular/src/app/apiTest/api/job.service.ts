@@ -117,6 +117,7 @@ export interface JobViewDto {
   isUrgent: boolean;
   postedAt: Date;
   provinceName?: string | null;
+  isSaved?: boolean; // đã lưu bởi user hiện tại
 }
 
 /**
@@ -160,6 +161,7 @@ export interface JobViewDetail {
   viewCount: number;
   applyCount: number;
   categoryPath: CategoryItemDto[];
+  isSaved?: boolean; // đã lưu bởi user hiện tại
 }
 
 // ============================================
@@ -213,5 +215,29 @@ export class JobApiService {
     return this.http.get<JobViewDto[]>(`${this.apiUrl}/${jobId}/related`, {
       params: { maxCount: maxCount.toString() }
     });
+  }
+
+  /**
+   * POST /api/jobs/{jobId}/save
+   * Lưu job vào danh sách yêu thích
+   */
+  saveJob(jobId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/save`, {});
+  }
+
+  /**
+   * DELETE /api/jobs/{jobId}/save
+   * Bỏ lưu job khỏi danh sách yêu thích
+   */
+  unsaveJob(jobId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${jobId}/save`);
+  }
+
+  /**
+   * GET /api/jobs/{jobId}/save-status
+   * Kiểm tra xem job đã được lưu chưa
+   */
+  getSavedJobStatus(jobId: string): Observable<{ isSaved: boolean; savedAt?: string }> {
+    return this.http.get<{ isSaved: boolean; savedAt?: string }>(`${this.apiUrl}/${jobId}/save-status`);
   }
 }

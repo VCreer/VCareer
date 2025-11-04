@@ -68,6 +68,11 @@ namespace VCareer.Dto.Job
         /// Ngày hết hạn
         /// </summary>
         public DateTime ExpiresAt { get; set; }
+
+        /// <summary>
+        /// Job đã được người dùng hiện tại lưu (favorite) hay chưa
+        /// </summary>
+        public bool IsSaved { get; set; }
     }
 }
 
