@@ -120,6 +120,11 @@ namespace VCareer.Dto.Job
         /// Chuỗi danh mục (từ cấp 1 -> cấp 3) của job hiện tại
         /// </summary>
         public List<CategoryItemDto> CategoryPath { get; set; } = new List<CategoryItemDto>();
+
+        /// <summary>
+        /// Job đã được người dùng hiện tại lưu (favorite) hay chưa
+        /// </summary>
+        public bool IsSaved { get; set; } = false;
     }
 }
 

@@ -293,16 +293,30 @@
         }
       }
 
+      // Khi đã lưu (active) - Trái tim màu đỏ đậm
       &.active {
-        background: #f0f9ff;
-        border-color: #0F83BA;
+        background: #fee2e2;
+        border-color: #dc2626;
+        color: #dc2626;
 
         i {
-          color: #0F83BA;
-          -webkit-text-stroke: 0px;
+          color: #dc2626;
+          -webkit-text-stroke: 1px #dc2626;
+          font-weight: 900;
+        }
+
+        &:hover {
+          background: #fecaca;
+          border-color: #b91c1c;
+
+          i {
+            color: #b91c1c;
+            -webkit-text-stroke: 1px #b91c1c;
+          }
         }
       }
     }
+
   }
 }
 
@@ -459,16 +473,30 @@
         }
       }
 
+      // Khi đã lưu (active) - Trái tim màu đỏ đậm
       &.active {
-        background: #f0f9ff;
-        border-color: #0F83BA;
+        background: #fee2e2;
+        border-color: #dc2626;
+        color: #dc2626;
 
         i {
-          color: #0F83BA;
-          -webkit-text-stroke: 0px;
+          color: #dc2626;
+          -webkit-text-stroke: 1px #dc2626;
+          font-weight: 900;
+        }
+
+        &:hover {
+          background: #fecaca;
+          border-color: #b91c1c;
+
+          i {
+            color: #b91c1c;
+            -webkit-text-stroke: 1px #b91c1c;
+          }
         }
       }
     }
+
   }
 }
 

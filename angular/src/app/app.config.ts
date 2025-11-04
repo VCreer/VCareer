@@ -14,6 +14,8 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import {
   GoogleLoginProvider,
   SocialAuthServiceConfig,
@@ -84,6 +86,12 @@ export const appConfig: ApplicationConfig = {
     //   useClass: MockApiInterceptor,
     //   multi: true,
     // }] : []),
+    // Auth Interceptor - Tự động gắn token vào mọi request
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
+    },
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,

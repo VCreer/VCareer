@@ -72,6 +72,15 @@ export class NavigationService {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userRole');
     localStorage.removeItem('isVerified');
+    // Xóa token ở cả localStorage và sessionStorage
+    try {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+    } catch {}
+    try {
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+    } catch {}
     // Sau khi đăng xuất, redirect về trang chủ
     this.router.navigate(['/']);
   }

@@ -68,6 +68,9 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             
             // Repository cho Company
             options.AddRepository<VCareer.Models.Companies.Company, VCareer.Repositories.Companies.CompanyRepository>();
+            
+            // Repository cho SavedJob
+            options.AddRepository<VCareer.Models.Job.SavedJob, VCareer.Repositories.Job.SavedJobRepository>();
         });
         
         // ==========================================
@@ -78,6 +81,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         // Nếu không, khi inject ILocationRepository sẽ bị lỗi 500!
         
         context.Services.AddTransient<ILocationRepository, LocationRepository>();
+        context.Services.AddTransient<ISavedJobRepository, SavedJobRepository>();
         context.Services.AddTransient<IDistrictRepository, DistrictRepository>();
         context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
         context.Services.AddTransient<IJobPostingRepository, JobPostingRepository>();

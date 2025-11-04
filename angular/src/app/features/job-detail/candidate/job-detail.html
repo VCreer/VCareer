@@ -122,7 +122,8 @@
               {{ translate('job_detail.apply_now') }}
             </button>
             <button class="box-apply-save" [class.active]="isHeartActive" (click)="toggleHeart()">
-              <i class="fa fa-heart"></i>
+              <i class="fa" [ngClass]="isHeartActive ? 'fa-heart' : 'fa-heart-o'"></i>
+              <span>{{ isHeartActive ? 'Đã lưu' : 'Lưu tin' }}</span>
             </button>
           </div>
         </div>
@@ -316,4 +317,19 @@
     (submit)="onModalSubmit($event)"
   >
   </app-apply-job-modal>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false"
+  ></app-toast-notification>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    *ngIf="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

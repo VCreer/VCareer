@@ -6,6 +6,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
 import {
   JobApiService,
   EmploymentType,
@@ -18,6 +19,7 @@ import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api
 import { Router } from '@angular/router';
 import { CategoryApiService, CategoryTreeDto } from '../../../apiTest/api/category.service';
 import { environment } from '../../../../environments/environment';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-job-detail',
@@ -29,6 +31,7 @@ import { environment } from '../../../../environments/environment';
     ToastNotificationComponent,
     SearchHeaderComponent,
     ApplyJobModalComponent,
+    LoginModalComponent,
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],
@@ -38,10 +41,13 @@ export class JobDetailComponent implements OnInit {
   isHeartActive: boolean = false;
   showToast: boolean = false;
   toastMessage: string = '';
+  toastType: 'success' | 'error' = 'success';
   selectedCategory: string = '';
   selectedLocation: string = '';
   searchPosition: string = '';
   showApplyModal: boolean = false;
+  showLoginModal: boolean = false;
+  isAuthenticated: boolean = false;
 
   // Job data from API
   jobDetail: JobViewDetail | null = null;
@@ -60,7 +66,8 @@ export class JobDetailComponent implements OnInit {
     private companyService: CompanyService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private categoryApi: CategoryApiService
+    private categoryApi: CategoryApiService,
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit() {
@@ -68,9 +75,16 @@ export class JobDetailComponent implements OnInit {
       this.selectedLanguage = lang;
     });
 
+    // Check authentication status
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isAuthenticated = isLoggedIn;
+      console.log('[JobDetail] isLoggedIn =', isLoggedIn);
+    });
+
     // Get job ID from route params
     this.route.params.subscribe(params => {
       this.jobId = params['id'];
+      console.log('[JobDetail] route jobId =', this.jobId);
       if (this.jobId) {
         this.loadJobDetail();
       }
@@ -85,11 +99,36 @@ export class JobDetailComponent implements OnInit {
 
     this.jobApi.getJobById(this.jobId).subscribe({
       next: (jobDetail: JobViewDetail) => {
+        console.log('[JobDetail] getJobById result =', jobDetail);
+        console.log('gia tri cua isSaved  =', jobDetail.isSaved);
         this.jobDetail = jobDetail;
         this.isLoading = false;
 
         // Load company info after job detail is loaded
         this.loadCompanyInfo();
+
+        // Ưu tiên lấy từ DTO nếu có
+        // if (typeof jobDetail.isSaved === 'boolean') {
+        this.isHeartActive = jobDetail.isSaved;
+        console.log('[JobDetail] isSaved from DTO =', jobDetail.isSaved);
+        // } else {
+        //   console.log('[JobDetail] DTO missing isSaved → calling loadSavedStatus');
+        //   this.loadSavedStatus();
+        // }
+
+        // Load saved status if authenticated
+        // if (this.isAuthenticated) {
+        //   // Ưu tiên lấy từ DTO nếu có
+        //   if (typeof jobDetail.isSaved === 'boolean') {
+        //     this.isHeartActive = jobDetail.isSaved;
+        //     console.log('[JobDetail] isSaved from DTO =', jobDetail.isSaved);
+        //   } else {
+        //     console.log('[JobDetail] DTO missing isSaved → calling loadSavedStatus');
+        //     this.loadSavedStatus();
+        //   }
+        // } else {
+        //   this.isHeartActive = false;
+        // }
       },
       error: error => {
         console.error('❌ Error loading job detail:', error);
@@ -308,7 +347,7 @@ export class JobDetailComponent implements OnInit {
       error: _ => {
         // Fallback: navigate by slug if tree load fails
         this.router.navigate(['/candidate/job'], { queryParams: { category: cat.slug } });
-      }
+      },
     });
   }
 
@@ -338,7 +377,102 @@ export class JobDetailComponent implements OnInit {
     return this.translationService.translate(key);
   }
 
+  /**
+   * Load saved job status from API
+   */
+  loadSavedStatus() {
+    if (!this.jobId) return;
+
+    const tokenDebug =
+      localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    console.log('[JobDetail] loadSavedStatus token exists =', !!tokenDebug);
+
+    this.jobApi.getSavedJobStatus(this.jobId).subscribe({
+      next: status => {
+        this.isHeartActive = status.isSaved;
+        console.log('[JobDetail] loadSavedStatus ->', status);
+        this.cdr.detectChanges();
+      },
+      error: error => {
+        // Silently fail - user might not be authenticated
+        console.error('[JobDetail] Error loading saved status:', error);
+      },
+    });
+  }
+
+  /**
+   * Toggle heart (save/unsave job)
+   * If not authenticated, show login modal
+   */
   toggleHeart(): void {
+    if (!this.isAuthenticated) {
+      // Show login modal
+      this.showLoginModal = true;
+      return;
+    }
+
+    if (!this.jobId) return;
+
+    if (this.isHeartActive) {
+      // Unsave job
+      this.jobApi.unsaveJob(this.jobId).subscribe({
+        next: () => {
+          this.isHeartActive = false;
+          this.showToastMessage('Đã bỏ lưu công việc', 'success');
+        },
+        error: error => {
+          console.error('Error unsaving job:', error);
+          this.showToastMessage('Không thể bỏ lưu công việc', 'error');
+        },
+      });
+    } else {
+      // Save job
+      this.jobApi.saveJob(this.jobId).subscribe({
+        next: () => {
+          this.isHeartActive = true;
+          this.showToastMessage('Đã lưu công việc thành công', 'success');
+        },
+        error: error => {
+          console.error('Error saving job:', error);
+          this.showToastMessage('Không thể lưu công việc', 'error');
+        },
+      });
+    }
+  }
+
+  /**
+   * Handle login success - reload saved status
+   */
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
+    // Reload saved status after login
+    if (this.jobId) {
+      // Yêu cầu: sau khi đăng nhập thành công, reload lại trang job detail
+      window.location.reload();
+    }
+  }
+
+  /**
+   * Close login modal
+   */
+  closeLoginModal() {
+    this.showLoginModal = false;
+  }
+
+  /**
+   * Show toast message
+   */
+  showToastMessage(message: string, type: 'success' | 'error') {
+    this.toastMessage = message;
+    this.showToast = true;
+    this.toastType = type;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
+  toggleHeartOld(): void {
     this.isHeartActive = !this.isHeartActive;
     if (this.isHeartActive) {
       this.toastMessage = this.translate('job_detail.save_success');
