@@ -59,6 +59,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/write-cv/:type',
         loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
+      },
+      {
+        path: 'candidate/save-jobs',
+        loadComponent: () => import('./features/dashboard/save-jobs/candidate/saved-jobs').then(c => c.SavedJobsComponent),
       }
     ]
   },
