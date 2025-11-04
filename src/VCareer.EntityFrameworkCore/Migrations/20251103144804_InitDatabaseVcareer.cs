@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class createAgainDB : Migration
+    public partial class InitDatabaseVcareer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -556,6 +556,27 @@ END
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Companies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FileDescriptors",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StorageName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OriginalName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Extension = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
+                    MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContainerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StoragePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UploadTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FileDescriptors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1912,6 +1933,9 @@ END
 
             migrationBuilder.DropTable(
                 name: "EmployeeIpAddresses");
+
+            migrationBuilder.DropTable(
+                name: "FileDescriptors");
 
             migrationBuilder.DropTable(
                 name: "JobPostingTags");
