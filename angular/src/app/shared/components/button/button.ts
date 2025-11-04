@@ -19,7 +19,13 @@ export class ButtonComponent {
 
   onClick(event: Event): void {
     if (!this.disabled && !this.loading) {
+      // If buttonType is 'submit', don't prevent default to allow form submission
+      if (this.buttonType !== 'submit') {
+        event.preventDefault();
+      }
       this.click.emit(event);
+    } else {
+      event.preventDefault();
     }
   }
 }

@@ -102,7 +102,7 @@
         </a>
       </li>
       <li class="sidebar-nav-item">
-        <a (click)="navigateTo('/recruiter/account-settings')" class="sidebar-link">
+        <a (click)="navigateTo('/recruiter/recruiter-setting')" class="sidebar-link" [class.active]="isActive('/recruiter/recruiter-setting')">
           <i class="fa fa-cog sidebar-icon"></i>
           <span class="sidebar-link-text">{{ translate('sidebar.account_settings') }}</span>
         </a>
