@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { HeaderTypeService, HeaderType } from '../../core/services/header-type.service';
 import { NavigationService } from '../../core/services/navigation.service';
 import { CandidateHeaderComponent } from './candidate-header/candidate-header';
@@ -53,6 +53,7 @@ export class HeaderWrapperComponent implements OnInit {
   currentHeaderType: HeaderType | null = 'candidate';
   isTransitioning = false;
   isManagementHeader = false;
+  private lastPathname = '';
 
   constructor(
     private headerTypeService: HeaderTypeService,
@@ -63,17 +64,35 @@ export class HeaderWrapperComponent implements OnInit {
   ngOnInit() {
     // Set header type based on current URL and login state
     const currentUrl = this.router.url;
-    const isLoggedIn = this.navigationService.isLoggedIn();
-    const userRole = this.navigationService.getCurrentRole();
+    this.updateHeaderType(currentUrl);
     
-    this.updateHeaderType(currentUrl, userRole);
-    
-    // Subscribe to route changes
+    // Subscribe to route changes - ignore query param changes for same route
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.updateHeaderType(event.url, userRole);
+        const currentPathname = event.url.split('?')[0];
+        // Only update if pathname actually changed (not just query params)
+        if (currentPathname !== this.lastPathname) {
+          this.lastPathname = currentPathname;
+          this.updateHeaderType(event.url);
+        }
       });
+    
+    // Subscribe to login state changes with debounce
+    this.navigationService.isLoggedIn$.pipe(
+      debounceTime(100),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.updateHeaderType(this.router.url);
+    });
+    
+    // Subscribe to role changes with debounce
+    this.navigationService.userRole$.pipe(
+      debounceTime(100),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.updateHeaderType(this.router.url);
+    });
     
     this.headerTypeService.headerType$.subscribe(headerType => {
       // Đảm bảo chỉ có một header hiển thị tại một thời điểm
@@ -87,16 +106,34 @@ export class HeaderWrapperComponent implements OnInit {
     });
   }
 
-  private updateHeaderType(currentUrl: string, userRole: string | null) {
-    // Check if we should show management header for /recruiter/home or /recruiter/recruiter-verify
-    if (currentUrl === '/recruiter/home' || currentUrl.startsWith('/recruiter/home') ||
-        currentUrl === '/recruiter/recruiter-verify' || currentUrl.startsWith('/recruiter/recruiter-verify')) {
+  private updateHeaderType(currentUrl: string) {
+    const isLoggedIn = this.navigationService.isLoggedIn();
+    const userRole = this.navigationService.getCurrentRole();
+    
+    // Extract pathname without query params
+    const urlPath = currentUrl.split('?')[0];
+    
+    // Check if we should show management header for recruiter management routes
+    const managementRoutes = [
+      '/recruiter/home',
+      '/recruiter/recruiter-verify',
+      '/recruiter/recruiter-setting'
+    ];
+    
+    const isManagementRoute = managementRoutes.some(route => 
+      urlPath === route || urlPath.startsWith(route + '/')
+    );
+    
+    // Only show management header if: logged in + recruiter role + management route
+    if (isManagementRoute && isLoggedIn && userRole === 'recruiter') {
       this.isManagementHeader = true;
       this.headerTypeService.switchToRecruiter();
-    } else if (currentUrl.startsWith('/recruiter') || userRole === 'recruiter') {
+    } else if (urlPath.startsWith('/recruiter')) {
+      // Recruiter routes but not logged in or not management route
       this.isManagementHeader = false;
       this.headerTypeService.switchToRecruiter();
     } else {
+      // Default to candidate header
       this.isManagementHeader = false;
       this.headerTypeService.switchToCandidate();
     }

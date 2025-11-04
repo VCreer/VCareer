@@ -1,3 +1,117 @@
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ButtonComponent } from '../button/button';
+import { TranslationService } from '../../../core/services/translation.service';
+import { DownloadCvModal } from '../download-cv-modal/download-cv-modal';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification';
+import { ConfirmDeleteModal } from '../confirm-delete-modal/confirm-delete-modal';
+import { RenameCvModal } from '../rename-cv-modal/rename-cv-modal';
+
+@Component({
+  selector: 'app-cv-list',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    ButtonComponent,
+    DownloadCvModal,
+    ToastNotificationComponent,
+    ConfirmDeleteModal,
+    RenameCvModal
+  ],
+  templateUrl: './cv-list.html',
+  styleUrls: ['./cv-list.scss']
+})
+export class CvListComponent {
+  @Input() cvs: any[] = [];
+  @Input() loading = false;
+
+  @Output() cvUpdated = new EventEmitter<string>();
+  @Output() cvDeleted = new EventEmitter<string>();
+  @Output() cvDuplicated = new EventEmitter<string>();
+  @Output() cvSetDefault = new EventEmitter<string>();
+  @Output() cvViewed = new EventEmitter<string>();
+  @Output() cvEdited = new EventEmitter<string>();
+  @Output() createCv = new EventEmitter<void>();
+
+  // UI state used by template
+  hoveredCvId: string | null = null;
+  showMoreMenu: string | null = null;
+  showDownloadModal = false;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
+  showConfirmDeleteModal = false;
+  showRenameModal = false;
+  currentCvName = '';
+  private cvToDelete: string | null = null;
+
+  constructor(private translationService: TranslationService) {}
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+
+  onView(cvId: string) {
+    this.cvViewed.emit(cvId);
+  }
+
+  onEdit(cvId: string) {
+    this.cvEdited.emit(cvId);
+  }
+
+  onDuplicate(cvId: string) {
+    this.cvDuplicated.emit(cvId);
+  }
+
+  onSetDefault(cvId: string) {
+    this.cvSetDefault.emit(cvId);
+  }
+
+  onDelete(cvId: string) {
+    this.cvToDelete = cvId;
+    this.showConfirmDeleteModal = true;
+  }
+
+  onCreate() {
+    this.createCv.emit();
+  }
+
+  // Template handlers mirroring original names
+  onCreateCv() { this.onCreate(); }
+  onCvHover(cvId: string) { this.hoveredCvId = cvId; }
+  onCvLeave(cvId: string) { this.hoveredCvId = null; this.showMoreMenu = null; }
+  onToggleStar(cvId: string) { this.onSetDefault(cvId); }
+  toggleMoreMenu(cvId: string) { this.showMoreMenu = this.showMoreMenu === cvId ? null : cvId; }
+  onPushToTop(_cvId: string) {}
+  onCopyLink(cvId: string) {
+    const link = `${window.location.origin}/cv/${cvId}`;
+    navigator.clipboard.writeText(link);
+    this.toastMessage = this.translate('cv_card.copy_link_success');
+    this.toastType = 'success';
+    this.showToast = true;
+  }
+  onShareFacebook(cvId: string) {
+    const link = `${window.location.origin}/cv/${cvId}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+    window.open(url, '_blank');
+  }
+  onDuplicateCv(cvId: string) { this.onDuplicate(cvId); this.showMoreMenu = null; }
+  onRenameCv(_cvId: string) {
+    this.currentCvName = '';
+    this.showRenameModal = true;
+  }
+  onDeleteCv(cvId: string) { this.onDelete(cvId); this.showMoreMenu = null; }
+  onDownloadCv(_cvId: string) { this.showDownloadModal = true; }
+  onCloseDownloadModal() { this.showDownloadModal = false; }
+  onDownloadWithoutLogo() { this.showDownloadModal = false; }
+  onDownloadFree() { this.showDownloadModal = false; }
+  onToastClose() { this.showToast = false; }
+  onCloseConfirmDeleteModal() { this.showConfirmDeleteModal = false; this.cvToDelete = null; }
+  onConfirmDelete() { if (this.cvToDelete) { this.cvDeleted.emit(this.cvToDelete); } this.onCloseConfirmDeleteModal(); }
+  onCloseRenameModal() { this.showRenameModal = false; }
+  onRename(newName: string) { this.cvUpdated.emit(newName); this.showRenameModal = false; }
+}
+
 // import { Component, Input, Output, EventEmitter } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // // import { Cv } from '../../../proxy/cv/cv.service';

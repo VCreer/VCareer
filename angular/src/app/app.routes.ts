@@ -24,6 +24,10 @@ export const APP_ROUTES: Routes = [
       //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
       // },
       {
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
+      {
         path: 'candidate/job',
         loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
       },
@@ -47,6 +51,14 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/change-password',
         loadComponent: () => import('./features/dashboard/change-password/candidate/change-password').then(c => c.ChangePasswordComponent),
+      },
+      {
+        path: 'candidate/cv-sample',
+        loadComponent: () => import('./features/dashboard/cv-sample/candidate/cv-sample').then(c => c.CvSampleComponent),
+      },
+      {
+        path: 'candidate/write-cv/:type',
+        loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
       }
     ]
   },
@@ -119,6 +131,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'recruiter-verify',
         loadComponent: () => import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(c => c.RecruiterVerifyOtpComponent),
+      },
+      {
+        path: 'recruiter-setting',
+        loadComponent: () => import('./features/dashboard/setting/recruiter/recruiter-setting').then(c => c.RecruiterSettingComponent),
       },
       // {
       //   path: 'performance-dashboard',
