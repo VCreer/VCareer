@@ -508,6 +508,12 @@ export class TranslationService {
       'profile_sidebar.email_phone': 'Email & Số điện thoại',
       
       // Profile Picture Edit
+      'profile_picture_edit.title': 'Chỉnh sửa ảnh đại diện',
+      'profile_picture_edit.preview_label': 'Xem trước',
+      'profile_picture_edit.change_picture': 'Thay đổi ảnh',
+      'profile_picture_edit.delete_picture': 'Xóa ảnh',
+      'profile_picture_edit.done': 'Hoàn thành',
+      'profile_picture_edit.close_no_save': 'Đóng không lưu',
       'profile_picture_edit.change_success': 'Đã thay đổi ảnh đại diện',
       'profile_picture_edit.delete_success': 'Đã xóa ảnh đại diện',
       
@@ -1014,6 +1020,12 @@ export class TranslationService {
       'profile_sidebar.email_phone': 'Email & Phone',
       
       // Profile Picture Edit
+      'profile_picture_edit.title': 'Edit Profile Picture',
+      'profile_picture_edit.preview_label': 'Preview',
+      'profile_picture_edit.change_picture': 'Change Picture',
+      'profile_picture_edit.delete_picture': 'Delete Picture',
+      'profile_picture_edit.done': 'Done',
+      'profile_picture_edit.close_no_save': 'Close without saving',
       'profile_picture_edit.change_success': 'Profile picture changed',
       'profile_picture_edit.delete_success': 'Profile picture deleted',
       
