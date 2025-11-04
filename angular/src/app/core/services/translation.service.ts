@@ -465,7 +465,58 @@ export class TranslationService {
       'write_cv.photo_modal_note': 'Hỗ trợ định dạng JPG, PNG. Kích thước tối đa 5MB',
       'write_cv.photo_modal_cancel': 'Hủy',
       'write_cv.photo_modal_confirm': 'Xác nhận',
-      'write_cv.photo_update_success': 'Cập nhật ảnh thành công'
+      'write_cv.photo_update_success': 'Cập nhật ảnh thành công',
+      
+      // CV Management
+      'cv_management.title': 'Quản lý CV',
+      'cv_management.subtitle': 'Tạo, chỉnh sửa và quản lý CV của bạn',
+      'cv_management.cv_list_title': 'Danh sách CV',
+      'cv_management.no_cv_title': 'Chưa có CV nào',
+      'cv_management.no_cv_description': 'Bắt đầu tạo CV đầu tiên của bạn để ứng tuyển việc làm',
+      'cv_management.upload_cv_title': 'CV đã tải lên',
+      'cv_management.no_cv_uploaded': 'Chưa có CV nào được tải lên',
+      'cv_management.upload_cv': 'Tải lên CV',
+      'cv_management.create_cv': 'Tạo CV',
+      'cv_management.create_first_cv': 'Tạo CV đầu tiên',
+      'cv_management.download': 'Tải xuống',
+      'cv_management.edit': 'Chỉnh sửa',
+      'cv_management.push_to_top': 'Đẩy lên đầu',
+      'cv_management.copy_link': 'Sao chép liên kết',
+      'cv_management.share_facebook': 'Chia sẻ Facebook',
+      'cv_management.create_copy': 'Tạo bản sao',
+      'cv_management.rename': 'Đổi tên',
+      'cv_management.delete': 'Xóa',
+      'cv_management.updated': 'Cập nhật',
+      'cv_management.loading': 'Đang tải...',
+      'cv_management.updated_successfully': 'Cập nhật CV thành công',
+      'cv_management.deleted_successfully': 'Xóa CV thành công',
+      'cv_management.duplicated_successfully': 'Sao chép CV thành công',
+      'cv_management.set_default_successfully': 'Đặt CV mặc định thành công',
+      
+      // CV Card
+      'cv_card.updated': 'Cập nhật',
+      'cv_card.copy_link_success': 'Đã sao chép liên kết',
+      'cv_card.delete_success': 'Đã xóa CV',
+      'cv_card.share_facebook_success': 'Đã chia sẻ lên Facebook',
+      'cv_card.rename_success': 'Đã đổi tên CV',
+      
+      // Profile Sidebar
+      'profile_sidebar.welcome_back': 'Chào mừng trở lại',
+      'profile_sidebar.verified_account': 'Tài khoản đã xác thực',
+      'profile_sidebar.upgrade_account': 'Nâng cấp tài khoản',
+      'profile_sidebar.contact_description': 'Nhà tuyển dụng có thể liên hệ với bạn qua',
+      'profile_sidebar.email_phone': 'Email & Số điện thoại',
+      
+      // Profile Picture Edit
+      'profile_picture_edit.change_success': 'Đã thay đổi ảnh đại diện',
+      'profile_picture_edit.delete_success': 'Đã xóa ảnh đại diện',
+      
+      // Upload CV
+      'upload_cv.upload_success': 'Tải lên CV thành công',
+      
+      // Download CV
+      'download_cv.success_without_logo': 'Tải xuống CV thành công (không logo)',
+      'download_cv.success_free': 'Tải xuống CV miễn phí thành công'
     },
     en: {
       // Breadcrumb
@@ -920,7 +971,58 @@ export class TranslationService {
       'write_cv.photo_modal_note': 'Supports JPG, PNG formats. Maximum size 5MB',
       'write_cv.photo_modal_cancel': 'Cancel',
       'write_cv.photo_modal_confirm': 'Confirm',
-      'write_cv.photo_update_success': 'Photo updated successfully'
+      'write_cv.photo_update_success': 'Photo updated successfully',
+      
+      // CV Management
+      'cv_management.title': 'CV Management',
+      'cv_management.subtitle': 'Create, edit and manage your CVs',
+      'cv_management.cv_list_title': 'CV List',
+      'cv_management.no_cv_title': 'No CV yet',
+      'cv_management.no_cv_description': 'Start creating your first CV to apply for jobs',
+      'cv_management.upload_cv_title': 'Uploaded CVs',
+      'cv_management.no_cv_uploaded': 'No CV uploaded yet',
+      'cv_management.upload_cv': 'Upload CV',
+      'cv_management.create_cv': 'Create CV',
+      'cv_management.create_first_cv': 'Create First CV',
+      'cv_management.download': 'Download',
+      'cv_management.edit': 'Edit',
+      'cv_management.push_to_top': 'Push to Top',
+      'cv_management.copy_link': 'Copy Link',
+      'cv_management.share_facebook': 'Share on Facebook',
+      'cv_management.create_copy': 'Create Copy',
+      'cv_management.rename': 'Rename',
+      'cv_management.delete': 'Delete',
+      'cv_management.updated': 'Updated',
+      'cv_management.loading': 'Loading...',
+      'cv_management.updated_successfully': 'CV updated successfully',
+      'cv_management.deleted_successfully': 'CV deleted successfully',
+      'cv_management.duplicated_successfully': 'CV duplicated successfully',
+      'cv_management.set_default_successfully': 'CV set as default successfully',
+      
+      // CV Card
+      'cv_card.updated': 'Updated',
+      'cv_card.copy_link_success': 'Link copied',
+      'cv_card.delete_success': 'CV deleted',
+      'cv_card.share_facebook_success': 'Shared on Facebook',
+      'cv_card.rename_success': 'CV renamed',
+      
+      // Profile Sidebar
+      'profile_sidebar.welcome_back': 'Welcome back',
+      'profile_sidebar.verified_account': 'Verified Account',
+      'profile_sidebar.upgrade_account': 'Upgrade Account',
+      'profile_sidebar.contact_description': 'Recruiters can contact you via',
+      'profile_sidebar.email_phone': 'Email & Phone',
+      
+      // Profile Picture Edit
+      'profile_picture_edit.change_success': 'Profile picture changed',
+      'profile_picture_edit.delete_success': 'Profile picture deleted',
+      
+      // Upload CV
+      'upload_cv.upload_success': 'CV uploaded successfully',
+      
+      // Download CV
+      'download_cv.success_without_logo': 'CV downloaded successfully (without logo)',
+      'download_cv.success_free': 'CV downloaded successfully (free)'
       ,
       // Category names (extra pages)
       'Sản xuất': 'Manufacturing',
