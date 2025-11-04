@@ -93,6 +93,7 @@ namespace VCareer.Profile
         /// <param name="input">Password change information</param>
         /// <returns>No content</returns>
         [HttpPut("change-password")]
+        [IgnoreAntiforgeryToken]
         /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto input)
         {

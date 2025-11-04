@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class TaoLaiDB : Migration
+    public partial class InitDatabaseVcareer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -553,6 +553,38 @@ namespace VCareer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Companies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CvTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    PreviewImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    LayoutDefinition = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Styles = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SupportedFields = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    SortOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsFree = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    Version = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CvTemplates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1201,36 +1233,22 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CVs",
+                name: "CandidateCvs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CandidateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CVName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    CVType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    IsDefault = table.Column<bool>(type: "bit", nullable: false),
-                    IsPublic = table.Column<bool>(type: "bit", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CareerObjective = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    WorkExperience = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Education = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Skills = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Projects = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Certificates = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Languages = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Interests = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    OriginalFileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    FileUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    FileSize = table.Column<long>(type: "bigint", nullable: true),
-                    FileType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
+                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CvName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DataJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsPublished = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsPublic = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    PublishedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ViewCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -1241,12 +1259,18 @@ namespace VCareer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CVs", x => x.Id);
+                    table.PrimaryKey("PK_CandidateCvs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CVs_CandidateProfile_CandidateId",
+                        name: "FK_CandidateCvs_CandidateProfile_CandidateId",
                         column: x => x.CandidateId,
                         principalTable: "CandidateProfile",
                         principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CandidateCvs_CvTemplates_TemplateId",
+                        column: x => x.TemplateId,
+                        principalTable: "CvTemplates",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -1652,6 +1676,36 @@ namespace VCareer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_CandidateId",
+                table: "CandidateCvs",
+                column: "CandidateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_CandidateId_IsDefault",
+                table: "CandidateCvs",
+                columns: new[] { "CandidateId", "IsDefault" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_IsDefault",
+                table: "CandidateCvs",
+                column: "IsDefault");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_IsPublic",
+                table: "CandidateCvs",
+                column: "IsPublic");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_IsPublished",
+                table: "CandidateCvs",
+                column: "IsPublished");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidateCvs_TemplateId",
+                table: "CandidateCvs",
+                column: "TemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Companies_BusinessLicenseNumber",
                 table: "Companies",
                 column: "BusinessLicenseNumber",
@@ -1677,29 +1731,24 @@ namespace VCareer.Migrations
                 column: "IndustryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CVs_CandidateId",
-                table: "CVs",
-                column: "CandidateId");
+                name: "IX_CvTemplates_Category",
+                table: "CvTemplates",
+                column: "Category");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CVs_CVType",
-                table: "CVs",
-                column: "CVType");
+                name: "IX_CvTemplates_IsActive",
+                table: "CvTemplates",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CVs_IsDefault",
-                table: "CVs",
-                column: "IsDefault");
+                name: "IX_CvTemplates_IsFree",
+                table: "CvTemplates",
+                column: "IsFree");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CVs_IsPublic",
-                table: "CVs",
-                column: "IsPublic");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CVs_Status",
-                table: "CVs",
-                column: "Status");
+                name: "IX_CvTemplates_SortOrder",
+                table: "CvTemplates",
+                column: "SortOrder");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Districts_ProvinceId",
@@ -1895,10 +1944,10 @@ namespace VCareer.Migrations
                 name: "AppRefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "CompanyIndustries");
+                name: "CandidateCvs");
 
             migrationBuilder.DropTable(
-                name: "CVs");
+                name: "CompanyIndustries");
 
             migrationBuilder.DropTable(
                 name: "Districts");
@@ -1931,10 +1980,13 @@ namespace VCareer.Migrations
                 name: "AbpRoles");
 
             migrationBuilder.DropTable(
-                name: "Industries");
+                name: "CandidateProfile");
 
             migrationBuilder.DropTable(
-                name: "CandidateProfile");
+                name: "CvTemplates");
+
+            migrationBuilder.DropTable(
+                name: "Industries");
 
             migrationBuilder.DropTable(
                 name: "EmployeeProfiles");

@@ -23,6 +23,7 @@ using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
+using VCareer.Models.CV;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
@@ -47,7 +48,7 @@ public class VCareerDbContext :
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
    
-    public DbSet<CurriculumVitae> CVs { get; set; }
+    
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     /*public DbSet<JobApplication> JobApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
@@ -58,6 +59,10 @@ public class VCareerDbContext :
     public DbSet<Job_Posting> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<JobPostingTag> JobPostingTags { get; set; }
+
+    // CV Management
+    public DbSet<CvTemplate> CvTemplates { get; set; }
+    public DbSet<CandidateCv> CandidateCvs { get; set; }
 
 
 
@@ -291,16 +296,7 @@ public class VCareerDbContext :
         });
 
         //-----------fluent api cho candidate-------------
-        builder.Entity<CandidateProfile>(e =>
-        {
-            e.ToTable("CandidateProfile");
-            e.ConfigureByConvention();
-            e.HasKey(x => x.UserId);
-            e.HasOne(x => x.User)
-            .WithOne()
-            .HasForeignKey<CandidateProfile>(x => x.UserId)
-            .IsRequired();
-        });
+        // (CandidateProfile configuration đã được di chuyển xuống dưới, cùng với CandidateCv relationship)
 
         //-----------fluent api cho recuiter------------
 
@@ -364,72 +360,87 @@ public class VCareerDbContext :
             c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
         });
 
-        builder.Entity<CurriculumVitae>(cv =>
+        
+
+        // ========== CV Template Configuration ==========
+        builder.Entity<CvTemplate>(template =>
         {
-            cv.ToTable("CVs");
-            cv.ConfigureByConvention();
-            
-            // Foreign key relationship với CandidateProfile
-            cv.HasOne(x => x.Candidate)
-              .WithMany()
-              .HasForeignKey(x => x.CandidateId)
-              .OnDelete(DeleteBehavior.Restrict);
+            template.ToTable("CvTemplates");
+            template.ConfigureByConvention();
 
-            // ⚠️ Nếu bạn thực sự muốn liên kết thêm với IdentityUser, 
-            // hãy dùng khóa ngoại khác (vd: UserId), tránh trùng CandidateId.
-            // cv.HasOne(x => x.User)
-            //   .WithMany()
-            //   .HasForeignKey(x => x.UserId)
-            //   .OnDelete(DeleteBehavior.Cascade);
+            template.HasKey(x => x.Id);
 
-            // 🆔 Khóa chính
-            cv.HasKey(x => x.Id);
+            // Required fields
+            template.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            template.Property(x => x.LayoutDefinition).IsRequired();
 
-            // 🧩 Cấu hình các trường — tất cả đều nullable trừ Id
-            cv.Property(x => x.CandidateId).IsRequired();
-            cv.Property(x => x.CVName).HasMaxLength(255).IsRequired(false);
-            cv.Property(x => x.CVType).HasMaxLength(50).IsRequired(false);
-            
-            cv.Property(x => x.Status).HasMaxLength(50).IsRequired(false);
-            cv.Property(x => x.IsDefault).IsRequired();
-            cv.Property(x => x.IsPublic).IsRequired();
-            cv.Property(x => x.FullName).HasMaxLength(255).IsRequired(false);
-            cv.Property(x => x.Email).HasMaxLength(256).IsRequired(false);
-            cv.Property(x => x.PhoneNumber).HasMaxLength(20).IsRequired(false);
-            cv.Property(x => x.DateOfBirth).IsRequired(false);
-            
-            cv.Property(x => x.Address).HasMaxLength(500).IsRequired(false);
-            cv.Property(x => x.CareerObjective).HasMaxLength(1000).IsRequired(false);
-            cv.Property(x => x.WorkExperience).IsRequired(false);
-            cv.Property(x => x.Education).IsRequired(false);
-            cv.Property(x => x.Skills).IsRequired(false);
-            cv.Property(x => x.Projects).IsRequired(false);
-            cv.Property(x => x.Certificates).IsRequired(false);
-            cv.Property(x => x.Languages).IsRequired(false);
-            cv.Property(x => x.Interests).HasMaxLength(1000).IsRequired(false);
-            cv.Property(x => x.OriginalFileName).HasMaxLength(255).IsRequired(false);
-            cv.Property(x => x.FileUrl).HasMaxLength(500).IsRequired(false);
-            cv.Property(x => x.FileSize).IsRequired(false);
-            cv.Property(x => x.FileType).HasMaxLength(50).IsRequired(false);
-            cv.Property(x => x.Description).HasMaxLength(1000).IsRequired(false);
-            cv.Property(x => x.ExtraProperties).IsRequired(false);
-            cv.Property(x => x.ConcurrencyStamp).HasMaxLength(40).IsRequired(false);
-            cv.Property(x => x.CreationTime).IsRequired();
-            cv.Property(x => x.CreatorId).IsRequired(false);
-            cv.Property(x => x.LastModificationTime).IsRequired(false);
-            cv.Property(x => x.LastModifierId).IsRequired(false);
-            cv.Property(x => x.IsDeleted).IsRequired();
-            cv.Property(x => x.DeleterId).IsRequired(false);
-            cv.Property(x => x.DeletionTime).IsRequired(false);
+            // Optional fields
+            template.Property(x => x.Description).HasMaxLength(500).IsRequired(false);
+            template.Property(x => x.PreviewImageUrl).HasMaxLength(500).IsRequired(false);
+            template.Property(x => x.Styles).IsRequired(false);
+            template.Property(x => x.SupportedFields).IsRequired(false);
+            template.Property(x => x.Category).HasMaxLength(100).IsRequired(false);
+            template.Property(x => x.Version).HasMaxLength(20).IsRequired(false);
 
-            // 📊 Indexes
-            cv.HasIndex(x => x.CandidateId);
-            cv.HasIndex(x => x.CVType);
-            cv.HasIndex(x => x.Status);
-            cv.HasIndex(x => x.IsDefault);
-            cv.HasIndex(x => x.IsPublic);
+            // Default values
+            template.Property(x => x.SortOrder).HasDefaultValue(0);
+            template.Property(x => x.IsActive).HasDefaultValue(true);
+            template.Property(x => x.IsDefault).HasDefaultValue(false);
+            template.Property(x => x.IsFree).HasDefaultValue(true);
+
+            // Indexes
+            template.HasIndex(x => x.IsActive);
+            template.HasIndex(x => x.IsFree);
+            template.HasIndex(x => x.Category);
+            template.HasIndex(x => x.SortOrder);
         });
 
+        // ========== Candidate CV Configuration ==========
+        builder.Entity<CandidateCv>(cv =>
+        {
+            cv.ToTable("CandidateCvs");
+            cv.ConfigureByConvention();
+
+            cv.HasKey(x => x.Id);
+
+            // Required fields
+            cv.Property(x => x.CandidateId).IsRequired();
+            cv.Property(x => x.TemplateId).IsRequired();
+            cv.Property(x => x.CvName).HasMaxLength(200).IsRequired();
+            cv.Property(x => x.DataJson).IsRequired();
+
+            // Optional fields
+            cv.Property(x => x.Notes).HasMaxLength(1000).IsRequired(false);
+            cv.Property(x => x.PublishedAt).IsRequired(false);
+
+            // Default values
+            cv.Property(x => x.IsPublished).HasDefaultValue(false);
+            cv.Property(x => x.IsDefault).HasDefaultValue(false);
+            cv.Property(x => x.IsPublic).HasDefaultValue(false);
+            cv.Property(x => x.ViewCount).HasDefaultValue(0);
+
+            // Foreign key relationships
+            // 1. Relationship với CandidateProfile (CandidateId = CandidateProfile.UserId)
+            cv.HasOne(x => x.CandidateProfile)
+                .WithMany(x => x.CandidateCvs)
+                .HasForeignKey(x => x.CandidateId)
+                .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key thay vì Id
+                .OnDelete(DeleteBehavior.Cascade); // Khi xóa CandidateProfile thì xóa tất cả CVs
+
+            // 2. Relationship với CvTemplate
+            cv.HasOne(x => x.Template)
+                .WithMany()
+                .HasForeignKey(x => x.TemplateId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho xóa template nếu đang được sử dụng
+
+            // Indexes
+            cv.HasIndex(x => x.CandidateId);
+            cv.HasIndex(x => x.TemplateId);
+            cv.HasIndex(x => x.IsPublished);
+            cv.HasIndex(x => x.IsDefault);
+            cv.HasIndex(x => x.IsPublic);
+            cv.HasIndex(x => new { x.CandidateId, x.IsDefault }); // Composite index for default CV lookup
+        });
 
         builder.Entity<Industry>(c =>
         {
@@ -492,6 +503,14 @@ public class VCareerDbContext :
             .WithOne()
             .HasForeignKey<CandidateProfile>(x => x.UserId)
             .IsRequired();
+
+            // One-to-Many relationship với CandidateCv
+            // CandidateId trong CandidateCv sẽ reference đến UserId trong CandidateProfile
+            e.HasMany(x => x.CandidateCvs)
+                .WithOne(x => x.CandidateProfile)
+                .HasForeignKey(x => x.CandidateId)
+                .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<RecruiterProfile>(e =>

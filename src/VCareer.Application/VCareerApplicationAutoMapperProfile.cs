@@ -4,6 +4,7 @@ using VCareer.Profile;
 using VCareer.Application;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
+using VCareer.Models.CV;
 /*using VCareer.Models.Applications;*/
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
@@ -12,7 +13,7 @@ using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
 using VCareer.Application.Contracts.Applications;
-using VCareer.Dto.CVDto;
+using VCareer.CV;
 
 namespace VCareer;
 
@@ -31,11 +32,20 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<SubmitCompanyLegalInfoDto, Company>();
         CreateMap<UpdateCompanyLegalInfoDto, Company>();
 
-        // CV mappings
-        CreateMap<CurriculumVitae, CVDto>();
+        // CV mappings (legacy)
+        /*CreateMap<CurriculumVitae, CVDto>();
         CreateMap<CreateCVOnlineDto, CurriculumVitae>();
         CreateMap<UploadCVDto, CurriculumVitae>();
-        CreateMap<UpdateCVDto, CurriculumVitae>();
+        CreateMap<UpdateCVDto, CurriculumVitae>();*/
+
+        // CV Template mappings
+        CreateMap<CvTemplate, CvTemplateDto>();
+        CreateMap<CreateCvTemplateDto, CvTemplate>();
+        CreateMap<UpdateCvTemplateDto, CvTemplate>();
+
+        // Candidate CV mappings
+        CreateMap<CandidateCv, CandidateCvDto>();
+        CreateMap<CreateCandidateCvDto, CandidateCv>();
 
         // Application mappings
        /* CreateMap<JobApplication, ApplicationDto>();
