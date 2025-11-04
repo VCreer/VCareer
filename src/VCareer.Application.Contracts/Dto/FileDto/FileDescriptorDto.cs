@@ -9,6 +9,7 @@ namespace VCareer.Dto.FileDto
 {
     public class FileDescriptorDto
     {
+        public string CreatorId { get; set; }
         public string StorageName { get; set; }
         public string OriginalName { get; set; }
         public string Extension { get; set; }
@@ -16,7 +17,6 @@ namespace VCareer.Dto.FileDto
         public string MimeType { get; set; }
         public string ContainerName { get; set; }
         public string StoragePath { get; set; }
-        public string OwnerId { get; set; }
         public int Status { get; set; }
         public DateTime UploadTime { get; set; }
     }

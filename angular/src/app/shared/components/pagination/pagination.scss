@@ -1,0 +1,85 @@
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+
+  .page-btn {
+    background: transparent;
+    border: 1px solid #0F83BA;
+    color: #0F83BA;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #0F83BA;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    .page-number-btn {
+      min-width: 40px;
+      height: 40px;
+      padding: 0 12px;
+      background: transparent;
+      border: 1px solid #e5e7eb;
+      color: #6b7280;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover:not(.active) {
+        border-color: #0F83BA;
+        color: #0F83BA;
+      }
+
+      &.active {
+        background: #0F83BA;
+        color: white;
+        border-color: #0F83BA;
+        font-weight: 600;
+      }
+
+      @media (max-width: 480px) {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 8px;
+        font-size: 13px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+}
+

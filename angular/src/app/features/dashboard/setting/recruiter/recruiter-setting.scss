@@ -1,0 +1,858 @@
+.recruiter-setting-page {
+  min-height: calc(100vh - 64px); // Subtract header height
+  padding-top: 0; // Remove top padding, breadcrumb-box will handle spacing
+  margin-left: 72px; // Push the entire element to the right
+  width: calc(100% - 72px); // Occupy the remaining width
+  padding-right: 0;
+  padding-bottom: 20px;
+  background: #f8fafc;
+  transition: margin-left 0.3s ease, width 0.3s ease; // Update transition for margin-left/width
+  position: relative;
+  z-index: 1; // Lower than sidebar (z-index: 999)
+  overflow: visible; // Ensure toast notification is visible
+
+  // Ensure notification menu appears above breadcrumb-box
+  ::ng-deep app-notification-menu {
+    .notification-menu {
+      z-index: 1002 !important; // Higher than breadcrumb-box (998) and header (1000)
+    }
+  }
+
+  // When sidebar is expanded, adjust margin and width
+  &.sidebar-expanded {
+    margin-left: 280px; // Sidebar expanded width
+    width: calc(100% - 280px); // Adjusted width
+  }
+
+  // Responsive: remove sidebar margin on mobile
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+    
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  // Breadcrumb Box - Positioned right below header and aligned with content
+  .breadcrumb-box {
+    background-color: white;
+    padding: 1rem 0;
+    position: fixed;
+    top: 64px; // Position right below header (64px header height)
+    z-index: 998; // Below header (1000) and notification (1001) but above content
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
+    border-bottom: 1px solid #e5e7eb; // Add border to separate from settings-layout
+
+    // Default (sidebar collapsed)
+    left: 72px;
+    width: calc(100% - 72px);
+
+    // When sidebar is expanded
+    &.sidebar-expanded {
+      left: 280px;
+      width: calc(100% - 280px);
+    }
+
+    // Responsive: On mobile, sidebar is not fixed, so breadcrumb should be full width
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+      
+      &.sidebar-expanded {
+        left: 0;
+        width: 100%;
+      }
+    }
+
+    .breadcrumb-container {
+      max-width: 1000px;
+      margin-left: 0; // Align to start instead of center
+      margin-right: auto;
+      padding-left: 16px; // Add padding for content alignment
+      padding-right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      @media (max-width: 768px) {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      .breadcrumb-item {
+        color: #0F83BA;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #0a6a94;
+          text-decoration: underline;
+        }
+
+        &.active {
+          color: #374151;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: default;
+          pointer-events: none;
+
+          &:hover {
+            text-decoration: none;
+          }
+        }
+      }
+
+      .breadcrumb-separator {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .settings-layout {
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-top: 80px; // Space for breadcrumb-box (64px header + ~56px breadcrumb = 120px, minus 40px for spacing)
+    padding: 16px;
+    display: flex;
+    gap: 20px;
+    background: white;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .left-subnav {
+    width: 280px;
+    flex-shrink: 0;
+
+    .settings-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: white;
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: #6b7280;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        font-weight: 500;
+
+        .nav-icon {
+          flex-shrink: 0;
+          width: 20px;
+          text-align: center;
+          font-size: 16px;
+        }
+
+        &:hover {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        &.active {
+          background: rgba(15, 131, 186, 0.1);
+          color: #0F83BA;
+          font-weight: 600;
+
+          .nav-icon {
+            color: #0F83BA;
+          }
+        }
+      }
+    }
+  }
+
+  .right-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .section-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      // Smaller padding for personal info section card (second card)
+      &:nth-child(2) {
+        padding: 20px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        gap: 16px;
+
+        .section-title-group {
+          flex: 1;
+
+          .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+          }
+
+          .section-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.5;
+          }
+        }
+
+        .section-progress {
+          .progress-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0F83BA;
+          }
+        }
+      }
+
+      .verification-steps {
+        margin-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .step-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 8px;
+          background: #f9fafb;
+
+          .step-radio {
+            flex-shrink: 0;
+
+            input[type="radio"] {
+              width: 18px;
+              height: 18px;
+              accent-color: #0F83BA;
+              cursor: default;
+            }
+          }
+
+          .step-label {
+            flex: 1;
+            font-size: 14px;
+            color: #374151;
+          }
+
+          .step-arrow {
+            flex-shrink: 0;
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .section-actions {
+        display: flex;
+        justify-content: flex-end;
+
+        ::ng-deep .learn-more-btn {
+          button.btn,
+          .btn {
+            background: white !important;
+            color: #0F83BA !important;
+            border: 1px solid #0F83BA !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            min-height: auto !important;
+            height: auto !important;
+            line-height: 1.4 !important;
+
+            &:hover:not(:disabled):not(.loading) {
+              background: rgba(15, 131, 186, 0.1) !important;
+              border-color: #0d6fa0 !important;
+              color: #0d6fa0 !important;
+              transform: none !important;
+              box-shadow: none !important;
+            }
+          }
+
+          // Override all button sizes
+          .btn-small,
+          .btn-medium,
+          .btn-large,
+          &.btn-small,
+          &.btn-medium,
+          &.btn-large {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+          }
+
+          // Override btn-primary background
+          .btn-primary,
+          &.btn-primary {
+            background: white !important;
+            color: #0F83BA !important;
+            border: 1px solid #0F83BA !important;
+          }
+        }
+      }
+
+      .form-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+
+        .avatar-section {
+          flex-shrink: 0;
+        }
+
+        .email-group {
+          flex: 0 0 auto;
+          width: 350px;
+          max-width: 350px;
+          margin-bottom: 0 !important;
+          margin-top: 0 !important;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          margin-left: auto; // Push to the right
+        }
+      }
+
+      .avatar-section {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-start;
+
+        // Hide avatar-name
+        ::ng-deep app-profile-avatar {
+          .avatar-info {
+            display: none;
+          }
+
+          // Change layout to horizontal (avatar and button side by side)
+          .avatar-container {
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 12px !important;
+          }
+
+          // Make avatar smaller - override inline styles
+          .avatar-image {
+            width: 80px !important;
+            height: 80px !important;
+            min-width: 80px !important;
+            min-height: 80px !important;
+            max-width: 80px !important;
+            max-height: 80px !important;
+            flex-shrink: 0 !important;
+
+            // Ensure image displays correctly
+            .avatar-img {
+              width: 100% !important;
+              height: 100% !important;
+              object-fit: cover !important;
+              display: block !important;
+            }
+          }
+
+          .avatar-placeholder {
+            width: 80px !important;
+            height: 80px !important;
+            min-width: 80px !important;
+            min-height: 80px !important;
+            max-width: 80px !important;
+            max-height: 80px !important;
+            font-size: 1.25rem !important;
+            flex-shrink: 0 !important;
+          }
+
+          .avatar-icon {
+            font-size: 1.25rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+
+          // Adjust avatar-actions to be inline
+          .avatar-actions {
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+          }
+
+          // Smaller upload button with custom colors
+          .avatar-upload-btn {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            background: white !important;
+            color: #6b7280 !important;
+            border: 1px solid #0F83BA !important;
+            border-radius: 6px !important;
+
+            &:hover:not(.uploading) {
+              background: rgba(15, 131, 186, 0.1) !important;
+              color: #0F83BA !important;
+            }
+
+            svg {
+              width: 14px !important;
+              height: 14px !important;
+              stroke: currentColor !important;
+            }
+
+            span {
+              font-size: 13px !important;
+            }
+          }
+
+          // Smaller remove button with custom colors
+          .avatar-remove-btn {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            background: white !important;
+            color: #6b7280 !important;
+            border: 1px solid #0F83BA !important;
+            border-radius: 6px !important;
+
+            &:hover {
+              background: rgba(239, 68, 68, 0.1) !important;
+              color: #ef4444 !important;
+              border-color: #ef4444 !important;
+            }
+
+            svg {
+              width: 14px !important;
+              height: 14px !important;
+              stroke: currentColor !important;
+            }
+          }
+        }
+      }
+
+      .profile-form {
+        .form-row {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 16px;
+
+          .form-group {
+            flex: 1;
+            margin-bottom: 0;
+            min-width: 0; // Allow flex items to shrink below content size
+
+            // Ensure inputs and selects have same width
+            .form-input {
+              width: 100% !important;
+              min-width: 0 !important;
+              max-width: 100% !important;
+            }
+
+            select.form-input {
+              width: 100% !important;
+              min-width: 0 !important;
+              max-width: 100% !important;
+            }
+          }
+        }
+
+        .form-group {
+          margin-bottom: 16px;
+
+          &.email-group {
+            flex: 1;
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+          }
+
+          .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+          }
+
+          .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+            box-sizing: border-box;
+
+            &:focus {
+              outline: none;
+              border-color: #0F83BA;
+              box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+            }
+
+            &:disabled {
+              background: #f3f4f6;
+              color: #6b7280;
+              cursor: not-allowed;
+            }
+          }
+
+          // Ensure select input has same width
+          select.form-input {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .phone-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+
+            .form-input {
+              flex: 1;
+            }
+
+            .phone-actions {
+              display: flex;
+              gap: 8px;
+              flex-shrink: 0;
+
+              .update-btn,
+              .verify-btn {
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                border: 1px solid #0F83BA;
+                transition: all 0.2s;
+              }
+
+              .update-btn {
+                background: white;
+                color: #0F83BA;
+
+                &:hover {
+                  background: #f0f9ff;
+                }
+              }
+
+              .verify-btn {
+                background: #0F83BA;
+                color: white;
+
+                &:hover {
+                  background: #0d6fa0;
+                }
+              }
+            }
+          }
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 20px;
+          padding-top: 16px;
+          border-top: 1px solid #e5e7eb;
+
+          .cancel-btn {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            background: white !important;
+            color: #6b7280 !important;
+            border: 1px solid #0F83BA !important;
+            border-radius: 6px !important;
+            font-weight: 500 !important;
+            transition: all 0.2s !important;
+
+            &:hover:not(:disabled) {
+              background: rgba(15, 131, 186, 0.1) !important;
+              color: #0F83BA !important;
+            }
+          }
+
+          .save-btn {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            background: white !important;
+            color: #0F83BA !important;
+            border: 1px solid #0F83BA !important;
+            border-radius: 6px !important;
+            font-weight: 500 !important;
+            transition: all 0.2s !important;
+
+            &:hover:not(:disabled) {
+              background: rgba(15, 131, 186, 0.1) !important;
+              color: #0d6fa0 !important;
+              border-color: #0d6fa0 !important;
+            }
+
+            &:disabled {
+              background: #f3f4f6 !important;
+              color: #9ca3af !important;
+              border-color: #d1d5db !important;
+              cursor: not-allowed !important;
+            }
+          }
+
+          // Override button component styles
+          ::ng-deep .cancel-btn,
+          ::ng-deep .save-btn {
+            button.btn,
+            .btn {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+              min-height: auto !important;
+              height: auto !important;
+              line-height: 1.4 !important;
+            }
+
+            .btn-small,
+            .btn-medium,
+            .btn-large,
+            &.btn-small,
+            &.btn-medium,
+            &.btn-large {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .recruiter-setting-page {
+    .settings-layout {
+      flex-direction: column;
+      gap: 20px;
+
+      .left-subnav {
+        width: 100%;
+
+        .settings-nav {
+          flex-direction: row;
+          overflow-x: auto;
+          padding-bottom: 8px;
+
+          .nav-item {
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .recruiter-setting-page {
+    padding: 16px;
+    padding-top: 80px;
+
+    .settings-layout {
+      .right-content {
+        .section-card {
+          padding: 20px;
+
+          .section-header {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .profile-form {
+            .form-group {
+              .phone-input-group {
+                flex-direction: column;
+
+                .phone-actions {
+                  width: 100%;
+                  flex-direction: column;
+
+                  .update-btn,
+                  .verify-btn {
+                    width: 100%;
+                  }
+                }
+              }
+            }
+
+            .form-actions {
+              flex-direction: column-reverse;
+
+              .cancel-btn,
+              .save-btn {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Change Password Form Styles
+    .change-password-form {
+      .password-form-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+
+        .password-form-label {
+          flex: 0 0 150px;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+          padding-top: 12px; // Align with input field
+        }
+
+        .password-field-wrapper {
+          flex: 1;
+          min-width: 0;
+
+          ::ng-deep .form-group {
+            margin-bottom: 0;
+
+            .form-label {
+              display: none; // Hide default label since we have password-form-label
+            }
+          }
+        }
+      }
+
+      .password-form-checkbox {
+        margin-bottom: 24px;
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+
+          .checkbox-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0F83BA;
+          }
+
+          .checkbox-text {
+            font-size: 14px;
+            color: #374151;
+            user-select: none;
+          }
+        }
+      }
+
+      .password-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+
+        .cancel-btn {
+          padding: 6px 12px !important;
+          font-size: 13px !important;
+          background: white !important;
+          color: #6b7280 !important;
+          border: 1px solid #0F83BA !important;
+          border-radius: 6px !important;
+          font-weight: 500 !important;
+          transition: all 0.2s !important;
+
+          &:hover:not(:disabled) {
+            background: rgba(15, 131, 186, 0.1) !important;
+            color: #0F83BA !important;
+          }
+        }
+
+        .save-btn {
+          padding: 6px 12px !important;
+          font-size: 13px !important;
+          background: #0F83BA !important;
+          color: white !important;
+          border: 1px solid #0F83BA !important;
+          border-radius: 6px !important;
+          font-weight: 500 !important;
+          transition: all 0.2s !important;
+
+          &:hover:not(:disabled) {
+            background: #0d6fa0 !important;
+            border-color: #0d6fa0 !important;
+          }
+
+          &:disabled {
+            background: #f3f4f6 !important;
+            color: #9ca3af !important;
+            border-color: #d1d5db !important;
+            cursor: not-allowed !important;
+          }
+        }
+
+        ::ng-deep .cancel-btn,
+        ::ng-deep .save-btn {
+          min-height: auto !important;
+          height: auto !important;
+          line-height: normal !important;
+          transform: none !important;
+          box-shadow: none !important;
+
+          &:hover {
+            transform: none !important;
+            box-shadow: none !important;
+          }
+        }
+      }
+
+      // Responsive adjustments
+      @media (max-width: 768px) {
+        .password-form-row {
+          flex-direction: column;
+          gap: 8px;
+
+          .password-form-label {
+            flex: none;
+            padding-top: 0;
+          }
+        }
+
+        .password-form-actions {
+          flex-direction: column-reverse;
+
+          .cancel-btn,
+          .save-btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+

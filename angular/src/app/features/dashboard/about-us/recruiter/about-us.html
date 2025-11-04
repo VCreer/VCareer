@@ -1,37 +1,177 @@
 <div class="about-us-page">
   <div class="container">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <h1>{{ translate('about_us.recruiter_title') }}</h1>
-      <p class="subtitle">{{ translate('about_us.recruiter_subtitle') }}</p>
-    </div>
-
-    <!-- Mission Section -->
-    <div class="content-section">
-      <h2>{{ translate('about_us.recruiter_mission_title') }}</h2>
-      <p>{{ translate('about_us.recruiter_mission_description') }}</p>
-    </div>
-
-    <!-- Features Section -->
-    <div class="content-section">
-      <h2>{{ translate('about_us.recruiter_features_title') }}</h2>
-      <div class="features-grid">
-        <div class="feature-item">
-          <i class="fa fa-users"></i>
-          <h3>{{ translate('about_us.recruiter_feature_1_title') }}</h3>
-          <p>{{ translate('about_us.recruiter_feature_1_description') }}</p>
-        </div>
-        <div class="feature-item">
-          <i class="fa fa-search"></i>
-          <h3>{{ translate('about_us.recruiter_feature_2_title') }}</h3>
-          <p>{{ translate('about_us.recruiter_feature_2_description') }}</p>
-        </div>
-        <div class="feature-item">
-          <i class="fa fa-chart-line"></i>
-          <h3>{{ translate('about_us.recruiter_feature_3_title') }}</h3>
-          <p>{{ translate('about_us.recruiter_feature_3_description') }}</p>
+    <!-- Introduction Hero Section -->
+    <div class="introduction-hero">
+      <div class="introduction-hero__image">
+        <img 
+          [src]="imagePath" 
+          alt="VCareer Introduction"
+        />
+      </div>
+      <div class="introduction-hero__content">
+        <h1 class="introduction-hero__title">
+          <span class="introduction-hero__brand">{{ translate('about_us.vcareer') }}</span>
+          <span class="introduction-hero__subtitle">{{ translate('about_us.introduction_subtitle') }}</span>
+        </h1>
+        <div class="introduction-hero__action">
+          <button type="button" class="post-job-btn" (click)="onPostJob()">
+            {{ translate('about_us.post_job') }}
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Service Section -->
+    <section id="service-section" class="service-section">
+      <h2 class="service-section__title">{{ translate('service.title') }}</h2>
+      
+      <!-- Service Details -->
+      <div class="service-details">
+        <div class="service-details__image">
+          <img 
+            src="assets/service/sevice-1.png" 
+            alt="Service"
+            loading="lazy"
+          />
+        </div>
+        <div class="service-details__content">
+          <h3 class="service-details__title">{{ translate('service.free_posting_title') }}</h3>
+          <ul class="service-details__list">
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.free_posting_desc1') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.free_posting_desc2') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.free_posting_desc3') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.free_posting_desc4') }}</span>
+            </li>
+          </ul>
+          <div class="service-details__action">
+            <button class="post-job-btn" (click)="onPostJob()">
+              {{ translate('about_us.post_job') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Jobs Section -->
+      <div class="service-details service-details--reverse">
+        <div class="service-details__content">
+          <h3 class="service-details__title">{{ translate('service.top_jobs_title') }}</h3>
+          <ul class="service-details__list">
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.top_jobs_desc1') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.top_jobs_desc2') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.top_jobs_desc3') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.top_jobs_desc4') }}</span>
+            </li>
+          </ul>
+          <div class="service-details__action">
+            <button class="post-job-btn" (click)="onPostJob()">
+              {{ translate('about_us.post_job') }}
+            </button>
+          </div>
+        </div>
+        <div class="service-details__image">
+          <img 
+            src="assets/service/service-2.png" 
+            alt="Top Jobs"
+            loading="lazy"
+          />
+        </div>
+      </div>
+
+      <!-- CV Suggest Section -->
+      <div class="service-details">
+        <div class="service-details__image">
+          <img 
+            src="assets/service/service-3.png" 
+            alt="CV Suggest"
+            loading="lazy"
+          />
+        </div>
+        <div class="service-details__content">
+          <h3 class="service-details__title">{{ translate('service.cv_suggest_title') }}</h3>
+          <ul class="service-details__list">
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.cv_suggest_desc1') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.cv_suggest_desc2') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.cv_suggest_desc3') }}</span>
+            </li>
+            <li class="service-details__item">
+              <i class="fa fa-check-circle"></i>
+              <span>{{ translate('service.cv_suggest_desc4') }}</span>
+            </li>
+          </ul>
+          <div class="service-details__action">
+            <button class="post-job-btn" (click)="onPostJob()">
+              {{ translate('about_us.post_job') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about-us-section" class="about-us-content">
+      <h2 class="about-us-content__title">{{ translate('about_us.about_title') }}</h2>
+      <div class="about-us-content__wrapper">
+        <div class="about-us-content__text">
+          <p class="about-us-content__paragraph">{{ translate('about_us.description1') }}</p>
+          <p class="about-us-content__paragraph">{{ translate('about_us.description2') }}</p>
+          
+          <div class="about-us-content__pillars">
+            <div class="pillar-item">
+              <h4 class="pillar-item__title">{{ translate('about_us.recruiter_title') }}</h4>
+              <p class="pillar-item__desc">{{ translate('about_us.recruiter_desc') }}</p>
+            </div>
+            <div class="pillar-item">
+              <h4 class="pillar-item__title">{{ translate('about_us.profile_title') }}</h4>
+              <p class="pillar-item__desc">{{ translate('about_us.profile_desc') }}</p>
+            </div>
+            <div class="pillar-item">
+              <h4 class="pillar-item__title">{{ translate('about_us.insight_title') }}</h4>
+              <p class="pillar-item__desc">{{ translate('about_us.insight_desc') }}</p>
+            </div>
+          </div>
+
+          <p class="about-us-content__paragraph">{{ translate('about_us.description3') }}</p>
+          <p class="about-us-content__paragraph">{{ translate('about_us.description4') }}</p>
+          <p class="about-us-content__tagline">{{ translate('about_us.tagline') }}</p>
+        </div>
+        <div class="about-us-content__image">
+          <img 
+            src="assets/images/about-us/about-us.png" 
+            alt="About VCareer"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
   </div>
 </div>

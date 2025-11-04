@@ -1,8 +1,8 @@
 .toast-notification {
-  position: fixed;
+  position: fixed !important;
   top: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 9999 !important; // Highest z-index to ensure it's always visible
   min-width: 300px;
   max-width: 400px;
   padding: 16px 20px;

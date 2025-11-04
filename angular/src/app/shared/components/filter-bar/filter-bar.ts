@@ -468,7 +468,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
         this.hasLocationResults = false;
       },
     });
-  }
+      }
 
   /**
    * Toggle province selection (với cascade logic)
@@ -490,8 +490,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
       this.internalSelectedProvinceIds.add(provinceId);
       province.districts.forEach(dist => {
         this.internalSelectedDistrictIds.add(dist.id);
-      });
-    }
+    });
+  }
   }
 
   /**
@@ -560,7 +560,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   closeDropdowns() {
     this.showCategoryDropdown = false;
     this.showLocationDropdown = false;
-  }
+    }
 
   /**
    * Get category count text for display
@@ -578,7 +578,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     const districtCount = this.internalSelectedDistrictIds.size;
     const totalCount = provinceCount + districtCount;
     return totalCount > 0 ? ` (${totalCount})` : '';
-  }
+    }
 
   /**
    * ✅ Cleanup subscriptions khi component bị destroy

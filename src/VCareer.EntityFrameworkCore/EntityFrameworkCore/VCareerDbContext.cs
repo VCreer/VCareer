@@ -23,7 +23,7 @@ using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
-using VCareer.Models.CV;
+using VCareer.Models.FileMetadata;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
@@ -59,6 +59,7 @@ public class VCareerDbContext :
     public DbSet<Job_Posting> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<JobPostingTag> JobPostingTags { get; set; }
+    public DbSet<FileDescriptor> FileDescriptors { get; set; }
 
     // CV Management
     public DbSet<CvTemplate> CvTemplates { get; set; }
@@ -617,6 +618,14 @@ public class VCareerDbContext :
             b.HasKey(x => x.Id);
             b.Property(x => x.Token).IsRequired().HasMaxLength(256);
             b.HasIndex(x => x.Token).IsUnique();
+        });
+        builder.Entity<FileDescriptor>(e =>
+        {
+            e.ToTable("FileDescriptors");
+            e.ConfigureByConvention();
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id)
+                .ValueGeneratedOnAdd();
         });
 
         // JobApplication Configuration

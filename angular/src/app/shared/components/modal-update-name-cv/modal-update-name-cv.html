@@ -1,0 +1,23 @@
+<div class="el-dialog__wrapper modal-update-name-cv">
+  <div class="el-dialog">
+    <div class="el-dialog__header">
+      <h3 class="el-dialog__title">{{ title }}</h3>
+      <button class="el-dialog__close" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="el-dialog__body">
+      <div class="info-message">
+        <i class="fa fa-lightbulb-o"></i>
+        <span>{{ infoMessage }}</span>
+      </div>
+      <div class="input-wrapper">
+        <input type="text" class="cv-name-input" [(ngModel)]="cvName" [placeholder]="inputPlaceholder" />
+      </div>
+    </div>
+    <div class="el-dialog__footer">
+      <button class="btn-secondary" (click)="onClose()">{{ backButtonText }}</button>
+      <button class="btn-primary" (click)="onContinue()">{{ continueButtonText }}</button>
+    </div>
+  </div>
+</div>

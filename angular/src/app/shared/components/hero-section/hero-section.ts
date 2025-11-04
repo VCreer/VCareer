@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
-import { FilterBarComponent } from '../filter-bar/filter-bar'; // âœ… Import FilterBar
+import { FilterBarComponent } from '../filter-bar/filter-bar'; // ✅ Import FilterBar
 import { CategoryTreeDto } from '../../../apiTest/api/category.service';
 import { ProvinceDto } from '../../../apiTest/api/location.service';
 
@@ -19,11 +19,11 @@ export class HeroSectionComponent {
   @Input() subtitle = '';
   @Input() showSearchForm = true;
 
-  // âœ… NEW: Nháº­n data tá»« parent (candidate-homepage)
+  // ✅ NEW: Nhận data từ parent (candidate-homepage)
   @Input() categories: CategoryTreeDto[] = [];
   @Input() provinces: ProvinceDto[] = [];
 
-  // âœ… Emit filter events
+  // ✅ Emit filter events
   @Output() searchJobs = new EventEmitter<any>();
   @Output() categorySelected = new EventEmitter<string[]>();
   @Output() locationSelected = new EventEmitter<{ provinceIds: number[]; districtIds: number[] }>();
