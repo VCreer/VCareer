@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { delay, catchError } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface Company {
   id: string;
@@ -27,10 +29,54 @@ export interface CompanyFilters {
   limit?: number;
 }
 
+/**
+ * DTO để hiển thị thông tin công ty trong trang job detail
+ */
+export interface CompanyInfoForJobDetailDto {
+  id: number;
+  companyName?: string;
+  logoUrl?: string;
+  companySize: number;
+  headquartersAddress?: string;
+  industries: string[];
+}
+
+export interface CompanyLegalInfoDto {
+  id: number;
+  companyName: string;
+  companyCode?: string;
+  description?: string;
+  headquartersAddress?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  status?: boolean;
+  companySize?: number;
+  industryId?: number;
+  foundedYear?: number;
+  logoUrl?: string;
+  coverImageUrl?: string;
+  websiteUrl?: string;
+}
+
+export interface CompanySearchInputDto {
+  keyword?: string;
+  status?: boolean;
+  skipCount?: number;
+  maxResultCount?: number;
+  sorting?: string;
+}
+
+export interface PagedResultDto<T> {
+  totalCount: number;
+  items: T[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CompanyService {
+  private apiUrl = `${environment.apis.default.url}`;
+  
   private mockCompanies: Company[] = [
     {
       id: '1',
@@ -82,7 +128,7 @@ export class CompanyService {
     }
   ];
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   getCompanies(filters?: CompanyFilters): Observable<{ companies: Company[], total: number }> {
     let filteredCompanies = [...this.mockCompanies];
@@ -118,10 +164,7 @@ export class CompanyService {
     }).pipe(delay(500));
   }
 
-  getCompanyById(id: string): Observable<Company | null> {
-    const company = this.mockCompanies.find(c => c.id === id);
-    return of(company || null).pipe(delay(300));
-  }
+  // (removed mock getCompanyById)
 
   getCompanyJobs(companyId: string): Observable<any[]> {
     // Return jobs for specific company
@@ -155,5 +198,46 @@ export class CompanyService {
 
   getFollowedCompanies(): Observable<Company[]> {
     return of(this.mockCompanies.slice(0, 2)).pipe(delay(300));
+  }
+
+  /**
+   * GET /api/profile/company-legal-info/by-job/{jobId}
+   * Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
+   */
+  getCompanyByJobId(jobId: string): Observable<CompanyInfoForJobDetailDto> {
+    if (!jobId) {
+      return throwError(() => new Error('JobId is required'));
+    }
+    
+    const url = `${this.apiUrl}/api/profile/company-legal-info/by-job/${jobId}`;
+    
+    return this.http.get<CompanyInfoForJobDetailDto>(url).pipe(
+      catchError(error => {
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * GET /api/profile/company-legal-info/{companyId}
+   * Lấy thông tin chi tiết công ty theo CompanyId
+   */
+  getCompanyById(companyId: number | string): Observable<CompanyLegalInfoDto> {
+    const url = `${this.apiUrl}/api/profile/company-legal-info/${companyId}`;
+    return this.http.get<CompanyLegalInfoDto>(url);
+  }
+
+  /**
+   * POST /api/profile/company-legal-info/search
+   * Tìm kiếm danh sách công ty
+   */
+  searchCompanies(input: CompanySearchInputDto): Observable<PagedResultDto<CompanyLegalInfoDto>> {
+    const url = `${this.apiUrl}/api/profile/company-legal-info/search`;
+    return this.http.post<PagedResultDto<CompanyLegalInfoDto>>(url, input).pipe(
+      catchError(error => {
+        console.error('Error searching companies:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

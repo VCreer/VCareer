@@ -60,6 +60,7 @@
     <Folder Include="wwwroot\files\cv\host\cv\" />
     <Folder Include="wwwroot\files\cv\host\cv\host\default\" />
     <Folder Include="wwwroot\files\recruiter\" />
+    <Folder Include="wwwroot\images\logo\logoComany\" />
   </ItemGroup>
 
 </Project>

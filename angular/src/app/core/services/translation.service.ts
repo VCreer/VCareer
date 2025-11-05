@@ -522,7 +522,23 @@ export class TranslationService {
       
       // Download CV
       'download_cv.success_without_logo': 'Tải xuống CV thành công (không logo)',
-      'download_cv.success_free': 'Tải xuống CV miễn phí thành công'
+      'download_cv.success_free': 'Tải xuống CV miễn phí thành công',
+      
+      // Saved Jobs
+      'saved_jobs.title': 'Việc làm đã lưu',
+      'saved_jobs.description': 'Xem lại danh sách những việc làm mà bạn đã lưu trước đó. Ứng tuyển ngay để không bỏ lỡ cơ hội nghề nghiệp dành cho bạn.',
+      'saved_jobs.list_count': 'Danh sách {{count}} việc làm đã lưu',
+      'saved_jobs.list_count_one': 'Danh sách 1 việc làm đã lưu',
+      'saved_jobs.no_jobs_count': 'Chưa có việc làm đã lưu',
+      'saved_jobs.saved_date': 'Đã lưu',
+      'saved_jobs.updated': 'Cập nhật',
+      'saved_jobs.apply': 'Ứng tuyển',
+      'saved_jobs.unsave': 'Bỏ lưu',
+      'saved_jobs.unsave_success': 'Đã bỏ lưu việc làm',
+      'saved_jobs.no_jobs_title': 'Chưa có việc làm đã lưu',
+      'saved_jobs.no_jobs_description': 'Bạn chưa lưu việc làm nào. Hãy duyệt và lưu những việc làm phù hợp với bạn.',
+      'saved_jobs.browse_jobs': 'Duyệt việc làm',
+      'saved_jobs.loading': 'Đang tải...'
     },
     en: {
       // Breadcrumb
@@ -1034,7 +1050,23 @@ export class TranslationService {
       
       // Download CV
       'download_cv.success_without_logo': 'CV downloaded successfully (without logo)',
-      'download_cv.success_free': 'CV downloaded successfully (free)'
+      'download_cv.success_free': 'CV downloaded successfully (free)',
+      
+      // Saved Jobs
+      'saved_jobs.title': 'Saved Jobs',
+      'saved_jobs.description': 'Review the list of jobs you have saved previously. Apply now to not miss out on career opportunities for you.',
+      'saved_jobs.list_count': 'List of {{count}} saved jobs',
+      'saved_jobs.list_count_one': 'List of 1 saved job',
+      'saved_jobs.no_jobs_count': 'No saved jobs yet',
+      'saved_jobs.saved_date': 'Saved',
+      'saved_jobs.updated': 'Updated',
+      'saved_jobs.apply': 'Apply',
+      'saved_jobs.unsave': 'Unsave',
+      'saved_jobs.unsave_success': 'Job unsaved',
+      'saved_jobs.no_jobs_title': 'No saved jobs yet',
+      'saved_jobs.no_jobs_description': 'You haven\'t saved any jobs yet. Browse and save jobs that match your interests.',
+      'saved_jobs.browse_jobs': 'Browse Jobs',
+      'saved_jobs.loading': 'Loading...'
       ,
       // Category names (extra pages)
       'Sản xuất': 'Manufacturing',

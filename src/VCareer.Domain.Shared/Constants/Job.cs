@@ -63,6 +63,19 @@ namespace VCareer.Model
         Over10 = 12         // Trên 10 năm
     }
 
+    /// <summary>
+    /// Trình độ học vấn yêu cầu
+    /// </summary>
+    public enum EducationLevel
+    {
+        Any = 0,          // Không yêu cầu
+        HighSchool = 1,   // THPT trở lên
+        College = 2,      // Cao đẳng trở lên
+        University = 3,   // Đại học trở lên
+        Master = 4,       // Thạc sĩ trở lên
+        Doctor = 5        // Tiến sĩ trở lên
+    }
+
     public class Job
     {
 

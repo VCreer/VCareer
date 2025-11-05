@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { CompanyService, CompanyLegalInfoDto, CompanySearchInputDto, PagedResultDto } from '../../../../apiTest/api/company.service';
 
 export interface Company {
   id: string;
@@ -24,25 +25,27 @@ export interface Company {
 })
 export class CompanyListingComponent implements OnInit {
   searchKeyword: string = '';
-  companies: Company[] = [];
-  topCompanies: Company[] = [];
+  companies: CompanyLegalInfoDto[] = [];
+  topCompanies: Company[] = []; // Vẫn dùng mock cho top companies
   activeTab: 'list' | 'top' = 'list';
   
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 9;
   totalCompanies: number = 0;
-  paginatedCompanies: Company[] = [];
+  paginatedCompanies: CompanyLegalInfoDto[] = [];
+  
+  isLoading: boolean = false;
 
   constructor(
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit() {
     this.loadCompanies();
     this.loadTopCompanies();
-    this.updateDisplayedCompanies();
   }
 
   get totalPages(): number {
@@ -51,63 +54,86 @@ export class CompanyListingComponent implements OnInit {
 
   onPageChange(page: number) {
     this.currentPage = page;
-    this.updateDisplayedCompanies();
+    this.loadCompanies();
     // Scroll to top of company list
     window.scrollTo({ top: document.querySelector('.company-list-section')?.getBoundingClientRect().top + window.pageYOffset - 100 || 0, behavior: 'smooth' });
-  }
-
-  updateDisplayedCompanies() {
-    // Chọn danh sách dựa trên tab active
-    const sourceCompanies = this.activeTab === 'top' ? this.topCompanies : this.companies;
-    this.totalCompanies = sourceCompanies.length;
-    
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedCompanies = sourceCompanies.slice(startIndex, endIndex);
   }
 
   setActiveTab(tab: 'list' | 'top') {
     this.activeTab = tab;
     this.currentPage = 1; // Reset về trang 1 khi chuyển tab
-    this.updateDisplayedCompanies();
+    if (tab === 'list') {
+      this.loadCompanies();
+    } else {
+      this.updateTopCompaniesDisplay();
+    }
+  }
+
+  updateTopCompaniesDisplay() {
+    this.totalCompanies = this.topCompanies.length;
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    // Convert top companies to CompanyLegalInfoDto format for display
+    this.paginatedCompanies = this.topCompanies.slice(startIndex, endIndex).map(c => ({
+      id: parseInt(c.id),
+      companyName: c.fullName || c.name,
+      description: c.description,
+      logoUrl: c.image,
+    } as CompanyLegalInfoDto));
   }
 
   loadCompanies() {
-    // TODO: Load companies from API
-    // Mock data - danh sách công ty thông thường
-    const mockCompanies: Company[] = [
-      {
-        id: '1',
-        name: 'NURA',
-        fullName: 'CÔNG TY CỔ PHẦN CÔNG NGHỆ Y TẾ NHẬT VIỆT',
-        description: 'Công ty CP Công nghệ Y tế Nhật Việt là đơn vị quản lý vận hành thương hiệu Phòng khám Đa khoa Công nghệ cao NURA...',
-        image: 'assets/images/company/nura.jpg',
-        industry: 'Công nghệ Y tế'
-      },
-      {
-        id: '2',
-        name: 'STRINGEE',
-        fullName: 'CÔNG TY CỔ PHẦN STRINGEE',
-        description: 'Stringee là công ty công nghệ cung cấp nền tảng quản trị doanh nghiệp hợp nhất – Cogover...',
-        image: 'assets/images/company/stringee.jpg',
-        industry: 'Công nghệ'
-      },
-      {
-        id: '3',
-        name: 'LOTTE',
-        fullName: 'CÔNG TY TNHH LOTTE VIỆT NAM',
-        description: '07/1998: Công ty Liên doanh Lotte Việt Nam thành lập nhà máy tại tỉnh Bình Dương- 05/2006: Chính thức ra mắt sản phẩm kẹo gum không đường Lotte Xylitol...',
-        image: 'assets/images/company/lotte.jpg',
-        industry: 'Thực phẩm & Đồ uống'
-      }
-    ];
+    if (this.activeTab === 'top') {
+      this.updateTopCompaniesDisplay();
+      return;
+    }
 
-    // Duplicate để có đủ dữ liệu test pagination (tạm thời)
-    this.companies = Array(27).fill(null).map((_, index) => ({
-      ...mockCompanies[index % mockCompanies.length],
-      id: String(index + 1),
-      name: `${mockCompanies[index % mockCompanies.length].name} ${Math.floor(index / mockCompanies.length) > 0 ? `- Copy ${Math.floor(index / mockCompanies.length)}` : ''}`
-    }));
+    this.isLoading = true;
+    
+    const input: CompanySearchInputDto = {
+      keyword: this.searchKeyword?.trim() || undefined,
+      status: true, // Chỉ lấy các công ty active
+      skipCount: (this.currentPage - 1) * this.itemsPerPage,
+      maxResultCount: this.itemsPerPage
+    };
+
+    this.companyService.searchCompanies(input).subscribe({
+      next: (result: PagedResultDto<CompanyLegalInfoDto>) => {
+        this.companies = result.items;
+        this.totalCompanies = result.totalCount;
+        this.paginatedCompanies = result.items;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading companies:', error);
+        this.isLoading = false;
+        // Fallback to empty array on error
+        this.companies = [];
+        this.totalCompanies = 0;
+        this.paginatedCompanies = [];
+      }
+    });
+  }
+
+  /**
+   * Truncate description nếu quá dài
+   */
+  truncateDescription(description: string | undefined, maxLength: number = 150): string {
+    if (!description) return '';
+    if (description.length <= maxLength) return description;
+    return description.substring(0, maxLength).trim() + '...';
+  }
+
+  /**
+   * Lấy tên ngắn gọn từ tên công ty đầy đủ
+   */
+  getShortCompanyName(fullName: string | undefined): string {
+    if (!fullName) return '';
+    // Lấy từ đầu tiên hoặc các từ đầu tiên
+    const words = fullName.trim().split(' ');
+    if (words.length <= 3) return fullName.toUpperCase();
+    // Lấy 2-3 từ đầu
+    return words.slice(0, 2).join(' ').toUpperCase();
   }
 
   loadTopCompanies() {
@@ -241,13 +267,11 @@ export class CompanyListingComponent implements OnInit {
   }
 
   onSearch() {
-    if (this.searchKeyword.trim()) {
-      // TODO: Implement search functionality
-      console.log('Searching for:', this.searchKeyword);
-    }
+    this.currentPage = 1; // Reset về trang 1 khi search
+    this.loadCompanies();
   }
 
-  onCompanyClick(companyId: string) {
+  onCompanyClick(companyId: number | string) {
     this.router.navigate(['/candidate/company-detail', companyId]);
   }
 

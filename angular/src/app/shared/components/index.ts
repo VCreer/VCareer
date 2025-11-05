@@ -20,3 +20,4 @@ export { NotificationMenuComponent, NotificationItem } from './notification-menu
 export { SidebarComponent } from './sidebar/sidebar';
 export { EnableJobSearchModalComponent } from './enable-job-search-modal/enable-job-search-modal';
 export { PaginationComponent } from './pagination/pagination';
+export { LoginModalComponent } from './login-modal/login-modal';

@@ -22,10 +22,7 @@ namespace VCareer.Profile
             _profileAppService = profileAppService;
         }
 
-        /// <summary>
-        /// Gets the current user's profile information
-        /// </summary>
-        /// <returns>Current user's profile information</returns>
+        // lấy profile hiện tại
         [HttpGet]
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
