@@ -184,4 +184,20 @@ namespace VCareer.Profile
         public string HeadquartersAddress { get; set; }
         public List<string> Industries { get; set; } = new List<string>(); // Danh sách tên ngành nghề
     }
+
+    /// <summary>
+    /// Input DTO để tìm kiếm danh sách công ty
+    /// </summary>
+    public class CompanySearchInputDto : PagedAndSortedResultRequestDto
+    {
+        /// <summary>
+        /// Keyword để tìm kiếm theo tên công ty (không phân biệt hoa thường)
+        /// </summary>
+        public string Keyword { get; set; }
+
+        /// <summary>
+        /// Lọc theo status (true = active, false = inactive, null = all)
+        /// </summary>
+        public bool? Status { get; set; }
+    }
 }

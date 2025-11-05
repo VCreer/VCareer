@@ -156,6 +156,16 @@
             color: #333;
             margin: 0;
             line-height: 1.4;
+
+            &.clickable {
+              cursor: pointer;
+              transition: color 0.2s ease;
+
+              &:hover {
+                color: #0F83BA;
+                text-decoration: underline;
+              }
+            }
           }
 
           .company-name {

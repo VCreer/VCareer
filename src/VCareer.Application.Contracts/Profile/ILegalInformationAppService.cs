@@ -67,5 +67,12 @@ namespace VCareer.Profile
         /// <param name="jobId">Job ID</param>
         /// <returns>Thông tin công ty bao gồm danh sách ngành nghề</returns>
         Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId);
+
+        /// <summary>
+        /// Tìm kiếm danh sách công ty (public API - không cần authorize)
+        /// </summary>
+        /// <param name="input">Input tìm kiếm (keyword, pagination, sorting)</param>
+        /// <returns>Danh sách công ty đã phân trang</returns>
+        Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input);
     }
 }

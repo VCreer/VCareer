@@ -240,4 +240,30 @@ export class JobApiService {
   getSavedJobStatus(jobId: string): Observable<{ isSaved: boolean; savedAt?: string }> {
     return this.http.get<{ isSaved: boolean; savedAt?: string }>(`${this.apiUrl}/${jobId}/save-status`);
   }
+
+  /**
+   * GET /api/jobs/saved
+   * Lấy danh sách job đã lưu của user hiện tại
+   */
+  getSavedJobs(skipCount: number = 0, maxResultCount: number = 20): Observable<PagedResultDto<SavedJobDto>> {
+    return this.http.get<PagedResultDto<SavedJobDto>>(`${this.apiUrl}/saved`, {
+      params: {
+        skipCount: skipCount.toString(),
+        maxResultCount: maxResultCount.toString()
+      }
+    });
+  }
+}
+
+/**
+ * SavedJobDto - Match với VCareer.Dto.Job.SavedJobDto
+ */
+export interface SavedJobDto {
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  salaryText: string;
+  location: string;
+  savedAt: Date;
+  jobDetail?: JobViewDto; // Full job details
 }

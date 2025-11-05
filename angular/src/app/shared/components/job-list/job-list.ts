@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { JobApiService } from '../../../apiTest/api/job.service';
-import { LoginModalComponent } from '../login-modal/login-modal';
 import { NavigationService } from '../../../core/services/navigation.service';
+// Import trực tiếp để tránh circular dependency
+import { LoginModalComponent } from '../login-modal/login-modal';
 
 @Component({
   selector: 'app-job-list',
@@ -459,9 +460,9 @@ export class JobListComponent implements OnInit, OnChanges {
   onLoginClose() { this.showLoginModal = false; }
   onLoginSuccess() {
     this.showLoginModal = false;
-    // Reload saved status sau khi login
     this.isAuthenticated = true;
-    this.updateFilteredJobs();
+    // Reload lại trang để gọi lại API search với token mới (để có isSaved)
+    window.location.reload();
   }
 
   showQuickViewButton(): boolean {
