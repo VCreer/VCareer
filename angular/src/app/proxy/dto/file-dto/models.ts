@@ -16,6 +16,7 @@ export interface FileChunkResult {
 }
 
 export interface FileDescriptorDto {
+  creatorId?: string;
   storageName?: string;
   originalName?: string;
   extension?: string;
@@ -23,7 +24,6 @@ export interface FileDescriptorDto {
   mimeType?: string;
   containerName?: string;
   storagePath?: string;
-  ownerId?: string;
   status: number;
   uploadTime?: string;
 }

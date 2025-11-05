@@ -251,33 +251,50 @@
   }
 }
 
-// Star Icon
+// Star Icon - Always visible (giống hình 1: ngôi sao vàng với shadow, không có vòng tròn)
 .cv-star {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 10;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  opacity: 1; // Luôn hiển thị
+  transition: all 0.3s ease;
   cursor: pointer;
-  
-  &.show {
-    opacity: 1;
-  }
+  background: transparent; // Bỏ background trắng
+  border: none;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px; // Thêm padding nhẹ để dễ click
   
   .star-icon {
     color: #d1d5db;
-    font-size: 1.5rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    transition: color 0.2s ease;
+    font-size: 1.75rem; // Tăng size để nổi bật hơn
+    transition: all 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)); // Shadow mềm mại
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); // Text shadow nhẹ
   }
   
   &.active .star-icon {
-    color: #fbbf24;
+    color: #fbbf24; // Vàng đậm
+    filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.4)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2)); // Glow effect vàng
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.3), 0 1px 2px rgba(0, 0, 0, 0.15); // Glow vàng nhẹ
   }
   
-  &:hover .star-icon {
-    color: #fbbf24;
+  &:hover {
+    .star-icon {
+      color: #fbbf24;
+      filter: drop-shadow(0 2px 8px rgba(251, 191, 36, 0.5)) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.25));
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+      transform: scale(1.1); // Phóng to nhẹ khi hover
+    }
+  }
+  
+  // Animation khi click
+  &:active {
+    transform: scale(0.95);
   }
 }
 

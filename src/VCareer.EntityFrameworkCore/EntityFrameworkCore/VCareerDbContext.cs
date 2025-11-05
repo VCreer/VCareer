@@ -24,6 +24,7 @@ using VCareer.Models.Companies;
 using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
 using VCareer.Models.FileMetadata;
+using VCareer.Models.CV;
 /*using VCareer.Models.Applications;*/
 
 namespace VCareer.EntityFrameworkCore;
