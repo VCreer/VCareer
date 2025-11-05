@@ -9,6 +9,10 @@ import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { ProfileAvatarComponent } from '../../../../shared/components/profile-avatar/profile-avatar';
 import { PasswordFieldComponent } from '../../../../shared/components/password-field/password-field';
+import { CompanyTabsComponent } from '../../../../shared/components/company-tabs/company-tabs.component';
+import { SearchCompanyComponent } from '../../../../shared/components/search-company/search-company.component';
+import { CreateCompanyFormComponent } from '../../../../shared/components/create-company-form/create-company-form.component';
+import { BusinessRegistrationComponent } from '../../../../shared/components/business-registration/business-registration.component';
 
 @Component({
   selector: 'app-recruiter-setting',
@@ -20,7 +24,11 @@ import { PasswordFieldComponent } from '../../../../shared/components/password-f
     ButtonComponent,
     ToastNotificationComponent,
     ProfileAvatarComponent,
-    PasswordFieldComponent
+    PasswordFieldComponent,
+    CompanyTabsComponent,
+    SearchCompanyComponent,
+    CreateCompanyFormComponent,
+    BusinessRegistrationComponent
   ],
   templateUrl: './recruiter-setting.html',
   styleUrls: ['./recruiter-setting.scss']
@@ -60,6 +68,37 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     { id: 2, label: 'Cập nhật thông tin công ty', completed: false },
     { id: 3, label: 'Xác thực Giấy đăng ký doanh nghiệp', completed: false }
   ];
+
+  // Company info
+  companyTab: string = 'search'; // 'search' or 'create'
+  companySearchKeyword: string = '';
+  companyList: any[] = [];
+  isSearchingCompany: boolean = false;
+  
+  // Create company form data
+  companyFormData = {
+    companyType: 'enterprise',
+    taxId: '',
+    website: '',
+    scale: '',
+    email: '',
+    companyName: '',
+    industry: '',
+    address: '',
+    phone: '',
+    description: ''
+  };
+  companyLogoPreview: string | null = null;
+  isSavingCompany: boolean = false;
+  companyFormErrors: any = {};
+
+  // Settings
+  cvApplicationNotificationEnabled: boolean = true;
+
+  // Business Registration
+  businessCertDocumentType: string = 'business-cert';
+  businessCertFile: File | null = null;
+  isSavingBusinessCert: boolean = false;
 
   constructor(
     private router: Router,
@@ -107,6 +146,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         this.activeTab = params['tab'];
+        this.cdr.detectChanges();
       }
     });
     
@@ -429,6 +469,259 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       'settings': 'Cài đặt'
     };
     return titles[tab] || 'Cài đặt';
+  }
+
+  setCompanyTab(tab: string) {
+    this.companyTab = tab;
+  }
+
+  onSearchCompany(keyword?: string) {
+    const searchKeyword = keyword || this.companySearchKeyword;
+    if (!searchKeyword || !searchKeyword.trim()) {
+      this.showToastMessage('Vui lòng nhập tên công ty', 'warning');
+      return;
+    }
+
+    this.companySearchKeyword = searchKeyword;
+    this.isSearchingCompany = true;
+    this.companyList = [];
+
+    // TODO: Call API to search companies
+    // Mock data for now
+    setTimeout(() => {
+      this.companyList = [
+        {
+          id: 1,
+          name: 'Trần Quốc Phong',
+          taxId: '0401526431',
+          address: '68 Lý Tự Trọng, phường Thạch Than...',
+          employeeRange: '10-24 nhân viên',
+          logoBgColor: '#9ca3af',
+          logoText: 'TP',
+          tags: ['Thời trang']
+        },
+        {
+          id: 2,
+          name: 'Ge Media',
+          taxId: '0312345678',
+          address: '2/26 đường Đông Tây 1, phường ...',
+          employeeRange: '25-99 nhân viên',
+          logoBgColor: '#7c3aed',
+          logoText: 'GM',
+          tags: ['Internet / Online', 'Marketing / Truyền...']
+        },
+        {
+          id: 3,
+          name: 'CÔNG TY TRÁCH NHIỆM HỮU HẠN CÔNG NGHỆ VÀ GIẢI PHÁP WIS',
+          taxId: '0123456789',
+          address: '123 Đường ABC, Quận 1, TP.HCM',
+          employeeRange: '10-24 nhân viên',
+          logoBgColor: '#14b8a6',
+          logoText: 'CW',
+          tags: ['Thương mại tổng hợp']
+        },
+        {
+          id: 4,
+          name: 'CÔNG TY TNHH NGỌC TRÂN AQUAS',
+          taxId: '0987654321',
+          address: '456 Đường XYZ, Quận 2, TP.HCM',
+          employeeRange: '25-99 nhân viên',
+          logoBgColor: '#92400e',
+          logoText: 'CA',
+          tags: ['Sản xuất']
+        },
+        {
+          id: 5,
+          name: 'CÔNG TY TNHH SX TM HÀ VINH',
+          taxId: '0111222333',
+          address: '789 Đường DEF, Quận 3, TP.HCM',
+          employeeRange: '10-24 nhân viên',
+          logoBgColor: '#ffffff',
+          logoText: 'topcv',
+          logoImage: 'assets/images/logo/logo.png',
+          tags: ['Giáo dục / Đào tạo']
+        },
+        {
+          id: 6,
+          name: 'CÔNG TY TRÁCH NHIỆM HỮU HẠN PHU MY HUR HOLDINGS',
+          taxId: '0444555666',
+          address: '321 Đường GHI, Quận 4, TP.HCM',
+          employeeRange: '25-99 nhân viên',
+          logoBgColor: '#fbbf24',
+          logoText: 'PM',
+          tags: ['Khác']
+        }
+      ];
+      this.isSearchingCompany = false;
+    }, 800);
+  }
+
+  onSelectCompany(company: any) {
+    // TODO: Handle company selection
+    this.showToastMessage(`Đã chọn công ty: ${company.name}`, 'success');
+    console.log('Selected company:', company);
+  }
+
+  onToggleCvApplicationNotification() {
+    // TODO: Call API to save notification settings
+    const status = this.cvApplicationNotificationEnabled ? 'bật' : 'tắt';
+    this.showToastMessage(`Đã ${status} thông báo CV ứng tuyển`, 'success');
+    console.log('CV Application Notification:', this.cvApplicationNotificationEnabled);
+  }
+
+  onLogoSelected(event: any) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.companyLogoPreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  validateField(fieldName: string) {
+    const value = this.companyFormData[fieldName as keyof typeof this.companyFormData];
+    this.companyFormErrors[fieldName] = '';
+
+    switch (fieldName) {
+      case 'taxId':
+        if (!value || (value as string).trim() === '') {
+          this.companyFormErrors.taxId = 'Mã số thuế là bắt buộc';
+        } else if (!/^\d{10}$|^\d{13}$/.test((value as string).trim())) {
+          this.companyFormErrors.taxId = 'Mã số thuế phải có 10 hoặc 13 chữ số';
+        }
+        break;
+
+      case 'companyName':
+        if (!value || (value as string).trim() === '') {
+          this.companyFormErrors.companyName = 'Tên công ty là bắt buộc';
+        } else if ((value as string).trim().length < 3) {
+          this.companyFormErrors.companyName = 'Tên công ty phải có ít nhất 3 ký tự';
+        }
+        break;
+
+      case 'email':
+        if (!value || (value as string).trim() === '') {
+          this.companyFormErrors.email = 'Email là bắt buộc';
+        } else {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test((value as string).trim())) {
+            this.companyFormErrors.email = 'Email không hợp lệ';
+          }
+        }
+        break;
+
+      case 'phone':
+        if (!value || (value as string).trim() === '') {
+          this.companyFormErrors.phone = 'Số điện thoại là bắt buộc';
+        } else {
+          const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+          if (!phoneRegex.test((value as string).trim())) {
+            this.companyFormErrors.phone = 'Số điện thoại không hợp lệ (VD: 0912345678)';
+          }
+        }
+        break;
+
+      case 'address':
+        if (!value || (value as string).trim() === '') {
+          this.companyFormErrors.address = 'Địa chỉ là bắt buộc';
+        } else if ((value as string).trim().length < 10) {
+          this.companyFormErrors.address = 'Địa chỉ phải có ít nhất 10 ký tự';
+        }
+        break;
+
+      case 'scale':
+        if (!value || value === '') {
+          this.companyFormErrors.scale = 'Vui lòng chọn quy mô công ty';
+        }
+        break;
+
+      case 'industry':
+        if (!value || value === '') {
+          this.companyFormErrors.industry = 'Vui lòng chọn lĩnh vực hoạt động';
+        }
+        break;
+
+      case 'website':
+        if (value && (value as string).trim() !== '') {
+          const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+          if (!urlRegex.test((value as string).trim())) {
+            this.companyFormErrors.website = 'Website không hợp lệ (VD: https://example.com)';
+          }
+        }
+        break;
+    }
+  }
+
+  validateAllFields(): boolean {
+    const requiredFields = ['taxId', 'companyName', 'email', 'phone', 'address', 'scale', 'industry'];
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+      this.validateField(field);
+      if (this.companyFormErrors[field]) {
+        isValid = false;
+      }
+    });
+
+    // Validate optional fields if they have values
+    if (this.companyFormData.website) {
+      this.validateField('website');
+      if (this.companyFormErrors.website) {
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  onSaveCompany() {
+    // Validate all fields
+    if (!this.validateAllFields()) {
+      this.showToastMessage('Vui lòng kiểm tra lại thông tin đã nhập', 'error');
+      return;
+    }
+
+    this.isSavingCompany = true;
+
+    // TODO: Call API to save company
+    setTimeout(() => {
+      this.isSavingCompany = false;
+      this.showToastMessage('Tạo công ty thành công!', 'success');
+      console.log('Company data:', this.companyFormData);
+    }, 1000);
+  }
+
+  onBusinessCertDocumentTypeChange(type: string) {
+    this.businessCertDocumentType = type;
+    this.businessCertFile = null;
+  }
+
+  onBusinessCertFileSelected(event: {type: string, file: File}) {
+    // Handle different file types for authorization
+    if (event.type === 'business-cert') {
+      this.businessCertFile = event.file;
+    } else if (event.type === 'identification') {
+      // Handle identification file (Giấy ủy quyền section is commented out)
+      console.log('Identification file:', event.file);
+    }
+  }
+
+  onSaveBusinessCert() {
+    if (!this.businessCertFile) {
+      this.showToastMessage('Vui lòng chọn file', 'error');
+      return;
+    }
+
+    this.isSavingBusinessCert = true;
+
+    // TODO: Call API to save business certificate
+    setTimeout(() => {
+      this.isSavingBusinessCert = false;
+      this.showToastMessage('Lưu giấy đăng ký doanh nghiệp thành công!', 'success');
+      console.log('Business cert file:', this.businessCertFile);
+    }, 1000);
   }
 }
 

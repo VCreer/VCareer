@@ -20,3 +20,7 @@ export { NotificationMenuComponent, NotificationItem } from './notification-menu
 export { SidebarComponent } from './sidebar/sidebar';
 export { EnableJobSearchModalComponent } from './enable-job-search-modal/enable-job-search-modal';
 export { PaginationComponent } from './pagination/pagination';
+export { CompanyTabsComponent } from './company-tabs/company-tabs.component';
+export { SearchCompanyComponent } from './search-company/search-company.component';
+export { CreateCompanyFormComponent } from './create-company-form/create-company-form.component';
+export { BusinessRegistrationComponent } from './business-registration/business-registration.component';

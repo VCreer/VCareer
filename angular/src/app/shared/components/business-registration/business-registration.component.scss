@@ -1,0 +1,361 @@
+.business-registration {
+  width: 100%;
+
+  .section-header {
+    margin-bottom: 24px;
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+
+    .section-instruction {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.5;
+
+      .instruction-link {
+        color: #0F83BA;
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .document-type-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .radio-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+
+      input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #0F83BA;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .radio-label {
+        font-size: 14px;
+        color: #374151;
+        cursor: pointer;
+        line-height: 1.5;
+        font-weight: 500;
+
+        &:hover {
+          color: #1f2937;
+        }
+      }
+
+      input[type="radio"]:checked + .radio-label {
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+  }
+
+  .content-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    &.authorization-section {
+      margin-bottom: 20px;
+
+      &:last-of-type {
+        margin-bottom: 24px;
+      }
+    }
+
+    .content-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .upload-section {
+        .upload-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 12px;
+
+          .required-star {
+            color: #ef4444;
+            margin-left: 4px;
+          }
+        }
+
+        .upload-area {
+          border: 2px dashed #d1d5db;
+          border-radius: 8px;
+          padding: 32px 24px;
+          text-align: center;
+          background: #f9fafb;
+          transition: all 0.3s ease;
+          margin-bottom: 12px;
+          min-height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &.drag-over {
+            border-color: #0F83BA;
+            background: #eff6ff;
+          }
+
+          .upload-content {
+            width: 100%;
+
+            .upload-instruction {
+              font-size: 14px;
+              color: #374151;
+              margin: 0 0 8px 0;
+              font-weight: 500;
+            }
+
+            .upload-specs {
+              font-size: 12px;
+              color: #6b7280;
+              margin: 0 0 16px 0;
+            }
+
+            .upload-btn {
+              ::ng-deep button.btn,
+              ::ng-deep .btn {
+                background: #0F83BA !important;
+                color: white !important;
+                border: none !important;
+                padding: 10px 20px !important;
+                border-radius: 6px !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+
+                i {
+                  font-size: 14px;
+                }
+
+                &:hover:not(:disabled):not(.loading) {
+                  background: #0d6fa0 !important;
+                  transform: none !important;
+                }
+              }
+            }
+          }
+
+          .file-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+
+            .file-icon {
+              font-size: 48px;
+              color: #ef4444;
+            }
+
+            .file-name {
+              font-size: 14px;
+              color: #374151;
+              margin: 0;
+              word-break: break-word;
+              text-align: center;
+            }
+
+            .remove-file-btn {
+              position: absolute;
+              top: -8px;
+              right: -8px;
+              background: #ef4444;
+              color: white;
+              border: none;
+              border-radius: 50%;
+              width: 24px;
+              height: 24px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              font-size: 12px;
+              transition: background 0.2s;
+
+              &:hover {
+                background: #dc2626;
+              }
+            }
+          }
+        }
+
+        .error-message {
+          display: block;
+          font-size: 12px;
+          color: #ef4444;
+          margin-top: 8px;
+        }
+
+        .warning-messages {
+          margin-top: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          .warning-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+
+            .warning-icon {
+              color: #f59e0b;
+              font-size: 16px;
+              flex-shrink: 0;
+              margin-top: 2px;
+            }
+
+            .warning-text {
+              font-size: 13px;
+              color: #92400e;
+              margin: 0;
+              line-height: 1.6;
+            }
+          }
+        }
+      }
+
+      .illustration-section {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        .illustration-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 12px 0;
+        }
+
+        .illustration-image {
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #f9fafb;
+          margin-bottom: 16px;
+
+          img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+          }
+        }
+
+        .download-template-wrapper {
+          display: flex;
+          justify-content: center;
+          margin-top: auto;
+
+          .download-template-btn {
+            ::ng-deep button.btn,
+            ::ng-deep .btn {
+              background: #0F83BA !important;
+              color: white !important;
+              border: none !important;
+              padding: 10px 20px !important;
+              border-radius: 6px !important;
+              font-size: 14px !important;
+              font-weight: 500 !important;
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+
+              i {
+                font-size: 14px;
+              }
+
+              &:hover:not(:disabled):not(.loading) {
+                background: #0d6fa0 !important;
+                transform: none !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+
+    @media (max-width: 768px) {
+      justify-content: stretch;
+
+      .save-btn {
+        width: 100%;
+      }
+    }
+
+    .save-btn {
+      ::ng-deep {
+        button.btn,
+        .btn,
+        button[type="button"],
+        button[type="submit"] {
+          background: #0F83BA !important;
+          background-color: #0F83BA !important;
+          color: white !important;
+          border: none !important;
+          padding: 10px 24px !important;
+          border-radius: 6px !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+
+          &:hover:not(:disabled):not(.loading) {
+            background: #0d6fa0 !important;
+            background-color: #0d6fa0 !important;
+            transform: none !important;
+          }
+
+          &:disabled,
+          &[disabled] {
+            background: #d1d5db !important;
+            background-color: #d1d5db !important;
+            cursor: not-allowed !important;
+          }
+        }
+      }
+    }
+  }
+}
+
