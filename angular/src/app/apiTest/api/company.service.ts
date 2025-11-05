@@ -58,6 +58,19 @@ export interface CompanyLegalInfoDto {
   websiteUrl?: string;
 }
 
+export interface CompanySearchInputDto {
+  keyword?: string;
+  status?: boolean;
+  skipCount?: number;
+  maxResultCount?: number;
+  sorting?: string;
+}
+
+export interface PagedResultDto<T> {
+  totalCount: number;
+  items: T[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -212,5 +225,19 @@ export class CompanyService {
   getCompanyById(companyId: number | string): Observable<CompanyLegalInfoDto> {
     const url = `${this.apiUrl}/api/profile/company-legal-info/${companyId}`;
     return this.http.get<CompanyLegalInfoDto>(url);
+  }
+
+  /**
+   * POST /api/profile/company-legal-info/search
+   * Tìm kiếm danh sách công ty
+   */
+  searchCompanies(input: CompanySearchInputDto): Observable<PagedResultDto<CompanyLegalInfoDto>> {
+    const url = `${this.apiUrl}/api/profile/company-legal-info/search`;
+    return this.http.post<PagedResultDto<CompanyLegalInfoDto>>(url, input).pipe(
+      catchError(error => {
+        console.error('Error searching companies:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

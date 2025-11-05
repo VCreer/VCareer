@@ -87,6 +87,15 @@ export class JobDetailComponent implements OnInit {
       console.log('[JobDetail] route jobId =', this.jobId);
       if (this.jobId) {
         this.loadJobDetail();
+      } else {
+        // Fallback: Lấy jobId từ URL nếu route params chưa có
+        const urlPath = window.location.pathname;
+        const match = urlPath.match(/\/candidate\/job-detail\/([^\/]+)/);
+        if (match && match[1]) {
+          this.jobId = match[1];
+          console.log('[JobDetail] Fallback: jobId from URL =', this.jobId);
+          this.loadJobDetail();
+        }
       }
     });
   }
@@ -446,11 +455,18 @@ export class JobDetailComponent implements OnInit {
   onLoginSuccess() {
     this.showLoginModal = false;
     this.isAuthenticated = true;
-    // Reload saved status after login
-    if (this.jobId) {
-      // Yêu cầu: sau khi đăng nhập thành công, reload lại trang job detail
-      window.location.reload();
-    }
+    // Đợi một chút để đảm bảo modal đã đóng và state đã cập nhật
+    setTimeout(() => {
+      // Reload lại trang job detail để load lại data với token mới
+      const currentUrl = window.location.href;
+      console.log('[JobDetail] Reloading page with URL:', currentUrl);
+      // Đảm bảo URL có jobId trước khi reload
+      if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
+        window.location.reload();
+      } else {
+        console.error('[JobDetail] Cannot reload: jobId not found in URL');
+      }
+    }, 100);
   }
 
   /**

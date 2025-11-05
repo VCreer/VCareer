@@ -24,30 +24,28 @@
     <div class="jobs-list" *ngIf="!loading && savedJobs.length > 0">
       <div class="job-card" *ngFor="let job of savedJobs; trackBy: trackByJobId">
         <!-- Company Logo -->
-        <div class="company-logo" [style.background]="job.logoBackground">
+        <div class="company-logo">
           <div class="logo-content">
-            <h3 class="logo-text">{{ job.companyLogo }}</h3>
-            <p class="logo-tagline">{{ job.companyTagline }}</p>
+            <h3 class="logo-text">{{ getCompanyLogoText(job.companyName) }}</h3>
           </div>
         </div>
 
         <!-- Job Details -->
         <div class="job-details">
-          <h2 class="job-title">{{ job.title }}</h2>
+          <h2 class="job-title clickable" (click)="onJobTitleClick(job)">{{ job.jobTitle }}</h2>
           <p class="company-name">{{ job.companyName }}</p>
-          <p class="saved-date">{{ translate('saved_jobs.saved_date') }}: {{ job.savedDate }}</p>
+          <p class="saved-date">Đã lưu: {{ formatSavedDate(job.savedAt) }}</p>
           
           <!-- Tags -->
           <div class="job-tags">
-            <span class="tag">{{ job.location }}</span>
-            <span class="tag">{{ translate('saved_jobs.updated') }} {{ job.updatedTime }}</span>
+            <span class="tag">{{ getProvinceName(job) }}</span>
           </div>
         </div>
 
         <!-- Salary and Actions -->
         <div class="job-actions">
           <div class="salary">
-            <span class="salary-text">{{ job.salary }}</span>
+            <span class="salary-text">{{ job.salaryText }}</span>
           </div>
           <div class="action-buttons">
             <app-button 

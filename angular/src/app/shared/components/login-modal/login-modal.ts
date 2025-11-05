@@ -5,12 +5,11 @@ import { Router } from '@angular/router';
 import { CustomAuthService } from '../../../core/services/custom-auth.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { GoogleAuthService } from '../../../core/services/google-auth.service';
-import { 
-  InputFieldComponent, 
-  PasswordFieldComponent, 
-  ButtonComponent, 
-  ToastNotificationComponent 
-} from '../';
+// Import trực tiếp để tránh circular dependency
+import { InputFieldComponent } from '../input-field/input-field';
+import { PasswordFieldComponent } from '../password-field/password-field';
+import { ButtonComponent } from '../button/button';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { finalize } from 'rxjs/operators';
 import { AuthService as ProxyAuthService } from '../../../proxy/services/auth/auth.service';
 import { TokenResponseDto } from '../../../proxy/dto/jwt-dto/models';

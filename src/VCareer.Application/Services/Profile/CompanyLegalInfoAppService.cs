@@ -9,6 +9,7 @@ using VCareer.Permissions;
 using VCareer.Profile;
 using VCareer.Repositories.Companies;
 using Volo.Abp;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
@@ -282,6 +283,36 @@ namespace VCareer.Services.Profile
             };
 
             return dto;
+        }
+
+        /// <summary>
+        /// Tìm kiếm danh sách công ty (public API)
+        /// Application Service chỉ gọi repository và map kết quả
+        /// </summary>
+        public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input)
+        {
+            // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
+            // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
+            var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+
+            // Gọi repository để thực hiện query (logic query ở Repository layer)
+            var result = await _companyCustomRepository.SearchCompaniesAsync(
+                keyword: input.Keyword,
+                status: input.Status,
+                skipCount: skipCount,
+                maxResultCount: maxResultCount,
+                sorting: input.Sorting
+            );
+
+            // Map sang DTO (Application Service chỉ làm việc với mapping)
+            var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
+
+            return new PagedResultDto<CompanyLegalInfoDto>
+            {
+                TotalCount = result.TotalCount,
+                Items = dtos
+            };
         }
     }
 }
