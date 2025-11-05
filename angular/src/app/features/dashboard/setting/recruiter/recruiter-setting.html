@@ -246,8 +246,92 @@
       </div>
     </div>
 
-    <!-- Other Tabs Content -->
-    <div class="right-content" *ngIf="activeTab !== 'personal-info' && activeTab !== 'change-password'">
+    <!-- Company Info Content -->
+    <div class="right-content" *ngIf="activeTab === 'company-info'">
+      <div class="section-card">
+        <!-- Tabs Section -->
+        <app-company-tabs 
+          [activeTab]="companyTab"
+          (tabChange)="setCompanyTab($event)">
+        </app-company-tabs>
+
+        <!-- Search Section -->
+        <app-search-company
+          *ngIf="companyTab === 'search'"
+          [searchKeyword]="companySearchKeyword"
+          [companyList]="companyList"
+          [isSearching]="isSearchingCompany"
+          (search)="onSearchCompany($event)"
+          (selectCompany)="onSelectCompany($event)">
+        </app-search-company>
+
+        <!-- Create Company Section -->
+        <app-create-company-form
+          *ngIf="companyTab === 'create'"
+          [formData]="companyFormData"
+          [logoPreview]="companyLogoPreview"
+          [formErrors]="companyFormErrors"
+          [isSaving]="isSavingCompany"
+          (logoSelected)="onLogoSelected($event)"
+          (fieldValidate)="validateField($event)"
+          (save)="onSaveCompany($event)">
+        </app-create-company-form>
+      </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="right-content" *ngIf="activeTab === 'settings'">
+      <div class="section-card">
+        <h2 class="section-title">Cài đặt nhận thông báo đến email tài khoản</h2>
+        
+        <!-- Email Notification Card -->
+        <div class="notification-card">
+          <div class="notification-icon">
+            <i class="fa fa-envelope"></i>
+          </div>
+          
+          <div class="notification-content">
+            <div class="notification-header">
+              <h3 class="notification-title">Thông báo CV ứng tuyển</h3>
+              <span class="notification-status" [class.active]="cvApplicationNotificationEnabled" [class.inactive]="!cvApplicationNotificationEnabled">
+                {{ cvApplicationNotificationEnabled ? 'Đang hoạt động' : 'Không hoạt động' }}
+              </span>
+            </div>
+            <p class="notification-description">
+              Tự động gửi email khi ứng viên ứng tuyển vào tin tuyển dụng của bạn
+            </p>
+          </div>
+          
+          <div class="notification-toggle">
+            <label class="toggle-switch">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="cvApplicationNotificationEnabled"
+                (change)="onToggleCvApplicationNotification()"
+                name="cvApplicationNotification">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business Cert Content -->
+    <div class="right-content" *ngIf="activeTab === 'business-cert'">
+      <div class="section-card">
+        <app-business-registration
+          [documentType]="businessCertDocumentType"
+          [selectedFile]="businessCertFile"
+          [isSaving]="isSavingBusinessCert"
+          (documentTypeChange)="onBusinessCertDocumentTypeChange($event)"
+          (fileSelected)="onBusinessCertFileSelected($event)"
+          (save)="onSaveBusinessCert()">
+        </app-business-registration>
+      </div>
+    </div>
+
+    <!-- API Connection Content -->
+    <div class="right-content" *ngIf="activeTab === 'api-connection'">
       <div class="section-card">
         <h2 class="section-title">{{ getTabTitle(activeTab) }}</h2>
         <p class="section-description">Chức năng đang được phát triển...</p>
