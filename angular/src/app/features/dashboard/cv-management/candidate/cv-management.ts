@@ -11,7 +11,19 @@ import { UploadCvModal } from '../../../../shared/components/upload-cv-modal/upl
 import { DownloadCvModal } from '../../../../shared/components/download-cv-modal/download-cv-modal';
 import { RenameCvModal } from '../../../../shared/components/rename-cv-modal/rename-cv-modal';
 import { UploadedCvCard } from '../../../../shared/components/uploaded-cv-card/uploaded-cv-card';
-import { CvService, Cv } from '../../../../proxy/api/cv.service';
+import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
+import { CandidateCvDto, GetCandidateCvListDto } from '../../../../proxy/cv/models';
+
+// Interface để map dữ liệu cho UI - ĐẶT TRƯỚC Component decorator
+export interface CvDisplayItem {
+  id: string;
+  title: string;
+  preview: string;
+  isDefault: boolean;
+  updatedAt: string;
+  version?: string;
+  cvData?: CandidateCvDto;
+}
 
 @Component({
   selector: 'app-cv-management',
@@ -35,7 +47,7 @@ export class CvManagementComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType = 'success';
-  cvs: Cv[] = [];
+  cvs: CvDisplayItem[] = [];
   loading = false;
   showProfilePictureModal = false;
   showUploadCvModal = false;
@@ -47,34 +59,156 @@ export class CvManagementComponent implements OnInit {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private cvService: CvService,
+    private candidateCvService: CandidateCvService,
     private uploadedCvService: UploadedCvService
   ) {}
 
   ngOnInit() {
+    console.log('CvManagementComponent ngOnInit called');
+    console.log('CandidateCvService:', this.candidateCvService);
+    
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
     });
-    this.loadCvs();
     
     // Subscribe to uploaded CVs service
     this.uploadedCvService.uploadedCvs$.subscribe(cvs => {
       this.uploadedCvs = cvs;
     });
+    
+    // Load CVs
+    console.log('Calling loadCvs()...');
+    this.loadCvs();
   }
 
   loadCvs() {
+    console.log('loadCvs() called');
     this.loading = true;
-    this.cvService.getCvs().subscribe({
-      next: (cvs) => {
-        this.cvs = cvs;
+    
+    // Tạo input để lấy danh sách CV của user hiện tại
+    const input: GetCandidateCvListDto = {
+      skipCount: 0,
+      maxResultCount: 100,
+      sorting: 'creationTime DESC'
+    };
+
+    console.log('Calling candidateCvService.getList with input:', input);
+    console.log('Service instance:', this.candidateCvService);
+    
+    const subscription = this.candidateCvService.getList(input).subscribe({
+      next: (response: any) => {
+        console.log('CV List Response:', response);
+        console.log('Response type:', typeof response);
+        console.log('Response keys:', Object.keys(response || {}));
+        
+        // Extract data từ ActionResult hoặc PagedResultDto
+        // Response có thể là:
+        // 1. ActionResult<PagedResultDto<CandidateCvDto>> với result.items
+        // 2. ActionResult với result là array
+        // 3. PagedResultDto với items
+        // 4. Array trực tiếp
+        let cvList: CandidateCvDto[] = [];
+        
+        // Case 1: ActionResult với result là PagedResultDto
+        if (response.result?.items && Array.isArray(response.result.items)) {
+          cvList = response.result.items;
+        }
+        // Case 2: ActionResult với result là array
+        else if (response.result && Array.isArray(response.result)) {
+          cvList = response.result;
+        }
+        // Case 3: PagedResultDto trực tiếp
+        else if (response.items && Array.isArray(response.items)) {
+          cvList = response.items;
+        }
+        // Case 4: Array trực tiếp
+        else if (Array.isArray(response)) {
+          cvList = response;
+        }
+        // Case 5: ActionResult với value
+        else if (response.value?.items && Array.isArray(response.value.items)) {
+          cvList = response.value.items;
+        }
+        else if (response.value && Array.isArray(response.value)) {
+          cvList = response.value;
+        }
+        // Case 6: Data property
+        else if (response.data?.items && Array.isArray(response.data.items)) {
+          cvList = response.data.items;
+        }
+        else if (response.data && Array.isArray(response.data)) {
+          cvList = response.data;
+        }
+        
+        console.log('Extracted CV List:', cvList);
+        
+        // Map CandidateCvDto sang CvDisplayItem
+        this.cvs = cvList.map(cv => this.mapCvToDisplayItem(cv));
         this.loading = false;
+        
+        if (this.cvs.length === 0) {
+          console.log('No CVs found. User may need to create a CV first.');
+        }
       },
       error: (error) => {
         console.error('Error loading CVs:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        this.showToastMessage(this.translate('cv_management.load_error') || 'Lỗi khi tải danh sách CV', 'error');
         this.loading = false;
       }
     });
+    
+    // Log subscription để debug
+    console.log('Subscription created:', subscription);
+  }
+
+  /**
+   * Map CandidateCvDto sang CvDisplayItem để hiển thị
+   */
+  private mapCvToDisplayItem(cv: CandidateCvDto): CvDisplayItem {
+    // Lấy preview image từ template
+    // Nếu không có previewImageUrl, tạo placeholder hoặc dùng default
+    let previewImage = cv.template?.previewImageUrl;
+    
+    if (!previewImage || previewImage.trim() === '') {
+      // Nếu không có preview image, tạo data URL từ CV render để làm thumbnail
+      // Hoặc dùng placeholder mặc định
+      previewImage = this.generatePreviewPlaceholder(cv);
+    }
+
+    // Format updated date - ưu tiên publishedAt, sau đó dùng creationTime
+    let updatedAt = '';
+    if (cv.publishedAt) {
+      updatedAt = new Date(cv.publishedAt).toLocaleDateString('vi-VN');
+    } else {
+      // Fallback to current date formatted
+      updatedAt = new Date().toLocaleDateString('vi-VN');
+    }
+
+    return {
+      id: cv.id || '',
+      title: cv.cvName || 'CV chưa có tên',
+      preview: previewImage,
+      isDefault: cv.isDefault || false,
+      updatedAt: updatedAt,
+      version: cv.template?.version || '1.0',
+      cvData: cv
+    };
+  }
+
+  /**
+   * Generate preview placeholder khi không có preview image
+   */
+  private generatePreviewPlaceholder(cv: CandidateCvDto): string {
+    // Tạo placeholder dựa trên template name hoặc CV name
+    const templateName = cv.template?.name || 'CV';
+    const cvName = cv.cvName || 'CV';
+    
+    // Có thể tạo một SVG placeholder hoặc dùng image mặc định
+    // Hoặc có thể render CV thành thumbnail (nhưng tốn performance)
+    
+    // Tạm thời dùng placeholder image
+    return 'assets/images/cv-management/cv-preview-placeholder.png';
   }
 
   translate(key: string): string {
@@ -82,8 +216,8 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCreateCv() {
-    console.log('onCreateCv called');
-    this.showUploadCvModal = true;
+    // Navigate to CV template selection page
+    this.router.navigate(['/candidate/cv-sample']);
   }
 
   onCloseUploadCvModal() {
@@ -103,6 +237,7 @@ export class CvManagementComponent implements OnInit {
   }
 
   viewCv(cvId: string) {
+    // Navigate đến trang view CV (không dùng popup)
     this.router.navigate(['/candidate/cv-management/view', cvId]);
   }
 
@@ -116,49 +251,75 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCvDeleted(cvId: string) {
-    this.cvService.deleteCv(cvId).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showToastMessage(this.translate('cv_management.deleted_successfully'), 'success');
-          this.loadCvs();
-        } else {
-          this.showToastMessage(this.translate('cv_management.delete_failed'), 'error');
-        }
+    this.candidateCvService.delete(cvId).subscribe({
+      next: () => {
+        this.showToastMessage(this.translate('cv_management.deleted_successfully') || 'Xóa CV thành công', 'success');
+        this.loadCvs();
       },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.delete_failed'), 'error');
+      error: (error) => {
+        console.error('Error deleting CV:', error);
+        this.showToastMessage(this.translate('cv_management.delete_failed') || 'Xóa CV thất bại', 'error');
       }
     });
   }
 
   onCvDuplicated(cvId: string) {
-    this.cvService.duplicateCv(cvId).subscribe({
-      next: (cv) => {
-        if (cv) {
-          this.showToastMessage(this.translate('cv_management.duplicated_successfully'), 'success');
-          this.loadCvs();
+    // Lấy CV hiện tại
+    this.candidateCvService.get(cvId).subscribe({
+      next: (response: any) => {
+        // Extract CV từ ActionResult
+        let cv: CandidateCvDto;
+        if (response.result) {
+          cv = response.result;
+        } else if (response.data) {
+          cv = response.data;
         } else {
-          this.showToastMessage(this.translate('cv_management.duplicate_failed'), 'error');
+          cv = response;
         }
+        
+        if (!cv || !cv.id || !cv.templateId) {
+          this.showToastMessage(this.translate('cv_management.duplicate_failed') || 'Không thể sao chép CV', 'error');
+          return;
+        }
+
+        // Tạo CV mới với dữ liệu tương tự
+        const duplicateDto = {
+          templateId: cv.templateId,
+          cvName: `${cv.cvName} (Bản sao)`,
+          dataJson: cv.dataJson || '{}',
+          isPublished: false,
+          isDefault: false,
+          isPublic: false,
+          notes: cv.notes || ''
+        };
+
+        this.candidateCvService.create(duplicateDto).subscribe({
+          next: () => {
+            this.showToastMessage(this.translate('cv_management.duplicated_successfully') || 'Sao chép CV thành công', 'success');
+            this.loadCvs();
+          },
+          error: (error) => {
+            console.error('Error duplicating CV:', error);
+            this.showToastMessage(this.translate('cv_management.duplicate_failed') || 'Sao chép CV thất bại', 'error');
+          }
+        });
       },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.duplicate_failed'), 'error');
+      error: (error) => {
+        console.error('Error getting CV to duplicate:', error);
+        this.showToastMessage(this.translate('cv_management.duplicate_failed') || 'Sao chép CV thất bại', 'error');
       }
     });
   }
 
   onSetDefault(cvId: string) {
-    this.cvService.setDefaultCv(cvId).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showToastMessage(this.translate('cv_management.set_default_successfully'), 'success');
-          this.loadCvs();
-        } else {
-          this.showToastMessage(this.translate('cv_management.set_default_failed'), 'error');
-        }
+    this.candidateCvService.setDefault(cvId).subscribe({
+      next: () => {
+        this.showToastMessage(this.translate('cv_management.set_default_successfully') || 'Đặt CV mặc định thành công', 'success');
+        this.loadCvs();
       },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.set_default_failed'), 'error');
+      error: (error) => {
+        console.error('Error setting default CV:', error);
+        this.showToastMessage(this.translate('cv_management.set_default_failed') || 'Đặt CV mặc định thất bại', 'error');
       }
     });
   }

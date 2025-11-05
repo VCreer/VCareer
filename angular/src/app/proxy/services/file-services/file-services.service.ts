@@ -9,29 +9,27 @@ export class FileServicesService {
   apiName = 'Default';
   
 
-  delete = (storageName: string, userId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'DELETE',
-      url: '/api/app/file-services',
-      params: { storageName, userId },
-    },
-    { apiName: this.apiName,...config });
-  
-
-  download = (storageName: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, FileDescriptorDto>({
-      method: 'POST',
-      url: '/api/app/file-services/download',
-      params: { storageName },
-    },
-    { apiName: this.apiName,...config });
-  
-
   getMetadata = (storageName: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, FileDescriptorDto>({
       method: 'GET',
       url: '/api/app/file-services/metadata',
       params: { storageName },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  hardDelete = (fileId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/file-services/hard-delete/${fileId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  softDelete = (fileId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/file-services/soft-delete/${fileId}`,
     },
     { apiName: this.apiName,...config });
   

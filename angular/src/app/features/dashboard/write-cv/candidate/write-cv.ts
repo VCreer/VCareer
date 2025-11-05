@@ -8,6 +8,9 @@ import { ToastNotificationComponent } from '../../../../shared/components/toast-
 import { PdfViewerComponent } from '../../../../shared/components/pdf-viewer/pdf-viewer';
 import { ModalUpdateNameCvComponent } from '../../../../shared/components/modal-update-name-cv/modal-update-name-cv';
 import { ModalUpdatePhotoComponent } from '../../../../shared/components/modal-update-photo/modal-update-photo';
+import { CvTemplateService } from '../../../../proxy/http-api/controllers/cv-template.service';
+import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
+import { CvTemplateDto } from '../../../../proxy/cv/models';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -20,8 +23,39 @@ import jsPDF from 'jspdf';
 })
 export class WriteCv implements OnInit {
   selectedLanguage: string = 'vi';
+  templateId: string = '';
   templateType: string = '';
+  cvId: string = ''; // CV ID khi edit mode
+  isEditMode: boolean = false; // Flag để biết là create hay edit
   cvName: string = 'CV chưa đặt tên';
+  loading: boolean = false;
+  
+  // Template data
+  currentTemplate: CvTemplateDto | null = null;
+  templateHtml: string = '';
+  templateStyles: string = '';
+  
+  // CV Data (sẽ được lưu vào DataJson)
+  cvData: any = {
+    personalInfo: {
+      fullName: '',
+      email: '',
+      phoneNumber: '',
+      dateOfBirth: '',
+      address: '',
+      gender: null,
+      profileImageUrl: '',
+      linkedIn: '',
+      website: ''
+    },
+    careerObjective: '',
+    workExperiences: [],
+    educations: [],
+    skills: [],
+    projects: [],
+    certificates: [],
+    languages: []
+  };
   
   // Validation errors
   phoneError: boolean = false;
@@ -65,7 +99,9 @@ export class WriteCv implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cvTemplateService: CvTemplateService,
+    private candidateCvService: CandidateCvService
   ) {}
 
   onEditorInput(event: Event) {
@@ -139,7 +175,27 @@ export class WriteCv implements OnInit {
   }
 
   ngOnInit() {
-    this.templateType = this.route.snapshot.paramMap.get('type') || 'standard';
+    // Lấy templateId từ route
+    this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
+    
+    // Kiểm tra xem có cvId trong queryParams không (edit mode)
+    const cvId = this.route.snapshot.queryParamMap.get('cvId');
+    const mode = this.route.snapshot.queryParamMap.get('mode');
+    
+    if (cvId && mode === 'edit') {
+      this.cvId = cvId;
+      this.isEditMode = true;
+      console.log('Edit mode - CV ID:', this.cvId);
+    }
+    
+    if (!this.templateId) {
+      console.error('No templateId provided');
+      this.showToast('Không tìm thấy template. Vui lòng chọn lại.', 'error');
+      setTimeout(() => {
+        this.router.navigate(['/candidate/cv-sample']);
+      }, 2000);
+      return;
+    }
     
     this.updateTranslations();
     
@@ -148,10 +204,969 @@ export class WriteCv implements OnInit {
       this.updateTranslations();
     });
     
-    // Initialize with empty CV state
+    // Load template từ API
+    this.loadTemplate();
+    
+    // Nếu là edit mode, load CV data sau khi template đã load
+    if (this.isEditMode && this.cvId) {
+      // Sẽ load CV data sau khi template render xong
+    }
+    
+    // Initialize with empty CV state (sẽ được override nếu là edit mode)
     setTimeout(() => {
       this.saveToHistory();
     }, 100);
+  }
+
+  loadTemplate() {
+    this.loading = true;
+    
+    this.cvTemplateService.get(this.templateId).subscribe({
+      next: (response: any) => {
+        console.log('Template Response:', response);
+        
+        // Extract template từ ActionResult
+        let template: CvTemplateDto;
+        if (response.result) {
+          template = response.result;
+        } else if (response.data) {
+          template = response.data;
+        } else {
+          template = response;
+        }
+        
+        if (!template || !template.layoutDefinition) {
+          console.error('Template not found or invalid');
+          this.showToast('Template không hợp lệ. Vui lòng chọn lại.', 'error');
+          this.loading = false;
+          setTimeout(() => {
+            this.router.navigate(['/candidate/cv-sample']);
+          }, 2000);
+          return;
+        }
+        
+        this.currentTemplate = template;
+        this.templateType = template.category || 'standard';
+        this.templateHtml = template.layoutDefinition;
+        this.templateStyles = template.styles || '';
+        
+        // Nếu là edit mode, load CV data trước khi render form
+        if (this.isEditMode && this.cvId) {
+          this.loadCvData();
+        } else {
+          // Render form với empty data
+          this.renderTemplateForm();
+          this.loading = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading template:', error);
+        this.showToast('Không thể tải template. Vui lòng thử lại.', 'error');
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/candidate/cv-sample']);
+        }, 2000);
+      }
+    });
+  }
+
+  @ViewChild('templateFormContainer', { static: false }) templateFormContainer!: ElementRef<HTMLDivElement>;
+
+  loadCvData() {
+    console.log('Loading CV data for edit, CV ID:', this.cvId);
+    
+    this.candidateCvService.get(this.cvId).subscribe({
+      next: (response: any) => {
+        console.log('CV Data Response:', response);
+        
+        let cv: any;
+        if (response.result) {
+          cv = response.result;
+        } else if (response.data) {
+          cv = response.data;
+        } else {
+          cv = response;
+        }
+        
+        // Load tên CV
+        if (cv.cvName) {
+          this.cvName = cv.cvName;
+        }
+        
+        // Parse DataJson và map vào cvData
+        if (cv.dataJson) {
+          try {
+            const backendData = JSON.parse(cv.dataJson);
+            console.log('Parsed backend data:', backendData);
+            
+            // Convert từ PascalCase (backend) sang camelCase (frontend)
+            this.cvData = this.convertFromBackendFormat(backendData);
+            console.log('Converted to frontend format:', this.cvData);
+            
+            // Render form với data đã load
+            this.renderTemplateForm();
+            this.loading = false;
+          } catch (error) {
+            console.error('Error parsing DataJson:', error);
+            this.showToast('Không thể tải dữ liệu CV. Vui lòng thử lại.', 'error');
+            this.loading = false;
+            // Render form với empty data
+            this.renderTemplateForm();
+          }
+        } else {
+          // Không có dataJson, render form với empty data
+          this.renderTemplateForm();
+          this.loading = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading CV data:', error);
+        this.showToast('Không thể tải dữ liệu CV. Vui lòng thử lại.', 'error');
+        this.loading = false;
+        // Render form với empty data
+        this.renderTemplateForm();
+      }
+    });
+  }
+
+  /**
+   * Convert từ backend PascalCase format sang frontend camelCase format
+   */
+  private convertFromBackendFormat(backendData: any): any {
+    const result: any = {
+      personalInfo: {
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        dateOfBirth: '',
+        address: '',
+        gender: null,
+        profileImageUrl: '',
+        linkedIn: '',
+        website: ''
+      },
+      careerObjective: '',
+      workExperiences: [],
+      educations: [],
+      skills: [],
+      projects: [],
+      certificates: [],
+      languages: []
+    };
+    
+    // PersonalInfo
+    if (backendData.PersonalInfo) {
+      const pi = backendData.PersonalInfo;
+      result.personalInfo = {
+        fullName: pi.FullName || '',
+        email: pi.Email || '',
+        phoneNumber: pi.PhoneNumber || '',
+        dateOfBirth: pi.DateOfBirth ? this.formatDateForInput(pi.DateOfBirth) : '',
+        address: pi.Address || '',
+        gender: pi.Gender !== null && pi.Gender !== undefined ? pi.Gender : null,
+        profileImageUrl: pi.ProfileImageUrl || '',
+        linkedIn: pi.LinkedIn || '',
+        website: pi.Website || ''
+      };
+    }
+    
+    // CareerObjective
+    result.careerObjective = backendData.CareerObjective || '';
+    
+    // WorkExperiences
+    if (backendData.WorkExperiences && Array.isArray(backendData.WorkExperiences)) {
+      result.workExperiences = backendData.WorkExperiences.map((exp: any) => ({
+        companyName: exp.CompanyName || '',
+        position: exp.Position || '',
+        startDate: exp.StartDate ? this.formatDateForInput(exp.StartDate) : '',
+        endDate: exp.EndDate ? this.formatDateForInput(exp.EndDate) : '',
+        isCurrentJob: exp.IsCurrentJob || false,
+        description: exp.Description || '',
+        achievements: exp.Achievements && Array.isArray(exp.Achievements) ? exp.Achievements : []
+      }));
+    }
+    
+    // Educations
+    if (backendData.Educations && Array.isArray(backendData.Educations)) {
+      result.educations = backendData.Educations.map((edu: any) => ({
+        institutionName: edu.InstitutionName || '',
+        degree: edu.Degree || '',
+        major: edu.Major || '',
+        startDate: edu.StartDate ? this.formatDateForInput(edu.StartDate) : '',
+        endDate: edu.EndDate ? this.formatDateForInput(edu.EndDate) : '',
+        isCurrent: edu.IsCurrent || false,
+        gpa: edu.Gpa || '',
+        description: edu.Description || ''
+      }));
+    }
+    
+    // Skills
+    if (backendData.Skills && Array.isArray(backendData.Skills)) {
+      result.skills = backendData.Skills.map((skill: any) => ({
+        skillName: skill.SkillName || '',
+        level: skill.Level || '',
+        category: skill.Category || ''
+      }));
+    }
+    
+    // Projects
+    if (backendData.Projects && Array.isArray(backendData.Projects)) {
+      result.projects = backendData.Projects.map((project: any) => ({
+        projectName: project.ProjectName || '',
+        description: project.Description || '',
+        technologies: project.Technologies || '',
+        projectUrl: project.ProjectUrl || '',
+        startDate: project.StartDate ? this.formatDateForInput(project.StartDate) : '',
+        endDate: project.EndDate ? this.formatDateForInput(project.EndDate) : ''
+      }));
+    }
+    
+    // Certificates
+    if (backendData.Certificates && Array.isArray(backendData.Certificates)) {
+      result.certificates = backendData.Certificates.map((cert: any) => ({
+        certificateName: cert.CertificateName || '',
+        issuingOrganization: cert.IssuingOrganization || '',
+        issueDate: cert.IssueDate ? this.formatDateForInput(cert.IssueDate) : '',
+        credentialId: cert.CredentialId || ''
+      }));
+    }
+    
+    // Languages
+    if (backendData.Languages && Array.isArray(backendData.Languages)) {
+      result.languages = backendData.Languages.map((lang: any) => ({
+        languageName: lang.LanguageName || '',
+        proficiencyLevel: lang.ProficiencyLevel || ''
+      }));
+    }
+    
+    return result;
+  }
+
+  /**
+   * Format date từ ISO string hoặc Date object sang format YYYY-MM-DD cho input[type="date"]
+   */
+  private formatDateForInput(date: any): string {
+    if (!date) return '';
+    
+    let dateObj: Date;
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      return '';
+    }
+    
+    // Format: YYYY-MM-DD
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  renderTemplateForm() {
+    if (!this.templateHtml || !this.templateFormContainer) {
+      // Wait for ViewChild to be initialized
+      setTimeout(() => this.renderTemplateForm(), 100);
+      return;
+    }
+
+    console.log('Rendering template form from LayoutDefinition');
+    
+    // Clone HTML để không làm thay đổi template gốc
+    let htmlContent = this.templateHtml;
+    
+    // Inject styles vào head hoặc đầu HTML
+    if (this.templateStyles) {
+      if (htmlContent.includes('<head>')) {
+        htmlContent = htmlContent.replace('<head>', `<head><style>${this.templateStyles}</style>`);
+      } else if (htmlContent.includes('</head>')) {
+        htmlContent = htmlContent.replace('</head>', `<style>${this.templateStyles}</style></head>`);
+      } else {
+        htmlContent = `<style>${this.templateStyles}</style>${htmlContent}`;
+      }
+    }
+    
+    // Replace placeholders với input fields
+    htmlContent = this.replacePlaceholdersWithInputs(htmlContent);
+    
+    // Render vào container
+    if (this.templateFormContainer?.nativeElement) {
+      this.templateFormContainer.nativeElement.innerHTML = htmlContent;
+      
+      // Setup event listeners cho các input fields
+      this.setupInputListeners();
+      
+      // Expose methods to window for onclick handlers
+      this.exposeMethodsToWindow();
+    }
+  }
+
+  /**
+   * Expose component methods to window object for onclick handlers
+   */
+  exposeMethodsToWindow() {
+    (window as any).addWorkExperience = () => this.addWorkExperience();
+    (window as any).removeWorkExperience = (index: number) => this.removeWorkExperience(index);
+    (window as any).moveWorkExperienceUp = (index: number) => this.moveWorkExperienceUp(index);
+    (window as any).moveWorkExperienceDown = (index: number) => this.moveWorkExperienceDown(index);
+    
+    (window as any).addEducation = () => this.addEducation();
+    (window as any).removeEducation = (index: number) => this.removeEducation(index);
+    (window as any).moveEducationUp = (index: number) => this.moveEducationUp(index);
+    (window as any).moveEducationDown = (index: number) => this.moveEducationDown(index);
+    
+    (window as any).addSkill = () => this.addSkill();
+    (window as any).removeSkill = (index: number) => this.removeSkill(index);
+    (window as any).moveSkillUp = (index: number) => this.moveSkillUp(index);
+    (window as any).moveSkillDown = (index: number) => this.moveSkillDown(index);
+  }
+
+  /**
+   * Escape HTML để tránh XSS và các vấn đề với special characters trong value attribute
+   */
+  private escapeHtmlForValue(str: string): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  replacePlaceholdersWithInputs(html: string): string {
+    // Personal Info placeholders - Wrap trong section container với hover buttons
+    const fullName = this.escapeHtmlForValue(this.cvData.personalInfo?.fullName || '');
+    const email = this.escapeHtmlForValue(this.cvData.personalInfo?.email || '');
+    const phoneNumber = this.escapeHtmlForValue(this.cvData.personalInfo?.phoneNumber || '');
+    const address = this.escapeHtmlForValue(this.cvData.personalInfo?.address || '');
+    const dateOfBirth = this.cvData.personalInfo?.dateOfBirth || '';
+    const profileImageUrl = this.escapeHtmlForValue(this.cvData.personalInfo?.profileImageUrl || '');
+    const linkedIn = this.escapeHtmlForValue(this.cvData.personalInfo?.linkedIn || '');
+    const website = this.escapeHtmlForValue(this.cvData.personalInfo?.website || '');
+    const careerObjective = this.escapeHtmlForValue(this.cvData.careerObjective || '');
+    
+    // Wrap PersonalInfo section trong container với hover buttons
+    // Profile không thể xóa (nghiệp vụ) nên chỉ có nút để edit fields
+    if (html.includes('{{personalInfo.') || html.includes('personalInfo.')) {
+      // Tìm và wrap toàn bộ personalInfo section
+      html = html.replace(/(<div[^>]*class="[^"]*section[^"]*"[^>]*>[\s\S]*?)(\{\{personalInfo\.|personalInfo\.)/gi, 
+        (match, before, placeholder) => {
+          // Nếu chưa có section wrapper, thêm vào
+          if (!before.includes('cv-section-item')) {
+            return before + '<div class="cv-section-item cv-section-personal-info" data-section-type="personalInfo"><div class="cv-section-item-content">' + placeholder;
+          }
+          return match;
+        });
+    }
+    
+    html = html.replace(/\{\{personalInfo\.fullName\}\}/g, 
+      `<input type="text" class="cv-input" data-field="personalInfo.fullName" placeholder="Họ và tên" value="${fullName}">`);
+    
+    html = html.replace(/\{\{personalInfo\.email\}\}/g, 
+      `<input type="email" class="cv-input" data-field="personalInfo.email" placeholder="Email" value="${email}">`);
+    
+    html = html.replace(/\{\{personalInfo\.phoneNumber\}\}/g, 
+      `<input type="tel" class="cv-input" data-field="personalInfo.phoneNumber" placeholder="Số điện thoại" value="${phoneNumber}">`);
+    
+    html = html.replace(/\{\{personalInfo\.address\}\}/g, 
+      `<input type="text" class="cv-input" data-field="personalInfo.address" placeholder="Địa chỉ" value="${address}">`);
+    
+    html = html.replace(/\{\{personalInfo\.dateOfBirth\}\}/g, 
+      `<input type="date" class="cv-input" data-field="personalInfo.dateOfBirth" value="${dateOfBirth}">`);
+    
+    html = html.replace(/\{\{personalInfo\.profileImageUrl\}\}/g, 
+      `<input type="url" class="cv-input" data-field="personalInfo.profileImageUrl" placeholder="URL ảnh đại diện" value="${profileImageUrl}">`);
+    
+    html = html.replace(/\{\{personalInfo\.linkedIn\}\}/g, 
+      `<input type="url" class="cv-input" data-field="personalInfo.linkedIn" placeholder="LinkedIn" value="${linkedIn}">`);
+    
+    html = html.replace(/\{\{personalInfo\.website\}\}/g, 
+      `<input type="url" class="cv-input" data-field="personalInfo.website" placeholder="Website" value="${website}">`);
+    
+    // Gender - select field
+    const gender = this.cvData.personalInfo?.gender;
+    html = html.replace(/\{\{personalInfo\.gender\}\}/g, 
+      `<select class="cv-input" data-field="personalInfo.gender">
+        <option value="">Chọn giới tính</option>
+        <option value="true" ${gender === true ? 'selected' : ''}>Nam</option>
+        <option value="false" ${gender === false ? 'selected' : ''}>Nữ</option>
+      </select>`);
+    
+    // Career Objective - Wrap trong section container (không thể xóa)
+    html = html.replace(/(\{\{careerObjective\}\})/g, 
+      `<div class="cv-section-item cv-section-career-objective" data-section-type="careerObjective">
+        <div class="cv-section-item-content">
+          <textarea class="cv-textarea" data-field="careerObjective" placeholder="Mục tiêu nghề nghiệp">${careerObjective}</textarea>
+        </div>
+        <div class="cv-section-item-actions">
+          <!-- Career Objective không thể xóa, chỉ có thể edit -->
+        </div>
+      </div>`);
+    
+    // Work Experiences - handle loop pattern
+    html = this.replaceWorkExperienceInputs(html);
+    
+    // Educations - handle loop pattern
+    html = this.replaceEducationInputs(html);
+    
+    // Skills
+    html = this.replaceSkillsInputs(html);
+    
+    // Projects
+    html = this.replaceProjectsInputs(html);
+    
+    // Certificates
+    html = this.replaceCertificatesInputs(html);
+    
+    // Languages
+    html = this.replaceLanguagesInputs(html);
+    
+    return html;
+  }
+
+  replaceWorkExperienceInputs(html: string): string {
+    // Check for loop pattern
+    const loopPattern = /\{\{#foreach\s+workExperiences\}\}([\s\S]*?)\{\{\/foreach\}\}/gi;
+    
+    if (loopPattern.test(html)) {
+      // Template has loop pattern
+      html = html.replace(loopPattern, (match, templateContent) => {
+        let result = '<div class="work-experiences-container" data-section="workExperiences">';
+        
+        // Render existing experiences
+        if (this.cvData.workExperiences && this.cvData.workExperiences.length > 0) {
+          this.cvData.workExperiences.forEach((exp: any, index: number) => {
+            result += this.renderWorkExperienceInput(templateContent, exp, index);
+          });
+        } else {
+          // Render empty one
+          result += this.renderWorkExperienceInput(templateContent, null, 0);
+        }
+        
+        result += '<button type="button" class="btn-add-experience" onclick="window.addWorkExperience()">+ Thêm kinh nghiệm</button>';
+        result += '</div>';
+        return result;
+      });
+    } else {
+      // Simple placeholder
+      html = html.replace(/\{\{workExperiences\}\}/g, () => {
+        let result = '<div class="work-experiences-container" data-section="workExperiences">';
+        if (this.cvData.workExperiences && this.cvData.workExperiences.length > 0) {
+          this.cvData.workExperiences.forEach((exp: any, index: number) => {
+            result += this.renderWorkExperienceForm(exp, index);
+          });
+        } else {
+          result += this.renderWorkExperienceForm(null, 0);
+        }
+        result += '<button type="button" class="btn-add-experience" onclick="window.addWorkExperience()">+ Thêm kinh nghiệm</button>';
+        result += '</div>';
+        return result;
+      });
+    }
+    
+    return html;
+  }
+
+  renderWorkExperienceInput(template: string, exp: any, index: number): string {
+    let html = template;
+    const data = exp || {};
+    
+    const companyName = this.escapeHtmlForValue(data.companyName || '');
+    const position = this.escapeHtmlForValue(data.position || '');
+    const description = this.escapeHtmlForValue(data.description || '');
+    
+    html = html.replace(/\{\{workExperience\.companyName\}\}/g, 
+      `<input type="text" class="cv-input" data-field="workExperiences.${index}.companyName" placeholder="Tên công ty" value="${companyName}">`);
+    
+    html = html.replace(/\{\{workExperience\.position\}\}/g, 
+      `<input type="text" class="cv-input" data-field="workExperiences.${index}.position" placeholder="Vị trí" value="${position}">`);
+    
+    html = html.replace(/\{\{workExperience\.description\}\}/g, 
+      `<textarea class="cv-textarea" data-field="workExperiences.${index}.description" placeholder="Mô tả">${description}</textarea>`);
+    
+    html = html.replace(/\{\{workExperience\.dateRange\}\}/g, 
+      `<input type="date" class="cv-input" data-field="workExperiences.${index}.startDate" placeholder="Ngày bắt đầu" value="${data.startDate || ''}">
+       <input type="date" class="cv-input" data-field="workExperiences.${index}.endDate" placeholder="Ngày kết thúc" value="${data.endDate || ''}">`);
+    
+    // Wrap trong section item với hover buttons
+    const totalItems = this.cvData.workExperiences?.length || 1;
+    const canMoveUp = index > 0;
+    const canMoveDown = index < totalItems - 1;
+    
+    return `
+      <div class="cv-section-item cv-section-work-experience-item" data-section-type="workExperience" data-index="${index}">
+        <div class="cv-section-item-content">
+          ${html}
+        </div>
+        <div class="cv-section-item-actions">
+          <button type="button" class="btn-action btn-move-up" ${!canMoveUp ? 'disabled' : ''} onclick="window.moveWorkExperienceUp(${index})" title="Di chuyển lên">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-action btn-move-down" ${!canMoveDown ? 'disabled' : ''} onclick="window.moveWorkExperienceDown(${index})" title="Di chuyển xuống">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" onclick="window.removeWorkExperience(${index})" title="Xóa">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderWorkExperienceForm(exp: any, index: number): string {
+    const data = exp || {};
+    const companyName = this.escapeHtmlForValue(data.companyName || '');
+    const position = this.escapeHtmlForValue(data.position || '');
+    const description = this.escapeHtmlForValue(data.description || '');
+    
+    const totalItems = this.cvData.workExperiences?.length || 1;
+    const canMoveUp = index > 0;
+    const canMoveDown = index < totalItems - 1;
+    
+    return `
+      <div class="cv-section-item cv-section-work-experience-item" data-section-type="workExperience" data-index="${index}">
+        <div class="cv-section-item-content">
+          <input type="text" class="cv-input" data-field="workExperiences.${index}.companyName" placeholder="Tên công ty" value="${companyName}">
+          <input type="text" class="cv-input" data-field="workExperiences.${index}.position" placeholder="Vị trí" value="${position}">
+          <input type="date" class="cv-input" data-field="workExperiences.${index}.startDate" value="${data.startDate || ''}">
+          <input type="date" class="cv-input" data-field="workExperiences.${index}.endDate" value="${data.endDate || ''}">
+          <textarea class="cv-textarea" data-field="workExperiences.${index}.description" placeholder="Mô tả">${description}</textarea>
+        </div>
+        <div class="cv-section-item-actions">
+          <button type="button" class="btn-action btn-move-up" ${!canMoveUp ? 'disabled' : ''} onclick="window.moveWorkExperienceUp(${index})" title="Di chuyển lên">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-action btn-move-down" ${!canMoveDown ? 'disabled' : ''} onclick="window.moveWorkExperienceDown(${index})" title="Di chuyển xuống">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" onclick="window.removeWorkExperience(${index})" title="Xóa">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  replaceEducationInputs(html: string): string {
+    const loopPattern = /\{\{#foreach\s+educations\}\}([\s\S]*?)\{\{\/foreach\}\}/gi;
+    
+    if (loopPattern.test(html)) {
+      html = html.replace(loopPattern, (match, templateContent) => {
+        let result = '<div class="educations-container" data-section="educations">';
+        if (this.cvData.educations && this.cvData.educations.length > 0) {
+          this.cvData.educations.forEach((edu: any, index: number) => {
+            result += this.renderEducationInput(templateContent, edu, index);
+          });
+        } else {
+          result += this.renderEducationInput(templateContent, null, 0);
+        }
+        result += `
+          <div class="cv-section-header-actions">
+            <button type="button" class="btn-action btn-add-section" onclick="window.addEducation()">
+              <i class="fa fa-plus"></i> Thêm
+            </button>
+          </div>
+        `;
+        result += '</div>';
+        return result;
+      });
+    } else {
+      html = html.replace(/\{\{educations\}\}/g, () => {
+        let result = '<div class="educations-container" data-section="educations">';
+        if (this.cvData.educations && this.cvData.educations.length > 0) {
+          this.cvData.educations.forEach((edu: any, index: number) => {
+            result += this.renderEducationForm(edu, index);
+          });
+        } else {
+          result += this.renderEducationForm(null, 0);
+        }
+        result += `
+          <div class="cv-section-header-actions">
+            <button type="button" class="btn-action btn-add-section" onclick="window.addEducation()">
+              <i class="fa fa-plus"></i> Thêm
+            </button>
+          </div>
+        `;
+        result += '</div>';
+        return result;
+      });
+    }
+    
+    return html;
+  }
+
+  renderEducationInput(template: string, edu: any, index: number): string {
+    let html = template;
+    const data = edu || {};
+    
+    const institutionName = this.escapeHtmlForValue(data.institutionName || '');
+    const major = this.escapeHtmlForValue(data.major || '');
+    const degree = this.escapeHtmlForValue(data.degree || '');
+    
+    html = html.replace(/\{\{education\.institutionName\}\}/g, 
+      `<input type="text" class="cv-input" data-field="educations.${index}.institutionName" placeholder="Tên trường" value="${institutionName}">`);
+    
+    html = html.replace(/\{\{education\.major\}\}/g, 
+      `<input type="text" class="cv-input" data-field="educations.${index}.major" placeholder="Ngành học" value="${major}">`);
+    
+    html = html.replace(/\{\{education\.degree\}\}/g, 
+      `<input type="text" class="cv-input" data-field="educations.${index}.degree" placeholder="Bằng cấp" value="${degree}">`);
+    
+    html = html.replace(/\{\{education\.dateRange\}\}/g, 
+      `<input type="date" class="cv-input" data-field="educations.${index}.startDate" value="${data.startDate || ''}">
+       <input type="date" class="cv-input" data-field="educations.${index}.endDate" value="${data.endDate || ''}">`);
+    
+    // Wrap trong section item với hover buttons
+    const totalItems = this.cvData.educations?.length || 1;
+    const canMoveUp = index > 0;
+    const canMoveDown = index < totalItems - 1;
+    
+    return `
+      <div class="cv-section-item cv-section-education-item" data-section-type="education" data-index="${index}">
+        <div class="cv-section-item-content">
+          ${html}
+        </div>
+        <div class="cv-section-item-actions">
+          <button type="button" class="btn-action btn-move-up" ${!canMoveUp ? 'disabled' : ''} onclick="window.moveEducationUp(${index})" title="Di chuyển lên">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-action btn-move-down" ${!canMoveDown ? 'disabled' : ''} onclick="window.moveEducationDown(${index})" title="Di chuyển xuống">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" onclick="window.removeEducation(${index})" title="Xóa">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderEducationForm(edu: any, index: number): string {
+    const data = edu || {};
+    const institutionName = this.escapeHtmlForValue(data.institutionName || '');
+    const major = this.escapeHtmlForValue(data.major || '');
+    const degree = this.escapeHtmlForValue(data.degree || '');
+    
+    const totalItems = this.cvData.educations?.length || 1;
+    const canMoveUp = index > 0;
+    const canMoveDown = index < totalItems - 1;
+    
+    return `
+      <div class="cv-section-item cv-section-education-item" data-section-type="education" data-index="${index}">
+        <div class="cv-section-item-content">
+          <input type="text" class="cv-input" data-field="educations.${index}.institutionName" placeholder="Tên trường" value="${institutionName}">
+          <input type="text" class="cv-input" data-field="educations.${index}.major" placeholder="Ngành học" value="${major}">
+          <input type="text" class="cv-input" data-field="educations.${index}.degree" placeholder="Bằng cấp" value="${degree}">
+          <input type="date" class="cv-input" data-field="educations.${index}.startDate" value="${data.startDate || ''}">
+          <input type="date" class="cv-input" data-field="educations.${index}.endDate" value="${data.endDate || ''}">
+        </div>
+        <div class="cv-section-item-actions">
+          <button type="button" class="btn-action btn-move-up" ${!canMoveUp ? 'disabled' : ''} onclick="window.moveEducationUp(${index})" title="Di chuyển lên">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-action btn-move-down" ${!canMoveDown ? 'disabled' : ''} onclick="window.moveEducationDown(${index})" title="Di chuyển xuống">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" onclick="window.removeEducation(${index})" title="Xóa">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  replaceSkillsInputs(html: string): string {
+    // Simple placeholder replacement for skills
+    html = html.replace(/\{\{skills\}\}/g, () => {
+      let result = '<div class="skills-container" data-section="skills">';
+      if (this.cvData.skills && this.cvData.skills.length > 0) {
+        this.cvData.skills.forEach((skill: any, index: number) => {
+          const skillName = this.escapeHtmlForValue(skill.skillName || '');
+          const level = this.escapeHtmlForValue(skill.level || '');
+          const totalItems = this.cvData.skills.length;
+          const canMoveUp = index > 0;
+          const canMoveDown = index < totalItems - 1;
+          
+          result += `
+            <div class="cv-section-item cv-section-skill-item" data-section-type="skill" data-index="${index}">
+              <div class="cv-section-item-content">
+                <input type="text" class="cv-input" data-field="skills.${index}.skillName" placeholder="Tên kỹ năng" value="${skillName}">
+                <input type="text" class="cv-input" data-field="skills.${index}.level" placeholder="Mức độ" value="${level}">
+              </div>
+              <div class="cv-section-item-actions">
+                <button type="button" class="btn-action btn-move-up" ${!canMoveUp ? 'disabled' : ''} onclick="window.moveSkillUp(${index})" title="Di chuyển lên">
+                  <i class="fa fa-arrow-up"></i>
+                </button>
+                <button type="button" class="btn-action btn-move-down" ${!canMoveDown ? 'disabled' : ''} onclick="window.moveSkillDown(${index})" title="Di chuyển xuống">
+                  <i class="fa fa-arrow-down"></i>
+                </button>
+                <button type="button" class="btn-action btn-delete" onclick="window.removeSkill(${index})" title="Xóa">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        result += `
+          <div class="cv-section-item cv-section-skill-item" data-section-type="skill" data-index="0">
+            <div class="cv-section-item-content">
+              <input type="text" class="cv-input" data-field="skills.0.skillName" placeholder="Tên kỹ năng">
+              <input type="text" class="cv-input" data-field="skills.0.level" placeholder="Mức độ">
+            </div>
+            <div class="cv-section-item-actions">
+              <button type="button" class="btn-action btn-delete" onclick="window.removeSkill(0)" title="Xóa">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+      result += `
+        <div class="cv-section-header-actions">
+          <button type="button" class="btn-action btn-add-section" onclick="window.addSkill()">
+            <i class="fa fa-plus"></i> Thêm
+          </button>
+        </div>
+      `;
+      result += '</div>';
+      return result;
+    });
+    
+    return html;
+  }
+
+  replaceProjectsInputs(html: string): string {
+    html = html.replace(/\{\{projects\}\}/g, () => {
+      let result = '<div class="projects-container" data-section="projects">';
+      // Similar to skills
+      result += '</div>';
+      return result;
+    });
+    return html;
+  }
+
+  replaceCertificatesInputs(html: string): string {
+    html = html.replace(/\{\{certificates\}\}/g, () => {
+      let result = '<div class="certificates-container" data-section="certificates">';
+      // Similar structure
+      result += '</div>';
+      return result;
+    });
+    return html;
+  }
+
+  replaceLanguagesInputs(html: string): string {
+    html = html.replace(/\{\{languages\}\}/g, () => {
+      let result = '<div class="languages-container" data-section="languages">';
+      // Similar structure
+      result += '</div>';
+      return result;
+    });
+    return html;
+  }
+
+  setupInputListeners() {
+    if (!this.templateFormContainer?.nativeElement) return;
+    
+    const container = this.templateFormContainer.nativeElement;
+    const inputs = container.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach((input: any) => {
+      const field = input.getAttribute('data-field');
+      if (!field) return;
+      
+      input.addEventListener('input', (e: any) => {
+        this.updateCvData(field, e.target.value);
+      });
+      
+      input.addEventListener('change', (e: any) => {
+        this.updateCvData(field, e.target.value);
+      });
+    });
+    
+    // Setup global functions for add/remove buttons
+    (window as any).addWorkExperience = () => this.addWorkExperience();
+    (window as any).removeWorkExperience = (index: number) => this.removeWorkExperience(index);
+    (window as any).addEducation = () => this.addEducation();
+    (window as any).removeEducation = (index: number) => this.removeEducation(index);
+    (window as any).addSkill = () => this.addSkill();
+    (window as any).removeSkill = (index: number) => this.removeSkill(index);
+  }
+
+  updateCvData(field: string, value: any) {
+    const keys = field.split('.');
+    
+    // Helper function to set nested value
+    const setNestedValue = (obj: any, path: string[], val: any) => {
+      let current = obj;
+      
+      for (let i = 0; i < path.length - 1; i++) {
+        const key = path[i];
+        const nextKey = path[i + 1];
+        
+        // Check if next key is array index
+        if (!isNaN(Number(nextKey))) {
+          // Next is array, so current[key] should be array
+          if (!current[key]) {
+            current[key] = [];
+          }
+          const index = Number(nextKey);
+          while (current[key].length <= index) {
+            current[key].push({});
+          }
+          current = current[key][index];
+          i++; // Skip next key as we already handled it
+        } else {
+          // Next is object property
+          if (!current[key]) {
+            current[key] = {};
+          }
+          current = current[key];
+        }
+      }
+      
+      // Set the final value
+      const lastKey = path[path.length - 1];
+      if (!isNaN(Number(lastKey))) {
+        // Last key is array index - shouldn't happen, but handle it
+        const index = Number(lastKey);
+        if (!Array.isArray(current)) {
+          current = [];
+        }
+        while (current.length <= index) {
+          current.push({});
+        }
+        current[index] = val;
+      } else {
+        // Convert string to boolean for gender
+        if (field.includes('gender') && typeof value === 'string') {
+          current[lastKey] = value === 'true';
+        } else {
+          current[lastKey] = val;
+        }
+      }
+    };
+    
+    setNestedValue(this.cvData, keys, value);
+    
+    console.log('CV Data updated:', JSON.stringify(this.cvData, null, 2));
+    this.saveToHistory();
+  }
+
+  addWorkExperience() {
+    if (!this.cvData.workExperiences) {
+      this.cvData.workExperiences = [];
+    }
+    this.cvData.workExperiences.push({});
+    this.renderTemplateForm();
+  }
+
+  removeWorkExperience(index: number) {
+    if (this.cvData.workExperiences && this.cvData.workExperiences.length > index) {
+      this.cvData.workExperiences.splice(index, 1);
+      this.renderTemplateForm();
+    }
+  }
+
+  addEducation() {
+    if (!this.cvData.educations) {
+      this.cvData.educations = [];
+    }
+    this.cvData.educations.push({});
+    this.renderTemplateForm();
+  }
+
+  removeEducation(index: number) {
+    if (this.cvData.educations && this.cvData.educations.length > index) {
+      this.cvData.educations.splice(index, 1);
+      this.renderTemplateForm();
+    }
+  }
+
+  addSkill() {
+    if (!this.cvData.skills) {
+      this.cvData.skills = [];
+    }
+    this.cvData.skills.push({});
+    this.renderTemplateForm();
+  }
+
+  removeSkill(index: number) {
+    if (this.cvData.skills && this.cvData.skills.length > index) {
+      this.cvData.skills.splice(index, 1);
+      this.renderTemplateForm();
+    }
+  }
+
+  moveWorkExperienceUp(index: number) {
+    if (this.cvData.workExperiences && index > 0 && index < this.cvData.workExperiences.length) {
+      const temp = this.cvData.workExperiences[index];
+      this.cvData.workExperiences[index] = this.cvData.workExperiences[index - 1];
+      this.cvData.workExperiences[index - 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  moveWorkExperienceDown(index: number) {
+    if (this.cvData.workExperiences && index >= 0 && index < this.cvData.workExperiences.length - 1) {
+      const temp = this.cvData.workExperiences[index];
+      this.cvData.workExperiences[index] = this.cvData.workExperiences[index + 1];
+      this.cvData.workExperiences[index + 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  moveEducationUp(index: number) {
+    if (this.cvData.educations && index > 0 && index < this.cvData.educations.length) {
+      const temp = this.cvData.educations[index];
+      this.cvData.educations[index] = this.cvData.educations[index - 1];
+      this.cvData.educations[index - 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  moveEducationDown(index: number) {
+    if (this.cvData.educations && index >= 0 && index < this.cvData.educations.length - 1) {
+      const temp = this.cvData.educations[index];
+      this.cvData.educations[index] = this.cvData.educations[index + 1];
+      this.cvData.educations[index + 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  moveSkillUp(index: number) {
+    if (this.cvData.skills && index > 0 && index < this.cvData.skills.length) {
+      const temp = this.cvData.skills[index];
+      this.cvData.skills[index] = this.cvData.skills[index - 1];
+      this.cvData.skills[index - 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  moveSkillDown(index: number) {
+    if (this.cvData.skills && index >= 0 && index < this.cvData.skills.length - 1) {
+      const temp = this.cvData.skills[index];
+      this.cvData.skills[index] = this.cvData.skills[index + 1];
+      this.cvData.skills[index + 1] = temp;
+      this.renderTemplateForm();
+    }
+  }
+
+  showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+    this.toast = {
+      show: true,
+      message: message,
+      type: type,
+      duration: 3000
+    };
+    
+    setTimeout(() => {
+      this.toast.show = false;
+    }, this.toast.duration);
   }
   
   updateTranslations() {
@@ -671,29 +1686,21 @@ export class WriteCv implements OnInit {
   }
 
   onSave() {
-    const fullnameInput = document.querySelector('.fullname-input') as HTMLInputElement;
-    const contactInputs = document.querySelectorAll('.contact-input') as NodeListOf<HTMLInputElement>;
-    
-    const fullname = fullnameInput?.value?.trim() || '';
-    const phone = contactInputs[2]?.value?.trim() || '';
-    const email = contactInputs[3]?.value?.trim() || '';
-    const address = contactInputs[5]?.value?.trim() || '';
+    // Validate từ cvData thay vì query DOM
+    const fullname = this.cvData.personalInfo?.fullName?.trim() || '';
+    const phone = this.cvData.personalInfo?.phoneNumber?.trim() || '';
+    const email = this.cvData.personalInfo?.email?.trim() || '';
     
     this.nameError = !fullname;
     this.phoneError = !phone;
     this.emailError = !email;
-    this.addressError = !address;
 
-    if (this.nameError || this.phoneError || this.emailError || this.addressError) {
-      this.toast = {
-        show: true,
-        type: 'warning',
-        duration: 5000,
-        message: this.translations.validationMessage
-      };
+    if (this.nameError || this.phoneError || this.emailError) {
+      this.showToast(this.translations.validationMessage || 'Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
       return;
     }
     
+    // Show modal để đặt tên CV
     this.modalCvName = this.cvName;
     this.showUpdateNameModal = true;
   }
@@ -703,19 +1710,99 @@ export class WriteCv implements OnInit {
   }
 
   onModalContinue(newName: string) {
-    this.cvName = newName || this.translations.modalInputPlaceholder;
+    this.cvName = newName || 'CV chưa đặt tên';
     this.showUpdateNameModal = false;
     
-    this.toast = { 
-      show: true, 
-      type: 'success', 
-      duration: 3000, 
-      message: this.translations.saveSuccess 
-    };
+    // Save CV to API
+    this.saveCvToApi();
+  }
+
+  saveCvToApi() {
+    if (!this.templateId || !this.currentTemplate) {
+      this.showToast('Không tìm thấy template. Vui lòng thử lại.', 'error');
+      return;
+    }
+
+    // Convert cvData từ camelCase sang PascalCase để match với backend DTO
+    const backendFormat = this.convertToBackendFormat(this.cvData);
     
-    setTimeout(() => {
-      this.router.navigate(['/candidate/cv-management']);
-    }, 3000);
+    // Log để debug
+    console.log('CV Data (camelCase):', JSON.stringify(this.cvData, null, 2));
+    console.log('CV Data (PascalCase):', JSON.stringify(backendFormat, null, 2));
+    
+    // Convert to JSON string
+    const dataJson = JSON.stringify(backendFormat);
+    
+    if (this.isEditMode && this.cvId) {
+      // Update existing CV
+      const updateDto = {
+        templateId: this.templateId,
+        cvName: this.cvName,
+        dataJson: dataJson,
+        notes: ''
+      };
+
+      console.log('Updating CV DTO:', updateDto);
+
+      this.candidateCvService.update(this.cvId, updateDto).subscribe({
+        next: (response: any) => {
+          console.log('CV updated successfully:', response);
+          this.showToast('Cập nhật CV thành công!', 'success');
+          
+          setTimeout(() => {
+            this.router.navigate(['/candidate/cv-management']);
+          }, 2000);
+        },
+        error: (error) => {
+          console.error('Error updating CV:', error);
+          let errorMessage = 'Cập nhật CV thất bại. Vui lòng thử lại.';
+          
+          if (error.error?.error?.message) {
+            errorMessage = error.error.error.message;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          }
+          
+          this.showToast(errorMessage, 'error');
+        }
+      });
+    } else {
+      // Create new CV
+      const createDto = {
+        templateId: this.templateId,
+        cvName: this.cvName,
+        dataJson: dataJson,
+        isPublished: false,
+        isDefault: false,
+        isPublic: false,
+        notes: ''
+      };
+
+      console.log('Saving CV DTO:', createDto);
+
+      this.candidateCvService.create(createDto).subscribe({
+        next: (response: any) => {
+          console.log('CV saved successfully:', response);
+          this.showToast(this.translations.saveSuccess || 'Lưu CV thành công!', 'success');
+          
+          setTimeout(() => {
+            this.router.navigate(['/candidate/cv-management']);
+          }, 2000);
+        },
+        error: (error) => {
+          console.error('Error saving CV:', error);
+          let errorMessage = this.translations.saveFailed || 'Lưu CV thất bại. Vui lòng thử lại.';
+          
+          if (error.error?.error?.message) {
+            errorMessage = error.error.error.message;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          }
+          
+          this.showToast(errorMessage, 'error');
+        }
+      });
+    }
   }
 
   onEditPhotoClick(event: MouseEvent) {
@@ -757,5 +1844,104 @@ export class WriteCv implements OnInit {
     setTimeout(() => {
       this.saveToHistory();
     }, 500);
+  }
+
+  /**
+   * Convert frontend camelCase format sang backend PascalCase format
+   */
+  private convertToBackendFormat(frontendData: any): any {
+    const result: any = {};
+    
+    // PersonalInfo
+    if (frontendData.personalInfo) {
+      result.PersonalInfo = {
+        FullName: frontendData.personalInfo.fullName || null,
+        Email: frontendData.personalInfo.email || null,
+        PhoneNumber: frontendData.personalInfo.phoneNumber || null,
+        DateOfBirth: frontendData.personalInfo.dateOfBirth ? new Date(frontendData.personalInfo.dateOfBirth) : null,
+        Address: frontendData.personalInfo.address || null,
+        Gender: frontendData.personalInfo.gender !== null && frontendData.personalInfo.gender !== undefined 
+          ? frontendData.personalInfo.gender 
+          : null,
+        ProfileImageUrl: frontendData.personalInfo.profileImageUrl || null,
+        LinkedIn: frontendData.personalInfo.linkedIn || null,
+        GitHub: frontendData.personalInfo.gitHub || null,
+        Website: frontendData.personalInfo.website || null
+      };
+    }
+    
+    // CareerObjective
+    result.CareerObjective = frontendData.careerObjective || null;
+    
+    // WorkExperiences
+    if (frontendData.workExperiences && Array.isArray(frontendData.workExperiences)) {
+      result.WorkExperiences = frontendData.workExperiences.map((exp: any) => ({
+        CompanyName: exp.companyName || null,
+        Position: exp.position || null,
+        StartDate: exp.startDate ? new Date(exp.startDate) : null,
+        EndDate: exp.endDate ? new Date(exp.endDate) : null,
+        IsCurrentJob: exp.isCurrentJob || false,
+        Description: exp.description || null,
+        Achievements: exp.achievements && Array.isArray(exp.achievements) ? exp.achievements : null
+      })).filter((exp: any) => exp.CompanyName || exp.Position); // Chỉ giữ lại những item có ít nhất 1 field
+    }
+    
+    // Educations
+    if (frontendData.educations && Array.isArray(frontendData.educations)) {
+      result.Educations = frontendData.educations.map((edu: any) => ({
+        InstitutionName: edu.institutionName || null,
+        Degree: edu.degree || null,
+        Major: edu.major || null,
+        StartDate: edu.startDate ? new Date(edu.startDate) : null,
+        EndDate: edu.endDate ? new Date(edu.endDate) : null,
+        IsCurrent: edu.isCurrent || false,
+        Gpa: edu.gpa || null,
+        Description: edu.description || null
+      })).filter((edu: any) => edu.InstitutionName || edu.Major); // Chỉ giữ lại những item có ít nhất 1 field
+    }
+    
+    // Skills
+    if (frontendData.skills && Array.isArray(frontendData.skills)) {
+      result.Skills = frontendData.skills.map((skill: any) => ({
+        SkillName: skill.skillName || null,
+        Level: skill.level || null,
+        Category: skill.category || null
+      })).filter((skill: any) => skill.SkillName);
+    }
+    
+    // Projects
+    if (frontendData.projects && Array.isArray(frontendData.projects)) {
+      result.Projects = frontendData.projects.map((project: any) => ({
+        ProjectName: project.projectName || null,
+        Description: project.description || null,
+        Technologies: project.technologies || null,
+        ProjectUrl: project.projectUrl || null,
+        StartDate: project.startDate ? new Date(project.startDate) : null,
+        EndDate: project.endDate ? new Date(project.endDate) : null
+      })).filter((project: any) => project.ProjectName);
+    }
+    
+    // Certificates
+    if (frontendData.certificates && Array.isArray(frontendData.certificates)) {
+      result.Certificates = frontendData.certificates.map((cert: any) => ({
+        CertificateName: cert.certificateName || null,
+        IssuingOrganization: cert.issuingOrganization || null,
+        IssueDate: cert.issueDate ? new Date(cert.issueDate) : null,
+        CredentialId: cert.credentialId || null
+      })).filter((cert: any) => cert.CertificateName);
+    }
+    
+    // Languages
+    if (frontendData.languages && Array.isArray(frontendData.languages)) {
+      result.Languages = frontendData.languages.map((lang: any) => ({
+        LanguageName: lang.languageName || null,
+        ProficiencyLevel: lang.proficiencyLevel || null
+      })).filter((lang: any) => lang.LanguageName);
+    }
+    
+    // AdditionalInfo
+    result.AdditionalInfo = frontendData.additionalInfo || null;
+    
+    return result;
   }
 }

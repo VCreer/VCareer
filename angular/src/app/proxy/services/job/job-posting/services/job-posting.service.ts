@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto } from '../../../dto/job/models';
+import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto } from '../../../../dto/job/models';
 
 @Injectable({
   providedIn: 'root',

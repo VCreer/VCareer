@@ -255,8 +255,11 @@ namespace VCareer.Services.CV
             System.Diagnostics.Debug.WriteLine($"CV ID: {cvId}");
             System.Diagnostics.Debug.WriteLine($"Template ID: {cv.TemplateId}");
             System.Diagnostics.Debug.WriteLine($"DataJson length: {cv.DataJson?.Length ?? 0}");
+            var dataJsonLength = cv.DataJson?.Length ?? 0;
+            System.Diagnostics.Debug.WriteLine($"DataJson preview: {(cv.DataJson != null && dataJsonLength > 0 ? cv.DataJson.Substring(0, Math.Min(500, dataJsonLength)) : "")}");
             System.Diagnostics.Debug.WriteLine($"Has loop pattern: {htmlContent.Contains("{{#foreach workExperiences}}", StringComparison.OrdinalIgnoreCase)}");
 
+            CvDataDto? cvData = null;
             try
             {
                 // Try parse as CvDataDto first
@@ -265,10 +268,11 @@ namespace VCareer.Services.CV
                     PropertyNameCaseInsensitive = true // Case insensitive để parse dễ hơn
                 };
                 
-                var cvData = System.Text.Json.JsonSerializer.Deserialize<CvDataDto>(cv.DataJson, options);
+                cvData = System.Text.Json.JsonSerializer.Deserialize<CvDataDto>(cv.DataJson, options);
                 
                 if (cvData == null)
                 {
+                    System.Diagnostics.Debug.WriteLine("ERROR: cvData is null after deserialization");
                     throw new UserFriendlyException("Không thể parse DataJson. Vui lòng kiểm tra lại format.");
                 }
                 
@@ -276,16 +280,81 @@ namespace VCareer.Services.CV
                 System.Diagnostics.Debug.WriteLine($"PersonalInfo is null: {cvData.PersonalInfo == null}");
                 if (cvData.PersonalInfo != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"FullName: {cvData.PersonalInfo.FullName}");
-                    System.Diagnostics.Debug.WriteLine($"Email: {cvData.PersonalInfo.Email}");
+                    System.Diagnostics.Debug.WriteLine($"FullName: {cvData.PersonalInfo.FullName ?? "(null)"}");
+                    System.Diagnostics.Debug.WriteLine($"Email: {cvData.PersonalInfo.Email ?? "(null)"}");
+                    System.Diagnostics.Debug.WriteLine($"PhoneNumber: {cvData.PersonalInfo.PhoneNumber ?? "(null)"}");
+                    System.Diagnostics.Debug.WriteLine($"Address: {cvData.PersonalInfo.Address ?? "(null)"}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("WARNING: PersonalInfo is null!");
                 }
                 System.Diagnostics.Debug.WriteLine($"WorkExperiences count: {cvData.WorkExperiences?.Count ?? 0}");
                 System.Diagnostics.Debug.WriteLine($"Educations count: {cvData.Educations?.Count ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"CareerObjective: {cvData.CareerObjective ?? "(null)"}");
+            }
+            catch (Exception ex)
+            {
+                // Log exception để debug
+                System.Diagnostics.Debug.WriteLine($"ERROR parsing DataJson: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 
+                // Fallback: Parse as simple dictionary
+                try
+                {
+                    var dataJson = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(cv.DataJson);
+                    if (dataJson != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Falling back to dictionary parsing");
+                        foreach (var kvp in dataJson)
+                        {
+                            var placeholder = "{{" + kvp.Key + "}}";
+                            var value = kvp.Value?.ToString() ?? "";
+                            htmlContent = htmlContent.Replace(placeholder, EscapeHtml(value));
+                        }
+                    }
+                    
+                    // Inject CSS và return (không thể parse đúng nên chỉ replace basic placeholders)
+                    if (!string.IsNullOrEmpty(template.Styles))
+                    {
+                        if (htmlContent.Contains("<head>"))
+                        {
+                            htmlContent = htmlContent.Replace("<head>", $"<head><style>{template.Styles}</style>");
+                        }
+                        else if (htmlContent.Contains("</head>"))
+                        {
+                            htmlContent = htmlContent.Replace("</head>", $"<style>{template.Styles}</style></head>");
+                        }
+                        else
+                        {
+                            var styleTag = $"<style>{template.Styles}</style>";
+                            htmlContent = styleTag + htmlContent;
+                        }
+                    }
+                    
+                    return new RenderCvDto
+                    {
+                        CvId = cvId,
+                        HtmlContent = htmlContent
+                    };
+                }
+                catch (Exception innerEx)
+                {
+                    // If parsing fails, throw exception
+                    var dataJsonPreview = cv.DataJson != null && cv.DataJson.Length > 0 
+                        ? cv.DataJson.Substring(0, Math.Min(200, cv.DataJson.Length)) 
+                        : "";
+                    throw new UserFriendlyException($"Lỗi khi render CV: {innerEx.Message}. DataJson: {dataJsonPreview}...");
+                }
+            }
+            
+            // Nếu parse thành công, tiếp tục replace placeholders
+            if (cvData != null)
+            {
                 // Replace personal info placeholders (luôn replace, kể cả khi null)
                 var personalInfo = cvData.PersonalInfo;
                 var fullNameValue = EscapeHtml(personalInfo?.FullName ?? "");
-                System.Diagnostics.Debug.WriteLine($"Replacing {{personalInfo.fullName}} with: {fullNameValue}");
+                System.Diagnostics.Debug.WriteLine($"Replacing {{personalInfo.fullName}} with: '{fullNameValue}'");
                 htmlContent = htmlContent.Replace("{{personalInfo.fullName}}", fullNameValue);
                 htmlContent = htmlContent.Replace("{{personalInfo.email}}", EscapeHtml(personalInfo?.Email ?? ""));
                 htmlContent = htmlContent.Replace("{{personalInfo.phoneNumber}}", EscapeHtml(personalInfo?.PhoneNumber ?? ""));
@@ -368,104 +437,82 @@ namespace VCareer.Services.CV
                     htmlContent = RenderEducationsWithTemplate(htmlContent, cvData.Educations);
                 }
 
-                    // === SKILLS ===
-                    if (htmlContent.Contains("{{skills}}"))
+                // === SKILLS ===
+                if (htmlContent.Contains("{{skills}}"))
+                {
+                    if (cvData.Skills != null && cvData.Skills.Any())
                     {
-                        if (cvData.Skills != null && cvData.Skills.Any())
-                        {
-                            var skillsHtml = RenderSkills(cvData.Skills);
-                            htmlContent = htmlContent.Replace("{{skills}}", skillsHtml);
-                        }
-                        else
-                        {
-                            htmlContent = htmlContent.Replace("{{skills}}", "");
-                        }
+                        var skillsHtml = RenderSkills(cvData.Skills);
+                        htmlContent = htmlContent.Replace("{{skills}}", skillsHtml);
                     }
                     else
                     {
-                        htmlContent = RenderSkillsWithTemplate(htmlContent, cvData.Skills);
+                        htmlContent = htmlContent.Replace("{{skills}}", "");
                     }
+                }
+                else
+                {
+                    htmlContent = RenderSkillsWithTemplate(htmlContent, cvData.Skills);
+                }
 
-                    // === PROJECTS ===
-                    if (htmlContent.Contains("{{projects}}"))
+                // === PROJECTS ===
+                if (htmlContent.Contains("{{projects}}"))
+                {
+                    if (cvData.Projects != null && cvData.Projects.Any())
                     {
-                        if (cvData.Projects != null && cvData.Projects.Any())
-                        {
-                            var projectsHtml = RenderProjects(cvData.Projects);
-                            htmlContent = htmlContent.Replace("{{projects}}", projectsHtml);
-                        }
-                        else
-                        {
-                            htmlContent = htmlContent.Replace("{{projects}}", "");
-                        }
+                        var projectsHtml = RenderProjects(cvData.Projects);
+                        htmlContent = htmlContent.Replace("{{projects}}", projectsHtml);
                     }
                     else
                     {
-                        htmlContent = RenderProjectsWithTemplate(htmlContent, cvData.Projects);
+                        htmlContent = htmlContent.Replace("{{projects}}", "");
                     }
+                }
+                else
+                {
+                    htmlContent = RenderProjectsWithTemplate(htmlContent, cvData.Projects);
+                }
 
-                    // === CERTIFICATES ===
-                    if (htmlContent.Contains("{{certificates}}"))
+                // === CERTIFICATES ===
+                if (htmlContent.Contains("{{certificates}}"))
+                {
+                    if (cvData.Certificates != null && cvData.Certificates.Any())
                     {
-                        if (cvData.Certificates != null && cvData.Certificates.Any())
-                        {
-                            var certificatesHtml = RenderCertificates(cvData.Certificates);
-                            htmlContent = htmlContent.Replace("{{certificates}}", certificatesHtml);
-                        }
-                        else
-                        {
-                            htmlContent = htmlContent.Replace("{{certificates}}", "");
-                        }
+                        var certificatesHtml = RenderCertificates(cvData.Certificates);
+                        htmlContent = htmlContent.Replace("{{certificates}}", certificatesHtml);
                     }
                     else
                     {
-                        htmlContent = RenderCertificatesWithTemplate(htmlContent, cvData.Certificates);
+                        htmlContent = htmlContent.Replace("{{certificates}}", "");
                     }
+                }
+                else
+                {
+                    htmlContent = RenderCertificatesWithTemplate(htmlContent, cvData.Certificates);
+                }
 
-                    // === LANGUAGES ===
-                    if (htmlContent.Contains("{{languages}}"))
+                // === LANGUAGES ===
+                if (htmlContent.Contains("{{languages}}"))
+                {
+                    if (cvData.Languages != null && cvData.Languages.Any())
                     {
-                        if (cvData.Languages != null && cvData.Languages.Any())
-                        {
-                            var languagesHtml = RenderLanguages(cvData.Languages);
-                            htmlContent = htmlContent.Replace("{{languages}}", languagesHtml);
-                        }
-                        else
-                        {
-                            htmlContent = htmlContent.Replace("{{languages}}", "");
-                        }
+                        var languagesHtml = RenderLanguages(cvData.Languages);
+                        htmlContent = htmlContent.Replace("{{languages}}", languagesHtml);
                     }
                     else
                     {
-                        htmlContent = RenderLanguagesWithTemplate(htmlContent, cvData.Languages);
+                        htmlContent = htmlContent.Replace("{{languages}}", "");
                     }
+                }
+                else
+                {
+                    htmlContent = RenderLanguagesWithTemplate(htmlContent, cvData.Languages);
+                }
 
                 // Additional info
                 htmlContent = htmlContent.Replace("{{additionalInfo}}", EscapeHtml(cvData.AdditionalInfo ?? ""));
-            }
-            catch (Exception ex)
-            {
-                // Log exception để debug
-                // Fallback: Parse as simple dictionary
-                try
-                {
-                    var dataJson = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(cv.DataJson);
-                    if (dataJson != null)
-                    {
-                        foreach (var kvp in dataJson)
-                        {
-                            var placeholder = "{{" + kvp.Key + "}}";
-                            var value = kvp.Value?.ToString() ?? "";
-                            htmlContent = htmlContent.Replace(placeholder, EscapeHtml(value));
-                        }
-                    }
-                }
-                catch
-                {
-                    // If parsing fails, just use empty string
-                    // Throw để biết lỗi gì
-                    throw new UserFriendlyException($"Lỗi khi render CV: {ex.Message}. DataJson: {cv.DataJson.Substring(0, Math.Min(200, cv.DataJson.Length))}...");
-                }
+                
+                System.Diagnostics.Debug.WriteLine("=== PLACEHOLDERS REPLACED SUCCESSFULLY ===");
             }
 
             // Inject CSS styles vào <head> hoặc đầu HTML

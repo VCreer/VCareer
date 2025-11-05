@@ -1,8 +1,8 @@
 import { Component, OnInit, OnChanges, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CVService } from '../../../proxy/cv/cv.service';
-import type { CVDto, GetCVListDto } from '../../../proxy/cv/models';
+import { CandidateCvService } from '../../../proxy/http-api/controllers/candidate-cv.service';
+import type { CandidateCvDto, GetCandidateCvListDto } from '../../../proxy/cv/models';
 
 @Component({
   selector: 'app-enable-job-search-modal',
@@ -16,12 +16,12 @@ export class EnableJobSearchModalComponent implements OnInit, OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() enableJobSearch = new EventEmitter<string[]>();
 
-  onlineCvs: CVDto[] = [];
-  uploadCvs: CVDto[] = [];
+  onlineCvs: CandidateCvDto[] = [];
+  uploadCvs: CandidateCvDto[] = [];
   selectedCvIds: Set<string> = new Set();
   loading: boolean = false;
 
-  constructor(private cvService: CVService) {}
+  constructor(private candidateCvService: CandidateCvService) {}
 
   ngOnInit() {
     if (this.show) {
@@ -38,16 +38,28 @@ export class EnableJobSearchModalComponent implements OnInit, OnChanges {
   loadCVs() {
     this.loading = true;
     
-    // Load CV ONLINE
-    const onlineInput: GetCVListDto = {
-      cvType: 'Online',
+    // Load CV ONLINE (chỉ lấy CV đã tạo online)
+    const onlineInput: GetCandidateCvListDto = {
       maxResultCount: 100,
-      skipCount: 0
+      skipCount: 0,
+      sorting: 'creationTime DESC'
     };
     
-    this.cvService.getCVList(onlineInput).subscribe({
-      next: (result) => {
-        this.onlineCvs = result.items || [];
+    this.candidateCvService.getList(onlineInput).subscribe({
+      next: (response: any) => {
+        // Extract data từ ActionResult
+        let cvList: CandidateCvDto[] = [];
+        if (response.result && Array.isArray(response.result)) {
+          cvList = response.result;
+        } else if (response.items && Array.isArray(response.items)) {
+          cvList = response.items;
+        } else if (Array.isArray(response)) {
+          cvList = response;
+        } else if (response.data && Array.isArray(response.data)) {
+          cvList = response.data;
+        }
+        
+        this.onlineCvs = cvList;
         this.loading = false;
       },
       error: (error) => {
@@ -57,24 +69,9 @@ export class EnableJobSearchModalComponent implements OnInit, OnChanges {
       }
     });
 
-    // Load CV UPLOAD
-    const uploadInput: GetCVListDto = {
-      cvType: 'Upload',
-      maxResultCount: 100,
-      skipCount: 0
-    };
-    
-    this.cvService.getCVList(uploadInput).subscribe({
-      next: (result) => {
-        this.uploadCvs = result.items || [];
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading upload CVs:', error);
-        this.uploadCvs = [];
-        this.loading = false;
-      }
-    });
+    // Load CV UPLOAD - tạm thời để trống vì chưa có API upload
+    this.uploadCvs = [];
+    this.loading = false;
   }
 
   onClose() {
@@ -105,12 +102,12 @@ export class EnableJobSearchModalComponent implements OnInit, OnChanges {
     return `${day}/${month}/${year}`;
   }
 
-  getCvName(cv: CVDto): string {
-    return cv.cvName || cv.originalFileName || 'CV không có tên';
+  getCvName(cv: CandidateCvDto): string {
+    return cv.cvName || 'CV không có tên';
   }
 
-  getUpdateDate(cv: CVDto): string {
-    return this.formatDate(cv.lastModificationTime || cv.creationTime);
+  getUpdateDate(cv: CandidateCvDto): string {
+    return this.formatDate(cv.publishedAt);
   }
 }
 
