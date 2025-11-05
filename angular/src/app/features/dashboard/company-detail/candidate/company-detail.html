@@ -24,7 +24,7 @@
         <!-- Company Logo (overlapping) -->
         <div class="company-logo-wrapper">
           <div class="logo-box">
-            <img [src]="company.logo" [alt]="company.name" class="company-logo" onerror="this.src='assets/images/default-company.png'">
+            <img [src]="company.logoUrl" [alt]="company.name" class="company-logo" onerror="this.src='assets/images/default-company.png'">
           </div>
         </div>
 
@@ -208,6 +208,20 @@
             </div>
             <p class="contact-value">{{ company.address }}</p>
           </div>
+
+          <!-- Google Map (small embed) -->
+          <div class="map-embed" *ngIf="company.address || company.mapUrl">
+            <iframe
+              [src]="getMapEmbedUrl() | safeUrl"
+              width="100%"
+              height="180"
+              style="border:0; border-radius: 8px;"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+            <button class="map-view-btn" (click)="openMapModal()">Xem bản đồ lớn</button>
+          </div>
         </div>
       </div>
 
@@ -227,5 +241,27 @@
 <div class="loading-state" *ngIf="isLoading">
   <div class="loading-spinner"></div>
   <p>Đang tải thông tin công ty...</p>
+</div>
+
+<!-- Map Modal -->
+<div class="map-modal-overlay" *ngIf="showMapModal" (click)="closeMapModal()">
+  <div class="map-modal" (click)="$event.stopPropagation()">
+    <div class="map-modal-header">
+      <h3>Bản đồ vị trí công ty</h3>
+      <button class="map-modal-close" (click)="closeMapModal()">✕</button>
+    </div>
+    <div class="map-modal-body">
+      <iframe
+        [src]="getMapEmbedUrl() | safeUrl"
+        width="100%"
+        height="100%"
+        style="border:0; border-radius: 8px;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+  
 </div>
 

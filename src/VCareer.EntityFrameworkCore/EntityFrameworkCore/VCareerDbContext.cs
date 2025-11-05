@@ -60,6 +60,7 @@ public class VCareerDbContext :
     public DbSet<Job_Posting> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<JobPostingTag> JobPostingTags { get; set; }
+    public DbSet<SavedJob> SavedJobs { get; set; }
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
 
     // CV Management
@@ -299,6 +300,35 @@ public class VCareerDbContext :
 
         //-----------fluent api cho candidate-------------
         // (CandidateProfile configuration đã được di chuyển xuống dưới, cùng với CandidateCv relationship)
+
+        //-----------fluent api cho SavedJob-------------
+        builder.Entity<SavedJob>(e =>
+        {
+            e.ToTable(VCareerConsts.DbTablePrefix + "SavedJobs", VCareerConsts.DbSchema);
+            e.ConfigureByConvention();
+
+            // Composite primary key: CandidateId + JobId
+            e.HasKey(x => new { x.CandidateId, x.JobId });
+
+            // Relationship với CandidateProfile
+            e.HasOne(x => x.CandidateProfile)
+                .WithMany()
+                .HasForeignKey(x => x.CandidateId)
+                .OnDelete(DeleteBehavior.Cascade); // Xóa SavedJob khi Candidate bị xóa
+
+            // Relationship với JobPosting
+            // Dùng Restrict để tránh multiple cascade paths
+            // (JobPosting đã có cascade đến RecruiterProfile, nên không thể cascade từ SavedJob)
+            e.HasOne(x => x.JobPosting)
+                .WithMany()
+                .HasForeignKey(x => x.JobId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Job nếu còn SavedJob
+
+            // Index để tìm kiếm nhanh
+            e.HasIndex(x => x.CandidateId);
+            e.HasIndex(x => x.JobId);
+            e.HasIndex(x => new { x.CandidateId, x.JobId }).IsUnique();
+        });
 
         //-----------fluent api cho recuiter------------
 

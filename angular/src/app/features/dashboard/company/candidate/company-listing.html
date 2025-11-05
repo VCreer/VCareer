@@ -46,7 +46,7 @@
       
       <!-- Billboard Image -->
       <div class="hero-image">
-        <img src="assets/company/company-billBoard.png" alt="Company Billboard" class="billboard-image">
+        <img src="assets/images/company/company-billBoard.png" alt="Company Billboard" class="billboard-image">
       </div>
     </div>
   </section>
@@ -56,26 +56,35 @@
     <div class="container">
       <h2 class="section-title">{{ activeTab === 'top' ? 'DANH SÁCH CÁC TOP CÔNG TY' : 'DANH SÁCH CÁC CÔNG TY NỔI BẬT' }}</h2>
       
-      <div class="company-grid" *ngIf="paginatedCompanies.length > 0">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <p>Đang tải danh sách công ty...</p>
+      </div>
+
+      <div class="company-grid" *ngIf="!isLoading && paginatedCompanies.length > 0">
         <div class="company-card" *ngFor="let company of paginatedCompanies" (click)="onCompanyClick(company.id)">
           <div class="company-image-wrapper">
-            <img [src]="company.image" [alt]="company.name" class="company-image" onerror="this.src='assets/images/default-company.png'">
+            <img 
+              [src]="company.logoUrl || 'assets/images/default-company.png'" 
+              [alt]="company.companyName" 
+              class="company-image" 
+              onerror="this.src='assets/images/default-company.png'">
           </div>
           
           <div class="company-info">
             <div class="company-brand">
-              <span class="brand-name" [class.nura]="company.name === 'NURA'" [class.red-bg]="company.name === 'STRINGEE' || company.name === 'LOTTE'">{{ company.name }}</span>
+              <span class="brand-name">{{ getShortCompanyName(company.companyName) }}</span>
             </div>
             
-            <h3 class="company-title">{{ company.fullName }}</h3>
+            <h3 class="company-title">{{ company.companyName }}</h3>
             
-            <p class="company-description">{{ company.description }}</p>
+            <p class="company-description">{{ truncateDescription(company.description) }}</p>
           </div>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div class="empty-state" *ngIf="paginatedCompanies.length === 0">
+      <div class="empty-state" *ngIf="!isLoading && paginatedCompanies.length === 0">
         <p>Không tìm thấy công ty nào.</p>
       </div>
 

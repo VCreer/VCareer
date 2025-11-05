@@ -37,7 +37,7 @@
     ng-zorro-antd "~20.0.0"
     tslib "^2.0.0"
 
-"@abp/ng.core@>=9.3.3", "@abp/ng.core@~9.3.2", "@abp/ng.core@~9.3.3":
+"@abp/ng.core@~9.3.2", "@abp/ng.core@~9.3.3":
   version "9.3.3"
   resolved "https://registry.npmjs.org/@abp/ng.core/-/ng.core-9.3.3.tgz"
   integrity sha512-ZFssSDXEgQwfTheseoWz7YY+/8cv25U8NSFEkwF+kFdzm4uLw2ozK70n9e4tsMBArDlUT+2hv81viHN5FdzeIw==
@@ -127,7 +127,7 @@
     "@volo/ngx-lepton-x.lite" "4.3.3"
     tslib "^2.3.0"
 
-"@abp/ng.theme.shared@>=9.3.3", "@abp/ng.theme.shared@~9.3.2", "@abp/ng.theme.shared@~9.3.3":
+"@abp/ng.theme.shared@~9.3.2", "@abp/ng.theme.shared@~9.3.3":
   version "9.3.3"
   resolved "https://registry.npmjs.org/@abp/ng.theme.shared/-/ng.theme.shared-9.3.3.tgz"
   integrity sha512-85+ULof8rGP1wLfFJ2lOMhO6yu0L36Jjk49bN84VdMSuR4yM89AGQOlnJPDhDMgZhip+Nt3oWSaiO3e37od0fA==
@@ -458,7 +458,7 @@
     semver "7.7.2"
     strip-json-comments "3.1.1"
 
-"@angular-eslint/template-parser@~20.0.0", "@angular-eslint/template-parser@20.0.0":
+"@angular-eslint/template-parser@~20.0.0":
   version "20.0.0"
   resolved "https://registry.npmjs.org/@angular-eslint/template-parser/-/template-parser-20.0.0.tgz"
   integrity sha512-5y9hxH/z+9rIOJp1FwRBSgJ6xt8/pgRfBF+eEIPyIHKl5mV0cVzlQiD7j1LMYTcxJZLHAoryomvSBDpmbtAlWg==
@@ -1661,7 +1661,7 @@
   resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.9.tgz"
   integrity sha512-PPOl1mi6lpLNQxnGoyAfschAodRFYXJ+9fs6WHXz7CSWKbOqiMZsubC+BQsVKuul+3vKLuwTHsS2c2y9EoKwxQ==
 
-"@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0", "@eslint-community/eslint-utils@^4.7.0":
+"@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":
   version "4.9.0"
   resolved "https://registry.npmjs.org/@eslint-community/eslint-utils/-/eslint-utils-4.9.0.tgz"
   integrity sha512-ayVFHdtZ+hsq1t2Dy24wCmGXGe4q9Gu3smhLYALJrr473ZH27MsnSL+LKUlimp4BWJqMDMLmPpx/Q9R3OAlL4g==
@@ -2434,7 +2434,7 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@popperjs/core@^2.11.8", "@popperjs/core@~2.11.0":
+"@popperjs/core@~2.11.0":
   version "2.11.8"
   resolved "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
@@ -4511,12 +4511,7 @@ eslint-visitor-keys@^3.4.1, eslint-visitor-keys@^3.4.3:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.4.3.tgz"
   integrity sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==
 
-eslint-visitor-keys@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-4.2.1.tgz"
-  integrity sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==
-
-"eslint@^6.0.0 || ^7.0.0 || >=8.0.0", eslint@^8.0.0, eslint@^8.56.0, "eslint@^8.57.0 || ^9.0.0":
+eslint@^8.0.0:
   version "8.57.1"
   resolved "https://registry.npmjs.org/eslint/-/eslint-8.57.1.tgz"
   integrity sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==
@@ -5600,7 +5595,7 @@ jasmine-core@^3.6.0:
   resolved "https://registry.npmjs.org/jasmine-core/-/jasmine-core-3.99.1.tgz"
   integrity sha512-Hu1dmuoGcZ7AfyynN3LsfruwMbxMALMka+YtZeGoLuDEySVmVAPaonkNoBRIw/ectu8b9tVQCJNgp4a4knp+tg==
 
-jasmine-core@>=3.8, jasmine-core@~4.0.0:
+jasmine-core@~4.0.0:
   version "4.0.1"
   resolved "https://registry.npmjs.org/jasmine-core/-/jasmine-core-4.0.1.tgz"
   integrity sha512-w+JDABxQCkxbGGxg+a2hUVZyqUS2JKngvIyLGu/xiw2ZwgsoSB0iiecLQsQORSeaKQ6iGrCyWG86RfNDuoA7Lg==
@@ -5614,7 +5609,7 @@ jest-worker@^27.4.5:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jiti@^1.20.0, jiti@>=1.21.0:
+jiti@^1.20.0:
   version "1.21.7"
   resolved "https://registry.npmjs.org/jiti/-/jiti-1.21.7.tgz"
   integrity sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==
@@ -5746,7 +5741,7 @@ karma-jasmine-html-reporter@^1.0.0:
   resolved "https://registry.npmjs.org/karma-jasmine-html-reporter/-/karma-jasmine-html-reporter-1.7.0.tgz"
   integrity sha512-pzum1TL7j90DTE86eFt48/s12hqwQuiD+e5aXx2Dc9wDEn2LfGq6RoAxEZZjFiN0RDSCOnosEKRZWxbQ+iMpQQ==
 
-karma-jasmine@>=1.1, karma-jasmine@~4.0.0:
+karma-jasmine@~4.0.0:
   version "4.0.2"
   resolved "https://registry.npmjs.org/karma-jasmine/-/karma-jasmine-4.0.2.tgz"
   integrity sha512-ggi84RMNQffSDmWSyyt4zxzh2CQGwsxvYYsprgyR1j8ikzIduEdOlcLvXjZGwXG/0j41KUXOWsUCBfbEHPWP9g==
@@ -5760,7 +5755,7 @@ karma-source-map-support@1.4.0:
   dependencies:
     source-map-support "^0.5.5"
 
-karma@*, karma@^6.3.0, karma@^6.4.0, karma@>=0.9, karma@~6.3.0:
+karma@~6.3.0:
   version "6.3.20"
   resolved "https://registry.npmjs.org/karma/-/karma-6.3.20.tgz"
   integrity sha512-HRNQhMuKOwKpjYlWiJP0DUrJOh+QjaI/DTaD8b9rEm4Il3tJ8MijutVZH4ts10LuUFst/CedwTS6vieCN8yTSw==
@@ -8003,11 +7998,6 @@ ts-api-utils@^1.3.0:
   version "1.4.3"
   resolved "https://registry.npmjs.org/ts-api-utils/-/ts-api-utils-1.4.3.tgz"
   integrity sha512-i3eMG77UTMD0hZhgRS562pv83RC6ukSAC2GMNWc+9dieh/+jDM5u5YG+NHX6VNDRHQcHwmsTHctP9LhbC3WxVw==
-
-ts-api-utils@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/ts-api-utils/-/ts-api-utils-2.1.0.tgz"
-  integrity sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==
 
 ts-toolbelt@^9.0.0:
   version "9.6.0"

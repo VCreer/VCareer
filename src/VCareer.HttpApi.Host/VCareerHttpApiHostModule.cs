@@ -56,6 +56,7 @@ using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 using System.IdentityModel.Tokens.Jwt;
 
+
 namespace VCareer;
 
 [DependsOn(
@@ -78,22 +79,22 @@ public class VCareerHttpApiHostModule : AbpModule
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
 
-        PreConfigure<OpenIddictBuilder>(builder =>
-        {
-            builder.AddValidation(options =>
-            {
-                options.AddAudiences("VCareer");
-                options.UseLocalServer();
-                options.UseAspNetCore();
-            });
-        });
+           PreConfigure<OpenIddictBuilder>(builder =>
+           {
+               builder.AddValidation(options =>
+               {
+                   options.AddAudiences("VCareer");
+                   options.UseLocalServer();
+                   options.UseAspNetCore();
+               });
+           });
 
-        if (!hostingEnvironment.IsDevelopment())
-        {
-            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-            {
-                options.AddDevelopmentEncryptionAndSigningCertificate = false;
-            });
+           if (!hostingEnvironment.IsDevelopment())
+           {
+               PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
+               {
+                   options.AddDevelopmentEncryptionAndSigningCertificate = false;
+               });
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
@@ -154,6 +155,8 @@ public class VCareerHttpApiHostModule : AbpModule
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
+
+
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
         // KHÔNG ForwardIdentityAuthenticationForBearer vì nó sẽ force tất cả JWT Bearer authentication 
@@ -163,9 +166,17 @@ public class VCareerHttpApiHostModule : AbpModule
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
+
+            // ✅ QUAN TRỌNG: Map claims từ JWT sang ABP format
+            options.ClaimsMap["sub"] = new List<string> { AbpClaimTypes.UserId };
+            options.ClaimsMap[ClaimTypes.NameIdentifier] = new List<string> { AbpClaimTypes.UserId };
+            options.ClaimsMap["role"] = new List<string> { AbpClaimTypes.Role };
+            options.ClaimsMap[ClaimTypes.Role] = new List<string> { AbpClaimTypes.Role };
+            options.ClaimsMap["email"] = new List<string> { AbpClaimTypes.Email };
+            options.ClaimsMap[ClaimTypes.Email] = new List<string> { AbpClaimTypes.Email };
+            options.ClaimsMap["preferred_username"] = new List<string> { AbpClaimTypes.UserName };
         });
 
-        //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
         // Cấu hình Authorization để đảm bảo [Authorize] hoạt động đúng
@@ -535,6 +546,10 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+
+        // Enable static files serving from wwwroot
+        app.UseStaticFiles();
+
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();

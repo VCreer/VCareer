@@ -197,13 +197,26 @@
             padding: 0.5rem;
             border-radius: 50%;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             &:hover {
-              color: #0f83ba;
+              color: #dc2626;
+              background: #fee2e2;
             }
 
             &.saved {
-              color: #0f83ba;
+              color: #dc2626;
+              
+              &:hover {
+                color: #b91c1c;
+                background: #fecaca;
+              }
+            }
+
+            i {
+              transition: all 0.2s;
             }
           }
         }
@@ -355,6 +368,10 @@
             .save-btn {
               font-size: 1rem;
               padding: 0.4rem;
+              
+              &.saved {
+                color: #dc2626;
+              }
             }
 
             .hide-icon {

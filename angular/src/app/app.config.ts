@@ -14,7 +14,13 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { GoogleLoginProvider, SocialAuthServiceConfig, SOCIAL_AUTH_CONFIG } from '@abacritt/angularx-social-login';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import {
+  GoogleLoginProvider,
+  SocialAuthServiceConfig,
+  SOCIAL_AUTH_CONFIG,
+} from '@abacritt/angularx-social-login';
 import { environment } from '../environments/environment';
 import { APP_ROUTES } from './app.routes';
 import { APP_ROUTE_PROVIDER } from './route.provider';
@@ -45,10 +51,10 @@ export const appConfig: ApplicationConfig = {
             id: GoogleLoginProvider.PROVIDER_ID,
             provider: new GoogleLoginProvider(
               '1016101725161-2vljk9oo68oq4oj5q7b4o6ofdj1hn539.apps.googleusercontent.com'
-            )
-          }
-        ]
-      } as SocialAuthServiceConfig
+            ),
+          },
+        ],
+      } as SocialAuthServiceConfig,
     },
     provideAbpCore(
       withOptions({
@@ -66,22 +72,30 @@ export const appConfig: ApplicationConfig = {
     // provideAccountConfig(), // Comment ABP Account module
     provideTenantManagementConfig(),
     provideAbpThemeShared(),
-    // Mock API Services (commented out - files don't exist)
-    // AuthMockService,
-    // CandidateMockService,
-    // RecruiterMockService,
-    // JobMockService,
-    // ProfileMockService,
-    // Mock API Interceptor (commented out - file doesn't exist)
-    // {
+    // Mock API Services (chỉ khi useMockApi = true)
+    // ...(environment.useMockApi ? [
+    //   AuthMockService,
+    //   CandidateMockService,
+    //   RecruiterMockService,
+    //   JobMockService,
+    //   ProfileMockService,
+    // ] : []),
+    // // Mock API Interceptor (chỉ khi useMockApi = true)
+    // ...(environment.useMockApi ? [{
     //   provide: HTTP_INTERCEPTORS,
     //   useClass: MockApiInterceptor,
-    //   multi: true
-    // },
+    //   multi: true,
+    // }] : []),
+    // Auth Interceptor - Tự động gắn token vào mọi request
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
+    },
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,
     //   useClass: CustomAuthService
     // }
-  ]
+  ],
 };

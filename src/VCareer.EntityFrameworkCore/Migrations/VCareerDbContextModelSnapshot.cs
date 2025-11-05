@@ -908,6 +908,9 @@ namespace VCareer.Migrations
                     b.Property<int>("DistrictId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Education")
+                        .HasColumnType("int");
+
                     b.Property<int>("EmploymentType")
                         .HasColumnType("int");
 
@@ -1087,6 +1090,29 @@ namespace VCareer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Provinces", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.Job.SavedJob", b =>
+                {
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("CandidateId", "JobId");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("CandidateId", "JobId")
+                        .IsUnique();
+
+                    b.ToTable("AppSavedJobs", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>
@@ -3387,6 +3413,25 @@ namespace VCareer.Migrations
                     b.Navigation("Province");
 
                     b.Navigation("RecruiterProfile");
+                });
+
+            modelBuilder.Entity("VCareer.Models.Job.SavedJob", b =>
+                {
+                    b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.Job.Job_Posting", "JobPosting")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CandidateProfile");
+
+                    b.Navigation("JobPosting");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
