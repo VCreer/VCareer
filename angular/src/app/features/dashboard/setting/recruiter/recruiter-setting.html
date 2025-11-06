@@ -186,7 +186,66 @@
       <div class="section-card">
         <h2 class="section-title">Thay đổi mật khẩu</h2>
         
-        <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword($event)" class="change-password-form">
+        <!-- Set Password Form for Google Users (First Time) -->
+        <form 
+          *ngIf="isGoogleUser && !hasPasswordSet"
+          [formGroup]="setPasswordForm" 
+          (ngSubmit)="onSetPassword($event)" 
+          class="change-password-form">
+          <!-- Mật khẩu mới -->
+          <div class="password-form-row">
+            <label class="password-form-label">Mật khẩu mới</label>
+            <div class="password-field-wrapper">
+              <app-password-field
+                formControlName="newPassword"
+                [placeholder]="'Nhập mật khẩu mới'"
+                [error]="getSetPasswordError('newPassword')"
+                [required]="true">
+              </app-password-field>
+            </div>
+          </div>
+
+          <!-- Nhập lại mật khẩu -->
+          <div class="password-form-row">
+            <label class="password-form-label">Nhập lại mật khẩu</label>
+            <div class="password-field-wrapper">
+              <app-password-field
+                formControlName="confirmPassword"
+                [placeholder]="'Nhập lại mật khẩu mới'"
+                [error]="getSetPasswordError('confirmPassword')"
+                [required]="true">
+              </app-password-field>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <app-password-form-actions
+            [isSaving]="isSettingPassword"
+            [saveText]="'Cập nhật'"
+            (cancel)="onCancel()"
+            (save)="onSetPassword()">
+          </app-password-form-actions>
+        </form>
+
+        <!-- Change Password Form (Full Form for Users with Password) -->
+        <form 
+          *ngIf="!isGoogleUser || hasPasswordSet"
+          [formGroup]="changePasswordForm" 
+          (ngSubmit)="onChangePassword($event)" 
+          class="change-password-form">
+          <!-- Mật khẩu hiện tại -->
+          <div class="password-form-row">
+            <label class="password-form-label">Mật khẩu hiện tại</label>
+            <div class="password-field-wrapper">
+              <app-password-field
+                formControlName="currentPassword"
+                [placeholder]="'Nhập mật khẩu hiện tại'"
+                [error]="getPasswordError('currentPassword')"
+                [required]="true">
+              </app-password-field>
+            </div>
+          </div>
+
           <!-- Mật khẩu mới -->
           <div class="password-form-row">
             <label class="password-form-label">Mật khẩu mới</label>
@@ -226,22 +285,11 @@
           </div>
 
           <!-- Form Actions -->
-          <div class="password-form-actions">
-            <app-button 
-              type="button"
-              (click)="onCancel()"
-              class="cancel-btn">
-              Hủy
-            </app-button>
-            <app-button 
-              type="submit"
-              [buttonType]="'submit'"
-              [disabled]="isChangingPassword || changePasswordForm.invalid"
-              [loading]="isChangingPassword"
-              class="save-btn">
-              Cập nhật
-            </app-button>
-          </div>
+          <app-password-form-actions
+            [isSaving]="isChangingPassword"
+            (cancel)="onCancel()"
+            (save)="onChangePassword()">
+          </app-password-form-actions>
         </form>
       </div>
     </div>

@@ -176,10 +176,10 @@ export class LoginComponent {
           return;
         }
 
-        // Lưu token vào localStorage
-        localStorage.setItem('access_token', accessToken);
+        // Lưu token vào localStorage với prefix candidate
+        this.navigationService.setAccessToken(accessToken, 'candidate');
         if (result?.refreshToken) {
-          localStorage.setItem('refresh_token', result.refreshToken);
+          this.navigationService.setRefreshToken(result.refreshToken, 'candidate');
         }
 
         this.showToastMessage('Đăng nhập thành công!', 'success');

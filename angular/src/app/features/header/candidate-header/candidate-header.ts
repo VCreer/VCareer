@@ -166,7 +166,6 @@ export class CandidateHeaderComponent implements OnInit {
 
   markAllAsRead() {
     // Logic đánh dấu tất cả thông báo đã đọc
-    console.log('Đánh dấu tất cả thông báo đã đọc');
     this.showNotificationMenu = false;
   }
 

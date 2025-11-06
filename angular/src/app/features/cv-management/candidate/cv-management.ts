@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../core/services/translation.service';
 import { UploadedCvService, UploadedCv } from '../../../core/services/uploaded-cv.service';
@@ -17,6 +18,7 @@ import { UploadedCvCard } from '../../../shared/components/uploaded-cv-card/uplo
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ToastNotificationComponent,
     ButtonComponent,
     CvListComponent,
@@ -42,6 +44,10 @@ export class CvManagementComponent implements OnInit {
   showRenameModal = false;
   cvToRename: any = null;
   uploadedCvs: UploadedCv[] = [];
+  
+  // Toggle settings
+  jobSearchEnabled: boolean = false;
+  allowRecruiterSearch: boolean = true;
 
   constructor(
     private router: Router,
@@ -219,6 +225,25 @@ export class CvManagementComponent implements OnInit {
 
   trackByCvName(index: number, cv: any): string {
     return cv.name;
+  }
+
+  // Toggle handlers
+  onJobSearchToggle() {
+    // TODO: Call API to update job search status
+    if (this.jobSearchEnabled) {
+      this.showToastMessage(this.translate('profile_sidebar.job_search_enabled'), 'success');
+    } else {
+      this.showToastMessage(this.translate('profile_sidebar.job_search_disabled'), 'info');
+    }
+  }
+
+  onAllowRecruiterSearchToggle() {
+    // TODO: Call API to update recruiter search permission
+    if (this.allowRecruiterSearch) {
+      this.showToastMessage(this.translate('profile_sidebar.recruiter_search_enabled'), 'success');
+    } else {
+      this.showToastMessage(this.translate('profile_sidebar.recruiter_search_disabled'), 'info');
+    }
   }
 }
 
