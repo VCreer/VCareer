@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   color: white;
-  overflow: hidden;
+  overflow: visible; // Đổi từ hidden sang visible để dropdown không bị cắt
   padding-top: 80px;
 }
 
@@ -61,6 +61,9 @@
 
 .search-container {
   margin-bottom: 3rem;
+  overflow: visible; // Đảm bảo dropdown không bị cắt
+  position: relative;
+  z-index: 10; // Đảm bảo dropdown có thể hiển thị
   
   // ✅ Custom styles cho FilterBar trong Hero Section
   ::ng-deep .filter-bar-container {
@@ -71,11 +74,13 @@
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
     max-width: 100%;
     z-index: 100;  // ✅ Đảm bảo filter bar ở trên các element khác
+    overflow: visible; // Đảm bảo dropdown không bị cắt
   }
   
   // ✅ FIX: Dropdown phải hiển thị trên tất cả sections
   ::ng-deep .filter-dropdown {
-    z-index: 99999 !important;
+    z-index: 9999 !important;
+    overflow: visible !important; // Đảm bảo không bị cắt
   }
   
   // ✅ Hero search input styles
@@ -84,11 +89,19 @@
     font-size: 16px;
     border: 2px solid #e5e7eb;
     border-radius: 10px;
+    width: 100% !important; // Đảm bảo input chiếm toàn bộ width của wrapper
+    box-sizing: border-box;
     
     &:focus {
       border-color: #0F83BA;
       box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
     }
+  }
+  
+  // ✅ Đảm bảo search-input-wrapper có đủ không gian
+  ::ng-deep .search-input-wrapper {
+    flex: 3 1 300px !important; // Force flex để search bar chiếm nhiều không gian
+    min-width: 300px !important;
   }
   
   // ✅ Hero search button styles  

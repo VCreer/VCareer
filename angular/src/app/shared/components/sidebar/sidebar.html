@@ -78,10 +78,9 @@
         </a>
       </li>
       <li class="sidebar-nav-item">
-        <a (click)="navigateTo('/recruiter/cv-management')" class="sidebar-link sidebar-link-has-submenu">
+        <a (click)="navigateTo('/recruiter/cv-management')" class="sidebar-link sidebar-link-has-submenu" [class.active]="isActive('/recruiter/cv-management')">
           <i class="fa fa-user-circle sidebar-icon"></i>
           <span class="sidebar-link-text">{{ translate('sidebar.cv_management') }}</span>
-          <i class="fa fa-chevron-right sidebar-chevron"></i>
         </a>
       </li>
       <li class="sidebar-nav-item">
@@ -96,7 +95,7 @@
 
       <!-- Third Group -->
       <li class="sidebar-nav-item">
-        <a (click)="navigateTo('/recruiter/buy-services')" class="sidebar-link">
+        <a (click)="navigateTo('/recruiter/buy-services')" class="sidebar-link" [class.active]="isActive('/recruiter/buy-services')">
           <i class="fa fa-shopping-cart sidebar-icon"></i>
           <span class="sidebar-link-text">{{ translate('sidebar.buy_services') }}</span>
         </a>

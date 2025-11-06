@@ -4,12 +4,11 @@
   <!-- 1. Category dropdown (bên trái) -->
   <button
     class="filter-trigger-btn category-btn"
-    (click)="toggleCategoryDropdown()"
+    (click)="toggleCategoryDropdown(); $event.stopPropagation()"
     [class.active]="showCategoryDropdown"
   >
-    <span class="filter-icon">☰</span>
+    <i class="fa fa-bars filter-icon"></i>
     <span class="filter-label">Danh mục Nghề{{ getCategoryCountText() }}</span>
-    <span class="dropdown-arrow" [class.open]="showCategoryDropdown">▼</span>
   </button>
 
   <!-- 2. Search input wrapper (ở giữa, flex-grow) -->
@@ -20,11 +19,10 @@
   <!-- 3. Location dropdown (bên phải, cạnh nút search) -->
   <button
     class="filter-trigger-btn location-btn"
-    (click)="toggleLocationDropdown()"
+    (click)="toggleLocationDropdown(); $event.stopPropagation()"
     [class.active]="showLocationDropdown"
   >
     <span class="filter-label">Địa điểm{{ getLocationCountText() }}</span>
-    <span class="dropdown-arrow" [class.open]="showLocationDropdown">▼</span>
   </button>
 
   <!-- 4. Search button sẽ được pass từ parent -->
@@ -33,11 +31,13 @@
   <!-- ============================================ -->
   <!-- CATEGORY DROPDOWN (3 cấp với hover) -->
   <!-- ============================================ -->
-  <div class="filter-dropdown category-dropdown" *ngIf="showCategoryDropdown">
+  <div class="filter-dropdown category-dropdown" *ngIf="showCategoryDropdown" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="dropdown-header">
       <h3 class="dropdown-title">Chọn Nhóm nghề, Nghề hoặc Chuyên môn</h3>
-      <button class="close-btn" (click)="closeDropdowns()">✕</button>
+      <button class="close-btn" (click)="closeDropdowns()">
+        <i class="fa fa-times"></i>
+      </button>
     </div>
 
     <!-- Search Input -->
@@ -49,7 +49,7 @@
         [(ngModel)]="categorySearchKeyword"
         (input)="onCategorySearch()"
       />
-      <span class="search-icon">🔍</span>
+      <i class="fa fa-search search-icon"></i>
     </div>
 
     <!-- Content: 2 cột -->
@@ -90,12 +90,16 @@
       <!-- ✅ Nếu KHÔNG search → Hiển thị tree bình thường -->
       <!-- ⚠️ PHẢI DÙNG DIV thay vì ng-container vì CSS Grid! -->
       <div class="category-tree-view" *ngIf="!isSearching()">
-        <!-- DEBUG INFO -->
+        <!-- Empty State -->
         <div
           *ngIf="filteredCategories.length === 0"
-          style="padding: 20px; color: #999; grid-column: 1 / -1"
+          class="category-empty-state"
         >
-          Không có dữ liệu (filteredCategories.length = {{ filteredCategories.length }})
+          <div class="empty-icon">
+            <i class="fa fa-folder-open"></i>
+          </div>
+          <p class="empty-text">Không có dữ liệu danh mục</p>
+          <p class="empty-hint">Vui lòng thử lại sau</p>
         </div>
 
         <!-- CỘT TRÁI: Danh sách Category cấp 1 -->
@@ -190,15 +194,17 @@
   <!-- ✅ BỎ OVERLAY (không làm mờ background) -->
       </div>
 
-<!-- ============================================ -->
-<!-- LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CLASS CATEGORY -->
-<!-- ============================================ -->
-<div class="location-dropdown-wrapper" *ngIf="showLocationDropdown">
+  <!-- ============================================ -->
+  <!-- LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CLASS CATEGORY -->
+  <!-- ============================================ -->
+  <div class="location-dropdown-wrapper" *ngIf="showLocationDropdown" (click)="$event.stopPropagation()">
   <div class="location-dropdown-container">
     <!-- Header -->
     <div class="location-header">
       <h3 class="location-title">Chọn Địa điểm</h3>
-      <button class="location-close-btn" (click)="closeDropdowns()">✕</button>
+      <button class="location-close-btn" (click)="closeDropdowns()">
+        <i class="fa fa-times"></i>
+      </button>
       </div>
 
     <!-- Search Input -->
@@ -210,7 +216,7 @@
         [(ngModel)]="locationSearchKeyword"
         (input)="onLocationSearch()"
       />
-      <span class="location-search-icon">🔍</span>
+      <i class="fa fa-search location-search-icon"></i>
     </div>
 
     <!-- Content: 2 cột -->

@@ -15,36 +15,51 @@
 
   // Category dropdown trigger (bên trái)
   .category-btn {
-    flex-shrink: 0;
-    width: 200px;
+    flex-shrink: 1; // Cho phép co lại một chút nếu cần
+    width: 170px; // Giảm thêm để search bar có nhiều không gian hơn
+    min-width: 150px; // Giới hạn không co quá nhỏ
+    position: relative; // Để dropdown có thể absolute dựa vào nó
   }
 
   // Search input (ở giữa, expand)
   .search-input-wrapper {
-    flex: 1;
+    flex: 3 1 300px; // Tăng flex-grow lên 3, min-width 300px để search bar chiếm nhiều không gian hơn
     display: flex;
     gap: 8px;
-    min-width: 0; // allow flex child to expand
+    min-width: 300px; // Đảm bảo không bị co quá nhỏ
     
     // Ensure the projected input fills available width
     [search-input] {
       flex: 1 1 auto;
       min-width: 0;
-      width: 100%;
+      width: 100% !important; // Force width 100%
       display: block;
+      max-width: 100%; // Đảm bảo không vượt quá container
     }
     
     // Make the middle input stretch nicely with rounded corners matching neighbors
     ::ng-deep .hero-search-input,
     ::ng-deep .main-search-input {
       border-radius: 8px;
+      width: 100% !important; // Force width để không bị override
+      min-width: 0;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #0F83BA !important; // Màu web khi focus
+        box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1) !important;
+      }
     }
   }
 
   // Location dropdown trigger (bên phải, cạnh nút search)
   .location-btn {
-    flex-shrink: 0;
-    width: 180px;
+    flex-shrink: 1; // Cho phép co lại một chút nếu cần
+    width: 150px; // Giảm thêm để search bar có nhiều không gian hơn
+    min-width: 130px; // Giới hạn không co quá nhỏ
+    position: relative; // Để dropdown có thể absolute dựa vào nó
   }
 
   // ============================================
@@ -77,7 +92,12 @@
       color: #0f83ba;
     }
 
-    .filter-icon { display: none; }
+    .filter-icon { 
+      display: inline-block;
+      font-size: 16px;
+      color: #6b7280;
+      margin-right: 4px;
+    }
 
     .filter-label {
       flex: 1;
@@ -85,9 +105,10 @@
     }
 
     .dropdown-arrow {
-      font-size: 10px;
+      font-size: 12px;
       transition: transform 0.2s ease;
       flex-shrink: 0;
+      color: #6b7280;
 
       &.open {
         transform: rotate(180deg);
@@ -99,20 +120,20 @@
   // DROPDOWN CONTAINER (Category & Location)
   // ============================================
   .filter-dropdown {
-    position: fixed !important; // ✅ FORCE fixed positioning
-    top: 150px !important; // ✅ Fixed position từ top
-    left: 50% !important; // ✅ Center horizontally
-    transform: translateX(-50%) !important;
+    position: absolute; // Thay đổi từ fixed sang absolute
+    top: calc(100% + 8px); // Đặt ngay dưới category-btn
+    left: 0; // Căn trái với category-btn (vì filter-bar-container có position: relative)
     margin-top: 0;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-    z-index: 999999 !important; // ✅ FORCE highest z-index
+    z-index: 9999; // Tăng z-index để không bị che khuất
     width: 900px;
-    max-height: 600px;
+    max-height: 70vh; // Dùng viewport height thay vì fixed để không bị che
     display: flex !important;
     flex-direction: column;
+    overflow: visible; // Đảm bảo không bị cắt
 
     // Header
     .dropdown-header {
@@ -132,8 +153,8 @@
       .close-btn {
         background: none;
         border: none;
-        font-size: 24px;
-      color: #6b7280;
+        font-size: 18px;
+        color: #6b7280;
         cursor: pointer;
         padding: 0;
         width: 32px;
@@ -144,10 +165,14 @@
         border-radius: 6px;
         transition: all 0.2s ease;
 
+        i {
+          font-size: 18px;
+        }
+
         &:hover {
           background: #f3f4f6;
           color: #111827;
-    }
+        }
       }
     }
 
@@ -182,6 +207,7 @@
         transform: translateY(-50%);
         font-size: 16px;
         color: #9ca3af;
+        pointer-events: none; // Không chặn click vào input
       }
     }
 
@@ -330,47 +356,92 @@
 
       .btn-text {
         background: none;
-        border: none;
+        border: 1px solid #e5e7eb;
         color: #6b7280;
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        padding: 8px 16px;
-        border-radius: 6px;
+        padding: 10px 20px;
+        border-radius: 8px;
         transition: all 0.2s ease;
 
         &:hover {
-          background: #f3f4f6;
-          color: #111827;
+          background: #f9fafb;
+          border-color: #d1d5db;
+          color: #374151;
         }
 
-        &:first-child {
-          border-radius: 8px 8px 0 0;
+        &:active {
+          background: #f3f4f6;
         }
+      }
 
       .btn-primary {
-        background: #0f83ba;
+        background: #0F83BA;
         color: white;
         border: none;
-        padding: 10px 32px;
+        padding: 10px 24px;
         border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
         &:hover {
           background: #0c6a98;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &:active {
+          background: #0a5a83;
+          transform: translateY(1px);
+        }
+
+        &:disabled {
+          background: #d1d5db;
+          color: #9ca3af;
+          cursor: not-allowed;
+          box-shadow: none;
         }
       }
     }
-  }
 
-  // ============================================
-  // CATEGORY DROPDOWN SPECIFIC
-  // ============================================
-  .category-dropdown {
-    // Cột trái: Level 1 categories
+    // ============================================
+    // CATEGORY DROPDOWN SPECIFIC
+    // ============================================
+    &.category-dropdown {
+      // Empty State
+      .category-empty-state {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+
+        .empty-icon {
+          font-size: 48px;
+          color: #d1d5db;
+          margin-bottom: 16px;
+        }
+
+        .empty-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 8px 0;
+        }
+
+        .empty-hint {
+          font-size: 14px;
+          color: #9ca3af;
+          margin: 0;
+        }
+      }
+
+      // Cột trái: Level 1 categories
     .category-level1-list {
       border-right: 1px solid #e5e7eb;
       display: flex;
@@ -570,34 +641,30 @@
         }
       }
     }
-      }
+  }
+}
 
   // ============================================
-  // LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CHUNG VỚI CATEGORY
+  // LOCATION DROPDOWN STYLES
   // ============================================
-      }
+  .location-dropdown-wrapper {
+    position: absolute; // Thay đổi từ fixed sang absolute
+    top: calc(100% + 8px); // Đặt ngay dưới location-btn
+    right: 0; // Căn phải với location-btn (vì filter-bar-container có position: relative)
+    z-index: 9999; // Tăng z-index để không bị che khuất
+    width: 900px;
+    max-height: 70vh; // Dùng viewport height thay vì fixed để không bị che
+    overflow: visible; // Đảm bảo không bị cắt
+  }
 
-// ============================================
-// LOCATION DROPDOWN STYLES (RA NGOÀI CONTAINER)
-// ============================================
-.location-dropdown-wrapper {
-  position: fixed;
-  top: 150px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999999;
-  width: 900px;
-  height: 600px; // ✅ CỐ ĐỊNH HEIGHT
-    }
-
-.location-dropdown-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  height: 100%; // ✅ FULL HEIGHT
-  overflow: hidden; // ✅ NGĂN OVERFLOW
+  .location-dropdown-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    max-height: 70vh; // Dùng viewport height
+    overflow: hidden;
 
   // Header
   .location-header {
@@ -618,7 +685,7 @@
     .location-close-btn {
       background: transparent;
       border: none;
-      font-size: 24px;
+      font-size: 18px;
       color: #6b7280;
       cursor: pointer;
       padding: 0;
@@ -629,6 +696,10 @@
       justify-content: center;
       border-radius: 6px;
       transition: all 0.2s ease;
+
+      i {
+        font-size: 18px;
+      }
 
       &:hover {
         background: #f3f4f6;
@@ -654,8 +725,8 @@
 
       &:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #0F83BA; // Màu web khi focus
+        box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
       }
 
       &::placeholder {
@@ -882,35 +953,54 @@
     flex-shrink: 0; // ✅ KHÔNG CO LẠI
 
     .location-btn-clear {
-      background: transparent;
-      border: 1px solid #d1d5db;
-      padding: 10px 20px;
-      border-radius: 8px;
+      background: none;
+      border: 1px solid #e5e7eb;
+      color: #6b7280;
       font-size: 14px;
       font-weight: 500;
-      color: #6b7280;
       cursor: pointer;
+      padding: 10px 20px;
+      border-radius: 8px;
       transition: all 0.2s ease;
 
       &:hover {
         background: #f9fafb;
+        border-color: #d1d5db;
         color: #374151;
-  }
-}
+      }
+
+      &:active {
+        background: #f3f4f6;
+      }
+    }
 
     .location-btn-apply {
-      background: #3b82f6;
+      background: #0F83BA;
+      color: white;
       border: none;
       padding: 10px 24px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
-      color: white;
       cursor: pointer;
       transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
       &:hover {
-        background: #2563eb;
+        background: #0c6a98;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        background: #0a5a83;
+        transform: translateY(1px);
+      }
+
+      &:disabled {
+        background: #d1d5db;
+        color: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
       }
     }
   }
