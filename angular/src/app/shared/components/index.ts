@@ -26,3 +26,4 @@ export { CreateCompanyFormComponent } from './create-company-form/create-company
 export { BusinessRegistrationComponent } from './business-registration/business-registration.component';
 export { CvFilterBarComponent, CvFilterData } from './cv-filter-bar/cv-filter-bar.component';
 export { CvEmptyStateComponent } from './cv-empty-state/cv-empty-state.component';
+export { PasswordFormActionsComponent } from './password-form-actions/password-form-actions.component';

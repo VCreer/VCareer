@@ -74,6 +74,8 @@ export class HeaderWrapperComponent implements OnInit {
         // Only update if pathname actually changed (not just query params)
         if (currentPathname !== this.lastPathname) {
           this.lastPathname = currentPathname;
+          // Update auth state based on route context when route changes
+          this.navigationService.updateAuthStateFromRoute();
           this.updateHeaderType(event.url);
         }
       });

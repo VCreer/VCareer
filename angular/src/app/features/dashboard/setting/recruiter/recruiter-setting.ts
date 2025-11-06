@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, FormControl } from '@angular/forms';
  import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
 import { ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto } from '../../../../proxy/profile/models';
@@ -13,6 +13,7 @@ import { CompanyTabsComponent } from '../../../../shared/components/company-tabs
 import { SearchCompanyComponent } from '../../../../shared/components/search-company/search-company.component';
 import { CreateCompanyFormComponent } from '../../../../shared/components/create-company-form/create-company-form.component';
 import { BusinessRegistrationComponent } from '../../../../shared/components/business-registration/business-registration.component';
+import { PasswordFormActionsComponent } from '../../../../shared/components/password-form-actions/password-form-actions.component';
 
 @Component({
   selector: 'app-recruiter-setting',
@@ -28,7 +29,8 @@ import { BusinessRegistrationComponent } from '../../../../shared/components/bus
     CompanyTabsComponent,
     SearchCompanyComponent,
     CreateCompanyFormComponent,
-    BusinessRegistrationComponent
+    BusinessRegistrationComponent,
+    PasswordFormActionsComponent
   ],
   templateUrl: './recruiter-setting.html',
   styleUrls: ['./recruiter-setting.scss']
@@ -57,8 +59,12 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   
   // Change password form
   changePasswordForm: FormGroup;
+  setPasswordForm: FormGroup; // Form for Google users to set password first time
   isChangingPassword = false;
   logoutAllSessions = false;
+  isGoogleUser = false; // Flag to check if user logged in with Google
+  hasPasswordSet = true; // Flag to check if user has set password (default true for normal users)
+  isSettingPassword = false; // Flag for setting password first time
   
   // Account verification
   verificationLevel: string = 'Cấp 1/3';
@@ -108,8 +114,9 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private formBuilder: FormBuilder
   ) {
-    // Initialize change password form
+    // Initialize change password form (for users who already have password)
     this.changePasswordForm = this.formBuilder.group({
+      currentPassword: ['', [Validators.required]],
       newPassword: ['', [
         Validators.required,
         Validators.minLength(8),
@@ -118,6 +125,31 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       ]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+    
+    // Initialize set password form (for Google users setting password first time)
+    this.setPasswordForm = this.formBuilder.group({
+      newPassword: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(100),
+        this.passwordStrengthValidator
+      ]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+    
+    // Subscribe to value changes to trigger validation
+    this.changePasswordForm.valueChanges.subscribe(() => {
+      if (this.changePasswordForm.get('newPassword')?.value && this.changePasswordForm.get('confirmPassword')?.value) {
+        this.changePasswordForm.updateValueAndValidity();
+      }
+    });
+    
+    // Subscribe to set password form value changes
+    this.setPasswordForm.valueChanges.subscribe(() => {
+      if (this.setPasswordForm.get('newPassword')?.value && this.setPasswordForm.get('confirmPassword')?.value) {
+        this.setPasswordForm.updateValueAndValidity();
+      }
+    });
   }
 
   ngOnInit() {
@@ -199,6 +231,16 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           gender: profile.gender === true ? 'male' : profile.gender === false ? 'female' : 'male',
           avatarUrl: ''
         };
+        
+        // TODO: Check if user is Google user from backend
+        // For now, we'll check via userType or a specific field
+        // Assuming if userType is 'External' or similar, it's a Google user
+        // This is a placeholder - adjust based on your actual backend response
+        this.isGoogleUser = profile.userType === 'External' || false;
+        // If Google user, assume password not set initially (will be updated after first set)
+        // TODO: Add a field in ProfileDto to check if password is set
+        this.hasPasswordSet = !this.isGoogleUser || profile.emailConfirmed; // Temporary logic
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -213,6 +255,9 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           gender: 'male',
           avatarUrl: ''
         };
+        // Default to non-Google user if error
+        this.isGoogleUser = false;
+        this.hasPasswordSet = true;
       }
     });
   }
@@ -331,8 +376,12 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   onCancel() {
     if (this.activeTab === 'change-password') {
-      this.changePasswordForm.reset();
-      this.logoutAllSessions = false;
+      if (this.isGoogleUser && !this.hasPasswordSet) {
+        this.setPasswordForm.reset();
+      } else {
+        this.changePasswordForm.reset();
+        this.logoutAllSessions = false;
+      }
     } else {
       this.loadProfileData();
     }
@@ -350,48 +399,111 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     return passwordValid ? null : { passwordStrength: true };
   }
 
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('newPassword');
-    const confirmPassword = control.get('confirmPassword');
-    if (!password || !confirmPassword || !password.value || !confirmPassword.value) {
+  passwordMatchValidator(form: AbstractControl): ValidationErrors | null {
+    if (!(form instanceof FormGroup)) return null;
+    
+    const password = form.get('newPassword');
+    const confirmPassword = form.get('confirmPassword');
+    
+    if (!password || !confirmPassword) {
       return null;
     }
-    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+    
+    // Only validate if both fields have values
+    if (!password.value || !confirmPassword.value) {
+      // Clear mismatch error if one field is empty
+      if (confirmPassword.hasError('passwordMismatch')) {
+        const errors = { ...confirmPassword.errors };
+        delete errors['passwordMismatch'];
+        confirmPassword.setErrors(Object.keys(errors).length > 0 ? errors : null);
+      }
+      return null;
+    }
+    
+    // Set error on confirmPassword if passwords don't match
+    if (password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ ...confirmPassword.errors, passwordMismatch: true });
+      return { passwordMismatch: true };
+    } else {
+      // Clear mismatch error if passwords match
+      if (confirmPassword.hasError('passwordMismatch')) {
+        const errors = { ...confirmPassword.errors };
+        delete errors['passwordMismatch'];
+        confirmPassword.setErrors(Object.keys(errors).length > 0 ? errors : null);
+      }
+    }
+    
+    return null;
   }
   
   onChangePassword(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.changePasswordForm.controls).forEach(key => {
+      this.changePasswordForm.get(key)?.markAsTouched();
+    });
+    
+    // Mark form as touched to trigger validators
+    this.changePasswordForm.markAllAsTouched();
+    
     if (this.changePasswordForm.invalid) {
-      this.showToastMessage('Vui lòng điền đầy đủ thông tin và kiểm tra lại mật khẩu', 'error');
+      // Show specific error messages
+      const currentPasswordError = this.getPasswordError('currentPassword');
+      const newPasswordError = this.getPasswordError('newPassword');
+      const confirmPasswordError = this.getPasswordError('confirmPassword');
+      
+      if (currentPasswordError) {
+        this.showToastMessage(currentPasswordError, 'error');
+      } else if (newPasswordError) {
+        this.showToastMessage(newPasswordError, 'error');
+      } else if (confirmPasswordError) {
+        this.showToastMessage(confirmPasswordError, 'error');
+      } else {
+        this.showToastMessage('Vui lòng điền đầy đủ thông tin và kiểm tra lại mật khẩu', 'error');
+      }
       return;
     }
 
     this.isChangingPassword = true;
 
+    const currentPassword = this.changePasswordForm.get('currentPassword')?.value;
+    const newPassword = this.changePasswordForm.get('newPassword')?.value;
+    
+    // Check if new password is different from current password
+    if (currentPassword === newPassword) {
+      this.showToastMessage('Mật khẩu mới phải khác mật khẩu hiện tại', 'error');
+      this.isChangingPassword = false;
+      return;
+    }
+
     const changePasswordDto: ChangePasswordDto = {
-      currentPassword: '', // TODO: Get current password if needed
-      newPassword: this.changePasswordForm.get('newPassword')?.value,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
       confirmPassword: this.changePasswordForm.get('confirmPassword')?.value
     };
 
     this.profileService.changePassword(changePasswordDto).subscribe({
       next: () => {
         this.isChangingPassword = false;
+        
+        // Save logoutAllSessions value before reset
+        const shouldLogoutAll = this.logoutAllSessions;
+        
+        // Reset form immediately to default empty state (like the image)
+        this.changePasswordForm.reset();
+        this.logoutAllSessions = false;
+        
         this.showToastMessage('Đổi mật khẩu thành công!', 'success');
         
-        // Reset form after successful change
-        setTimeout(() => {
-          this.changePasswordForm.reset();
-          this.logoutAllSessions = false;
-          
-          // If logout all sessions is checked, logout and redirect to login
-          if (this.logoutAllSessions) {
+        // If logout all sessions was checked, logout and redirect to login
+        if (shouldLogoutAll) {
+          setTimeout(() => {
             this.navigationService.logout();
             this.router.navigate(['/recruiter/login']);
-          }
-        }, 2000);
+          }, 1500);
+        }
       },
       error: (error) => {
         this.isChangingPassword = false;
@@ -410,13 +522,110 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     });
   }
   
+  // Handle setting password for Google users (first time)
+  onSetPassword(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Mark all fields as touched to show validation errors
+    Object.keys(this.setPasswordForm.controls).forEach(key => {
+      this.setPasswordForm.get(key)?.markAsTouched();
+    });
+    
+    this.setPasswordForm.markAllAsTouched();
+    
+    if (this.setPasswordForm.invalid) {
+      const newPasswordError = this.getSetPasswordError('newPassword');
+      const confirmPasswordError = this.getSetPasswordError('confirmPassword');
+      
+      if (newPasswordError) {
+        this.showToastMessage(newPasswordError, 'error');
+      } else if (confirmPasswordError) {
+        this.showToastMessage(confirmPasswordError, 'error');
+      } else {
+        this.showToastMessage('Vui lòng điền đầy đủ thông tin và kiểm tra lại mật khẩu', 'error');
+      }
+      return;
+    }
+    
+    const newPassword = this.setPasswordForm.get('newPassword')?.value;
+    const confirmPassword = this.setPasswordForm.get('confirmPassword')?.value;
+    
+    if (newPassword !== confirmPassword) {
+      this.showToastMessage('Mật khẩu xác nhận không khớp', 'error');
+      return;
+    }
+    
+    this.isSettingPassword = true;
+    
+    // For Google users, we need to set password without current password
+    // TODO: Create a separate API endpoint for setting password first time for external users
+    // For now, using changePassword with empty currentPassword as a workaround
+    // Note: This might fail on backend - backend should handle external users differently
+    const changePasswordDto: ChangePasswordDto = {
+      currentPassword: '', // Empty for Google users setting password first time
+      newPassword: newPassword,
+      confirmPassword: confirmPassword
+    };
+    
+    this.profileService.changePassword(changePasswordDto).subscribe({
+      next: () => {
+        this.isSettingPassword = false;
+        this.hasPasswordSet = true; // Mark password as set
+        this.showToastMessage('Đặt mật khẩu thành công!', 'success');
+        
+        // Reset form and show full form for future password changes
+        setTimeout(() => {
+          this.setPasswordForm.reset();
+        }, 2000);
+      },
+      error: (error) => {
+        this.isSettingPassword = false;
+        let errorMessage = 'Đặt mật khẩu thất bại. Vui lòng thử lại.';
+        
+        if (error.error?.error?.message) {
+          errorMessage = error.error.error.message;
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+        
+        // If error indicates password already set, update flag
+        if (errorMessage.includes('Current password') || errorMessage.includes('incorrect')) {
+          // This might mean password is already set, try normal change password flow
+          this.hasPasswordSet = true;
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
+  }
+
   getPasswordError(fieldName: string): string {
     const field = this.changePasswordForm.get(fieldName);
-    if (!field || !field.errors || !field.touched) return '';
+    if (!field) return '';
+    
+    // Check if field is touched or form is submitted
+    if (!field.touched && !this.changePasswordForm.touched) {
+      return '';
+    }
+    
+    if (!field.errors) return '';
 
     const errors = field.errors;
+    
+    // Check form-level errors for passwordMismatch
+    if (fieldName === 'confirmPassword' && this.changePasswordForm.errors?.['passwordMismatch']) {
+      return 'Mật khẩu xác nhận không khớp';
+    }
+    
     if (errors['required']) {
-      return `${fieldName === 'newPassword' ? 'Mật khẩu mới' : 'Xác nhận mật khẩu'} là bắt buộc`;
+      if (fieldName === 'currentPassword') {
+        return 'Mật khẩu hiện tại là bắt buộc';
+      } else if (fieldName === 'newPassword') {
+        return 'Mật khẩu mới là bắt buộc';
+      } else {
+        return 'Xác nhận mật khẩu là bắt buộc';
+      }
     }
     if (errors['minlength']) {
       return `${fieldName === 'newPassword' ? 'Mật khẩu mới' : 'Xác nhận mật khẩu'} phải có ít nhất ${errors['minlength'].requiredLength} ký tự`;
@@ -430,6 +639,44 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     if (errors['passwordMismatch']) {
       return 'Mật khẩu xác nhận không khớp';
     }
+    return '';
+  }
+
+  getSetPasswordError(fieldName: string): string {
+    const field = this.setPasswordForm.get(fieldName);
+    if (!field) return '';
+    
+    // Check if field is touched or form is submitted
+    if (!field.touched && !this.setPasswordForm.touched) {
+      return '';
+    }
+    
+    if (!field.errors) return '';
+
+    const errors = field.errors;
+    
+    // Check form-level errors for passwordMismatch
+    if (fieldName === 'confirmPassword' && this.setPasswordForm.errors?.['passwordMismatch']) {
+      return 'Mật khẩu xác nhận không khớp';
+    }
+    
+    if (errors['required']) {
+      if (fieldName === 'newPassword') {
+        return 'Mật khẩu mới là bắt buộc';
+      } else {
+        return 'Xác nhận mật khẩu là bắt buộc';
+      }
+    }
+    if (errors['minlength']) {
+      return `${fieldName === 'newPassword' ? 'Mật khẩu mới' : 'Xác nhận mật khẩu'} phải có ít nhất ${errors['minlength'].requiredLength} ký tự`;
+    }
+    if (errors['maxlength']) {
+      return `${fieldName === 'newPassword' ? 'Mật khẩu mới' : 'Xác nhận mật khẩu'} không được vượt quá ${errors['maxlength'].requiredLength} ký tự`;
+    }
+    if (errors['passwordStrength']) {
+      return 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt';
+    }
+    
     return '';
   }
 
@@ -559,14 +806,12 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   onSelectCompany(company: any) {
     // TODO: Handle company selection
     this.showToastMessage(`Đã chọn công ty: ${company.name}`, 'success');
-    console.log('Selected company:', company);
   }
 
   onToggleCvApplicationNotification() {
     // TODO: Call API to save notification settings
     const status = this.cvApplicationNotificationEnabled ? 'bật' : 'tắt';
     this.showToastMessage(`Đã ${status} thông báo CV ứng tuyển`, 'success');
-    console.log('CV Application Notification:', this.cvApplicationNotificationEnabled);
   }
 
   onLogoSelected(event: any) {
@@ -689,7 +934,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.isSavingCompany = false;
       this.showToastMessage('Tạo công ty thành công!', 'success');
-      console.log('Company data:', this.companyFormData);
     }, 1000);
   }
 
@@ -704,7 +948,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       this.businessCertFile = event.file;
     } else if (event.type === 'identification') {
       // Handle identification file (Giấy ủy quyền section is commented out)
-      console.log('Identification file:', event.file);
     }
   }
 
@@ -720,7 +963,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.isSavingBusinessCert = false;
       this.showToastMessage('Lưu giấy đăng ký doanh nghiệp thành công!', 'success');
-      console.log('Business cert file:', this.businessCertFile);
     }, 1000);
   }
 }

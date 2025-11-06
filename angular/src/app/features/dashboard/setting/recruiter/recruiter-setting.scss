@@ -736,17 +736,17 @@
           .save-btn {
             padding: 6px 12px !important;
             font-size: 13px !important;
-            background: white !important;
-            color: #0F83BA !important;
+            background: #0F83BA !important;
+            color: white !important;
             border: 1px solid #0F83BA !important;
             border-radius: 6px !important;
             font-weight: 500 !important;
             transition: all 0.2s !important;
 
             &:hover:not(:disabled) {
-              background: rgba(15, 131, 186, 0.1) !important;
-              color: #0d6fa0 !important;
+              background: #0d6fa0 !important;
               border-color: #0d6fa0 !important;
+              color: white !important;
             }
 
             &:disabled {
@@ -758,8 +758,7 @@
           }
 
           // Override button component styles
-          ::ng-deep .cancel-btn,
-          ::ng-deep .save-btn {
+          ::ng-deep .cancel-btn {
             button.btn,
             .btn {
               padding: 6px 12px !important;
@@ -767,6 +766,47 @@
               min-height: auto !important;
               height: auto !important;
               line-height: 1.4 !important;
+            }
+
+            .btn-small,
+            .btn-medium,
+            .btn-large,
+            &.btn-small,
+            &.btn-medium,
+            &.btn-large {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+            }
+          }
+
+          ::ng-deep .save-btn {
+            button.btn,
+            .btn,
+            button.btn-primary,
+            .btn-primary {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+              min-height: auto !important;
+              height: auto !important;
+              line-height: 1.4 !important;
+              background: #0F83BA !important;
+              color: white !important;
+              border: 1px solid #0F83BA !important;
+
+              &:hover:not(:disabled):not(.loading) {
+                background: #0d6fa0 !important;
+                border-color: #0d6fa0 !important;
+                color: white !important;
+                transform: none !important;
+                box-shadow: none !important;
+              }
+
+              &:disabled {
+                background: #f3f4f6 !important;
+                color: #9ca3af !important;
+                border-color: #d1d5db !important;
+                opacity: 0.7 !important;
+              }
             }
 
             .btn-small,
@@ -886,7 +926,7 @@
       }
 
       .password-form-checkbox {
-        margin-bottom: 24px;
+        margin-bottom: 32px !important;
 
         .checkbox-label {
           display: flex;
@@ -909,68 +949,6 @@
         }
       }
 
-      .password-form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-
-        .cancel-btn {
-          padding: 6px 12px !important;
-          font-size: 13px !important;
-          background: white !important;
-          color: #6b7280 !important;
-          border: 1px solid #0F83BA !important;
-          border-radius: 6px !important;
-          font-weight: 500 !important;
-          transition: all 0.2s !important;
-
-          &:hover:not(:disabled) {
-            background: rgba(15, 131, 186, 0.1) !important;
-            color: #0F83BA !important;
-          }
-        }
-
-        .save-btn {
-          padding: 6px 12px !important;
-          font-size: 13px !important;
-          background: #0F83BA !important;
-          color: white !important;
-          border: 1px solid #0F83BA !important;
-          border-radius: 6px !important;
-          font-weight: 500 !important;
-          transition: all 0.2s !important;
-
-          &:hover:not(:disabled) {
-            background: #0d6fa0 !important;
-            border-color: #0d6fa0 !important;
-          }
-
-          &:disabled {
-            background: #f3f4f6 !important;
-            color: #9ca3af !important;
-            border-color: #d1d5db !important;
-            cursor: not-allowed !important;
-          }
-        }
-
-        ::ng-deep .cancel-btn,
-        ::ng-deep .save-btn {
-          min-height: auto !important;
-          height: auto !important;
-          line-height: normal !important;
-          transform: none !important;
-          box-shadow: none !important;
-
-          &:hover {
-            transform: none !important;
-            box-shadow: none !important;
-          }
-        }
-      }
-
       // Responsive adjustments
       @media (max-width: 768px) {
         .password-form-row {
@@ -980,15 +958,6 @@
           .password-form-label {
             flex: none;
             padding-top: 0;
-          }
-        }
-
-        .password-form-actions {
-          flex-direction: column-reverse;
-
-          .cancel-btn,
-          .save-btn {
-            width: 100%;
           }
         }
       }

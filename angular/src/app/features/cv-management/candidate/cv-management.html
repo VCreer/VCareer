@@ -100,6 +100,52 @@
                 </app-button>
               </div>
             </div>
+
+            <!-- Toggle Settings Section -->
+            <div class="toggle-settings-section">
+              <!-- Toggle 1: Job Search Status -->
+              <div class="toggle-setting-item">
+                <div class="toggle-wrapper">
+                  <label class="toggle-label">
+                    <input 
+                      type="checkbox" 
+                      class="toggle-input" 
+                      [(ngModel)]="jobSearchEnabled"
+                      (change)="onJobSearchToggle()"
+                      [checked]="jobSearchEnabled">
+                    <span class="toggle-slider" [class.active]="jobSearchEnabled"></span>
+                  </label>
+                  <div class="toggle-content">
+                    <span class="toggle-text" [class.inactive]="!jobSearchEnabled">
+                      {{ jobSearchEnabled ? 'Đang bật tìm việc' : 'Đang Tắt tìm việc' }}
+                    </span>
+                    <p class="toggle-description" *ngIf="!jobSearchEnabled">
+                      Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Toggle 2: Allow Recruiter Search -->
+              <div class="toggle-setting-item">
+                <div class="toggle-wrapper">
+                  <label class="toggle-label">
+                    <input 
+                      type="checkbox" 
+                      class="toggle-input" 
+                      [(ngModel)]="allowRecruiterSearch"
+                      (change)="onAllowRecruiterSearchToggle()"
+                      [checked]="allowRecruiterSearch">
+                    <span class="toggle-slider" [class.active]="allowRecruiterSearch"></span>
+                  </label>
+                  <div class="toggle-content">
+                    <span class="toggle-text">
+                      Cho phép NTD tìm kiếm hồ sơ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Contact Info Card - Separate card -->
