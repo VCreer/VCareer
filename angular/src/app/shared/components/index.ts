@@ -24,3 +24,5 @@ export { CompanyTabsComponent } from './company-tabs/company-tabs.component';
 export { SearchCompanyComponent } from './search-company/search-company.component';
 export { CreateCompanyFormComponent } from './create-company-form/create-company-form.component';
 export { BusinessRegistrationComponent } from './business-registration/business-registration.component';
+export { CvFilterBarComponent, CvFilterData } from './cv-filter-bar/cv-filter-bar.component';
+export { CvEmptyStateComponent } from './cv-empty-state/cv-empty-state.component';

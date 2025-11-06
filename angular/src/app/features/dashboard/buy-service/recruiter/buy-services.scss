@@ -1,0 +1,435 @@
+.buy-services-page {
+  min-height: 100vh; // Full viewport height
+  padding-top: 0; // Remove top padding, breadcrumb-box will handle spacing
+  margin-left: 0; // Remove margin, use absolute positioning instead
+  width: calc(100% - 72px); // Occupy the remaining width
+  padding-right: 0;
+  padding-bottom: 40px; // Add bottom padding
+  background: #f3f4f6 !important; // Override body background
+  transition: left 0.3s ease, width 0.3s ease;
+  position: absolute; // Absolute positioning to cover area
+  top: 0;
+  left: 72px;
+  right: 0;
+  bottom: 0; // Extend to bottom
+  z-index: 1; // Lower than sidebar (z-index: 999)
+  overflow-y: auto; // Allow vertical scrolling
+  overflow-x: visible;
+
+  // When sidebar is expanded, adjust position
+  &.sidebar-expanded {
+    left: 280px; // Sidebar expanded width
+    width: calc(100% - 280px); // Adjusted width
+  }
+
+  // Responsive: remove sidebar margin on mobile
+  @media (max-width: 768px) {
+    left: 0;
+    width: 100%;
+    margin-left: 0;
+    
+    &.sidebar-expanded {
+      left: 0;
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+
+  // Breadcrumb Box - Positioned right below header and aligned with content
+  .breadcrumb-box {
+    background-color: white;
+    padding: 1rem 0;
+    position: fixed;
+    top: 64px; // Position right below header (64px header height)
+    z-index: 998; // Below header (1000) and notification (1001) but above content
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
+    border-bottom: 1px solid #e5e7eb;
+    min-height: 56px; // Ensure minimum height
+
+    // Default (sidebar collapsed)
+    left: 72px;
+    width: calc(100% - 72px);
+
+    // When sidebar is expanded
+    &.sidebar-expanded {
+      left: 280px;
+      width: calc(100% - 280px);
+    }
+
+    // Responsive: On mobile, sidebar is not fixed, so breadcrumb should be full width
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+      
+      &.sidebar-expanded {
+        left: 0;
+        width: 100%;
+      }
+    }
+
+    .breadcrumb-container {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      min-height: 40px; // Ensure minimum height for container
+
+      @media (max-width: 768px) {
+        padding-left: 15px;
+        padding-right: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        min-height: auto;
+      }
+
+      .page-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+        flex-shrink: 0;
+        line-height: 1.5;
+      }
+
+      .quote-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #0F83BA; // Web primary color
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        position: absolute;
+        right: 80px; // Position from right edge
+        top: 50%;
+        transform: translateY(-50%);
+        height: fit-content;
+
+        i {
+          font-size: 16px;
+        }
+
+        &:hover {
+          background: #0c6a98; // Darker web color
+          transform: translateY(-50%) translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+          position: relative;
+          right: auto;
+          top: auto;
+          transform: none;
+          width: 100%;
+          justify-content: center;
+          margin-top: 8px;
+
+          &:hover {
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    margin-top: 80px; // Space for breadcrumb-box (64px header + ~56px breadcrumb = 120px, minus 40px for spacing)
+    padding-bottom: 60px; // Add bottom padding to ensure content doesn't touch bottom
+
+    @media (max-width: 768px) {
+      padding: 16px;
+      padding-bottom: 60px;
+      margin-top: 100px; // More space on mobile
+    }
+  }
+
+  // Important Note Banner
+  .important-note {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fee2e2; // Light red
+    border-radius: 8px;
+    margin-bottom: 32px;
+
+    .note-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        font-size: 20px;
+        color: #dc2626; // Red
+      }
+    }
+
+    .note-content {
+      flex: 1;
+
+      .note-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #991b1b; // Dark red
+        margin: 0 0 8px 0;
+      }
+
+      .note-text {
+        font-size: 14px;
+        color: #7f1d1d; // Dark red text
+        line-height: 1.6;
+        margin: 0;
+      }
+    }
+  }
+
+  // Service Section
+  .service-section {
+    margin-bottom: 48px;
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 12px 0;
+    }
+
+    .section-description {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin: 0 0 8px 0;
+    }
+
+    .section-warning {
+      font-size: 14px;
+      color: #dc2626; // Red
+      font-weight: 500;
+      margin: 0 0 24px 0;
+    }
+
+    .service-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+
+      @media (max-width: 1200px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  // Service Card
+  .service-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    &.has-vip {
+      .card-header {
+        position: relative;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+
+      .card-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+      }
+
+      .vip-badge {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b); // Gold gradient
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .card-body {
+      flex: 1;
+      margin-bottom: 24px;
+
+      .card-price {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        margin-bottom: 16px;
+
+        .price-amount {
+          font-size: 28px;
+          font-weight: 700;
+          color: #0F83BA; // Web primary color
+        }
+
+        .price-currency {
+          font-size: 16px;
+          color: #6b7280;
+        }
+      }
+
+      .card-description {
+        font-size: 14px;
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 0;
+      }
+    }
+
+    .card-footer {
+      display: flex;
+      gap: 12px;
+
+      .btn-add-cart {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        i {
+          font-size: 16px;
+        }
+
+        &:hover {
+          background: #e5e7eb;
+          border-color: #d1d5db;
+        }
+      }
+
+      .btn-buy-now {
+        flex: 1;
+        padding: 10px 16px;
+        background: #0F83BA; // Web primary color
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #0c6a98; // Darker web color
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .important-note {
+      flex-direction: column;
+      gap: 12px;
+
+      .note-icon {
+        align-self: flex-start;
+      }
+    }
+
+    .service-section {
+      .section-title {
+        font-size: 20px;
+      }
+    }
+
+    .service-card {
+      padding: 20px;
+
+      .card-header {
+        .card-title {
+          font-size: 18px;
+        }
+      }
+
+      .card-body {
+        .card-price {
+          .price-amount {
+            font-size: 24px;
+          }
+        }
+      }
+
+      .card-footer {
+        flex-direction: column;
+
+        .btn-add-cart,
+        .btn-buy-now {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .service-card {
+      padding: 16px;
+
+      .card-body {
+        .card-price {
+          .price-amount {
+            font-size: 22px;
+          }
+        }
+      }
+    }
+  }
+}
+

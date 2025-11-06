@@ -19,10 +19,6 @@ export const APP_ROUTES: Routes = [
         path: 'candidate/profile',
         loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
       },
-      // {
-      //   path: 'candidate/cv-management',
-      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      // },
       {
         path: 'candidate/cv-management',
         loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
@@ -139,6 +135,14 @@ export const APP_ROUTES: Routes = [
       {
         path: 'recruiter-setting',
         loadComponent: () => import('./features/dashboard/setting/recruiter/recruiter-setting').then(c => c.RecruiterSettingComponent),
+      },
+      {
+        path: 'cv-management',
+        loadComponent: () => import('./features/cv-management/recruiter/cv-management').then(c => c.RecruiterCvManagementComponent),
+      },
+      {
+        path: 'buy-services',
+        loadComponent: () => import('./features/dashboard/buy-service/recruiter/buy-services').then(c => c.BuyServicesComponent),
       },
       // {
       //   path: 'performance-dashboard',

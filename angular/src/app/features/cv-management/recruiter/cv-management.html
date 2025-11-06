@@ -1,0 +1,106 @@
+<div class="recruiter-cv-management-container" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <span class="breadcrumb-item active">Quản lý CV ứng viên</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Filter Bar -->
+    <app-cv-filter-bar
+      [campaigns]="campaigns"
+      [statuses]="statuses"
+      [sources]="sources"
+      [labels]="labels"
+      (filterChange)="onFilterChange($event)">
+    </app-cv-filter-bar>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      <div class="content-header">
+        <div class="candidate-count">
+          <span>Tìm thấy <strong>{{ totalCount }}</strong> ứng viên</span>
+        </div>
+        <app-button
+          [type]="'primary'"
+          [size]="'medium'"
+          (click)="onExportCvList()">
+          <i class="fa fa-download" style="margin-right: 8px;"></i>
+          Xuất danh sách CV
+        </app-button>
+      </div>
+
+      <!-- CV List or Empty State -->
+      <div class="cv-list-container">
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
+      <app-cv-empty-state
+        *ngIf="!loading && filteredCvs.length === 0"
+        message="Bạn không có CV">
+      </app-cv-empty-state>
+
+      <!-- CV List Table -->
+      <div *ngIf="!loading && filteredCvs.length > 0" class="cv-table-wrapper">
+        <table class="cv-table">
+          <thead>
+            <tr>
+              <th>Họ và tên</th>
+              <th>Email</th>
+              <th>Số điện thoại</th>
+              <th>Vị trí ứng tuyển</th>
+              <th>Trạng thái</th>
+              <th>Nguồn</th>
+              <th>Ngày ứng tuyển</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cv of filteredCvs">
+              <td data-label="Họ và tên">
+                <div class="candidate-name">{{ cv.name }}</div>
+              </td>
+              <td data-label="Email">{{ cv.email }}</td>
+              <td data-label="Số điện thoại">{{ cv.phone }}</td>
+              <td data-label="Vị trí ứng tuyển">{{ cv.position }}</td>
+              <td data-label="Trạng thái">
+                <span class="status-badge" [class]="'status-' + cv.status">
+                  {{ getStatusName(cv.status) }}
+                </span>
+              </td>
+              <td data-label="Nguồn">{{ getSourceName(cv.source) }}</td>
+              <td data-label="Ngày ứng tuyển">{{ formatDate(cv.appliedDate) }}</td>
+              <td data-label="Thao tác">
+                <div class="action-buttons">
+                  <button class="action-btn view-btn" (click)="viewCv(cv.id)" title="Xem CV">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="action-btn edit-btn" (click)="editCv(cv.id)" title="Chỉnh sửa">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteCv(cv.id)" title="Xóa">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+
