@@ -2,20 +2,25 @@
   <div class="upload-modal-content" (click)="$event.stopPropagation()">
     <!-- Modal Header -->
     <div class="upload-modal-header">
-      <div class="header-content">
-        <h2 class="modal-title">{{ translate('upload_cv.title') }}</h2>
-        <p class="modal-subtitle">{{ translate('upload_cv.subtitle') }}</p>
-      </div>
       <button class="close-btn" (click)="onClose()">
         <i class="fa fa-times"></i>
       </button>
     </div>
 
-    <!-- Modal Body -->
+    <!-- Main Content -->
     <div class="upload-modal-body">
-      <div class="upload-description">
-        <p>{{ translate('upload_cv.description') }}</p>
-        <p class="benefits">{{ translate('upload_cv.benefits') }}</p>
+      <!-- Title Section -->
+      <div class="title-section">
+        <h1 class="main-title">Upload CV để các cơ hội việc làm tự tìm đến bạn</h1>
+        <p class="subtitle">Giảm đến 50% thời gian cần thiết để tìm được một công việc phù hợp</p>
+      </div>
+
+      <!-- Description Text -->
+      <div class="description-section">
+        <p class="description-text">
+          Bạn đã có sẵn CV của mình, chỉ cần tải CV lên, hệ thống sẽ tự động đề xuất CV của bạn tới những nhà tuyển dụng uy tín. 
+          Tiết kiệm thời gian, tìm việc thông minh, nắm bắt cơ hội và làm chủ đường đua nghề nghiệp của chính mình.
+        </p>
       </div>
 
       <!-- File Upload Area -->
@@ -28,10 +33,10 @@
           <div class="upload-icon">
             <i class="fa fa-cloud-upload"></i>
           </div>
-          <p class="upload-text">{{ translate('upload_cv.upload_instructions') }}</p>
-          <p class="upload-formats">{{ translate('upload_cv.supported_formats') }}</p>
+          <p class="upload-text">Tải lên CV từ máy tính, chọn hoặc kéo thả</p>
+          <p class="upload-formats">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</p>
           <button class="select-file-btn" (click)="fileInput.click()">
-            {{ translate('upload_cv.select_cv') }}
+            Chọn CV
           </button>
         </div>
         <input #fileInput 
@@ -44,22 +49,23 @@
       <!-- Selected File Info -->
       <div class="selected-file" *ngIf="selectedFile">
         <div class="file-info">
-          <i class="fa fa-file"></i>
-          <span class="file-name">{{ selectedFile.name }}</span>
-          <span class="file-size">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</span>
+          <i class="fa fa-file-pdf"></i>
+          <div class="file-details">
+            <span class="file-name">{{ selectedFile.name }}</span>
+            <span class="file-size">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</span>
+          </div>
         </div>
         <button class="remove-file-btn" (click)="removeFile()">
           <i class="fa fa-times"></i>
         </button>
       </div>
 
-    </div>
-
-    <!-- Modal Footer -->
-    <div class="upload-modal-footer">
-      <button class="upload-btn" (click)="onUpload()" [disabled]="!selectedFile">
-        {{ translate('upload_cv.upload_button') }}
-      </button>
+      <!-- Upload Button -->
+      <div class="upload-button-section">
+        <button class="upload-btn" (click)="onUpload()" [disabled]="!selectedFile">
+          Tải CV lên
+        </button>
+      </div>
     </div>
 
     <!-- Toast Notification -->

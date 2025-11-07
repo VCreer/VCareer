@@ -33,7 +33,8 @@ export class CandidateProfileComponent implements OnInit {
     phone: '',
     dateOfBirth: '',
     gender: '',
-    address: ''
+    address: '', // Địa chỉ (có thể map từ location)
+    location: '' // Location từ CandidateProfile
   };
 
   // Settings
@@ -66,28 +67,29 @@ export class CandidateProfileComponent implements OnInit {
   loadProfileData() {
     this.isLoading = true;
     
-    // Gọi bằng native fetch để loại trừ toàn bộ Http Interceptor
-    fetch(`${environment.apis.default.url}/api/profile`, {
-      method: 'GET',
+    // Lấy token từ localStorage
+    // Login component lưu token với key 'access_token'
+    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
+    
+    if (!token) {
+      console.warn('No token found in localStorage');
+      this.showErrorMessage('Vui lòng đăng nhập lại');
+      this.isLoading = false;
+      this.router.navigate(['/candidate/login']);
+      return;
+    }
+
+    // Sử dụng HttpClient trực tiếp để đảm bảo token được thêm vào headers
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      credentials: 'include',
-      redirect: 'follow',
-      mode: 'cors'
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
-        }
-        return res.json() as Promise<ProfileDto>;
-      })
-      .then((response: ProfileDto) => {
+        'Content-Type': 'application/json'
+      }
+    }).subscribe({
+      next: (response: ProfileDto) => {
         console.log('Profile data from API:', response);
-        console.log('Response type:', typeof response);
-        console.log('Response keys:', response ? Object.keys(response) : 'null');
         
         // Kiểm tra nếu response rỗng hoặc null
         if (!response) {
@@ -98,7 +100,8 @@ export class CandidateProfileComponent implements OnInit {
             phone: '',
             dateOfBirth: '',
             gender: '',
-            address: ''
+            address: '',
+            location: ''
           };
           this.isLoading = false;
           return;
@@ -111,16 +114,27 @@ export class CandidateProfileComponent implements OnInit {
           phone: response.phoneNumber || '',
           dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
           gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
-          address: response.address || ''
+          address: response.location || response.address || '', // Map location từ CandidateProfile vào address field
+          location: response.location || '' // Giữ location riêng để gửi lên update
         };
         
         console.log('Mapped profile data:', this.profileData);
-        console.log('Setting isLoading to false');
         this.isLoading = false;
-      })
-      .catch((error) => {
+      },
+      error: (error) => {
         console.error('Error loading profile:', error);
-        try { console.error('Error details:', JSON.stringify(error)); } catch {}
+        
+        // Nếu lỗi 401 Unauthorized, chuyển đến trang login
+        if (error.status === 401 || error.status === 403) {
+          this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+          // Xóa cả 2 keys để đảm bảo
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          this.router.navigate(['/candidate/login']);
+          return;
+        }
+        
         // Load default data if API fails
         this.profileData = {
           fullName: '',
@@ -128,13 +142,13 @@ export class CandidateProfileComponent implements OnInit {
           phone: '',
           dateOfBirth: '',
           gender: '',
-          address: ''
+          address: '',
+          location: ''
         };
-        console.log('Setting isLoading to false after error');
         this.isLoading = false;
-        // Show error message but don't block the UI
-        console.warn('Using default data due to API error');
-      });
+        this.showErrorMessage('Không thể tải thông tin profile. Vui lòng thử lại sau.');
+      }
+    });
   }
 
   onCancelEdit() {
@@ -151,21 +165,106 @@ export class CandidateProfileComponent implements OnInit {
 
     this.isSaving = true;
     
-    // Parse fullName to name and surname
-    const nameParts = profileData.fullName.trim().split(' ');
-    const surname = nameParts.pop() || '';
-    const name = nameParts.join(' ') || '';
-
-    const updateDto: UpdatePersonalInfoDto = {
-      name: name,
-      surname: surname,
-      phoneNumber: profileData.phone,
-      address: profileData.address,
-      dateOfBirth: profileData.dateOfBirth,
-      gender: profileData.gender === 'male' ? true : profileData.gender === 'female' ? false : undefined
-    };
+    // Lấy token từ localStorage
+    // Login component lưu token với key 'access_token'
+    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
     
-    this.profileService.updatePersonalInfo(updateDto).subscribe({
+    if (!token) {
+      this.showErrorMessage('Vui lòng đăng nhập lại');
+      this.isSaving = false;
+      this.router.navigate(['/candidate/login']);
+      return;
+    }
+    
+    // Parse fullName to name and surname
+    // Đảm bảo name và surname không rỗng (required fields)
+    const nameParts = profileData.fullName.trim().split(' ').filter(part => part.length > 0);
+    if (nameParts.length === 0) {
+      this.showErrorMessage('Họ và tên không được để trống');
+      this.isSaving = false;
+      return;
+    }
+    
+    // Nếu chỉ có 1 từ, đặt vào cả name và surname để đảm bảo cả 2 đều có giá trị
+    let name = '';
+    let surname = '';
+    if (nameParts.length === 1) {
+      name = nameParts[0];
+      surname = nameParts[0];
+    } else {
+      surname = nameParts.pop() || '';
+      name = nameParts.join(' ').trim() || '';
+    }
+
+    // Đảm bảo name và surname không rỗng sau khi parse
+    if (!name || !surname) {
+      this.showErrorMessage('Không thể parse họ và tên. Vui lòng nhập đầy đủ họ và tên.');
+      this.isSaving = false;
+      return;
+    }
+
+    // Format dateOfBirth: nếu có giá trị, chuyển sang ISO 8601 format
+    let formattedDateOfBirth: string | undefined = undefined;
+    if (profileData.dateOfBirth) {
+      try {
+        const date = new Date(profileData.dateOfBirth);
+        if (!isNaN(date.getTime())) {
+          formattedDateOfBirth = date.toISOString();
+        }
+      } catch (e) {
+        console.warn('Invalid date format:', profileData.dateOfBirth);
+      }
+    }
+
+    // Build DTO - CHỈ gửi các fields có trong UI và có giá trị
+    // KHÔNG gửi: bio, nationality, maritalStatus (không có trong UI)
+    const updateDto: any = {
+      name: name.trim(),
+      surname: surname.trim()
+    };
+
+    // Chỉ thêm optional fields nếu có giá trị
+    if (profileData.email?.trim() && profileData.email.trim().length > 0) {
+      updateDto.email = profileData.email.trim();
+    }
+
+    if (profileData.phone?.trim() && profileData.phone.trim().length > 0) {
+      updateDto.phoneNumber = profileData.phone.trim();
+    }
+
+    if (profileData.address?.trim() && profileData.address.trim().length > 0) {
+      // Location: map từ address field (vì CandidateProfile dùng Location, không dùng Address)
+      updateDto.location = profileData.address.trim();
+      // Address field (optional - không có trong CandidateProfile nhưng có thể dùng cho tương lai)
+      updateDto.address = profileData.address.trim();
+    } else if (profileData.location?.trim() && profileData.location.trim().length > 0) {
+      updateDto.location = profileData.location.trim();
+    }
+
+    if (formattedDateOfBirth) {
+      updateDto.dateOfBirth = formattedDateOfBirth;
+    }
+
+    if (profileData.gender === 'male' || profileData.gender === 'female') {
+      updateDto.gender = profileData.gender === 'male' ? true : false;
+    }
+
+    // KHÔNG gửi các fields không có trong UI:
+    // - bio (không có trong form)
+    // - nationality (không có trong form)
+    // - maritalStatus (không có trong form)
+    
+    console.log('Sending update DTO:', JSON.stringify(updateDto, null, 2));
+    
+    // Sử dụng HttpClient trực tiếp để đảm bảo token được thêm vào headers
+    const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
+    this.http.put(apiUrl, updateDto, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    }).subscribe({
       next: (response) => {
         this.showSuccessMessage('Cập nhật thông tin thành công!');
         this.loadProfileData(); // Reload data
@@ -173,7 +272,71 @@ export class CandidateProfileComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error saving profile:', error);
+        console.error('Error details:', error.error);
         this.isSaving = false;
+        
+        // Nếu lỗi 401 Unauthorized, chuyển đến trang login
+        if (error.status === 401 || error.status === 403) {
+          this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+          // Xóa cả 2 keys để đảm bảo
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          this.router.navigate(['/candidate/login']);
+          return;
+        }
+        
+        // Xử lý lỗi 400 Bad Request với validation errors
+        if (error.status === 400) {
+          let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
+          
+          console.error('Validation error response:', error.error);
+          
+          if (error.error) {
+            // ASP.NET Core ValidationProblemDetails format
+            if (error.error.errors) {
+              // ModelState validation errors
+              const validationErrors: string[] = [];
+              Object.keys(error.error.errors).forEach(key => {
+                const fieldErrors = error.error.errors[key];
+                if (Array.isArray(fieldErrors)) {
+                  fieldErrors.forEach((err: string) => {
+                    validationErrors.push(`${key}: ${err}`);
+                  });
+                } else {
+                  validationErrors.push(`${key}: ${fieldErrors}`);
+                }
+              });
+              
+              if (validationErrors.length > 0) {
+                errorMessage = 'Lỗi validation:\n' + validationErrors.join('\n');
+                console.error('Validation errors:', validationErrors);
+              }
+            }
+            // ABP Framework format
+            else if (error.error.error?.details) {
+              const details = error.error.error.details;
+              if (Array.isArray(details) && details.length > 0) {
+                errorMessage = details.map((d: any) => d.message || d).join('\n');
+              }
+            } else if (error.error.error?.message) {
+              errorMessage = error.error.error.message;
+            } else if (typeof error.error === 'string') {
+              errorMessage = error.error;
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
+            } else if (error.error.title) {
+              errorMessage = error.error.title;
+              if (error.error.detail) {
+                errorMessage += ': ' + error.error.detail;
+              }
+            }
+          }
+          
+          this.showErrorMessage(errorMessage);
+          return;
+        }
+        
         this.showErrorMessage('Có lỗi xảy ra khi lưu thông tin');
       }
     });

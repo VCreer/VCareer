@@ -1,9 +1,17 @@
-import type { EntityDto } from '@abp/ng.core';
+import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
 export interface ChangePasswordDto {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
+  companyName?: string;
+  logoUrl?: string;
+  companySize: number;
+  headquartersAddress?: string;
+  industries: string[];
 }
 
 export interface CompanyLegalInfoDto extends EntityDto<number> {
@@ -38,6 +46,11 @@ export interface CompanyLegalInfoDto extends EntityDto<number> {
   legalReviewedAt?: string;
   creationTime?: string;
   lastModificationTime?: string;
+}
+
+export interface CompanySearchInputDto extends PagedAndSortedResultRequestDto {
+  keyword?: string;
+  status?: boolean;
 }
 
 export interface ProfileDto extends EntityDto<string> {
@@ -114,12 +127,4 @@ export interface UpdatePersonalInfoDto {
   address?: string;
   nationality?: string;
   maritalStatus?: string;
-}
-
-export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
-  companyName?: string;
-  logoUrl?: string;
-  companySize: number;
-  headquartersAddress?: string;
-  industries: string[];
 }

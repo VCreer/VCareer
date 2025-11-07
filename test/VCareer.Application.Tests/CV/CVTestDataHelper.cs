@@ -1,4 +1,5 @@
 using System;
+using VCareer.Dto.CVDto;
 using VCareer.Models.Users;
 
 namespace VCareer.CV

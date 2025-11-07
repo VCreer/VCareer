@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using VCareer.Helpers;
 using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
@@ -22,6 +23,7 @@ namespace VCareer.Services.Profile
     {
         private readonly IdentityUserManager _userManager;
         private readonly ICurrentUser _currentUser;
+        private readonly TokenClaimsHelper _tokenClaimsHelper;
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly IRepository<EmployeeProfile, Guid> _employeeProfileRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
@@ -29,12 +31,14 @@ namespace VCareer.Services.Profile
         public ProfileAppService(
             IdentityUserManager userManager,
             ICurrentUser currentUser,
+            TokenClaimsHelper tokenClaimsHelper,
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             IRepository<EmployeeProfile, Guid> employeeProfileRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository)
         {
             _userManager = userManager;
             _currentUser = currentUser;
+            _tokenClaimsHelper = tokenClaimsHelper;
             _candidateProfileRepository = candidateProfileRepository;
             _employeeProfileRepository = employeeProfileRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
@@ -42,10 +46,12 @@ namespace VCareer.Services.Profile
 
         //ádadad
 
-        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
+        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
-            var user = await _userManager.GetByIdAsync(_currentUser.GetId());
+            // Lấy UserId từ token claims thay vì ICurrentUser
+            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var user = await _userManager.GetByIdAsync(userId);
 
 
             if (user == null)
@@ -91,10 +97,12 @@ namespace VCareer.Services.Profile
 
 
         //ádada
-        [Authorize(VCareerPermission.Profile.ChangePassword)]
+        /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
-            var user = await _userManager.GetByIdAsync(_currentUser.GetId());
+            // Lấy UserId từ token claims thay vì ICurrentUser
+            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)
             {
@@ -121,23 +129,9 @@ namespace VCareer.Services.Profile
         // lấy thông tin id hiện tại
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
-
-
-            // ✅ Debug: In ra tất cả claims
-            var claims = _currentUser.GetAllClaims();
-            foreach (var claim in claims)
-            {
-                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
-            }
-
-            // ✅ Kiểm tra xem có UserId không
-            if (!_currentUser.IsAuthenticated)
-            {
-                throw new UserFriendlyException("User not authenticated.");
-            }
-
-
-            var user = await _userManager.GetByIdAsync(_currentUser.GetId());
+            // Lấy UserId từ token claims thay vì ICurrentUser
+            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)
             {
@@ -175,7 +169,8 @@ namespace VCareer.Services.Profile
         [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
-            var userId = _currentUser.GetId();
+            // Lấy UserId từ token claims thay vì ICurrentUser
+            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)
