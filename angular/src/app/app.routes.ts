@@ -25,7 +25,15 @@ export const APP_ROUTES: Routes = [
       // },
       {
         path: 'candidate/cv-management',
-        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
+      {
+        path: 'candidate/cv-management/view/:cvId',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-view').then(c => c.CvViewComponent),
+      },
+      {
+        path: 'candidate/cv-management/uploaded/view/:id',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/uploaded-cv-view').then(c => c.UploadedCvViewComponent),
       },
       {
         path: 'candidate/job',
@@ -57,7 +65,7 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/dashboard/cv-sample/candidate/cv-sample').then(c => c.CvSampleComponent),
       },
       {
-        path: 'candidate/write-cv/:type',
+        path: 'candidate/write-cv/:templateId',
         loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
       },
       {

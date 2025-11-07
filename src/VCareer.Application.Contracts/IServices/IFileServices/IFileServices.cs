@@ -11,7 +11,7 @@ namespace VCareer.IServices.IFileServices
 {
     public interface IFileServices :IApplicationService
     {
-        Task UploadAsync(UploadFileDto input);
+        Task<Guid> UploadAsync(UploadFileDto input); // Return FileDescriptor Id after upload
     /*    Task<FileDescriptorDto> DownloadAsync(string storageName);*/
         public Task HardDeleteAsync(string fileId);
         public Task SoftDeleteAsync(string fileId);

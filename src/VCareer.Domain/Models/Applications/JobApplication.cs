@@ -1,7 +1,8 @@
-/*using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using VCareer.Models.Companies;
 using VCareer.Models.Users;
+using VCareer.Models.CV;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace VCareer.Models.Applications
@@ -12,7 +13,7 @@ namespace VCareer.Models.Applications
     public class JobApplication : FullAuditedAggregateRoot<Guid>
     {
         /// <summary>
-        /// ID công việc ứng tuyển
+        /// ID công việc ứng tuyển (Job_Posting)
         /// </summary>
         [Required]
         public Guid JobId { get; set; }
@@ -24,72 +25,36 @@ namespace VCareer.Models.Applications
         public Guid CandidateId { get; set; }
 
         /// <summary>
-        /// ID công ty
+        /// ID công ty (từ Job_Posting.RecruiterProfile.CompanyId)
         /// </summary>
         [Required]
-        public Guid CompanyId { get; set; }
+        public int CompanyId { get; set; }
 
         /// <summary>
-        /// Loại CV sử dụng: "Library" (từ thư viện), "Upload" (tải lên mới)
+        /// Loại CV sử dụng: "Online" (CandidateCv), "Uploaded" (UploadedCv)
         /// </summary>
         [Required]
         [StringLength(20)]
         public string CVType { get; set; }
 
         /// <summary>
-        /// ID CV từ thư viện (nếu CVType = "Library")
+        /// ID CV online (CandidateCv) - nếu CVType = "Online"
         /// </summary>
-        public Guid? CVId { get; set; }
+        public Guid? CandidateCvId { get; set; }
 
         /// <summary>
-        /// URL file CV tải lên (nếu CVType = "Upload")
+        /// ID CV đã tải lên (UploadedCv) - nếu CVType = "Uploaded"
         /// </summary>
-        [StringLength(500)]
-        public string UploadedCVUrl { get; set; }
-
-        /// <summary>
-        /// Tên file CV tải lên
-        /// </summary>
-        [StringLength(255)]
-        public string UploadedCVName { get; set; }
-
-        /// <summary>
-        /// Kích thước file CV (bytes)
-        /// </summary>
-        public long? UploadedCVSize { get; set; }
-
-        /// <summary>
-        /// Loại file CV tải lên
-        /// </summary>
-        [StringLength(50)]
-        public string UploadedCVType { get; set; }
-
-        /// <summary>
-        /// Thông tin ứng viên khi tải CV lên
-        /// </summary>
-        [StringLength(100)]
-        public string CandidateName { get; set; }
-
-        /// <summary>
-        /// Email ứng viên khi tải CV lên
-        /// </summary>
-        [StringLength(100)]
-        public string CandidateEmail { get; set; }
-
-        /// <summary>
-        /// Số điện thoại ứng viên khi tải CV lên
-        /// </summary>
-        [StringLength(20)]
-        public string CandidatePhone { get; set; }
+        public Guid? UploadedCvId { get; set; }
 
         /// <summary>
         /// Thư xin việc/Cover letter
         /// </summary>
         [StringLength(2000)]
-        public string CoverLetter { get; set; }
+        public string? CoverLetter { get; set; }
 
         /// <summary>
-        /// Trạng thái ứng tuyển: "Pending", "Reviewed", "Shortlisted", "Interviewed", "Accepted", "Rejected"
+        /// Trạng thái ứng tuyển: "Pending", "Reviewed", "Shortlisted", "Interviewed", "Accepted", "Rejected", "Withdrawn"
         /// </summary>
         [Required]
         [StringLength(20)]
@@ -99,7 +64,7 @@ namespace VCareer.Models.Applications
         /// Ghi chú từ nhà tuyển dụng
         /// </summary>
         [StringLength(1000)]
-        public string RecruiterNotes { get; set; }
+        public string? RecruiterNotes { get; set; }
 
         /// <summary>
         /// Điểm đánh giá từ nhà tuyển dụng (1-5)
@@ -130,7 +95,7 @@ namespace VCareer.Models.Applications
         /// Lý do từ chối (nếu Status = "Rejected")
         /// </summary>
         [StringLength(500)]
-        public string RejectionReason { get; set; }
+        public string? RejectionReason { get; set; }
 
         /// <summary>
         /// Ngày hẹn phỏng vấn
@@ -141,18 +106,13 @@ namespace VCareer.Models.Applications
         /// Địa điểm phỏng vấn
         /// </summary>
         [StringLength(200)]
-        public string InterviewLocation { get; set; }
+        public string? InterviewLocation { get; set; }
 
         /// <summary>
         /// Ghi chú phỏng vấn
         /// </summary>
         [StringLength(1000)]
-        public string InterviewNotes { get; set; }
-
-        /// <summary>
-        /// Có được ứng viên quan tâm không
-        /// </summary>
-        public bool IsInterested { get; set; } = true;
+        public string? InterviewNotes { get; set; }
 
         /// <summary>
         /// Ngày ứng viên hủy ứng tuyển
@@ -163,75 +123,12 @@ namespace VCareer.Models.Applications
         /// Lý do hủy ứng tuyển
         /// </summary>
         [StringLength(500)]
-        public string WithdrawalReason { get; set; }
+        public string? WithdrawalReason { get; set; }
 
         // Navigation Properties
-        public virtual CandidateProfile Candidate { get; set; }
-        public virtual Company Company { get; set; }
-        public virtual CurriculumVitae CV { get; set; }
-    }
-
-    /// <summary>
-    /// Tài liệu đính kèm trong đơn ứng tuyển
-    /// </summary>
-    public class ApplicationDocument : FullAuditedAggregateRoot<Guid>
-    {
-        /// <summary>
-        /// ID đơn ứng tuyển
-        /// </summary>
-        [Required]
-        public Guid ApplicationId { get; set; }
-
-        /// <summary>
-        /// Tên tài liệu
-        /// </summary>
-        [Required]
-        [StringLength(255)]
-        public string DocumentName { get; set; }
-
-        /// <summary>
-        /// URL file tài liệu
-        /// </summary>
-        [Required]
-        [StringLength(500)]
-        public string DocumentUrl { get; set; }
-
-        /// <summary>
-        /// Loại tài liệu: "CV", "CoverLetter", "Certificate", "Portfolio", "Other"
-        /// </summary>
-        [Required]
-        [StringLength(20)]
-        public string DocumentType { get; set; }
-
-        /// <summary>
-        /// Kích thước file (bytes)
-        /// </summary>
-        public long FileSize { get; set; }
-
-        /// <summary>
-        /// Loại MIME của file
-        /// </summary>
-        [StringLength(100)]
-        public string MimeType { get; set; }
-
-        /// <summary>
-        /// Mô tả tài liệu
-        /// </summary>
-        [StringLength(500)]
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Có phải tài liệu chính không
-        /// </summary>
-        public bool IsPrimary { get; set; } = false;
-
-        /// <summary>
-        /// Thứ tự hiển thị
-        /// </summary>
-        public int DisplayOrder { get; set; } = 0;
-
-        // Navigation Properties
-        public virtual JobApplication Application { get; set; }
+        public virtual CandidateProfile? Candidate { get; set; }
+        public virtual Company? Company { get; set; }
+        public virtual CandidateCv? CandidateCv { get; set; }
+        public virtual UploadedCv? UploadedCv { get; set; }
     }
 }
-*/
