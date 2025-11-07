@@ -158,7 +158,8 @@
         height: 20px;
       }
 
-      &.notification-btn {
+      &.notification-btn,
+      &.cart-btn {
         position: relative;
       }
 
@@ -239,6 +240,17 @@
     }
 
     &.notification-btn {
+      position: relative;
+    }
+  }
+
+  .cart-menu-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    .cart-btn {
       position: relative;
     }
   }

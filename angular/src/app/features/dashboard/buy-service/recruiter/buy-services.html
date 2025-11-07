@@ -1,4 +1,12 @@
 <div class="buy-services-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
   <!-- Breadcrumb Box -->
   <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
@@ -36,7 +44,7 @@
       </p>
 
       <div class="service-cards">
-        <div *ngFor="let pkg of trialPackages" class="service-card">
+        <div *ngFor="let pkg of trialPackages" class="service-card" (click)="onViewDetail(pkg.id)">
           <div class="card-header">
             <h3 class="card-title">{{ pkg.title }}</h3>
           </div>
@@ -47,7 +55,7 @@
             </div>
             <p class="card-description">{{ pkg.description }}</p>
           </div>
-          <div class="card-footer">
+          <div class="card-footer" (click)="$event.stopPropagation()">
             <button class="btn-add-cart" (click)="onAddToCart(pkg.id)">
               <i class="fa fa-shopping-cart"></i>
               <span>Thêm vào giỏ</span>
@@ -68,7 +76,7 @@
       </p>
 
       <div class="service-cards">
-        <div *ngFor="let pkg of regularPackages" class="service-card" [class.has-vip]="pkg.isVip">
+        <div *ngFor="let pkg of regularPackages" class="service-card" [class.has-vip]="pkg.isVip" (click)="onViewDetail(pkg.id)">
           <div class="card-header">
             <h3 class="card-title">{{ pkg.title }}</h3>
             <span *ngIf="pkg.isVip" class="vip-badge">VIP</span>
@@ -80,7 +88,7 @@
             </div>
             <p class="card-description">{{ pkg.description }}</p>
           </div>
-          <div class="card-footer">
+          <div class="card-footer" (click)="$event.stopPropagation()">
             <button class="btn-add-cart" (click)="onAddToCart(pkg.id)">
               <i class="fa fa-shopping-cart"></i>
               <span>Thêm vào giỏ</span>
