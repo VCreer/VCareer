@@ -4,7 +4,9 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { CartService } from '../../../../core/services/cart.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
+import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 
 interface ServicePackage {
   id: string;
@@ -18,13 +20,16 @@ interface ServicePackage {
 @Component({
   selector: 'app-buy-services',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, ToastNotificationComponent],
   templateUrl: './buy-services.html',
   styleUrls: ['./buy-services.scss']
 })
 export class BuyServicesComponent implements OnInit, OnDestroy {
   selectedLanguage = 'vi';
   sidebarExpanded: boolean = false;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
   private routerSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
@@ -85,7 +90,8 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
 
   constructor(
     private translationService: TranslationService,
-    private router: Router
+    private router: Router,
+    private cartService: CartService
   ) {}
 
   ngOnInit() {
@@ -129,17 +135,41 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
 
   onRequestQuote(): void {
     // TODO: Implement request quote functionality
-    console.log('Request quote clicked');
+  }
+
+  onViewDetail(packageId: string): void {
+    this.router.navigate(['/recruiter/buy-services/detail', packageId]);
   }
 
   onAddToCart(packageId: string): void {
-    // TODO: Implement add to cart functionality
-    console.log('Add to cart:', packageId);
+    const allPackages = [...this.trialPackages, ...this.regularPackages];
+    const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
+    
+    if (selectedPackage) {
+      const added = this.cartService.addToCart({
+        id: selectedPackage.id,
+        title: selectedPackage.title,
+        price: selectedPackage.price
+      });
+
+      if (added) {
+        this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
+      }
+    }
+  }
+
+  showToastMessage(type: 'success' | 'error' | 'info' | 'warning', message: string): void {
+    this.toastType = type;
+    this.toastMessage = message;
+    this.showToast = true;
+  }
+
+  onToastClose(): void {
+    this.showToast = false;
   }
 
   onBuyNow(packageId: string): void {
     // TODO: Implement buy now functionality
-    console.log('Buy now:', packageId);
   }
 }
 

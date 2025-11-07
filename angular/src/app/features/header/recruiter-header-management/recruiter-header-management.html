@@ -45,6 +45,19 @@
         <span>Tìm CV</span>
       </app-icon-action-button>
 
+      <!-- Shopping Cart Icon with Badge -->
+      <div class="cart-menu-wrapper">
+        <app-icon-button-badge 
+          [badgeCount]="cartCount"
+          [showBadge]="cartCount > 0"
+          [ariaLabel]="'Giỏ hàng'"
+          [buttonClass]="'icon-btn cart-btn'"
+          (click)="navigateToCart()"
+        >
+          <i class="fa fa-shopping-cart"></i>
+        </app-icon-button-badge>
+      </div>
+
       <!-- Notifications Icon with Badge and Menu -->
       <div class="notification-menu-wrapper">
         <app-icon-button-badge 

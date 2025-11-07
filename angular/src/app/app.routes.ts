@@ -144,6 +144,14 @@ export const APP_ROUTES: Routes = [
         path: 'buy-services',
         loadComponent: () => import('./features/dashboard/buy-service/recruiter/buy-services').then(c => c.BuyServicesComponent),
       },
+      {
+        path: 'buy-services/detail/:id',
+        loadComponent: () => import('./features/dashboard/buy-service-detail/recruiter/buy-service-detail').then(c => c.BuyServiceDetailComponent),
+      },
+      {
+        path: 'cart',
+        loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
+      },
       // {
       //   path: 'performance-dashboard',
       //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
