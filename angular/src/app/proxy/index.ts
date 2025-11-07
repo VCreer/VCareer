@@ -1,3 +1,4 @@
+import * as Application from './application';
 import * as Books from './books';
 import * as Cv from './cv';
 import * as Dto from './dto';
@@ -11,4 +12,4 @@ import * as Profile from './profile';
 import * as Services from './services';
 import * as Volo from './volo';
 export * from './api-config.service';
-export { Books, Cv, Dto, HttpApi, Iservices, Job, Microsoft, Model, Models, Profile, Services, Volo };
+export { Application, Books, Cv, Dto, HttpApi, Iservices, Job, Microsoft, Model, Models, Profile, Services, Volo };

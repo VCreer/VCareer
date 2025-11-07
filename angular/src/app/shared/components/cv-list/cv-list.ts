@@ -31,6 +31,7 @@ export class CvListComponent {
   @Output() cvSetDefault = new EventEmitter<string>();
   @Output() cvViewed = new EventEmitter<string>();
   @Output() cvEdited = new EventEmitter<string>();
+  @Output() cvDownloaded = new EventEmitter<string>();
   @Output() createCv = new EventEmitter<void>();
 
   // UI state used by template
@@ -101,10 +102,36 @@ export class CvListComponent {
     this.showRenameModal = true;
   }
   onDeleteCv(cvId: string) { this.onDelete(cvId); this.showMoreMenu = null; }
-  onDownloadCv(_cvId: string) { this.showDownloadModal = true; }
-  onCloseDownloadModal() { this.showDownloadModal = false; }
-  onDownloadWithoutLogo() { this.showDownloadModal = false; }
-  onDownloadFree() { this.showDownloadModal = false; }
+  private cvToDownloadId: string | null = null;
+  
+  onDownloadCv(cvId: string) { 
+    this.cvToDownloadId = cvId;
+    this.cvDownloaded.emit(cvId);
+    this.showDownloadModal = true;
+  }
+  
+  onCloseDownloadModal() { 
+    this.showDownloadModal = false;
+    this.cvToDownloadId = null;
+  }
+  
+  onDownloadWithoutLogo() { 
+    // Emit event để parent component handle download
+    if (this.cvToDownloadId) {
+      this.cvDownloaded.emit(this.cvToDownloadId);
+    }
+    this.showDownloadModal = false;
+    this.cvToDownloadId = null;
+  }
+  
+  onDownloadFree() { 
+    // Emit event để parent component handle download
+    if (this.cvToDownloadId) {
+      this.cvDownloaded.emit(this.cvToDownloadId);
+    }
+    this.showDownloadModal = false;
+    this.cvToDownloadId = null;
+  }
   onToastClose() { this.showToast = false; }
   onCloseConfirmDeleteModal() { this.showConfirmDeleteModal = false; this.cvToDelete = null; }
   onConfirmDelete() { if (this.cvToDelete) { this.cvDeleted.emit(this.cvToDelete); } this.onCloseConfirmDeleteModal(); }

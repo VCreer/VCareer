@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto } from '../../../../dto/job/models';
+import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto, SavedJobDto, SavedJobStatusDto } from '../../../../dto/job/models';
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +35,23 @@ export class JobPostingService {
     { apiName: this.apiName,...config });
   
 
+  getSavedJobStatus = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SavedJobStatusDto>({
+      method: 'GET',
+      url: `/api/app/job-posting/saved-job-status/${jobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getSavedJobs = (skipCount?: number, maxResultCount: number = 20, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<SavedJobDto>>({
+      method: 'GET',
+      url: '/api/app/job-posting/saved-jobs',
+      params: { skipCount, maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
   indexJob = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -59,11 +76,27 @@ export class JobPostingService {
     { apiName: this.apiName,...config });
   
 
+  saveJob = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-posting/save-job/${jobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   searchJobs = (input: JobSearchInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<JobViewDto>>({
       method: 'POST',
       url: '/api/app/job-posting/search-jobs',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  unsaveJob = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-posting/unsave-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
 

@@ -32,6 +32,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-view').then(c => c.CvViewComponent),
       },
       {
+        path: 'candidate/cv-management/uploaded/view/:id',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/uploaded-cv-view').then(c => c.UploadedCvViewComponent),
+      },
+      {
         path: 'candidate/job',
         loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
       },

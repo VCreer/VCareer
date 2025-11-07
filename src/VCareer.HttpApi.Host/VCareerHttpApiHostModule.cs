@@ -55,6 +55,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 using System.IdentityModel.Tokens.Jwt;
+using VCareer.HttpApi.Host.Swagger;
 
 
 namespace VCareer;
@@ -140,6 +141,7 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
+        ConfigureFilePolicyConfigs(configuration); // Bind FilePolicyConfigs từ appsettings.json
         //  ConfigureClaims();
     }
 
@@ -154,6 +156,11 @@ public class VCareerHttpApiHostModule : AbpModule
     private void ConfigureGoogleOptions(IConfiguration configuration)
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
+    }
+
+    private void ConfigureFilePolicyConfigs(IConfiguration configuration)
+    {
+        Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
     }
 
 
@@ -469,6 +476,17 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "VCareer API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
+
+                // Configure Swagger để handle file uploads (IFormFile)
+                // Map IFormFile to binary string for Swagger
+                options.MapType<Microsoft.AspNetCore.Http.IFormFile>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
+                
+                // Add OperationFilter để handle IFormFile trong DTOs
+                options.OperationFilter<FileUploadOperationFilter>();
 
                 // Thêm JWT Bearer Authentication vào Swagger
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

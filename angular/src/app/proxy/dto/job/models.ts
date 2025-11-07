@@ -2,6 +2,13 @@ import type { ExperienceLevel } from '../../model/experience-level.enum';
 import type { SalaryFilterType } from './salary-filter-type.enum';
 import type { EmploymentType } from '../../model/employment-type.enum';
 import type { PositionType } from '../../model/position-type.enum';
+import type { EducationLevel } from '../../model/education-level.enum';
+
+export interface CategoryItemDto {
+  id?: string;
+  name?: string;
+  slug?: string;
+}
 
 export interface CategoryTreeDto {
   categoryId?: string;
@@ -59,6 +66,9 @@ export interface JobViewDetail {
   expiresAt?: string;
   viewCount: number;
   applyCount: number;
+  education?: EducationLevel;
+  categoryPath: CategoryItemDto[];
+  isSaved: boolean;
 }
 
 export interface JobViewDto {
@@ -72,6 +82,7 @@ export interface JobViewDto {
   isUrgent: boolean;
   postedAt?: string;
   expiresAt?: string;
+  isSaved: boolean;
 }
 
 export interface PagedResultDto<T> {
@@ -84,4 +95,19 @@ export interface ProvinceDto {
   name?: string;
   code?: string;
   districts: DistrictDto[];
+}
+
+export interface SavedJobDto {
+  jobId?: string;
+  jobTitle?: string;
+  companyName?: string;
+  salaryText?: string;
+  location?: string;
+  savedAt?: string;
+  jobDetail: JobViewDto;
+}
+
+export interface SavedJobStatusDto {
+  isSaved: boolean;
+  savedAt?: string;
 }

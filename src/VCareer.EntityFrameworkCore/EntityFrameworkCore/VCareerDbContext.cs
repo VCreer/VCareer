@@ -25,7 +25,7 @@ using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
 using VCareer.Models.FileMetadata;
 using VCareer.Models.CV;
-/*using VCareer.Models.Applications;*/
+using VCareer.Models.Applications;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -51,8 +51,9 @@ public class VCareerDbContext :
    
     
     public DbSet<ActivityLog> ActivityLogs { get; set; }
-    /*public DbSet<JobApplication> JobApplications { get; set; }
-    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
+    
+    // Applications
+    public DbSet<JobApplication> JobApplications { get; set; }
 
     public DbSet<District> Districts { get; set; }
     public DbSet<Province> Provinces { get; set; }
@@ -62,12 +63,13 @@ public class VCareerDbContext :
     public DbSet<JobPostingTag> JobPostingTags { get; set; }
     public DbSet<SavedJob> SavedJobs { get; set; }
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
+    public DbSet<UploadedCv> UploadedCvs { get; set; }
 
     // CV Management
     public DbSet<CvTemplate> CvTemplates { get; set; }
     public DbSet<CandidateCv> CandidateCvs { get; set; }
 
-
+    
 
     #region Entities from the modules
 
@@ -474,6 +476,47 @@ public class VCareerDbContext :
             cv.HasIndex(x => new { x.CandidateId, x.IsDefault }); // Composite index for default CV lookup
         });
 
+        // ========== Uploaded CV Configuration ==========
+        builder.Entity<UploadedCv>(uploadedCv =>
+        {
+            uploadedCv.ToTable("UploadedCvs");
+            uploadedCv.ConfigureByConvention();
+            uploadedCv.HasKey(x => x.Id);
+
+            // Required fields
+            uploadedCv.Property(x => x.CandidateId).IsRequired();
+            uploadedCv.Property(x => x.FileDescriptorId).IsRequired();
+            uploadedCv.Property(x => x.CvName).HasMaxLength(200).IsRequired();
+
+            // Optional fields
+            uploadedCv.Property(x => x.Notes).HasMaxLength(1000).IsRequired(false);
+
+            // Default values
+            uploadedCv.Property(x => x.IsDefault).HasDefaultValue(false);
+            uploadedCv.Property(x => x.IsPublic).HasDefaultValue(false);
+
+            // Foreign key relationships
+            // 1. Relationship với CandidateProfile (CandidateId = CandidateProfile.UserId)
+            uploadedCv.HasOne(x => x.CandidateProfile)
+                .WithMany(x => x.UploadedCvs)
+                .HasForeignKey(x => x.CandidateId)
+                .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key
+                .OnDelete(DeleteBehavior.Cascade); // Khi xóa CandidateProfile thì xóa tất cả UploadedCvs
+
+            // 2. Relationship với FileDescriptor
+            uploadedCv.HasOne(x => x.FileDescriptor)
+                .WithMany()
+                .HasForeignKey(x => x.FileDescriptorId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho xóa FileDescriptor nếu đang được sử dụng
+
+            // Indexes
+            uploadedCv.HasIndex(x => x.CandidateId);
+            uploadedCv.HasIndex(x => x.FileDescriptorId);
+            uploadedCv.HasIndex(x => x.IsDefault);
+            uploadedCv.HasIndex(x => x.IsPublic);
+            uploadedCv.HasIndex(x => new { x.CandidateId, x.IsDefault }); // Composite index for default CV lookup
+        });
+
         builder.Entity<Industry>(c =>
         {
             c.ToTable("Industries");
@@ -660,7 +703,7 @@ public class VCareerDbContext :
         });
 
         // JobApplication Configuration
-        /*builder.Entity<JobApplication>(ja =>
+        builder.Entity<JobApplication>(ja =>
         {
             ja.ToTable("JobApplications");
             ja.ConfigureByConvention();
@@ -676,9 +719,14 @@ public class VCareerDbContext :
               .HasForeignKey(x => x.CompanyId)
               .OnDelete(DeleteBehavior.Restrict);
 
-            ja.HasOne(x => x.CV)
+            ja.HasOne(x => x.CandidateCv)
               .WithMany()
-              .HasForeignKey(x => x.CVId)
+              .HasForeignKey(x => x.CandidateCvId)
+              .OnDelete(DeleteBehavior.SetNull);
+
+            ja.HasOne(x => x.UploadedCv)
+              .WithMany()
+              .HasForeignKey(x => x.UploadedCvId)
               .OnDelete(DeleteBehavior.SetNull);
 
             // Properties
@@ -686,11 +734,6 @@ public class VCareerDbContext :
             ja.Property(x => x.CandidateId).IsRequired();
             ja.Property(x => x.CompanyId).IsRequired();
             ja.Property(x => x.CVType).HasMaxLength(20).IsRequired();
-            ja.Property(x => x.UploadedCVUrl).HasMaxLength(500);
-            ja.Property(x => x.UploadedCVName).HasMaxLength(255);
-            ja.Property(x => x.CandidateName).HasMaxLength(100);
-            ja.Property(x => x.CandidateEmail).HasMaxLength(100);
-            ja.Property(x => x.CandidatePhone).HasMaxLength(20);
             ja.Property(x => x.CoverLetter).HasMaxLength(2000);
             ja.Property(x => x.Status).HasMaxLength(20).IsRequired();
             ja.Property(x => x.RecruiterNotes).HasMaxLength(1000);
@@ -733,7 +776,7 @@ public class VCareerDbContext :
         });
 
         // ApplicationDocument Configuration
-        builder.Entity<ApplicationDocument>(ad =>
+        /*builder.Entity<ApplicationDocument>(ad =>
         {
             ad.ToTable("ApplicationDocuments");
             ad.ConfigureByConvention();

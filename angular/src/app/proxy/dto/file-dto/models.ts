@@ -1,5 +1,19 @@
 import type { IFormFile } from '../../microsoft/asp-net-core/http/models';
 
+export interface FileDescriptorDto {
+  id?: string;
+  creatorId?: string;
+  storageName?: string;
+  originalName?: string;
+  extension?: string;
+  size: number;
+  mimeType?: string;
+  containerName?: string;
+  storagePath?: string;
+  status: number;
+  uploadTime?: string;
+}
+
 export interface FileChunkInput {
   uploadId?: string;
   chunkIndex: number;
@@ -13,19 +27,6 @@ export interface FileChunkResult {
   isCompleted: boolean;
   message?: string;
   storageName?: string;
-}
-
-export interface FileDescriptorDto {
-  creatorId?: string;
-  storageName?: string;
-  originalName?: string;
-  extension?: string;
-  size: number;
-  mimeType?: string;
-  containerName?: string;
-  storagePath?: string;
-  status: number;
-  uploadTime?: string;
 }
 
 export interface UploadFileDto {

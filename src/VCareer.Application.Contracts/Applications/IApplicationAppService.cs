@@ -11,14 +11,14 @@ namespace VCareer.Application.Contracts.Applications
     public interface IApplicationAppService
     {
         /// <summary>
-        /// Nộp đơn ứng tuyển với CV từ thư viện
+        /// Nộp đơn ứng tuyển với CV online (CandidateCv)
         /// </summary>
-        Task<ApplicationDto> ApplyWithLibraryCVAsync(ApplyWithLibraryCVDto input);
+        Task<ApplicationDto> ApplyWithOnlineCVAsync(ApplyWithOnlineCVDto input);
 
         /// <summary>
-        /// Nộp đơn ứng tuyển với CV tải lên mới
+        /// Nộp đơn ứng tuyển với CV đã tải lên (UploadedCv)
         /// </summary>
-        Task<ApplicationDto> ApplyWithUploadCVAsync(ApplyWithUploadCVDto input);
+        Task<ApplicationDto> ApplyWithUploadedCVAsync(ApplyWithUploadedCVDto input);
 
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển
@@ -48,7 +48,7 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Lấy thống kê đơn ứng tuyển
         /// </summary>
-        Task<ApplicationStatisticsDto> GetApplicationStatisticsAsync(Guid? jobId = null, Guid? companyId = null);
+        Task<ApplicationStatisticsDto> GetApplicationStatisticsAsync(Guid? jobId = null, int? companyId = null);
 
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của ứng viên
@@ -66,7 +66,7 @@ namespace VCareer.Application.Contracts.Applications
         Task<PagedResultDto<ApplicationDto>> GetJobApplicationsAsync(Guid jobId, GetApplicationListDto input);
 
         /// <summary>
-        /// Tải xuống CV của đơn ứng tuyển
+        /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
         /// </summary>
         Task<byte[]> DownloadApplicationCVAsync(Guid id);
 
@@ -76,4 +76,3 @@ namespace VCareer.Application.Contracts.Applications
         Task DeleteApplicationAsync(Guid id);
     }
 }
-

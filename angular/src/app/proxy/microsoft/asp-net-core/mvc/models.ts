@@ -1,5 +1,6 @@
+
 export interface ActionResult<TValue = any> {
-  result?: TValue;
+  result?: ActionResult<TValue>;
   value?: TValue;
 }
 
