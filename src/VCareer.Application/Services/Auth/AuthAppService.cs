@@ -85,7 +85,7 @@ namespace VCareer.Services.Auth
             var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
             if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
 
-            // await _signInManager.SignInAsync(user, true);// đang lỗi khi chạy fe
+          /*   await _signInManager.SignInAsync(user, true);*/// đang lỗi khi chạy fe
 
             return await _tokenGenerator.CreateTokenAsync(user);
         }
@@ -124,6 +124,7 @@ namespace VCareer.Services.Auth
 
 
         [Authorize]
+        [IgnoreAntiforgeryToken]
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;

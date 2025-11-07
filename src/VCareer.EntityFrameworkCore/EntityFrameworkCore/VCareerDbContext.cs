@@ -53,12 +53,10 @@ public class VCareerDbContext :
     /*public DbSet<JobApplication> JobApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
-    public DbSet<District> Districts { get; set; }
-    public DbSet<Province> Provinces { get; set; }
-    public DbSet<Job_Category> JobCategories { get; set; }
-    public DbSet<Job_Posting> JobPostings { get; set; }
+       public DbSet<Job_Category> JobCategories { get; set; }
+    public DbSet<Job_Post> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
-    public DbSet<JobPostingTag> JobPostingTags { get; set; }
+    public DbSet<JobPostTag> JobPostingTags { get; set; }
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
 
 
@@ -139,7 +137,7 @@ public class VCareerDbContext :
 
         //-----------fluent api cho jobPostingTag -----------
 
-        builder.Entity<JobPostingTag>(b =>
+        builder.Entity<JobPostTag>(b =>
         {
             b.ToTable("JobPostingTags");
             b.HasKey(x => new { x.JobPostingId, x.TagId }); // Composite key
@@ -157,39 +155,6 @@ public class VCareerDbContext :
         });
 
         //-----------fluent api cho province-----------
-
-        builder.Entity<Province>(b =>
-        {
-            b.ToTable("Provinces");
-            b.ConfigureByConvention();
-
-            b.HasMany(x => x.Districts)
-            .WithOne(x => x.Province)
-            .HasForeignKey(x => x.ProvinceId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-
-            b.HasMany(x => x.Job_Posting)
-         .WithOne(x => x.Province)
-         .HasForeignKey(x => x.ProvinceId)
-         .OnDelete(DeleteBehavior.Cascade);
-
-
-
-
-
-        });
-
-        //-----------fluent api cho disstrict------------
-
-        builder.Entity<District>(b =>
-        {
-            b.ToTable("Districts");
-            b.ConfigureByConvention();
-
-            b.HasOne(x => x.Province).WithMany(x => x.Districts).HasForeignKey(x => x.ProvinceId).OnDelete(DeleteBehavior.Cascade);
-        });
-
         //-----------fluent api cho job_category--------------
 
         builder.Entity<Job_Category>(b =>
@@ -224,7 +189,7 @@ public class VCareerDbContext :
 
         //-----------fluent api cho job_posting----------
 
-        builder.Entity<Job_Posting>(b =>
+        builder.Entity<Job_Post>(b =>
           {
               b.ToTable("JobPostings");
               b.ConfigureByConvention();
@@ -234,14 +199,13 @@ public class VCareerDbContext :
 
               b.Property(j => j.Title).IsRequired().HasMaxLength(256);
               b.Property(j => j.Slug).IsRequired().HasMaxLength(300);
-              b.Property(j => j.Image).HasMaxLength(500);
+              b.Property(j => j.CompanyImageUrl).HasMaxLength(500);
               b.Property(j => j.Description).HasMaxLength(5000);
               b.Property(j => j.Requirements).HasMaxLength(5000);
               b.Property(j => j.Benefits).HasMaxLength(5000);
               b.Property(j => j.WorkLocation).HasMaxLength(500);
 
               b.Property(x => x.SalaryDeal).HasDefaultValue(false);
-              b.Property(x => x.IsUrgent).HasDefaultValue(false);
               b.Property(x => x.ApplyCount).HasDefaultValue(0);
 
 
@@ -260,14 +224,6 @@ public class VCareerDbContext :
                .WithOne(x => x.JobPosting)
                .HasForeignKey(x => x.JobPostingId)
                .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
-
-
-              b.HasOne(j => j.Province)
-                .WithMany(p => p.Job_Posting)
-                .HasForeignKey(j => j.ProvinceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-
 
           });
 

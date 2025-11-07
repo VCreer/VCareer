@@ -62,6 +62,7 @@ public class VCareerDomainModule : AbpModule
             options.Lockout.MaxFailedAccessAttempts = lockoutConfig.GetValue("MaxFailedAccessAttempts", 5);
             options.Lockout.DefaultLockoutTimeSpan = lockoutConfig.GetValue("DefaultLockoutTimeSpan", TimeSpan.FromMinutes(10));
         });
+        ConfigureCustomClaimsPrincipalFactory(context);
 
 
 
@@ -70,5 +71,13 @@ public class VCareerDomainModule : AbpModule
 #if DEBUG
         //  context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
+    }
+
+    //conffig  để custom cái tạo claims trong  abpuserClaimsPrincipalFactory
+    private void ConfigureCustomClaimsPrincipalFactory(ServiceConfigurationContext context)
+    {
+        context.Services.Replace(
+            ServiceDescriptor.Transient<IUserClaimsPrincipalFactory<Volo.Abp.Identity.IdentityUser>, Token.CustomUserClaimsPrincipalFactory>()
+        );
     }
 }

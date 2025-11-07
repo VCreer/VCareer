@@ -9,7 +9,7 @@ namespace VCareer.Dto.FileDto
 {
     public class FileStreamResultDto
     {
-        public byte[] Data { get; set; }
+        public Stream Data { get; set; }
         public string MimeType { get; set; }
         public string FileName { get; set; }
     }
