@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,10 +18,12 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.ObjectMapping;
 using Volo.Abp.Uow;
 
 namespace VCareer.Services.FileServices
 {
+    [RemoteService(false)] // trnáh tạo api động vì các service này ko liên quan nghiệp vụ, chỉ tương tác file
     public class FileServices : ApplicationService, IFileServices
     {
         private readonly IFileSecurityServices _fileSecurityServices;
@@ -94,47 +97,45 @@ namespace VCareer.Services.FileServices
             }
         }
         #endregion
-   /*     public async Task<FileStreamResultDto> DownloadAsync(string storageName)
+        // hàm này có trả dto chứa stream nên viết service hoặc controller phải để ý , nếu có lỗi thì check phần stream
+        public async Task<FileStreamResultDto> DownloadAsync(string fileOriginName, string containerName, DateTime uploadTime)
         {
-            if (string.IsNullOrEmpty(storageName)) throw new ArgumentNullException("StorageName is null or empty");
-            var file = await _fileDescriptorRepository.FirstOrDefaultAsync(f => f.StorageName == storageName);
+            if (string.IsNullOrEmpty(fileOriginName)) throw new ArgumentNullException("StorageName is null or empty");
+            var file = await _fileDescriptorRepository.FirstOrDefaultAsync(f =>
+            f.OriginalName == fileOriginName &&
+            f.UploadTime == uploadTime &&
+            f.ContainerName == containerName);
             if (file == null) throw new BusinessException("File not found ");
             var mimeType = _fileSecurityServices.GetMimeType(file.Extension);
 
             var container = _blobFactory.Create(file.ContainerName);
-            if (!await container.ExistsAsync(storageName)) throw new UserFriendlyException("File not found at local storage");
-
-
+            if (!await container.ExistsAsync(file.StorageName)) throw new UserFriendlyException("File not found at local storage");
 
             var stream = await container.GetAsync(file.StorageName);
             if (stream == null) throw new BusinessException("Fail at read file ");
 
             return new FileStreamResultDto
             {
-                Data= stream,
+                Data = stream,
                 MimeType = mimeType,
                 FileName = file.OriginalName
             };
 
-        }*/
-
-        public Task<FileDescriptorDto> GetMetadataAsync(string storageName)
-        {
-            throw new NotImplementedException();
         }
-
         public async Task UploadAsync(UploadFileDto input)
         {
-            FileDescriptorDto fileDescriptor = await CheckValidationAsync(input);
-            await StorageLocalAsync(fileDescriptor, input.File);
-            await StorageDataBaseAsync(fileDescriptor);
+            using (var stream = input.File.OpenReadStream())
+            {
+                FileDescriptorDto fileDescriptor = await CheckValidationAsync(input, stream);
+                await StorageLocalAsync(fileDescriptor, stream);
+                await StorageDataBaseAsync(fileDescriptor);
+            }
         }
         #region upload file logic
 
         //xử lý file 
-        private async Task<FileDescriptorDto> CheckValidationAsync(UploadFileDto input)
+        private async Task<FileDescriptorDto> CheckValidationAsync(UploadFileDto input, Stream stream)
         {
-            var stream = input.File.OpenReadStream();
             var sizeAllow = _filePoliciesServices.GetMaxFileSizeMb(input.ContainerType);
 
 
@@ -161,7 +162,7 @@ namespace VCareer.Services.FileServices
                 Extension = Path.GetExtension(input.File.FileName),
                 ContainerName = containerName,
                 Size = input.File.Length,
-                Status = FileStatus.Active,
+                Status = FileStatus.Public,
                 StoragePath = stogarePath,
                 UploadTime = DateTime.UtcNow
             };
@@ -170,15 +171,13 @@ namespace VCareer.Services.FileServices
 
 
         //lưu file upload vào blob local
-        private async Task StorageLocalAsync(FileDescriptorDto input, IFormFile file)
+        private async Task StorageLocalAsync(FileDescriptorDto input, Stream stream)
         {
             try
             {
                 var container = _blobFactory.Create(input.ContainerName);
-                using (var stream = file.OpenReadStream())
-                {
-                    await container.SaveAsync(input.StorageName, stream, true);
-                }
+
+                await container.SaveAsync(input.StorageName, stream, true);
             }
             catch (Exception ex)
             {
@@ -202,10 +201,20 @@ namespace VCareer.Services.FileServices
         #endregion
 
 
-        public Task<FileChunkResult> UploadChunkAsync(FileChunkInput input)
+        public async Task<List<FileDescriptorDto>> GetListFileByContainer(string containerName)
         {
-            throw new NotImplementedException();
+            List<FileDescriptor> listFileMetadata = new List<FileDescriptor>();
+            if (string.IsNullOrEmpty(containerName)) throw new ArgumentNullException("StorageName is null or empty");
+            listFileMetadata = await _fileDescriptorRepository.GetListAsync(f => f.ContainerName == containerName);
+            return ObjectMapper.Map<List<FileDescriptor>, List<FileDescriptorDto>>(listFileMetadata);
         }
 
+        public async Task<List<FileDescriptorDto>> GetListFileByContainerType(string containerType)
+        {
+            List<FileDescriptor> listFileMetadata = new List<FileDescriptor>();
+            if (string.IsNullOrEmpty(containerType)) throw new ArgumentNullException("StorageName is null or empty");
+            listFileMetadata = await _fileDescriptorRepository.GetListAsync(f => f.FileType == containerType);
+            return ObjectMapper.Map<List<FileDescriptor>, List<FileDescriptorDto>>(listFileMetadata);
+        }
     }
 }

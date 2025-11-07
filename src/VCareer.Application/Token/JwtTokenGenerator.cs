@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -25,25 +27,24 @@ namespace VCareer.Jwt
     // đăng kí  di trong module host trong hàm ConfigureServices()
     public class JwtTokenGenerator : ITokenGenerator, ITransientDependency
     {
-        private readonly IAbpClaimsPrincipalFactory _claimsPrincipalFactory;
+        private readonly IUserClaimsPrincipalFactory<Volo.Abp.Identity.IdentityUser> _claimsPrincipalFactory;
         private readonly JwtOptions _jwtOptions;
         private readonly IRefreshtokenRepository _refreshtokenRepository;
         private readonly IdentityUserManager _userManager;
-        private readonly IdentityRoleManager _roleManager;
-        private readonly AbpUserClaimsPrincipalFactory _abpUserClaimsPrincipalFactory;
 
-        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager,IdentityRoleManager roleManager,AbpUserClaimsPrincipalFactory abpUserClaimsPrincipalFactory)
+        public JwtTokenGenerator(
+            IUserClaimsPrincipalFactory<Volo.Abp.Identity.IdentityUser> claimsPrincipalFactory,
+            IOptions<JwtOptions> jwtOptions,
+            IRefreshtokenRepository refreshtokenRepository,
+            IdentityUserManager userManager)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _jwtOptions = jwtOptions.Value;
             _refreshtokenRepository = refreshtokenRepository;
             _userManager = userManager;
-            _roleManager = roleManager;
-            _abpUserClaimsPrincipalFactory = abpUserClaimsPrincipalFactory;
-
         }
 
-        public async Task<TokenResponseDto> CreateTokenAsync(IdentityUser user)
+        public async Task<TokenResponseDto> CreateTokenAsync(Volo.Abp.Identity.IdentityUser user)
         {
             var accessToken = await CreateAccessTokenAsync(user);
             var refreshToken = CreateRefreshTokenAsync(user);
@@ -58,10 +59,10 @@ namespace VCareer.Jwt
 
         }
 
-        private async Task<string> CreateAccessTokenAsync(IdentityUser user)
+        private async Task<string> CreateAccessTokenAsync(Volo.Abp.Identity.IdentityUser user)
         {
-            var principal = await _abpUserClaimsPrincipalFactory.CreateAsync(user);
-         
+            var principal = await _claimsPrincipalFactory.CreateAsync(user);
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -77,7 +78,7 @@ namespace VCareer.Jwt
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private RefreshToken CreateRefreshTokenAsync(IdentityUser user)
+        private RefreshToken CreateRefreshTokenAsync(Volo.Abp.Identity.IdentityUser user)
         {
             return new RefreshToken
             {
@@ -111,18 +112,18 @@ namespace VCareer.Jwt
         }
 
         [UnitOfWork]
-        public async Task CancleAsync(IdentityUser user)
+        public async Task CancleAsync(Volo.Abp.Identity.IdentityUser user)
         {
 
             var tokens = await _refreshtokenRepository.GetListAsync(token => token.UserId == user.Id && token.IsRevoked == false);
             if (tokens.Any()) return;
-            
-                foreach (var token in tokens)
-                {
-                    token.IsRevoked = true;
-                }
+
+            foreach (var token in tokens)
+            {
+                token.IsRevoked = true;
+            }
             await _refreshtokenRepository.UpdateManyAsync(tokens);
         }
 
-          }
+    }
 }

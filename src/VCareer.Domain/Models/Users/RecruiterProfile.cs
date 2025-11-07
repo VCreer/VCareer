@@ -22,6 +22,6 @@ namespace VCareer.Models.Users
         public long MaxQuotaBytes { get; set; }
 
         //danh sách các jonPossting
-        public virtual ICollection<Job_Posting> JobPostings { get; set; }
+        public virtual ICollection<Job_Post> JobPostings { get; set; }
     }
 }

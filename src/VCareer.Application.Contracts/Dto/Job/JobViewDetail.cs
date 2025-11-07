@@ -1,6 +1,6 @@
 using System;
 using VCareer.Constants;
-using VCareer.Model;
+using VCareer.Constants.JobConstant;
 
 namespace VCareer.Dto.Job
 {

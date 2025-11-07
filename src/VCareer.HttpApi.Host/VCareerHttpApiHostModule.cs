@@ -15,6 +15,7 @@ using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -42,6 +43,8 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
+using Volo.Abp.Caching;
+using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
@@ -54,6 +57,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 
+
 namespace VCareer;
 
 [DependsOn(
@@ -62,59 +66,32 @@ namespace VCareer;
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
-      typeof(VCareerApplicationModule),
+    typeof(VCareerApplicationModule),
     typeof(VCareerEntityFrameworkCoreModule),
-    typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpBlobStoringFileSystemModule)
+
     )]
 public class VCareerHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-     /*   var hostingEnvironment = context.Services.GetHostingEnvironment();
-        var configuration = context.Services.GetConfiguration();
-
-        PreConfigure<OpenIddictBuilder>(builder =>
-        {
-            builder.AddValidation(options =>
-            {
-                options.AddAudiences("VCareer");
-                options.UseLocalServer();
-                options.UseAspNetCore();
-            });
-        });
-
-        if (!hostingEnvironment.IsDevelopment())
-        {
-            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-            {
-                options.AddDevelopmentEncryptionAndSigningCertificate = false;
-            });
-
-            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
-            {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
-                serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
-            });
-        }*/
+        /*  Configure<AbpAntiForgeryOptions>(options =>
+          {
+              options.AutoValidate = false;
+          });*/
     }
-
-
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-
-
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.LogCompleteSecurityArtifact = true;
         }
-
         if (!configuration.GetValue<bool>("AuthServer:RequireHttpsMetadata"))
         {
             Configure<OpenIddictServerAspNetCoreOptions>(options =>
@@ -139,31 +116,25 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
-        //  ConfigureClaims();
+        ConfigureDistributedCache(context, configuration);
     }
-
-
 
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng
     private void ConfigureJwtOptions(IConfiguration configuration)
     {
         Configure<JwtOptions>(configuration.GetSection("Authentication:Jwt"));
     }
-
     private void ConfigureGoogleOptions(IConfiguration configuration)
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-   //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-        // Cấu hình claims principal factory options
-        // IsDynamicClaimsEnabled = true cho phép ABP load claims động từ database
-        // Điều này quan trọng khi sử dụng JWT Bearer authentication
+        //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
-        {
-            options.IsDynamicClaimsEnabled = true;
-        });
+ {
+     options.IsDynamicClaimsEnabled = true;
+ });
 
         //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
@@ -184,41 +155,10 @@ public class VCareerHttpApiHostModule : AbpModule
               IssuerSigningKey = new SymmetricSecurityKey(
                   Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
               ),
-              // Cấu hình để map claims từ JWT token vào format mà ABP CurrentUser hiểu được
-              // ABP sử dụng ClaimTypes.NameIdentifier cho UserId
-              NameClaimType = AbpClaimTypes.Name,
-              RoleClaimType = ClaimTypes.Role
-              
           };
-
-          // Event handler để đảm bảo claims được map đúng sau khi token được validate
-          options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
-          {
-              OnTokenValidated = async context =>
-              {
-                  var principal = context.Principal;
-                  if (principal?.Identity is ClaimsIdentity identity && !identity.IsAuthenticated)
-                  {
-                      // Đảm bảo identity được đánh dấu là authenticated
-                      // Điều này quan trọng để ABP có thể sử dụng claims
-                  }
-                  await Task.CompletedTask;
-              },
-              OnAuthenticationFailed = async context =>
-              {
-                  // Log authentication failures để debug
-                  await Task.CompletedTask;
-              }
-          };
-
-
       });
-
         context.Services.AddAuthorization();
-       
-
     }
-
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
@@ -229,7 +169,6 @@ public class VCareerHttpApiHostModule : AbpModule
             options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ?? Array.Empty<string>());
         });
     }
-
     private void ConfigureBundles()
     {
         Configure<AbpBundlingOptions>(options =>
@@ -251,7 +190,6 @@ public class VCareerHttpApiHostModule : AbpModule
             );
         });
     }
-
     private void ConfigureBlobStorings(ServiceConfigurationContext context)
     {
         Configure<AbpBlobStoringOptions>(options =>
@@ -291,8 +229,6 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         });
     }
-
-
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
@@ -308,7 +244,6 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         }
     }
-
     private void ConfigureConventionalControllers()
     {
         Configure<AbpAspNetCoreMvcOptions>(options =>
@@ -316,7 +251,6 @@ public class VCareerHttpApiHostModule : AbpModule
             options.ConventionalControllers.Create(typeof(VCareerApplicationModule).Assembly);
         });
     }
-
     private static void ConfigureSwagger(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddAbpSwaggerGen(
@@ -354,7 +288,6 @@ public class VCareerHttpApiHostModule : AbpModule
             });
             });
     }
-
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddCors(options =>
@@ -376,12 +309,24 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         });
     }
-
     private void ConfigureHealthChecks(ServiceConfigurationContext context)
     {
         context.Services.AddVCareerHealthChecks();
     }
+    private void ConfigureDistributedCache(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        context.Services.AddDistributedMemoryCache();
 
+        Configure<AbpDistributedCacheOptions>(options =>
+  {
+      options.KeyPrefix = "VCareerCache:";
+      options.GlobalCacheEntryOptions = new DistributedCacheEntryOptions
+      {
+          SlidingExpiration = TimeSpan.FromMinutes(20),
+      };
+  });
+
+    }
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
@@ -407,7 +352,6 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();
-               /* app.UseAbpOpenIddictValidation();*/
 
         if (MultiTenancyConsts.IsEnabled)
         {
@@ -415,8 +359,8 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseUnitOfWork();
-        app.UseDynamicClaims();
         app.UseAuthorization();
+        app.UseDynamicClaims();
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>

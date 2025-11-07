@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
+using VCareer.IRepositories.Job;
 using VCareer.Models.Job;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -15,7 +16,6 @@ namespace VCareer.Repositories.Job
         public JobCategoryRepository(IDbContextProvider<VCareerDbContext> dbContextProvider) : base(dbContextProvider)
         {
         }
-
         // laod full cây category
         public async Task<List<Job_Category>> GetFullCategoryTreeAsync()
         {
@@ -57,7 +57,6 @@ namespace VCareer.Repositories.Job
             }
         }
 
-
         // Lấy path của 1 category
         public async Task<string> GetStringPath(Guid categoryId)
         {
@@ -80,10 +79,7 @@ namespace VCareer.Repositories.Job
             return string.Join(" > ", pathNames);
         }
 
-
-        /// <summary>
         /// Build path names từ root đến category hiện tại
-        /// </summary>
         private List<string> BuildCategoryPathNames(
             Job_Category category,
             Dictionary<Guid, Job_Category> categoriesDict)
@@ -108,10 +104,8 @@ namespace VCareer.Repositories.Job
             return path;
         }
 
-        /// <summary>
         /// Tìm kiếm category theo keyword trong path
         /// Trả về danh sách leaf categories có path chứa keyword
-        /// </summary>
         public async Task<List<Job_Category>> SearchCategoriesByPathAsync(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword))
@@ -156,9 +150,7 @@ namespace VCareer.Repositories.Job
                 .ToList();
         }
 
-        /// <summary>
         /// Lấy tất cả ID của các category con (leaf) từ một category
-        /// </summary>
         public async Task<List<Guid>> GetAllChildrenCategoryIdsAsync(Guid categoryId)
         {
             var dbContext = await GetDbContextAsync();
@@ -186,10 +178,7 @@ namespace VCareer.Repositories.Job
             return leafIds;
         }
 
-
-        /// <summary>
         /// Collect leaf category IDs recursively
-        /// </summary>
         private void CollectLeafIdsRecursive(
             Guid categoryId,
             Dictionary<Guid, Job_Category> categoriesDict,
@@ -218,9 +207,7 @@ namespace VCareer.Repositories.Job
             }
         }
 
-        /// <summary>
         /// Cập nhật số lượng job của category
-        /// </summary>
         public async Task UpdateJobCountAsync(Guid categoryId, int jobCount)
         {
             var dbContext = await GetDbContextAsync();
@@ -235,11 +222,7 @@ namespace VCareer.Repositories.Job
             }
         }
 
-
-
-        /// <summary>
         /// Lấy category theo ID với children đã load
-        /// </summary>
         public async Task<Job_Category> GetWithChildrenAsync(Guid categoryId)
         {
             var dbContext = await GetDbContextAsync();

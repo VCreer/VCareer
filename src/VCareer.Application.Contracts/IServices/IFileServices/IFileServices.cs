@@ -12,11 +12,12 @@ namespace VCareer.IServices.IFileServices
     public interface IFileServices :IApplicationService
     {
         Task UploadAsync(UploadFileDto input);
-    /*    Task<FileDescriptorDto> DownloadAsync(string storageName);*/
+        Task<FileStreamResultDto> DownloadAsync(string fileOriginName, string containerName, DateTime uploadTime);
         public Task HardDeleteAsync(string fileId);
         public Task SoftDeleteAsync(string fileId);
-        Task<FileDescriptorDto> GetMetadataAsync(string storageName);
-        Task<FileChunkResult> UploadChunkAsync(FileChunkInput input);
+        public Task<List<FileDescriptorDto>> GetListFileByContainer(string containerName);// ví dụ như  Candidate, Employee
+        public Task<List<FileDescriptorDto>> GetListFileByContainerType(string containerType);//cv,avatar..vv 
+     /*   Task<FileChunkResult> UploadChunkAsync(FileChunkInput input);*/
         
     }
 }
