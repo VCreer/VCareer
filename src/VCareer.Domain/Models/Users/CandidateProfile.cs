@@ -24,8 +24,13 @@ namespace VCareer.Models.Users
         // === NAVIGATION PROPERTIES ===
 
         /// <summary>
-        /// Danh sách CVs của candidate này
+        /// Danh sách CVs online của candidate này (tạo từ template)
         /// </summary>
         public ICollection<CandidateCv>? CandidateCvs { get; set; }
+
+        /// <summary>
+        /// Danh sách CVs đã upload (file) của candidate này
+        /// </summary>
+        public ICollection<UploadedCv>? UploadedCvs { get; set; }
     }
 }

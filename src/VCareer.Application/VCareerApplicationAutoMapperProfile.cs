@@ -2,13 +2,16 @@ using AutoMapper;
 using VCareer.Books;
 using VCareer.Profile;
 using VCareer.Application;
+using VCareer.Application.Contracts.CV;
 using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Models.CV;
-/*using VCareer.Models.Applications;*/
+using VCareer.Models.FileMetadata;
+using VCareer.Models.Applications;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using VCareer.Dto;
+using VCareer.Dto.FileDto;
 using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
@@ -47,9 +50,15 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<CandidateCv, CandidateCvDto>();
         CreateMap<CreateCandidateCvDto, CandidateCv>();
 
+        // Uploaded CV mappings
+        CreateMap<UploadedCv, UploadedCvDto>();
+        CreateMap<CreateUploadedCvDto, UploadedCv>();
+
+        // FileDescriptor mappings
+        CreateMap<FileDescriptor, FileDescriptorDto>();
+
         // Application mappings
-       /* CreateMap<JobApplication, ApplicationDto>();
-        CreateMap<ApplicationDocument, ApplicationDocumentDto>();*/
+        CreateMap<JobApplication, ApplicationDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

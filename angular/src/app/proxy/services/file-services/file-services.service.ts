@@ -35,8 +35,9 @@ export class FileServicesService {
   
 
   upload = (input: UploadFileDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
+    this.restService.request<any, string>({
       method: 'POST',
+      responseType: 'text',
       url: '/api/app/file-services/upload',
       body: input,
     },
