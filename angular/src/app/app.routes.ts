@@ -182,4 +182,14 @@ export const APP_ROUTES: Routes = [
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
   },
+  
+  // 404 - Wildcard route (phải đặt cuối cùng)
+  {
+    path: '404',
+    loadComponent: () => import('./features/not-found/not-found').then(c => c.NotFoundComponent),
+  },
+  {
+    path: '**',
+    redirectTo: '/404'
+  },
 ];
