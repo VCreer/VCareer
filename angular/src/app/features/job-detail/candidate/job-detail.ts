@@ -534,14 +534,16 @@ export class JobDetailComponent implements OnInit {
     this.showApplyModal = false;
   }
 
-  onModalSubmit(data: { cvOption: string; showToast: boolean; toastMessage: string }): void {
-    console.log('Submitting application with:', {
-      cvOption: data.cvOption,
-    });
-
-    // Show toast notification
-    if (data.showToast) {
-      this.toastMessage = data.toastMessage;
+  onModalSubmit(data: { success: boolean; message: string }): void {
+    if (data.success) {
+      this.toastType = 'success';
+      this.toastMessage = data.message;
+      this.showToast = true;
+      // Reload job detail to update apply count
+      this.loadJobDetail();
+    } else {
+      this.toastType = 'error';
+      this.toastMessage = data.message;
       this.showToast = true;
     }
   }

@@ -312,10 +312,10 @@
   <!-- Apply Modal -->
   <app-apply-job-modal
     [show]="showApplyModal"
-    [title]="translate('job_detail.apply_now') + ' ' + translate('job_detail.title')"
+    [title]="'Ứng tuyển ' + (jobDetail?.title || '')"
+    [jobId]="jobId"
     (close)="closeApplyModal()"
-    (submit)="onModalSubmit($event)"
-  >
+    (submit)="onModalSubmit($event)">
   </app-apply-job-modal>
 
   <!-- Toast Notification -->
