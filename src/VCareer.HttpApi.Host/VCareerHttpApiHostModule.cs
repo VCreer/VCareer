@@ -225,54 +225,67 @@ public class VCareerHttpApiHostModule : AbpModule
             {
                 OnTokenValidated = async context =>
                 {
-                    // Đảm bảo claims được map đúng cho ABP Framework
-                    var identity = context.Principal?.Identity as ClaimsIdentity;
-                    if (identity != null)
+                    // QUAN TRỌNG: Lấy service provider từ HttpContext để inject ABP services
+                    var serviceProvider = context.HttpContext.RequestServices;
+                    var claimsPrincipalFactory = serviceProvider.GetRequiredService<IAbpClaimsPrincipalFactory>();
+                    var currentPrincipalAccessor = serviceProvider.GetRequiredService<ICurrentPrincipalAccessor>();
+                    
+                    if (context.Principal == null)
                     {
-                        // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
-                        // Nếu không có, JWT Bearer sẽ không set IsAuthenticated = true
-                        if (!identity.IsAuthenticated)
-                        {
-                            // Tạo lại identity với authentication type "Bearer"
-                            var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
-                            context.Principal = new ClaimsPrincipal(newIdentity);
-                            identity = newIdentity;
-                        }
-                        
-                        // QUAN TRỌNG: Đảm bảo HttpContext.User được set
-                        if (context.HttpContext != null && context.Principal != null)
-                        {
-                            context.HttpContext.User = context.Principal;
-                        }
-                        
-                        System.Console.WriteLine($"[JWT Bearer] Token validated. IsAuthenticated: {identity.IsAuthenticated}, Claims count: {identity.Claims.Count()}");
-                        
-                        // Tìm UserId từ các claims có thể có
-                        var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
-                            ?? identity.FindFirst(ClaimTypes.NameIdentifier)
-                            ?? identity.FindFirst("sub")
-                            ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
-                        
-                        if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
-                        {
-                            System.Console.WriteLine($"[JWT Bearer] Found UserId: {userId} from claim type: {userIdClaim.Type}");
-                            
-                            // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
-                            if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
-                            {
-                                identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
-                                System.Console.WriteLine($"[JWT Bearer] Added AbpClaimTypes.UserId claim: {userId}");
-                            }
-                        }
-                        else
-                        {
-                            System.Console.WriteLine("[JWT Bearer] UserId claim not found or invalid!");
-                        }
+                        System.Console.WriteLine("[JWT Bearer] Principal is null!");
+                        await Task.CompletedTask;
+                        return;
                     }
-                    else
+
+                    var identity = context.Principal?.Identity as ClaimsIdentity;
+                    if (identity == null)
                     {
                         System.Console.WriteLine("[JWT Bearer] Identity is null!");
+                        await Task.CompletedTask;
+                        return;
                     }
+
+                    // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
+                    if (!identity.IsAuthenticated)
+                    {
+                        var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
+                        context.Principal = new ClaimsPrincipal(newIdentity);
+                        identity = newIdentity;
+                    }
+
+                    // QUAN TRỌNG: Đảm bảo có AbpClaimTypes.UserId claim từ JWT token
+                    // Tìm UserId từ các claims có thể có trong JWT token
+                    var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
+                        ?? identity.FindFirst(ClaimTypes.NameIdentifier)
+                        ?? identity.FindFirst("sub")
+                        ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
+                    
+                    if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+                    {
+                        // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
+                        if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
+                        {
+                            identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
+                        }
+                    }
+
+                    // QUAN TRỌNG NHẤT: Gọi AbpClaimsPrincipalFactory để ABP populate đầy đủ claims
+                    // Đây là cách chính thống của ABP Framework để populate claims
+                    // Factory sẽ gọi tất cả IAbpClaimsPrincipalContributor (như VCareerClaimContributer)
+                    var principal = await claimsPrincipalFactory.CreateAsync(context.Principal);
+                    
+                    // QUAN TRỌNG: Update ICurrentPrincipalAccessor với principal đã được ABP xử lý
+                    // Đây là cách ABP's ICurrentUser lấy claims - nó đọc từ ICurrentPrincipalAccessor
+                    currentPrincipalAccessor.Current = principal;
+                    
+                    // QUAN TRỌNG: Update HttpContext.User với principal đã được ABP xử lý
+                    context.HttpContext.User = principal;
+                    
+                    // Update context.Principal để các middleware khác cũng dùng principal đã được xử lý
+                    context.Principal = principal;
+                    
+                    System.Console.WriteLine($"[JWT Bearer] Token validated and ABP claims populated. IsAuthenticated: {principal.Identity?.IsAuthenticated}, Claims count: {principal.Claims.Count()}");
+                    System.Console.WriteLine($"[JWT Bearer] UserId: {principal.FindFirst(AbpClaimTypes.UserId)?.Value}, Email: {principal.FindFirst(AbpClaimTypes.Email)?.Value}, UserName: {principal.FindFirst(AbpClaimTypes.UserName)?.Value}");
                     
                     await Task.CompletedTask;
                 },
@@ -280,14 +293,11 @@ public class VCareerHttpApiHostModule : AbpModule
                 {
                     // Log lỗi authentication để debug
                     var exception = context.Exception;
-                    // Log vào console để debug
                     System.Console.WriteLine($"[JWT Bearer] Authentication failed: {exception?.Message}");
                     if (exception?.InnerException != null)
                     {
                         System.Console.WriteLine($"[JWT Bearer] Inner exception: {exception.InnerException.Message}");
                     }
-                    // KHÔNG handle response ở đây - để authorization middleware xử lý
-                    // Nếu handle response, sẽ trả về 200 thay vì 401
                     return Task.CompletedTask;
                 },
                 OnMessageReceived = context =>
@@ -307,12 +317,10 @@ public class VCareerHttpApiHostModule : AbpModule
                 OnChallenge = context =>
                 {
                     // Set status code 401 cho unauthorized requests
-                    // QUAN TRỌNG: Handle response và set status code + body
                     context.HandleResponse();
                     context.Response.StatusCode = 401;
                     context.Response.Headers.Append("WWW-Authenticate", "Bearer");
                     
-                    // Đảm bảo có response body để tránh empty body
                     var responseBody = System.Text.Json.JsonSerializer.Serialize(new
                     {
                         error = "Unauthorized",
@@ -542,6 +550,10 @@ public class VCareerHttpApiHostModule : AbpModule
         // Tạm thời comment UseAbpOpenIddictValidation để test JWT Bearer authentication
         // Nếu bạn cần OpenIddict cho các tính năng khác, có thể bật lại sau
         // app.UseAbpOpenIddictValidation();
+        
+        // QUAN TRỌNG: Middleware để đảm bảo ICurrentPrincipalAccessor được update từ HttpContext.User
+        // Điều này đảm bảo ICurrentUser có thể đọc được claims từ JWT token
+        app.UseMiddleware<VCareer.HttpApi.Host.Middleware.JwtClaimsPrincipalMiddleware>();
 
         if (MultiTenancyConsts.IsEnabled)
         {

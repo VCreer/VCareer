@@ -262,23 +262,55 @@ export class CandidateProfileComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.showSuccessMessage('Cập nhật thông tin thành công!');
-        this.loadProfileData(); // Reload data
+        // Update local data thay vì reload từ server để tránh lỗi token invalid
+        // Chỉ update các field đã được update thành công
+        this.profileData.fullName = `${updateDto.name} ${updateDto.surname}`.trim();
+        if (updateDto.email) {
+          this.profileData.email = updateDto.email;
+        }
+        if (updateDto.phoneNumber) {
+          this.profileData.phone = updateDto.phoneNumber;
+        }
+        if (updateDto.location) {
+          this.profileData.address = updateDto.location;
+          this.profileData.location = updateDto.location;
+        }
+        if (updateDto.dateOfBirth) {
+          this.profileData.dateOfBirth = updateDto.dateOfBirth.split('T')[0];
+        }
+        if (updateDto.gender !== undefined && updateDto.gender !== null) {
+          this.profileData.gender = updateDto.gender ? 'male' : 'female';
+        }
         this.isSaving = false;
+        
+        // Optionally reload data after a delay if needed (commented out to prevent token issues)
+        // setTimeout(() => {
+        //   this.loadProfileData();
+        // }, 1000);
       },
       error: (error) => {
         console.error('Error saving profile:', error);
         console.error('Error details:', error.error);
         this.isSaving = false;
         
-        // Nếu lỗi 401 Unauthorized, chuyển đến trang login
+        // CHỈ xử lý lỗi 401/403 khi THỰC SỰ là lỗi authentication, không phải do update thành công
+        // Nếu response có status 401/403 NHƯNG không có response body hoặc có message cụ thể về auth
         if (error.status === 401 || error.status === 403) {
-          this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-          // Xóa cả 2 keys để đảm bảo
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
-          this.router.navigate(['/candidate/login']);
-          return;
+          // Kiểm tra xem có phải lỗi authentication thực sự không
+          const errorMessage = error?.error?.message || error?.error?.error_description || '';
+          const isAuthError = errorMessage.toLowerCase().includes('unauthorized') || 
+                           errorMessage.toLowerCase().includes('authentication') ||
+                           errorMessage.toLowerCase().includes('token');
+          
+          if (isAuthError || error.status === 401) {
+            this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+            // Xóa cả 2 keys để đảm bảo
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+            this.router.navigate(['/candidate/login']);
+            return;
+          }
         }
         
         // Xử lý lỗi 400 Bad Request với validation errors
