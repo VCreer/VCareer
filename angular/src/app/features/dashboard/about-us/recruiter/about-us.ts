@@ -60,15 +60,10 @@ export class AboutUs implements OnInit, AfterViewInit, OnDestroy {
     if (!this.navigationService.isLoggedIn()) {
       this.router.navigate(['/recruiter/login']);
     } else {
-      // Route post-job chưa được implement
-      // Nếu đã verified, không làm gì (hoặc có thể navigate đến home khi route được implement)
-      // Nếu chưa verified, navigate đến verify page
       const isVerified = this.navigationService.isVerified();
       if (!isVerified) {
         this.router.navigate(['/recruiter/recruiter-verify']);
       }
-      // TODO: Navigate to /recruiter/post-job when route is implemented
-      // For now, if already verified, do nothing or show message
     }
   }
 

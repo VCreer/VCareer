@@ -76,7 +76,7 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToContact() {
-    this.router.navigate(['/contact']);
+    this.router.navigate(['/candidate/contact']);
     this.closeMobileMenu();
   }
 
