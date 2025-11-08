@@ -1,0 +1,152 @@
+<div class="contact-page">
+  <div class="container">
+    <div class="contact-wrapper">
+      <!-- Left Section: Contact Info and Form -->
+      <div class="contact-left">
+        <!-- Contact Information Card -->
+        <div class="contact-card contact-info-card">
+          <div class="contact-info-section">
+            <h2 class="contact-info-title">Liên Hệ Với Chúng Tôi</h2>
+            <div class="contact-info-grid">
+              <div class="contact-info-item">
+                <div class="info-icon">
+                  <i class="fa fa-map-marker"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Địa Chỉ</div>
+                  <div class="info-value">Hà Nội, Việt Nam</div>
+                </div>
+              </div>
+
+              <div class="contact-info-item">
+                <div class="info-icon">
+                  <i class="fa fa-envelope"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Email</div>
+                  <div class="info-value">employe&#64;vcareer.com</div>
+                </div>
+              </div>
+
+              <div class="contact-info-item">
+                <div class="info-icon">
+                  <i class="fa fa-phone"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Số Điện Thoại</div>
+                  <div class="info-value">0123456789</div>
+                </div>
+              </div>
+
+              <div class="contact-info-item">
+                <div class="info-icon">
+                  <i class="fa fa-globe"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Website</div>
+                  <div class="info-value">https://www.vcareer.com</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form Card -->
+        <div class="contact-card contact-form-card">
+          <div class="contact-form-section">
+            <h2 class="form-title">Gửi Tin Nhắn</h2>
+            <p class="form-description">
+              Bạn có thể điền thông tin vào biểu mẫu dưới đây để chúng tôi hỗ trợ bạn nhanh nhất. 
+              Hãy chia sẻ yêu cầu của bạn với chúng tôi.
+            </p>
+
+            <form (ngSubmit)="onSubmit()" class="contact-form">
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    [(ngModel)]="contactForm.name"
+                    placeholder="Họ Tên"
+                    class="form-input"
+                    required
+                  />
+                </div>
+                <div class="form-group half-width">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    [(ngModel)]="contactForm.email"
+                    placeholder="Email"
+                    class="form-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    [(ngModel)]="contactForm.subject"
+                    placeholder="Tiêu Đề"
+                    class="form-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <textarea
+                    id="message"
+                    name="message"
+                    [(ngModel)]="contactForm.message"
+                    placeholder="Tin Nhắn"
+                    class="form-textarea"
+                    rows="6"
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <button type="submit" class="submit-btn">
+                  Gửi Tin Nhắn
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section: Map -->
+      <div class="contact-right">
+        <div class="map-container">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0976984284994!2d105.77975581440682!3d21.028816985998347!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab5e6f0e9a6b%3A0x5d7f3f5a2e3a5f5d!2sHanoi!5e0!3m2!1sen!2s!4v1234567890123!5m2!1sen!2s"
+            width="100%"
+            height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()"
+  ></app-toast-notification>
+</div>
+
