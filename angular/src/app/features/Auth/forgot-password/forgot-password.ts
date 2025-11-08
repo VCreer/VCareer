@@ -7,6 +7,8 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../shared/components';
+import { AuthService } from '../../../proxy/services/auth/auth.service';
+import { ForgotPasswordDto } from '../../../proxy/dto/auth-dto/models';
 
 @Component({
   selector: 'app-forgot-password',
@@ -32,7 +34,8 @@ export class ForgotPasswordComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -58,39 +61,35 @@ export class ForgotPasswordComponent implements OnInit {
   onSubmit(): void {
     if (this.forgotPasswordForm.valid) {
       this.isLoading = true;
-      // Clear any previous messages
-      
       const email = this.forgotPasswordForm.get('email')?.value;
       
-      // Simulate API call to send OTP
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        // Simulate API call with different scenarios
-        if (email === 'test@example.com' || email === 'testuser') {
-          // Email doesn't exist
-          this.showToastMessage('Email không tồn tại', 'error');
+      const input: ForgotPasswordDto = {
+        email: email
+      };
+
+      // Gọi API ForgotPassword
+      this.authService.forgotPassword(input).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showToastMessage('Liên kết đặt lại mật khẩu đã được gửi đến email của bạn! Vui lòng kiểm tra hộp thư.', 'success');
           
-          // Hide error message after 5 seconds
-          // Error message will auto-hide via toast
-        } else {
-          // Email exists - send OTP and redirect to OTP verification
-          this.showToastMessage('Mã OTP đã được gửi đến email của bạn!', 'success');
+          // Reset form sau khi gửi thành công
+          this.forgotPasswordForm.reset();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Forgot password error:', error);
           
-          // Store email for OTP verification
-          localStorage.setItem('reset_email', email);
-          
-          // Redirect to OTP verification page after 2 seconds
-          setTimeout(() => {
-            const currentUrl = this.router.url;
-            if (currentUrl.includes('/recruiter/')) {
-              this.router.navigate(['/recruiter/verify-otp']);
-            } else {
-              this.router.navigate(['/candidate/verify-otp']);
-            }
-          }, 2000);
+          // Xử lý lỗi
+          if (error.error?.error?.message) {
+            this.showToastMessage(error.error.error.message, 'error');
+          } else if (error.error?.error) {
+            this.showToastMessage(error.error.error, 'error');
+          } else {
+            this.showToastMessage('Có lỗi xảy ra. Vui lòng thử lại sau.', 'error');
+          }
         }
-      }, 2000);
+      });
     } else {
       this.markFormGroupTouched();
     }

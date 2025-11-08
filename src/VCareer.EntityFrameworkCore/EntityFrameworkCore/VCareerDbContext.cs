@@ -459,7 +459,7 @@ public class VCareerDbContext :
                 .WithMany(x => x.CandidateCvs)
                 .HasForeignKey(x => x.CandidateId)
                 .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key thay vì Id
-                .OnDelete(DeleteBehavior.Cascade); // Khi xóa CandidateProfile thì xóa tất cả CVs
+                .OnDelete(DeleteBehavior.Restrict); // Restrict để tránh multiple cascade paths với JobApplications
 
             // 2. Relationship với CvTemplate
             cv.HasOne(x => x.Template)
@@ -501,7 +501,7 @@ public class VCareerDbContext :
                 .WithMany(x => x.UploadedCvs)
                 .HasForeignKey(x => x.CandidateId)
                 .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key
-                .OnDelete(DeleteBehavior.Cascade); // Khi xóa CandidateProfile thì xóa tất cả UploadedCvs
+                .OnDelete(DeleteBehavior.Restrict); // Restrict để tránh multiple cascade paths với JobApplications
 
             // 2. Relationship với FileDescriptor
             uploadedCv.HasOne(x => x.FileDescriptor)
@@ -585,7 +585,7 @@ public class VCareerDbContext :
                 .WithOne(x => x.CandidateProfile)
                 .HasForeignKey(x => x.CandidateId)
                 .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict); // Restrict để tránh multiple cascade paths với JobApplications
         });
 
         builder.Entity<RecruiterProfile>(e =>

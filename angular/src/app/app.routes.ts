@@ -176,6 +176,10 @@ export const APP_ROUTES: Routes = [
     redirectTo: '/candidate/forget-password',
     pathMatch: 'full'
   },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+  },
 
   // ABP routes
   {
