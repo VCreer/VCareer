@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VCareer.Application.Contracts.Applications;
 using VCareer.Helpers;
@@ -12,6 +13,7 @@ using VCareer.Models.Users;
 using VCareer.Models.Companies;
 using VCareer.Services.CV;
 using VCareer;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
@@ -23,6 +25,7 @@ namespace VCareer.Application.Applications
     /// <summary>
     /// Application Management Service - Refactored để hỗ trợ CandidateCv và UploadedCv
     /// </summary>
+    /*[Authorize(VCareerPermission.Application.Default)]*/
     public class ApplicationAppService : VCareerAppService, IApplicationAppService
     {
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
@@ -32,6 +35,7 @@ namespace VCareer.Application.Applications
         private readonly IRepository<UploadedCv, Guid> _uploadedCvRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
         private readonly IRepository<Company, int> _companyRepository;
+        private readonly IRepository<Volo.Abp.Identity.IdentityUser, Guid> _identityUserRepository;
         private readonly ICandidateCvAppService _candidateCvAppService;
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly TokenClaimsHelper _tokenClaimsHelper;
@@ -44,6 +48,7 @@ namespace VCareer.Application.Applications
             IRepository<UploadedCv, Guid> uploadedCvRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
             IRepository<Company, int> companyRepository,
+            IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository,
             ICandidateCvAppService candidateCvAppService,
             IUploadedCvAppService uploadedCvAppService,
             TokenClaimsHelper tokenClaimsHelper)
@@ -55,6 +60,7 @@ namespace VCareer.Application.Applications
             _uploadedCvRepository = uploadedCvRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
             _companyRepository = companyRepository;
+            _identityUserRepository = identityUserRepository;
             _candidateCvAppService = candidateCvAppService;
             _uploadedCvAppService = uploadedCvAppService;
             _tokenClaimsHelper = tokenClaimsHelper;
@@ -63,6 +69,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)
         /// </summary>
+        /*[Authorize(VCareerPermission.Application.Apply)]*/
         public async Task<ApplicationDto> ApplyWithOnlineCVAsync(ApplyWithOnlineCVDto input)
         {
             // Lấy thông tin user hiện tại
@@ -74,32 +81,37 @@ namespace VCareer.Application.Applications
                 throw new UserFriendlyException("Không tìm thấy thông tin ứng viên");
 
             // Kiểm tra CV online có tồn tại và thuộc về ứng viên không
-            var cv = await _candidateCvRepository.FirstOrDefaultAsync(c => c.Id == input.CandidateCvId && c.CandidateId == candidate.Id);
+            // Lưu ý: CandidateCv.CandidateId = UserId (không phải CandidateProfile.Id)
+            var cv = await _candidateCvRepository.FirstOrDefaultAsync(c => c.Id == input.CandidateCvId && c.CandidateId == userId);
             if (cv == null)
                 throw new UserFriendlyException("CV không tồn tại hoặc không thuộc về bạn");
 
             // Kiểm tra đã ứng tuyển công việc này chưa
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
             var existingApplication = await _applicationRepository.FirstOrDefaultAsync(
-                a => a.JobId == input.JobId && a.CandidateId == candidate.Id);
+                a => a.JobId == input.JobId && a.CandidateId == candidate.UserId);
             if (existingApplication != null)
                 throw new UserFriendlyException("Bạn đã ứng tuyển công việc này rồi");
 
-            // Lấy thông tin Job và Company
-            var job = await _jobPostingRepository.GetAsync(input.JobId);
+            // Lấy thông tin Job và Company - Include RecruiterProfile để lấy CompanyId
+            var queryable = await _jobPostingRepository.GetQueryableAsync();
+            var job = await queryable
+                .Include(j => j.RecruiterProfile)
+                .FirstOrDefaultAsync(j => j.Id == input.JobId);
+            
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
-            // Lấy CompanyId từ RecruiterProfile
-            var recruiter = await _recruiterProfileRepository.GetAsync(job.RecruiterId);
-            if (recruiter == null)
+            if (job.RecruiterProfile == null)
                 throw new UserFriendlyException("Không tìm thấy thông tin nhà tuyển dụng");
 
             // Tạo đơn ứng tuyển
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId (không phải CandidateProfile.Id)
             var application = new JobApplication
             {
                 JobId = input.JobId,
-                CandidateId = candidate.Id,
-                CompanyId = recruiter.CompanyId,
+                CandidateId = candidate.UserId,
+                CompanyId = job.RecruiterProfile.CompanyId,
                 CVType = "Online",
                 CandidateCvId = input.CandidateCvId,
                 CoverLetter = input.CoverLetter,
@@ -108,9 +120,13 @@ namespace VCareer.Application.Applications
 
             await _applicationRepository.InsertAsync(application);
 
-            // Tăng ApplyCount của Job
-            job.ApplyCount++;
-            await _jobPostingRepository.UpdateAsync(job);
+            // Tăng ApplyCount của Job - Reload job để tránh concurrency exception
+            var jobToUpdate = await _jobPostingRepository.GetAsync(input.JobId);
+            if (jobToUpdate != null)
+            {
+                jobToUpdate.ApplyCount++;
+                await _jobPostingRepository.UpdateAsync(jobToUpdate);
+            }
 
             return await MapToDtoAsync(application);
         }
@@ -118,6 +134,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Nộp đơn ứng tuyển với CV đã tải lên (UploadedCv)
         /// </summary>
+        /*[Authorize(VCareerPermission.Application.Apply)]*/
         public async Task<ApplicationDto> ApplyWithUploadedCVAsync(ApplyWithUploadedCVDto input)
         {
             // Lấy thông tin user hiện tại
@@ -129,32 +146,37 @@ namespace VCareer.Application.Applications
                 throw new UserFriendlyException("Không tìm thấy thông tin ứng viên");
 
             // Kiểm tra CV uploaded có tồn tại và thuộc về ứng viên không
-            var uploadedCv = await _uploadedCvRepository.FirstOrDefaultAsync(c => c.Id == input.UploadedCvId && c.CandidateId == candidate.Id);
+            // Lưu ý: UploadedCv.CandidateId = UserId (không phải CandidateProfile.Id)
+            var uploadedCv = await _uploadedCvRepository.FirstOrDefaultAsync(c => c.Id == input.UploadedCvId && c.CandidateId == userId);
             if (uploadedCv == null)
                 throw new UserFriendlyException("CV không tồn tại hoặc không thuộc về bạn");
 
             // Kiểm tra đã ứng tuyển công việc này chưa
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
             var existingApplication = await _applicationRepository.FirstOrDefaultAsync(
-                a => a.JobId == input.JobId && a.CandidateId == candidate.Id);
+                a => a.JobId == input.JobId && a.CandidateId == candidate.UserId);
             if (existingApplication != null)
                 throw new UserFriendlyException("Bạn đã ứng tuyển công việc này rồi");
 
-            // Lấy thông tin Job và Company
-            var job = await _jobPostingRepository.GetAsync(input.JobId);
+            // Lấy thông tin Job và Company - Include RecruiterProfile để lấy CompanyId
+            var queryable = await _jobPostingRepository.GetQueryableAsync();
+            var job = await queryable
+                .Include(j => j.RecruiterProfile)
+                .FirstOrDefaultAsync(j => j.Id == input.JobId);
+            
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
-            // Lấy CompanyId từ RecruiterProfile
-            var recruiter = await _recruiterProfileRepository.GetAsync(job.RecruiterId);
-            if (recruiter == null)
+            if (job.RecruiterProfile == null)
                 throw new UserFriendlyException("Không tìm thấy thông tin nhà tuyển dụng");
 
             // Tạo đơn ứng tuyển
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId (không phải CandidateProfile.Id)
             var application = new JobApplication
             {
                 JobId = input.JobId,
-                CandidateId = candidate.Id,
-                CompanyId = recruiter.CompanyId,
+                CandidateId = candidate.UserId,
+                CompanyId = job.RecruiterProfile.CompanyId,
                 CVType = "Uploaded",
                 UploadedCvId = input.UploadedCvId,
                 CoverLetter = input.CoverLetter,
@@ -163,9 +185,13 @@ namespace VCareer.Application.Applications
 
             await _applicationRepository.InsertAsync(application);
 
-            // Tăng ApplyCount của Job
-            job.ApplyCount++;
-            await _jobPostingRepository.UpdateAsync(job);
+            // Tăng ApplyCount của Job - Reload job để tránh concurrency exception
+            var jobToUpdate = await _jobPostingRepository.GetAsync(input.JobId);
+            if (jobToUpdate != null)
+            {
+                jobToUpdate.ApplyCount++;
+                await _jobPostingRepository.UpdateAsync(jobToUpdate);
+            }
 
             return await MapToDtoAsync(application);
         }
@@ -173,6 +199,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển
         /// </summary>
+        [Authorize(VCareerPermission.Application.View)]
         public async Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input)
         {
             var query = await _applicationRepository.GetQueryableAsync();
@@ -231,6 +258,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy thông tin chi tiết đơn ứng tuyển
         /// </summary>
+        [Authorize(VCareerPermission.Application.View)]
         public async Task<ApplicationDto> GetApplicationAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -240,6 +268,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Cập nhật trạng thái đơn ứng tuyển (cho nhà tuyển dụng)
         /// </summary>
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> UpdateApplicationStatusAsync(Guid id, UpdateApplicationStatusDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -268,14 +297,16 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Hủy đơn ứng tuyển (cho ứng viên)
         /// </summary>
+        [Authorize(VCareerPermission.Application.Withdraw)]
         public async Task<ApplicationDto> WithdrawApplicationAsync(Guid id, WithdrawApplicationDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
 
             // Kiểm tra quyền sở hữu
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
             var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (candidate == null || application.CandidateId != candidate.Id)
+            if (candidate == null || application.CandidateId != candidate.UserId)
                 throw new UserFriendlyException("Bạn không có quyền hủy đơn ứng tuyển này");
 
             application.Status = "Withdrawn";
@@ -290,6 +321,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Đánh dấu đã xem đơn ứng tuyển
         /// </summary>
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> MarkAsViewedAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -308,6 +340,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy thống kê đơn ứng tuyển
         /// </summary>
+        [Authorize(VCareerPermission.Application.Statistics)]
         public async Task<ApplicationStatisticsDto> GetApplicationStatisticsAsync(Guid? jobId = null, int? companyId = null)
         {
             var query = await _applicationRepository.GetQueryableAsync();
@@ -347,6 +380,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của ứng viên
         /// </summary>
+        [Authorize(VCareerPermission.Application.View)]
         public async Task<PagedResultDto<ApplicationDto>> GetMyApplicationsAsync(GetApplicationListDto input)
         {
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
@@ -354,13 +388,15 @@ namespace VCareer.Application.Applications
             if (candidate == null)
                 throw new UserFriendlyException("Không tìm thấy thông tin ứng viên");
 
-            input.CandidateId = candidate.Id;
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
+            input.CandidateId = candidate.UserId;
             return await GetApplicationListAsync(input);
         }
 
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của công ty
         /// </summary>
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetCompanyApplicationsAsync(GetApplicationListDto input)
         {
             var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
@@ -375,6 +411,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển cho một công việc cụ thể
         /// </summary>
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetJobApplicationsAsync(Guid jobId, GetApplicationListDto input)
         {
             input.JobId = jobId;
@@ -384,6 +421,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
         /// </summary>
+        [Authorize(VCareerPermission.Application.DownloadCV)]
         public async Task<byte[]> DownloadApplicationCVAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -406,6 +444,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Xóa đơn ứng tuyển (soft delete)
         /// </summary>
+        [Authorize(VCareerPermission.Application.Delete)]
         public async Task DeleteApplicationAsync(Guid id)
         {
             await _applicationRepository.DeleteAsync(id);
@@ -433,10 +472,18 @@ namespace VCareer.Application.Applications
             }
 
             // Load Candidate để lấy CandidateName
-            var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.Id == application.CandidateId);
+            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId (không phải CandidateProfile.Id)
+            var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
             if (candidate != null)
             {
-                dto.CandidateName = candidate.User.Name;
+                // Load User từ IdentityUser repository
+                var user = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
+                if (user != null)
+                {
+                    dto.CandidateName = !string.IsNullOrEmpty(user.Name) 
+                        ? $"{user.Name} {user.Surname}".Trim() 
+                        : user.UserName;
+                }
             }
 
             // Load CV info

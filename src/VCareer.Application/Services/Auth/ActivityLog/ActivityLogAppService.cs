@@ -15,7 +15,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 
-namespace VCareer.Services.ActivityLogService
+namespace VCareer.Services.Auth.ActivityLog
 {
     [Authorize]
     public class ActivityLogAppService : ApplicationService, IActivityLogAppService
