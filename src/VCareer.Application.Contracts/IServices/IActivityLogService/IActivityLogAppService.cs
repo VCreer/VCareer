@@ -36,3 +36,19 @@ namespace VCareer.IServices.IActivityLogService
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

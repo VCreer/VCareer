@@ -20,12 +20,29 @@ export class NavigationService {
   }
 
   private initializeAuthState() {
+    // Kiểm tra token trước khi restore state
+    // Token có thể được lưu với key 'access_token' hoặc 'auth_token'
+    const accessToken = localStorage.getItem('access_token');
+    const authToken = localStorage.getItem('auth_token');
+    const hasValidToken = !!(accessToken || authToken);
+    
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const userRole = localStorage.getItem('userRole') as UserRole;
     
-    if (isLoggedIn && userRole) {
+    // CHỈ restore state nếu có token VÀ có flag isLoggedIn VÀ có userRole
+    // Nếu không có token, xóa state để tránh bị stuck ở trạng thái logged in
+    if (hasValidToken && isLoggedIn && userRole) {
       this.isLoggedInSubject.next(true);
       this.userRoleSubject.next(userRole);
+    } else {
+      // Nếu không có token hoặc state không hợp lệ, clear state
+      if (isLoggedIn || userRole) {
+        console.warn('Auth state found but no valid token. Clearing auth state.');
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userRole');
+      }
+      this.isLoggedInSubject.next(false);
+      this.userRoleSubject.next(null);
     }
   }
 
@@ -57,6 +74,10 @@ export class NavigationService {
     // Xóa trạng thái khỏi localStorage
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userRole');
+    // Xóa token khi logout
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
     // Sau khi đăng xuất, redirect về trang chủ
     this.router.navigate(['/']);
   }

@@ -53,3 +53,19 @@ namespace VCareer.Models.ActivityLogs
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

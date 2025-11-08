@@ -61,3 +61,19 @@ namespace VCareer.Dto.DashboardDto
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

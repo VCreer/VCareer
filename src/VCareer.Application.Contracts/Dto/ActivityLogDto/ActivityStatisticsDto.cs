@@ -21,3 +21,19 @@ namespace VCareer.Dto.ActivityLogDto
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
