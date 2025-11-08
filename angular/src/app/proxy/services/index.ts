@@ -1,4 +1,3 @@
-import * as ActivityLogService from './activity-log-service';
 import * as Auth from './auth';
 import * as Books from './books';
 import * as Cv from './cv';
@@ -8,4 +7,4 @@ import * as Profile from './profile';
 import * as RecruitmentDashboard from './recruitment-dashboard';
 import * as TeamManagement from './team-management';
 import * as User from './user';
-export { ActivityLogService, Auth, Books, Cv, FileServices, Job, Profile, RecruitmentDashboard, TeamManagement, User };
+export { Auth, Books, Cv, FileServices, Job, Profile, RecruitmentDashboard, TeamManagement, User };

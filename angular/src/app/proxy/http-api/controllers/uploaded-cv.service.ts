@@ -18,10 +18,11 @@ export class UploadedCvService {
     { apiName: this.apiName,...config });
   
 
-  downloadCv = (id: string, config?: Partial<Rest.Config>) =>
+  downloadCv = (id: string, inline: boolean = true, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<any>>({
       method: 'GET',
       url: `/api/cv/uploaded/${id}/download`,
+      params: { inline },
     },
     { apiName: this.apiName,...config });
   
