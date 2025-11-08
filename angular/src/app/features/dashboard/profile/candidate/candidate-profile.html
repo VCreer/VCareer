@@ -98,110 +98,102 @@
 
     <!-- Right Sidebar - User Status and Settings -->
     <div class="right-sidebar">
-      <!-- User Profile Card -->
-      <div class="user-card">
-        <!-- <div class="profile-picture-container" (click)="openAvatarModal()">
-          <img src="assets/images/default-avatar.png" alt="Profile" class="profile-picture">
-          <div class="camera-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
+      <!-- Profile Sidebar Section -->
+      <div class="profile-sidebar-section">
+        <!-- Profile Card -->
+        <div class="profile-card">
+          <div class="profile-layout">
+            <!-- Left Column - Profile Icon -->
+            <div class="profile-left-column">
+              <div class="profile-icon" (click)="openAvatarModal()">
+                <i class="fa fa-user-circle"></i>
+              </div>
+            </div>
+            
+            <!-- Right Column - Profile Info -->
+            <div class="profile-right-column">
+              <div class="profile-info">
+                <span class="profile-label">Profile</span>
+                <h3>Chào bạn trở lại, {{ profileData.fullName }}</h3>
+              </div>
+              
+              <div class="account-status">
+                <span class="verified-badge">Tài khoản đã xác thực</span>
+              </div>
+              
+              <button class="upgrade-btn">
+                <i class="fa fa-arrow-up"></i>
+                Nâng cấp tài khoản
+              </button>
+            </div>
           </div>
-        </div> -->
-        
-        <div class="user-info">
-          <h3 class="welcome-text">Chào bạn trở lại, {{ profileData.fullName }}</h3>
-          <div class="verified-status">
-            <span class="verified-text">Tài khoản đã xác thực</span>
-          </div>
-          <button class="upgrade-button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M7 17L17 7M17 7H7M17 7V17"></path>
-            </svg>
-            Nâng cấp tài khoản
-          </button>
 
-          <!-- Toggle Buttons -->
-          <div class="toggle-settings">
-            <!-- Toggle 1: Đang Tắt tìm việc -->
-            <div class="toggle-item">
-              <label class="toggle-switch">
-                <input type="checkbox" [checked]="jobSearchEnabled" (change)="onToggleJobSearch()" name="jobSearchEnabled">
-                <span class="slider"></span>
-              </label>
-              <div class="toggle-content">
-                <span class="toggle-label" [class.active]="jobSearchEnabled" [class.inactive]="!jobSearchEnabled">
-                  {{ jobSearchEnabled ? 'Đang Bật tìm việc' : 'Đang Tắt tìm việc' }}
-                </span>
-                <p class="toggle-description">
-                  Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
-                </p>
+          <!-- Toggle Settings Section -->
+          <div class="toggle-settings-section">
+            <!-- Toggle 1: Job Search Status -->
+            <div class="toggle-setting-item">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">
+                  <input 
+                    type="checkbox" 
+                    class="toggle-input" 
+                    [ngModel]="jobSearchEnabled"
+                    (change)="onJobSearchToggle($event)"
+                    [checked]="jobSearchEnabled">
+                  <span class="toggle-slider" [class.active]="jobSearchEnabled"></span>
+                </label>
+                <div class="toggle-content">
+                  <span class="toggle-text" [class.inactive]="!jobSearchEnabled">
+                    {{ jobSearchEnabled ? 'Đang bật tìm việc' : 'Đang Tắt tìm việc' }}
+                  </span>
+                  <p class="toggle-description">
+                    Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
+                  </p>
+                </div>
               </div>
             </div>
 
-            <!-- Toggle 2: Cho phép NTD tìm kiếm hồ sơ -->
-            <div class="toggle-item">
-              <label class="toggle-switch">
-                <input type="checkbox" [(ngModel)]="allowRecruiterSearch" name="allowRecruiterSearch" checked>
-                <span class="slider"></span>
-              </label>
-              <div class="toggle-content">
-                <span class="toggle-label" [class.active]="allowRecruiterSearch">
-                  Cho phép NTD tìm kiếm hồ sơ
-                </span>
+            <!-- Toggle 2: Allow Recruiter Search -->
+            <div class="toggle-setting-item">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">
+                  <input 
+                    type="checkbox" 
+                    class="toggle-input" 
+                    [ngModel]="allowRecruiterSearch"
+                    (change)="onAllowRecruiterSearchToggle($event)"
+                    [checked]="allowRecruiterSearch">
+                  <span class="toggle-slider" [class.active]="allowRecruiterSearch"></span>
+                </label>
+                <div class="toggle-content">
+                  <span class="toggle-text">
+                    Cho phép NTD tìm kiếm hồ sơ
+                  </span>
+                  <div class="toggle-description-container">
+                    <p class="toggle-description">
+                      Khi có cơ hội việc làm phù hợp, NTD sẽ liên hệ và trao đổi với bạn qua
+                    </p>
+                    <div class="contact-method">
+                      <i class="fa fa-envelope contact-icon"></i>
+                      <span>Email & Số điện thoại</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- Contact Information Settings -->
-      <div class="contact-section">
-        <h4 class="contact-title">Khi có cơ hội việc làm phù hợp, NTD sẽ liên hệ và trao đổi với bạn qua:</h4>
-        <div class="contact-options">
-          <div class="contact-option">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <span>Email và Số điện thoại của bạn</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Avatar Edit Modal -->
-  <div class="avatar-modal" *ngIf="showAvatarModal" (click)="closeAvatarModal($event)">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>CHỈNH SỬA ẢNH ĐẠI DIỆN</h2>
-      </div>
-      
-      <div class="modal-body">
-        <!-- Left Column - Image Preview -->
-        <div class="image-preview-section">
-          <h3>Ảnh hiển thị trên CV</h3>
-          <div class="preview-container">
-            <img [src]="previewImage || profileData.avatarUrl || 'assets/images/default-avatar.png'" alt="Preview" class="preview-image">
-          </div>
-        </div>
-
-        <!-- Right Column - Action Buttons -->
-        <div class="action-section">
-          <div class="action-buttons">
-            <button class="change-btn" (click)="triggerFileInput()">Đổi ảnh</button>
-            <button class="delete-btn" (click)="deleteImage()">Xóa ảnh</button>
-            <button class="done-btn" (click)="saveAvatar()">Xong</button>
-            <button class="cancel-btn" (click)="cancelAvatarEdit()">Đóng lại (Không lưu)</button>
-          </div>
-          <input type="file" id="avatar-input" class="file-input" accept="image/*" (change)="onImageSelect($event)" style="display: none;">
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Profile Picture Edit Modal -->
+  <app-profile-picture-edit-modal
+    *ngIf="showProfilePictureModal"
+    (close)="closeProfilePictureModal()"
+    (changePicture)="onProfilePictureChange()"
+    (deletePicture)="onProfilePictureDelete()">
+  </app-profile-picture-edit-modal>
 </div>
 
 <!-- Loading indicator -->

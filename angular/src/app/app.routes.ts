@@ -67,6 +67,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/contact',
         loadComponent: () => import('./features/contact/candidate/contact').then(c => c.ContactComponent),
+      },
+      {
+        path: 'candidate/applied-jobs',
+        loadComponent: () => import('./features/dashboard/applied-jobs/candidate/applied-jobs').then(c => c.AppliedJobsComponent),
       }
     ]
   },

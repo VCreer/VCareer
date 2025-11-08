@@ -188,4 +188,9 @@ export class CandidateHeaderComponent implements OnInit {
     this.router.navigate(['/candidate/save-jobs']);
     this.showProfileMenu = false;
   }
+
+  navigateToAppliedJobs() {
+    this.router.navigate(['/candidate/applied-jobs']);
+    this.showProfileMenu = false;
+  }
 }

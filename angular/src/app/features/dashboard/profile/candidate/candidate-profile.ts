@@ -8,6 +8,7 @@ import { UploadedCvService } from '../../../../core/services/uploaded-cv.service
 import { ProfileService } from '../../../../proxy/profile/profile.service';
 import type { ProfileDto, UpdatePersonalInfoDto } from '../../../../proxy/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
+import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
 
 @Component({
   selector: 'app-candidate-profile',
@@ -15,7 +16,8 @@ import { EnableJobSearchModalComponent } from '../../../../shared/components/ena
   imports: [
     CommonModule,
     FormsModule,
-    EnableJobSearchModalComponent
+    EnableJobSearchModalComponent,
+    ProfilePictureEditModal
   ],
   templateUrl: './candidate-profile.html',
   styleUrls: ['./candidate-profile.scss']
@@ -43,10 +45,8 @@ export class CandidateProfileComponent implements OnInit {
   allowRecruiterSearch: boolean = true;
   showEnableJobSearchModal: boolean = false;
 
-  // Avatar modal
-  showAvatarModal: boolean = false;
-  selectedImage: string = '';
-  previewImage: string = '';
+  // Profile Picture Modal
+  showProfilePictureModal: boolean = false;
 
   // Validation
   errors: any = {};
@@ -85,13 +85,8 @@ export class CandidateProfileComponent implements OnInit {
         return res.json() as Promise<ProfileDto>;
       })
       .then((response: ProfileDto) => {
-        console.log('Profile data from API:', response);
-        console.log('Response type:', typeof response);
-        console.log('Response keys:', response ? Object.keys(response) : 'null');
-        
         // Kiểm tra nếu response rỗng hoặc null
         if (!response) {
-          console.warn('No profile data returned from API');
           this.profileData = {
             fullName: '',
             email: '',
@@ -114,13 +109,9 @@ export class CandidateProfileComponent implements OnInit {
           address: response.address || ''
         };
         
-        console.log('Mapped profile data:', this.profileData);
-        console.log('Setting isLoading to false');
         this.isLoading = false;
       })
       .catch((error) => {
-        console.error('Error loading profile:', error);
-        try { console.error('Error details:', JSON.stringify(error)); } catch {}
         // Load default data if API fails
         this.profileData = {
           fullName: '',
@@ -130,10 +121,7 @@ export class CandidateProfileComponent implements OnInit {
           gender: '',
           address: ''
         };
-        console.log('Setting isLoading to false after error');
         this.isLoading = false;
-        // Show error message but don't block the UI
-        console.warn('Using default data due to API error');
       });
   }
 
@@ -219,68 +207,6 @@ export class CandidateProfileComponent implements OnInit {
     return isValid;
   }
 
-  // Removed avatar and CV upload functionality as per user request
-
-  // Avatar modal methods
-  // openAvatarModal() {
-  //   this.showAvatarModal = true;
-  //   this.selectedImage = '';
-  //   this.previewImage = this.profileData.avatarUrl;
-  // }
-
-  // closeAvatarModal(event: any) {
-  //   if (event.target === event.currentTarget) {
-  //     this.showAvatarModal = false;
-  //   }
-  // }
-
-  triggerFileInput() {
-    document.getElementById('avatar-input')?.click();
-  }
-
-  onImageSelect(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.selectedImage = e.target.result;
-        this.previewImage = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  deleteImage() {
-    this.selectedImage = '';
-    this.previewImage = '';
-  }
-
-  // saveAvatar() {
-  //   if (this.previewImage) {
-  //     // Tạo file từ base64 image
-  //     const file = this.dataURLtoFile(this.previewImage, 'avatar.jpg');
-  //     this.onAvatarChange(file);
-  //   }
-  //   this.showAvatarModal = false;
-  // }
-
-  private dataURLtoFile(dataurl: string, filename: string): File {
-    const arr = dataurl.split(',');
-    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-  }
-
-  cancelAvatarEdit() {
-    this.showAvatarModal = false;
-    this.selectedImage = '';
-    this.previewImage = '';
-  }
 
   onBackToProfile() {
     this.router.navigate(['/candidate/dashboard']);
@@ -348,7 +274,30 @@ export class CandidateProfileComponent implements OnInit {
     }, 3000);
   }
 
-  // Enable Job Search Modal methods
+  // Profile Picture Modal methods
+  openProfilePictureModal() {
+    this.showProfilePictureModal = true;
+  }
+
+  openAvatarModal() {
+    this.openProfilePictureModal();
+  }
+
+  closeProfilePictureModal() {
+    this.showProfilePictureModal = false;
+  }
+
+  onProfilePictureChange() {
+    this.showSuccessMessage('Đã cập nhật ảnh đại diện thành công');
+    this.closeProfilePictureModal();
+  }
+
+  onProfilePictureDelete() {
+    this.showSuccessMessage('Đã xóa ảnh đại diện thành công');
+    this.closeProfilePictureModal();
+  }
+
+  // Enable Job Search Modal methods (keep existing logic)
   onToggleJobSearch() {
     // Nếu đang bật (toggle từ ON sang OFF), chỉ cần tắt
     if (this.jobSearchEnabled) {
@@ -359,13 +308,34 @@ export class CandidateProfileComponent implements OnInit {
     }
   }
 
+  // Wrapper for new UI that uses event
+  onJobSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    // Keep existing logic but handle event
+    if (target.checked) {
+      // Nếu đang tắt (toggle từ OFF sang ON), mở modal để chọn CV
+      this.showEnableJobSearchModal = true;
+      // Reset checkbox vì modal sẽ xử lý
+      target.checked = false;
+      this.jobSearchEnabled = false;
+    } else {
+      // Nếu đang bật (toggle từ ON sang OFF), chỉ cần tắt
+      this.jobSearchEnabled = false;
+    }
+  }
+
+  onAllowRecruiterSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.allowRecruiterSearch = target.checked;
+    // Keep existing logic - no message for this one
+  }
+
   onCloseEnableJobSearchModal() {
     this.showEnableJobSearchModal = false;
   }
 
   onEnableJobSearch(selectedCvIds: string[]) {
     // Xử lý logic bật tìm việc với các CV đã chọn
-    console.log('Enable job search for CVs:', selectedCvIds);
     // TODO: Gọi API để bật tìm việc với các CV đã chọn
     this.jobSearchEnabled = true;
     this.showSuccessMessage('Đã bật tìm việc thành công!');
