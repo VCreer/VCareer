@@ -32,7 +32,7 @@
         <li class="nav-item">
           <a (click)="navigateToAbout(); $event.preventDefault()" 
              class="nav-link" 
-             [class.active]="isActiveRoute('/about')">
+             [class.active]="isActiveRoute('/candidate/about-us')">
             {{ translate('header.about') }}
           </a>
         </li>
@@ -266,7 +266,7 @@
       <li class="nav-item">
         <a (click)="navigateToAbout(); $event.preventDefault()" 
            class="nav-link" 
-           [class.active]="isActiveRoute('/about')">
+           [class.active]="isActiveRoute('/candidate/about-us')">
           {{ translate('header.about') }}
         </a>
       </li>
