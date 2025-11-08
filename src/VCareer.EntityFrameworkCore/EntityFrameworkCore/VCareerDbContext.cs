@@ -709,9 +709,11 @@ public class VCareerDbContext :
             ja.ConfigureByConvention();
 
             // Foreign Keys
+            // Lưu ý: CandidateProfile có primary key là UserId, nên JobApplication.CandidateId = CandidateProfile.UserId
             ja.HasOne(x => x.Candidate)
               .WithMany()
               .HasForeignKey(x => x.CandidateId)
+              .HasPrincipalKey(x => x.UserId) // Sử dụng UserId làm principal key
               .OnDelete(DeleteBehavior.Restrict);
 
             ja.HasOne(x => x.Company)
@@ -727,7 +729,7 @@ public class VCareerDbContext :
             ja.HasOne(x => x.UploadedCv)
               .WithMany()
               .HasForeignKey(x => x.UploadedCvId)
-              .OnDelete(DeleteBehavior.SetNull);
+              .OnDelete(DeleteBehavior.Restrict); // Changed from SetNull to Restrict to avoid cascade path conflicts
 
             // Properties
             ja.Property(x => x.JobId).IsRequired();

@@ -13,6 +13,7 @@ namespace VCareer.HttpApi.Controllers
     /// </summary>
     [ApiController]
     [Route("api/applications")]
+    [Authorize]
     public class ApplicationController : VCareerController
     {
         private readonly IApplicationAppService _applicationAppService;
