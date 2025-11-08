@@ -189,7 +189,6 @@
 }
 
 .profile-sidebar-section {
-  // Removed sticky positioning - now scrolls normally with content
 }
 
 .profile-card {
@@ -275,24 +274,57 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
 
-.toggle-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1f2937;
-  line-height: 1.5;
-  
-  &.inactive {
-    color: #6b7280;
+  .toggle-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+    line-height: 1.5;
+    
+    &.inactive {
+      color: #6b7280;
+    }
   }
-}
 
-.toggle-description {
-  font-size: 0.8125rem;
-  color: #6b7280;
-  line-height: 1.5;
-  margin: 0;
+  .toggle-description-container {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.5rem;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .toggle-description {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .contact-method {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0F83BA;
+    font-weight: 500;
+    visibility: visible !important;
+    opacity: 1 !important;
+    
+    .contact-icon {
+      font-size: 0.875rem;
+    }
+  }
 }
 
 // Responsive adjustments
@@ -337,28 +369,16 @@
 .profile-icon {
   width: 60px;
   height: 60px;
-  background: #e8f5e8;
+  background: #f3f4f6;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  cursor: pointer;
   
   i {
-    color: #22c55e;
-    font-size: 1.5rem;
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: -5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    background: #22c55e;
-    border-radius: 50%;
+    color: #6b7280;
+    font-size: 2rem;
   }
 }
 
@@ -393,10 +413,9 @@
 }
 
 .upgrade-btn {
-  width: 100%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start; // Align to the left
+  justify-content: center;
   gap: 0.5rem;
   
   i {
@@ -404,166 +423,8 @@
   }
 }
 
-.contact-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 1.5rem;
-
-  .contact-description {
-    font-size: 0.9rem;
-    color: #374151;
-    line-height: 1.5;
-    margin: 0 0 1rem 0;
-  }
-  
-  .contact-method {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: #0F83BA;
-    font-weight: 500;
-    
-    .contact-icon {
-      font-size: 1rem;
-    }
-  }
-}
 
 
-.user-info {
-  text-align: center;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-
-  .welcome-text {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 0.5rem 0;
-  }
-
-  .user-status {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 1rem 0;
-  }
-}
-
-.job-search-settings {
-  .settings-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 1rem 0;
-  }
-
-  .toggle-container {
-    margin-bottom: 1rem;
-  }
-
-  .toggle-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-size: 0.875rem;
-    color: #374151;
-
-    .toggle-input {
-      margin-right: 0.5rem;
-    }
-  }
-
-  .settings-description {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 1rem 0;
-    line-height: 1.5;
-  }
-
-  .contact-methods {
-    h5 {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #374151;
-      margin: 0 0 0.75rem 0;
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-size: 0.875rem;
-      color: #374151;
-      margin-bottom: 0.5rem;
-
-      input {
-        margin-right: 0.5rem;
-      }
-    }
-  }
-}
-
-.app-download {
-  text-align: center;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 8px;
-
-  h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 0.5rem 0;
-  }
-
-  p {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 1rem 0;
-  }
-
-  .download-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-
-    .download-image {
-      height: 40px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-
-      &:hover {
-        transform: scale(1.05);
-      }
-    }
-  }
-}
-
-.career-guidance {
-  .career-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1rem 0;
-
-    li {
-      font-size: 0.875rem;
-      color: #6b7280;
-      margin-bottom: 0.5rem;
-      padding-left: 1rem;
-      position: relative;
-
-      &:before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: #0F83BA;
-        font-weight: bold;
-      }
-    }
-  }
-}
 
 // Responsive Design
 @media (max-width: 1024px) {
@@ -572,10 +433,6 @@
     gap: 1.5rem;
   }
 
-  .cv-sidebar-section {
-    position: static;
-    order: -1;
-  }
 }
 
 @media (max-width: 768px) {

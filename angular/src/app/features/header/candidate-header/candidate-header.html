@@ -136,7 +136,7 @@
               </div>
               <div class="section-content" *ngIf="expandedSections.jobManagement">
                 <div class="menu-item" (click)="navigateToSavedJobs()">{{ translate('profile.saved_jobs') }}</div>
-                <div class="menu-item">{{ translate('profile.applied_jobs') }}</div>
+                <div class="menu-item" (click)="navigateToAppliedJobs()">{{ translate('profile.applied_jobs') }}</div>
                 <div class="menu-item">{{ translate('profile.suitable_jobs') }}</div>
                 <div class="menu-item">{{ translate('profile.job_suggestions') }}</div>
               </div>

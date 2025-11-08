@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
@@ -10,7 +10,7 @@ import { ToastNotificationComponent } from '../../../shared/components/toast-not
   templateUrl: './contact.html',
   styleUrls: ['./contact.scss']
 })
-export class ContactComponent implements OnInit {
+export class ContactComponent {
   contactForm = {
     name: '',
     email: '',
@@ -21,10 +21,6 @@ export class ContactComponent implements OnInit {
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-
-  constructor() {}
-
-  ngOnInit(): void {}
 
   onSubmit(): void {
     if (this.isFormValid()) {

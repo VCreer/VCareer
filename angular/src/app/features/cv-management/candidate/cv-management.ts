@@ -228,22 +228,22 @@ export class CvManagementComponent implements OnInit {
   }
 
   // Toggle handlers
-  onJobSearchToggle() {
-    // TODO: Call API to update job search status
-    if (this.jobSearchEnabled) {
-      this.showToastMessage(this.translate('profile_sidebar.job_search_enabled'), 'success');
-    } else {
-      this.showToastMessage(this.translate('profile_sidebar.job_search_disabled'), 'info');
-    }
+  onJobSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.jobSearchEnabled = target.checked;
+    const message = this.jobSearchEnabled 
+      ? 'Đã bật tìm việc thành công' 
+      : 'Đã tắt tìm việc thành công';
+    this.showToastMessage(message, 'success');
   }
 
-  onAllowRecruiterSearchToggle() {
-    // TODO: Call API to update recruiter search permission
-    if (this.allowRecruiterSearch) {
-      this.showToastMessage(this.translate('profile_sidebar.recruiter_search_enabled'), 'success');
-    } else {
-      this.showToastMessage(this.translate('profile_sidebar.recruiter_search_disabled'), 'info');
-    }
+  onAllowRecruiterSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.allowRecruiterSearch = target.checked;
+    const message = this.allowRecruiterSearch 
+      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+    this.showToastMessage(message, 'success');
   }
 }
 
