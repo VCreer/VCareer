@@ -119,7 +119,7 @@
           <div class="job-detail__info--actions">
             <button class="box-apply-current" (click)="openApplyModal()">
               <i class="fa fa-paper-plane"></i>
-              {{ translate('job_detail.apply_now') }}
+              {{ hasApplied ? 'Ứng tuyển lại' : translate('job_detail.apply_now') }}
             </button>
             <button class="box-apply-save" [class.active]="isHeartActive" (click)="toggleHeart()">
               <i class="fa" [ngClass]="isHeartActive ? 'fa-heart' : 'fa-heart-o'"></i>

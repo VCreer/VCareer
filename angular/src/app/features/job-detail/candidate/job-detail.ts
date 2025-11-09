@@ -20,6 +20,7 @@ import { Router } from '@angular/router';
 import { CategoryApiService, CategoryTreeDto } from '../../../apiTest/api/category.service';
 import { environment } from '../../../../environments/environment';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
 
 @Component({
   selector: 'app-job-detail',
@@ -48,6 +49,7 @@ export class JobDetailComponent implements OnInit {
   showApplyModal: boolean = false;
   showLoginModal: boolean = false;
   isAuthenticated: boolean = false;
+  hasApplied: boolean = false; // Đã ứng tuyển chưa
 
   // Job data from API
   jobDetail: JobViewDetail | null = null;
@@ -67,7 +69,8 @@ export class JobDetailComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private categoryApi: CategoryApiService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private applicationService: ApplicationService
   ) {}
 
   ngOnInit() {
@@ -79,6 +82,12 @@ export class JobDetailComponent implements OnInit {
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
       console.log('[JobDetail] isLoggedIn =', isLoggedIn);
+      // Check application status when authentication state changes
+      if (isLoggedIn && this.jobId) {
+        this.checkApplicationStatus();
+      } else {
+        this.hasApplied = false;
+      }
     });
 
     // Get job ID from route params
@@ -120,6 +129,11 @@ export class JobDetailComponent implements OnInit {
         // if (typeof jobDetail.isSaved === 'boolean') {
         this.isHeartActive = jobDetail.isSaved;
         console.log('[JobDetail] isSaved from DTO =', jobDetail.isSaved);
+
+        // Check application status if authenticated
+        if (this.isAuthenticated && this.jobId) {
+          this.checkApplicationStatus();
+        }
         // } else {
         //   console.log('[JobDetail] DTO missing isSaved → calling loadSavedStatus');
         //   this.loadSavedStatus();
@@ -457,6 +471,10 @@ export class JobDetailComponent implements OnInit {
     this.isAuthenticated = true;
     // Đợi một chút để đảm bảo modal đã đóng và state đã cập nhật
     setTimeout(() => {
+      // Check application status after login
+      if (this.jobId) {
+        this.checkApplicationStatus();
+      }
       // Reload lại trang job detail để load lại data với token mới
       const currentUrl = window.location.href;
       console.log('[JobDetail] Reloading page with URL:', currentUrl);
@@ -541,10 +559,36 @@ export class JobDetailComponent implements OnInit {
       this.showToast = true;
       // Reload job detail to update apply count
       this.loadJobDetail();
+      // Update application status
+      if (this.isAuthenticated && this.jobId) {
+        this.checkApplicationStatus();
+      }
     } else {
       this.toastType = 'error';
       this.toastMessage = data.message;
       this.showToast = true;
     }
+  }
+
+  /**
+   * Check if user has already applied for this job
+   */
+  checkApplicationStatus(): void {
+    if (!this.jobId || !this.isAuthenticated) {
+      this.hasApplied = false;
+      return;
+    }
+
+    this.applicationService.checkApplicationStatus(this.jobId).subscribe({
+      next: (status) => {
+        this.hasApplied = status.hasApplied || false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        // Silently fail - user might not be authenticated or job doesn't exist
+        console.error('[JobDetail] Error checking application status:', error);
+        this.hasApplied = false;
+      },
+    });
   }
 }

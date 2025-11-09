@@ -86,12 +86,7 @@ namespace VCareer.Application.Applications
             if (cv == null)
                 throw new UserFriendlyException("CV không tồn tại hoặc không thuộc về bạn");
 
-            // Kiểm tra đã ứng tuyển công việc này chưa
-            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
-            var existingApplication = await _applicationRepository.FirstOrDefaultAsync(
-                a => a.JobId == input.JobId && a.CandidateId == candidate.UserId);
-            if (existingApplication != null)
-                throw new UserFriendlyException("Bạn đã ứng tuyển công việc này rồi");
+            // Cho phép ứng tuyển lại (giống TopCV) - không check duplicate
 
             // Lấy thông tin Job và Company - Include RecruiterProfile để lấy CompanyId
             var queryable = await _jobPostingRepository.GetQueryableAsync();
@@ -151,12 +146,7 @@ namespace VCareer.Application.Applications
             if (uploadedCv == null)
                 throw new UserFriendlyException("CV không tồn tại hoặc không thuộc về bạn");
 
-            // Kiểm tra đã ứng tuyển công việc này chưa
-            // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId
-            var existingApplication = await _applicationRepository.FirstOrDefaultAsync(
-                a => a.JobId == input.JobId && a.CandidateId == candidate.UserId);
-            if (existingApplication != null)
-                throw new UserFriendlyException("Bạn đã ứng tuyển công việc này rồi");
+            // Cho phép ứng tuyển lại (giống TopCV) - không check duplicate
 
             // Lấy thông tin Job và Company - Include RecruiterProfile để lấy CompanyId
             var queryable = await _jobPostingRepository.GetQueryableAsync();
@@ -448,6 +438,47 @@ namespace VCareer.Application.Applications
         public async Task DeleteApplicationAsync(Guid id)
         {
             await _applicationRepository.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        public async Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId)
+        {
+            try
+            {
+                var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+                var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+                
+                if (candidate == null)
+                {
+                    return new ApplicationStatusDto { HasApplied = false };
+                }
+
+                // Lấy đơn ứng tuyển mới nhất (nếu có nhiều đơn)
+                var queryable = await _applicationRepository.GetQueryableAsync();
+                var application = await queryable
+                    .Where(a => a.JobId == jobId && a.CandidateId == candidate.UserId)
+                    .OrderByDescending(a => a.CreationTime)
+                    .FirstOrDefaultAsync();
+
+                if (application == null)
+                {
+                    return new ApplicationStatusDto { HasApplied = false };
+                }
+
+                return new ApplicationStatusDto
+                {
+                    HasApplied = true,
+                    ApplicationId = application.Id,
+                    Status = application.Status
+                };
+            }
+            catch
+            {
+                // Nếu không authenticated hoặc có lỗi, trả về false
+                return new ApplicationStatusDto { HasApplied = false };
+            }
         }
 
         /// <summary>
