@@ -118,7 +118,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   }
 
   navigateToPostJob() {
-    this.router.navigate(['/recruiter/post-job']);
+    this.router.navigate(['/recruiter/job-posting']);
   }
 
   navigateToFindCv() {

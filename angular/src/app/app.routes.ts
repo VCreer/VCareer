@@ -136,6 +136,10 @@ export const APP_ROUTES: Routes = [
         path: 'service',
         loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
       },
+      {
+        path: 'job-posting',
+        loadComponent: () => import('./features/dashboard/job-posting/recruiter/job-posting').then(c => c.JobPostingComponent),
+      },
       // {
       //   path: 'home',
       //   loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),

@@ -1,0 +1,167 @@
+.company-preview-wrapper {
+  .preview-section {
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 16px 0;
+    }
+
+    // Contact Information
+    .contact-info {
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        color: #374151;
+        margin-bottom: 8px;
+
+        .contact-icon {
+          color: #6b7280;
+          font-size: 0.875rem;
+        }
+      }
+
+      .contact-divider {
+        width: 1px;
+        height: 16px;
+        background: #e5e7eb;
+        margin: 8px 0 8px 20px;
+      }
+    }
+
+    // Company Preview
+    .company-preview {
+      .company-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 12px 0;
+      }
+
+      .company-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+
+        .company-info-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.875rem;
+          color: #374151;
+
+          .company-icon {
+            color: #6b7280;
+            font-size: 0.875rem;
+          }
+        }
+      }
+
+      .company-description {
+        margin-bottom: 16px;
+
+        .description-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 8px;
+        }
+
+        .description-content {
+          font-size: 0.875rem;
+          color: #6b7280;
+          line-height: 1.5;
+
+          &:empty::before {
+            content: 'Chưa có mô tả';
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .company-photos {
+        .photos-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #374151;
+
+          .photos-edit-icon {
+            font-size: 0.75rem;
+            color: #0F83BA;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    // Keywords
+    .keywords-content {
+      font-size: 0.875rem;
+      color: #6b7280;
+      min-height: 20px;
+    }
+
+    // Share Buttons
+    .share-buttons {
+      display: flex;
+      gap: 8px;
+
+      .share-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s;
+
+        &:hover {
+          opacity: 0.8;
+        }
+
+        .share-icon {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: white;
+        }
+
+        .share-icon-fa {
+          font-size: 0.875rem;
+          color: white;
+        }
+
+        &.share-facebook {
+          background: #1877f2;
+        }
+
+        &.share-linkedin {
+          background: #0a66c2;
+        }
+
+        &.share-twitter {
+          background: #1da1f2;
+        }
+
+        &.share-link {
+          background: #6b7280;
+        }
+      }
+    }
+  }
+}
+
