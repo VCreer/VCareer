@@ -17,6 +17,7 @@ namespace VCareer.Models.Job
     {
         #region Basic Job Description
         public string? CompanyImageUrl { get; set; }
+        public int CompanyId { get; set; }
         public string? CompanyName { get; set; }
         public string? Title { get; set; }
         public string? Slug { get; set; }
@@ -40,11 +41,17 @@ namespace VCareer.Models.Job
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
         public int Quantity { get; set; }
-
         #endregion
+
         #region Status
         public JobStatus Status { get; set; }
-        public bool IsApproved { get; set; } = false; // đã được duyệt chưa 
+        #endregion
+
+        #region Approve job 
+        public RiskJobLevel RiskJobLevel { get; set; } = RiskJobLevel.NonCalculated;
+        public string? RejectedReason { get; set; } // chỉ dùng để gửi email cho recruiter, job được accept cũng có thể có trường này 
+        public Guid? ApprovedBy { get; set; }
+        public DateTime? ApproveAt { get; set; }
         #endregion
         public int ViewCount { get; set; }
         public DateTime PostedAt { get => CreationTime; set => CreationTime = value; }
@@ -52,6 +59,7 @@ namespace VCareer.Models.Job
         public int ApplyCount { get; set; } = 0; // Số lượng ứng viên đã nộp hồ sơ
         public Guid RecruiterId { get; set; }
         public Guid JobCategoryId { get; set; }
+
 
         #region Navigate atribute
         public virtual RecruiterProfile RecruiterProfile { get; set; }

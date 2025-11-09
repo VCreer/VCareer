@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VCareer.Dto.Job;
+using VCareer.Dto.JobDto;
 using VCareer.Models.Job;
 
 namespace VCareer.Services.LuceneService.JobSearch

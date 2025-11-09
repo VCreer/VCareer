@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VCareer.Models.Job;
+using VCareer.Models.Companies;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer.IRepositories.Job
+namespace VCareer.IRepositories.ICompanyRepository
 {
-    public interface IJobPostRepository : IRepository<Job_Post, Guid>
+    public interface ICompanyRepository : IRepository<Company, int>
     {
     }
 }

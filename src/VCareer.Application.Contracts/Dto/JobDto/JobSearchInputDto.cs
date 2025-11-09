@@ -3,65 +3,45 @@ using System.Collections.Generic;
 using VCareer.Constants;
 using VCareer.Constants.JobConstant;
 
-namespace VCareer.Dto.Job
+namespace VCareer.Dto.JobDto
 {
-    /// <summary>
     /// Input DTO cho tìm kiếm job (FE gửi lên)
     /// ⚠️ REDESIGNED theo UI mới (Radio buttons cho Experience và Salary)
-    /// </summary>
+    
+
+
+    //cần phải sửa lại vì có nhiều trường ko có trong job
     public class JobSearchInputDto
     {
-        /// <summary>
         /// Từ khóa tìm kiếm (title, description, requirements, benefits...)
-        /// </summary>
         public string? Keyword { get; set; }
 
-        /// <summary>
         /// Danh sách Category IDs (FE gửi leaf nodes)
-        /// </summary>
         public List<Guid>? CategoryIds { get; set; }
 
-        /// <summary>
         /// Danh sách Province IDs
-        /// </summary>
         public List<int>? ProvinceIds { get; set; }
 
-        /// <summary>
         /// Danh sách District IDs
-        /// </summary>
         public List<int>? DistrictIds { get; set; }
 
-        // ============================================
         // ✨ FILTER KINH NGHIỆM - Dropdown/Radio (đơn giản hóa)
-        // ============================================
-        /// <summary>
         /// Filter kinh nghiệm (match exact với ExperienceLevel enum)
         /// null = Tất cả
-        /// </summary>
         public ExperienceLevel? ExperienceFilter { get; set; }
 
-        // ============================================
         // ✨ FILTER LƯƠNG - Radio Buttons
-        // ============================================
-        /// <summary>
         /// Filter lương theo radio buttons
         /// Values: "all", "under10", "10to15", "15to20", "20to30", "30to50", "over50", "deal"
-        /// </summary>
         public SalaryFilterType? SalaryFilter { get; set; }
 
-        /// <summary>
         /// Loại hình công việc (Full-time, Part-time, Remote...)
-        /// </summary>
         public List<EmploymentType>? EmploymentTypes { get; set; }
 
-        /// <summary>
         /// Vị trí (Intern, Junior, Senior...)
-        /// </summary>
         public List<PositionType>? PositionTypes { get; set; }
 
-        /// <summary>
         /// Tuyển gấp?
-        /// </summary>
         public bool? IsUrgent { get; set; }
 
         /// <summary>

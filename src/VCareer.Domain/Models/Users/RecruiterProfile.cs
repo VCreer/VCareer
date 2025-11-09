@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Constants.JobConstant;
 using VCareer.Models.Companies;
 using VCareer.Models.Job;
 using Volo.Abp.Domain.Entities.Auditing;
@@ -14,10 +15,12 @@ namespace VCareer.Models.Users
     {
         public Guid UserId { get; set; }
         public int CompanyId { get; set; }
+        public string Email{ get; set; }
         public bool IsLead { get; set; }
         public bool Status { get; set; }
         public IdentityUser User { get; set; }
         public Company Company { get; set; }
+        public RecruiterLevel RecruiterLevel { get; set; } = RecruiterLevel.Unverified;
         public long QuotaUsedBytes { get; set; } 
         public long MaxQuotaBytes { get; set; }
 

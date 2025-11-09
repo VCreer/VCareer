@@ -11,6 +11,7 @@ namespace VCareer.Models.Users
     public class CandidateProfile : FullAuditedAggregateRoot<Guid>
     {
         public Guid UserId { get; set; }
+        public string Email { get; set; }
         public DateTime DateOfbirth { get; set; }
         public bool Gender { get; set; }
         public string Location { get; set; }
