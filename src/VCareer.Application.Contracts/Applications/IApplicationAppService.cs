@@ -74,5 +74,10 @@ namespace VCareer.Application.Contracts.Applications
         /// Xóa đơn ứng tuyển (soft delete)
         /// </summary>
         Task DeleteApplicationAsync(Guid id);
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId);
     }
 }

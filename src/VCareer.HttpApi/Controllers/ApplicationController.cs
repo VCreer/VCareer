@@ -142,5 +142,14 @@ namespace VCareer.HttpApi.Controllers
         {
             await _applicationAppService.DeleteApplicationAsync(id);
         }
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        [HttpGet("check-status/{jobId}")]
+        public async Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId)
+        {
+            return await _applicationAppService.CheckApplicationStatusAsync(jobId);
+        }
     }
 }

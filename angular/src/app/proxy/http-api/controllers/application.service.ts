@@ -123,5 +123,12 @@ export class ApplicationService {
     },
     { apiName: this.apiName,...config });
 
+  checkApplicationStatus = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, { hasApplied: boolean; applicationId?: string; status?: string }>({
+      method: 'GET',
+      url: `/api/applications/check-status/${jobId}`,
+    },
+    { apiName: this.apiName,...config });
+
   constructor(private restService: RestService) {}
 }
