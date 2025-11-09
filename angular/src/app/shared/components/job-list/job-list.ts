@@ -2,11 +2,15 @@ import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitte
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
+import { JobApiService } from '../../../apiTest/api/job.service';
+import { NavigationService } from '../../../core/services/navigation.service';
+// Import trực tiếp để tránh circular dependency
+import { LoginModalComponent } from '../login-modal/login-modal';
 
 @Component({
   selector: 'app-job-list',
   standalone: true,
-  imports: [CommonModule, ToastNotificationComponent],
+  imports: [CommonModule, ToastNotificationComponent, LoginModalComponent],
   templateUrl: './job-list.html',
   styleUrls: ['./job-list.scss']
 })
@@ -32,6 +36,8 @@ export class JobListComponent implements OnInit, OnChanges {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
+  showLoginModal = false;
+  isAuthenticated = false;
   
   // Search and filter properties
   filteredJobs: any[] = [];
@@ -145,11 +151,18 @@ export class JobListComponent implements OnInit, OnChanges {
     }
   ];
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private jobApi: JobApiService,
+    private navigationService: NavigationService
+  ) {}
 
   ngOnInit() {
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
+    });
+    this.navigationService.isLoggedIn$.subscribe(isLogged => {
+      this.isAuthenticated = isLogged;
     });
     // Initialize filteredJobs with all jobs
     this.updateFilteredJobs();
@@ -179,6 +192,7 @@ export class JobListComponent implements OnInit, OnChanges {
     console.log('✅ JobListComponent: filteredJobs updated');
     console.log('   📄 Filtered count:', this.filteredJobs.length);
     console.log('   📑 Total pages:', this.totalPages);
+    // Backend đã trả isSaved trong JobViewDto, không cần gọi API thêm
   }
 
   calculateTotalPages() {
@@ -361,13 +375,33 @@ export class JobListComponent implements OnInit, OnChanges {
   }
 
   onSaveJob(job: any) {
-    console.log('Save job:', job);
-    // Handle save job logic - toggle saved state
-    job.isSaved = !job.isSaved;
+    if (!this.isAuthenticated) {
+      this.showLoginModal = true;
+      return;
+    }
+
+    if (!job || !job.id) return;
+
     if (job.isSaved) {
-      this.showSuccessToast('Đã lưu công việc vào danh sách yêu thích');
+      this.jobApi.unsaveJob(job.id).subscribe({
+        next: () => {
+          job.isSaved = false;
+          this.showSuccessToast('Đã bỏ lưu công việc khỏi danh sách yêu thích');
+        },
+        error: () => {
+          this.showSuccessToast('Không thể bỏ lưu công việc');
+        }
+      });
     } else {
-      this.showSuccessToast('Đã bỏ lưu công việc khỏi danh sách yêu thích');
+      this.jobApi.saveJob(job.id).subscribe({
+        next: () => {
+          job.isSaved = true;
+          this.showSuccessToast('Đã lưu công việc vào danh sách yêu thích');
+        },
+        error: () => {
+          this.showSuccessToast('Không thể lưu công việc');
+        }
+      });
     }
   }
 
@@ -420,6 +454,15 @@ export class JobListComponent implements OnInit, OnChanges {
 
   onToastClose() {
     this.showToast = false;
+  }
+
+  // Login modal handlers
+  onLoginClose() { this.showLoginModal = false; }
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
+    // Reload lại trang để gọi lại API search với token mới (để có isSaved)
+    window.location.reload();
   }
 
   showQuickViewButton(): boolean {

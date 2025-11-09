@@ -14,13 +14,13 @@
     <div class="cv-item" *ngFor="let cv of cvs; let i = index">
       <!-- CV Card - Only Image Box -->
       <div class="cv-card" (mouseenter)="onCvHover(cv.id)" (mouseleave)="onCvLeave(cv.id)">
-        <!-- Star Icon (Top Right) - Always show for all CVs -->
-        <div class="cv-star" [class.show]="hoveredCvId === cv.id" [class.active]="cv.isDefault" (click)="onToggleStar(cv.id)">
+        <!-- Star Icon (Top Right) - Always visible -->
+        <div class="cv-star" [class.active]="cv.isDefault" (click)="onToggleStar(cv.id); $event.stopPropagation()">
           <i class="fa fa-star star-icon"></i>
         </div>
 
-        <!-- CV Preview Image -->
-        <div class="cv-preview-image">
+        <!-- CV Preview Image - Clickable -->
+        <div class="cv-preview-image" (click)="onView(cv.id)" style="cursor: pointer;">
           <img [src]="cv.preview" [alt]="cv.title" class="cv-image">
         </div>
 

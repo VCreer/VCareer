@@ -126,7 +126,7 @@ namespace VCareer.Services.Profile
         }
 
 
-        //ádad
+        // lấy thông tin id hiện tại
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
             // Lấy UserId từ token claims thay vì ICurrentUser

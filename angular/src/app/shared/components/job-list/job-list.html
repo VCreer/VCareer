@@ -34,8 +34,8 @@
             </div>
 
             <!-- Quick View Button in same row -->
-            <button
-              class="quick-view-btn"
+            <button 
+              class="quick-view-btn" 
               *ngIf="showQuickViewButton()"
               (click)="onQuickView(job); $event.stopPropagation()"
             >
@@ -53,12 +53,13 @@
             <div class="action-icons">
               <i class="fa fa-eye-slash hide-icon" (click)="hideJob(job); $event.stopPropagation()">
               </i>
-              <button
+              <button 
                 class="save-btn"
                 [class.saved]="job.isSaved"
                 (click)="onSaveJob(job); $event.stopPropagation()"
+                title="{{ job.isSaved ? 'Đã lưu' : 'Lưu tin' }}"
               >
-                <i class="fa fa-heart"></i>
+                <i class="fa" [ngClass]="job.isSaved ? 'fa-heart' : 'fa-heart-o'"></i>
               </button>
             </div>
           </div>
@@ -66,6 +67,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    *ngIf="showLoginModal"
+    (close)="onLoginClose()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="getPaginatedJobs().length === 0">
@@ -83,7 +91,7 @@
         fill="none"
         stroke="currentColor"
         stroke-width="2"
-      >
+    >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6"></polyline>
       </svg>
@@ -92,8 +100,8 @@
       <span class="current-page">{{ currentPage }}</span>
       <span class="total-pages"> / {{ totalPages }} {{ translate('pagination.pages') }}</span>
     </span>
-    <button
-      class="page-btn"
+    <button 
+      class="page-btn" 
       (click)="onPageChange(currentPage + 1)"
       [disabled]="currentPage === totalPages"
     >
@@ -110,11 +118,12 @@
     </button>
   </div>
 
+  <!-- Toast Notification -->
   <app-toast-notification
     [show]="showToast"
     [message]="toastMessage"
     [type]="toastType"
     (close)="onToastClose()"
   ></app-toast-notification>
-</div> 
+</div>
 -->

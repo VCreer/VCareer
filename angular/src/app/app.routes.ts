@@ -24,12 +24,53 @@ export const APP_ROUTES: Routes = [
       //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
       // },
       {
-        path: 'candidate/job',
-        loadComponent: () => import('./features/dashboard/job/candidate/job').then(c => c.JobComponent),
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
       },
       {
-        path: 'candidate/job-detail',
-        loadComponent: () => import('./features/dashboard/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+        path: 'candidate/cv-management/view/:cvId',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-view').then(c => c.CvViewComponent),
+      },
+      {
+        path: 'candidate/cv-management/uploaded/view/:id',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/uploaded-cv-view').then(c => c.UploadedCvViewComponent),
+      },
+      {
+        path: 'candidate/job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+      },
+      {
+        path: 'candidate/job-detail/:id',
+        loadComponent: () => import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
+      {
+        path: 'candidate/company',
+        loadComponent: () => import('./features/dashboard/company/candidate/company-listing').then(c => c.CompanyListingComponent),
+      },
+      {
+        path: 'candidate/companies',
+        redirectTo: 'candidate/company',
+        pathMatch: 'full'
+      },
+      {
+        path: 'candidate/company-detail/:id',
+        loadComponent: () => import('./features/dashboard/company-detail/candidate/company-detail').then(c => c.CompanyDetailComponent),
+      },
+      {
+        path: 'candidate/change-password',
+        loadComponent: () => import('./features/dashboard/change-password/candidate/change-password').then(c => c.ChangePasswordComponent),
+      },
+      {
+        path: 'candidate/cv-sample',
+        loadComponent: () => import('./features/dashboard/cv-sample/candidate/cv-sample').then(c => c.CvSampleComponent),
+      },
+      {
+        path: 'candidate/write-cv/:templateId',
+        loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
+      },
+      {
+        path: 'candidate/save-jobs',
+        loadComponent: () => import('./features/dashboard/save-jobs/candidate/saved-jobs').then(c => c.SavedJobsComponent),
       }
     ]
   },
@@ -91,9 +132,21 @@ export const APP_ROUTES: Routes = [
         path: 'about-us',
         loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
       },
-        {
-        path: 'recruiter-homepage',
-        loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+      {
+        path: 'service',
+        loadComponent: () => import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs)
+      },
+      // {
+      //   path: 'home',
+      //   loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
+      // },
+      {
+        path: 'recruiter-verify',
+        loadComponent: () => import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(c => c.RecruiterVerifyOtpComponent),
+      },
+      {
+        path: 'recruiter-setting',
+        loadComponent: () => import('./features/dashboard/setting/recruiter/recruiter-setting').then(c => c.RecruiterSettingComponent),
       },
       // {
       //   path: 'performance-dashboard',

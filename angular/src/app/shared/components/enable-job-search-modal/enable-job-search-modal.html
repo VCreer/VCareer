@@ -1,0 +1,80 @@
+<div class="enable-job-search-modal" *ngIf="show" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Bật tìm việc</h2>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="loading">
+        <p>Đang tải danh sách CV...</p>
+      </div>
+
+      <!-- CV Sections -->
+      <div class="cv-sections" *ngIf="!loading">
+        <!-- CV ONLINE Section -->
+        <div class="cv-section" *ngIf="onlineCvs.length > 0">
+          <h3 class="section-title">CV ONLINE</h3>
+          <div class="cv-grid">
+            <div class="cv-item" *ngFor="let cv of onlineCvs">
+              <label class="cv-checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedCvIds.has(cv.id!)"
+                  (change)="onToggleCv(cv.id!)"
+                  class="cv-checkbox">
+                <div class="cv-info">
+                  <span class="cv-name">{{ getCvName(cv) }}</span>
+                  <span class="cv-date">Cập nhật ngày: {{ getUpdateDate(cv) }}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CV UPLOAD Section -->
+        <div class="cv-section" *ngIf="uploadCvs.length > 0">
+          <h3 class="section-title">CV UPLOAD</h3>
+          <div class="cv-grid">
+            <div class="cv-item" *ngFor="let cv of uploadCvs">
+              <label class="cv-checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedCvIds.has(cv.id!)"
+                  (change)="onToggleCv(cv.id!)"
+                  class="cv-checkbox">
+                <div class="cv-info">
+                  <span class="cv-name">{{ getCvName(cv) }}</span>
+                  <span class="cv-date">Cập nhật ngày: {{ getUpdateDate(cv) }}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="onlineCvs.length === 0 && uploadCvs.length === 0">
+          <p>Bạn chưa có CV nào. Vui lòng tạo hoặc upload CV trước.</p>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer" *ngIf="!loading && (onlineCvs.length > 0 || uploadCvs.length > 0)">
+        <p>Khi bật tìm việc, bạn đồng thời cũng cho phép NTD tìm kiếm và xem các CV đã chọn của mình</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer" *ngIf="!loading && (onlineCvs.length > 0 || uploadCvs.length > 0)">
+      <button 
+        class="enable-button" 
+        (click)="onEnableJobSearch()"
+        [disabled]="selectedCvIds.size === 0">
+        Bật tìm việc ngay
+      </button>
+    </div>
+  </div>
+</div>
+

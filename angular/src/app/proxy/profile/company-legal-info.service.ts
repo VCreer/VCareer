@@ -1,5 +1,6 @@
-import type { CompanyLegalInfoDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from './models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
+import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
@@ -14,6 +15,14 @@ export class CompanyLegalInfoService {
     this.restService.request<any, IActionResult>({
       method: 'DELETE',
       url: `/api/profile/company-legal-info/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCompanyByJobId = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyInfoForJobDetailDto>({
+      method: 'GET',
+      url: `/api/profile/company-legal-info/by-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -38,6 +47,15 @@ export class CompanyLegalInfoService {
     this.restService.request<any, CompanyLegalInfoDto[]>({
       method: 'GET',
       url: '/api/profile/company-legal-info/current-user/list',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  searchCompanies = (input: CompanySearchInputDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyLegalInfoDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/search',
+      body: input,
     },
     { apiName: this.apiName,...config });
   

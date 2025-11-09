@@ -1,0 +1,63 @@
+<div class="cv-sample-container">
+  <div class="cv-sample-content">
+    <div class="header-section">
+      <div class="breadcrumb">
+        <a href="/" class="breadcrumb-link">{{ translate('breadcrumb.home') }}</a>
+        <span class="breadcrumb-separator">></span>
+        <span class="breadcrumb-current">{{ translate('cv_sample.breadcrumb') }}</span>
+      </div>
+      <h1 class="page-title">{{ translate('cv_sample.page_title') }}</h1>
+      
+      <div class="choose-template__filter">
+        <button 
+          class="filter-btn"
+          *ngFor="let filter of filters" 
+          [class.active]="selectedFilter === filter.id"
+          (click)="selectFilter(filter.id)">
+          <i [class]="filter.icon"></i>
+          {{ translate(filter.label) }}
+        </button>
+      </div>
+    </div>
+
+    <div class="cv-sample-main">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="loading-spinner"></div>
+        <p>{{ translate('cv_sample.loading') || 'Đang tải templates...' }}</p>
+      </div>
+
+      <!-- Templates List -->
+      <div class="list-cv-style" *ngIf="!loading && hasResults">
+        <div class="list-cv-style_item col-sm-4" *ngFor="let template of filteredTemplates">
+          <div class="cv-template-card">
+            <div class="cv-preview">
+              <div class="cv-preview-image">
+                <img [src]="getTemplatePreviewImage(template)" [alt]="template.name || 'CV Template'">
+                <button class="btn-use-template" (click)="useTemplate(template.id || '')">
+                  {{ translate('cv_sample.use_template') || 'Sử dụng mẫu' }}
+                </button>
+              </div>
+              <div class="template-header">
+                <div class="template-title">{{ template.name || 'CV Template' }}</div>
+                <div class="template-description" *ngIf="template.description">
+                  {{ template.description }}
+                </div>
+                <div class="template-tags">
+                  <span class="tag" *ngFor="let tag of getTemplateTags(template)">{{ tag }}</span>
+                  <span class="tag tag-free" *ngIf="template.isFree">Miễn phí</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- No Results State -->
+      <div class="no-results" *ngIf="!loading && !hasResults">
+        <img src="assets/images/cv-sample/not-cv-sample.png" alt="No CV samples">
+        <p>{{ translate('cv_sample.no_results') || 'Không tìm thấy template nào' }}</p>
+      </div>
+    </div>
+  </div>
+</div>

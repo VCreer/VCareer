@@ -22,10 +22,7 @@ namespace VCareer.Profile
             _profileAppService = profileAppService;
         }
 
-        /// <summary>
-        /// Gets the current user's profile information
-        /// </summary>
-        /// <returns>Current user's profile information</returns>
+        // lấy profile hiện tại
         [HttpGet]
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
@@ -93,6 +90,7 @@ namespace VCareer.Profile
         /// <param name="input">Password change information</param>
         /// <returns>No content</returns>
         [HttpPut("change-password")]
+        [IgnoreAntiforgeryToken]
         /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto input)
         {
