@@ -37,10 +37,18 @@ export const APP_ROUTES: Routes = [
             c => c.CandidateProfileComponent
           ),
       },
-      // {
-      //   path: 'candidate/cv-management',
-      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      // },
+      {
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
+      {
+        path: 'candidate/cv-sample',
+        loadComponent: () => import('./features/dashboard/cv-sample/candidate/cv-sample').then(c => c.CvSampleComponent),
+      },
+      {
+        path: 'candidate/write-cv/:type',
+        loadComponent: () => import('./features/dashboard/write-cv/candidate/write-cv').then(c => c.WriteCv),
+      },
       {
         path: 'candidate/job',
         loadComponent: () =>
