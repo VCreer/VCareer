@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { WriteCv } from '../write-cv';
+import { WriteCv } from './write-cv';
 
 describe('WriteCv', () => {
   let component: WriteCv;
