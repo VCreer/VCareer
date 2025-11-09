@@ -1,0 +1,23 @@
+<div class="select-field-wrapper">
+  <label class="select-label" *ngIf="label">
+    {{ label }}
+    <span class="required" *ngIf="required">*</span>
+  </label>
+  
+  <select 
+    class="select-input"
+    [class.error]="error"
+    [class.disabled]="disabled"
+    [disabled]="disabled"
+    [required]="required"
+    [value]="value"
+    (change)="onSelect($event)">
+    <option value="">{{ placeholder }}</option>
+    <option *ngFor="let option of options" [value]="option.value">
+      {{ option.label }}
+    </option>
+  </select>
+  
+  <span class="error-message" *ngIf="error">{{ error }}</span>
+</div>
+

@@ -1,0 +1,185 @@
+.job-posting-page {
+  min-height: calc(100vh - 64px);
+  padding-top: 0;
+  margin-left: 72px;
+  width: calc(100% - 72px);
+  padding-right: 0;
+  padding-bottom: 20px;
+  background: #f8fafc;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 1;
+
+  &.sidebar-expanded {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  // Breadcrumb Box
+  .breadcrumb-box {
+    background-color: white;
+    padding: 1rem 0;
+    position: fixed;
+    top: 64px;
+    z-index: 998;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
+    border-bottom: 1px solid #e5e7eb;
+    min-height: 56px;
+
+    left: 72px;
+    width: calc(100% - 72px);
+
+    &.sidebar-expanded {
+      left: 280px;
+      width: calc(100% - 280px);
+    }
+
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+
+      &.sidebar-expanded {
+        left: 0;
+        width: 100%;
+      }
+    }
+
+    .breadcrumb-container {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      min-height: 40px;
+
+      @media (max-width: 768px) {
+        padding-left: 15px;
+        padding-right: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        min-height: auto;
+      }
+
+      .page-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+        flex-shrink: 0;
+        line-height: 1.5;
+      }
+
+      .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+
+        @media (max-width: 768px) {
+          width: 100%;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+    }
+  }
+
+  // Content Wrapper
+  .content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-top: 80px;
+    padding: 24px 16px;
+
+    @media (max-width: 768px) {
+      padding: 16px;
+      margin-top: 70px;
+    }
+  }
+
+  // Form Wrapper
+  .form-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    .form-main-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 24px 0;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .form-section {
+      margin-bottom: 32px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 20px 0;
+      }
+
+      .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+      }
+    }
+
+    // Company Image Section
+    .company-image-section {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .image-preview {
+        margin-top: 8px;
+
+        img {
+          max-width: 200px;
+          max-height: 200px;
+          width: auto;
+          height: auto;
+          border-radius: 8px;
+          border: 2px solid #e5e7eb;
+          object-fit: contain;
+          background: #f9fafb;
+          padding: 8px;
+        }
+      }
+    }
+  }
+
+}

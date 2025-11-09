@@ -1,0 +1,17 @@
+<div class="generic-modal-overlay" *ngIf="show" (click)="onOverlayClick()">
+  <div class="generic-modal-content" [style.max-width]="maxWidth" (click)="onContentClick($event)">
+    <!-- Modal Header -->
+    <div class="generic-modal-header" *ngIf="title || showCloseButton">
+      <h2 class="generic-modal-title" *ngIf="title">{{ title }}</h2>
+      <button class="generic-modal-close" *ngIf="showCloseButton" (click)="onClose()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="generic-modal-body" [style.background]="bodyBackground">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
+

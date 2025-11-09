@@ -1,0 +1,179 @@
+<div class="preview-content-grid">
+  <!-- Left Column -->
+  <div class="preview-left-column">
+    <!-- Job Info Section -->
+    <div class="job-detail__info">
+      <!-- Job Title -->
+      <div class="job-detail__info--title">
+        <h1>{{ jobData.jobTitle || 'Tên công việc' }}</h1>
+      </div>
+
+      <!-- Job Details Section -->
+      <div class="job-detail__info--sections">
+        <div class="job-detail__info-item" *ngIf="jobData.salary">
+          <div class="job-detail__info-item-icon">
+            <i class="fa fa-dollar-sign"></i>
+          </div>
+          <div class="job-detail__info-item-content">
+            <div class="job-detail__info-item-title">Mức lương</div>
+            <div class="job-detail__info-item-value">{{ getSalaryLabel() }}</div>
+          </div>
+        </div>
+        <div class="job-detail__info-item" *ngIf="jobData.location">
+          <div class="job-detail__info-item-icon">
+            <i class="fa fa-map-marker-alt"></i>
+          </div>
+          <div class="job-detail__info-item-content">
+            <div class="job-detail__info-item-title">Địa điểm</div>
+            <div class="job-detail__info-item-value">{{ getLocationLabel() }}</div>
+          </div>
+        </div>
+        <div class="job-detail__info-item" *ngIf="jobData.experience">
+          <div class="job-detail__info-item-icon">
+            <i class="fa fa-infinity"></i>
+          </div>
+          <div class="job-detail__info-item-content">
+            <div class="job-detail__info-item-title">Kinh nghiệm</div>
+            <div class="job-detail__info-item-value">{{ getExperienceLabel() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deadline -->
+      <div class="job-deadline" *ngIf="jobData.applicationDeadline">
+        <i class="fa fa-clock"></i>
+        <span>Hạn nộp hồ sơ: {{ formatDate(jobData.applicationDeadline) }}</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="job-detail__info--actions">
+        <button class="box-apply-current">
+          <i class="fa fa-paper-plane"></i>
+          Ứng tuyển ngay
+        </button>
+        <button class="box-apply-save">
+          <i class="fa fa-heart"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Job Description Section -->
+    <div class="job-detail__box--left-content">
+      <!-- Recruitment Details Header -->
+      <div class="recruitment-details-header">
+        <div class="section-title-bar"></div>
+        <h2 class="section-title">Chi tiết tin tuyển dụng</h2>
+      </div>
+
+      <!-- Job Description -->
+      <div class="job-detail__info--section" *ngIf="jobData.description">
+        <h3 class="section-title">Mô tả công việc</h3>
+        <div [innerHTML]="jobData.description"></div>
+      </div>
+
+      <!-- Candidate Requirements -->
+      <div class="job-detail__info--section" *ngIf="jobData.requirements">
+        <h3 class="section-title">Yêu cầu ứng viên</h3>
+        <div [innerHTML]="jobData.requirements"></div>
+      </div>
+
+      <!-- Benefits Section -->
+      <div class="job-detail__info--section" *ngIf="jobData.benefits">
+        <h3 class="section-title">Quyền lợi</h3>
+        <div [innerHTML]="jobData.benefits"></div>
+      </div>
+
+      <!-- Work Location Section -->
+      <div class="job-detail__info--section" *ngIf="jobData.workLocation">
+        <h3 class="section-title">Địa điểm làm việc</h3>
+        <p>{{ jobData.workLocation }}</p>
+      </div>
+
+      <!-- Application Method Section -->
+      <div class="job-detail__info--section" *ngIf="jobData.applicationMethod">
+        <h3 class="section-title">Cách thức ứng tuyển</h3>
+        <div [innerHTML]="jobData.applicationMethod"></div>
+      </div>
+
+      <!-- Application Deadline -->
+      <div class="job-detail__info--section" *ngIf="jobData.applicationDeadline">
+        <h3 class="section-title">Hạn nộp hồ sơ</h3>
+        <p>{{ formatDate(jobData.applicationDeadline) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="preview-right-column">
+    <!-- Company Information -->
+    <div class="job-detail__company">
+      <div class="company-logo">
+        <div class="logo-box" *ngIf="jobData.companyImagePreview">
+          <img [src]="jobData.companyImagePreview" alt="Company logo">
+        </div>
+        <div class="logo-box logo-box-text" *ngIf="!jobData.companyImagePreview && jobData.companyName">
+          {{ jobData.companyName.charAt(0).toUpperCase() }}
+        </div>
+        <div class="logo-box" *ngIf="!jobData.companyImagePreview && !jobData.companyName">
+          <i class="fa fa-building"></i>
+        </div>
+      </div>
+      <h3 class="company-name">{{ jobData.companyName || 'Tên công ty' }}</h3>
+      <div class="company-details">
+        <div class="company-detail-item" *ngIf="jobData.companySize">
+          <i class="fa fa-users"></i>
+          <span class="label">Quy mô:</span>
+          <span>{{ getCompanySizeLabel() }}</span>
+        </div>
+        <div class="company-detail-item" *ngIf="jobData.companyIndustry">
+          <i class="fa fa-briefcase"></i>
+          <span class="label">Lĩnh vực:</span>
+          <span>{{ getCompanyIndustryLabel() }}</span>
+        </div>
+        <div class="company-detail-item" *ngIf="jobData.companyLocation">
+          <i class="fa fa-map-marker-alt"></i>
+          <span class="label">Địa điểm:</span>
+          <span>{{ jobData.companyLocation }}</span>
+        </div>
+      </div>
+      <a href="#" class="company-link" *ngIf="jobData.companyWebsite">
+        Xem trang công ty
+        <i class="fa fa-external-link-alt"></i>
+      </a>
+    </div>
+
+    <!-- General Information -->
+    <div class="job-detail__body-right--item job-detail__body-right--box-general">
+      <h3>Thông tin chung</h3>
+      <div class="info-item" *ngIf="jobData.positionLevel">
+        <i class="fa fa-user"></i>
+        <span class="label">Cấp bậc:</span>
+        <span>{{ getPositionLevelLabel() }}</span>
+      </div>
+      <div class="info-item" *ngIf="jobData.education">
+        <i class="fa fa-graduation-cap"></i>
+        <span class="label">Học vấn:</span>
+        <span>{{ getEducationLabel() }}</span>
+      </div>
+      <div class="info-item" *ngIf="jobData.quantity">
+        <i class="fa fa-users"></i>
+        <span class="label">Số lượng tuyển:</span>
+        <span>{{ jobData.quantity }}</span>
+      </div>
+      <div class="info-item" *ngIf="jobData.employmentType">
+        <i class="fa fa-briefcase"></i>
+        <span class="label">Hình thức làm việc:</span>
+        <span>{{ getEmploymentTypeLabel() }}</span>
+      </div>
+    </div>
+
+    <!-- Related Categories/Area Section -->
+    <div class="job-detail__body-right--item job-detail__body-right--box-category" *ngIf="jobData.location">
+      <h3>Khu vực</h3>
+      <div class="category-tags">
+        <span class="tag">{{ getLocationLabel() }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
