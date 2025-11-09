@@ -1,0 +1,266 @@
+<div class="recruiter-setting-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <span class="breadcrumb-item active">Cài đặt tài khoản</span>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <!-- Left Sub-navigation -->
+    <div class="left-subnav">
+      <nav class="settings-nav">
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'change-password'"
+          (click)="setActiveTab('change-password')">
+          <i class="fa fa-key nav-icon"></i>
+          <span>Đổi mật khẩu</span>
+        </a>
+        
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'personal-info'"
+          (click)="setActiveTab('personal-info')">
+          <i class="fa fa-user nav-icon"></i>
+          <span>Thông tin cá nhân</span>
+        </a>
+        
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'business-cert'"
+          (click)="setActiveTab('business-cert')">
+          <i class="fa fa-file-text nav-icon"></i>
+          <span>Giấy đăng ký doanh nghiệp</span>
+        </a>
+        
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'company-info'"
+          (click)="setActiveTab('company-info')">
+          <i class="fa fa-building nav-icon"></i>
+          <span>Thông tin công ty</span>
+        </a>
+        
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'api-connection'"
+          (click)="setActiveTab('api-connection')">
+          <i class="fa fa-plug nav-icon"></i>
+          <span>Kết nối API</span>
+        </a>
+        
+        <a 
+          class="nav-item" 
+          [class.active]="activeTab === 'settings'"
+          (click)="setActiveTab('settings')">
+          <i class="fa fa-cog nav-icon"></i>
+          <span>Cài đặt</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Right Content Panel -->
+    <div class="right-content" *ngIf="activeTab === 'personal-info'">
+      <!-- Account Verification Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2 class="section-title">Tài khoản xác thực: {{ verificationLevel }}</h2>
+            <p class="section-description">
+              Nâng cấp tài khoản lên cấp 2/3 để nhận 100 lượt xem CV ứng viên từ công cụ tìm kiếm CV.
+            </p>
+          </div>
+          <div class="section-progress">
+            <span class="progress-text">Hoàn thành {{ verificationProgress }}%</span>
+          </div>
+        </div>
+        
+        <div class="verification-steps">
+          <div class="step-item" *ngFor="let step of verificationSteps">
+            <div class="step-radio">
+              <input type="radio" [checked]="step.completed" disabled>
+            </div>
+            <span class="step-label">{{ step.label }}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="step-arrow">
+              <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="section-actions">
+          <app-button 
+            type="button"
+            [size]="'small'"
+            (click)="onLearnMore()"
+            class="learn-more-btn">
+            Tìm hiểu thêm
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Update Personal Information Section -->
+      <div class="section-card">
+        <h2 class="section-title">Cập nhật thông tin cá nhân</h2>
+        
+        <div class="form-header-section">
+          <div class="avatar-section">
+            <app-profile-avatar
+              [avatarUrl]="profileData.avatarUrl"
+              [name]="profileData.fullName"
+              [size]="'large'"
+              [showEditButton]="true"
+              (onAvatarChange)="onChangeAvatar($event)"
+              (onAvatarRemove)="onRemoveAvatar()">
+            </app-profile-avatar>
+          </div>
+          
+          <div class="form-group email-group">
+            <label class="form-label">Email</label>
+            <input 
+              type="email" 
+              class="form-input" 
+              [value]="profileData.email"
+              readonly
+              disabled>
+          </div>
+        </div>
+        
+        <form class="profile-form" (ngSubmit)="onSaveProfile($event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Họ và tên</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [(ngModel)]="profileData.fullName"
+                name="fullName"
+                required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Giới tính</label>
+              <select 
+                class="form-input" 
+                [(ngModel)]="profileData.gender"
+                name="gender">
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Số điện thoại</label>
+            <input 
+              type="tel" 
+              class="form-input" 
+              [(ngModel)]="profileData.phone"
+              name="phone"
+              required>
+          </div>
+          
+          <div class="form-actions">
+            <app-button 
+              type="button"
+              (click)="onCancel()"
+              class="cancel-btn">
+              Hủy
+            </app-button>
+            <app-button 
+              type="submit"
+              [buttonType]="'submit'"
+              [disabled]="isSaving"
+              [loading]="isSaving"
+              class="save-btn">
+              Lưu
+            </app-button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password Content -->
+    <div class="right-content" *ngIf="activeTab === 'change-password'">
+      <div class="section-card">
+        <h2 class="section-title">Thay đổi mật khẩu</h2>
+        
+        <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword($event)" class="change-password-form">
+          <!-- Mật khẩu mới -->
+          <div class="password-form-row">
+            <label class="password-form-label">Mật khẩu mới</label>
+            <div class="password-field-wrapper">
+              <app-password-field
+                formControlName="newPassword"
+                [placeholder]="'Nhập mật khẩu mới'"
+                [error]="getPasswordError('newPassword')"
+                [required]="true">
+              </app-password-field>
+            </div>
+          </div>
+
+          <!-- Nhập lại mật khẩu -->
+          <div class="password-form-row">
+            <label class="password-form-label">Nhập lại mật khẩu</label>
+            <div class="password-field-wrapper">
+              <app-password-field
+                formControlName="confirmPassword"
+                [placeholder]="'Nhập lại mật khẩu mới'"
+                [error]="getPasswordError('confirmPassword')"
+                [required]="true">
+              </app-password-field>
+            </div>
+          </div>
+
+          <!-- Checkbox: Thoát tất cả các phiên bản đăng nhập hiện tại -->
+          <div class="password-form-checkbox">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="logoutAllSessions"
+                [ngModelOptions]="{standalone: true}"
+                class="checkbox-input">
+              <span class="checkbox-text">Thoát tất cả các phiên bản đăng nhập hiện tại</span>
+            </label>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="password-form-actions">
+            <app-button 
+              type="button"
+              (click)="onCancel()"
+              class="cancel-btn">
+              Hủy
+            </app-button>
+            <app-button 
+              type="submit"
+              [buttonType]="'submit'"
+              [disabled]="isChangingPassword || changePasswordForm.invalid"
+              [loading]="isChangingPassword"
+              class="save-btn">
+              Cập nhật
+            </app-button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Other Tabs Content -->
+    <div class="right-content" *ngIf="activeTab !== 'personal-info' && activeTab !== 'change-password'">
+      <div class="section-card">
+        <h2 class="section-title">{{ getTabTitle(activeTab) }}</h2>
+        <p class="section-description">Chức năng đang được phát triển...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification - Outside container to avoid being clipped -->
+<app-toast-notification
+  [show]="showToast"
+  [message]="toastMessage"
+  [type]="toastType"
+  (close)="onToastClose()">
+</app-toast-notification>
+

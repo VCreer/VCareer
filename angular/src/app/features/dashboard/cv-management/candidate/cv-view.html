@@ -1,0 +1,46 @@
+<div class="cv-view-container">
+  <!-- Header với các action buttons -->
+  <div class="cv-view-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="onBack()">
+        <i class="fa fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      <h1 class="cv-title">{{ cvName }}</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-action btn-download" (click)="onDownloadCv()">
+        <i class="fa fa-download"></i>
+        <span>Tải CV PDF</span>
+      </button>
+      <button class="btn-action btn-edit" (click)="onEditCv()">
+        <i class="fa fa-edit"></i>
+        <span>Sửa CV</span>
+      </button>
+      <button class="btn-action btn-copy" (click)="onCopyCv()">
+        <i class="fa fa-copy"></i>
+        <span>Copy CV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Đang tải CV...</p>
+  </div>
+
+  <!-- CV Content -->
+  <div class="cv-content-wrapper" *ngIf="!loading && cvHtml">
+    <div class="cv-content" [innerHTML]="cvHtml"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+

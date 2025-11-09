@@ -99,7 +99,7 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToCompanies() {
-    this.router.navigate(['/candidate/companies']);
+    this.router.navigate(['/candidate/company']);
     this.closeMobileMenu();
   }
 
@@ -210,6 +210,16 @@ export class CandidateHeaderComponent implements OnInit {
 
   navigateToCvManagement() {
     this.router.navigate(['/candidate/cv-management']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToChangePassword() {
+    this.router.navigate(['/candidate/change-password']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToSavedJobs() {
+    this.router.navigate(['/candidate/save-jobs']);
     this.showProfileMenu = false;
   }
 }

@@ -5,9 +5,9 @@ using Volo.Abp.Application.Dtos;
 namespace VCareer.Application.Contracts.Applications
 {
     /// <summary>
-    /// DTO để nộp đơn ứng tuyển từ CV có sẵn trong thư viện
+    /// DTO để nộp đơn ứng tuyển với CV online (CandidateCv)
     /// </summary>
-    public class ApplyWithLibraryCVDto
+    public class ApplyWithOnlineCVDto
     {
         /// <summary>
         /// ID công việc ứng tuyển
@@ -16,22 +16,22 @@ namespace VCareer.Application.Contracts.Applications
         public Guid JobId { get; set; }
 
         /// <summary>
-        /// ID CV từ thư viện
+        /// ID CV online (CandidateCv)
         /// </summary>
         [Required]
-        public Guid CVId { get; set; }
+        public Guid CandidateCvId { get; set; }
 
         /// <summary>
-        /// Thư xin việc/Cover letter
+        /// Thư xin việc/Cover letter (optional)
         /// </summary>
         [StringLength(2000)]
-        public string CoverLetter { get; set; }
+        public string? CoverLetter { get; set; }
     }
 
     /// <summary>
-    /// DTO để nộp đơn ứng tuyển với CV tải lên mới
+    /// DTO để nộp đơn ứng tuyển với CV đã tải lên (UploadedCv)
     /// </summary>
-    public class ApplyWithUploadCVDto
+    public class ApplyWithUploadedCVDto
     {
         /// <summary>
         /// ID công việc ứng tuyển
@@ -40,38 +40,16 @@ namespace VCareer.Application.Contracts.Applications
         public Guid JobId { get; set; }
 
         /// <summary>
-        /// File CV tải lên
+        /// ID CV đã tải lên (UploadedCv)
         /// </summary>
         [Required]
-        public Microsoft.AspNetCore.Http.IFormFile CVFile { get; set; }
+        public Guid UploadedCvId { get; set; }
 
         /// <summary>
-        /// Tên ứng viên
-        /// </summary>
-        [Required]
-        [StringLength(100)]
-        public string CandidateName { get; set; }
-
-        /// <summary>
-        /// Email ứng viên
-        /// </summary>
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
-        public string CandidateEmail { get; set; }
-
-        /// <summary>
-        /// Số điện thoại ứng viên
-        /// </summary>
-        [Required]
-        [StringLength(20)]
-        public string CandidatePhone { get; set; }
-
-        /// <summary>
-        /// Thư xin việc/Cover letter
+        /// Thư xin việc/Cover letter (optional)
         /// </summary>
         [StringLength(2000)]
-        public string CoverLetter { get; set; }
+        public string? CoverLetter { get; set; }
     }
 
     /// <summary>
@@ -90,7 +68,7 @@ namespace VCareer.Application.Contracts.Applications
         /// Ghi chú từ nhà tuyển dụng
         /// </summary>
         [StringLength(1000)]
-        public string RecruiterNotes { get; set; }
+        public string? RecruiterNotes { get; set; }
 
         /// <summary>
         /// Điểm đánh giá (1-5)
@@ -102,7 +80,7 @@ namespace VCareer.Application.Contracts.Applications
         /// Lý do từ chối (nếu Status = "Rejected")
         /// </summary>
         [StringLength(500)]
-        public string RejectionReason { get; set; }
+        public string? RejectionReason { get; set; }
 
         /// <summary>
         /// Ngày hẹn phỏng vấn
@@ -113,13 +91,13 @@ namespace VCareer.Application.Contracts.Applications
         /// Địa điểm phỏng vấn
         /// </summary>
         [StringLength(200)]
-        public string InterviewLocation { get; set; }
+        public string? InterviewLocation { get; set; }
 
         /// <summary>
         /// Ghi chú phỏng vấn
         /// </summary>
         [StringLength(1000)]
-        public string InterviewNotes { get; set; }
+        public string? InterviewNotes { get; set; }
     }
 
     /// <summary>
@@ -131,7 +109,7 @@ namespace VCareer.Application.Contracts.Applications
         /// Lý do hủy ứng tuyển
         /// </summary>
         [StringLength(500)]
-        public string WithdrawalReason { get; set; }
+        public string? WithdrawalReason { get; set; }
     }
 
     /// <summary>
@@ -147,7 +125,7 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Tên công việc
         /// </summary>
-        public string JobTitle { get; set; }
+        public string? JobTitle { get; set; }
 
         /// <summary>
         /// ID ứng viên
@@ -157,67 +135,47 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Tên ứng viên
         /// </summary>
-        public string CandidateName { get; set; }
+        public string? CandidateName { get; set; }
 
         /// <summary>
         /// ID công ty
         /// </summary>
-        public Guid CompanyId { get; set; }
+        public int CompanyId { get; set; }
 
         /// <summary>
         /// Tên công ty
         /// </summary>
-        public string CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         /// <summary>
-        /// Loại CV sử dụng
+        /// Loại CV sử dụng: "Online" hoặc "Uploaded"
         /// </summary>
         public string CVType { get; set; }
 
         /// <summary>
-        /// ID CV từ thư viện
+        /// ID CV online (CandidateCv)
         /// </summary>
-        public Guid? CVId { get; set; }
+        public Guid? CandidateCvId { get; set; }
 
         /// <summary>
-        /// Tên CV từ thư viện
+        /// Tên CV online
         /// </summary>
-        public string CVName { get; set; }
+        public string? CandidateCvName { get; set; }
 
         /// <summary>
-        /// URL file CV tải lên
+        /// ID CV đã tải lên (UploadedCv)
         /// </summary>
-        public string UploadedCVUrl { get; set; }
+        public Guid? UploadedCvId { get; set; }
 
         /// <summary>
-        /// Tên file CV tải lên
+        /// Tên CV đã tải lên
         /// </summary>
-        public string UploadedCVName { get; set; }
-
-        /// <summary>
-        /// Kích thước file CV
-        /// </summary>
-        public long? UploadedCVSize { get; set; }
-
-        /// <summary>
-        /// Loại file CV
-        /// </summary>
-        public string UploadedCVType { get; set; }
-
-        /// <summary>
-        /// Email ứng viên
-        /// </summary>
-        public string CandidateEmail { get; set; }
-
-        /// <summary>
-        /// Số điện thoại ứng viên
-        /// </summary>
-        public string CandidatePhone { get; set; }
+        public string? UploadedCvName { get; set; }
 
         /// <summary>
         /// Thư xin việc
         /// </summary>
-        public string CoverLetter { get; set; }
+        public string? CoverLetter { get; set; }
 
         /// <summary>
         /// Trạng thái ứng tuyển
@@ -227,7 +185,7 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Ghi chú từ nhà tuyển dụng
         /// </summary>
-        public string RecruiterNotes { get; set; }
+        public string? RecruiterNotes { get; set; }
 
         /// <summary>
         /// Điểm đánh giá
@@ -247,7 +205,7 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Lý do từ chối
         /// </summary>
-        public string RejectionReason { get; set; }
+        public string? RejectionReason { get; set; }
 
         /// <summary>
         /// Ngày hẹn phỏng vấn
@@ -257,17 +215,12 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Địa điểm phỏng vấn
         /// </summary>
-        public string InterviewLocation { get; set; }
+        public string? InterviewLocation { get; set; }
 
         /// <summary>
         /// Ghi chú phỏng vấn
         /// </summary>
-        public string InterviewNotes { get; set; }
-
-        /// <summary>
-        /// Có được ứng viên quan tâm không
-        /// </summary>
-        public bool IsInterested { get; set; }
+        public string? InterviewNotes { get; set; }
 
         /// <summary>
         /// Ngày hủy ứng tuyển
@@ -277,7 +230,7 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// Lý do hủy ứng tuyển
         /// </summary>
-        public string WithdrawalReason { get; set; }
+        public string? WithdrawalReason { get; set; }
     }
 
     /// <summary>
@@ -298,17 +251,17 @@ namespace VCareer.Application.Contracts.Applications
         /// <summary>
         /// ID công ty (lọc theo công ty)
         /// </summary>
-        public Guid? CompanyId { get; set; }
+        public int? CompanyId { get; set; }
 
         /// <summary>
         /// Trạng thái ứng tuyển
         /// </summary>
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         /// <summary>
         /// Loại CV
         /// </summary>
-        public string CVType { get; set; }
+        public string? CVType { get; set; }
 
         /// <summary>
         /// Từ ngày ứng tuyển
@@ -380,56 +333,5 @@ namespace VCareer.Application.Contracts.Applications
         /// Tỷ lệ chấp nhận (%)
         /// </summary>
         public decimal AcceptanceRate { get; set; }
-    }
-
-    /// <summary>
-    /// DTO thông tin tài liệu đính kèm
-    /// </summary>
-    public class ApplicationDocumentDto : FullAuditedEntityDto<Guid>
-    {
-        /// <summary>
-        /// ID đơn ứng tuyển
-        /// </summary>
-        public Guid ApplicationId { get; set; }
-
-        /// <summary>
-        /// Tên tài liệu
-        /// </summary>
-        public string DocumentName { get; set; }
-
-        /// <summary>
-        /// URL file tài liệu
-        /// </summary>
-        public string DocumentUrl { get; set; }
-
-        /// <summary>
-        /// Loại tài liệu
-        /// </summary>
-        public string DocumentType { get; set; }
-
-        /// <summary>
-        /// Kích thước file (bytes)
-        /// </summary>
-        public long FileSize { get; set; }
-
-        /// <summary>
-        /// Loại MIME của file
-        /// </summary>
-        public string MimeType { get; set; }
-
-        /// <summary>
-        /// Mô tả tài liệu
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Có phải tài liệu chính không
-        /// </summary>
-        public bool IsPrimary { get; set; }
-
-        /// <summary>
-        /// Thứ tự hiển thị
-        /// </summary>
-        public int DisplayOrder { get; set; }
     }
 }

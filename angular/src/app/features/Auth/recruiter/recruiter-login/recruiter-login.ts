@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -28,6 +29,7 @@ export class RecruiterLoginComponent {
   private customAuthService = inject(CustomAuthService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private navigationService = inject(NavigationService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -125,18 +127,14 @@ export class RecruiterLoginComponent {
         if (email === 'admin@company.com' && password === 'admin123') {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
-          setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
-          }, 2000);
+          this.navigationService.loginAsRecruiter();
         } else if (email === 'test@company.com' || email === 'testrecruiter') {
           this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
           this.loginForm.patchValue({ password: '' });
         } else {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           localStorage.setItem('justLoggedIn', 'true');
-          setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
-          }, 2000);
+          this.navigationService.loginAsRecruiter();
         }
       }, 1500);
     } else {

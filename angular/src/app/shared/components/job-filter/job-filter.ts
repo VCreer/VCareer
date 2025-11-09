@@ -27,11 +27,11 @@ export class JobFilterComponent implements OnInit {
   @Output() filterChange = new EventEmitter<any>();
 
   selectedLanguage: string = 'vi';
-
+  
   // ============================================
   // ✅ FILTER OPTIONS (From Enums)
   // ============================================
-
+  
   // Hình thức làm việc (EmploymentType)
   employmentTypes: FilterOption[] = [
     { value: null, label: 'Tất cả', checked: true },
@@ -41,7 +41,7 @@ export class JobFilterComponent implements OnInit {
     { value: EmploymentType.Contract, label: 'Hợp đồng', checked: false },
     { value: EmploymentType.Freelance, label: 'Freelance', checked: false },
   ];
-
+  
   // Kinh nghiệm (ExperienceLevel)
   experienceLevels: FilterOption[] = [
     { value: null, label: 'Tất cả', checked: true },
@@ -148,7 +148,7 @@ export class JobFilterComponent implements OnInit {
     this.employmentTypes.forEach(o => {
       o.checked = o.value === null;
     });
-
+    
     this.experienceLevels.forEach(o => {
       o.checked = o.value === null;
     });
@@ -160,7 +160,7 @@ export class JobFilterComponent implements OnInit {
     this.salaryFilters.forEach(o => {
       o.checked = o.value === null;
     });
-
+    
     this.emitFilterChange();
   }
 
@@ -185,7 +185,7 @@ export class JobFilterComponent implements OnInit {
         selectedPosition && selectedPosition.value !== null ? [selectedPosition.value] : [],
       salaryFilter: selectedSalary && selectedSalary.value !== null ? selectedSalary.value : null,
     };
-
+    
     console.log('🔧 JobFilter emitting:', filters);
     this.filterChange.emit(filters);
   }

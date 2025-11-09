@@ -7,7 +7,9 @@ using VCareer.Models.Companies;
 using VCareer.Permission;
 using VCareer.Permissions;
 using VCareer.Profile;
+using VCareer.Repositories.Companies;
 using Volo.Abp;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
@@ -19,15 +21,19 @@ namespace VCareer.Services.Profile
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly IRepository<Company, int> _companyRepository;
+        private readonly ICompanyRepository _companyCustomRepository;
         private readonly ICurrentUser _currentUser;
 
         public CompanyLegalInfoAppService(
             IRepository<Company, int> companyRepository,
+            ICompanyRepository companyCustomRepository,
             ICurrentUser currentUser)
         {
             _companyRepository = companyRepository;
+            _companyCustomRepository = companyCustomRepository;
             _currentUser = currentUser;
         }
+
 
         [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync(SubmitCompanyLegalInfoDto input)
@@ -81,6 +87,8 @@ namespace VCareer.Services.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
+
 
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
@@ -141,12 +149,16 @@ namespace VCareer.Services.Profile
 
 
 
-        // Long dùng hàm này để view listk
+
+        
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
+
+
+
 
         public async Task<CompanyLegalInfoDto> GetCurrentUserCompanyLegalInfoAsync()
         {
@@ -163,6 +175,10 @@ namespace VCareer.Services.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
+
+
+
+
         public async Task<List<CompanyLegalInfoDto>> GetCurrentUserCompanyLegalInfoListAsync()
         {
             // In real scenario, you would filter by current user
@@ -170,6 +186,11 @@ namespace VCareer.Services.Profile
             var companies = await _companyRepository.GetListAsync();
             return ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
         }
+
+
+
+
+
 
         [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
         public async Task DeleteCompanyLegalInfoAsync(int id)
@@ -197,6 +218,8 @@ namespace VCareer.Services.Profile
 
             await _companyRepository.UpdateAsync(company);
         }
+
+
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
@@ -227,6 +250,69 @@ namespace VCareer.Services.Profile
             await _companyRepository.UpdateAsync(company);
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
+        }
+
+
+
+
+        /// <summary>
+        /// Lấy thông tin công ty theo Job ID (để hiển thị trong trang job detail)
+        /// </summary>
+        public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
+        {
+            // Sử dụng repository để lấy company với đầy đủ thông tin industries
+            var company = await _companyCustomRepository.GetCompanyByJobIdAsync(jobId);
+
+            if (company == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy công ty cho job này.");
+            }
+
+            // Map sang DTO và lấy danh sách industries
+            var dto = new CompanyInfoForJobDetailDto
+            {
+                Id = company.Id,
+                CompanyName = company.CompanyName,
+                LogoUrl = company.LogoUrl,
+                CompanySize = company.CompanySize,
+                HeadquartersAddress = company.HeadquartersAddress,
+                Industries = company.CompanyIndustries?
+                    .Select(ci => ci.Industry?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList() ?? new List<string>()
+            };
+
+            return dto;
+        }
+
+        /// <summary>
+        /// Tìm kiếm danh sách công ty (public API)
+        /// Application Service chỉ gọi repository và map kết quả
+        /// </summary>
+        public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input)
+        {
+            // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
+            // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
+            var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+
+            // Gọi repository để thực hiện query (logic query ở Repository layer)
+            var result = await _companyCustomRepository.SearchCompaniesAsync(
+                keyword: input.Keyword,
+                status: input.Status,
+                skipCount: skipCount,
+                maxResultCount: maxResultCount,
+                sorting: input.Sorting
+            );
+
+            // Map sang DTO (Application Service chỉ làm việc với mapping)
+            var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
+
+            return new PagedResultDto<CompanyLegalInfoDto>
+            {
+                TotalCount = result.TotalCount,
+                Items = dtos
+            };
         }
     }
 }

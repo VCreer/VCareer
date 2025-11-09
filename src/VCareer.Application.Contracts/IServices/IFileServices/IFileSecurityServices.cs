@@ -15,7 +15,8 @@ namespace VCareer.IServices.IFileServices
         bool ValidateSize(long size, object containerType);
         Task<bool> ValidateMimeAndMagicAsync(Stream fileStream, object containerType);
         Task<bool> ScanVirusAsync(Stream fileStream);
-        string GenerateSafeStorageName(string userId, string fileName);
+        string GenerateSafeStorageName(string fileName);
         Task<bool> CheckUserQuotaAsync(IdentityUser user, long newFileSize);
+        string GetMimeType(string extension);
     }
 }

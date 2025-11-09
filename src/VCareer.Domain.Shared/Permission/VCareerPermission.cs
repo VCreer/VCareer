@@ -33,16 +33,30 @@ namespace VCareer.Permission
             public const string DownloadSupportingDocument = Default + ".DownloadSupportingDocument";
         }
 
-        public static class CV
+        public static class CvTemplate
         {
-            public const string Default = GroupName + ".CV";
-            public const string CreateOnline = Default + ".CreateOnline";
-            public const string Upload = Default + ".Upload";
+            public const string Default = GroupName + ".CvTemplate";
+            public const string Create = Default + ".Create";
             public const string Update = Default + ".Update";
             public const string Delete = Default + ".Delete";
             public const string Get = Default + ".Get";
+            public const string GetList = Default + ".GetList";
+            public const string GetActiveTemplates = Default + ".GetActiveTemplates";
+        }
+
+        public static class CandidateCv
+        {
+            public const string Default = GroupName + ".CandidateCv";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string Delete = Default + ".Delete";
+            public const string Get = Default + ".Get";
+            public const string GetList = Default + ".GetList";
+            public const string Render = Default + ".Render";
             public const string SetDefault = Default + ".SetDefault";
-            public const string SetPublic = Default + ".SetPublic";
+            public const string Publish = Default + ".Publish";
+            public const string IncrementViewCount = Default + ".IncrementViewCount";
+            public const string GetDefault = Default + ".GetDefault";
         }
 
         public static class Dashboard
@@ -55,17 +69,19 @@ namespace VCareer.Permission
             public const string CompareStaffPerformance = Default + ".CompareStaffPerformance";
         }
 
-        /*public static class Application
+        public static class Application
         {
             public const string Default = GroupName + ".Application";
             public const string Apply = Default + ".Apply";
             public const string View = Default + ".View";
             public const string Update = Default + ".Update";
             public const string Delete = Default + ".Delete";
-            public const string Manage = Default + ".Manage"; // Cho nhà tuyển dụng
+            public const string Manage = Default + ".Manage";
             public const string Statistics = Default + ".Statistics";
             public const string DownloadCV = Default + ".DownloadCV";
             public const string Withdraw = Default + ".Withdraw";
-        }*/
+        }
+
+        
     }
 }

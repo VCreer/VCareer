@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -189,6 +190,94 @@ namespace VCareer.Controllers.Job
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi khi xóa job khỏi index", error = ex.Message });
+            }
+        }
+
+        #endregion
+
+        #region Saved Jobs (Favorite)
+
+        /// <summary>
+        /// Lưu job vào danh sách yêu thích
+        /// </summary>
+        [HttpPost]
+        [Route("{jobId}/save")]
+        [Authorize]
+        public async Task<ActionResult> SaveJobAsync(Guid jobId)
+        {
+            try
+            {
+                await _jobPostingService.SaveJobAsync(jobId);
+                return Ok(new { message = "Đã lưu công việc thành công" });
+            }
+            catch (Volo.Abp.BusinessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lưu công việc", error = ex.Message });
+            }
+        }
+
+
+        /// <summary>
+        /// Bỏ lưu job khỏi danh sách yêu thích
+        /// </summary>
+        [HttpDelete]
+        [Route("{jobId}/save")]
+        [Authorize]
+        public async Task<ActionResult> UnsaveJobAsync(Guid jobId)
+        {
+            try
+            {
+                await _jobPostingService.UnsaveJobAsync(jobId);
+                return Ok(new { message = "Đã bỏ lưu công việc thành công" });
+            }
+            catch (Volo.Abp.BusinessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi bỏ lưu công việc", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem job đã được lưu chưa
+        /// </summary>
+        [HttpGet]
+        [Route("{jobId}/save-status")]
+        public async Task<ActionResult<SavedJobStatusDto>> GetSavedJobStatusAsync(Guid jobId)
+        {
+            try
+            {
+                var status = await _jobPostingService.GetSavedJobStatusAsync(jobId);
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi kiểm tra trạng thái lưu", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách job đã lưu của user hiện tại
+        /// </summary>
+        [HttpGet]
+        [Route("saved")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<SavedJobDto>>> GetSavedJobsAsync([FromQuery] int skipCount = 0, [FromQuery] int maxResultCount = 20)
+        {
+            try
+            {
+                var result = await _jobPostingService.GetSavedJobsAsync(skipCount, maxResultCount);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công việc đã lưu", error = ex.Message });
             }
         }
 

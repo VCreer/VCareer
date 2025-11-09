@@ -39,7 +39,7 @@ import { FutureHeroComponent } from '../../../../shared/components/future-hero/f
     FutureHeroComponent,
   ],
   templateUrl: './candidate-homepage.html',
-  styleUrls: ['./candidate-homepage.scss'],
+  styleUrls: ['./candidate-homepage.scss']
 })
 export class CandidateHomepageComponent implements OnInit {
   // Dữ liệu form tìm kiếm

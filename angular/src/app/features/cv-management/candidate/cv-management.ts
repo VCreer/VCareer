@@ -4,14 +4,13 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../core/services/translation.service';
 import { UploadedCvService, UploadedCv } from '../../../core/services/uploaded-cv.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
-import { CvListComponent } from '../../../shared/components/cv-list/cv-list';
 import { ButtonComponent } from '../../../shared/components/button/button';
+import { CvListComponent } from '../../../shared/components/cv-list/cv-list';
 import { ProfilePictureEditModal } from '../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
 import { UploadCvModal } from '../../../shared/components/upload-cv-modal/upload-cv-modal';
 import { DownloadCvModal } from '../../../shared/components/download-cv-modal/download-cv-modal';
 import { RenameCvModal } from '../../../shared/components/rename-cv-modal/rename-cv-modal';
 import { UploadedCvCard } from '../../../shared/components/uploaded-cv-card/uploaded-cv-card';
-import { CvService, Cv } from '../../../proxy/api/cv.service';
 
 @Component({
   selector: 'app-cv-management',
@@ -19,8 +18,8 @@ import { CvService, Cv } from '../../../proxy/api/cv.service';
   imports: [
     CommonModule,
     ToastNotificationComponent,
-    CvListComponent,
     ButtonComponent,
+    CvListComponent,
     ProfilePictureEditModal,
     UploadCvModal,
     DownloadCvModal,
@@ -35,7 +34,7 @@ export class CvManagementComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType = 'success';
-  cvs: Cv[] = [];
+  cvs: any[] = [];
   loading = false;
   showProfilePictureModal = false;
   showUploadCvModal = false;
@@ -47,7 +46,6 @@ export class CvManagementComponent implements OnInit {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private cvService: CvService,
     private uploadedCvService: UploadedCvService
   ) {}
 
@@ -64,17 +62,9 @@ export class CvManagementComponent implements OnInit {
   }
 
   loadCvs() {
-    this.loading = true;
-    this.cvService.getCvs().subscribe({
-      next: (cvs) => {
-        this.cvs = cvs;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading CVs:', error);
-        this.loading = false;
-      }
-    });
+    // TODO: Hook BE API. For now, use empty list
+    this.loading = false;
+    this.cvs = [];
   }
 
   translate(key: string): string {
@@ -82,7 +72,10 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCreateCv() {
-    console.log('onCreateCv called');
+    this.router.navigate(['/candidate/cv-sample']);
+  }
+
+  onOpenUploadCvModal() {
     this.showUploadCvModal = true;
   }
 
@@ -116,51 +109,21 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCvDeleted(cvId: string) {
-    this.cvService.deleteCv(cvId).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showToastMessage(this.translate('cv_management.deleted_successfully'), 'success');
-          this.loadCvs();
-        } else {
-          this.showToastMessage(this.translate('cv_management.delete_failed'), 'error');
-        }
-      },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.delete_failed'), 'error');
-      }
-    });
+    // TODO: Call BE delete when connected
+    this.showToastMessage(this.translate('cv_management.deleted_successfully'), 'success');
+    this.loadCvs();
   }
 
   onCvDuplicated(cvId: string) {
-    this.cvService.duplicateCv(cvId).subscribe({
-      next: (cv) => {
-        if (cv) {
-          this.showToastMessage(this.translate('cv_management.duplicated_successfully'), 'success');
-          this.loadCvs();
-        } else {
-          this.showToastMessage(this.translate('cv_management.duplicate_failed'), 'error');
-        }
-      },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.duplicate_failed'), 'error');
-      }
-    });
+    // TODO: Call BE duplicate when connected
+    this.showToastMessage(this.translate('cv_management.duplicated_successfully'), 'success');
+    this.loadCvs();
   }
 
   onSetDefault(cvId: string) {
-    this.cvService.setDefaultCv(cvId).subscribe({
-      next: (success) => {
-        if (success) {
-          this.showToastMessage(this.translate('cv_management.set_default_successfully'), 'success');
-          this.loadCvs();
-        } else {
-          this.showToastMessage(this.translate('cv_management.set_default_failed'), 'error');
-        }
-      },
-      error: () => {
-        this.showToastMessage(this.translate('cv_management.set_default_failed'), 'error');
-      }
-    });
+    // TODO: Call BE set default when connected
+    this.showToastMessage(this.translate('cv_management.set_default_successfully'), 'success');
+    this.loadCvs();
   }
 
   private showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning') {

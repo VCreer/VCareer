@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Dto.JwtDto;
-using VCareer.IRepositories.TokenRepository;
+using VCareer.IRepositories.ITokenRepository;
 using VCareer.IServices.IAuth;
 using VCareer.Models.Token;
 using Volo.Abp.DependencyInjection;
@@ -30,14 +30,17 @@ namespace VCareer.Jwt
         private readonly IRefreshtokenRepository _refreshtokenRepository;
         private readonly IdentityUserManager _userManager;
         private readonly IdentityRoleManager _roleManager;
+        private readonly AbpUserClaimsPrincipalFactory _abpUserClaimsPrincipalFactory;
 
-        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager,IdentityRoleManager roleManager)
+        public JwtTokenGenerator(IAbpClaimsPrincipalFactory claimsPrincipalFactory, IOptions<JwtOptions> jwtOptions, IRefreshtokenRepository refreshtokenRepository, IdentityUserManager userManager,IdentityRoleManager roleManager,AbpUserClaimsPrincipalFactory abpUserClaimsPrincipalFactory)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _jwtOptions = jwtOptions.Value;
             _refreshtokenRepository = refreshtokenRepository;
             _userManager = userManager;
             _roleManager = roleManager;
+            _abpUserClaimsPrincipalFactory = abpUserClaimsPrincipalFactory;
+
         }
 
         public async Task<TokenResponseDto> CreateTokenAsync(IdentityUser user)

@@ -1,0 +1,280 @@
+<app-header-cv-editor
+  [(cvName)]="cvName"
+  (undo)="onUndo()"
+  (redo)="onRedo()"
+  (preview)="onPreview()"
+  (save)="onSave()">
+</app-header-cv-editor>
+
+<!-- Preview Dialog -->
+<div class="el-dialog__wrapper" *ngIf="showPreviewDialog">
+  <div class="el-dialog dialog-preview">
+    <div class="el-dialog__header">
+      <h3 class="el-dialog__title">{{ translations.previewDialogTitle }}</h3>
+      <button class="el-dialog__close" (click)="closePreviewDialog()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="el-dialog__body">
+      <app-pdf-viewer [pdfUrl]="pdfPreviewUrl"></app-pdf-viewer>
+    </div>
+  </div>
+</div>
+
+<!-- Update Name Modal -->
+<app-modal-update-name-cv
+  *ngIf="showUpdateNameModal"
+  [cvName]="modalCvName"
+  [title]="translations.modalTitle"
+  [infoMessage]="translations.modalInfo"
+  [inputPlaceholder]="translations.modalInputPlaceholder"
+  [backButtonText]="translations.modalBackButton"
+  [continueButtonText]="translations.modalContinueButton"
+  (close)="onModalClose()"
+  (continue)="onModalContinue($event)">
+</app-modal-update-name-cv>
+
+<!-- Update Photo Modal -->
+<app-modal-update-photo
+  *ngIf="showUpdatePhotoModal"
+  [title]="translations.photoModalTitle"
+  [uploadInstruction]="translations.photoModalInstruction"
+  [note]="translations.photoModalNote"
+  [cancelButtonText]="translations.photoModalCancel"
+  [confirmButtonText]="translations.photoModalConfirm"
+  (close)="onPhotoModalClose()"
+  (confirm)="onPhotoModalConfirm($event)">
+</app-modal-update-photo>
+
+<div class="write-cv-container">
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Đang tải template...</p>
+  </div>
+
+  <!-- Template Form Container -->
+  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate"></div>
+
+  <!-- Fallback: Original Form (sẽ được ẩn khi có template) -->
+  <div class="cv-section-main" [style.display]="currentTemplate ? 'none' : 'block'">
+    <app-toast-notification
+      [show]="toast.show"
+      [type]="toast.type"
+      [message]="toast.message"
+      [duration]="toast.duration"
+      (close)="toast.show = false">
+    </app-toast-notification>
+    <!-- Profile Header Section -->
+    <div class="profile-header-section">
+      <!-- Profile Picture -->
+      <div class="profile-picture">
+        <div class="avatar-placeholder">
+          <i class="fa fa-user"></i>
+          <button class="edit-photo-btn" (click)="onEditPhotoClick($event)">
+            <i class="fa fa-pencil"></i>
+            <span>{{ translations.editPhoto }}</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Info Section -->
+      <div class="info-section">
+        <!-- Name -->
+        <input type="text" class="fullname-input" [placeholder]="translations.fullnamePlaceholder" [class.error]="nameError" (input)="onInputChange()">
+        
+        <!-- Applied Position -->
+        <div class="applied-position">
+          <input type="text" class="position-input" [placeholder]="translations.positionPlaceholder" [class.error]="positionError" (input)="onInputChange()">
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="contact-list">
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.birthdateLabel }}:</span>
+            <input type="text" class="contact-input" [placeholder]="translations.birthdatePlaceholder" [class.error]="birthdateError" (input)="onInputChange()">
+          </div>
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.genderLabel }}:</span>
+            <input type="text" class="contact-input" [placeholder]="translations.genderPlaceholder" [class.error]="genderError">
+          </div>
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.phoneLabel }}:</span>
+            <input type="text" class="contact-input" [placeholder]="translations.phonePlaceholder" [class.error]="phoneError">
+          </div>
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.emailLabel }}:</span>
+            <input type="email" class="contact-input" [placeholder]="translations.emailPlaceholder" [class.error]="emailError">
+          </div>
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.websiteLabel }}:</span>
+            <input type="text" class="contact-input" [placeholder]="translations.websitePlaceholder" [class.error]="websiteError">
+          </div>
+          <div class="contact-item editable">
+            <span class="contact-label">{{ translations.addressLabel }}:</span>
+            <input type="text" class="contact-input" [placeholder]="translations.addressPlaceholder" [class.error]="addressError">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Career Objective -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionCareerObjective }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.careerObjectivePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Education -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionEducation }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="education-entry">
+        <div class="date-column">
+          <div class="date-range">
+            <input type="text" class="form-control date-input" [placeholder]="translations.startDate">
+            <span class="date-separator">-</span>
+            <input type="text" class="form-control date-input" [placeholder]="translations.endDate">
+          </div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.institutionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.majorPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.educationDescriptionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Work Experience -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionWorkExperience }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="work-entry">
+        <div class="date-column">
+          <div class="date-range">
+            <input type="text" class="form-control date-input" [placeholder]="translations.startDate">
+            <span class="date-separator">-</span>
+            <input type="text" class="form-control date-input" [placeholder]="translations.endDate">
+          </div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.companyPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.jobTitlePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.workDescriptionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+      <div class="work-entry">
+        <div class="date-column">
+          <div class="date-range">
+            <input type="text" class="form-control date-input" [placeholder]="translations.startDate">
+            <span class="date-separator">-</span>
+            <input type="text" class="form-control date-input" [placeholder]="translations.endDate">
+          </div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.companyPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.jobTitlePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.workDescriptionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Activities -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionActivities }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="activity-entry">
+        <div class="date-column">
+          <div class="date-range">
+            <input type="text" class="form-control date-input" [placeholder]="translations.startDate">
+            <span class="date-separator">-</span>
+            <input type="text" class="form-control date-input" [placeholder]="translations.endDate">
+          </div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.activityOrganizationPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.activityPositionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.activityDescriptionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Certificates -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionCertificates }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="certificate-entry">
+        <div class="date-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.certificateTime" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.certificateNamePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Awards -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionAwards }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="award-entry">
+        <div class="date-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.awardTime" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.awardNamePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Skills -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionSkills }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="skill-entry">
+        <div class="skill-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.skillNamePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+        <div class="content-column">
+          <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.skillDescriptionPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionReferences }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.referencePlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+    </div>
+    
+    <div class="section-divider"></div>
+    
+    <!-- Hobbies -->
+    <div class="cv-section">
+      <div class="section-header">
+        <h3 class="section-title">{{ translations.sectionHobbies }}</h3>
+      </div>
+      <div class="section-divider"></div>
+      <div class="ql-editor ql-blank" contenteditable="true" [attr.data-placeholder]="translations.hobbyPlaceholder" (input)="onEditorInput($event)" (blur)="onEditorBlur($event)"><p><br></p></div>
+    </div>
+  </div>
+</div>

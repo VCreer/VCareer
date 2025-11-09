@@ -1,0 +1,92 @@
+<div class="saved-jobs-container">
+  <!-- Header Section -->
+  <div class="saved-jobs-header">
+    <div class="header-content">
+      <h1 class="page-title">{{ translate('saved_jobs.title') }}</h1>
+      <p class="page-description">{{ translate('saved_jobs.description') }}</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="saved-jobs-content">
+    <!-- Subtitle -->
+    <div class="jobs-count" *ngIf="savedJobs.length > 0">
+      <p class="count-text">{{ getJobsCountText() }}</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="loading-spinner"></div>
+      <p>{{ translate('saved_jobs.loading') }}</p>
+    </div>
+
+    <!-- Jobs List -->
+    <div class="jobs-list" *ngIf="!loading && savedJobs.length > 0">
+      <div class="job-card" *ngFor="let job of savedJobs; trackBy: trackByJobId">
+        <!-- Company Logo -->
+        <div class="company-logo">
+          <div class="logo-content">
+            <h3 class="logo-text">{{ getCompanyLogoText(job.companyName) }}</h3>
+          </div>
+        </div>
+
+        <!-- Job Details -->
+        <div class="job-details">
+          <h2 class="job-title clickable" (click)="onJobTitleClick(job)">{{ job.jobTitle }}</h2>
+          <p class="company-name">{{ job.companyName }}</p>
+          <p class="saved-date">Đã lưu: {{ formatSavedDate(job.savedAt) }}</p>
+          
+          <!-- Tags -->
+          <div class="job-tags">
+            <span class="tag">{{ getProvinceName(job) }}</span>
+          </div>
+        </div>
+
+        <!-- Salary and Actions -->
+        <div class="job-actions">
+          <div class="salary">
+            <span class="salary-text">{{ job.salaryText }}</span>
+          </div>
+          <div class="action-buttons">
+            <app-button 
+              [type]="'primary'"
+              [size]="'medium'"
+              (click)="onApplyJob(job)">
+              {{ translate('saved_jobs.apply') }}
+            </app-button>
+            <button 
+              class="btn-unsave"
+              (click)="onUnsaveJob(job)">
+              <i class="fa fa-trash"></i>
+              {{ translate('saved_jobs.unsave') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && savedJobs.length === 0">
+      <div class="empty-icon">
+        <img src="assets/images/save-jobs/empty.png" alt="No saved jobs" class="empty-image">
+      </div>
+      <h3 class="empty-title">{{ translate('saved_jobs.no_jobs_title') }}</h3>
+      <p class="empty-description">{{ translate('saved_jobs.no_jobs_description') }}</p>
+      <app-button 
+        [type]="'primary'"
+        [size]="'medium'"
+        (click)="onBrowseJobs()">
+        {{ translate('saved_jobs.browse_jobs') }}
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+

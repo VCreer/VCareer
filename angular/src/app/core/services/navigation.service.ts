@@ -10,9 +10,11 @@ export type UserRole = 'candidate' | 'recruiter' | null;
 export class NavigationService {
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
   private userRoleSubject = new BehaviorSubject<UserRole>(null);
+  private isVerifiedSubject = new BehaviorSubject<boolean>(false);
   
   public isLoggedIn$ = this.isLoggedInSubject.asObservable();
   public userRole$ = this.userRoleSubject.asObservable();
+  public isVerified$ = this.isVerifiedSubject.asObservable();
 
   constructor(private router: Router) {
     // Khôi phục trạng thái từ localStorage khi khởi tạo
@@ -20,29 +22,14 @@ export class NavigationService {
   }
 
   private initializeAuthState() {
-    // Kiểm tra token trước khi restore state
-    // Token có thể được lưu với key 'access_token' hoặc 'auth_token'
-    const accessToken = localStorage.getItem('access_token');
-    const authToken = localStorage.getItem('auth_token');
-    const hasValidToken = !!(accessToken || authToken);
-    
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const userRole = localStorage.getItem('userRole') as UserRole;
+    const isVerified = localStorage.getItem('isVerified') === 'true';
     
-    // CHỈ restore state nếu có token VÀ có flag isLoggedIn VÀ có userRole
-    // Nếu không có token, xóa state để tránh bị stuck ở trạng thái logged in
-    if (hasValidToken && isLoggedIn && userRole) {
+    if (isLoggedIn && userRole) {
       this.isLoggedInSubject.next(true);
       this.userRoleSubject.next(userRole);
-    } else {
-      // Nếu không có token hoặc state không hợp lệ, clear state
-      if (isLoggedIn || userRole) {
-        console.warn('Auth state found but no valid token. Clearing auth state.');
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userRole');
-      }
-      this.isLoggedInSubject.next(false);
-      this.userRoleSubject.next(null);
+      this.isVerifiedSubject.next(isVerified);
     }
   }
 
@@ -63,21 +50,37 @@ export class NavigationService {
     // Lưu trạng thái vào localStorage
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userRole', 'recruiter');
-    // Sau khi đăng nhập, redirect đến /recruiter
-    this.router.navigate(['/recruiter']);
+    
+    // Kiểm tra verification status
+    const isVerified = this.isVerified();
+    this.isVerifiedSubject.next(isVerified);
+    
+    // Nếu chưa verify, redirect đến trang verify, ngược lại redirect đến home
+    if (!isVerified) {
+      this.router.navigate(['/recruiter/recruiter-verify']);
+    } else {
+      this.router.navigate(['/recruiter/home']);
+    }
   }
 
   // Đăng xuất
   logout() {
     this.isLoggedInSubject.next(false);
     this.userRoleSubject.next(null);
+    this.isVerifiedSubject.next(false);
     // Xóa trạng thái khỏi localStorage
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userRole');
-    // Xóa token khi logout
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('isVerified');
+    // Xóa token ở cả localStorage và sessionStorage
+    try {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+    } catch {}
+    try {
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+    } catch {}
     // Sau khi đăng xuất, redirect về trang chủ
     this.router.navigate(['/']);
   }
@@ -92,13 +95,30 @@ export class NavigationService {
     return this.userRoleSubject.value;
   }
 
+  // Kiểm tra verification status
+  isVerified(): boolean {
+    const verified = localStorage.getItem('isVerified');
+    return verified === 'true';
+  }
+
+  // Set verification status
+  setVerified(verified: boolean) {
+    this.isVerifiedSubject.next(verified);
+    localStorage.setItem('isVerified', verified ? 'true' : 'false');
+  }
+
   // Navigate dựa trên role
   navigateBasedOnRole() {
     const role = this.getCurrentRole();
     if (role === 'candidate') {
       this.router.navigate(['/jobs']);
     } else if (role === 'recruiter') {
-      this.router.navigate(['/recruiter']);
+      const isVerified = this.isVerified();
+      if (!isVerified) {
+        this.router.navigate(['/recruiter/recruiter-verify']);
+      } else {
+        this.router.navigate(['/recruiter/home']);
+      }
     } else {
       this.router.navigate(['/']);
     }
