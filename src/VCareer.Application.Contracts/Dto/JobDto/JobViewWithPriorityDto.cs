@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using VCareer.Constants.JobConstant;
 
-namespace VCareer.Dto.Job
+namespace VCareer.Dto.JobDto
 {
-    public class JobCachingDto
+    public class JobViewWithPriorityDto
     {
         #region Priority
         public string JobPriorityId { get; }

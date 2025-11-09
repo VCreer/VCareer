@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Job;
+using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Companies;
@@ -18,12 +19,12 @@ namespace VCareer.Services.Job
 
     public class JobSearchService : ApplicationService, IJobSearchService
     {
-        private readonly IJobPostRepository _jobPostingRepository;
+        private readonly IJobSearchRepository _jobPostingRepository;
         private readonly ILuceneJobIndexer _luceneIndexer;
         private readonly ILogger<JobSearchService> _logger;
 
         public JobSearchService(
-                IJobPostRepository jobPostingRepository,
+                IJobSearchRepository jobPostingRepository,
                 ILuceneJobIndexer luceneIndexer,
                 ILogger<JobSearchService> logger)
         {
@@ -32,7 +33,7 @@ namespace VCareer.Services.Job
             _logger = logger;
         }
 
-        public async Task<PagedResultDto<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
+        public async Task<PagedResultDto<JobViewWithPriorityDto>> SearchJobsAsync(JobSearchInputDto input)
         {
             try
             {
@@ -41,7 +42,7 @@ namespace VCareer.Services.Job
 
                 if (!jobIds.Any())
                 {
-                    return new PagedResultDto<JobViewDto>(new List<JobViewDto>(), 0);
+                    return new PagedResultDto<JobViewWithPriorityDto>(new List<JobViewWithPriorityDto>(), 0);
                 }
 
                 // Step 2: Load jobs từ DB theo thứ tự của Lucene
@@ -59,13 +60,13 @@ namespace VCareer.Services.Job
 
                 //return new PagedResultDto<JobViewDto>(jobViewDtos, jobIds.Count);
 
-                List<JobViewDto> list = new List<JobViewDto>();
+                List<JobViewWithPriorityDto> list = new List<JobViewWithPriorityDto>();
                 foreach (var relatedJob in orderedJobs)
                 {
                     var job = await MapToJobViewDto(relatedJob);
                     list.Add(job);
                 }
-                return new PagedResultDto<JobViewDto>(list, jobIds.Count);
+                return new PagedResultDto<JobViewWithPriorityDto>(list, jobIds.Count);
 
             }
             catch (Exception ex)
@@ -102,21 +103,18 @@ namespace VCareer.Services.Job
 
             return await MapToJobViewDetail(job);
         }
-        public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
+        public async Task<List<JobViewWithPriorityDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
             var relatedJobs = await _jobPostingRepository.GetRelatedJobsAsync(jobId, maxCount);
             //   return relatedJobs.Select(MapToJobViewDto).ToList();
 
-            List<JobViewDto> list = new List<JobViewDto>();
+            List<JobViewWithPriorityDto> list = new List<JobViewWithPriorityDto>();
             foreach (var relatedJob in relatedJobs)
             {
                 var job = await MapToJobViewDto(relatedJob);
                 list.Add(job);
             }
             return list;
-
-
-
         }
 
         // Reindex toàn bộ jobs (Admin only)
@@ -179,66 +177,23 @@ namespace VCareer.Services.Job
         }
 
         /// Map Job_Posting -> JobViewDto (thông tin cơ bản cho list)
-        private async Task<JobViewDto> MapToJobViewDto(Job_Post job)
+        private async Task<JobViewWithPriorityDto> MapToJobViewDto(Job_Post job)
         {
+            var namecompany = await _jobPostingRepository.GetNameComany(job.Id);
 
-            /*  var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
+            return new JobViewWithPriorityDto
+            {
 
-              var namecompany = await _jobPostingRepository.GetNameComany(job.Id);
-
-
-              return new JobViewDto
-              {
-                  Id = job.Id,
-
-                  Title = job.Title,
-                  // CompanyLogo = await _companyRepository.GetAsync(id),
-                  CompanyName = namecompany,
-                  ExperienceText = job.ExperienceText,  // ✨ String (đã format sẵn)
-                                                        //  WorkLocation = job.WorkLocation,
-                                                        //CategoryName = job.JobCategory?.Name,
-                  ProvinceName = province.Name,
-                  //DistrictName = job.District?.Name,
-
-                  IsUrgent = job.IsUrgent,
-                  PostedAt = job.PostedAt,
-                  ExpiresAt = job.ExpiresAt.Value,
-              };*/
-            throw new NotImplementedException();
+            };
         }
 
         /// Map Job_Posting -> JobViewDetail (chi tiết đầy đủ)
         private async Task<JobViewDetail> MapToJobViewDetail(Job_Post job)
         {
 
-            /*  var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
-
-              return new JobViewDetail
-              {
-                  Id = job.Id,
-                  Slug = job.Slug,
-                  Title = job.Title,
-                  Description = job.Description,
-                  Requirements = job.Requirements,
-                  Benefits = job.Benefits,
-                  //CompanyLogo = job.CompanyLogo,
-                  //CompanyName = job.CompanyName,
-                  ExperienceText = job.ExperienceText,  // ✨ String (đã format sẵn)
-                  Quantity = job.Quantity,
-
-                  //CategoryName = job.JobCategory?.Name,
-                  ProvinceName = province.Name,
-                  //DistrictName = job.District?.Name,
-                  WorkLocation = job.WorkLocation,
-                  EmploymentType = job.EmploymentType,
-                  PositionType = job.PositionType,
-                  IsUrgent = job.IsUrgent,
-                  PostedAt = job.PostedAt,
-                  ExpiresAt = job.ExpiresAt.Value,
-                  ViewCount = job.ViewCount,
-                  ApplyCount = job.ApplyCount
-              };*/
-            throw new NotImplementedException();
+            return new JobViewDetail
+            {
+            };
         }
     }
 }

@@ -66,7 +66,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         
             
              context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
-        context.Services.AddTransient<IJobPostRepository, JobPostRepository>();
+        context.Services.AddTransient<IJobSearchRepository, JobPostRepository>();
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

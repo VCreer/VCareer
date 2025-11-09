@@ -13,11 +13,9 @@ using Volo.Abp.OpenIddict;
 using Volo.Abp.PermissionManagement.OpenIddict;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
-using Volo.Abp.Emailing;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.TenantManagement;
-using Volo.Abp.MailKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -37,9 +35,7 @@ namespace VCareer;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
-    typeof(BlobStoringDatabaseDomainModule),
-    typeof(AbpEmailingModule),
-    typeof(AbpMailKitModule)
+    typeof(BlobStoringDatabaseDomainModule)
 
      )]
 public class VCareerDomainModule : AbpModule

@@ -16,13 +16,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Text;
-using VCareer.Dto.Job;
 using VCareer.Models.Job;
 using Volo.Abp.DependencyInjection;
 using Lucene.Net.Analysis.Util;
 using VCareer.Constants;
 using VCareer.IRepositories.Job;
 using VCareer.Constants.JobConstant;
+using VCareer.Dto.JobDto;
 
 namespace VCareer.Services.LuceneService.JobSearch
 {
@@ -34,11 +34,11 @@ namespace VCareer.Services.LuceneService.JobSearch
         private readonly string _indexPath; // Đường dẫn lưu index trên đĩa (App_Data/LuceneIndex)
         private readonly Analyzer _analyzer;// Analyzer để phân tích text thành tokens
         private FSDirectory _directory;  // Directory chứa Lucene index
-        private readonly IJobPostRepository _jobPostingRepository;   // Load job để index
+        private readonly IJobSearchRepository _jobPostingRepository;   // Load job để index
         private readonly IJobCategoryRepository _jobCategoryRepository; // Load category path
 
         public LuceneJobIndexer(
-        IJobPostRepository jobPostingRepository,
+        IJobSearchRepository jobPostingRepository,
         IJobCategoryRepository jobCategoryRepository
       )
         {

@@ -12,6 +12,7 @@ namespace VCareer.Models.Users
     public class EmployeeProfile : FullAuditedAggregateRoot<Guid>
     {
         public Guid UserId { get; set; }
+        public string Email { get; set; }
         public string Department { get; set; }
         public string Description { get; set; }
         public bool IsSuperAdmin { get; set; }

@@ -8,7 +8,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace VCareer.IRepositories.Job
 {
-    public interface IJobPostRepository : IRepository<Job_Post, Guid>
+    public interface IJobPriorityRepository : IRepository<Job_Priority, int>
     {
     }
 }
