@@ -1,0 +1,312 @@
+<div class="recruitment-campaign-container" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <span class="breadcrumb-item active">
+        {{ viewMode === 'manage' ? 'Quản lý chiến dịch tuyển dụng' : 'Chiến dịch tuyển dụng' }}
+      </span>
+      <app-button
+        *ngIf="viewMode === 'manage'"
+        type="primary"
+        size="medium"
+        (click)="onCreateNewCampaign()">
+        <i class="fa fa-plus"></i>
+        Thêm chiến dịch mới
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Create Campaign View -->
+  <div class="main-content" *ngIf="viewMode === 'create'">
+    <div class="campaign-form-section">
+      <!-- Form Title -->
+      <h1 class="form-title">Tạo chiến dịch tuyển dụng đầu tiên của bạn</h1>
+
+      <!-- Campaign Form -->
+      <form class="campaign-form" (ngSubmit)="onNext()">
+        <!-- First Row: Campaign Name and Position -->
+        <div class="form-row">
+          <div class="form-group">
+            <app-input-field
+              label="Tên chiến dịch tuyển dụng"
+              type="text"
+              placeholder="VD: Tuyển dụng nhân viên Marketing tháng 10, tuyển dụng designer,..."
+              [required]="true"
+              [error]="getFieldError('campaignName')"
+              [(ngModel)]="campaignForm.campaignName"
+              (ngModelChange)="onFieldChange('campaignName')"
+              name="campaignName">
+            </app-input-field>
+          </div>
+
+          <div class="form-group">
+            <app-select-field
+              label="Vị trí tuyển dụng"
+              placeholder="- Chọn vị trí tuyển dụng -"
+              [required]="true"
+              [options]="positionOptions"
+              [error]="getFieldError('position')"
+              [(ngModel)]="campaignForm.position"
+              (ngModelChange)="onFieldChange('position')"
+              name="position">
+            </app-select-field>
+          </div>
+        </div>
+
+        <!-- Second Row: Work Location (Multi-select) -->
+        <div class="form-row">
+          <div class="form-group form-group-full">
+            <app-multi-select-location
+              label="Khu vực làm việc"
+              [required]="true"
+              [options]="locationOptions"
+              [selectedValues]="campaignForm.workLocations"
+              [error]="getFieldError('workLocations')"
+              (selectedValuesChange)="onLocationChange($event)"
+              (errorChange)="onLocationErrorChange($event)">
+            </app-multi-select-location>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <app-button
+            type="primary"
+            size="medium"
+            (click)="onNext()">
+            Tiếp theo
+          </app-button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Campaigns View -->
+  <div class="main-content" *ngIf="viewMode === 'manage'">
+    <!-- White Card Container -->
+    <div class="campaign-management-card">
+      <!-- Filter and Search Section -->
+      <div class="filter-search-section">
+        <div class="filter-dropdown-wrapper">
+          <select class="filter-dropdown" [(ngModel)]="filterType" (change)="onFilterChange()">
+            <option value="all">Tất cả chiến dịch</option>
+            <option value="active">Chiến dịch đang hoạt động</option>
+            <option value="inactive">Chiến dịch đã tắt</option>
+          </select>
+        </div>
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Tìm chiến dịch (Nhấn enter để tìm kiếm)"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearchCampaigns()"
+            (input)="onSearchCampaigns()">
+          <i class="fa fa-search search-icon"></i>
+        </div>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-count">
+        Tìm thấy {{ filteredCampaigns.length }} chiến dịch tuyển dụng
+      </div>
+
+      <!-- Campaigns Table -->
+      <div class="campaigns-table-wrapper">
+      <table class="campaigns-table" *ngIf="filteredCampaigns.length > 0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Chiến dịch tuyển dụng</th>
+            <th>CV ứng tuyển</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+            <th>Trạng thái</th>
+            <th>Hoạt động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let campaign of filteredCampaigns">
+            <!-- ID -->
+            <td class="campaign-id-cell">
+              <div class="campaign-id">{{ campaign.id }}</div>
+            </td>
+
+            <!-- Campaign Info -->
+            <td class="campaign-info-cell">
+              <div class="campaign-name">{{ campaign.name }}</div>
+            </td>
+
+            <!-- Applied CVs -->
+            <td class="applied-cvs-cell">
+              <a 
+                *ngIf="campaign.appliedCvs > 0"
+                href="#" 
+                class="applied-cvs-link"
+                (click)="onViewAppliedCvs(campaign); $event.preventDefault()">
+                {{ campaign.appliedCvs }} CV
+              </a>
+              <span *ngIf="campaign.appliedCvs === 0" class="applied-cvs-empty">
+                Chưa có CV nào
+              </span>
+            </td>
+
+            <!-- Start Date -->
+            <td class="start-date-cell">
+              <span class="date-value">{{ formatDate(campaign.startDate) }}</span>
+            </td>
+
+            <!-- End Date -->
+            <td class="end-date-cell">
+              <span class="date-value">{{ formatDate(campaign.endDate) }}</span>
+            </td>
+
+            <!-- Status -->
+            <td class="status-cell">
+              <span class="status-badge" [class.active]="campaign.isActive" [class.inactive]="!campaign.isActive">
+                {{ campaign.isActive ? 'Đang hoạt động' : 'Đã tắt' }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="actions-cell">
+              <div class="actions-container">
+                <!-- Toggle Switch -->
+                <app-toggle-switch
+                  [checked]="campaign.isActive"
+                  (checkedChange)="onToggleCampaign(campaign, $event)">
+                </app-toggle-switch>
+
+                <!-- Actions Menu -->
+                <div class="actions-menu-container" [attr.data-campaign-id]="campaign.id">
+                  <button 
+                    class="actions-btn"
+                    (click)="toggleActionsMenu(campaign.id, $event)">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  
+                  <div 
+                    class="actions-menu"
+                    [class.show]="showActionsMenu === campaign.id"
+                    [attr.data-campaign-id]="campaign.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onViewCampaign(campaign)">
+                      <i class="fa fa-eye menu-icon"></i>
+                      <span>Xem chi tiết</span>
+                    </div>
+                    <div class="menu-item" (click)="onEditCampaign(campaign)">
+                      <i class="fa fa-edit menu-icon"></i>
+                      <span>Sửa</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item delete-item" (click)="onDeleteCampaign(campaign)">
+                      <i class="fa fa-trash menu-icon"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredCampaigns.length === 0">
+        <div class="empty-state-content">
+          <i class="fa fa-folder-open empty-icon"></i>
+          <p class="empty-message">
+            {{ searchQuery || filterType !== 'all' ? 'Không tìm thấy chiến dịch nào' : 'Chưa có chiến dịch tuyển dụng nào' }}
+          </p>
+          <p class="empty-submessage" *ngIf="!searchQuery && filterType === 'all'">
+            Hãy tạo chiến dịch tuyển dụng đầu tiên của bạn
+          </p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Selection Modal -->
+  <app-generic-modal
+    [show]="showActivityModal"
+    [title]="'Khởi động chiến dịch: ' + campaignForm.campaignName"
+    [maxWidth]="'1200px'"
+    [closeOnOverlayClick]="true"
+    (close)="onCloseModal()">
+    <div class="activity-modal-content">
+      <!-- Introduction Text -->
+      <p class="modal-intro">
+        Vui lòng lựa chọn hoạt động đầu tiên để khởi động chiến dịch tuyển dụng của bạn. 
+        Dựa vào Insights chiến dịch tuyển dụng bạn chia sẻ, chúng tôi gợi ý những hoạt động phù hợp phía dưới. 
+        Hãy lựa chọn loại hoạt động bạn thấy phù hợp nhất vào lúc này.
+      </p>
+
+      <!-- Activity Details -->
+      <div class="activity-modal-body" *ngIf="selectedActivity">
+        <div class="activity-detail-content">
+          <div class="activity-icon-circle">
+            <i class="fa" [class]="selectedActivity.icon"></i>
+          </div>
+          <h3 class="activity-detail-title">{{ selectedActivity.title }} tại TopCV</h3>
+          <p class="activity-detail-description">{{ selectedActivity.description }}</p>
+          <app-button
+            type="primary"
+            size="medium"
+            (click)="onActivityAction()">
+            {{ selectedActivity.title }}
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </app-generic-modal>
+
+  <!-- Edit Campaign Modal -->
+  <app-generic-modal
+    [show]="showEditModal"
+    [title]="'Sửa chiến dịch: ' + (editingCampaign?.name || '')"
+    [maxWidth]="'600px'"
+    [closeOnOverlayClick]="true"
+    [bodyBackground]="'white'"
+    (close)="onCloseEditModal()">
+    <div class="edit-campaign-modal-content">
+      <!-- Campaign Name Input -->
+      <div class="edit-form-group">
+        <label class="edit-form-label">Tên chiến dịch tuyển dụng</label>
+        <app-input-field
+          type="text"
+          placeholder="VD: Tuyển dụng nhân viên Marketing tháng 10, tuyển dụng designer,..."
+          [required]="true"
+          [error]="getFieldError('editCampaignName')"
+          [(ngModel)]="editCampaignName"
+          (ngModelChange)="clearFieldError('editCampaignName')"
+          name="editCampaignName">
+        </app-input-field>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="edit-modal-footer">
+        <app-button
+          type="secondary"
+          size="medium"
+          (click)="onCloseEditModal()">
+          Hủy
+        </app-button>
+        <app-button
+          type="primary"
+          size="medium"
+          (click)="onSaveEditCampaign()">
+          Lưu
+        </app-button>
+      </div>
+    </div>
+  </app-generic-modal>
+</div>
+

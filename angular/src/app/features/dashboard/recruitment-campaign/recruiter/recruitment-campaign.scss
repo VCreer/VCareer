@@ -1,0 +1,635 @@
+.recruitment-campaign-container {
+  min-height: calc(100vh - 64px);
+  padding-top: 0;
+  margin-left: 72px;
+  width: calc(100% - 72px);
+  padding-right: 0;
+  padding-bottom: 20px;
+  background: #f8fafc;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+
+  &.sidebar-expanded {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+    
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  // Breadcrumb Box
+  .breadcrumb-box {
+    background-color: white;
+    padding: 1rem 0;
+    position: fixed;
+    top: 64px;
+    z-index: 998;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
+    border-bottom: 1px solid #e5e7eb;
+
+    left: 72px;
+    width: calc(100% - 72px);
+
+    &.sidebar-expanded {
+      left: 280px;
+      width: calc(100% - 280px);
+    }
+
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+      
+      &.sidebar-expanded {
+        left: 0;
+        width: 100%;
+      }
+    }
+
+    .breadcrumb-container {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: relative;
+
+      @media (max-width: 768px) {
+        padding-left: 15px;
+        padding-right: 15px;
+        flex-wrap: wrap;
+      }
+
+      .breadcrumb-item {
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: default;
+        pointer-events: none;
+        flex-shrink: 0;
+      }
+
+      .breadcrumb-separator {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+
+      ::ng-deep app-button {
+        margin-left: auto;
+        flex-shrink: 0;
+
+        .btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          white-space: nowrap;
+
+          i {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  .main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-top: 80px;
+    padding: 16px 24px;
+
+    .campaign-form-section {
+      background: white;
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: 0 auto;
+
+      .form-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 32px;
+        text-align: center;
+      }
+
+      .campaign-form {
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          margin-bottom: 24px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .form-group {
+            &.form-group-full {
+              grid-column: 1 / -1;
+            }
+          }
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: center;
+          margin-top: 40px;
+          padding-top: 24px;
+          border-top: 1px solid #e5e7eb;
+
+          ::ng-deep app-button {
+            .btn {
+              min-width: 200px;
+              font-weight: 500;
+            }
+          }
+        }
+
+      }
+    }
+  }
+
+  // Activity Modal Styles
+  ::ng-deep .activity-modal-content {
+    .modal-intro {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      padding: 0;
+    }
+
+    .activity-modal-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+
+      .activity-detail-content {
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+
+        .activity-icon-circle {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: #e0f2fe;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px;
+          border: 3px solid #0F83BA;
+
+          i {
+            font-size: 32px;
+            color: #0F83BA;
+          }
+        }
+
+        .activity-detail-title {
+          font-size: 20px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 16px 0;
+        }
+
+        .activity-detail-description {
+          font-size: 14px;
+          color: #6b7280;
+          line-height: 1.6;
+          margin: 0 0 24px 0;
+        }
+
+        ::ng-deep app-button {
+          .btn {
+            min-width: 200px;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  // Campaign Management View Styles
+  .campaign-management-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .filter-search-section {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: center;
+
+    .filter-dropdown-wrapper {
+      flex-shrink: 0;
+
+      .filter-dropdown {
+        padding: 10px 16px;
+        padding-right: 40px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        color: #374151;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #9ca3af;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #0F83BA;
+          box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+        }
+      }
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+
+      .search-input {
+        width: 100%;
+        padding: 10px 16px;
+        padding-right: 40px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #374151;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #9ca3af;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #0F83BA;
+          box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 14px;
+        pointer-events: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 12px;
+
+      .filter-dropdown-wrapper,
+      .search-input-wrapper {
+        width: 100%;
+      }
+    }
+  }
+
+  .results-count {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 16px;
+  }
+
+  .campaigns-table-wrapper {
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+    position: relative;
+
+    .campaigns-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+
+        th {
+          padding: 12px 16px;
+          text-align: left;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+          white-space: nowrap;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid #e5e7eb;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: #f9fafb;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          td {
+            padding: 16px;
+            vertical-align: top;
+          }
+        }
+      }
+    }
+  }
+
+  // Campaign ID Cell
+  .campaign-id-cell {
+    .campaign-id {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  // Campaign Info Cell
+  .campaign-info-cell {
+    .campaign-name {
+      font-size: 14px;
+      color: #374151;
+    }
+  }
+
+  // Applied CVs Cell
+  .applied-cvs-cell {
+    .applied-cvs-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0F83BA;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #0d6fa0;
+        text-decoration: underline;
+      }
+
+      &:active {
+        color: #0a5a7a;
+      }
+    }
+
+    .applied-cvs-empty {
+      font-size: 14px;
+      color: #6b7280;
+    }
+  }
+
+  // Date Cells
+  .start-date-cell,
+  .end-date-cell {
+    .date-value {
+      font-size: 14px;
+      color: #374151;
+    }
+  }
+
+  // Status Cell
+  .status-cell {
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+
+      &.active {
+        background-color: #e0f2fe;
+        color: #0c4a6e;
+      }
+
+      &.inactive {
+        background-color: #f3f4f6;
+        color: #6b7280;
+      }
+    }
+  }
+
+  // Actions Cell
+  .actions-cell {
+    position: relative;
+
+    .actions-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+
+    .actions-menu-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .actions-btn {
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: #6b7280;
+      border-radius: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+
+      i {
+        font-size: 16px;
+      }
+    }
+
+    .actions-menu {
+      position: fixed;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 180px;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      margin-top: 0;
+
+      &.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+        color: #374151;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: #f9fafb;
+        }
+
+        &.delete-item {
+          color: #dc2626;
+
+          &:hover {
+            background: #fef2f2;
+          }
+        }
+
+        .menu-icon {
+          font-size: 14px;
+          width: 16px;
+          text-align: center;
+        }
+
+        span {
+          font-weight: 500;
+        }
+      }
+
+      .menu-separator {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 4px 0;
+      }
+    }
+  }
+
+  // Empty State
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+
+    .empty-state-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+
+      .empty-icon {
+        font-size: 64px;
+        color: #d1d5db;
+        margin-bottom: 8px;
+      }
+
+      .empty-message {
+        font-size: 18px;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+      }
+
+      .empty-submessage {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+      }
+    }
+  }
+
+  // Edit Campaign Modal Styles
+  ::ng-deep .edit-campaign-modal-content {
+    .edit-form-group {
+      margin-bottom: 24px;
+
+      .edit-form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+    }
+
+    .edit-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 24px;
+
+      ::ng-deep app-button {
+        .btn {
+          min-width: 100px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .campaigns-table-wrapper {
+      overflow-x: auto;
+      overflow-y: visible;
+
+      .campaigns-table {
+        min-width: 800px;
+      }
+    }
+
+    .actions-menu {
+      // Adjust positioning for mobile if needed
+      min-width: 160px;
+    }
+  }
+}
+

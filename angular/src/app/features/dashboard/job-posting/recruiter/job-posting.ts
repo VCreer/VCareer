@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { 
   ButtonComponent, 
   InputFieldComponent, 
@@ -39,7 +41,11 @@ interface ValidationErrors {
 export class JobPostingComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
+  private queryParamsSubscription?: Subscription;
   showPreviewModal = false;
+
+  // Campaign data from query params
+  campaignName: string = '';
 
   // Validation errors
   validationErrors: ValidationErrors = {};
@@ -50,6 +56,10 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
   private jobOptionsService = inject(JobOptionsService);
+
+  constructor(
+    private route: ActivatedRoute
+  ) {}
 
   // Job form options - using service
   salaryOptions = this.jobOptionsService.SALARY_OPTIONS;
@@ -91,11 +101,22 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 100);
+
+    // Read query params for campaign data
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+      if (params['campaignName']) {
+        this.campaignName = params['campaignName'];
+      }
+      
+    });
   }
 
   ngOnDestroy() {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.queryParamsSubscription) {
+      this.queryParamsSubscription.unsubscribe();
     }
   }
 

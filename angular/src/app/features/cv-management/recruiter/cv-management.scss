@@ -222,98 +222,274 @@
                 td {
                   padding: 16px;
                   color: #374151;
-                  vertical-align: middle;
+                  vertical-align: top;
+                }
+              }
+            }
+          }
+        }
 
-                  .candidate-name {
-                    font-weight: 500;
-                    color: #1f2937;
-                  }
+        // Table Cell Styles
+        // Candidate Cell
+        .candidate-cell {
+          .candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
 
-                  .status-badge {
-                    display: inline-block;
-                    padding: 4px 12px;
-                    border-radius: 12px;
-                    font-size: 12px;
-                    font-weight: 500;
-                    white-space: nowrap;
+            .candidate-avatar {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background: #1f2937;
+              color: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              font-weight: 600;
+              flex-shrink: 0;
+              overflow: hidden;
 
-                    &.status-new {
-                      background: #dbeafe;
-                      color: #1e40af;
-                    }
+              .avatar-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+              }
+            }
 
-                    &.status-reviewing {
-                      background: #fef3c7;
-                      color: #92400e;
-                    }
+            .candidate-details {
+              flex: 1;
+              min-width: 0;
 
-                    &.status-interviewing {
-                      background: #e0e7ff;
-                      color: #3730a3;
-                    }
+              .candidate-name {
+                font-weight: 600;
+                color: #1f2937;
+                font-size: 14px;
+                margin-bottom: 4px;
+              }
 
-                    &.status-offered {
-                      background: #d1fae5;
-                      color: #065f46;
-                    }
+              .candidate-viewed {
+                font-size: 12px;
+                color: #6b7280;
+              }
+            }
+          }
+        }
 
-                    &.status-hired {
-                      background: #dcfce7;
-                      color: #166534;
-                    }
+        // Campaign Cell
+        .campaign-cell {
+          .campaign-info {
+            .campaign-name {
+              font-size: 14px;
+              color: #374151;
+              margin-bottom: 4px;
+            }
 
-                    &.status-rejected {
-                      background: #fee2e2;
-                      color: #991b1b;
-                    }
-                  }
+            .campaign-id {
+              font-size: 12px;
+              color: #6b7280;
+            }
+          }
+        }
 
-                  .action-buttons {
-                    display: flex;
-                    gap: 8px;
-                    align-items: center;
+        // Contact Cell
+        .contact-cell {
+          .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
 
-                    .action-btn {
-                      width: 32px;
-                      height: 32px;
-                      border: none;
-                      border-radius: 6px;
-                      cursor: pointer;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      transition: all 0.2s ease;
-                      font-size: 14px;
+            .contact-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
 
-                      &.view-btn {
-                        background: #eff6ff;
-                        color: #0F83BA;
+              .contact-icon {
+                color: #0F83BA;
+                font-size: 14px;
+                width: 16px;
+                text-align: center;
+              }
 
-                        &:hover {
-                          background: #dbeafe;
-                        }
-                      }
+              .contact-text {
+                font-size: 14px;
+                color: #374151;
+              }
+            }
+          }
+        }
 
-                      &.edit-btn {
-                        background: #fef3c7;
-                        color: #d97706;
+        // Source Cell
+        .source-cell {
+          .source-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
 
-                        &:hover {
-                          background: #fde68a;
-                        }
-                      }
+            .source-type {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 14px;
+              color: #374151;
 
-                      &.delete-btn {
-                        background: #fee2e2;
-                        color: #dc2626;
+              i {
+                color: #6b7280;
+                font-size: 12px;
+                width: 16px;
+                text-align: center;
+              }
+            }
 
-                        &:hover {
-                          background: #fecaca;
-                        }
-                      }
-                    }
+            .source-date {
+              font-size: 12px;
+              color: #6b7280;
+            }
+          }
+        }
+
+        // Applied Date Cell
+        .applied-date-cell {
+          .applied-date-value {
+            font-size: 14px;
+            color: #374151;
+          }
+        }
+
+        // Status Cell
+        .status-cell {
+          .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+
+            &.status-suitable {
+              background: #FED7AA;
+              color: #C2410C;
+            }
+
+            &.status-send-offer {
+              background: #DBEAFE;
+              color: #1E40AF;
+            }
+
+            &.status-default {
+              background: #F3F4F6;
+              color: #6B7280;
+            }
+          }
+        }
+
+        // Notes Cell
+        .notes-cell {
+          max-width: 200px;
+
+          .notes-content {
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.4;
+            word-wrap: break-word;
+          }
+
+          .notes-empty {
+            font-size: 13px;
+            color: #9ca3af;
+            font-style: italic;
+          }
+        }
+
+        // Actions Cell
+        .actions-cell {
+          .actions-menu-wrapper {
+            position: relative;
+            display: inline-block;
+
+            .actions-menu-btn {
+              background: none;
+              border: none;
+              padding: 8px;
+              cursor: pointer;
+              color: #6b7280;
+              border-radius: 4px;
+              transition: all 0.2s;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              &:hover {
+                background-color: #f3f4f6;
+                color: #374151;
+              }
+
+              i {
+                font-size: 16px;
+              }
+            }
+
+            .actions-menu {
+              position: fixed;
+              background: white;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              min-width: 180px;
+              z-index: 10000;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.2s ease, visibility 0.2s ease;
+
+              &.show {
+                opacity: 1;
+                visibility: visible;
+              }
+
+              .menu-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 14px;
+                color: #374151;
+
+                &:last-child {
+                  border-bottom: none;
+                }
+
+                &:hover {
+                  background: #f9fafb;
+                }
+
+                &.delete-item {
+                  color: #dc2626;
+
+                  &:hover {
+                    background: #fef2f2;
                   }
                 }
+
+                .menu-icon {
+                  font-size: 14px;
+                  width: 16px;
+                  text-align: center;
+                }
+
+                span {
+                  font-weight: 500;
+                }
+              }
+
+              .menu-separator {
+                height: 1px;
+                background: #e5e7eb;
+                margin: 4px 0;
               }
             }
           }

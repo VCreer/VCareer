@@ -23,8 +23,8 @@ import {
     ToastNotificationComponent,
     LogoSectionComponent
   ],
-  templateUrl: './admin-login.html',
-  styleUrls: ['./admin-login.scss']
+  templateUrl: './employee-login.html',
+  styleUrls: ['./employee-login.scss']
 })
 export class AdminLoginComponent implements OnInit {
   adminLoginForm!: FormGroup;
