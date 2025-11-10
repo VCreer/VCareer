@@ -19,6 +19,7 @@ using Volo.Abp.TenantManagement;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
+using MailKit.Security;
 
 
 namespace VCareer;
@@ -61,6 +62,28 @@ public class VCareerDomainModule : AbpModule
         ConfigureCustomClaimsPrincipalFactory(context);
 
 
+
+        // Cấu hình MailKit để xử lý SSL/TLS đúng cách
+        Configure<AbpMailKitOptions>(options =>
+        {
+            var smtpPort = _configuration.GetValue<int>("Settings:Abp.Mailing.Smtp.Port", 587);
+            var enableSsl = _configuration.GetValue<bool>("Settings:Abp.Mailing.Smtp.EnableSsl", true);
+            
+            // Port 465 sử dụng SSL/TLS từ đầu (implicit SSL)
+            // Port 587 sử dụng STARTTLS (plain-text rồi nâng cấp lên TLS)
+            if (smtpPort == 465)
+            {
+                options.SecureSocketOption = SecureSocketOptions.SslOnConnect;
+            }
+            else if (smtpPort == 587 && enableSsl)
+            {
+                options.SecureSocketOption = SecureSocketOptions.StartTls;
+            }
+            else
+            {
+                options.SecureSocketOption = SecureSocketOptions.None;
+            }
+        });
 
         // đây là đoạn code sẽ chạy nếu dự án đang trong quá trình debug 
         //đoạn dưới là nếu đang trong quá trình debug mặc định sẽ ko gửi mail mà sẽ gửi log bằng nullEmailSender

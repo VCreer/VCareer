@@ -3617,7 +3617,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("CandidateCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.CV.CvTemplate", "Template")
@@ -3636,7 +3636,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("UploadedCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.FileMetadata.FileDescriptor", "FileDescriptor")
