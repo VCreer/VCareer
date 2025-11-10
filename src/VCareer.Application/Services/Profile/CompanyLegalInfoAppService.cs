@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using VCareer.IRepositories.ICompanyRepository;
+using VCareer.IRepositories.Job;
 using VCareer.Models.Companies;
 using VCareer.Permission;
 using VCareer.Permissions;
 using VCareer.Profile;
-using VCareer.Repositories.Companies;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -20,18 +21,18 @@ namespace VCareer.Services.Profile
     //  [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
-        private readonly IRepository<Company, int> _companyRepository;
-        private readonly ICompanyRepository _companyCustomRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly IJobPostRepository _jobPostRepository;
 
         public CompanyLegalInfoAppService(
-            IRepository<Company, int> companyRepository,
-            ICompanyRepository companyCustomRepository,
-            ICurrentUser currentUser)
+            ICompanyRepository companyRepository,
+            ICurrentUser currentUser,
+            IJobPostRepository jobPostRepository)
         {
             _companyRepository = companyRepository;
-            _companyCustomRepository = companyCustomRepository;
             _currentUser = currentUser;
+            _jobPostRepository = jobPostRepository;
         }
 
 
@@ -150,7 +151,7 @@ namespace VCareer.Services.Profile
 
 
 
-        
+
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -261,7 +262,8 @@ namespace VCareer.Services.Profile
         public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
         {
             // Sử dụng repository để lấy company với đầy đủ thông tin industries
-            var company = await _companyCustomRepository.GetCompanyByJobIdAsync(jobId);
+            var job = await _jobPostRepository.GetAsync(jobId);
+            var company = await _companyRepository.FindAsync(c=>c.Id==job.CompanyId );
 
             if (company == null)
             {
@@ -291,28 +293,29 @@ namespace VCareer.Services.Profile
         /// </summary>
         public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input)
         {
-            // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
-            // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
-            var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
-            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            /*   // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
+               // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
+               var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+               var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
 
-            // Gọi repository để thực hiện query (logic query ở Repository layer)
-            var result = await _companyCustomRepository.SearchCompaniesAsync(
-                keyword: input.Keyword,
-                status: input.Status,
-                skipCount: skipCount,
-                maxResultCount: maxResultCount,
-                sorting: input.Sorting
-            );
+               // Gọi repository để thực hiện query (logic query ở Repository layer)
+               var result = await _companyCustomRepository.SearchCompaniesAsync(
+                   keyword: input.Keyword,
+                   status: input.Status,
+                   skipCount: skipCount,
+                   maxResultCount: maxResultCount,
+                   sorting: input.Sorting
+               );
 
-            // Map sang DTO (Application Service chỉ làm việc với mapping)
-            var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
+               // Map sang DTO (Application Service chỉ làm việc với mapping)
+               var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
 
-            return new PagedResultDto<CompanyLegalInfoDto>
-            {
-                TotalCount = result.TotalCount,
-                Items = dtos
-            };
+               return new PagedResultDto<CompanyLegalInfoDto>
+               {
+                   TotalCount = result.TotalCount,
+                   Items = dtos
+               };*/
+            throw new  NotImplementedException();
         }
     }
 }

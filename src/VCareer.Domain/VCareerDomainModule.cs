@@ -19,6 +19,7 @@ using Volo.Abp.TenantManagement;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
+using Volo.Abp.MailKit;
 using MailKit.Security;
 
 

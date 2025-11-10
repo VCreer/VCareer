@@ -46,24 +46,16 @@ namespace VCareer.Services.Auth
         private readonly IConfiguration _configuration;
 
         public AuthAppService(
-            IdentityUserManager identityManager, 
-            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
-            ITokenGenerator tokenGenerator, 
-            CurrentUser currentUser,
-            TokenClaimsHelper tokenClaimsHelper,
-            IEmailSender emailSender, 
-            ITemplateRenderer templateRenderer, 
-            IdentityRoleManager roleManager, 
-            IOptions<GoogleOptions> googleOptions,
-            IConfiguration configuration)
             IdentityUserManager identityManager,
             SignInManager<Volo.Abp.Identity.IdentityUser> signInManager,
             ITokenGenerator tokenGenerator,
-            ICurrentUser currentUser,
+            CurrentUser currentUser,
             IEmailSender emailSender,
             ITemplateRenderer templateRenderer,
             IdentityRoleManager roleManager,
-            IOptions<GoogleOptions> googleOptions)
+            IOptions<GoogleOptions> googleOptions,
+            IConfiguration configuration
+           )
         {
             _identityManager = identityManager;
             _signInManager = signInManager;
@@ -90,17 +82,17 @@ namespace VCareer.Services.Auth
 
             // Lấy AngularUrl từ configuration với fallback
             var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
-            
+
             // Đảm bảo URL không có trailing slash
             angularUrl = angularUrl.TrimEnd('/');
-            
+
             // Log để debug (có thể xóa sau khi test xong)
             Logger.LogInformation($"ForgotPassword: AngularUrl from config = {angularUrl}");
-            
+
             // Tạo link reset password với token và email trong query string
             // Sử dụng route chung /reset-password, component sẽ tự detect candidate/recruiter
             var resetLink = $"{angularUrl}/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
-            
+
             Logger.LogInformation($"ForgotPassword: Reset link = {resetLink}");
 
             var body = await _templateRenderer.RenderAsync(
@@ -152,8 +144,8 @@ namespace VCareer.Services.Auth
 
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
-                if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
-           
+            if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
+
             var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
