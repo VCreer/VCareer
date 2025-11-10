@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.CV;
-using VCareer.Helpers;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Users;
 
 namespace VCareer.Services.CV
 {
@@ -21,24 +21,25 @@ namespace VCareer.Services.CV
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly IRepository<CvTemplate, Guid> _templateRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
-        private readonly TokenClaimsHelper _tokenClaimsHelper;
+        private readonly ICurrentUser _currentUser;
 
         public CandidateCvAppService(
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<CvTemplate, Guid> templateRepository,
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
-            TokenClaimsHelper tokenClaimsHelper)
+             ICurrentUser currentUser
+            )
         {
             _candidateCvRepository = candidateCvRepository;
             _templateRepository = templateRepository;
             _candidateProfileRepository = candidateProfileRepository;
-            _tokenClaimsHelper = tokenClaimsHelper;
+            _currentUser = currentUser;
         }
 
         public async Task<CandidateCvDto> CreateAsync(CreateCandidateCvDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             // Kiểm tra user có phải candidate không
             var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
             if (candidate == null)
@@ -90,8 +91,8 @@ namespace VCareer.Services.CV
 
         public async Task<CandidateCvDto> UpdateAsync(Guid id, UpdateCandidateCvDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var cv = await _candidateCvRepository.GetAsync(id);
 
             // Kiểm tra quyền: chỉ có thể update CV của chính mình
@@ -156,8 +157,8 @@ namespace VCareer.Services.CV
 
         public async Task DeleteAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var cv = await _candidateCvRepository.GetAsync(id);
 
             // Kiểm tra quyền: chỉ có thể xóa CV của chính mình
@@ -183,8 +184,8 @@ namespace VCareer.Services.CV
 
         public async Task<PagedResultDto<CandidateCvDto>> GetListAsync(GetCandidateCvListDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var queryable = await _candidateCvRepository.GetQueryableAsync();
 
             // Chỉ lấy CV của user hiện tại
@@ -1128,8 +1129,8 @@ namespace VCareer.Services.CV
 
         public async Task SetDefaultAsync(Guid cvId)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var cv = await _candidateCvRepository.GetAsync(cvId);
 
             if (cv.CandidateId != userId)
@@ -1152,8 +1153,8 @@ namespace VCareer.Services.CV
 
         public async Task PublishAsync(Guid cvId, bool isPublished)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var cv = await _candidateCvRepository.GetAsync(cvId);
 
             if (cv.CandidateId != userId)
@@ -1179,8 +1180,8 @@ namespace VCareer.Services.CV
 
         public async Task<CandidateCvDto> GetDefaultCvAsync()
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             var cv = await _candidateCvRepository.FirstOrDefaultAsync(
                 x => x.CandidateId == userId && x.IsDefault);
 

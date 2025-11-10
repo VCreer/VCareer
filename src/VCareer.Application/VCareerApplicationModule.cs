@@ -50,10 +50,7 @@ public class VCareerApplicationModule : AbpModule
         // ABP tự động đăng ký, nhưng ta có thể đăng ký thủ công để rõ ràng:
         context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
 
-        // 🔧 ĐĂNG KÝ JOB POSTING APP SERVICE (Transient - mỗi request 1 instance mới)
-        context.Services.AddSingleton<VCareer.Job.JobPosting.ISerices.IJobPostingAppService, JobPostingAppService>();
-        context.Services.AddSingleton<IJobCategoryAppService, JobCategoryAppService>();
-           }
+                      }
 
    
 
