@@ -57,7 +57,7 @@ public class VCareerDbContext :
        public DbSet<Job_Category> JobCategories { get; set; }
     public DbSet<Job_Post> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
-    public DbSet<JobPostingTag> JobPostingTags { get; set; }
+    public DbSet<JobPostTag> JobPostingTags { get; set; }
     public DbSet<SavedJob> SavedJobs { get; set; }
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
     public DbSet<UploadedCv> UploadedCvs { get; set; }
@@ -259,7 +259,7 @@ public class VCareerDbContext :
         // (CandidateProfile configuration đã được di chuyển xuống dưới, cùng với CandidateCv relationship)
 
         //-----------fluent api cho SavedJob-------------
-        builder.Entity<SavedJob>(e =>
+      /*  builder.Entity<SavedJob>(e =>
         {
             e.ToTable(VCareerConsts.DbTablePrefix + "SavedJobs", VCareerConsts.DbSchema);
             e.ConfigureByConvention();
@@ -285,7 +285,7 @@ public class VCareerDbContext :
             e.HasIndex(x => x.CandidateId);
             e.HasIndex(x => x.JobId);
             e.HasIndex(x => new { x.CandidateId, x.JobId }).IsUnique();
-        });
+        });*/
 
         //-----------fluent api cho recuiter------------
 

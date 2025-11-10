@@ -130,7 +130,7 @@ namespace VCareer.Services.Auth
                 throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
             }
 
-            var user = await _identityManager.FindByIdAsync(userId.Value.ToString());
+            var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
             // Update security stamp để invalidate tất cả tokens cũ (logout tất cả devices)

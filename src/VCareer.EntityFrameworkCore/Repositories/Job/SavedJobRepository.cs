@@ -33,7 +33,7 @@ namespace VCareer.Repositories.Job
                     .ThenInclude(j => j.RecruiterProfile)
                         .ThenInclude(r => r.Company)
                 .Include(s => s.JobPosting)
-                    .ThenInclude(j => j.Province)
+                    .ThenInclude(j => j.ProvinceCode)
                 .OrderByDescending(s => s.CreationTime)
                 .Skip(skipCount)
                 .Take(maxResultCount)

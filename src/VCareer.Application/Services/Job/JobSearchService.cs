@@ -381,52 +381,57 @@ namespace VCareer.Services.Job
             };
         }
 
+        public Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Lấy danh sách job đã lưu của user hiện tại
         /// </summary>
-     /*   public async Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
-        {
-            if (!_currentUser.IsAuthenticated)
-            {
-                return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
-            }
-            var userId = _currentUser.Id.Value;
+        /*   public async Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
+           {
+               if (!_currentUser.IsAuthenticated)
+               {
+                   return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
+               }
+               var userId = _currentUser.Id.Value;
 
-            // Lấy CandidateProfile từ UserId
-            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-            if (candidateProfile == null)
-            {
-                return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
-            }
-            // Lấy danh sách SavedJob với JobPosting (từ Repository)
-            var savedJobs = await _savedJobRepository.GetSavedJobsWithDetailsAsync(
-                candidateProfile.UserId,
-                skipCount,
-                maxResultCount
-            );
+               // Lấy CandidateProfile từ UserId
+               var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+               if (candidateProfile == null)
+               {
+                   return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
+               }
+               // Lấy danh sách SavedJob với JobPosting (từ Repository)
+               var savedJobs = await _savedJobRepository.GetSavedJobsWithDetailsAsync(
+                   candidateProfile.UserId,
+                   skipCount,
+                   maxResultCount
+               );
 
-            var totalCount = await _savedJobRepository.CountSavedJobsAsync(candidateProfile.UserId);
-            // Map sang DTO
-            var items = new List<SavedJobDto>();
-            foreach (var savedJob in savedJobs)
-            {
-                var job = savedJob.JobPosting;
-                if (job == null) continue;
-                var jobViewDto = await MapToJobViewDto(job);
+               var totalCount = await _savedJobRepository.CountSavedJobsAsync(candidateProfile.UserId);
+               // Map sang DTO
+               var items = new List<SavedJobDto>();
+               foreach (var savedJob in savedJobs)
+               {
+                   var job = savedJob.JobPosting;
+                   if (job == null) continue;
+                   var jobViewDto = await MapToJobViewDto(job);
 
-                items.Add(new SavedJobDto
-                {
-                    JobId = savedJob.JobId,
-                    JobTitle = job.Title,
-                    CompanyName = jobViewDto.CompanyName ?? "Chưa có thông tin",
-                    SalaryText = job.SalaryText,
-                    Location = jobViewDto.ProvinceName ?? "Chưa có thông tin",
-                    SavedAt = savedJob.CreationTime,
-                    JobDetail = jobViewDto
-                });
-            }
-            return new PagedResultDto<SavedJobDto>(items, totalCount);
-        }*/
+                   items.Add(new SavedJobDto
+                   {
+                       JobId = savedJob.JobId,
+                       JobTitle = job.Title,
+                       CompanyName = jobViewDto.CompanyName ?? "Chưa có thông tin",
+                       SalaryText = job.SalaryText,
+                       Location = jobViewDto.ProvinceName ?? "Chưa có thông tin",
+                       SavedAt = savedJob.CreationTime,
+                       JobDetail = jobViewDto
+                   });
+               }
+               return new PagedResultDto<SavedJobDto>(items, totalCount);
+           }*/
 
         #endregion
 
