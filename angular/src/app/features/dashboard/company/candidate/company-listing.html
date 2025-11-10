@@ -65,7 +65,7 @@
         <div class="company-card" *ngFor="let company of paginatedCompanies" (click)="onCompanyClick(company.id)">
           <div class="company-image-wrapper">
             <img 
-              [src]="company.logoUrl || 'assets/images/default-company.png'" 
+              [src]="getLogoUrl(company.logoUrl)" 
               [alt]="company.companyName" 
               class="company-image" 
               onerror="this.src='assets/images/default-company.png'">

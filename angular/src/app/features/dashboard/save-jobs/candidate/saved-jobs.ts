@@ -5,6 +5,8 @@ import { TranslationService } from '../../../../core/services/translation.servic
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { JobApiService, SavedJobDto, JobViewDto } from '../../../../apiTest/api/job.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-saved-jobs',
@@ -24,11 +26,22 @@ export class SavedJobsComponent implements OnInit {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private jobApi: JobApiService
+    private jobApi: JobApiService,
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit() {
-    this.loadSavedJobs();
+    // Check authentication trước khi load data
+    // Sử dụng take(1) để chỉ lấy giá trị đầu tiên và tự động unsubscribe
+    this.navigationService.isLoggedIn$.pipe(take(1)).subscribe(isLoggedIn => {
+      if (!isLoggedIn) {
+        // Nếu chưa đăng nhập, redirect đến route 404
+        this.router.navigate(['/404']);
+        return;
+      }
+      // Nếu đã đăng nhập, load data
+      this.loadSavedJobs();
+    });
   }
 
   translate(key: string): string {

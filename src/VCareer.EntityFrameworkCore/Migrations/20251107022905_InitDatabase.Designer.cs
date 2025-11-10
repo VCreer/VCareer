@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251105112430_InitDatabaseVcareer")]
-    partial class InitDatabaseVcareer
+    [Migration("20251107022905_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,8 @@ namespace VCareer.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("ActivityType")
                         .HasColumnType("int");
@@ -56,14 +57,16 @@ namespace VCareer.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<Guid?>("EntityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("EntityType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -72,22 +75,176 @@ namespace VCareer.Migrations
 
                     b.Property<string>("IpAddress")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Metadata")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("UserAgent")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ActivityLogs");
+                    b.HasIndex("ActivityType");
+
+                    b.HasIndex("CreationTime");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "ActivityType");
+
+                    b.HasIndex("UserId", "CreationTime");
+
+                    b.ToTable("ActivityLogs", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.Applications.JobApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CVType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("CandidateCvId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("CoverLetter")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<DateTime?>("InterviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InterviewLocation")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("InterviewNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<int?>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecruiterNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("RespondedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("UploadedCvId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ViewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ViewedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("WithdrawalReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("WithdrawnAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CVType");
+
+                    b.HasIndex("CandidateCvId");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CreationTime");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UploadedCvId");
+
+                    b.HasIndex("JobId", "CandidateId")
+                        .IsUnique();
+
+                    b.ToTable("JobApplications", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Book", b =>
@@ -3425,12 +3582,45 @@ namespace VCareer.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
+            modelBuilder.Entity("VCareer.Models.Applications.JobApplication", b =>
+                {
+                    b.HasOne("VCareer.Models.CV.CandidateCv", "CandidateCv")
+                        .WithMany()
+                        .HasForeignKey("CandidateCvId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("VCareer.Models.Users.CandidateProfile", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.Companies.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VCareer.Models.CV.UploadedCv", "UploadedCv")
+                        .WithMany()
+                        .HasForeignKey("UploadedCvId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("CandidateCv");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("UploadedCv");
+                });
+
             modelBuilder.Entity("VCareer.Models.CV.CandidateCv", b =>
                 {
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("CandidateCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.CV.CvTemplate", "Template")
@@ -3449,7 +3639,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("UploadedCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.FileMetadata.FileDescriptor", "FileDescriptor")

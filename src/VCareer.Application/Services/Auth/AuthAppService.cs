@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -41,8 +43,19 @@ namespace VCareer.Services.Auth
         private readonly ITemplateRenderer _templateRenderer;
         private readonly GoogleOptions _googleOptions;
         private readonly ICurrentUser _currentUser;
+        private readonly IConfiguration _configuration;
 
         public AuthAppService(
+            IdentityUserManager identityManager, 
+            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
+            ITokenGenerator tokenGenerator, 
+            CurrentUser currentUser,
+            TokenClaimsHelper tokenClaimsHelper,
+            IEmailSender emailSender, 
+            ITemplateRenderer templateRenderer, 
+            IdentityRoleManager roleManager, 
+            IOptions<GoogleOptions> googleOptions,
+            IConfiguration configuration)
             IdentityUserManager identityManager,
             SignInManager<Volo.Abp.Identity.IdentityUser> signInManager,
             ITokenGenerator tokenGenerator,
@@ -60,6 +73,7 @@ namespace VCareer.Services.Auth
             _templateRenderer = templateRenderer;
             _roleManager = roleManager;
             _googleOptions = googleOptions.Value;
+            _configuration = configuration;
         }
 
         public Task CandidateRegisterAsync(CandidateRegisterDto input)
@@ -74,7 +88,20 @@ namespace VCareer.Services.Auth
 
             var token = await _identityManager.GeneratePasswordResetTokenAsync(user);
 
-            var resetLink = $"https://your-frontend-url/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+            // Lấy AngularUrl từ configuration với fallback
+            var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
+            
+            // Đảm bảo URL không có trailing slash
+            angularUrl = angularUrl.TrimEnd('/');
+            
+            // Log để debug (có thể xóa sau khi test xong)
+            Logger.LogInformation($"ForgotPassword: AngularUrl from config = {angularUrl}");
+            
+            // Tạo link reset password với token và email trong query string
+            // Sử dụng route chung /reset-password, component sẽ tự detect candidate/recruiter
+            var resetLink = $"{angularUrl}/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+            
+            Logger.LogInformation($"ForgotPassword: Reset link = {resetLink}");
 
             var body = await _templateRenderer.RenderAsync(
                  "Abp.StandardEmailTemplates.Message",
