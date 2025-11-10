@@ -9,7 +9,6 @@ namespace VCareer.Dto.FileDto
 {
     public class FileDescriptorDto
     {
-        public Guid Id { get; set; }
         public string CreatorId { get; set; }
         public string StorageName { get; set; }
         public string OriginalName { get; set; }

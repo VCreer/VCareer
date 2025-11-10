@@ -1,23 +1,23 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using VCareer;
 using VCareer.Application.Contracts.CV;
 using VCareer.Constants.FilePolicy;
 using VCareer.Dto.FileDto;
 using VCareer.Files.BlobContainers;
-using VCareer.Helpers;
 using VCareer.IServices.IFileServices;
 using VCareer.Models.CV;
 using VCareer.Models.FileMetadata;
 using VCareer.Models.Users;
 using VCareer.Services.FileServices;
-using VCareer;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Users;
 
 namespace VCareer.Services.CV
 {
@@ -31,7 +31,9 @@ namespace VCareer.Services.CV
         private readonly IRepository<FileDescriptor, Guid> _fileDescriptorRepository;
         private readonly IFileServices _fileServices;
         private readonly IBlobContainerFactory _blobFactory;
-        private readonly TokenClaimsHelper _tokenClaimsHelper;
+        private readonly ICurrentUser _currentUser;
+
+
 
         public UploadedCvAppService(
             IRepository<UploadedCv, Guid> uploadedCvRepository,
@@ -39,14 +41,15 @@ namespace VCareer.Services.CV
             IRepository<FileDescriptor, Guid> fileDescriptorRepository,
             IFileServices fileServices,
             IBlobContainerFactory blobFactory,
-            TokenClaimsHelper tokenClaimsHelper)
+              ICurrentUser currentUser
+           )
         {
             _uploadedCvRepository = uploadedCvRepository;
             _candidateProfileRepository = candidateProfileRepository;
             _fileDescriptorRepository = fileDescriptorRepository;
             _fileServices = fileServices;
             _blobFactory = blobFactory;
-            _tokenClaimsHelper = tokenClaimsHelper;
+            _currentUser = currentUser;
         }
 
         public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = false, string? notes = null)
@@ -54,7 +57,7 @@ namespace VCareer.Services.CV
             Guid userId;
             try
             {
-                userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+                 userId = _currentUser.GetId();
             }
             catch (Exception ex)
             {
@@ -156,7 +159,7 @@ namespace VCareer.Services.CV
 
         public async Task<PagedResultDto<UploadedCvDto>> GetListAsync(GetUploadedCvListDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
 
             // Chỉ lấy CV của current user nếu không có CandidateId trong input
             var candidateId = input.CandidateId ?? userId;
@@ -211,7 +214,7 @@ namespace VCareer.Services.CV
 
         public async Task<UploadedCvDto> GetAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
 
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
@@ -226,7 +229,7 @@ namespace VCareer.Services.CV
 
         public async Task<UploadedCvDto> UpdateAsync(Guid id, UpdateUploadedCvDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
 
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
@@ -275,7 +278,7 @@ namespace VCareer.Services.CV
 
         public async Task DeleteAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
 
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
@@ -297,7 +300,7 @@ namespace VCareer.Services.CV
 
         public async Task SetDefaultAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
 
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
@@ -322,8 +325,7 @@ namespace VCareer.Services.CV
 
         public async Task<byte[]> DownloadCvAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-
+            var userId = _currentUser.GetId();
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
             // Kiểm tra quyền
