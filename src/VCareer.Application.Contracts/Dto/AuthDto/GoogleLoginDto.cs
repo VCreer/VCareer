@@ -12,7 +12,7 @@ namespace VCareer.Dto.AuthDto
     {
         [Required]
         public string IdToken { get; set; }
-        [Required]
-        public ScreenRoleType Type{ get; set; }
+   /*     [Required]
+        public ScreenRoleType Type{ get; set; }*/
     }
 }

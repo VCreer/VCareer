@@ -1,22 +1,25 @@
-using System;
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.Uow;
+using System;
+using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Profile;
+using VCareer.Models.Users;
+// 🔧 Thêm using cho custom repositories
+using VCareer.Repositories.Job;
+using VCareer.Repositories.Profile;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
+using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.Modularity;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
-using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
-// 🔧 Thêm using cho custom repositories
-using VCareer.Repositories.Job;
-using VCareer.IRepositories.Job;
+using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using Volo.Abp.Uow;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -45,28 +48,20 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<VCareerDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
+            /* Remove "includeAllEntities: true" to create
+             * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
-            
-            // ==========================================
-            // 🔧 ĐĂNG KÝ CUSTOM REPOSITORIES cho ABP (Manual)
-            // ==========================================
-            // ABP chỉ tự động đăng ký default repositories
-            // Custom repository implementations phải đăng ký thủ công
-            
-            // Repository cho Location (Province & District)
-                      
-            // Repository cho Job Category
             options.AddRepository<VCareer.Models.Job.Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
-            
-            // Repository cho Job Posting
             options.AddRepository<VCareer.Models.Job.Job_Post, VCareer.Repositories.Job.JobPostRepository>();
+            options.AddRepository<CandidateProfile, CandidateRepository>();
+            options.AddRepository<RecruiterProfile, RecruiterProfileRepository>();
         });
-        
-            
-             context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
+
+
+        context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
         context.Services.AddTransient<IJobSearchRepository, JobPostRepository>();
+        context.Services.AddTransient<ICandidateProfileRepository, CandidateRepository>();
+        context.Services.AddTransient<IRecruiterRepository, RecruiterProfileRepository>();
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {
@@ -81,6 +76,6 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.UseSqlServer();
 
         });
-        
+
     }
 }
