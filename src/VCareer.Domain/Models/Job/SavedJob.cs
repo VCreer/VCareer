@@ -5,7 +5,7 @@ using Volo.Abp.Domain.Entities;
 namespace VCareer.Models.Job
 {
     
-    public class SavedJob : Entity
+    public class SavedJob :Entity
     {
         public Guid CandidateId { get; set; }
 

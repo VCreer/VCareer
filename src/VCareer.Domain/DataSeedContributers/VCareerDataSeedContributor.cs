@@ -35,13 +35,13 @@ namespace VCareer.DataSeedContributers
         VCareerPermission.Files.Upload
     };
 
-            await SeedRoleAsync("SYSTEM_EMPLOYEE", defaultPermissions);
-            await SeedRoleAsync("FINANCE_EMPLOYEE", defaultPermissions);
-            await SeedRoleAsync("CUSTOMER_SUPPORT", defaultPermissions);
-            await SeedRoleAsync("ACCOUNT_EMPLOYEE", defaultPermissions);
-            await SeedRoleAsync("LEAD_RECRUITER", defaultPermissions);
-            await SeedRoleAsync("HR_STAFF", defaultPermissions);
-            await SeedRoleAsync("CANDIDATE", defaultPermissions);
+            await SeedRoleAsync("system_employee");
+            await SeedRoleAsync("finance_employee");
+            await SeedRoleAsync("customer_support");
+            await SeedRoleAsync("account_employee");
+            await SeedRoleAsync("lead_recruiter");
+            await SeedRoleAsync("hr_staff");
+            await SeedRoleAsync("candidate");
         }
 
         private async Task SeedRoleAsync(string roleName, string[] permissions = null)
