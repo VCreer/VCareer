@@ -125,11 +125,8 @@ namespace VCareer.Services.Auth
 
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
-                if (userId == null || userId == Guid.Empty)
-            {
-                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
-            }
-
+                if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
+           
             var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
 
@@ -146,10 +143,7 @@ namespace VCareer.Services.Auth
 
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
-            if (userId == null || userId == Guid.Empty)
-            {
-                throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
-            }
+            if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
 
             var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
