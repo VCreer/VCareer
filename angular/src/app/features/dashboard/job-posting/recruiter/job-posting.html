@@ -10,7 +10,12 @@
   <!-- Breadcrumb Box -->
   <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
-      <h1 class="page-title">Đăng tuyển dụng</h1>
+      <div class="page-header">
+        <h1 class="page-title">Đăng tin tuyển dụng</h1>
+        <span class="campaign-badge" *ngIf="campaignName">
+          Chiến dịch: {{ campaignName }}
+        </span>
+      </div>
       <div class="action-buttons">
         <app-button 
           type="secondary" 

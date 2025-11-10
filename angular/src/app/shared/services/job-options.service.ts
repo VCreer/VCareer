@@ -123,6 +123,34 @@ export class JobOptionsService {
     { value: 'other', label: 'Khác' }
   ];
 
+  // Job position options (Vị trí tuyển dụng)
+  readonly JOB_POSITION_OPTIONS: SelectOption[] = [
+    { value: 'marketing-staff', label: 'Nhân viên Marketing' },
+    { value: 'designer', label: 'Designer' },
+    { value: 'developer', label: 'Developer' },
+    { value: 'sales-staff', label: 'Nhân viên Kinh doanh' },
+    { value: 'accountant', label: 'Kế toán' },
+    { value: 'hr-staff', label: 'Nhân viên Nhân sự' },
+    { value: 'content-writer', label: 'Content Writer' },
+    { value: 'seo-specialist', label: 'Chuyên viên SEO' },
+    { value: 'social-media', label: 'Chuyên viên Social Media' },
+    { value: 'project-manager', label: 'Quản lý Dự án' },
+    { value: 'business-analyst', label: 'Chuyên viên Phân tích Nghiệp vụ' },
+    { value: 'customer-service', label: 'Nhân viên Chăm sóc Khách hàng' },
+    { value: 'data-analyst', label: 'Chuyên viên Phân tích Dữ liệu' },
+    { value: 'product-manager', label: 'Quản lý Sản phẩm' },
+    { value: 'ui-ux-designer', label: 'UI/UX Designer' },
+    { value: 'qa-tester', label: 'QA/Tester' },
+    { value: 'devops-engineer', label: 'DevOps Engineer' },
+    { value: 'system-admin', label: 'Quản trị Hệ thống' },
+    { value: 'network-engineer', label: 'Kỹ sư Mạng' },
+    { value: 'security-specialist', label: 'Chuyên viên Bảo mật' },
+    { value: 'mobile-developer', label: 'Mobile Developer' },
+    { value: 'web-developer', label: 'Web Developer' },
+    { value: 'fullstack-developer', label: 'Fullstack Developer' },
+    { value: 'other', label: 'Khác' }
+  ];
+
   // Helper methods to get label by value
   getSalaryLabel(value: string): string {
     const option = this.SALARY_OPTIONS.find(opt => opt.value === value);
@@ -161,6 +189,11 @@ export class JobOptionsService {
 
   getEmploymentTypeLabel(value: string): string {
     const option = this.EMPLOYMENT_TYPE_OPTIONS.find(opt => opt.value === value);
+    return option ? option.label : '';
+  }
+
+  getJobPositionLabel(value: string): string {
+    const option = this.JOB_POSITION_OPTIONS.find(opt => opt.value === value);
     return option ? option.label : '';
   }
 

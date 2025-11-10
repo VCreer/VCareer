@@ -1,0 +1,67 @@
+<div class="multi-select-location-field">
+  <label class="form-label">
+    {{ label }}
+    <span class="required-asterisk" *ngIf="required">*</span>
+  </label>
+
+  <!-- Multi-select Container -->
+  <div class="multi-select-container" #locationDropdown>
+    <div
+      class="multi-select-toggle"
+      [class.error]="error"
+      [class.has-selection]="selectedValues.length > 0"
+      (click)="toggleLocationDropdown()">
+      <!-- Selected Locations as Tags (inside input) -->
+      <div class="selected-locations-tags">
+        <span
+          class="location-tag"
+          *ngFor="let locationValue of selectedValues">
+          {{ getLocationLabel(locationValue) }}
+          <button
+            type="button"
+            class="tag-remove-btn"
+            (click)="removeLocation(locationValue); $event.stopPropagation()"
+            aria-label="Remove">
+            <i class="fa fa-times"></i>
+          </button>
+        </span>
+        <!-- Placeholder text when no selection -->
+        <span *ngIf="selectedValues.length === 0" class="placeholder-text">
+          - Chọn khu vực làm việc -
+        </span>
+      </div>
+      <div class="multi-select-actions">
+        <button
+          type="button"
+          class="clear-all-btn"
+          *ngIf="selectedValues.length > 0"
+          (click)="clearAllLocations($event)"
+          aria-label="Clear all">
+          <i class="fa fa-times"></i>
+        </button>
+        <i class="fa fa-chevron-down dropdown-icon" [class.rotated]="showLocationDropdown"></i>
+      </div>
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div class="multi-select-dropdown" *ngIf="showLocationDropdown">
+      <div
+        class="dropdown-option"
+        *ngFor="let option of options"
+        [class.selected]="isLocationSelected(option.value)"
+        (click)="toggleLocationSelection(option.value)">
+        <input
+          type="checkbox"
+          [checked]="isLocationSelected(option.value)"
+          [readonly]="true">
+        <span>{{ option.label }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+</div>
+

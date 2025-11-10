@@ -1,0 +1,226 @@
+<div class="cv-detail-container" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải CV...</p>
+  </div>
+
+  <!-- White Card Wrapper - Contains header and content -->
+  <div *ngIf="!loading" class="cv-detail-card">
+    <!-- Recruitment Header - Only campaign info and close button -->
+    <div class="recruitment-header">
+      <!-- Left: Campaign Information -->
+      <div class="header-left">
+        <div class="campaign-header-info">
+          <i class="fa fa-flag campaign-icon"></i>
+          <div class="campaign-text">
+            <span class="campaign-label">Chiến dịch tuyển dụng</span>
+            <span class="campaign-name">{{ cvDetail?.campaignName || 'Tuyển dụng Developer tháng 10' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Close Button -->
+      <button class="close-btn" (click)="onClose()" aria-label="Close">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <!-- CV Detail Content -->
+    <div class="cv-detail-content">
+      <!-- Left Column: CV Content - Only show when data exists from BE -->
+      <div *ngIf="cvDetail" class="cv-content-column">
+        <!-- Candidate Profile -->
+        <div class="candidate-profile">
+        <div class="candidate-illustration">
+          <div class="illustration-placeholder">
+            <i class="fa fa-user"></i>
+          </div>
+        </div>
+        <h1 class="candidate-name">{{ cvDetail.name }}</h1>
+        <p class="candidate-position">{{ cvDetail.position }}</p>
+      </div>
+
+      <!-- CV Sections -->
+      <div class="cv-sections">
+        <!-- Career Objective -->
+        <div *ngIf="cvDetail.careerObjective" class="cv-section">
+          <h2 class="section-title">MỤC TIÊU NGHỀ NGHIỆP</h2>
+          <div class="section-divider"></div>
+          <p class="section-content">{{ cvDetail.careerObjective }}</p>
+        </div>
+
+        <!-- Education -->
+        <div *ngIf="cvDetail.education && cvDetail.education.length > 0" class="cv-section">
+          <h2 class="section-title">HỌC VẤN</h2>
+          <div class="section-divider"></div>
+          <div *ngFor="let edu of cvDetail.education" class="education-item">
+            <div class="education-degree">{{ edu.degree }}</div>
+            <div class="education-period">{{ edu.startDate }} - {{ edu.endDate }}</div>
+            <div class="education-school">{{ edu.school }}</div>
+            <div *ngIf="edu.description" class="education-description">{{ edu.description }}</div>
+          </div>
+        </div>
+
+        <!-- Honors and Awards -->
+        <div *ngIf="cvDetail.honorsAwards && cvDetail.honorsAwards.length > 0" class="cv-section">
+          <h2 class="section-title">DANH HIỆU VÀ GIẢI THƯỞNG</h2>
+          <div class="section-divider"></div>
+          <div *ngFor="let honor of cvDetail.honorsAwards" class="honor-item">
+            <span class="honor-year">{{ honor.year }}</span>
+            <span class="honor-title">{{ honor.title }}</span>
+          </div>
+        </div>
+
+        <!-- Certificates -->
+        <div *ngIf="cvDetail.certificates && cvDetail.certificates.length > 0" class="cv-section">
+          <h2 class="section-title">CHỨNG CHỈ</h2>
+          <div class="section-divider"></div>
+          <div *ngFor="let cert of cvDetail.certificates" class="certificate-item">
+            <span class="cert-year">{{ cert.year }}</span>
+            <span class="cert-title">{{ cert.title }}</span>
+          </div>
+        </div>
+
+        <!-- Activities -->
+        <div *ngIf="cvDetail.activities && cvDetail.activities.length > 0" class="cv-section">
+          <h2 class="section-title">HOẠT ĐỘNG</h2>
+          <div class="section-divider"></div>
+          <div *ngFor="let activity of cvDetail.activities" class="activity-item">
+            <div class="activity-title">{{ activity.title }}</div>
+            <div class="activity-period">{{ activity.startDate }} - {{ activity.endDate }}</div>
+            <div class="activity-organization">{{ activity.organization }}</div>
+            <div class="activity-description">{{ activity.description }}</div>
+          </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div *ngIf="cvDetail.personalInfo" class="cv-section">
+          <h2 class="section-title">THÔNG TIN CÁ NHÂN</h2>
+          <div class="section-divider"></div>
+          <div class="personal-info-list">
+            <div *ngIf="cvDetail.personalInfo.phone" class="info-item">
+              <i class="fa fa-phone info-icon"></i>
+              <span>{{ cvDetail.personalInfo.phone }}</span>
+            </div>
+            <div *ngIf="cvDetail.personalInfo.email" class="info-item">
+              <i class="fa fa-envelope info-icon"></i>
+              <span>{{ cvDetail.personalInfo.email }}</span>
+            </div>
+            <div *ngIf="cvDetail.personalInfo.facebook" class="info-item">
+              <i class="fa fa-facebook info-icon"></i>
+              <span>{{ cvDetail.personalInfo.facebook }}</span>
+            </div>
+            <div *ngIf="cvDetail.personalInfo.address" class="info-item">
+              <i class="fa fa-map-marker info-icon"></i>
+              <span>{{ cvDetail.personalInfo.address }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div *ngIf="cvDetail.skills && cvDetail.skills.length > 0" class="cv-section">
+          <h2 class="section-title">CÁC KỸ NĂNG</h2>
+          <div class="section-divider"></div>
+          <div *ngFor="let skill of cvDetail.skills" class="skill-item">
+            <div class="skill-category">{{ skill.category }}</div>
+            <ul class="skill-list">
+              <li *ngFor="let item of skill.items">{{ item }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Right Column: Recruitment Info - Always visible -->
+      <div class="recruitment-info-column">
+      
+      <!-- Applicant Summary Card -->
+      <div class="applicant-summary-card" *ngIf="cvDetail">
+        <div class="candidate-header-summary">
+          <div class="candidate-avatar-summary">
+            <span>{{ getInitials(cvDetail.name) }}</span>
+          </div>
+          <div class="candidate-info-summary">
+            <div class="candidate-name-summary">{{ cvDetail.name }}</div>
+            <div class="contact-opened-summary" *ngIf="cvDetail.contactOpenedDate">
+              Đã mở liên hệ ngày {{ cvDetail.contactOpenedDate }}
+            </div>
+          </div>
+        </div>
+        <div class="contact-details-summary">
+          <div class="contact-detail-summary-item">
+            <span class="contact-value-summary">{{ cvDetail.email }}</span>
+          </div>
+          <div class="contact-detail-summary-item">
+            <span class="contact-value-summary">{{ cvDetail.phone }}</span>
+          </div>
+        </div>
+        <div class="contact-actions-summary">
+          <button class="contact-btn-summary phone-btn" (click)="onContact('phone')" title="Gọi điện">
+            <i class="fa fa-phone"></i>
+          </button>
+          <button class="contact-btn-summary email-btn" (click)="onContact('email')" title="Gửi email">
+            <i class="fa fa-envelope"></i>
+          </button>
+          <button class="contact-btn-summary chat-btn" (click)="onContact('chat')" title="Nhắn tin">
+            <i class="fa fa-comments"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recruitment Campaign -->
+      <div class="campaign-info-card" *ngIf="cvDetail">
+        <div class="campaign-header-small">
+          <i class="fa fa-flag campaign-icon-small"></i>
+          <span class="campaign-label-small">Chiến dịch tuyển dụng</span>
+        </div>
+        <div class="campaign-name-small">{{ cvDetail.campaignName }}</div>
+      </div>
+
+      <!-- CV Status -->
+      <div class="status-card">
+        <p class="status-description">
+          Thực hiện đánh giá sẽ giúp hệ thống tối ưu tốt hơn cho chiến dịch tuyển dụng của bạn.
+        </p>
+        <div class="status-dropdown-wrapper">
+          <div class="status-dropdown" [class.disabled]="!cvDetail" [class.open]="showStatusDropdown" (click)="toggleStatusDropdown()">
+            <span class="status-dropdown-text">{{ getStatusLabel(selectedStatus) }}</span>
+            <i class="fa fa-chevron-down status-dropdown-icon" [class.rotated]="showStatusDropdown"></i>
+          </div>
+          <div class="status-dropdown-menu" *ngIf="showStatusDropdown" (click)="$event.stopPropagation()">
+            <div 
+              class="status-dropdown-item" 
+              *ngFor="let status of statusOptions"
+              [class.active]="selectedStatus === status.value"
+              (click)="onStatusSelect(status.value)">
+              <span class="status-item-label">{{ status.label }}</span>
+              <i class="fa fa-check status-item-check" *ngIf="selectedStatus === status.value"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <app-button
+          type="secondary"
+          size="medium"
+          (click)="onDownloadPdf()"
+          [disabled]="!cvDetail">
+          Tải CV PDF
+        </app-button>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<app-toast-notification
+  [show]="showToast"
+  [message]="toastMessage"
+  [type]="toastType"
+  (close)="onToastClose()">
+</app-toast-notification>
+

@@ -45,6 +45,17 @@ export class SelectFieldComponent implements ControlValueAccessor {
     this.valueChange.emit(this.value);
   }
 
+  clearSelection(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.disabled) return;
+    
+    this.value = '';
+    this.onChange(this.value);
+    this.onTouched();
+    this.valueChange.emit(this.value);
+  }
+
   // ControlValueAccessor implementation
   writeValue(value: string): void {
     this.value = value || '';

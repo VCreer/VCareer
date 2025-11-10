@@ -1,0 +1,684 @@
+.cv-detail-container {
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+  background: #f9fafb;
+  margin-left: 72px;
+  width: calc(100% - 72px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 1;
+
+  &.sidebar-expanded {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  // Loading State
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #0F83BA;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  // Recruitment Header - Only campaign info and close button
+  .recruitment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+
+    // Left: Campaign Information
+    .header-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+
+      .campaign-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .campaign-icon {
+          color: #0F83BA;
+          font-size: 18px;
+          flex-shrink: 0;
+        }
+
+        .campaign-text {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+
+          .campaign-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 400;
+          }
+
+          .campaign-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+          }
+        }
+      }
+    }
+
+    // Close Button
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+
+      &:hover {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      i {
+        font-size: 20px;
+      }
+    }
+  }
+
+  // White Card Wrapper
+  .cv-detail-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    min-height: calc(100vh - 200px); // Adjust for padding and header
+    overflow: hidden;
+
+    .cv-detail-content {
+      display: flex;
+      gap: 0;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+
+      @media (max-width: 1024px) {
+        flex-direction: column;
+      }
+    }
+  }
+
+  // Left Column: CV Content
+  .cv-content-column {
+    flex: 1;
+    padding: 32px 24px 32px 0;
+    border-right: 1px solid #e5e7eb;
+    margin-right: 24px;
+
+    .candidate-profile {
+      text-align: center;
+      margin-bottom: 32px;
+
+      .candidate-illustration {
+        margin-bottom: 16px;
+
+        .illustration-placeholder {
+          width: 120px;
+          height: 120px;
+          margin: 0 auto;
+          background: #f3f4f6;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          i {
+            font-size: 48px;
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .candidate-name {
+        font-size: 32px;
+        font-weight: 700;
+        color: #0F83BA;
+        margin: 0 0 8px 0;
+      }
+
+      .candidate-position {
+        font-size: 18px;
+        color: #374151;
+        margin: 0;
+      }
+    }
+
+    .cv-sections {
+      .cv-section {
+        margin-bottom: 32px;
+
+        .section-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #0F83BA;
+          margin: 0 0 8px 0;
+        }
+
+        .section-divider {
+          height: 2px;
+          background: #0F83BA;
+          margin-bottom: 16px;
+        }
+
+        .section-content {
+          font-size: 14px;
+          color: #374151;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        // Education
+        .education-item {
+          margin-bottom: 16px;
+
+          .education-degree {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+          }
+
+          .education-period {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+          }
+
+          .education-school {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 4px;
+          }
+
+          .education-description {
+            font-size: 14px;
+            color: #6b7280;
+            font-style: italic;
+          }
+        }
+
+        // Honors and Awards
+        .honor-item {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 8px;
+
+          .honor-year {
+            font-weight: 600;
+            color: #374151;
+            min-width: 60px;
+          }
+
+          .honor-title {
+            color: #374151;
+          }
+        }
+
+        // Certificates
+        .certificate-item {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 8px;
+
+          .cert-year {
+            font-weight: 600;
+            color: #374151;
+            min-width: 60px;
+          }
+
+          .cert-title {
+            color: #374151;
+          }
+        }
+
+        // Activities
+        .activity-item {
+          margin-bottom: 16px;
+
+          .activity-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+          }
+
+          .activity-period {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+          }
+
+          .activity-organization {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 8px;
+          }
+
+          .activity-description {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+          }
+        }
+
+        // Personal Info
+        .personal-info-list {
+          .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #374151;
+
+            .info-icon {
+              color: #6b7280;
+              width: 20px;
+              text-align: center;
+            }
+          }
+        }
+
+        // Skills
+        .skill-item {
+          margin-bottom: 16px;
+
+          .skill-category {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+          }
+
+          .skill-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #374151;
+            font-size: 14px;
+            line-height: 1.8;
+
+            li {
+              margin-bottom: 4px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Right Column: Recruitment Info
+  .recruitment-info-column {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    @media (max-width: 1024px) {
+      width: 100%;
+    }
+
+    // Applicant Summary Card
+    .applicant-summary-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .candidate-header-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        .candidate-avatar-summary {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #BFDBFE;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          font-weight: 600;
+          flex-shrink: 0;
+        }
+
+        .candidate-info-summary {
+          flex: 1;
+          min-width: 0;
+
+          .candidate-name-summary {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+            line-height: 1.4;
+          }
+
+          .contact-opened-summary {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+          }
+        }
+      }
+
+      .contact-details-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e5e7eb;
+
+        .contact-detail-summary-item {
+          font-size: 14px;
+          color: #374151;
+          line-height: 1.4;
+
+          .contact-value-summary {
+            color: #374151;
+          }
+        }
+      }
+
+      .contact-actions-summary {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+        padding-top: 8px;
+        border-top: 1px solid #e5e7eb;
+
+        .contact-btn-summary {
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          border: 1px solid #0F83BA;
+          border-radius: 50%;
+          background: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+          font-size: 16px;
+
+          &.phone-btn {
+            color: #0F83BA;
+
+            &:hover {
+              background: #e0f2fe;
+              border-color: #0d6fa0;
+            }
+          }
+
+          &.email-btn {
+            color: #0F83BA;
+
+            &:hover {
+              background: #e0f2fe;
+              border-color: #0d6fa0;
+            }
+          }
+
+          &.chat-btn {
+            color: #0F83BA;
+
+            &:hover {
+              background: #e0f2fe;
+              border-color: #0d6fa0;
+            }
+          }
+
+          i {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .campaign-info-card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+
+      .campaign-header-small {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+
+        .campaign-icon-small {
+          color: #0F83BA;
+          font-size: 14px;
+        }
+
+        .campaign-label-small {
+          font-size: 12px;
+          color: #6b7280;
+        }
+      }
+
+      .campaign-name-small {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+      }
+    }
+
+    .status-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+
+      .status-description {
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.5;
+        margin: 0 0 16px 0;
+      }
+
+      .status-dropdown-wrapper {
+        position: relative;
+
+        .status-dropdown {
+          width: 100%;
+          padding: 12px 16px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          background: white;
+          font-size: 14px;
+          color: #374151;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          user-select: none;
+
+          &:hover:not(.disabled) {
+            border-color: #9ca3af;
+            background: #f9fafb;
+          }
+
+          &:focus:not(.disabled) {
+            outline: none;
+            border-color: #0F83BA;
+            box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+          }
+
+          &.open {
+            border-color: #0F83BA;
+            box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+          }
+
+          &.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f3f4f6;
+
+            &:hover {
+              border-color: #e5e7eb;
+              background: #f3f4f6;
+            }
+          }
+
+          .status-dropdown-text {
+            flex: 1;
+            font-weight: 500;
+            color: #374151;
+          }
+
+          .status-dropdown-icon {
+            color: #6b7280;
+            font-size: 12px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+
+            &.rotated {
+              transform: rotate(180deg);
+            }
+          }
+        }
+
+        .status-dropdown-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          z-index: 1000;
+          overflow: hidden;
+          max-height: 300px;
+          overflow-y: auto;
+
+          .status-dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              background: #f9fafb;
+            }
+
+            &.active {
+              background: #e0f2fe;
+              color: #0F83BA;
+
+              .status-item-label {
+                color: #0F83BA;
+                font-weight: 600;
+              }
+
+              .status-item-check {
+                color: #0F83BA;
+              }
+            }
+
+            .status-item-label {
+              flex: 1;
+              font-size: 14px;
+              color: #374151;
+              font-weight: 500;
+            }
+
+            .status-item-check {
+              color: #10B981;
+              font-size: 14px;
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      ::ng-deep app-button {
+        width: 100%;
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

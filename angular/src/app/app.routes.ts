@@ -157,6 +157,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/cv-management/recruiter/cv-management').then(c => c.RecruiterCvManagementComponent),
       },
       {
+        path: 'cv-management-detail',
+        loadComponent: () => import('./features/dashboard/cv-management-detail/recruiter/cv-management-detail').then(c => c.CvManagementDetailComponent),
+      },
+      {
+        path: 'recruitment-campaign',
+        loadComponent: () => import('./features/dashboard/recruitment-campaign/recruiter/recruitment-campaign').then(c => c.RecruitmentCampaignComponent),
+      },
+      {
+        path: 'campaign-detail',
+        loadComponent: () => import('./features/dashboard/campaign/recruiter/campaign-detail').then(c => c.CampaignDetailComponent),
+      },
+      {
         path: 'buy-services',
         loadComponent: () => import('./features/dashboard/buy-service/recruiter/buy-services').then(c => c.BuyServicesComponent),
       },
@@ -177,7 +189,7 @@ export const APP_ROUTES: Routes = [
   
   {
     path: 'admin/login',
-    loadComponent: () => import('./features/Auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
+    loadComponent: () => import('./features/Auth/admin/login/employee-login').then(c => c.AdminLoginComponent),
   },
 
   // Legacy redirects

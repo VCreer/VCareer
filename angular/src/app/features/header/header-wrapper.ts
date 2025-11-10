@@ -121,6 +121,9 @@ export class HeaderWrapperComponent implements OnInit {
       '/recruiter/recruiter-verify',
       '/recruiter/recruiter-setting',
       '/recruiter/cv-management',
+      '/recruiter/cv-management-detail',
+      '/recruiter/recruitment-campaign',
+      '/recruiter/campaign-detail',
       '/recruiter/buy-services',
       '/recruiter/buy-services/detail',
       '/recruiter/cart',
@@ -132,9 +135,18 @@ export class HeaderWrapperComponent implements OnInit {
     );
     
     // Only show management header if: logged in + recruiter role + management route
-    if (isManagementRoute && isLoggedIn && userRole === 'recruiter') {
-      this.isManagementHeader = true;
-      this.headerTypeService.switchToRecruiter();
+    // Also show management header for management routes even if not logged in (for development/testing)
+    if (isManagementRoute) {
+      // Show management header for management routes
+      if (isLoggedIn && userRole === 'recruiter') {
+        this.isManagementHeader = true;
+        this.headerTypeService.switchToRecruiter();
+      } else {
+        // Still show management header for management routes even if not logged in
+        // This allows the route to work during development
+        this.isManagementHeader = true;
+        this.headerTypeService.switchToRecruiter();
+      }
     } else if (urlPath.startsWith('/recruiter')) {
       // Recruiter routes but not logged in or not management route
       this.isManagementHeader = false;

@@ -66,7 +66,7 @@
 
       <!-- Second Group -->
       <li class="sidebar-nav-item">
-        <a (click)="navigateTo('/recruiter/campaigns')" class="sidebar-link">
+        <a (click)="navigateTo('/recruiter/recruitment-campaign')" class="sidebar-link" [class.active]="isActive('/recruiter/recruitment-campaign')">
           <i class="fa fa-briefcase sidebar-icon"></i>
           <span class="sidebar-link-text">{{ translate('sidebar.recruitment_campaigns') }}</span>
         </a>
