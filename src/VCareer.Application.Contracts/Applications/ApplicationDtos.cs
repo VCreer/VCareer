@@ -285,6 +285,27 @@ namespace VCareer.Application.Contracts.Applications
     }
 
     /// <summary>
+    /// DTO kiểm tra trạng thái ứng tuyển
+    /// </summary>
+    public class ApplicationStatusDto
+    {
+        /// <summary>
+        /// Đã ứng tuyển chưa
+        /// </summary>
+        public bool HasApplied { get; set; }
+
+        /// <summary>
+        /// ID đơn ứng tuyển (nếu đã ứng tuyển)
+        /// </summary>
+        public Guid? ApplicationId { get; set; }
+
+        /// <summary>
+        /// Trạng thái đơn ứng tuyển (nếu đã ứng tuyển)
+        /// </summary>
+        public string? Status { get; set; }
+    }
+
+    /// <summary>
     /// DTO thống kê đơn ứng tuyển
     /// </summary>
     public class ApplicationStatisticsDto

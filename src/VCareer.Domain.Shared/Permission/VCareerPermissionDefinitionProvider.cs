@@ -64,8 +64,8 @@ namespace VCareer.Permission
             dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewTopPerformers, L("Permission:Dashboard.ViewTopPerformers"));
             dashboardPermission.AddChild(VCareerPermission.Dashboard.CompareStaffPerformance, L("Permission:Dashboard.CompareStaffPerformance"));
 
-
-            /*var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
+            // Application Permissions
+            var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
             applicationPermission.AddChild(VCareerPermission.Application.Apply, L("Permission:Application.Apply"));
             applicationPermission.AddChild(VCareerPermission.Application.View, L("Permission:Application.View"));
             applicationPermission.AddChild(VCareerPermission.Application.Update, L("Permission:Application.Update"));
@@ -73,7 +73,9 @@ namespace VCareer.Permission
             applicationPermission.AddChild(VCareerPermission.Application.Manage, L("Permission:Application.Manage"));
             applicationPermission.AddChild(VCareerPermission.Application.Statistics, L("Permission:Application.Statistics"));
             applicationPermission.AddChild(VCareerPermission.Application.DownloadCV, L("Permission:Application.DownloadCV"));
-            applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));*/
+            applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));
+
+            
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);

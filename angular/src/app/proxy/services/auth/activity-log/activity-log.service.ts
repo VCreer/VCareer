@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ActivityLogFilterDto, ActivityLogListDto } from '../../dto/activity-log-dto/models';
-import type { ActivityType } from '../../models/activity-logs/activity-type.enum';
+import type { ActivityLogFilterDto, ActivityLogListDto } from '../../../dto/activity-log-dto/models';
+import type { ActivityType } from '../../../models/activity-logs/activity-type.enum';
 
 @Injectable({
   providedIn: 'root',

@@ -13,6 +13,7 @@ namespace VCareer.HttpApi.Controllers
     /// </summary>
     [ApiController]
     [Route("api/applications")]
+    [Authorize]
     public class ApplicationController : VCareerController
     {
         private readonly IApplicationAppService _applicationAppService;
@@ -140,6 +141,15 @@ namespace VCareer.HttpApi.Controllers
         public async Task DeleteApplicationAsync(Guid id)
         {
             await _applicationAppService.DeleteApplicationAsync(id);
+        }
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        [HttpGet("check-status/{jobId}")]
+        public async Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId)
+        {
+            return await _applicationAppService.CheckApplicationStatusAsync(jobId);
         }
     }
 }

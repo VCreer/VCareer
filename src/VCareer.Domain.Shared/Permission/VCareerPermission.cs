@@ -69,17 +69,19 @@ namespace VCareer.Permission
             public const string CompareStaffPerformance = Default + ".CompareStaffPerformance";
         }
 
-        /*public static class Application
+        public static class Application
         {
             public const string Default = GroupName + ".Application";
             public const string Apply = Default + ".Apply";
             public const string View = Default + ".View";
             public const string Update = Default + ".Update";
             public const string Delete = Default + ".Delete";
-            public const string Manage = Default + ".Manage"; // Cho nhà tuyển dụng
+            public const string Manage = Default + ".Manage";
             public const string Statistics = Default + ".Statistics";
             public const string DownloadCV = Default + ".DownloadCV";
             public const string Withdraw = Default + ".Withdraw";
-        }*/
+        }
+
+        
     }
 }
