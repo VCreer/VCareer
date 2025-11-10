@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto } from '../dto/job/models';
+import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto, SavedJobDto, SavedJobStatusDto } from '../dto/job/models';
 import type { ActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -35,6 +35,23 @@ export class JobPostingService {
     { apiName: this.apiName,...config });
   
 
+  getSavedJobStatus = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<SavedJobStatusDto>>({
+      method: 'GET',
+      url: `/api/jobs/${jobId}/save-status`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getSavedJobs = (skipCount?: number, maxResultCount: number = 20, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<PagedResultDto<SavedJobDto>>>({
+      method: 'GET',
+      url: '/api/jobs/saved',
+      params: { skipCount, maxResultCount },
+    },
+    { apiName: this.apiName,...config });
+  
+
   indexJob = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult>({
       method: 'POST',
@@ -59,11 +76,27 @@ export class JobPostingService {
     { apiName: this.apiName,...config });
   
 
+  saveJob = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult>({
+      method: 'POST',
+      url: `/api/jobs/${jobId}/save`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   searchJobs = (input: JobSearchInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<PagedResultDto<JobViewDto>>>({
       method: 'POST',
       url: '/api/jobs/search',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  unsaveJob = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult>({
+      method: 'DELETE',
+      url: `/api/jobs/${jobId}/save`,
     },
     { apiName: this.apiName,...config });
 

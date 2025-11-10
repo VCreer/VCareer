@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Models.CV;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Identity;
 
@@ -20,5 +21,17 @@ namespace VCareer.Models.Users
         public IdentityUser User { get; set; }
         public long QuotaUsedBytes { get; set; }
         public long MaxQuotaBytes { get; set; }
+
+        // === NAVIGATION PROPERTIES ===
+
+        /// <summary>
+        /// Danh sách CVs online của candidate này (tạo từ template)
+        /// </summary>
+        public ICollection<CandidateCv>? CandidateCvs { get; set; }
+
+        /// <summary>
+        /// Danh sách CVs đã upload (file) của candidate này
+        /// </summary>
+        public ICollection<UploadedCv>? UploadedCvs { get; set; }
     }
 }

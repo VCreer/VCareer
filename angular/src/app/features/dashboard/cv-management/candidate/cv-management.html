@@ -21,47 +21,55 @@
             (cvSetDefault)="onSetDefault($event)"
             (cvDeleted)="onCvDeleted($event)"
             (cvUpdated)="onCvUpdated($event)"
+            (cvDownloaded)="onDownloadCv($event)"
             (createCv)="onCreateCv()">
           </app-cv-list>
 
           <!-- Upload CV Section -->
           <div class="upload-cv-section">
             <div class="upload-cv-header">
-              <h2 class="upload-cv-title">{{ translate('cv_management.upload_cv_title') }}</h2>
+              <h2 class="upload-cv-title">{{ translate('cv_management.upload_cv_title') || 'CV đã tải lên' }}</h2>
               <button 
                 type="button"
                 class="btn btn-primary"
-                (click)="onCreateCv()">
-                <i class="fa fa-upload"></i>
-                {{ translate('cv_management.upload_cv') }}
+                (click)="showUploadCvModal = true">
+                <i class="fa fa-cloud-upload"></i>
+                {{ translate('cv_management.upload_cv') || 'Tải lên CV' }}
               </button>
             </div>
             
+            <!-- Loading State -->
+            <div class="upload-loading" *ngIf="loadingUploadedCvs">
+              <p>Đang tải...</p>
+            </div>
+            
             <!-- Empty State for Upload -->
-            <div class="upload-empty-state" *ngIf="uploadedCvs.length === 0">
+            <div class="upload-empty-state" *ngIf="!loadingUploadedCvs && uploadedCvs.length === 0">
               <div class="upload-empty-icon">
                 <img src="assets/images/cv-management/no-cv.png" alt="No CV" class="upload-no-cv-image">
               </div>
-              <p class="upload-empty-message">{{ translate('cv_management.no_cv_uploaded') }}</p>
+              <p class="upload-empty-message">{{ translate('cv_management.no_cv_uploaded') || 'Chưa có CV nào được tải lên' }}</p>
             </div>
 
             <!-- Uploaded CVs -->
-            <div class="uploaded-cvs-grid" *ngIf="uploadedCvs.length > 0">
-              <div class="uploaded-cv-item" *ngFor="let cv of uploadedCvs; trackBy: trackByCvName">
-                <app-uploaded-cv-card
-                  [isStarred]="cv.isStarred"
-                  (download)="onCvDownload()"
-                  (toggleStar)="onCvToggleStar(cv)"
-                  (copyLink)="onCvCopyLink()"
-                  (shareFacebook)="onCvShareFacebook()"
-                  (rename)="onCvRename(cv)"
-                  (delete)="onCvDelete(cv)">
-                </app-uploaded-cv-card>
-                
-                <!-- CV Info outside the card -->
-                <div class="cv-info">
-                  <h3 class="cv-name">{{ cv.name }}</h3>
-                  <p class="cv-date">{{ translate('cv_card.updated') }} {{ cv.uploadDate }}</p>
+            <div class="uploaded-cvs-grid" *ngIf="!loadingUploadedCvs && uploadedCvs.length > 0">
+              <div class="uploaded-cv-item" *ngFor="let cv of uploadedCvs; trackBy: trackByCvId">
+                <div class="uploaded-cv-wrapper" (click)="onUploadedCvView(cv)">
+                  <app-uploaded-cv-card
+                    [isStarred]="cv.isDefault"
+                    (download)="onUploadedCvDownload(cv); $event.stopPropagation()"
+                    (toggleStar)="onUploadedCvToggleStar(cv); $event.stopPropagation()"
+                    (copyLink)="onUploadedCvCopyLink(cv); $event.stopPropagation()"
+                    (shareFacebook)="onCvShareFacebook(); $event.stopPropagation()"
+                    (rename)="onUploadedCvRename(cv); $event.stopPropagation()"
+                    (delete)="onUploadedCvDelete(cv); $event.stopPropagation()">
+                  </app-uploaded-cv-card>
+                  
+                  <!-- CV Info outside the card -->
+                  <div class="cv-info">
+                    <h3 class="cv-name">{{ cv.cvName || cv.originalFileName || 'CV không có tên' }}</h3>
+                    <p class="cv-date">{{ translate('cv_card.updated') || 'Cập nhật' }} {{ formatDate(cv.uploadTime) }}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -152,5 +160,6 @@
     (close)="onCloseRenameModal()"
     (rename)="onRename($event)">
   </app-rename-cv-modal>
+
 </div>
 

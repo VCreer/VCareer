@@ -1,0 +1,119 @@
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" [class.show]="show" (click)="onClose()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" [class.show]="show">
+  <!-- User Profile Section -->
+  <div class="sidebar-profile">
+    <div class="profile-avatar">
+      <i class="fa fa-user"></i>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">{{ userName }}</div>
+      <div class="profile-role">{{ userRole }}</div>
+      <div class="profile-verification" [class.not-verified]="!isVerified">
+        <span>{{ translate('sidebar.verification') }}: {{ verificationLevel }}</span>
+        <i class="fa fa-question-circle verification-info-icon"></i>
+        <span class="verification-badge" *ngIf="!isVerified">{{ translate('sidebar.not_verified') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar-nav">
+    <ul class="sidebar-nav-list">
+      <!-- First Group -->
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/home')" class="sidebar-link" [class.active]="isActive('/recruiter/home')">
+          <i class="fa fa-th sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.dashboard') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/insights')" class="sidebar-link">
+          <i class="fa fa-lightbulb sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.insights') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/rewards')" class="sidebar-link">
+          <i class="fa fa-gem sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.rewards') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/redeem-gifts')" class="sidebar-link">
+          <i class="fa fa-gift sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.redeem_gifts') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/toppy-ai')" class="sidebar-link">
+          <i class="fa fa-robot sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.toppy_ai') }}</span>
+          <span class="sidebar-badge">1</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/suggested-cv')" class="sidebar-link">
+          <i class="fa fa-thumbs-up sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.suggested_cv') }}</span>
+        </a>
+      </li>
+
+      <!-- Divider -->
+      <li class="sidebar-nav-item sidebar-nav-divider"></li>
+
+      <!-- Second Group -->
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/campaigns')" class="sidebar-link">
+          <i class="fa fa-briefcase sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.recruitment_campaigns') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/post-job')" class="sidebar-link">
+          <i class="fa fa-file-alt sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.job_postings') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/cv-management')" class="sidebar-link sidebar-link-has-submenu">
+          <i class="fa fa-user-circle sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.cv_management') }}</span>
+          <i class="fa fa-chevron-right sidebar-chevron"></i>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/reports')" class="sidebar-link">
+          <i class="fa fa-chart-bar sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.recruitment_reports') }}</span>
+        </a>
+      </li>
+
+      <!-- Divider -->
+      <li class="sidebar-nav-item sidebar-nav-divider"></li>
+
+      <!-- Third Group -->
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/buy-services')" class="sidebar-link">
+          <i class="fa fa-shopping-cart sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.buy_services') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/recruiter-setting')" class="sidebar-link" [class.active]="isActive('/recruiter/recruiter-setting')">
+          <i class="fa fa-cog sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.account_settings') }}</span>
+        </a>
+      </li>
+      <li class="sidebar-nav-item">
+        <a (click)="navigateTo('/recruiter/activity-history')" class="sidebar-link">
+          <i class="fa fa-history sidebar-icon"></i>
+          <span class="sidebar-link-text">{{ translate('sidebar.activity_history') }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+

@@ -51,7 +51,7 @@ public class VCareerApplicationModule : AbpModule
         context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
 
         // 🔧 ĐĂNG KÝ JOB POSTING APP SERVICE (Transient - mỗi request 1 instance mới)
-        context.Services.AddSingleton<VCareer.Job.JobPosting.ISerices.IJobSearchService, JobSearchService>();
+        context.Services.AddSingleton<VCareer.Job.JobPosting.ISerices.IJobPostingAppService, JobPostingAppService>();
         context.Services.AddSingleton<IJobCategoryAppService, JobCategoryAppService>();
            }
 

@@ -13,132 +13,118 @@
       <!-- Select CV Section -->
       <div class="apply-section">
         <div class="section-header">
-          <img src="assets/images/apply-job-modal/apply-cv.png" alt="CV" class="cv-icon">
+          <i class="fa fa-user-circle cv-icon"></i>
           <h3>{{ translate('apply_modal.select_cv_to_apply') }}</h3>
         </div>
 
-        <!-- Recent CV Option -->
-        <div class="cv-option" [class.selected]="selectedCVOption === 'recent'">
-          <label class="radio-label">
-            <input type="radio" name="cvOption" value="recent" [(ngModel)]="selectedCVOption">
-            <span class="radio-text">{{ translate('apply_modal.recent_cv') }}</span>
-          </label>
-          <div class="cv-details">
-            <div class="cv-file">
-              <span class="cv-name">Front-end-Uong-Hoang-Duy.pdf</span>
-              <a href="#" class="view-link">{{ translate('apply_modal.view') }}</a>
-            </div>
-            <div class="cv-info">
-              <div class="info-item">
-                <span class="label">{{ translate('apply_modal.full_name') }}</span>
-                <span class="value">Uông Hoàng Duy</span>
-              </div>
-              <div class="info-item">
-                <span class="label">{{ translate('apply_modal.email') }}</span>
-                <span class="value">duyuong0273&#64;gmail.com</span>
-              </div>
-              <div class="info-item">
-                <span class="label">{{ translate('apply_modal.phone') }}</span>
-                <span class="value">0966211316</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Select Another CV Option -->
+        <!-- Option 1: Library CV (Default) -->
         <div class="cv-option" [class.selected]="selectedCVOption === 'library'">
           <label class="radio-label">
-            <input type="radio" name="cvOption" value="library" [(ngModel)]="selectedCVOption">
-            <span class="radio-text">{{ translate('apply_modal.select_other_cv') }}</span>
+            <input type="radio" name="cvOption" value="library" [(ngModel)]="selectedCVOption" (change)="onCVOptionChange()">
+            <span class="radio-text">{{ translate('apply_modal.select_other_cv') || 'Chọn CV khác trong thư viện CV của tôi' }}</span>
           </label>
-        </div>
-
-        <!-- Upload CV Option -->
-        <div class="cv-option upload-option" [class.selected]="selectedCVOption === 'upload'">
-          <label class="radio-label">
-            <input type="radio" name="cvOption" value="upload" [(ngModel)]="selectedCVOption">
-            <span class="radio-text">{{ translate('apply_modal.upload_cv') }}</span>
-          </label>
-                     <div class="upload-area">
-             <input type="file" id="cv-upload-input" 
-                    accept=".pdf,.doc,.docx" 
-                    style="display: none;"
-                    (change)="onFileSelected($event)">
-             
-             <!-- Default upload view (when no file is selected) -->
-             <div class="upload-default" *ngIf="!uploadedFile">
-               <i class="fa fa-cloud-upload-alt"></i>
-               <p>{{ translate('apply_modal.upload_support') }}</p>
-               <button class="upload-btn" (click)="onUploadBtnClick($event)">{{ translate('apply_modal.select_cv') }}</button>
-             </div>
-
-             <!-- File info view (when file is selected) -->
-             <div class="upload-file-info" *ngIf="uploadedFile">
-               <div class="file-info">
-                 <i class="fa fa-file-pdf"></i>
-                 <span class="file-name">{{ uploadedFile.name }}</span>
-                 <button class="remove-file-btn" (click)="removeFile()">
-                   <i class="fa fa-trash"></i>
-                 </button>
-               </div>
-               <button class="select-file-btn" (click)="onUploadBtnClick($event)">{{ translate('apply_modal.select_cv') }}</button>
-             </div>
-
-            <!-- Form Info (shown when upload option is selected) -->
-            <div class="form-info" *ngIf="selectedCVOption === 'upload'">
-              <div class="form-info-header">
-                <span class="form-info-header-title">{{ translate('apply_modal.contact_info') }}</span>
-                <span class="form-info-header-note">{{ translate('apply_modal.required_fields') }}</span>
+          
+          <!-- Library CV Content (shown when selected) -->
+          <div class="cv-option-content" *ngIf="selectedCVOption === 'library'">
+            <!-- CV Online -->
+            <div class="cv-select-group">
+              <label class="cv-select-label">CV Online</label>
+              <select class="cv-select" [(ngModel)]="selectedOnlineCvId" (change)="selectedUploadedCvId = ''">
+                <option value="">-- Chọn CV Online --</option>
+                <option *ngFor="let cv of onlineCvs" [value]="cv.id">{{ cv.cvName }}</option>
+              </select>
+              <div class="cv-select-info" *ngIf="selectedOnlineCvId">
+                <span class="selected-cv-name">{{ getSelectedOnlineCvName() }}</span>
               </div>
-              <div class="form-info-body">
-                <div class="form-row full-width">
-                  <label class="form-label">{{ translate('apply_modal.full_name_label') }} <span class="required">*</span></label>
-                  <input type="text" 
-                         class="form-control input-sm" 
-                         [(ngModel)]="fullName" 
-                         (input)="onFieldChange()"
-                         [placeholder]="translate('apply_modal.full_name_placeholder')">
-                  <span class="error-message" *ngIf="fullNameError">{{ fullNameError }}</span>
-                </div>
-                <div class="form-row half-width">
-                  <label class="form-label">{{ translate('apply_modal.email_label') }} <span class="required">*</span></label>
-                  <input type="email" 
-                         class="form-control input-sm" 
-                         [(ngModel)]="email" 
-                         (input)="onFieldChange()"
-                         [placeholder]="translate('apply_modal.email_placeholder')">
-                  <span class="error-message" *ngIf="emailError">{{ emailError }}</span>
-                </div>
-                <div class="form-row half-width">
-                  <label class="form-label">{{ translate('apply_modal.phone_label') }} <span class="required">*</span></label>
-                  <input type="tel" 
-                         class="form-control input-sm" 
-                         [(ngModel)]="phone" 
-                         (input)="onFieldChange()"
-                         [placeholder]="translate('apply_modal.phone_placeholder')">
-                  <span class="error-message" *ngIf="phoneError">{{ phoneError }}</span>
-                </div>
+            </div>
+
+            <!-- CV Uploaded -->
+            <div class="cv-select-group">
+              <label class="cv-select-label">CV đã tải lên</label>
+              <select class="cv-select" [(ngModel)]="selectedUploadedCvId" (change)="selectedOnlineCvId = ''">
+                <option value="">-- Chọn CV đã tải lên --</option>
+                <option *ngFor="let cv of uploadedCvs" [value]="cv.id">{{ cv.cvName || cv.originalFileName }}</option>
+              </select>
+              <div class="cv-select-info" *ngIf="selectedUploadedCvId">
+                <span class="selected-cv-name">{{ getSelectedUploadedCvName() }}</span>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Option 2: Upload CV -->
+        <div class="cv-option upload-option" [class.selected]="selectedCVOption === 'upload'">
+          <label class="radio-label">
+            <input type="radio" name="cvOption" value="upload" [(ngModel)]="selectedCVOption" (change)="onCVOptionChange()">
+            <span class="radio-text">{{ translate('apply_modal.upload_cv') || 'Tải lên CV từ máy tính, chọn hoặc kéo thả' }}</span>
+          </label>
+          
+          <!-- Upload CV Content (shown when selected) -->
+          <div class="cv-option-content" *ngIf="selectedCVOption === 'upload'">
+            <div class="upload-area" 
+                 (dragover)="$event.preventDefault()"
+                 (drop)="onDrop($event)"
+                 [class.has-file]="uploadedFile">
+              <input type="file" 
+                     id="cv-upload-input" 
+                     accept=".pdf,.doc,.docx" 
+                     style="display: none;"
+                     (change)="onFileSelected($event)">
+              
+              <!-- Default upload view (when no file is selected) -->
+              <div class="upload-default" *ngIf="!uploadedFile">
+                <i class="fa fa-cloud-upload-alt upload-icon"></i>
+                <p class="upload-text">{{ translate('apply_modal.upload_cv') || 'Tải lên CV từ máy tính, chọn hoặc kéo thả' }}</p>
+                <p class="upload-format-info">{{ translate('apply_modal.upload_support') || 'Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB' }}</p>
+                <button class="upload-btn" (click)="onUploadBtnClick($event)">{{ translate('apply_modal.select_cv') || 'Chọn CV' }}</button>
+              </div>
+
+              <!-- File info view (when file is selected) -->
+              <div class="upload-file-info" *ngIf="uploadedFile">
+                <div class="file-info">
+                  <i class="fa fa-file-pdf file-icon"></i>
+                  <span class="file-name">{{ uploadedFile.name }}</span>
+                  <button class="remove-file-btn" (click)="removeFile()" type="button">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+                <button class="select-file-btn" (click)="onUploadBtnClick($event)" type="button">{{ translate('apply_modal.select_cv') || 'Chọn CV' }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <div class="error-message" *ngIf="cvError">{{ cvError }}</div>
       </div>
 
-      <!-- Note Section -->
-      <div class="apply-section note-section">
-        <div class="note-header">
-          <i class="fa fa-exclamation-triangle"></i>
-          <h3>{{ translate('apply_modal.note') }}</h3>
+      <!-- Cover Letter Section -->
+      <div class="apply-section cover-letter-section">
+        <div class="section-header">
+          <i class="fa fa-leaf cover-letter-icon"></i>
+          <h3>{{ translate('apply_modal.cover_letter') || 'Thư giới thiệu:' }}</h3>
         </div>
-        <p>{{ translate('apply_modal.note_careful') }}</p>
-        <p>{{ translate('apply_modal.note_report') }}</p>
+        <p class="section-description">
+          {{ translate('apply_modal.cover_letter_description') || 'Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.' }}
+        </p>
+        <div class="cover-letter-editor">
+          <textarea 
+            class="cover-letter-textarea" 
+            [(ngModel)]="coverLetter"
+            [placeholder]="translate('apply_modal.cover_letter_placeholder') || 'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'"
+            rows="6"></textarea>
+          <i class="fa fa-pencil cover-letter-edit-icon"></i>
+        </div>
+        <div class="error-message" *ngIf="coverLetterError">{{ coverLetterError }}</div>
       </div>
     </div>
 
     <!-- Modal Footer -->
     <div class="apply-modal-footer">
-      <button class="btn-cancel" (click)="onClose()">{{ translate('apply_modal.cancel') }}</button>
-      <button class="btn-submit" (click)="onSubmit()">{{ translate('apply_modal.submit') }}</button>
+      <button class="btn-cancel" (click)="onClose()" type="button">{{ translate('apply_modal.cancel') || 'Hủy' }}</button>
+      <button class="btn-submit" (click)="onSubmit()" type="button" [disabled]="loadingCvs">
+        {{ translate('apply_modal.submit') || 'Nộp hồ sơ ứng tuyển' }}
+      </button>
     </div>
   </div>
 </div>

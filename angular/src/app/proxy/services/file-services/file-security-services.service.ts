@@ -19,12 +19,22 @@ export class FileSecurityServicesService {
     { apiName: this.apiName,...config });
   
 
-  generateSafeStorageNameByUserIdAndFileName = (userId: string, fileName: string, config?: Partial<Rest.Config>) =>
+  generateSafeStorageNameByFileName = (fileName: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, string>({
       method: 'POST',
       responseType: 'text',
-      url: `/api/app/file-security-services/generate-safe-storage-name/${userId}`,
+      url: '/api/app/file-security-services/generate-safe-storage-name',
       params: { fileName },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getMimeTypeByExtension = (extension: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string>({
+      method: 'GET',
+      responseType: 'text',
+      url: '/api/app/file-security-services/mime-type',
+      params: { extension },
     },
     { apiName: this.apiName,...config });
   

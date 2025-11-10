@@ -57,6 +57,18 @@ export enum ExperienceLevel {
 }
 
 /**
+ * EducationLevel enum - Match với VCareer.Model.EducationLevel
+ */
+export enum EducationLevel {
+  Any = 0,
+  HighSchool = 1,
+  College = 2,
+  University = 3,
+  Master = 4,
+  Doctor = 5
+}
+
+/**
  * SalaryFilterType enum - Match với VCareer.Dto.Job.SalaryFilterType
  */
 export enum SalaryFilterType {
@@ -105,6 +117,7 @@ export interface JobViewDto {
   isUrgent: boolean;
   postedAt: Date;
   provinceName?: string | null;
+  isSaved?: boolean; // đã lưu bởi user hiện tại
 }
 
 /**
@@ -113,6 +126,42 @@ export interface JobViewDto {
 export interface PagedResultDto<T> {
   items: T[];
   totalCount: number;
+}
+
+/**
+ * Category breadcrumb item (cấp 1 -> cấp 3)
+ */
+export interface CategoryItemDto {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
+ * JobViewDetail - Match với VCareer.Dto.Job.JobViewDetail
+ */
+export interface JobViewDetail {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  requirements: string;
+  benefits?: string | null;
+  salaryText: string;
+  experienceText: string;
+  quantity: number;
+  provinceName?: string | null;
+  workLocation?: string | null;
+  employmentType: EmploymentType;
+  positionType: PositionType;
+  education: EducationLevel;
+  isUrgent: boolean;
+  postedAt: Date;
+  expiresAt: Date;
+  viewCount: number;
+  applyCount: number;
+  categoryPath: CategoryItemDto[];
+  isSaved?: boolean; // đã lưu bởi user hiện tại
 }
 
 // ============================================
@@ -154,8 +203,8 @@ export class JobApiService {
    * GET /api/jobs/{id}
    * Lấy chi tiết job theo ID
    */
-  getJobById(jobId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${jobId}`);
+  getJobById(jobId: string): Observable<JobViewDetail> {
+    return this.http.get<JobViewDetail>(`${this.apiUrl}/${jobId}`);
   }
 
   /**
@@ -167,4 +216,54 @@ export class JobApiService {
       params: { maxCount: maxCount.toString() }
     });
   }
+
+  /**
+   * POST /api/jobs/{jobId}/save
+   * Lưu job vào danh sách yêu thích
+   */
+  saveJob(jobId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${jobId}/save`, {});
+  }
+
+  /**
+   * DELETE /api/jobs/{jobId}/save
+   * Bỏ lưu job khỏi danh sách yêu thích
+   */
+  unsaveJob(jobId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${jobId}/save`);
+  }
+
+  /**
+   * GET /api/jobs/{jobId}/save-status
+   * Kiểm tra xem job đã được lưu chưa
+   */
+  getSavedJobStatus(jobId: string): Observable<{ isSaved: boolean; savedAt?: string }> {
+    return this.http.get<{ isSaved: boolean; savedAt?: string }>(`${this.apiUrl}/${jobId}/save-status`);
+  }
+
+  /**
+   * GET /api/jobs/saved
+   * Lấy danh sách job đã lưu của user hiện tại
+   */
+  getSavedJobs(skipCount: number = 0, maxResultCount: number = 20): Observable<PagedResultDto<SavedJobDto>> {
+    return this.http.get<PagedResultDto<SavedJobDto>>(`${this.apiUrl}/saved`, {
+      params: {
+        skipCount: skipCount.toString(),
+        maxResultCount: maxResultCount.toString()
+      }
+    });
+  }
+}
+
+/**
+ * SavedJobDto - Match với VCareer.Dto.Job.SavedJobDto
+ */
+export interface SavedJobDto {
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  salaryText: string;
+  location: string;
+  savedAt: Date;
+  jobDetail?: JobViewDto; // Full job details
 }

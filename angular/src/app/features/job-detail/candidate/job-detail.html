@@ -119,10 +119,11 @@
           <div class="job-detail__info--actions">
             <button class="box-apply-current" (click)="openApplyModal()">
               <i class="fa fa-paper-plane"></i>
-              {{ translate('job_detail.apply_now') }}
+              {{ hasApplied ? 'Ứng tuyển lại' : translate('job_detail.apply_now') }}
             </button>
             <button class="box-apply-save" [class.active]="isHeartActive" (click)="toggleHeart()">
-              <i class="fa fa-heart"></i>
+              <i class="fa" [ngClass]="isHeartActive ? 'fa-heart' : 'fa-heart-o'"></i>
+              <span>{{ isHeartActive ? 'Đã lưu' : 'Lưu tin' }}</span>
             </button>
           </div>
         </div>
@@ -193,33 +194,64 @@
 
       <!-- Right Column -->
       <div class="job-detail__box--right">
-        <!-- Company Info (original layout) -->
-        <div class="job-detail__company">
+        <!-- Company Info (from API) -->
+        <div class="job-detail__company" *ngIf="companyInfo && !isLoadingCompany && !companyError">
           <div class="company-logo">
-            <div class="logo-box">SM</div>
+            <img
+              *ngIf="companyInfo.logoUrl"
+              [src]="getLogoUrl(companyInfo.logoUrl)"
+              [alt]="companyInfo.companyName || 'Company Logo'"
+              class="company-logo-img"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="logo-box" [style.display]="companyInfo.logoUrl ? 'none' : 'flex'">
+              {{ (companyInfo.companyName || 'SM').substring(0, 2).toUpperCase() }}
+            </div>
           </div>
-          <h3 class="company-name">CÔNG TY TNHH SPACEMIND</h3>
+          <h3 class="company-name">{{ companyInfo.companyName || 'Chưa có thông tin' }}</h3>
           <div class="company-details">
-            <div class="company-detail-item">
+            <div class="company-detail-item" *ngIf="companyInfo.companySize">
               <i class="fa fa-users"></i>
               <span class="label">Quy mô:</span>
-              <span>25-99 nhân viên</span>
+              <span>{{ formatCompanySize(companyInfo.companySize) }}</span>
             </div>
-            <div class="company-detail-item">
+            <div
+              class="company-detail-item"
+              *ngIf="companyInfo.industries && companyInfo.industries.length > 0"
+            >
               <i class="fa fa-briefcase"></i>
               <span class="label">Lĩnh vực:</span>
-              <span>IT - Phần mềm</span>
+              <span>{{ companyInfo.industries.join(', ') }}</span>
             </div>
-            <div class="company-detail-item">
+            <div class="company-detail-item" *ngIf="companyInfo.headquartersAddress">
               <i class="fa fa-map-marker-alt"></i>
               <span class="label">Địa điểm:</span>
-              <span>Phòng 11.03, tầng 11, tòa nhà The Summit Building, 350...</span>
+              <span>{{ companyInfo.headquartersAddress }}</span>
             </div>
           </div>
-          <a href="#" class="company-link">
+          <a [routerLink]="['/candidate/company-detail', companyInfo.id]" class="company-link">
             {{ translate('job_detail.view_company_page') }}
             <i class="fa fa-external-link-alt"></i>
           </a>
+        </div>
+
+        <!-- Loading state for company -->
+        <div class="job-detail__company" *ngIf="isLoadingCompany && !companyError">
+          <div class="company-logo">
+            <div class="logo-box">...</div>
+          </div>
+          <h3 class="company-name">Đang tải thông tin công ty...</h3>
+        </div>
+
+        <!-- Error state for company (ẩn nếu có lỗi, không hiển thị gì) -->
+        <div class="job-detail__company" *ngIf="companyError && !isLoadingCompany">
+          <div class="company-logo">
+            <div class="logo-box">?</div>
+          </div>
+          <h3 class="company-name">Không thể tải thông tin công ty</h3>
+          <p style="color: #999; font-size: 0.875rem; margin-top: 0.5rem">
+            Thông tin công ty tạm thời không khả dụng
+          </p>
         </div>
 
         <!-- General Information (original layout) -->
@@ -228,22 +260,22 @@
           <div class="info-item">
             <i class="fa fa-user"></i>
             <span class="label">{{ translate('job_detail.job_level') }}:</span>
-            <span>Nhân viên</span>
+            <span>{{ getPositionTypeVi(jobDetail.positionType) }}</span>
           </div>
           <div class="info-item">
             <i class="fa fa-graduation-cap"></i>
             <span class="label">{{ translate('job_detail.education') }}:</span>
-            <span>Đại Học trở lên</span>
+            <span>{{ getEducationLevelVi(jobDetail.education) }}</span>
           </div>
           <div class="info-item">
             <i class="fa fa-users"></i>
             <span class="label">{{ translate('job_detail.quantity') }}:</span>
-            <span>1 người</span>
+            <span>{{ jobDetail.quantity || 0 }}</span>
           </div>
           <div class="info-item">
             <i class="fa fa-briefcase"></i>
             <span class="label">{{ translate('job_detail.work_type') }}:</span>
-            <span>Toàn thời gian</span>
+            <span>{{ getEmploymentTypeVi(jobDetail.employmentType) }}</span>
           </div>
         </div>
 
@@ -251,17 +283,19 @@
         <div class="job-detail__body-right--item job-detail__body-right--box-category">
           <h3>{{ translate('job_detail.related_categories') }}</h3>
           <div class="category-tags">
-            <span class="tag">Công nghệ Thông tin</span>
-            <span class="tag">Software Engineering</span>
-            <span class="tag">Frontend Developer</span>
-            <span class="tag">Việc làm IT</span>
+            <a
+              class="tag"
+              *ngFor="let c of jobDetail.categoryPath"
+              href="/candidate/job"
+              (click)="onRelatedCategoryClick(c, $event)"
+            >
+              {{ c.name }}
+            </a>
           </div>
 
           <h3 style="margin-top: 1.5rem">{{ translate('job_detail.area') }}</h3>
           <div class="category-tags">
-            <span class="tag">Đà Nẵng</span>
-            <span class="tag">Hồ Chí Minh</span>
-            <span class="tag">Hà Nội</span>
+            <span class="tag">{{ jobDetail.provinceName || 'không có' }}</span>
           </div>
         </div>
       </div>
@@ -278,9 +312,24 @@
   <!-- Apply Modal -->
   <app-apply-job-modal
     [show]="showApplyModal"
-    [title]="translate('job_detail.apply_now') + ' ' + translate('job_detail.title')"
+    [title]="'Ứng tuyển ' + (jobDetail?.title || '')"
+    [jobId]="jobId"
     (close)="closeApplyModal()"
-    (submit)="onModalSubmit($event)"
-  >
+    (submit)="onModalSubmit($event)">
   </app-apply-job-modal>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false"
+  ></app-toast-notification>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    *ngIf="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

@@ -18,7 +18,7 @@
         <li class="nav-item">
           <a (click)="navigateToServices()" 
              class="nav-link" 
-             [class.active]="isActiveRoute('/services')">
+             [class.active]="currentRoute === '/recruiter/service'">
             {{ translate('recruiter.services') }}
           </a>
         </li>
@@ -89,7 +89,7 @@
       <li class="nav-item">
         <a (click)="navigateToServices()" 
            class="nav-link" 
-           [class.active]="isActiveRoute('/services')">
+           [class.active]="currentRoute === '/recruiter/service'">
           {{ translate('recruiter.services') }}
         </a>
       </li>

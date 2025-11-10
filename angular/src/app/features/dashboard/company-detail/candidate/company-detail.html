@@ -1,0 +1,267 @@
+<div class="company-detail-page" *ngIf="!isLoading && company">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-wrapper">
+    <div class="breadcrumb-container">
+      <a routerLink="/candidate/company" class="breadcrumb-item">Danh sách Công ty</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">Thông tin công ty & tin tuyển dụng từ {{ company.fullName }}</span>
+    </div>
+  </div>
+
+  <!-- Company Banner Section -->
+  <div class="company-banner-section">
+    <!-- Top Banner (Red) - Empty placeholder for banner image -->
+    <div class="company-banner" *ngIf="company.bannerImage" [style.background-image]="'url(' + company.bannerImage + ')'">
+      <!-- Banner will show when bannerImage is provided -->
+    </div>
+    <div class="company-banner-empty" *ngIf="!company.bannerImage">
+      <!-- Empty banner placeholder -->
+    </div>
+
+    <!-- Bottom Info Section (Green) -->
+    <div class="company-info-section">
+      <div class="info-content">
+        <!-- Company Logo (overlapping) -->
+        <div class="company-logo-wrapper">
+          <div class="logo-box">
+            <img [src]="company.logoUrl" [alt]="company.name" class="company-logo" onerror="this.src='assets/images/default-company.png'">
+          </div>
+        </div>
+
+        <!-- Company Info -->
+        <div class="company-info-content">
+          <h1 class="company-full-name">{{ company.fullName }}</h1>
+          
+          <div class="company-details-row">
+            <div class="details-left">
+              <span class="pro-badge" *ngIf="company.isProCompany">Pro Company</span>
+              <div class="detail-item" *ngIf="company.website">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <a [href]="getWebsiteUrl(company.website)" target="_blank" rel="noopener noreferrer" class="website-link">{{ company.website }}</a>
+              </div>
+              <div class="detail-item" *ngIf="company.employees">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>{{ company.employees }}+ nhân viên</span>
+              </div>
+            </div>
+            <div class="details-right">
+              <div class="detail-item followers" *ngIf="company.followers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>{{ company.followers }} người theo dõi</span>
+              </div>
+              <button class="follow-btn" [class.following]="company.isFollowing" (click)="onFollowCompany()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                {{ company.isFollowing ? 'Đã theo dõi' : 'Theo dõi công ty' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="company-detail-container">
+    <!-- Left Column -->
+    <div class="main-content">
+      <!-- Giới thiệu công ty Section -->
+      <div class="info-section">
+        <div class="section-header">
+          <h2>Giới thiệu công ty</h2>
+        </div>
+        <div class="section-content">
+          <div class="company-description" [class.collapsed]="!isDescriptionExpanded">
+            <p *ngFor="let paragraph of getDescriptionParagraphs()">{{ paragraph }}</p>
+          </div>
+          <button class="toggle-description-btn" (click)="toggleDescription()">
+            {{ isDescriptionExpanded ? 'Thu gọn ^' : 'Xem thêm ▼' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Tuyển dụng Section - Only show when BE is connected -->
+      <div class="box-job-listing" *ngIf="hasJobsFromBE">
+        <!-- Header -->
+        <div class="job-listing-header">
+          <h2>Tuyển dụng</h2>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="job-search-bar">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input 
+              type="text" 
+              class="job-search-input"
+              placeholder="Tên công việc, vị trí ứng tuyển..."
+              [(ngModel)]="jobSearchKeyword"
+              (keyup.enter)="onSearchJobs()"
+            />
+          </div>
+          
+          <div class="location-dropdown-wrapper">
+            <svg class="location-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <select class="location-select" [(ngModel)]="selectedLocation">
+              <option value="">Tất cả tỉnh/thành phố</option>
+              <!-- TODO: Load locations from BE API -->
+            </select>
+            <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </div>
+
+          <button class="search-btn" (click)="onSearchJobs()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Tìm kiếm
+          </button>
+        </div>
+
+        <!-- Job List -->
+        <div class="job-list-container" *ngIf="filteredJobs.length > 0">
+          <div class="job-card" *ngFor="let job of filteredJobs">
+            <div class="job-logo">
+              <img [src]="job.logo || company?.logo || 'assets/images/home/company-placeholder.png'" [alt]="job.company" />
+            </div>
+            <div class="job-info">
+              <div class="job-title-row">
+                <h3 class="job-title">
+                  {{ job.title }}
+                  <svg class="verified-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F83BA" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"></path>
+                  </svg>
+                </h3>
+              </div>
+              <div class="job-company-row">
+                <span class="pro-badge" *ngIf="job.isPro">Pro</span>
+                <span class="company-name">{{ job.companyName || company?.fullName }}</span>
+              </div>
+              <div class="job-tags">
+                <span class="job-tag location-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  {{ job.location }}
+                </span>
+                <span class="job-tag deadline-tag" *ngIf="job.daysRemaining">
+                  Còn {{ job.daysRemaining }} ngày để ứng tuyển
+                </span>
+              </div>
+            </div>
+            <div class="job-actions">
+              <div class="job-salary" *ngIf="job.salary">{{ job.salary }}</div>
+              <div class="buttons-row">
+                <button class="apply-btn" (click)="onApplyJob(job)">Ứng tuyển</button>
+                <button class="favorite-btn" [class.active]="job.isFavorite" (click)="toggleFavorite(job)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="sidebar-content">
+      <!-- Thông tin liên hệ Section -->
+      <div class="info-section">
+        <div class="section-header">
+          <h2>Thông tin liên hệ</h2>
+        </div>
+        <div class="section-content">
+          <div class="contact-item" *ngIf="company.address">
+            <div class="contact-label">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F83BA" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Địa chỉ công ty</span>
+            </div>
+            <p class="contact-value">{{ company.address }}</p>
+          </div>
+
+          <!-- Google Map (small embed) -->
+          <div class="map-embed" *ngIf="company.address || company.mapUrl">
+            <iframe
+              [src]="getMapEmbedUrl() | safeUrl"
+              width="100%"
+              height="180"
+              style="border:0; border-radius: 8px;"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+            <button class="map-view-btn" (click)="openMapModal()">Xem bản đồ lớn</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="isLoading">
+  <div class="loading-spinner"></div>
+  <p>Đang tải thông tin công ty...</p>
+</div>
+
+<!-- Map Modal -->
+<div class="map-modal-overlay" *ngIf="showMapModal" (click)="closeMapModal()">
+  <div class="map-modal" (click)="$event.stopPropagation()">
+    <div class="map-modal-header">
+      <h3>Bản đồ vị trí công ty</h3>
+      <button class="map-modal-close" (click)="closeMapModal()">✕</button>
+    </div>
+    <div class="map-modal-body">
+      <iframe
+        [src]="getMapEmbedUrl() | safeUrl"
+        width="100%"
+        height="100%"
+        style="border:0; border-radius: 8px;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+  
+</div>
+
