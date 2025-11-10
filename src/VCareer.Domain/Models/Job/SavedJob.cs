@@ -19,7 +19,7 @@ namespace VCareer.Models.Job
         public virtual CandidateProfile CandidateProfile { get; set; }
 
        
-        public virtual Job_Posting JobPosting { get; set; }
+        public virtual Job_Post JobPosting { get; set; }
 
         /// <summary>
         /// Override để return composite key

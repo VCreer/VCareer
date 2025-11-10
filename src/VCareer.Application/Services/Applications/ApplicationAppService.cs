@@ -30,7 +30,7 @@ namespace VCareer.Application.Applications
     {
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;
-        private readonly IRepository<Job_Posting, Guid> _jobPostingRepository;
+        private readonly IRepository<Job_Post, Guid> _jobPostingRepository;
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly IRepository<UploadedCv, Guid> _uploadedCvRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
@@ -43,7 +43,7 @@ namespace VCareer.Application.Applications
         public ApplicationAppService(
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
-            IRepository<Job_Posting, Guid> jobPostingRepository,
+            IRepository<Job_Post, Guid> jobPostingRepository,
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<UploadedCv, Guid> uploadedCvRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,

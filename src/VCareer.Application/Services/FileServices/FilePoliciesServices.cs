@@ -142,25 +142,9 @@ namespace VCareer.Services.FileServices
         //vì container blob name được định nghĩa ko có phần ContainerType, mà cái hàm này mình tìm dựa trên mấy cái enum có tên là container +"ContainerType"
         public string GetContainerName(string containerTypeName)
         {
-            // Try to find which enum type contains this value
-            foreach (var containerType in containers)
-            {
-                try
-                {
-                    // Try to parse the string as an enum value of this type
-                    var enumValue = Enum.Parse(containerType, containerTypeName, ignoreCase: true);
-                    if (enumValue != null)
-                    {
-                        return containerType.Name.Replace("ContainerType", "");
-                    }
-                }
-                catch
-                {
-                    // Continue to next enum type
-                }
-            }
-            
-            throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
+            var container = containers.FirstOrDefault(c => Enum.IsDefined(c, containerTypeName));
+            if (container == null) throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
+            return container.Name.Replace("ContainerType", "");
         }
         public string GetStoragePath(string containerTypeName, string containerName)
         {

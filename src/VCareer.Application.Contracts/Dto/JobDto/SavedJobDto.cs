@@ -1,4 +1,5 @@
 using System;
+using VCareer.Dto.JobDto;
 using Volo.Abp.Application.Dtos;
 
 namespace VCareer.Dto.Job
