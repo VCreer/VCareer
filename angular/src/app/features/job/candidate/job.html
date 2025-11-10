@@ -5,7 +5,7 @@
   <div class="search-header">
     <div class="search-container">
       <h1 class="page-title">{{ translate('job_page.title') }}</h1>
-      
+
       <!-- ✅ FilterBarComponent (Category + Search + Location + Button) -->
       <app-filter-bar
         [categories]="categories"
@@ -35,7 +35,6 @@
           {{ translate('job_page.search_button') }}
         </button>
       </app-filter-bar>
-
     </div>
   </div>
 
@@ -45,14 +44,10 @@
   <div class="main-content" [class.show-detail-job]="selectedJob">
     <!-- Left Column - Filter (Hide when showing detail) -->
     <div class="filter-column" *ngIf="!selectedJob">
-      <app-job-filter
-        (filterChange)="onFilterChange($event)"
-      ></app-job-filter>
-      
+      <app-job-filter (filterChange)="onFilterChange($event)"></app-job-filter>
+
       <!-- Clear Filters Button -->
-      <button 
-        class="clear-filters-btn"
-        (click)="onClearFilters()">
+      <button class="clear-filters-btn" (click)="onClearFilters()">
         {{ translate('job_filter.clear_filters') }}
       </button>
     </div>

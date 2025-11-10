@@ -37,10 +37,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0F83BA, #0A6B96);
-  color: white;
+  background: #f3f4f6;
+  color: #6b7280;
   font-weight: 600;
   font-size: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.avatar-icon {
+  font-size: inherit;
+  color: #6b7280;
 }
 
 .avatar-initials {

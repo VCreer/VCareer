@@ -22,8 +22,12 @@ export class ToastNotificationComponent implements OnInit, OnDestroy, OnChanges 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['show'] && this.show) {
-      this.startTimeout();
+    if (changes['show']) {
+      if (this.show) {
+        this.startTimeout();
+      } else {
+        this.clearTimeout();
+      }
     }
   }
 

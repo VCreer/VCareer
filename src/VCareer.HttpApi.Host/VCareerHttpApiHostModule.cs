@@ -50,12 +50,15 @@ using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 using Volo.Abp.Studio;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
+using System.IdentityModel.Tokens.Jwt;
+using VCareer.HttpApi.Host.Swagger;
 
 
 namespace VCareer;
@@ -128,6 +131,13 @@ public class VCareerHttpApiHostModule : AbpModule
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
+
+    private void ConfigureFilePolicyConfigs(IConfiguration configuration)
+    {
+        Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
+    }
+
+
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
         //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
@@ -136,7 +146,6 @@ public class VCareerHttpApiHostModule : AbpModule
      options.IsDynamicClaimsEnabled = true;
  });
 
-        //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
         // cấu hình jwt
@@ -260,15 +269,29 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
 
+                // Configure Swagger để handle file uploads (IFormFile)
+                // Map IFormFile to binary string for Swagger
+                options.MapType<Microsoft.AspNetCore.Http.IFormFile>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
+                
+                // Add OperationFilter để handle IFormFile trong DTOs
+                options.OperationFilter<FileUploadOperationFilter>();
+
+                // Thêm JWT Bearer Authentication vào Swagger
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "Nhập 'Bearer {token}' (ví dụ: Bearer abc123...)",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
                 });
 
+                // Áp dụng security scheme cho tất cả endpoints
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
@@ -347,6 +370,10 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+
+        // Enable static files serving from wwwroot
+        app.UseStaticFiles();
+
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();

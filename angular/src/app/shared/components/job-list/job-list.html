@@ -57,8 +57,9 @@
                 class="save-btn"
                 [class.saved]="job.isSaved"
                 (click)="onSaveJob(job); $event.stopPropagation()"
+                title="{{ job.isSaved ? 'Đã lưu' : 'Lưu tin' }}"
               >
-                <i class="fa fa-heart"></i>
+                <i class="fa" [ngClass]="job.isSaved ? 'fa-heart' : 'fa-heart-o'"></i>
               </button>
             </div>
           </div>
@@ -66,6 +67,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    *ngIf="showLoginModal"
+    (close)="onLoginClose()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="getPaginatedJobs().length === 0">

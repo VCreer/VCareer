@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Profile;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
 
 namespace VCareer.Profile
@@ -20,6 +22,8 @@ namespace VCareer.Profile
         {
             _companyLegalInfoAppService = companyLegalInfoAppService;
         }
+
+
 
         /// <summary>
         /// Submits company legal information for the current user
@@ -44,6 +48,18 @@ namespace VCareer.Profile
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, [FromBody] UpdateCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.UpdateCompanyLegalInfoAsync(id, input);
+        }
+
+        /// <summary>
+        /// Tìm kiếm danh sách công ty (public API)
+        /// Phải đặt trước route {id} để tránh conflict
+        /// </summary>
+        /// <param name="input">Input tìm kiếm</param>
+        /// <returns>Danh sách công ty đã phân trang</returns>
+        [HttpPost("search")]
+        public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync([FromBody] CompanySearchInputDto input)
+        {
+            return await _companyLegalInfoAppService.SearchCompaniesAsync(input);
         }
 
         /// <summary>
@@ -109,6 +125,13 @@ namespace VCareer.Profile
         {
             await _companyLegalInfoAppService.DeleteCompanyLegalInfoAsync(id);
             return NoContent();
+        }
+
+        ///lấy công ty
+        [HttpGet("by-job/{jobId}")]
+        public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
+        {
+            return await _companyLegalInfoAppService.GetCompanyByJobIdAsync(jobId);
         }
     }
 }

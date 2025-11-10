@@ -18,5 +18,11 @@ namespace VCareer.Job.JobPosting.ISerices
         Task ReindexAllJobsAsync();
         Task IndexJobAsync(Guid jobId);
         Task RemoveJobFromIndexAsync(Guid jobId);
+
+        // Saved Jobs (Favorite)
+        Task SaveJobAsync(Guid jobId);
+        Task UnsaveJobAsync(Guid jobId);
+        Task<SavedJobStatusDto> GetSavedJobStatusAsync(Guid jobId);
+        Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20);
     }
 }

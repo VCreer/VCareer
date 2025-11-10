@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
@@ -24,11 +24,24 @@ export class JobDetailComponent implements OnInit {
   searchPosition: string = '';
   showApplyModal: boolean = false;
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
+    });
+
+    // Check if openApplyModal query parameter is present
+    this.route.queryParams.subscribe(params => {
+      if (params['openApplyModal'] === 'true') {
+        // Delay slightly to ensure component is fully rendered
+        setTimeout(() => {
+          this.showApplyModal = true;
+        }, 100);
+      }
     });
   }
 

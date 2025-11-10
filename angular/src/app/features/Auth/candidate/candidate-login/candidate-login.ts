@@ -37,6 +37,7 @@ export class LoginComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private proxyAuth = inject(ProxyAuthService);
+  private googleAuthService = inject(GoogleAuthService);
 
   loginForm: FormGroup;
   isLoading = false;

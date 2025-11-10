@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,9 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Constants;
+using VCareer.Constants.FilePolicy;
 using VCareer.Dto.FileDto;
 using VCareer.Files.BlobContainers;
-using VCareer.IRepositories.IFileRepository;
 using VCareer.IServices.IFileServices;
 using VCareer.Models.FileMetadata;
 using Volo.Abp;
@@ -20,6 +21,7 @@ using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Uow;
+using static VCareer.Constants.FilePolicy.FilePolicyConfigs;
 
 namespace VCareer.Services.FileServices
 {
@@ -29,9 +31,9 @@ namespace VCareer.Services.FileServices
         private readonly IFileSecurityServices _fileSecurityServices;
         private readonly IBlobContainerFactory _blobFactory;
         private readonly FilePoliciesServices _filePoliciesServices;
-        private readonly IFileDescriptorRepository _fileDescriptorRepository;
+        private readonly IRepository<FileDescriptor, Guid> _fileDescriptorRepository;
 
-        public FileServices(IFileSecurityServices fileSecurityServices, IBlobContainer<BlobContainer> blobContainer, FilePoliciesServices filePoliciesServices, IBlobContainerFactory blobFactory, IFileDescriptorRepository fileDescriptorRepository)
+        public FileServices(IFileSecurityServices fileSecurityServices, IBlobContainer<BlobContainer> blobContainer, FilePoliciesServices filePoliciesServices, IBlobContainerFactory blobFactory, IRepository<FileDescriptor, Guid> fileDescriptorRepository)
         {
             _fileSecurityServices = fileSecurityServices;
             _blobFactory = blobFactory;

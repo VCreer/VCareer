@@ -1,95 +1,100 @@
 import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 
-export interface CVDto extends EntityDto<string> {
+export interface CandidateCvDto extends EntityDto<string> {
   candidateId?: string;
+  templateId?: string;
   cvName?: string;
-  cvType?: string;
-  status?: string;
+  dataJson?: string;
+  isPublished: boolean;
   isDefault: boolean;
   isPublic: boolean;
-  fullName?: string;
-  email?: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  gender?: boolean;
-  address?: string;
-  careerObjective?: string;
-  workExperience?: string;
-  education?: string;
-  skills?: string;
-  projects?: string;
-  certificates?: string;
-  languages?: string;
-  interests?: string;
-  originalFileName?: string;
-  fileUrl?: string;
-  fileSize?: number;
-  fileType?: string;
-  description?: string;
-  creationTime?: string;
-  lastModificationTime?: string;
+  publishedAt?: string;
+  viewCount: number;
+  notes?: string;
+  template: CvTemplateDto;
 }
 
-export interface CreateCVOnlineDto {
+export interface CreateCandidateCvDto {
+  templateId: string;
   cvName: string;
-  careerObjective?: string;
-  fullName: string;
-  email: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  address?: string;
-  workExperience?: string;
-  education?: string;
-  skills?: string;
-  projects?: string;
-  certificates?: string;
-  languages?: string;
-  interests?: string;
+  dataJson: string;
+  isPublished: boolean;
+  isDefault: boolean;
   isPublic: boolean;
+  notes?: string;
 }
 
-export interface GetCVListDto extends PagedAndSortedResultRequestDto {
-  cvType?: string;
-  status?: string;
-  isPublic?: boolean;
+export interface CreateCvTemplateDto {
+  name: string;
+  description?: string;
+  previewImageUrl?: string;
+  layoutDefinition: string;
+  styles?: string;
+  supportedFields?: string;
+  category?: string;
+  sortOrder: number;
+  isActive: boolean;
+  isDefault: boolean;
+  isFree: boolean;
+  version?: string;
+}
+
+export interface CvTemplateDto extends EntityDto<string> {
+  name?: string;
+  description?: string;
+  previewImageUrl?: string;
+  layoutDefinition?: string;
+  styles?: string;
+  supportedFields?: string;
+  category?: string;
+  sortOrder: number;
+  isActive: boolean;
+  isDefault: boolean;
+  isFree: boolean;
+  version?: string;
+}
+
+export interface GetCandidateCvListDto extends PagedAndSortedResultRequestDto {
+  templateId?: string;
+  isPublished?: boolean;
   isDefault?: boolean;
-}
-
-export interface SetDefaultCVDto {
-  cvId: string;
-}
-
-export interface SetPublicCVDto {
-  cvId: string;
-  isPublic: boolean;
-}
-
-export interface UpdateCVDto {
-  cvName?: string;
-  careerObjective?: string;
-  fullName?: string;
-  email?: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  address?: string;
-  workExperience?: string;
-  education?: string;
-  skills?: string;
-  projects?: string;
-  certificates?: string;
-  languages?: string;
-  interests?: string;
   isPublic?: boolean;
-  status?: string;
+  searchKeyword?: string;
 }
 
-export interface UploadCVDto {
-  cvName: string;
-  cvType: string;
-  fileUrl: string;
-  originalFileName: string;
-  fileSize: number;
-  fileType: string;
+export interface GetCvTemplateListDto extends PagedAndSortedResultRequestDto {
+  category?: string;
+  isActive?: boolean;
+  isFree?: boolean;
+  searchKeyword?: string;
+}
+
+export interface RenderCvDto {
+  cvId?: string;
+  htmlContent?: string;
+}
+
+export interface UpdateCandidateCvDto {
+  templateId?: string;
+  cvName?: string;
+  dataJson?: string;
+  isPublished?: boolean;
+  isDefault?: boolean;
+  isPublic?: boolean;
+  notes?: string;
+}
+
+export interface UpdateCvTemplateDto {
+  name?: string;
   description?: string;
-  isPublic: boolean;
+  previewImageUrl?: string;
+  layoutDefinition?: string;
+  styles?: string;
+  supportedFields?: string;
+  category?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  isDefault?: boolean;
+  isFree?: boolean;
+  version?: string;
 }

@@ -47,7 +47,17 @@
 </app-modal-update-photo>
 
 <div class="write-cv-container">
-  <div class="cv-section-main">
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Đang tải template...</p>
+  </div>
+
+  <!-- Template Form Container -->
+  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate"></div>
+
+  <!-- Fallback: Original Form (sẽ được ẩn khi có template) -->
+  <div class="cv-section-main" [style.display]="currentTemplate ? 'none' : 'block'">
     <app-toast-notification
       [show]="toast.show"
       [type]="toast.type"

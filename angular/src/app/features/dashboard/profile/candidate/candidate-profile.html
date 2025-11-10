@@ -121,6 +121,38 @@
             </svg>
             Nâng cấp tài khoản
           </button>
+
+          <!-- Toggle Buttons -->
+          <div class="toggle-settings">
+            <!-- Toggle 1: Đang Tắt tìm việc -->
+            <div class="toggle-item">
+              <label class="toggle-switch">
+                <input type="checkbox" [checked]="jobSearchEnabled" (change)="onToggleJobSearch()" name="jobSearchEnabled">
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-content">
+                <span class="toggle-label" [class.active]="jobSearchEnabled" [class.inactive]="!jobSearchEnabled">
+                  {{ jobSearchEnabled ? 'Đang Bật tìm việc' : 'Đang Tắt tìm việc' }}
+                </span>
+                <p class="toggle-description">
+                  Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
+                </p>
+              </div>
+            </div>
+
+            <!-- Toggle 2: Cho phép NTD tìm kiếm hồ sơ -->
+            <div class="toggle-item">
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="allowRecruiterSearch" name="allowRecruiterSearch" checked>
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-content">
+                <span class="toggle-label" [class.active]="allowRecruiterSearch">
+                  Cho phép NTD tìm kiếm hồ sơ
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -177,3 +209,10 @@
   <div class="loading-spinner"></div>
   <p>Đang tải dữ liệu...</p>
 </div>
+
+<!-- Enable Job Search Modal -->
+<app-enable-job-search-modal
+  [show]="showEnableJobSearchModal"
+  (close)="onCloseEnableJobSearchModal()"
+  (enableJobSearch)="onEnableJobSearch($event)">
+</app-enable-job-search-modal>

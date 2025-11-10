@@ -1,0 +1,393 @@
+:host {
+  display: block;
+}
+
+/* Sidebar Overlay - chỉ hiển thị khi sidebar expanded */
+.sidebar-overlay {
+  position: fixed;
+  top: 64px; /* Bắt đầu từ dưới header */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 64px); /* Chiều cao = full height - header height */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998; /* Thấp hơn sidebar */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+/* Sidebar Container */
+.sidebar {
+  position: fixed;
+  top: 64px; /* Bắt đầu từ dưới header (header height = 64px) */
+  left: 0;
+  width: 72px; /* Collapsed width - chỉ đủ cho icons */
+  height: calc(100% - 64px); /* Chiều cao = full height - header height */
+  background-color: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  z-index: 999; /* Thấp hơn header (header z-index = 1000) */
+  transform: translateX(0); /* Luôn hiển thị */
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &.show {
+    width: 280px; /* Expanded width */
+    max-width: 85vw;
+  }
+
+  /* User Profile Section */
+  .sidebar-profile {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    transition: padding 0.3s ease;
+
+    .profile-avatar {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: width 0.3s ease, height 0.3s ease;
+
+      i {
+        font-size: 1.5rem;
+        color: #6B7280;
+        transition: font-size 0.3s ease;
+      }
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      max-width: 0;
+      transition: opacity 0.3s ease, max-width 0.3s ease;
+      
+      .profile-name,
+      .profile-role,
+      .profile-verification {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .profile-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+      }
+
+      .profile-role {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-verification {
+        font-size: 0.8125rem;
+        color: #6B7280;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+
+        &.not-verified {
+          color: #dc2626;
+        }
+
+        .verification-info-icon {
+          font-size: 0.875rem;
+          color: #9CA3AF;
+          cursor: help;
+        }
+
+        .verification-badge {
+          background-color: #fee2e2;
+          color: #dc2626;
+          font-size: 0.75rem;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
+          font-weight: 500;
+          margin-left: auto;
+        }
+      }
+    }
+  }
+
+  /* Expanded state for profile */
+  &.show {
+    .sidebar-profile {
+      padding: 1.5rem;
+      gap: 1rem;
+
+      .profile-avatar {
+        width: 64px;
+        height: 64px;
+
+        i {
+          font-size: 2rem;
+        }
+      }
+
+      .profile-info {
+        opacity: 1;
+        max-width: none;
+        overflow: visible;
+        
+        .profile-name,
+        .profile-role,
+        .profile-verification {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+        }
+      }
+    }
+  }
+
+  /* Sidebar Navigation */
+  .sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+
+    .sidebar-nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar-nav-item {
+      margin: 0;
+
+      &.sidebar-nav-divider {
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.5rem 0.75rem;
+        opacity: 0.5;
+      }
+
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 0.875rem;
+        color: #374151;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        margin: 0.25rem 0.5rem;
+        border-radius: 8px;
+
+        &:hover {
+          background-color: #f3f4f6;
+        }
+
+        &.active {
+          background-color: #f0f9ff;
+          color: #0F83BA;
+
+          .sidebar-icon {
+            color: #0F83BA;
+          }
+
+          /* Circle background for active icon */
+          &::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0f2fe;
+            z-index: -1;
+          }
+        }
+
+        .sidebar-icon {
+          flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          color: #374151;
+          transition: color 0.2s ease;
+        }
+
+        .sidebar-link-text {
+          flex: 1;
+          white-space: nowrap;
+          opacity: 0;
+          width: 0;
+          overflow: hidden;
+          transition: opacity 0.3s ease, width 0.3s ease;
+        }
+
+        .sidebar-badge {
+          background-color: #0F83BA;
+          color: white;
+          border-radius: 50%;
+          min-width: 18px;
+          height: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 600;
+          padding: 0 4px;
+          opacity: 0;
+          width: 0;
+          overflow: hidden;
+          transition: opacity 0.3s ease, width 0.3s ease;
+          position: absolute;
+          top: 6px;
+          right: 6px;
+        }
+
+        .sidebar-chevron {
+          flex-shrink: 0;
+          font-size: 0.875rem;
+          color: #9CA3AF;
+          margin-left: auto;
+          opacity: 0;
+          width: 0;
+          overflow: hidden;
+          transition: opacity 0.3s ease, width 0.3s ease;
+        }
+
+        &.sidebar-link-has-submenu {
+          .sidebar-link-text {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+
+  /* Expanded state for navigation */
+  &.show {
+    .sidebar-nav {
+      .sidebar-nav-item {
+        .sidebar-link {
+          justify-content: flex-start;
+          padding: 0.875rem 1.5rem;
+          margin: 0;
+
+          &.active {
+            background-color: #f0f9ff;
+            color: #0F83BA;
+
+            .sidebar-icon {
+              color: #0F83BA;
+            }
+
+            &::before {
+              display: none; /* Remove circle when expanded */
+            }
+          }
+
+          .sidebar-link-text {
+            opacity: 1;
+            width: auto;
+          }
+
+          .sidebar-badge {
+            opacity: 1;
+            width: auto;
+            position: static;
+            margin-left: auto;
+          }
+
+          .sidebar-chevron {
+            opacity: 1;
+            width: auto;
+          }
+        }
+      }
+    }
+  }
+
+  &.show {
+    .sidebar-nav-item.sidebar-nav-divider {
+      margin: 0.5rem 0;
+      opacity: 1;
+    }
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 260px;
+    max-width: 90vw;
+
+    .sidebar-profile {
+      padding: 1.25rem;
+
+      .profile-avatar {
+        width: 56px;
+        height: 56px;
+
+        i {
+          font-size: 1.75rem;
+        }
+      }
+
+      .profile-info {
+        .profile-name {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .sidebar-nav {
+      .sidebar-nav-item {
+        .sidebar-link {
+          padding: 0.75rem 1.25rem;
+          font-size: 0.875rem;
+
+          .sidebar-icon {
+            font-size: 1rem;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 240px;
+    max-width: 95vw;
+  }
+}
+

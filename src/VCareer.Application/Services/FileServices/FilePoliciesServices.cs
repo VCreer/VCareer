@@ -28,17 +28,65 @@ namespace VCareer.Services.FileServices
 
         public ContainerConfig GetContainterConfig(object containerType)
         {
+            if (_config == null)
+            {
+                throw new InvalidOperationException("FilePolicyConfigs configuration is null. Please check appsettings.json configuration.");
+            }
+            
+            if (_config.Value == null)
+            {
+                throw new InvalidOperationException("FilePolicyConfigs.Value is null. Please check appsettings.json configuration.");
+            }
+            
             if (containerType is CandidateContainerType candidateContainerType)
+            {
+                if (_config.Value.Candidate == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Candidate is null. Please check appsettings.json configuration.");
+                }
+                
+                if (_config.Value.Candidate.Containers == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Candidate.Containers is null. Please check appsettings.json configuration.");
+                }
+                
                 return GetContainer(_config.Value.Candidate.Containers, candidateContainerType.ToString());
+            }
 
             if (containerType is RecruiterContainerType recruiterContainerType)
+            {
+                if (_config.Value.Recruiter == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Recruiter is null. Please check appsettings.json configuration.");
+                }
+                
+                if (_config.Value.Recruiter.Containers == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Recruiter.Containers is null. Please check appsettings.json configuration.");
+                }
+                
                 return GetContainer(_config.Value.Recruiter.Containers, recruiterContainerType.ToString());
+            }
 
             if (containerType is EmployeeContainerType employeeContainerType)
+            {
+                if (_config.Value.Employee == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Employee is null. Please check appsettings.json configuration.");
+                }
+                
+                if (_config.Value.Employee.Containers == null)
+                {
+                    throw new InvalidOperationException("FilePolicyConfigs.Employee.Containers is null. Please check appsettings.json configuration.");
+                }
+                
                 return GetContainer(_config.Value.Employee.Containers, employeeContainerType.ToString());
+            }
 
             if (containerType is SystemContainerType systemContainerType)
+            {
                 return GetSystemContainer(systemContainerType);
+            }
 
             throw new ArgumentException($"Container type {containerType} not found or unsupport");
         }
@@ -94,9 +142,25 @@ namespace VCareer.Services.FileServices
         //vì container blob name được định nghĩa ko có phần ContainerType, mà cái hàm này mình tìm dựa trên mấy cái enum có tên là container +"ContainerType"
         public string GetContainerName(string containerTypeName)
         {
-            var container = containers.FirstOrDefault(c => Enum.IsDefined(c, containerTypeName));
-            if (container == null) throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
-            return container.Name.Replace("ContainerType", "");
+            // Try to find which enum type contains this value
+            foreach (var containerType in containers)
+            {
+                try
+                {
+                    // Try to parse the string as an enum value of this type
+                    var enumValue = Enum.Parse(containerType, containerTypeName, ignoreCase: true);
+                    if (enumValue != null)
+                    {
+                        return containerType.Name.Replace("ContainerType", "");
+                    }
+                }
+                catch
+                {
+                    // Continue to next enum type
+                }
+            }
+            
+            throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
         }
         public string GetStoragePath(string containerTypeName, string containerName)
         {

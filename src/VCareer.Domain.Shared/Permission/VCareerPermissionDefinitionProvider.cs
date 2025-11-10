@@ -35,14 +35,27 @@ namespace VCareer.Permission
             profilePermission.AddChild(VCareerPermission.Profile.DeleteSupportingDocument, L("Permission:Profile.DeleteSupportingDocument"));
             profilePermission.AddChild(VCareerPermission.Profile.DownloadSupportingDocument, L("Permission:Profile.DownloadSupportingDocument"));
 
-            var cvPermission = group.AddPermission(VCareerPermission.CV.Default, L("Permission:CV"));
-            cvPermission.AddChild(VCareerPermission.CV.CreateOnline, L("Permission:CV.CreateOnline"));
-            cvPermission.AddChild(VCareerPermission.CV.Upload, L("Permission:CV.Upload"));
-            cvPermission.AddChild(VCareerPermission.CV.Update, L("Permission:CV.Update"));
-            cvPermission.AddChild(VCareerPermission.CV.Delete, L("Permission:CV.Delete"));
-            cvPermission.AddChild(VCareerPermission.CV.Get, L("Permission:CV.Get"));
-            cvPermission.AddChild(VCareerPermission.CV.SetDefault, L("Permission:CV.SetDefault"));
-            cvPermission.AddChild(VCareerPermission.CV.SetPublic, L("Permission:CV.SetPublic"));
+            // CV Template Permissions (chủ yếu cho Admin)
+            var cvTemplatePermission = group.AddPermission(VCareerPermission.CvTemplate.Default, L("Permission:CvTemplate"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.Create, L("Permission:CvTemplate.Create"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.Update, L("Permission:CvTemplate.Update"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.Delete, L("Permission:CvTemplate.Delete"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.Get, L("Permission:CvTemplate.Get"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.GetList, L("Permission:CvTemplate.GetList"));
+            cvTemplatePermission.AddChild(VCareerPermission.CvTemplate.GetActiveTemplates, L("Permission:CvTemplate.GetActiveTemplates"));
+
+            // Candidate CV Permissions (cho Candidate)
+            var candidateCvPermission = group.AddPermission(VCareerPermission.CandidateCv.Default, L("Permission:CandidateCv"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Create, L("Permission:CandidateCv.Create"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Update, L("Permission:CandidateCv.Update"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Delete, L("Permission:CandidateCv.Delete"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Get, L("Permission:CandidateCv.Get"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.GetList, L("Permission:CandidateCv.GetList"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Render, L("Permission:CandidateCv.Render"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.SetDefault, L("Permission:CandidateCv.SetDefault"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.Publish, L("Permission:CandidateCv.Publish"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.IncrementViewCount, L("Permission:CandidateCv.IncrementViewCount"));
+            candidateCvPermission.AddChild(VCareerPermission.CandidateCv.GetDefault, L("Permission:CandidateCv.GetDefault"));
 
             var dashboardPermission = group.AddPermission(VCareerPermission.Dashboard.Default, L("Permission:Dashboard"));
             dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewCompanyDashboard, L("Permission:Dashboard.ViewCompanyDashboard"));
@@ -51,8 +64,8 @@ namespace VCareer.Permission
             dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewTopPerformers, L("Permission:Dashboard.ViewTopPerformers"));
             dashboardPermission.AddChild(VCareerPermission.Dashboard.CompareStaffPerformance, L("Permission:Dashboard.CompareStaffPerformance"));
 
-
-            /*var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
+            // Application Permissions
+            var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
             applicationPermission.AddChild(VCareerPermission.Application.Apply, L("Permission:Application.Apply"));
             applicationPermission.AddChild(VCareerPermission.Application.View, L("Permission:Application.View"));
             applicationPermission.AddChild(VCareerPermission.Application.Update, L("Permission:Application.Update"));
@@ -60,7 +73,9 @@ namespace VCareer.Permission
             applicationPermission.AddChild(VCareerPermission.Application.Manage, L("Permission:Application.Manage"));
             applicationPermission.AddChild(VCareerPermission.Application.Statistics, L("Permission:Application.Statistics"));
             applicationPermission.AddChild(VCareerPermission.Application.DownloadCV, L("Permission:Application.DownloadCV"));
-            applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));*/
+            applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));
+
+            
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);
