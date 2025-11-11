@@ -118,6 +118,12 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   
+  // Employee login route (must be before all employee routes)
+  {
+    path: 'employee/login',
+    loadComponent: () => import('./features/Auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
+  },
+  
   // Recruiter main route
   {
     path: 'recruiter',
@@ -187,9 +193,29 @@ export const APP_ROUTES: Routes = [
     ]
   },
   
+  // Employee main route with layout (must be after login route)
   {
-    path: 'admin/login',
-    loadComponent: () => import('./features/Auth/admin/login/employee-login').then(c => c.AdminLoginComponent),
+    path: 'employee',
+    loadComponent: () => import('./layout/employee/employee-layout').then(c => c.EmployeeLayoutComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'home'
+      },
+      {
+        path: 'home',
+        loadComponent: () => import('./features/dashboard/homepage/employee/employee-home').then(c => c.EmployeeHomeComponent),
+      },
+      {
+        path: 'manage-recruitment-information',
+        loadComponent: () => import('./features/dashboard/manage-recruitment-information/employee/employee-job-management').then(c => c.EmployeeJobManagementComponent),
+      },
+      {
+        path: 'manage-recruitment-information-detail',
+        loadComponent: () => import('./features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail').then(c => c.EmployeeJobManagementDetailComponent),
+      }
+    ]
   },
 
   // Legacy redirects

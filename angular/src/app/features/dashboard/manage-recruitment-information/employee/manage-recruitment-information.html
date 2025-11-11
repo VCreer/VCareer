@@ -1,0 +1,115 @@
+<div class="employee-job-management-page" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <h1 class="page-title">Quản lý tin tuyển dụng</h1>
+    </div>
+  </div>
+
+  <div class="job-management-content">
+    <div class="summary-cards">
+      <div class="summary-card" *ngFor="let card of summaryCards">
+        <div class="summary-card-icon" [style.border-color]="card.borderColor">
+          <i [class]="card.icon"></i>
+        </div>
+        <div class="summary-card-content">
+          <div class="summary-card-value">{{ card.value }}</div>
+          <div class="summary-card-label">{{ card.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-list-card">
+      <div class="filter-bar">
+        <div class="search-group">
+          <i class="fa fa-search"></i>
+          <input
+            type="text"
+            placeholder="Tìm kiếm tin tuyển dụng"
+            [value]="searchTerm"
+            (input)="onSearchChange($event.target.value)"
+          />
+        </div>
+
+        <div class="filter-group status-dropdown-wrapper" (click)="$event.stopPropagation()">
+          <button type="button" class="status-dropdown" (click)="toggleStatusDropdown()">
+            <span>{{ selectedStatus.label }}</span>
+            <i class="fa fa-chevron-down"></i>
+          </button>
+          <div class="status-dropdown-menu" *ngIf="showStatusDropdown">
+            <button
+              type="button"
+              class="status-dropdown-item"
+              *ngFor="let option of statusOptions"
+              [class.active]="selectedStatus.value === option.value"
+              (click)="selectStatus(option)"
+            >
+              <span>{{ option.label }}</span>
+              <i class="fa fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-list" *ngIf="paginatedPostings.length > 0; else emptyState">
+        <div class="job-item" *ngFor="let posting of paginatedPostings">
+          <div class="job-item-left">
+            <div class="company-logo">
+              <img [src]="getCompanyLogoUrl(posting.companyLogo || posting.companyName)" [alt]="posting.companyName" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNkI3MjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+PC90ZXh0Pgo8L3N2Zz4='; this.onerror=null;" />
+            </div>
+          </div>
+          
+          <div class="job-item-center">
+            <div class="job-header-top">
+              <div class="campaign-code">Mã chiến dịch: {{ posting.campaignCode }}</div>
+              <div class="job-salary">
+                <i class="fa fa-dollar-sign"></i>
+                <span>{{ posting.salary }}</span>
+              </div>
+            </div>
+            <div class="job-header">
+              <h3 class="job-title">{{ posting.title }}</h3>
+            </div>
+            
+            <div class="company-name-wrapper">
+              <div class="company-name">{{ posting.companyName }}</div>
+              <button type="button" class="view-detail-btn" (click)="viewDetail(posting)">Xem chi tiết</button>
+            </div>
+            
+            <div class="job-tags-wrapper">
+              <div class="job-tags">
+                <span class="tag tag-location">
+                  {{ posting.location }}
+                </span>
+                <span class="tag tag-experience">
+                  {{ posting.experience }}
+                </span>
+              </div>
+              <div class="job-status">
+                <span [class]="getStatusBadgeClass(posting.status)">
+                  {{ getStatusLabel(posting.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty-list">
+          <i class="fa fa-clipboard-list"></i>
+          <p>Không có tin tuyển dụng nào phù hợp.</p>
+        </div>
+      </ng-template>
+
+      <app-pagination
+        *ngIf="totalPages > 1"
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalItems"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+
