@@ -612,7 +612,8 @@ public class VCareerDbContext :
             ja.HasIndex(x => x.CVType);
             ja.HasIndex(x => x.Status);
             ja.HasIndex(x => x.CreationTime);
-            ja.HasIndex(x => new { x.JobId, x.CandidateId }).IsUnique(); // Prevent duplicate applications
+            // Cho phép ứng tuyển lại: bỏ Unique constraint trên (JobId, CandidateId)
+            ja.HasIndex(x => new { x.JobId, x.CandidateId });
         });
 
         builder.Entity<ActivityLog>(a =>
