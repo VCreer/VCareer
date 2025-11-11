@@ -25,6 +25,8 @@ namespace VCareer.IServices.IAuth
     {
         public Task CandidateRegisterAsync(CandidateRegisterDto input);
         public Task RecruiterRegisterAsync(RecruiterRegisterDto input);
+        public Task CreateEmployeeAsync(CreateEmployeeDto input);
+        public Task<TokenResponseDto> EmployeeLoginAsync(EmployeeLoginDto input);
         public Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input);
         public Task ForgotPasswordAsync(ForgotPasswordDto input);
         public Task ResetPasswordAsync(ResetPasswordDto input);

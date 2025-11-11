@@ -53,6 +53,7 @@ namespace VCareer.Services.Auth
         private readonly ICandidateProfileRepository _candidateProfileRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IRecruiterRepository _recruiterRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
         public AuthAppService(
             IdentityUserManager identityManager,
@@ -66,7 +67,8 @@ namespace VCareer.Services.Auth
             IConfiguration configuration,
             ICandidateProfileRepository candidateProfile,
             ICompanyRepository companyRepository,
-            IRecruiterRepository recruiterProfile
+            IRecruiterRepository recruiterProfile,
+            IEmployeeRepository employeeRepository
            )
         {
             _identityManager = identityManager;
@@ -81,6 +83,7 @@ namespace VCareer.Services.Auth
             _candidateProfileRepository = candidateProfile;
             _companyRepository = companyRepository;
             _recruiterRepository = recruiterProfile;
+            _employeeRepository = employeeRepository;
         }
 
 
@@ -186,7 +189,6 @@ namespace VCareer.Services.Auth
             await _identityManager.UpdateSecurityStampAsync(user);
         }
 
-
         [Authorize]
         [IgnoreAntiforgeryToken]
         public async Task LogOutAsync()
@@ -195,7 +197,7 @@ namespace VCareer.Services.Auth
 
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
-            if ( userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
+            if (userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
 
             var user = await _identityManager.FindByIdAsync(userId.ToString());
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
@@ -282,5 +284,49 @@ namespace VCareer.Services.Auth
             //SAU CẦN GHI THÊM LOG VÀO ĐÂY
         }
 
-           }
+        [UnitOfWork]
+        public async Task CreateEmployeeAsync(CreateEmployeeDto input)
+        {
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
+
+            //check ma so thue
+
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+            foreach (var roleName in input.EmployeeRoles)
+            {
+                var roleCheck = await _roleManager.FindByNameAsync(roleName);
+                if (roleCheck == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                result = await _identityManager.AddToRoleAsync(newUser, roleCheck.Name);
+                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            }
+
+            var employeeProfile = new EmployeeProfile { 
+            Email = input.Email,
+            UserId =newUser.Id,
+            };
+
+            await _employeeRepository.InsertAsync(employeeProfile);
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<TokenResponseDto> EmployeeLoginAsync(EmployeeLoginDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // nếu đặt true ở hàm check pass thì nếu đăng nhập sai thì sẽ tạm thời kháo tài khoản 
+            var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
+            if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
+
+            var employeeProfile = await _employeeRepository.FirstOrDefaultAsync(x => x.UserId == user.Id);
+            if (employeeProfile == null) throw new UserFriendlyException("Login Failed");
+            if (!employeeProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
+
+            return await _tokenGenerator.CreateTokenAsync(user);
+        }
+    }
 }
