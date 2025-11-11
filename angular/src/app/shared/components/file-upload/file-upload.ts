@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-file-upload',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="form-group">
-      <label class="form-label" [class.required]="required">{{ label }}</label>
+      <label class="form-label" [class.required]="required" *ngIf="label">{{ label }}</label>
       <div class="file-upload-container">
         <input 
           type="file" 

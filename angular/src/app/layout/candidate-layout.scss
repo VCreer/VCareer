@@ -10,4 +10,5 @@
   min-height: calc(100vh - 80px); /* Đảm bảo content đủ cao */
   padding-bottom: 20px; /* Thêm padding bottom để tránh bị che bởi taskbar */
   background: transparent; /* Để component con có thể set background riêng */
+  position: relative; /* Allow child components to use absolute positioning */
 }

@@ -1,0 +1,67 @@
+.employee-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 64px; // Space for fixed header
+  background: #f9fafb;
+}
+
+.layout-container {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 64px);
+  position: relative;
+}
+
+// Sidebar is always visible, just changes width
+:host ::ng-deep {
+  .sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 72px; // Collapsed width - always visible
+    height: calc(100vh - 64px);
+    z-index: 999;
+    transform: translateX(0) !important; // Always visible, never hidden
+    transition: width 0.3s ease;
+
+    &.show {
+      width: 280px; // Expanded width
+    }
+  }
+
+  // Hide overlay in employee layout (sidebar is always visible)
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+.main-content {
+  flex: 1;
+  min-height: calc(100vh - 64px);
+  margin-left: 72px; // Default sidebar collapsed width (sidebar luôn hiển thị)
+  width: calc(100% - 72px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  padding: 24px;
+  background: #f9fafb;
+  position: relative;
+  z-index: 1;
+
+  // When sidebar is expanded
+  &.sidebar-expanded {
+    margin-left: 280px; // Sidebar expanded width
+    width: calc(100% - 280px);
+  }
+
+  // Responsive: remove sidebar margin on mobile
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}
+

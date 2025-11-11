@@ -4,6 +4,6 @@
   (click)="onClick($event)"
 >
   <ng-content></ng-content>
-  <span class="badge" *ngIf="showBadge && badgeCount > 0">{{ badgeCount }}</span>
+  <span class="badge" *ngIf="showBadge && badgeCount > 0">{{ badgeCount > 99 ? '99+' : badgeCount }}</span>
 </button>
 

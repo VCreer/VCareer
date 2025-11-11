@@ -1,0 +1,154 @@
+.company-tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e5e7eb;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .company-tab {
+    flex: 1;
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    border-bottom: none;
+    padding: 16px 20px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.3s ease;
+    border-radius: 8px 8px 0 0;
+
+    @media (max-width: 768px) {
+      padding: 12px 16px;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    &.active {
+      background: white;
+      border-color: #0F83BA;
+      border-bottom: none;
+
+      &::after {
+        background: #0F83BA;
+      }
+
+      .tab-title {
+        color: #0F83BA;
+        font-weight: 600;
+      }
+
+      .tab-description {
+        color: #6b7280;
+      }
+
+      .icon-search {
+        color: #0F83BA;
+        background: #f3f4f6;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .icon-tab {
+        color: #0F83BA;
+        background: #f3f4f6;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+    }
+
+    .icon-search {
+      color: #0F83BA;
+      background: #f3f4f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .icon-tab {
+      color: #0F83BA;
+      background: #f3f4f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tab-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: transparent;
+
+      .tab-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: #0F83BA;
+        transition: color 0.3s ease;
+        line-height: 1.4;
+      }
+
+      .tab-description {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0;
+        text-align: left;
+        line-height: 1.4;
+      }
+    }
+
+    .tab-check-icon {
+      font-size: 20px;
+      color: #0F83BA;
+      flex-shrink: 0;
+    }
+
+    &:hover:not(.active) {
+      background: #f9fafb;
+      border-color: #d1d5db;
+
+      .tab-title {
+        color: #0F83BA;
+      }
+    }
+  }
+}
+

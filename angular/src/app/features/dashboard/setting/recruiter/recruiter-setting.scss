@@ -190,6 +190,146 @@
       border-radius: 12px;
       padding: 24px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      max-width: 1400px;
+      width: 100%;
+
+      // Company Info Section - Components moved to @shared/components
+      // Styles for search-company and create-company-form are in their respective component files
+
+      // Settings Section
+      .notification-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-top: 24px;
+        transition: box-shadow 0.3s ease;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          padding: 16px;
+        }
+
+        &:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .notification-icon {
+          flex-shrink: 0;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+
+          i {
+            font-size: 20px;
+            color: #0F83BA;
+          }
+        }
+
+        .notification-content {
+          flex: 1;
+          min-width: 0;
+
+          .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+
+            .notification-title {
+              font-size: 16px;
+              font-weight: 600;
+              color: #1f2937;
+              margin: 0;
+              line-height: 1.4;
+            }
+
+            .notification-status {
+              padding: 4px 12px;
+              border-radius: 12px;
+              font-size: 12px;
+              font-weight: 500;
+              white-space: nowrap;
+
+              &.active {
+                background: #d1fae5;
+                color: #059669;
+              }
+
+              &.inactive {
+                background: #f3f4f6;
+                color: #6b7280;
+              }
+            }
+          }
+
+          .notification-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.5;
+          }
+        }
+
+        .notification-toggle {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+
+          .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            margin-top: 2px;
+
+            input {
+              opacity: 0;
+              width: 0;
+              height: 0;
+
+              &:checked + .slider {
+                background-color: #0F83BA;
+
+                &:before {
+                  transform: translateX(20px);
+                }
+              }
+            }
+
+            .slider {
+              position: absolute;
+              cursor: pointer;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: #d1d5db;
+              transition: 0.4s;
+              border-radius: 24px;
+
+              &:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: 0.4s;
+                border-radius: 50%;
+              }
+            }
+          }
+        }
+      }
 
       // Smaller padding for personal info section card (second card)
       &:nth-child(2) {
@@ -596,17 +736,17 @@
           .save-btn {
             padding: 6px 12px !important;
             font-size: 13px !important;
-            background: white !important;
-            color: #0F83BA !important;
+            background: #0F83BA !important;
+            color: white !important;
             border: 1px solid #0F83BA !important;
             border-radius: 6px !important;
             font-weight: 500 !important;
             transition: all 0.2s !important;
 
             &:hover:not(:disabled) {
-              background: rgba(15, 131, 186, 0.1) !important;
-              color: #0d6fa0 !important;
+              background: #0d6fa0 !important;
               border-color: #0d6fa0 !important;
+              color: white !important;
             }
 
             &:disabled {
@@ -618,8 +758,7 @@
           }
 
           // Override button component styles
-          ::ng-deep .cancel-btn,
-          ::ng-deep .save-btn {
+          ::ng-deep .cancel-btn {
             button.btn,
             .btn {
               padding: 6px 12px !important;
@@ -627,6 +766,47 @@
               min-height: auto !important;
               height: auto !important;
               line-height: 1.4 !important;
+            }
+
+            .btn-small,
+            .btn-medium,
+            .btn-large,
+            &.btn-small,
+            &.btn-medium,
+            &.btn-large {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+            }
+          }
+
+          ::ng-deep .save-btn {
+            button.btn,
+            .btn,
+            button.btn-primary,
+            .btn-primary {
+              padding: 6px 12px !important;
+              font-size: 13px !important;
+              min-height: auto !important;
+              height: auto !important;
+              line-height: 1.4 !important;
+              background: #0F83BA !important;
+              color: white !important;
+              border: 1px solid #0F83BA !important;
+
+              &:hover:not(:disabled):not(.loading) {
+                background: #0d6fa0 !important;
+                border-color: #0d6fa0 !important;
+                color: white !important;
+                transform: none !important;
+                box-shadow: none !important;
+              }
+
+              &:disabled {
+                background: #f3f4f6 !important;
+                color: #9ca3af !important;
+                border-color: #d1d5db !important;
+                opacity: 0.7 !important;
+              }
             }
 
             .btn-small,
@@ -746,7 +926,7 @@
       }
 
       .password-form-checkbox {
-        margin-bottom: 24px;
+        margin-bottom: 32px !important;
 
         .checkbox-label {
           display: flex;
@@ -769,68 +949,6 @@
         }
       }
 
-      .password-form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-
-        .cancel-btn {
-          padding: 6px 12px !important;
-          font-size: 13px !important;
-          background: white !important;
-          color: #6b7280 !important;
-          border: 1px solid #0F83BA !important;
-          border-radius: 6px !important;
-          font-weight: 500 !important;
-          transition: all 0.2s !important;
-
-          &:hover:not(:disabled) {
-            background: rgba(15, 131, 186, 0.1) !important;
-            color: #0F83BA !important;
-          }
-        }
-
-        .save-btn {
-          padding: 6px 12px !important;
-          font-size: 13px !important;
-          background: #0F83BA !important;
-          color: white !important;
-          border: 1px solid #0F83BA !important;
-          border-radius: 6px !important;
-          font-weight: 500 !important;
-          transition: all 0.2s !important;
-
-          &:hover:not(:disabled) {
-            background: #0d6fa0 !important;
-            border-color: #0d6fa0 !important;
-          }
-
-          &:disabled {
-            background: #f3f4f6 !important;
-            color: #9ca3af !important;
-            border-color: #d1d5db !important;
-            cursor: not-allowed !important;
-          }
-        }
-
-        ::ng-deep .cancel-btn,
-        ::ng-deep .save-btn {
-          min-height: auto !important;
-          height: auto !important;
-          line-height: normal !important;
-          transform: none !important;
-          box-shadow: none !important;
-
-          &:hover {
-            transform: none !important;
-            box-shadow: none !important;
-          }
-        }
-      }
-
       // Responsive adjustments
       @media (max-width: 768px) {
         .password-form-row {
@@ -842,17 +960,13 @@
             padding-top: 0;
           }
         }
-
-        .password-form-actions {
-          flex-direction: column-reverse;
-
-          .cancel-btn,
-          .save-btn {
-            width: 100%;
-          }
-        }
       }
     }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 }
 

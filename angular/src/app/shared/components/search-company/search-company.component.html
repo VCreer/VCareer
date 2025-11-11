@@ -1,0 +1,74 @@
+<div class="search-company-section">
+  <div class="search-bar-container">
+    <div class="search-input-wrapper">
+      <i class="fa fa-search search-icon"></i>
+      <input 
+        type="text" 
+        class="search-input"
+        placeholder="Tên công ty"
+        [(ngModel)]="localKeyword"
+        (keyup.enter)="onSearch()">
+    </div>
+    <app-button 
+      [type]="'primary'"
+      [size]="'medium'"
+      (click)="onSearch()">
+      Tìm kiếm
+    </app-button>
+  </div>
+
+  <!-- Alert Box -->
+  <div class="alert-box">
+    <i class="fa fa-exclamation-triangle alert-icon"></i>
+    <p class="alert-text">
+      Để tài khoản được xác thực nhanh chóng, vui lòng sử dụng <strong>Tên công ty</strong> trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế.
+    </p>
+  </div>
+
+  <!-- Company List Section -->
+  <div class="company-list-section">
+    <h3 class="company-list-title">Công ty mới tạo</h3>
+    
+    <div class="company-grid" *ngIf="companyList.length > 0">
+      <div class="company-card" *ngFor="let company of companyList">
+        <div class="company-card-left">
+          <div class="company-logo-circle" [style.background-color]="company.logoBgColor">
+            <span class="company-logo-text" *ngIf="!company.logoImage">{{ company.logoText }}</span>
+            <img *ngIf="company.logoImage" [src]="company.logoImage" [alt]="company.name" class="company-logo-img">
+          </div>
+        </div>
+        
+        <div class="company-card-middle">
+          <h4 class="company-name">{{ company.name }}</h4>
+          <p class="company-tax">MST: {{ company.taxId }}</p>
+          <p class="company-address">{{ company.address }}</p>
+          <div class="company-meta">
+            <span class="company-employees">|{{ company.employeeRange }}</span>
+          </div>
+          <div class="company-tags">
+            <span class="company-tag" *ngFor="let tag of company.tags">{{ tag }}</span>
+          </div>
+        </div>
+        
+        <div class="company-card-right">
+          <app-button 
+            [type]="'primary'"
+            [size]="'small'"
+            (click)="onSelect(company)">
+            Chọn
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="companyList.length === 0 && !isSearching">
+      <p>Chưa có công ty nào. Hãy tìm kiếm để xem danh sách công ty.</p>
+    </div>
+
+    <div class="loading-state" *ngIf="isSearching">
+      <div class="loading-spinner"></div>
+      <p>Đang tìm kiếm...</p>
+    </div>
+  </div>
+</div>
+

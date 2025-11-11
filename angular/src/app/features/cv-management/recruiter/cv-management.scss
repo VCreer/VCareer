@@ -1,0 +1,583 @@
+.recruiter-cv-management-container {
+  min-height: calc(100vh - 64px); // Subtract header height
+  padding-top: 0; // Remove top padding, breadcrumb-box will handle spacing
+  margin-left: 72px; // Push the entire element to the right
+  width: calc(100% - 72px); // Occupy the remaining width
+  padding-right: 0;
+  padding-bottom: 20px;
+  background: #f8fafc;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 1; // Lower than sidebar (z-index: 999)
+  overflow: visible;
+
+  // When sidebar is expanded, adjust margin and width
+  &.sidebar-expanded {
+    margin-left: 280px; // Sidebar expanded width
+    width: calc(100% - 280px); // Adjusted width
+  }
+
+  // Responsive: remove sidebar margin on mobile
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+    
+    &.sidebar-expanded {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  // Breadcrumb Box - Positioned right below header and aligned with content
+  .breadcrumb-box {
+    background-color: white;
+    padding: 1rem 0;
+    position: fixed;
+    top: 64px; // Position right below header (64px header height)
+    z-index: 998; // Below header (1000) and notification (1001) but above content
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease, width 0.3s ease;
+    border-bottom: 1px solid #e5e7eb;
+
+    // Default (sidebar collapsed)
+    left: 72px;
+    width: calc(100% - 72px);
+
+    // When sidebar is expanded
+    &.sidebar-expanded {
+      left: 280px;
+      width: calc(100% - 280px);
+    }
+
+    // Responsive: On mobile, sidebar is not fixed, so breadcrumb should be full width
+    @media (max-width: 768px) {
+      left: 0;
+      width: 100%;
+      
+      &.sidebar-expanded {
+        left: 0;
+        width: 100%;
+      }
+    }
+
+    .breadcrumb-container {
+      max-width: 1400px;
+      margin-left: 0;
+      margin-right: auto;
+      padding-left: 16px;
+      padding-right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      @media (max-width: 768px) {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      .breadcrumb-item {
+        color: #0F83BA;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #0a6a94;
+          text-decoration: underline;
+        }
+
+        &.active {
+          color: #374151;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: default;
+          pointer-events: none;
+
+          &:hover {
+            text-decoration: none;
+          }
+        }
+      }
+
+      .breadcrumb-separator {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-top: 80px; // Space for breadcrumb-box (64px header + ~56px breadcrumb = 120px, minus 40px for spacing)
+    padding: 16px 24px;
+
+    // Filter bar wrapper - ensure no conflicts
+    ::ng-deep app-cv-filter-bar {
+      margin-bottom: 16px;
+      display: block;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      
+      .cv-filter-bar-container {
+        position: relative !important;
+        overflow: visible !important;
+        z-index: 1;
+        
+        .filter-dropdown-wrapper {
+          position: relative !important;
+          z-index: auto !important;
+          
+          .filter-dropdown-menu {
+            z-index: 10000 !important; // Higher than other dropdowns
+            position: absolute !important;
+          }
+        }
+      }
+    }
+
+    .content-section {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+
+        .candidate-count {
+          font-size: 16px;
+          color: #374151;
+
+          strong {
+            color: #0F83BA;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .cv-list-container {
+        .loading-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          color: #6b7280;
+
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #0F83BA;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+          }
+        }
+
+        .cv-table-wrapper {
+          overflow-x: auto;
+
+          .cv-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+
+            thead {
+              background: #f9fafb;
+              border-bottom: 2px solid #e5e7eb;
+
+              th {
+                padding: 12px 16px;
+                text-align: left;
+                font-weight: 600;
+                color: #374151;
+                white-space: nowrap;
+              }
+            }
+
+            tbody {
+              tr {
+                border-bottom: 1px solid #e5e7eb;
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                  background: #f9fafb;
+                }
+
+                td {
+                  padding: 16px;
+                  color: #374151;
+                  vertical-align: top;
+                }
+              }
+            }
+          }
+        }
+
+        // Table Cell Styles
+        // Candidate Cell
+        .candidate-cell {
+          .candidate-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .candidate-avatar {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background: #1f2937;
+              color: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              font-weight: 600;
+              flex-shrink: 0;
+              overflow: hidden;
+
+              .avatar-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+              }
+            }
+
+            .candidate-details {
+              flex: 1;
+              min-width: 0;
+
+              .candidate-name {
+                font-weight: 600;
+                color: #1f2937;
+                font-size: 14px;
+                margin-bottom: 4px;
+              }
+
+              .candidate-viewed {
+                font-size: 12px;
+                color: #6b7280;
+              }
+            }
+          }
+        }
+
+        // Campaign Cell
+        .campaign-cell {
+          .campaign-info {
+            .campaign-name {
+              font-size: 14px;
+              color: #374151;
+              margin-bottom: 4px;
+            }
+
+            .campaign-id {
+              font-size: 12px;
+              color: #6b7280;
+            }
+          }
+        }
+
+        // Contact Cell
+        .contact-cell {
+          .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .contact-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .contact-icon {
+                color: #0F83BA;
+                font-size: 14px;
+                width: 16px;
+                text-align: center;
+              }
+
+              .contact-text {
+                font-size: 14px;
+                color: #374151;
+              }
+            }
+          }
+        }
+
+        // Source Cell
+        .source-cell {
+          .source-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .source-type {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 14px;
+              color: #374151;
+
+              i {
+                color: #6b7280;
+                font-size: 12px;
+                width: 16px;
+                text-align: center;
+              }
+            }
+
+            .source-date {
+              font-size: 12px;
+              color: #6b7280;
+            }
+          }
+        }
+
+        // Applied Date Cell
+        .applied-date-cell {
+          .applied-date-value {
+            font-size: 14px;
+            color: #374151;
+          }
+        }
+
+        // Status Cell
+        .status-cell {
+          .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+
+            &.status-suitable {
+              background: #FED7AA;
+              color: #C2410C;
+            }
+
+            &.status-send-offer {
+              background: #DBEAFE;
+              color: #1E40AF;
+            }
+
+            &.status-default {
+              background: #F3F4F6;
+              color: #6B7280;
+            }
+          }
+        }
+
+        // Notes Cell
+        .notes-cell {
+          max-width: 200px;
+
+          .notes-content {
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.4;
+            word-wrap: break-word;
+          }
+
+          .notes-empty {
+            font-size: 13px;
+            color: #9ca3af;
+            font-style: italic;
+          }
+        }
+
+        // Actions Cell
+        .actions-cell {
+          .actions-menu-wrapper {
+            position: relative;
+            display: inline-block;
+
+            .actions-menu-btn {
+              background: none;
+              border: none;
+              padding: 8px;
+              cursor: pointer;
+              color: #6b7280;
+              border-radius: 4px;
+              transition: all 0.2s;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              &:hover {
+                background-color: #f3f4f6;
+                color: #374151;
+              }
+
+              i {
+                font-size: 16px;
+              }
+            }
+
+            .actions-menu {
+              position: fixed;
+              background: white;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              min-width: 180px;
+              z-index: 10000;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.2s ease, visibility 0.2s ease;
+
+              &.show {
+                opacity: 1;
+                visibility: visible;
+              }
+
+              .menu-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 14px;
+                color: #374151;
+
+                &:last-child {
+                  border-bottom: none;
+                }
+
+                &:hover {
+                  background: #f9fafb;
+                }
+
+                &.delete-item {
+                  color: #dc2626;
+
+                  &:hover {
+                    background: #fef2f2;
+                  }
+                }
+
+                .menu-icon {
+                  font-size: 14px;
+                  width: 16px;
+                  text-align: center;
+                }
+
+                span {
+                  font-weight: 500;
+                }
+              }
+
+              .menu-separator {
+                height: 1px;
+                background: #e5e7eb;
+                margin: 4px 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .recruiter-cv-management-container {
+    .main-content {
+      padding: 16px;
+
+      .cv-list-container {
+        .cv-table-wrapper {
+          .cv-table {
+            font-size: 13px;
+
+            thead th,
+            tbody td {
+              padding: 12px 8px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .recruiter-cv-management-container {
+    .main-content {
+      padding: 12px;
+
+      .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .candidate-count {
+          font-size: 14px;
+        }
+      }
+
+      .cv-list-container {
+        .cv-table-wrapper {
+          .cv-table {
+            thead {
+              display: none;
+            }
+
+            tbody {
+              tr {
+                display: block;
+                margin-bottom: 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 12px;
+
+                td {
+                  display: flex;
+                  justify-content: space-between;
+                  padding: 8px 0;
+                  border: none;
+
+                  &::before {
+                    content: attr(data-label);
+                    font-weight: 600;
+                    color: #6b7280;
+                    margin-right: 12px;
+                  }
+
+                  .action-buttons {
+                    justify-content: flex-end;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

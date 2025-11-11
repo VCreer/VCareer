@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-export type HeaderType = 'candidate' | 'recruiter';
+export type HeaderType = 'candidate' | 'recruiter' | 'employee';
 
 @Injectable({
   providedIn: 'root'
@@ -26,5 +26,9 @@ export class HeaderTypeService {
 
   switchToCandidate() {
     this.setHeaderType('candidate');
+  }
+
+  switchToEmployee() {
+    this.setHeaderType('employee');
   }
 }

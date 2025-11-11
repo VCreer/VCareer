@@ -1,0 +1,73 @@
+<div class="company-preview-wrapper">
+  <!-- Contact Information -->
+  <div class="preview-section">
+    <h4 class="preview-section-title">Thông tin liên hệ</h4>
+    <div class="contact-info">
+      <div class="contact-item">
+        <i class="fa fa-user contact-icon"></i>
+        <span>Tên liên hệ: {{ contactInfo.name }}</span>
+      </div>
+      <div class="contact-divider"></div>
+      <div class="contact-item">
+        <i class="fa fa-map-marker-alt contact-icon"></i>
+        <span>{{ contactInfo.address }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Company -->
+  <div class="preview-section">
+    <h4 class="preview-section-title">Về công ty</h4>
+    <div class="company-preview">
+      <h5 class="company-name">{{ companyForm.companyName || 'VCareer' }}</h5>
+      <div class="company-info-row">
+        <div class="company-info-item">
+          <i class="fa fa-users company-icon"></i>
+          <span>{{ getEmployeeRange() }} nhân viên</span>
+        </div>
+        <div class="company-info-item">
+          <i class="fa fa-phone company-icon"></i>
+          <span>Liên hệ: {{ contactInfo.name }}</span>
+        </div>
+      </div>
+      <div class="company-description">
+        <label class="description-label">Mô tả công ty</label>
+        <div class="description-content" [innerHTML]="companyForm.overview || 'Chưa có mô tả'"></div>
+      </div>
+      <div class="company-photos">
+        <label class="photos-label">
+          Photos
+          <i class="fa fa-pencil photos-edit-icon"></i>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keywords -->
+  <div class="preview-section">
+    <h4 class="preview-section-title">Từ khóa</h4>
+    <div class="keywords-content">
+      <!-- Keywords will be displayed here -->
+    </div>
+  </div>
+
+  <!-- Share -->
+  <div class="preview-section">
+    <h4 class="preview-section-title">Chia sẻ</h4>
+    <div class="share-buttons">
+      <button type="button" class="share-btn share-facebook" title="Facebook">
+        <span class="share-icon">f</span>
+      </button>
+      <button type="button" class="share-btn share-linkedin" title="LinkedIn">
+        <span class="share-icon">in</span>
+      </button>
+      <button type="button" class="share-btn share-twitter" title="Twitter">
+        <i class="fa fa-twitter share-icon-fa"></i>
+      </button>
+      <button type="button" class="share-btn share-link" title="Copy Link">
+        <i class="fa fa-link share-icon-fa"></i>
+      </button>
+    </div>
+  </div>
+</div>
+

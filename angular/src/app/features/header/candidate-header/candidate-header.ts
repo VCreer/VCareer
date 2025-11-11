@@ -71,12 +71,12 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToAbout() {
-    this.router.navigate(['/about']);
+    this.router.navigate(['/candidate/about-us']);
     this.closeMobileMenu();
   }
 
   navigateToContact() {
-    this.router.navigate(['/contact']);
+    this.router.navigate(['/candidate/contact']);
     this.closeMobileMenu();
   }
 
@@ -166,7 +166,6 @@ export class CandidateHeaderComponent implements OnInit {
 
   markAllAsRead() {
     // Logic đánh dấu tất cả thông báo đã đọc
-    console.log('Đánh dấu tất cả thông báo đã đọc');
     this.showNotificationMenu = false;
   }
 
@@ -187,6 +186,11 @@ export class CandidateHeaderComponent implements OnInit {
 
   navigateToSavedJobs() {
     this.router.navigate(['/candidate/save-jobs']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToAppliedJobs() {
+    this.router.navigate(['/candidate/applied-jobs']);
     this.showProfileMenu = false;
   }
 }

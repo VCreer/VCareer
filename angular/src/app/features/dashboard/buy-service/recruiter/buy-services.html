@@ -1,0 +1,105 @@
+<div class="buy-services-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <h1 class="page-title">Mua dịch vụ</h1>
+      <button class="quote-btn" (click)="onRequestQuote()">
+        <i class="fa fa-check-circle"></i>
+        <span>Báo giá dịch vụ</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Important Note Banner -->
+    <div class="important-note">
+      <div class="note-icon">
+        <i class="fa fa-info-circle"></i>
+      </div>
+      <div class="note-content">
+        <h3 class="note-title">Lưu ý quan trọng</h3>
+        <p class="note-text">
+          Nhằm tránh rủi ro mạo danh và lừa đảo, VCareer khuyến nghị Quý khách hàng không chuyển khoản vào bất cứ tài khoản cá nhân nào và chỉ thực hiện thanh toán vào các tài khoản chính thức của chúng tôi
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 1: TOP JOBS TRIAL -->
+    <section class="service-section">
+      <h2 class="section-title">TOP JOBS TRIAL | ĐĂNG TIN TUYỂN DỤNG</h2>
+      <p class="section-description">
+        Trải nghiệm cộng hưởng sức mạnh công nghệ tạo ra hiệu quả đột phá cho tin tuyển dụng của Doanh nghiệp với chi phí tối ưu
+      </p>
+      <p class="section-warning">
+        Nhà tuyển dụng sẽ chỉ được mua và kích hoạt duy nhất 1 gói Top Job Trial
+      </p>
+
+      <div class="service-cards">
+        <div *ngFor="let pkg of trialPackages" class="service-card" (click)="onViewDetail(pkg.id)">
+          <div class="card-header">
+            <h3 class="card-title">{{ pkg.title }}</h3>
+          </div>
+          <div class="card-body">
+            <div class="card-price">
+              <span class="price-amount">{{ pkg.price }}</span>
+              <span class="price-currency">VND*</span>
+            </div>
+            <p class="card-description">{{ pkg.description }}</p>
+          </div>
+          <div class="card-footer" (click)="$event.stopPropagation()">
+            <button class="btn-add-cart" (click)="onAddToCart(pkg.id)">
+              <i class="fa fa-shopping-cart"></i>
+              <span>Thêm vào giỏ</span>
+            </button>
+            <button class="btn-buy-now" (click)="onBuyNow(pkg.id)">
+              <span>Mua ngay</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: TOP JOBS -->
+    <section class="service-section">
+      <h2 class="section-title">TOP JOBS | ĐĂNG TIN TUYỂN DỤNG HIỆU SUẤT CAO</h2>
+      <p class="section-description">
+        Cộng hưởng sức mạnh công nghệ tạo ra hiệu quả đột phá cho tin tuyển dụng của Doanh nghiệp
+      </p>
+
+      <div class="service-cards">
+        <div *ngFor="let pkg of regularPackages" class="service-card" [class.has-vip]="pkg.isVip" (click)="onViewDetail(pkg.id)">
+          <div class="card-header">
+            <h3 class="card-title">{{ pkg.title }}</h3>
+            <span *ngIf="pkg.isVip" class="vip-badge">VIP</span>
+          </div>
+          <div class="card-body">
+            <div class="card-price">
+              <span class="price-amount">{{ pkg.price }}</span>
+              <span class="price-currency">VND*</span>
+            </div>
+            <p class="card-description">{{ pkg.description }}</p>
+          </div>
+          <div class="card-footer" (click)="$event.stopPropagation()">
+            <button class="btn-add-cart" (click)="onAddToCart(pkg.id)">
+              <i class="fa fa-shopping-cart"></i>
+              <span>Thêm vào giỏ</span>
+            </button>
+            <button class="btn-buy-now" (click)="onBuyNow(pkg.id)">
+              <span>Mua ngay</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+

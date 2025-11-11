@@ -1,0 +1,120 @@
+<div class="rich-text-editor-wrapper">
+  <label class="editor-label" *ngIf="label">
+    {{ label }}
+    <span class="required" *ngIf="required">*</span>
+  </label>
+  
+  <div class="rich-text-editor" [class.disabled]="disabled">
+    <!-- Toolbar -->
+    <div class="editor-toolbar">
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('bold')" 
+        title="Bold"
+        [disabled]="disabled">
+        <i class="fa fa-bold"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('italic')" 
+        title="Italic"
+        [disabled]="disabled">
+        <i class="fa fa-italic"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('underline')" 
+        title="Underline"
+        [disabled]="disabled">
+        <i class="fa fa-underline"></i>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('insertUnorderedList')" 
+        title="Bullet List"
+        [disabled]="disabled">
+        <i class="fa fa-list-ul"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('insertOrderedList')" 
+        title="Numbered List"
+        [disabled]="disabled">
+        <i class="fa fa-list-ol"></i>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('justifyLeft')" 
+        title="Align Left"
+        [disabled]="disabled">
+        <i class="fa fa-align-left"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('justifyCenter')" 
+        title="Align Center"
+        [disabled]="disabled">
+        <i class="fa fa-align-center"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('justifyRight')" 
+        title="Align Right"
+        [disabled]="disabled">
+        <i class="fa fa-align-right"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('justifyFull')" 
+        title="Justify"
+        [disabled]="disabled">
+        <i class="fa fa-align-justify"></i>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('undo')" 
+        title="Undo"
+        [disabled]="disabled">
+        <i class="fa fa-undo"></i>
+      </button>
+      <button 
+        type="button" 
+        class="toolbar-btn" 
+        (click)="formatText('redo')" 
+        title="Redo"
+        [disabled]="disabled">
+        <i class="fa fa-redo"></i>
+      </button>
+    </div>
+    
+    <!-- Editor Content -->
+    <div 
+      #editorContent
+      class="editor-content"
+      [contentEditable]="!disabled"
+      [attr.data-placeholder]="placeholder"
+      [style.min-height]="minHeight"
+      (input)="onEditorInput($event)"
+      (blur)="onEditorBlur($event)">
+    </div>
+    
+    <!-- Editor Footer -->
+    <div class="editor-footer">
+      <i class="fa fa-pencil editor-icon"></i>
+    </div>
+  </div>
+</div>
+

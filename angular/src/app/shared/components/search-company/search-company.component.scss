@@ -1,0 +1,237 @@
+.search-company-section {
+  margin-bottom: 32px;
+
+  .search-bar-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        color: #9ca3af;
+        font-size: 16px;
+        z-index: 1;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 12px 16px 12px 44px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #0F83BA;
+          box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
+    }
+  }
+
+  .alert-box {
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 32px;
+
+    .alert-icon {
+      color: #2563eb;
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .alert-text {
+      margin: 0;
+      font-size: 14px;
+      color: #1e40af;
+      line-height: 1.5;
+
+      strong {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .company-list-section {
+    margin-top: 32px;
+
+    .company-list-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 24px 0;
+    }
+
+    .company-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+      }
+
+      @media (max-width: 768px) {
+        gap: 16px;
+      }
+
+      .company-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: box-shadow 0.3s ease;
+
+        @media (max-width: 768px) {
+          padding: 16px;
+          flex-direction: column;
+        }
+
+        &:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-card-left {
+          flex-shrink: 0;
+
+          .company-logo-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+
+            .company-logo-text {
+              color: #ffffff;
+              font-size: 18px;
+              font-weight: 600;
+              text-transform: uppercase;
+            }
+
+            .company-logo-img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+        }
+
+        .company-card-middle {
+          flex: 1;
+          min-width: 0;
+
+          .company-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+            word-wrap: break-word;
+          }
+
+          .company-tax {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0 0 6px 0;
+          }
+
+          .company-address {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+          }
+
+          .company-meta {
+            margin-bottom: 8px;
+
+            .company-employees {
+              font-size: 13px;
+              color: #6b7280;
+            }
+          }
+
+          .company-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+
+            .company-tag {
+              background: #f3f4f6;
+              color: #6b7280;
+              padding: 4px 10px;
+              border-radius: 4px;
+              font-size: 12px;
+            }
+          }
+        }
+
+        .company-card-right {
+          flex-shrink: 0;
+          display: flex;
+          align-items: flex-start;
+
+          @media (max-width: 768px) {
+            width: 100%;
+            justify-content: flex-end;
+          }
+        }
+      }
+    }
+
+    .empty-state,
+    .loading-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+
+      p {
+        margin: 16px 0 0 0;
+        font-size: 14px;
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #0F83BA;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

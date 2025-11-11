@@ -1,0 +1,25 @@
+<div class="company-tabs">
+  <button 
+    class="company-tab" 
+    [class.active]="activeTab === 'search'"
+    (click)="setTab('search')">
+    <i class="fa fa-search icon-search"></i>
+    <div class="tab-content">
+      <span class="tab-title">Tìm kiếm thông tin công ty</span>
+      <p class="tab-description">Dành cho Doanh nghiệp đã có trên VCareer</p>
+    </div>
+  </button>
+  
+  <button 
+    class="company-tab" 
+    [class.active]="activeTab === 'create'"
+    (click)="setTab('create')">
+    <i class="fa fa-plus icon-tab"></i>
+    <div class="tab-content">
+      <span class="tab-title">Tạo công ty mới</span>
+      <p class="tab-description">Dành cho Doanh nghiệp lần đầu sử dụng VCareer</p>
+    </div>
+    <i class="fa fa-check-circle tab-check-icon" *ngIf="activeTab === 'create'"></i>
+  </button>
+</div>
+
