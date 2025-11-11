@@ -1,5 +1,17 @@
 
 export interface CandidateRegisterDto {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface CreateEmployeeDto {
+  email: string;
+  password: string;
+  employeeRoles: string[];
+}
+
+export interface EmployeeLoginDto {
   email?: string;
   password?: string;
 }
@@ -9,7 +21,7 @@ export interface ForgotPasswordDto {
 }
 
 export interface GoogleLoginDto {
-  idToken?: string;
+  idToken: string;
 }
 
 export interface LoginDto {
@@ -22,11 +34,10 @@ export interface RecruiterRegisterDto {
   password: string;
   name: string;
   phoneNumber: string;
-  city: string;
-  district?: string;
-  isCompany: boolean;
-  companyName?: string;
-  businesshouseholdname?: string;
+  provinceCode: number;
+  districtCode: number;
+  companyName: string;
+  taxCode: string;
 }
 
 export interface ResetPasswordDto {

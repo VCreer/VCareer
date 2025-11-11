@@ -164,7 +164,7 @@ export class LoginComponent {
   };
 
   this.proxyAuth
-    .login(payload)
+    .candidateLogin(payload)
     .pipe(finalize(() => (this.isLoading = false)))
     .subscribe({
       next: (result: TokenResponseDto) => {

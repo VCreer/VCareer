@@ -10,6 +10,7 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
+import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
 
 @Component({
   selector: 'app-recruiter-login',
@@ -30,6 +31,7 @@ export class RecruiterLoginComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private navigationService = inject(NavigationService);
+   private proxyAuth = inject(ProxyAuthService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -111,42 +113,58 @@ export class RecruiterLoginComponent {
   }
 
   onSubmit() {
-    this.submitAttempted = true;
-    
-    Object.keys(this.loginForm.controls).forEach(key => {
-      this.loginForm.get(key)?.markAsTouched();
-    });
+  this.submitAttempted = true;
 
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      const { email, password, rememberMe } = this.loginForm.value;
-      
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        if (email === 'admin@company.com' && password === 'admin123') {
-          this.showToastMessage('Đăng nhập thành công!', 'success');
-          localStorage.setItem('justLoggedIn', 'true');
-          this.navigationService.loginAsRecruiter();
-        } else if (email === 'test@company.com' || email === 'testrecruiter') {
-          this.showToastMessage('Mật khẩu không đúng. Vui lòng nhập lại.', 'error');
-          this.loginForm.patchValue({ password: '' });
-        } else {
-          this.showToastMessage('Đăng nhập thành công!', 'success');
-          localStorage.setItem('justLoggedIn', 'true');
-          this.navigationService.loginAsRecruiter();
-        }
-      }, 1500);
-    } else {
-      const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
-        this.loginForm.get(key)?.invalid
-      );
-      if (firstErrorField) {
-        const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  Object.keys(this.loginForm.controls).forEach(key => {
+    this.loginForm.get(key)?.markAsTouched();
+  });
+
+  if (this.loginForm.invalid) {
+    const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
+      this.loginForm.get(key)?.invalid
+    );
+    if (firstErrorField) {
+      const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
   }
+
+  this.isLoading = true;
+  const { email, password } = this.loginForm.value;
+
+  const input = { email, password };
+
+  this.proxyAuth.recruiterLogin(input).subscribe({
+    next: (res) => {
+      this.isLoading = false;
+      this.showToastMessage('Đăng nhập thành công!', 'success');
+
+      // Lưu token (nếu trả về TokenResponseDto)
+      if (res?.accessToken) {
+        localStorage.setItem('access_token', res.accessToken);
+        localStorage.setItem('user_role', 'recruiter');
+      }
+
+      // Điều hướng
+      setTimeout(() => {
+        this.navigationService.loginAsRecruiter();
+      }, 1500);
+    },
+    error: (err) => {
+      this.isLoading = false;
+
+      let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
+      if (err?.status === 401) msg = 'Email hoặc mật khẩu không đúng.';
+      else if (err?.status === 404) msg = 'Tài khoản không tồn tại.';
+      else if (err?.error?.message) msg = err.error.message;
+
+      this.showToastMessage(msg, 'error');
+      this.loginForm.patchValue({ password: '' });
+    }
+  });
+}
+
 
   navigateToSignUp() {
     this.router.navigate(['/recruiter/register']);

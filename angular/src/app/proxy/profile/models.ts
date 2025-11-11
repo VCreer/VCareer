@@ -9,23 +9,23 @@ export interface ChangePasswordDto {
 export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
   companyName?: string;
   logoUrl?: string;
-  companySize: number;
+  companySize?: number;
   headquartersAddress?: string;
   industries: string[];
 }
 
 export interface CompanyLegalInfoDto extends EntityDto<number> {
   companyName?: string;
-  companyCode?: string;
-  verificationStatus: boolean;
+  companyCode: string;
+  verificationStatus?: boolean;
   description?: string;
   headquartersAddress?: string;
   contactEmail?: string;
   contactPhone?: string;
-  status: boolean;
-  companySize: number;
-  industryId: number;
-  foundedYear: number;
+  status?: boolean;
+  companySize?: number;
+  industryId?: number;
+  foundedYear?: number;
   logoUrl?: string;
   legalDocumentUrl?: string;
   coverImageUrl?: string;
@@ -80,12 +80,12 @@ export interface SubmitCompanyLegalInfoDto {
   headquartersAddress: string;
   contactEmail: string;
   contactPhone: string;
-  companySize: number;
-  industryId: number;
-  foundedYear: number;
+  companySize?: number;
+  industryId?: number;
+  foundedYear?: number;
   taxCode: string;
   businessLicenseNumber: string;
-  businessLicenseIssueDate: string;
+  businessLicenseIssueDate?: string;
   businessLicenseIssuePlace: string;
   legalRepresentative: string;
   businessLicenseFile?: string;
@@ -101,9 +101,9 @@ export interface UpdateCompanyLegalInfoDto {
   headquartersAddress: string;
   contactEmail: string;
   contactPhone: string;
-  companySize: number;
-  industryId: number;
-  foundedYear: number;
+  companySize?: number;
+  industryId?: number;
+  foundedYear?: number;
   taxCode: string;
   businessLicenseNumber: string;
   businessLicenseIssueDate: string;

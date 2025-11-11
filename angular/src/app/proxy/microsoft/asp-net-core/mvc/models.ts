@@ -1,8 +1,4 @@
-
 export interface ActionResult<TValue = any> {
-  result?: ActionResult<TValue>;
+  result?: ActionResult<any>;
   value?: TValue;
-}
-
-export interface IActionResult {
 }

@@ -1,18 +1,19 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobSearchInputDto, JobViewDetail, JobViewDto, PagedResultDto, SavedJobDto, SavedJobStatusDto } from '../../../../dto/job/models';
+import type { JobSearchInputDto, JobViewWithPriorityDto, PagedResultDto } from '../../dto/job-dto/models';
+import type { JobViewDetail, SavedJobDto, SavedJobStatusDto } from '../../dto/job/models';
 
 @Injectable({
   providedIn: 'root',
 })
-export class JobPostingService {
+export class JobSearchService {
   apiName = 'Default';
   
 
   getJobById = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobViewDetail>({
       method: 'GET',
-      url: `/api/app/job-posting/job-by-id/${jobId}`,
+      url: `/api/app/job-search/job-by-id/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -20,16 +21,16 @@ export class JobPostingService {
   getJobBySlug = (slug: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobViewDetail>({
       method: 'GET',
-      url: '/api/app/job-posting/job-by-slug',
+      url: '/api/app/job-search/job-by-slug',
       params: { slug },
     },
     { apiName: this.apiName,...config });
   
 
   getRelatedJobs = (jobId: string, maxCount: number = 10, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, JobViewDto[]>({
+    this.restService.request<any, JobViewWithPriorityDto[]>({
       method: 'GET',
-      url: `/api/app/job-posting/related-jobs/${jobId}`,
+      url: `/api/app/job-search/related-jobs/${jobId}`,
       params: { maxCount },
     },
     { apiName: this.apiName,...config });
@@ -38,7 +39,7 @@ export class JobPostingService {
   getSavedJobStatus = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SavedJobStatusDto>({
       method: 'GET',
-      url: `/api/app/job-posting/saved-job-status/${jobId}`,
+      url: `/api/app/job-search/saved-job-status/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -46,7 +47,7 @@ export class JobPostingService {
   getSavedJobs = (skipCount?: number, maxResultCount: number = 20, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<SavedJobDto>>({
       method: 'GET',
-      url: '/api/app/job-posting/saved-jobs',
+      url: '/api/app/job-search/saved-jobs',
       params: { skipCount, maxResultCount },
     },
     { apiName: this.apiName,...config });
@@ -55,7 +56,7 @@ export class JobPostingService {
   indexJob = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-posting/index-job/${jobId}`,
+      url: `/api/app/job-search/index-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -63,7 +64,7 @@ export class JobPostingService {
   reindexAllJobs = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/job-posting/reindex-all-jobs',
+      url: '/api/app/job-search/reindex-all-jobs',
     },
     { apiName: this.apiName,...config });
   
@@ -71,7 +72,7 @@ export class JobPostingService {
   removeJobFromIndex = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: `/api/app/job-posting/job-from-index/${jobId}`,
+      url: `/api/app/job-search/job-from-index/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -79,15 +80,15 @@ export class JobPostingService {
   saveJob = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-posting/save-job/${jobId}`,
+      url: `/api/app/job-search/save-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
   
 
   searchJobs = (input: JobSearchInputDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PagedResultDto<JobViewDto>>({
+    this.restService.request<any, PagedResultDto<JobViewWithPriorityDto>>({
       method: 'POST',
-      url: '/api/app/job-posting/search-jobs',
+      url: '/api/app/job-search/search-jobs',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -96,7 +97,7 @@ export class JobPostingService {
   unsaveJob = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-posting/unsave-job/${jobId}`,
+      url: `/api/app/job-search/unsave-job/${jobId}`,
     },
     { apiName: this.apiName,...config });
 
