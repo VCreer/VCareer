@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ApplicationDto, ApplicationStatisticsDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../application/contracts/applications/models';
+import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../application/contracts/applications/models';
 import type { IActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -25,6 +25,14 @@ export class ApplicationService {
       method: 'POST',
       url: '/api/applications/apply-with-uploaded-cv',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  checkApplicationStatus = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ApplicationStatusDto>({
+      method: 'GET',
+      url: `/api/applications/check-status/${jobId}`,
     },
     { apiName: this.apiName,...config });
   

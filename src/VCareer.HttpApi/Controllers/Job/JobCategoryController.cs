@@ -22,9 +22,7 @@ namespace VCareer.Controllers.Job
             _jobCategoryService = jobCategoryService;
         }
 
-        /// <summary>
         /// Lấy cây phân cấp danh mục nghề nghiệp đầy đủ với số lượng job
-        /// </summary>
         /// <returns>Danh sách category tree</returns>
         [HttpGet]
         [Route("tree")]
@@ -41,11 +39,8 @@ namespace VCareer.Controllers.Job
             }
         }
 
-        /// <summary>
         /// Tìm kiếm danh mục nghề nghiệp theo từ khóa
         /// Trả về danh sách các leaf categories có path chứa từ khóa
-        /// </summary>
-        /// <param name="keyword">Từ khóa tìm kiếm</param>
         /// <returns>Danh sách category tree phù hợp</returns>
         [HttpPost]
         [Route("search")]

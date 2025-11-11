@@ -57,9 +57,34 @@ namespace VCareer.Profile
         /// <param name="input">Input tìm kiếm</param>
         /// <returns>Danh sách công ty đã phân trang</returns>
         [HttpPost("search")]
-        public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync([FromBody] CompanySearchInputDto input)
+        public async Task<ActionResult<PagedResultDto<CompanyLegalInfoDto>>> SearchCompaniesAsync([FromBody] CompanySearchInputDto input)
         {
-            return await _companyLegalInfoAppService.SearchCompaniesAsync(input);
+            try
+            {
+                // Validate input
+                if (input == null)
+                {
+                    return BadRequest(new { message = "Input không được để trống" });
+                }
+
+                // Đảm bảo maxResultCount có giá trị hợp lệ
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10; // Default
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.SearchCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi tìm kiếm công ty", error = ex.Message });
+            }
         }
 
         /// <summary>

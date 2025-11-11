@@ -8,13 +8,8 @@ namespace VCareer.Constants
 {
     public static class FileStatus
     {
-
-        public const int Deleted = -4; // bị xóa mềm  
-        public const int Error = -3;    //bị lỗi khi xử lý file
-        public const int Quanrantined = -2; //nhiễm virus
-        public const int InActive = -1; 
-
-        public const int Pending = 0; // file h
-        public const int Active = 1;  //File hoạt động
+        public const int Deleted = -1; // bị xóa mềm  
+        public const int Private = 0; // file đã xác thực nhưng private
+        public const int Public = 1;  //File đã xác thực và public
     }
 }

@@ -233,9 +233,76 @@ export class CompanyService {
    */
   searchCompanies(input: CompanySearchInputDto): Observable<PagedResultDto<CompanyLegalInfoDto>> {
     const url = `${this.apiUrl}/api/profile/company-legal-info/search`;
-    return this.http.post<PagedResultDto<CompanyLegalInfoDto>>(url, input).pipe(
+    
+    // Đảm bảo các giá trị không phải undefined và đúng kiểu dữ liệu
+    // ABP Framework giới hạn MaxResultCount tối đa 1000
+    let skipCount = input.skipCount ?? 0;
+    let maxResultCount = input.maxResultCount ?? 10;
+    
+    // Đảm bảo là number, không phải string hoặc undefined
+    skipCount = Number(skipCount);
+    maxResultCount = Number(maxResultCount);
+    
+    // Validate và giới hạn maxResultCount
+    if (isNaN(skipCount) || skipCount < 0) {
+      skipCount = 0;
+    }
+    if (isNaN(maxResultCount) || maxResultCount <= 0) {
+      maxResultCount = 10;
+    }
+    if (maxResultCount > 1000) {
+      console.warn('[CompanyService] MaxResultCount exceeds 1000, capping at 1000');
+      maxResultCount = 1000;
+    }
+    
+    // Build request body - chỉ include các field có giá trị hợp lệ
+    const requestBody: any = {
+      skipCount: skipCount,
+      maxResultCount: maxResultCount
+    };
+    
+    // Keyword - luôn gửi (empty string hoặc string)
+    // Backend có thể yêu cầu field này, nên luôn gửi (empty string nếu không có để tránh validation error)
+    if (input.keyword && typeof input.keyword === 'string' && input.keyword.trim().length > 0) {
+      requestBody.keyword = input.keyword.trim();
+    } else {
+      // Gửi empty string thay vì null hoặc không gửi field
+      // Backend sẽ xử lý empty string như "không filter"
+      requestBody.keyword = '';
+    }
+    
+    // Status - luôn gửi nếu có giá trị
+    if (input.status !== undefined && input.status !== null) {
+      requestBody.status = Boolean(input.status);
+    }
+    
+    // Sorting - chỉ gửi nếu có giá trị
+    if (input.sorting && typeof input.sorting === 'string' && input.sorting.trim().length > 0) {
+      requestBody.sorting = input.sorting.trim();
+    }
+    
+    console.log('[CompanyService] Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('[CompanyService] Request body types:', {
+      skipCount: typeof requestBody.skipCount,
+      maxResultCount: typeof requestBody.maxResultCount,
+      keyword: typeof requestBody.keyword,
+      status: typeof requestBody.status
+    });
+    
+    return this.http.post<PagedResultDto<CompanyLegalInfoDto>>(url, requestBody).pipe(
       catchError(error => {
-        console.error('Error searching companies:', error);
+        console.error('[CompanyService] Error searching companies:', error);
+        console.error('[CompanyService] Error response body:', error.error);
+        console.error('[CompanyService] Error status:', error.status);
+        
+        // Log chi tiết validation errors
+        if (error.error && error.error.errors) {
+          console.error('[CompanyService] Validation errors:', JSON.stringify(error.error.errors, null, 2));
+          Object.keys(error.error.errors || {}).forEach(key => {
+            console.error(`[CompanyService] ${key}:`, error.error.errors[key]);
+          });
+        }
+        
         return throwError(() => error);
       })
     );

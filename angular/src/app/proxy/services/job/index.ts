@@ -1,2 +1,3 @@
-import * as JobPosting from './job-posting';
-export { JobPosting };
+export * from './job-category.service';
+export * from './job-post.service';
+export * from './job-search.service';

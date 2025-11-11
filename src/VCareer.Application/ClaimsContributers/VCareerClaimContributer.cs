@@ -25,18 +25,10 @@ namespace VCareer.Security
             var identity = principle.Identities.FirstOrDefault(i => i.IsAuthenticated == true);
             if (identity == null) return;
 
-            // Tìm UserId từ nhiều nguồn có thể
-            var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId)
-                ?? identity.FindFirst(ClaimTypes.NameIdentifier)
-                ?? identity.FindFirst("sub");
-            
+            var userIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId)) return;
 
-            // Đảm bảo có AbpClaimTypes.UserId claim (quan trọng cho GetId())
-            if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
-            {
-                identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
-            }
+            var user = await _identityUserRepository.FindAsync(userId);
 
             var user = await _identityUserRepository.FindAsync(userId);
             if (user != null)
@@ -91,6 +83,8 @@ namespace VCareer.Security
                 
                 await SubcriptionPlanClaimsAsync(identity, user);
             }
+        }
+            await SubcriptionPlanClaimsAsync(identity, user);
         }
         private async Task SubcriptionPlanClaimsAsync(ClaimsIdentity identity, IdentityUser user)
         {

@@ -10,6 +10,7 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
+import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -30,6 +31,7 @@ export class RegisterComponent implements OnInit {
   private router = inject(Router);
   private customAuthService = inject(CustomAuthService);
   private googleAuthService = inject(GoogleAuthService);
+   private proxyAuth = inject(ProxyAuthService);
 
   registerForm: FormGroup;
   isLoading = false;
@@ -161,39 +163,48 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit() {
-    this.submitAttempted = true;
-    
-    Object.keys(this.registerForm.controls).forEach(key => {
-      this.registerForm.get(key)?.markAsTouched();
-    });
+  this.submitAttempted = true;
 
-    if (this.registerForm.valid) {
-      this.isLoading = true;
-      const { firstName, lastName, email, username, password, termsAgreement } = this.registerForm.value;
-      
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        if (email === 'test@example.com' || username === 'testuser') {
-          this.showToastMessage('Email hoặc tên đăng nhập đã tồn tại trong hệ thống', 'error');
-          this.registerForm.patchValue({ email: '', username: '' });
-        } else {
-          this.showToastMessage('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
-          setTimeout(() => {
-            this.router.navigate(['/candidate/login']);
-          }, 2000);
-        }
-      }, 1500);
-    } else {
-      const firstErrorField = Object.keys(this.registerForm.controls).find(key =>
-        this.registerForm.get(key)?.invalid
-      );
-      if (firstErrorField) {
-        const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+  Object.keys(this.registerForm.controls).forEach(key => {
+    this.registerForm.get(key)?.markAsTouched();
+  });
+
+  if (this.registerForm.invalid) {
+    const firstErrorField = Object.keys(this.registerForm.controls).find(key =>
+      this.registerForm.get(key)?.invalid
+    );
+    if (firstErrorField) {
+      const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
   }
+
+  this.isLoading = true;
+
+  // Ghép name = firstName + lastName
+  const { firstName, lastName, email, password } = this.registerForm.value;
+  const input = {
+    name: `${firstName.trim()} ${lastName.trim()}`,
+    email: email.trim(),
+    password: password
+  };
+
+  this.proxyAuth.candidateRegister(input)
+    .subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showToastMessage('Đăng ký thành công! Chuyển hướng đến trang đăng nhập...', 'success');
+        setTimeout(() => this.router.navigate(['/candidate/login']), 2000);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const msg = err?.error?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
+        this.showToastMessage(msg, 'error');
+      }
+    });
+}
+
 
   navigateToLogin() {
     this.router.navigate(['/login']);
