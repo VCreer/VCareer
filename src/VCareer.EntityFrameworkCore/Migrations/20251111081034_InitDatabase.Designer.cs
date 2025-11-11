@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251111010828_InitDatabase")]
+    [Migration("20251111081034_InitDatabase")]
     partial class InitDatabase
     {
         /// <inheritdoc />
@@ -109,7 +109,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Applications.JobApplication", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CVType")
@@ -242,8 +241,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("UploadedCvId");
 
-                    b.HasIndex("JobId", "CandidateId")
-                        .IsUnique();
+                    b.HasIndex("JobId", "CandidateId");
 
                     b.ToTable("JobApplications", (string)null);
                 });
@@ -1409,11 +1407,9 @@ namespace VCareer.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Department")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")

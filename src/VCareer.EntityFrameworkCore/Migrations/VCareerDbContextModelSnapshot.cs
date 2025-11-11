@@ -106,7 +106,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Applications.JobApplication", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CVType")

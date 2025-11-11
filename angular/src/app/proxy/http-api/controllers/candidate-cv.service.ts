@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CandidateCvDto, CreateCandidateCvDto, GetCandidateCvListDto, RenderCvDto, UpdateCandidateCvDto } from '../../cv/models';
-import type { ActionResult } from '../../microsoft/asp-net-core/mvc/models';
+import type { ActionResult, IActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +20,7 @@ export class CandidateCvService {
   
 
   delete = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'DELETE',
       url: `/api/cv/candidates/${id}`,
     },
@@ -44,7 +44,7 @@ export class CandidateCvService {
   
 
   getList = (input: GetCandidateCvListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'GET',
       url: '/api/cv/candidates',
       params: { templateId: input.templateId, isPublished: input.isPublished, isDefault: input.isDefault, isPublic: input.isPublic, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
@@ -53,7 +53,7 @@ export class CandidateCvService {
   
 
   incrementViewCount = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'POST',
       url: `/api/cv/candidates/${id}/increment-view`,
     },
@@ -61,7 +61,7 @@ export class CandidateCvService {
   
 
   publish = (id: string, isPublished: boolean, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'POST',
       url: `/api/cv/candidates/${id}/publish`,
       body: isPublished,
@@ -78,7 +78,7 @@ export class CandidateCvService {
   
 
   setDefault = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'POST',
       url: `/api/cv/candidates/${id}/set-default`,
     },

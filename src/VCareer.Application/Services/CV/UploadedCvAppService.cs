@@ -54,109 +54,105 @@ namespace VCareer.Services.CV
 
         public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = false, string? notes = null)
         {
-            /*  Guid userId;
-              try
-              {
-                   userId = _currentUser.GetId();
-              }
-              catch (Exception ex)
-              {
-                  throw new UserFriendlyException($"Lỗi xác thực người dùng: {ex.Message}", innerException: ex);
-              }
+            Guid userId;
+            try
+            {
+                userId = _currentUser.GetId();
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Lỗi xác thực người dùng: {ex.Message}", innerException: ex);
+            }
 
-              if (userId == Guid.Empty)
-              {
-                  throw new UserFriendlyException("UserId không hợp lệ. Vui lòng đăng nhập lại.");
-              }
+            if (userId == Guid.Empty)
+            {
+                throw new UserFriendlyException("UserId không hợp lệ. Vui lòng đăng nhập lại.");
+            }
 
-              // Kiểm tra user có phải candidate không
-              var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-              if (candidate == null)
-              {
-                  throw new UserFriendlyException("Chỉ có candidate mới có thể upload CV.");
-              }
+            // Kiểm tra user có phải candidate không
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Chỉ có candidate mới có thể upload CV.");
+            }
 
-              // Upload file qua FileServices với ContainerType = "Resumes"
-              var uploadDto = new UploadFileDto
-              {
-                  File = file,
-                  ContainerType = CandidateContainerType.Resumes.ToString(), // Convert enum to string
-                  UserId = userId.ToString()
-              };
+            // Upload file qua FileServices với ContainerType = \"Resumes\" và nhận về FileDescriptorId
+            var uploadDto = new UploadFileDto
+            {
+                File = file,
+                ContainerType = CandidateContainerType.Resumes.ToString(),
+                UserId = userId.ToString()
+            };
 
-              // Upload file (lưu vào blob storage và FileDescriptor vào DB)
-              // FileServices.UploadAsync now returns the FileDescriptor Id
-              Guid fileDescriptorId;
-              try
-              {
-                  fileDescriptorId = await _fileServices.UploadAsync(uploadDto);
-              }
-              catch (Exception ex)
-              {
-                  throw new UserFriendlyException($"Lỗi khi upload file: {ex.Message}", innerException: ex);
-              }
+            Guid fileDescriptorId;
+            try
+            {
+                fileDescriptorId = await _fileServices.UploadAsync(uploadDto);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Lỗi khi upload file: {ex.Message}", innerException: ex);
+            }
 
-              if (fileDescriptorId == Guid.Empty)
-              {
-                  throw new UserFriendlyException("FileDescriptorId không hợp lệ sau khi upload.");
-              }
+            if (fileDescriptorId == Guid.Empty)
+            {
+                throw new UserFriendlyException("FileDescriptorId không hợp lệ sau khi upload.");
+            }
 
-              // Lấy FileDescriptor vừa tạo bằng Id
-              FileDescriptor fileDescriptor;
-              try
-              {
-                  fileDescriptor = await _fileDescriptorRepository.GetAsync(fileDescriptorId);
-              }
-              catch (Exception ex)
-              {
-                  throw new UserFriendlyException($"Không tìm thấy file descriptor sau khi upload. FileDescriptorId: {fileDescriptorId}. Error: {ex.Message}", innerException: ex);
-              }
+            // Lấy FileDescriptor vừa tạo bằng Id
+            FileDescriptor fileDescriptor;
+            try
+            {
+                fileDescriptor = await _fileDescriptorRepository.GetAsync(fileDescriptorId);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Không tìm thấy file descriptor sau khi upload. FileDescriptorId: {fileDescriptorId}. Error: {ex.Message}", innerException: ex);
+            }
 
-              // Nếu set làm default, bỏ default của các CV upload khác
-              if (isDefault)
-              {
-                  var existingDefault = await _uploadedCvRepository.FirstOrDefaultAsync(
-                      x => x.CandidateId == userId && x.IsDefault);
-                  if (existingDefault != null)
-                  {
-                      existingDefault.IsDefault = false;
-                      await _uploadedCvRepository.UpdateAsync(existingDefault);
-                  }
-              }
+            // Nếu set làm default, bỏ default của các CV upload khác
+            if (isDefault)
+            {
+                var existingDefault = await _uploadedCvRepository.FirstOrDefaultAsync(
+                    x => x.CandidateId == userId && x.IsDefault);
+                if (existingDefault != null)
+                {
+                    existingDefault.IsDefault = false;
+                    await _uploadedCvRepository.UpdateAsync(existingDefault);
+                }
+            }
 
-              // Tạo UploadedCv record
-              var uploadedCv = new UploadedCv
-              {
-                  CandidateId = userId,
-                  FileDescriptorId = fileDescriptor.Id,
-                  CvName = cvName ?? throw new ArgumentNullException(nameof(cvName)),
-                  IsDefault = isDefault,
-                  IsPublic = isPublic,
-                  Notes = notes
-              };
+            // Tạo UploadedCv record
+            var uploadedCv = new UploadedCv
+            {
+                CandidateId = userId,
+                FileDescriptorId = fileDescriptor.Id,
+                CvName = cvName ?? throw new ArgumentNullException(nameof(cvName)),
+                IsDefault = isDefault,
+                IsPublic = isPublic,
+                Notes = notes
+            };
 
-              try
-              {
-                  await _uploadedCvRepository.InsertAsync(uploadedCv);
-              }
-              catch (Exception ex)
-              {
-                  throw new UserFriendlyException($"Lỗi khi tạo UploadedCv record: {ex.Message}", innerException: ex);
-              }
+            try
+            {
+                await _uploadedCvRepository.InsertAsync(uploadedCv);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Lỗi khi tạo UploadedCv record: {ex.Message}", innerException: ex);
+            }
 
-              // Load FileDescriptor để map vào DTO
-              uploadedCv.FileDescriptor = fileDescriptor;
+            // Load FileDescriptor để map vào DTO
+            uploadedCv.FileDescriptor = fileDescriptor;
 
-              try
-              {
-                  return await MapToDtoAsync(uploadedCv);
-              }
-              catch (Exception ex)
-              {
-                  throw new UserFriendlyException($"Lỗi khi map UploadedCv sang DTO: {ex.Message}", innerException: ex);
-              }*/
-
-            throw new NotImplementedException();
+            try
+            {
+                return await MapToDtoAsync(uploadedCv);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Lỗi khi map UploadedCv sang DTO: {ex.Message}", innerException: ex);
+            }
         }
 
         public async Task<PagedResultDto<UploadedCvDto>> GetListAsync(GetUploadedCvListDto input)

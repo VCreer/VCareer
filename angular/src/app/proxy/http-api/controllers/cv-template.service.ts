@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CreateCvTemplateDto, CvTemplateDto, GetCvTemplateListDto, RenderCvDto, UpdateCvTemplateDto } from '../../cv/models';
-import type { ActionResult } from '../../microsoft/asp-net-core/mvc/models';
+import type { ActionResult, IActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +20,7 @@ export class CvTemplateService {
   
 
   delete = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'DELETE',
       url: `/api/cv/templates/${id}`,
     },
@@ -36,7 +36,7 @@ export class CvTemplateService {
   
 
   getActiveTemplates = (input: GetCvTemplateListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'GET',
       url: '/api/cv/templates/active',
       params: { category: input.category, isActive: input.isActive, isFree: input.isFree, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
@@ -45,7 +45,7 @@ export class CvTemplateService {
   
 
   getList = (input: GetCvTemplateListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'GET',
       url: '/api/cv/templates',
       params: { category: input.category, isActive: input.isActive, isFree: input.isFree, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },

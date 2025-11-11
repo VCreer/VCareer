@@ -1048,8 +1048,8 @@ namespace VCareer.Migrations
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Department = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsSuperAdmin = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -1888,8 +1888,7 @@ namespace VCareer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_JobApplications_JobId_CandidateId",
                 table: "JobApplications",
-                columns: new[] { "JobId", "CandidateId" },
-                unique: true);
+                columns: new[] { "JobId", "CandidateId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobApplications_Status",

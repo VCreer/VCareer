@@ -120,6 +120,8 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
         ConfigureDistributedCache(context, configuration);
+        // Bind FileBlobStorageConfig -> FilePolicyConfigs for file services
+        ConfigureFilePolicyConfigs(configuration);
     }
 
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng

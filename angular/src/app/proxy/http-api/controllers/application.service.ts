@@ -2,7 +2,7 @@ import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../application/contracts/applications/models';
-import type { ActionResult } from '../../microsoft/asp-net-core/mvc/models';
+import type { IActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -46,7 +46,7 @@ export class ApplicationService {
   
 
   downloadApplicationCV = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'GET',
       url: `/api/applications/${id}/download-cv`,
     },

@@ -1,9 +1,8 @@
-export type StringValues = string | string[];
 
 export interface IFormFile {
   contentType?: string;
   contentDisposition?: string;
-  headers: Record<string, StringValues>;
+  headers: Record<string, string | string[]>;
   length: number;
   name?: string;
   fileName?: string;

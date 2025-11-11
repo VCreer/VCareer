@@ -34,14 +34,22 @@ namespace VCareer.Files.FileValidator
 
     // Word mới (.docx)
     { "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        new[] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } }, // ZIP header
+        new[] {
+            new byte[] { 0x50, 0x4B, 0x03, 0x04 }, // ZIP local file header
+            new byte[] { 0x50, 0x4B, 0x05, 0x06 }, // ZIP empty archive
+            new byte[] { 0x50, 0x4B, 0x07, 0x08 }  // ZIP spanned
+        } },
 
     // Excel cũ (.xls)
     { "application/vnd.ms-excel", new[] { new byte[] { 0xD0, 0xCF, 0x11, 0xE0 } } },
 
     // Excel mới (.xlsx)
     { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        new[] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        new[] {
+            new byte[] { 0x50, 0x4B, 0x03, 0x04 },
+            new byte[] { 0x50, 0x4B, 0x05, 0x06 },
+            new byte[] { 0x50, 0x4B, 0x07, 0x08 }
+        } },
 
     // CSV hoặc TXT (văn bản đơn giản)
     { "text/plain", new[]
@@ -62,7 +70,11 @@ namespace VCareer.Files.FileValidator
 
     // Nén
     // ZIP (PK..) 
-    { "application/zip",              new[] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+    { "application/zip",              new[] {
+            new byte[] { 0x50, 0x4B, 0x03, 0x04 },
+            new byte[] { 0x50, 0x4B, 0x05, 0x06 },
+            new byte[] { 0x50, 0x4B, 0x07, 0x08 }
+        } },
     // RAR ("Rar!"), định dạng nén độc quyền của WinRAR
     { "application/x-rar-compressed", new[] { new byte[] { 0x52, 0x61, 0x72, 0x21 } } },
     //7Z, định dạng nén mạnh của 7-Zip
@@ -105,15 +117,31 @@ namespace VCareer.Files.FileValidator
             var allowedMagicSignatures = GetMagicSignatureFromMimes(allowedMimeTypes);
             if (allowedMagicSignatures.Count == 0) throw new ArgumentException("No magic signatures found for the this comtainter type or not support");
 
-            byte[] header = new byte[16];
+            // Read a larger header window to tolerate small prepended bytes/BOM
+            byte[] header = new byte[512];
             int bytesRead = await stream.ReadAsync(header, 0, header.Length);
             stream.Seek(0, SeekOrigin.Begin); // Reset stream position
             if (bytesRead == 0) throw new ArgumentException("Read header file false");
 
+            // Check signatures at any offset within the captured header
             foreach (byte[] sign in allowedMagicSignatures)
             {
-                if (header.Take(sign.Length).SequenceEqual(sign))
-                    return true;
+                if (bytesRead >= sign.Length)
+                {
+                    for (int offset = 0; offset <= bytesRead - sign.Length; offset++)
+                    {
+                        bool match = true;
+                        for (int i = 0; i < sign.Length; i++)
+                        {
+                            if (header[offset + i] != sign[i])
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if (match) return true;
+                    }
+                }
             }
             return false;
         }
