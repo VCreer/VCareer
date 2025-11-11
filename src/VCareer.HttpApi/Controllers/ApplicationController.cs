@@ -125,13 +125,35 @@ namespace VCareer.HttpApi.Controllers
         /// <summary>
         /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
         /// </summary>
-        [HttpGet("{id}/download-cv")]
+        [HttpPost("{id}/download-application-cv")]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> DownloadApplicationCVAsync(Guid id)
         {
-            var fileBytes = await _applicationAppService.DownloadApplicationCVAsync(id);
-            var fileName = $"CV_Application_{id}.pdf";
+            var result = await _applicationAppService.DownloadApplicationCVWithInfoAsync(id);
             
-            return File(fileBytes, "application/pdf", fileName);
+            return File(result.FileBytes, result.ContentType, result.FileName);
+        }
+
+        /// <summary>
+        /// Tải xuống hàng loạt CV của các ứng viên đã ứng tuyển vào công ty
+        /// Dành cho Leader Recruiter (IsLead = 1) và HR Staff (IsLead = 0)
+        /// </summary>
+        [HttpPost("bulk-download-cvs")]
+        public async Task<IActionResult> BulkDownloadCompanyCVsAsync([FromBody] BulkDownloadCVsDto input)
+        {
+            var zipBytes = await _applicationAppService.BulkDownloadCompanyCVsAsync(input);
+            var fileName = $"Company_CVs_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip";
+            
+            return File(zipBytes, "application/zip", fileName);
+        }
+
+        /// <summary>
+        /// Đánh giá ứng viên (Rating từ 1-10)
+        /// </summary>
+        [HttpPost("{id}/rate")]
+        public async Task<ApplicationDto> RateApplicationAsync(Guid id, [FromBody] RateApplicationDto input)
+        {
+            return await _applicationAppService.RateApplicationAsync(id, input);
         }
 
         /// <summary>

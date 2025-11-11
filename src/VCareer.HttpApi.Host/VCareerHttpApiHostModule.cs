@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
@@ -55,8 +54,6 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 using System.IdentityModel.Tokens.Jwt;
-using VCareer.HttpApi.Host.Swagger;
-
 
 namespace VCareer;
 
@@ -80,22 +77,22 @@ public class VCareerHttpApiHostModule : AbpModule
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
 
-           PreConfigure<OpenIddictBuilder>(builder =>
-           {
-               builder.AddValidation(options =>
-               {
-                   options.AddAudiences("VCareer");
-                   options.UseLocalServer();
-                   options.UseAspNetCore();
-               });
-           });
+        PreConfigure<OpenIddictBuilder>(builder =>
+        {
+            builder.AddValidation(options =>
+            {
+                options.AddAudiences("VCareer");
+                options.UseLocalServer();
+                options.UseAspNetCore();
+            });
+        });
 
-           if (!hostingEnvironment.IsDevelopment())
-           {
-               PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-               {
-                   options.AddDevelopmentEncryptionAndSigningCertificate = false;
-               });
+        if (!hostingEnvironment.IsDevelopment())
+        {
+            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
+            {
+                options.AddDevelopmentEncryptionAndSigningCertificate = false;
+            });
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
@@ -141,7 +138,6 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
-        ConfigureFilePolicyConfigs(configuration); // Bind FilePolicyConfigs từ appsettings.json
         //  ConfigureClaims();
     }
 
@@ -157,13 +153,6 @@ public class VCareerHttpApiHostModule : AbpModule
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
-
-    private void ConfigureFilePolicyConfigs(IConfiguration configuration)
-    {
-        Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
-    }
-
-
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
         // KHÔNG ForwardIdentityAuthenticationForBearer vì nó sẽ force tất cả JWT Bearer authentication 
@@ -173,17 +162,9 @@ public class VCareerHttpApiHostModule : AbpModule
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
-
-            // ✅ QUAN TRỌNG: Map claims từ JWT sang ABP format
-            options.ClaimsMap["sub"] = new List<string> { AbpClaimTypes.UserId };
-            options.ClaimsMap[ClaimTypes.NameIdentifier] = new List<string> { AbpClaimTypes.UserId };
-            options.ClaimsMap["role"] = new List<string> { AbpClaimTypes.Role };
-            options.ClaimsMap[ClaimTypes.Role] = new List<string> { AbpClaimTypes.Role };
-            options.ClaimsMap["email"] = new List<string> { AbpClaimTypes.Email };
-            options.ClaimsMap[ClaimTypes.Email] = new List<string> { AbpClaimTypes.Email };
-            options.ClaimsMap["preferred_username"] = new List<string> { AbpClaimTypes.UserName };
         });
 
+        //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
         // Cấu hình Authorization để đảm bảo [Authorize] hoạt động đúng
@@ -240,118 +221,110 @@ public class VCareerHttpApiHostModule : AbpModule
                 };
             }
             
-            options.Events = new JwtBearerEvents
-            {
-                OnTokenValidated = async context =>
-                {
-                    // QUAN TRỌNG: Lấy service provider từ HttpContext để inject ABP services
-                    var serviceProvider = context.HttpContext.RequestServices;
-                    var claimsPrincipalFactory = serviceProvider.GetRequiredService<IAbpClaimsPrincipalFactory>();
-                    var currentPrincipalAccessor = serviceProvider.GetRequiredService<ICurrentPrincipalAccessor>();
+            //options.Events = new JwtBearerEvents
+            //{
+            //    OnTokenValidated = async context =>
+            //    {
+            //        // Đảm bảo claims được map đúng cho ABP Framework
+            //        var identity = context.Principal?.Identity as ClaimsIdentity;
+            //        if (identity != null)
+            //        {
+            //            // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
+            //            // Nếu không có, JWT Bearer sẽ không set IsAuthenticated = true
+            //            if (!identity.IsAuthenticated)
+            //            {
+            //                // Tạo lại identity với authentication type "Bearer"
+            //                var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
+            //                context.Principal = new ClaimsPrincipal(newIdentity);
+            //                identity = newIdentity;
+            //            }
+                        
+            //            // QUAN TRỌNG: Đảm bảo HttpContext.User được set
+            //            if (context.HttpContext != null && context.Principal != null)
+            //            {
+            //                context.HttpContext.User = context.Principal;
+            //            }
+                        
+            //            System.Console.WriteLine($"[JWT Bearer] Token validated. IsAuthenticated: {identity.IsAuthenticated}, Claims count: {identity.Claims.Count()}");
+                        
+            //            // Tìm UserId từ các claims có thể có
+            //            var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
+            //                ?? identity.FindFirst(ClaimTypes.NameIdentifier)
+            //                ?? identity.FindFirst("sub")
+            //                ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
+                        
+            //            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            //            {
+            //                System.Console.WriteLine($"[JWT Bearer] Found UserId: {userId} from claim type: {userIdClaim.Type}");
+                            
+            //                // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
+            //                if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
+            //                {
+            //                    identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
+            //                    System.Console.WriteLine($"[JWT Bearer] Added AbpClaimTypes.UserId claim: {userId}");
+            //                }
+            //            }
+            //            else
+            //            {
+            //                System.Console.WriteLine("[JWT Bearer] UserId claim not found or invalid!");
+            //            }
+            //        }
+            //        else
+            //        {
+            //            System.Console.WriteLine("[JWT Bearer] Identity is null!");
+            //        }
                     
-                    if (context.Principal == null)
-                    {
-                        System.Console.WriteLine("[JWT Bearer] Principal is null!");
-                        await Task.CompletedTask;
-                        return;
-                    }
-
-                    var identity = context.Principal?.Identity as ClaimsIdentity;
-                    if (identity == null)
-                    {
-                        System.Console.WriteLine("[JWT Bearer] Identity is null!");
-                        await Task.CompletedTask;
-                        return;
-                    }
-
-                    // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
-                    if (!identity.IsAuthenticated)
-                    {
-                        var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
-                        context.Principal = new ClaimsPrincipal(newIdentity);
-                        identity = newIdentity;
-                    }
-
-                    // QUAN TRỌNG: Đảm bảo có AbpClaimTypes.UserId claim từ JWT token
-                    // Tìm UserId từ các claims có thể có trong JWT token
-                    var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
-                        ?? identity.FindFirst(ClaimTypes.NameIdentifier)
-                        ?? identity.FindFirst("sub")
-                        ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
+            //        await Task.CompletedTask;
+            //    },
+            //    OnAuthenticationFailed = context =>
+            //    {
+            //        // Log lỗi authentication để debug
+            //        var exception = context.Exception;
+            //        // Log vào console để debug
+            //        System.Console.WriteLine($"[JWT Bearer] Authentication failed: {exception?.Message}");
+            //        if (exception?.InnerException != null)
+            //        {
+            //            System.Console.WriteLine($"[JWT Bearer] Inner exception: {exception.InnerException.Message}");
+            //        }
+            //        // KHÔNG handle response ở đây - để authorization middleware xử lý
+            //        // Nếu handle response, sẽ trả về 200 thay vì 401
+            //        return Task.CompletedTask;
+            //    },
+            //    OnMessageReceived = context =>
+            //    {
+            //        // Debug: Kiểm tra xem token có được gửi trong header không
+            //        var token = context.Token;
+            //        if (string.IsNullOrEmpty(token))
+            //        {
+            //            System.Console.WriteLine("[JWT Bearer] No token found in Authorization header");
+            //        }
+            //        else
+            //        {
+            //            System.Console.WriteLine($"[JWT Bearer] Token received: {token.Substring(0, Math.Min(20, token.Length))}...");
+            //        }
+            //        return Task.CompletedTask;
+            //    },
+            //    OnChallenge = context =>
+            //    {
+            //        // Set status code 401 cho unauthorized requests
+            //        // QUAN TRỌNG: Handle response và set status code + body
+            //        context.HandleResponse();
+            //        context.Response.StatusCode = 401;
+            //        context.Response.Headers.Append("WWW-Authenticate", "Bearer");
                     
-                    if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
-                    {
-                        // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
-                        if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
-                        {
-                            identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
-                        }
-                    }
-
-                    // QUAN TRỌNG NHẤT: Gọi AbpClaimsPrincipalFactory để ABP populate đầy đủ claims
-                    // Đây là cách chính thống của ABP Framework để populate claims
-                    // Factory sẽ gọi tất cả IAbpClaimsPrincipalContributor (như VCareerClaimContributer)
-                    var principal = await claimsPrincipalFactory.CreateAsync(context.Principal);
+            //        // Đảm bảo có response body để tránh empty body
+            //        var responseBody = System.Text.Json.JsonSerializer.Serialize(new
+            //        {
+            //            error = "Unauthorized",
+            //            error_description = "Authentication required. Please provide a valid token."
+            //        });
                     
-                    // QUAN TRỌNG: Update ICurrentPrincipalAccessor với principal đã được ABP xử lý
-                    // Đây là cách ABP's ICurrentUser lấy claims - nó đọc từ ICurrentPrincipalAccessor
-                    currentPrincipalAccessor.Current = principal;
+            //        context.Response.ContentType = "application/json";
+            //        context.Response.WriteAsync(responseBody);
                     
-                    // QUAN TRỌNG: Update HttpContext.User với principal đã được ABP xử lý
-                    context.HttpContext.User = principal;
-                    
-                    // Update context.Principal để các middleware khác cũng dùng principal đã được xử lý
-                    context.Principal = principal;
-                    
-                    System.Console.WriteLine($"[JWT Bearer] Token validated and ABP claims populated. IsAuthenticated: {principal.Identity?.IsAuthenticated}, Claims count: {principal.Claims.Count()}");
-                    System.Console.WriteLine($"[JWT Bearer] UserId: {principal.FindFirst(AbpClaimTypes.UserId)?.Value}, Email: {principal.FindFirst(AbpClaimTypes.Email)?.Value}, UserName: {principal.FindFirst(AbpClaimTypes.UserName)?.Value}");
-                    
-                    await Task.CompletedTask;
-                },
-                OnAuthenticationFailed = context =>
-                {
-                    // Log lỗi authentication để debug
-                    var exception = context.Exception;
-                    System.Console.WriteLine($"[JWT Bearer] Authentication failed: {exception?.Message}");
-                    if (exception?.InnerException != null)
-                    {
-                        System.Console.WriteLine($"[JWT Bearer] Inner exception: {exception.InnerException.Message}");
-                    }
-                    return Task.CompletedTask;
-                },
-                OnMessageReceived = context =>
-                {
-                    // Debug: Kiểm tra xem token có được gửi trong header không
-                    var token = context.Token;
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        System.Console.WriteLine("[JWT Bearer] No token found in Authorization header");
-                    }
-                    else
-                    {
-                        System.Console.WriteLine($"[JWT Bearer] Token received: {token.Substring(0, Math.Min(20, token.Length))}...");
-                    }
-                    return Task.CompletedTask;
-                },
-                OnChallenge = context =>
-                {
-                    // Set status code 401 cho unauthorized requests
-                    context.HandleResponse();
-                    context.Response.StatusCode = 401;
-                    context.Response.Headers.Append("WWW-Authenticate", "Bearer");
-                    
-                    var responseBody = System.Text.Json.JsonSerializer.Serialize(new
-                    {
-                        error = "Unauthorized",
-                        error_description = "Authentication required. Please provide a valid token."
-                    });
-                    
-                    context.Response.ContentType = "application/json";
-                    context.Response.WriteAsync(responseBody);
-                    
-                    return Task.CompletedTask;
-                }
-            };
+            //        return Task.CompletedTask;
+            //    }
+            //};
         });
     }
 
@@ -485,17 +458,6 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
 
-                // Configure Swagger để handle file uploads (IFormFile)
-                // Map IFormFile to binary string for Swagger
-                options.MapType<Microsoft.AspNetCore.Http.IFormFile>(() => new OpenApiSchema
-                {
-                    Type = "string",
-                    Format = "binary"
-                });
-                
-                // Add OperationFilter để handle IFormFile trong DTOs
-                options.OperationFilter<FileUploadOperationFilter>();
-
                 // Thêm JWT Bearer Authentication vào Swagger
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -572,10 +534,6 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
-
-        // Enable static files serving from wwwroot
-        app.UseStaticFiles();
-
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
@@ -584,10 +542,6 @@ public class VCareerHttpApiHostModule : AbpModule
         // Tạm thời comment UseAbpOpenIddictValidation để test JWT Bearer authentication
         // Nếu bạn cần OpenIddict cho các tính năng khác, có thể bật lại sau
         // app.UseAbpOpenIddictValidation();
-        
-        // QUAN TRỌNG: Middleware để đảm bảo ICurrentPrincipalAccessor được update từ HttpContext.User
-        // Điều này đảm bảo ICurrentUser có thể đọc được claims từ JWT token
-        app.UseMiddleware<VCareer.HttpApi.Host.Middleware.JwtClaimsPrincipalMiddleware>();
 
         if (MultiTenancyConsts.IsEnabled)
         {
