@@ -1,0 +1,198 @@
+<div class="cv-filter-bar-container">
+  <!-- Main Filter Row -->
+  <div class="filter-main-row">
+    <!-- Search Input -->
+    <div class="search-input-wrapper">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Tìm kiếm tên, email, số điện thoại"
+        [(ngModel)]="searchKeyword"
+        (input)="onSearchChange()"
+      />
+      <i class="fa fa-search search-icon"></i>
+    </div>
+
+    <!-- Status Dropdown -->
+    <div class="filter-dropdown-wrapper" (click)="$event.stopPropagation()">
+      <button
+        class="filter-dropdown-btn"
+        [class.active]="showStatusDropdown"
+        (click)="toggleDropdown('status')"
+      >
+        <span class="filter-text">{{ getSelectedStatusName() }}</span>
+        <i class="fa fa-chevron-down" [class.rotated]="showStatusDropdown"></i>
+        <button
+          *ngIf="selectedStatus"
+          class="clear-filter-btn"
+          (click)="clearFilter('status'); $event.stopPropagation()"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      </button>
+      <div class="filter-dropdown-menu" *ngIf="showStatusDropdown">
+        <div
+          *ngFor="let status of statuses"
+          class="filter-dropdown-item"
+          [class.selected]="selectedStatus === status.id"
+          (click)="selectStatus(status.id)"
+        >
+          {{ status.name }}
+        </div>
+        <div *ngIf="statuses.length === 0" class="filter-dropdown-empty">
+          Không có dữ liệu
+        </div>
+      </div>
+    </div>
+
+    <!-- Display All CVs Dropdown -->
+    <div class="filter-dropdown-wrapper" (click)="$event.stopPropagation()">
+      <button
+        class="filter-dropdown-btn"
+        [class.active]="showDisplayAllDropdown"
+        (click)="toggleDropdown('displayAll')"
+      >
+        <span class="filter-text">{{ displayAll ? 'Hiển thị tất cả CV' : 'Chỉ hiển thị CV chưa xem' }}</span>
+        <button
+          *ngIf="!displayAll"
+          class="clear-filter-btn"
+          (click)="clearDisplayAllFilter(); $event.stopPropagation()"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+        <i class="fa fa-chevron-down" [class.rotated]="showDisplayAllDropdown"></i>
+      </button>
+      <div class="filter-dropdown-menu" *ngIf="showDisplayAllDropdown">
+        <div
+          class="filter-dropdown-item"
+          [class.selected]="displayAll"
+          (click)="toggleDisplayAll(); showDisplayAllDropdown = false"
+        >
+          Hiển thị tất cả CV
+        </div>
+        <div
+          class="filter-dropdown-item"
+          [class.selected]="!displayAll"
+          (click)="toggleDisplayAll(); showDisplayAllDropdown = false"
+        >
+          Chỉ hiển thị CV chưa xem
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Range Dropdown - Date Range Picker -->
+    <div class="filter-dropdown-wrapper" (click)="$event.stopPropagation()">
+      <button
+        class="filter-dropdown-btn"
+        [class.active]="showTimeRangeDropdown"
+        (click)="toggleDropdown('timeRange')"
+      >
+        <span class="filter-text">{{ getSelectedTimeRangeName() }}</span>
+        <button
+          *ngIf="selectedTimeRange || dateRange.startDate || dateRange.endDate"
+          class="clear-filter-btn"
+          (click)="clearFilter('timeRange'); $event.stopPropagation()"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+        <i class="fa fa-chevron-down" [class.rotated]="showTimeRangeDropdown"></i>
+      </button>
+      <div 
+        class="filter-dropdown-menu dropdown-menu ltr show-calendar show-ranges opensleft linked" 
+        *ngIf="showTimeRangeDropdown"
+      >
+        <div class="drp-container">
+          <!-- Preset Ranges (Left) -->
+          <div class="ranges">
+            <div
+              *ngFor="let timeRange of timeRanges"
+              class="range-item"
+              [class.selected]="isTimeRangeSelected(timeRange.id)"
+              (click)="selectTimeRange(timeRange.id)"
+            >
+              {{ timeRange.name }}
+            </div>
+          </div>
+          
+          <!-- Calendars Container (Right) -->
+          <div class="calendars-container">
+            <!-- Left Calendar -->
+            <div class="drp-calendar col left">
+              <div class="calendar-table">
+                <div class="calendar-header">
+                  <button class="prev-month" (click)="previousMonth()">
+                    <i class="fa fa-chevron-left"></i>
+                  </button>
+                  <span class="month-year">{{ getCurrentMonthYear() }}</span>
+                  <button class="next-month" (click)="nextMonth()">
+                    <i class="fa fa-chevron-right"></i>
+                  </button>
+                </div>
+                <div class="calendar-grid">
+                  <div class="calendar-weekdays">
+                    <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                  </div>
+                  <div class="calendar-days">
+                    <div
+                      *ngFor="let day of calendarDays"
+                      class="calendar-day"
+                      [class.selected]="isDateSelected(day)"
+                      [class.in-range]="isDateInRange(day)"
+                      [class.start-date]="isStartDate(day)"
+                      [class.end-date]="isEndDate(day)"
+                      [class.disabled]="day.disabled"
+                      (click)="selectDate(day)"
+                    >
+                      {{ day.date }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right Calendar -->
+            <div class="drp-calendar col right">
+              <div class="calendar-table">
+                <div class="calendar-header">
+                  <button class="prev-month" (click)="nextMonth()">
+                    <i class="fa fa-chevron-left"></i>
+                  </button>
+                  <span class="month-year">{{ getNextMonthYear() }}</span>
+                  <button class="next-month" (click)="nextNextMonth()">
+                    <i class="fa fa-chevron-right"></i>
+                  </button>
+                </div>
+                <div class="calendar-grid">
+                  <div class="calendar-weekdays">
+                    <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                  </div>
+                  <div class="calendar-days">
+                    <div
+                      *ngFor="let day of nextCalendarDays"
+                      class="calendar-day"
+                      [class.selected]="isDateSelected(day)"
+                      [class.in-range]="isDateInRange(day)"
+                      [class.start-date]="isStartDate(day)"
+                      [class.end-date]="isEndDate(day)"
+                      [class.disabled]="day.disabled"
+                      (click)="selectDate(day)"
+                    >
+                      {{ day.date }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="calendar-footer">
+          <button class="btn-cancel" (click)="cancelDateRange()">Hủy</button>
+          <button class="btn-apply" (click)="applyDateRange()">Áp dụng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

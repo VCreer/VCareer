@@ -118,8 +118,8 @@
     
     &:focus {
       outline: none;
-      border-color: #0046FF;
-      box-shadow: 0 0 0 3px rgba(0, 70, 255, 0.1);
+      border-color: #0F83BA; // Màu web khi focus
+      box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
     }
 
     &::placeholder {

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../core/services/translation.service';
 import { UploadedCvService, UploadedCv } from '../../../core/services/uploaded-cv.service';
@@ -17,6 +18,7 @@ import { UploadedCvCard } from '../../../shared/components/uploaded-cv-card/uplo
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ToastNotificationComponent,
     ButtonComponent,
     CvListComponent,
@@ -42,6 +44,10 @@ export class CvManagementComponent implements OnInit {
   showRenameModal = false;
   cvToRename: any = null;
   uploadedCvs: UploadedCv[] = [];
+  
+  // Toggle settings
+  jobSearchEnabled: boolean = false;
+  allowRecruiterSearch: boolean = true;
 
   constructor(
     private router: Router,
@@ -219,6 +225,25 @@ export class CvManagementComponent implements OnInit {
 
   trackByCvName(index: number, cv: any): string {
     return cv.name;
+  }
+
+  // Toggle handlers
+  onJobSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.jobSearchEnabled = target.checked;
+    const message = this.jobSearchEnabled 
+      ? 'Đã bật tìm việc thành công' 
+      : 'Đã tắt tìm việc thành công';
+    this.showToastMessage(message, 'success');
+  }
+
+  onAllowRecruiterSearchToggle(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.allowRecruiterSearch = target.checked;
+    const message = this.allowRecruiterSearch 
+      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+    this.showToastMessage(message, 'success');
   }
 }
 

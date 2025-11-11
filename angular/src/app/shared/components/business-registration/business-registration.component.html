@@ -1,0 +1,246 @@
+<div class="business-registration">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2 class="section-title">Thông tin Giấy đăng ký doanh nghiệp</h2>
+    <p class="section-instruction">
+      Vui lòng lựa chọn phương thức đăng tải, xem hướng dẫn đăng tải 
+      <a href="#" class="instruction-link" target="_blank">Tại đây</a>.
+    </p>
+  </div>
+
+  <!-- Document Type Selection -->
+  <div class="document-type-selection">
+    <label class="radio-option">
+      <input 
+        type="radio" 
+        name="documentType" 
+        value="business-cert"
+        [(ngModel)]="documentType"
+        (change)="onDocumentTypeChange('business-cert')"
+        checked>
+      <span class="radio-label">Giấy đăng ký doanh nghiệp hoặc Giấy tờ tương đương khác</span>
+    </label>
+    <label class="radio-option">
+      <input 
+        type="radio" 
+        name="documentType" 
+        value="authorization"
+        [(ngModel)]="documentType"
+        (change)="onDocumentTypeChange('authorization')">
+      <span class="radio-label">Giấy ủy quyền và Giấy tờ định danh</span>
+    </label>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card" *ngIf="documentType === 'business-cert'">
+    <div class="content-wrapper">
+      <!-- Left Side: File Upload -->
+      <div class="upload-section">
+        <label class="upload-label">Giấy tờ<span class="required-star">*</span></label>
+        
+        <div 
+          class="upload-area"
+          [class.drag-over]="isDragOver"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)">
+          <div class="upload-content" *ngIf="!selectedFile">
+            <p class="upload-instruction">Chọn hoặc kéo file vào đây</p>
+            <p class="upload-specs">Dung lượng tối đa 5MB, định dạng: jpeg, jpg, png, pdf</p>
+            <app-button 
+              [type]="'primary'"
+              [size]="'medium'"
+              (click)="onSelectFileClick($event, fileInput)"
+              class="upload-btn">
+              <i class="fa fa-upload"></i>
+              Chọn file
+            </app-button>
+          </div>
+          <div class="file-preview" *ngIf="selectedFile">
+            <i class="fa fa-file-pdf file-icon"></i>
+            <p class="file-name">{{ selectedFile.name }}</p>
+            <button class="remove-file-btn" (click)="selectedFile = null; fileError = ''">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <input 
+            #fileInput
+            type="file" 
+            accept=".jpeg,.jpg,.png,.pdf"
+            (change)="onFileSelect($event)"
+            style="display: none;">
+        </div>
+
+        <span class="error-message" *ngIf="fileError">{{ fileError }}</span>
+
+        <!-- Warning Messages -->
+        <div class="warning-messages">
+          <div class="warning-item">
+            <i class="fa fa-exclamation-triangle warning-icon"></i>
+            <p class="warning-text">
+              Các văn bản đăng tải cần đầy đủ các mặt và không có dấu hiệu chỉnh sửa/ che/ cắt thông tin. Vui lòng đăng tải Giấy đăng ký doanh nghiệp có thông tin trùng khớp với dữ liệu của doanh nghiệp theo Trang thông tin điện tử của Cục Thuế
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Illustration -->
+      <div class="illustration-section">
+        <h3 class="illustration-title">Minh họa</h3>
+        <div class="illustration-image">
+          <img [src]="getIllustrationImage()" alt="Minh họa giấy tờ" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Cards for Authorization: 2 separate sections -->
+  <div *ngIf="documentType === 'authorization'">
+    <!-- Power of Attorney Section -->
+    <!-- <div class="content-card authorization-section">
+      <div class="content-wrapper">
+        <div class="upload-section">
+          <label class="upload-label">Giấy ủy quyền<span class="required-star">*</span></label>
+          
+          <div 
+            class="upload-area"
+            [class.drag-over]="isDragOverPowerOfAttorney"
+            (dragover)="onDragOverPowerOfAttorney($event)"
+            (dragleave)="onDragLeavePowerOfAttorney($event)"
+            (drop)="onDropPowerOfAttorney($event)">
+            <div class="upload-content" *ngIf="!powerOfAttorneyFile">
+              <p class="upload-instruction">Chọn hoặc kéo file vào đây</p>
+              <p class="upload-specs">Dung lượng tối đa 5MB, định dạng: jpeg, jpg, png, pdf</p>
+              <app-button 
+                [type]="'primary'"
+                [size]="'medium'"
+                (click)="fileInputPowerOfAttorney.click()"
+                class="upload-btn">
+                <i class="fa fa-upload"></i>
+                Chọn file
+              </app-button>
+            </div>
+            <div class="file-preview" *ngIf="powerOfAttorneyFile">
+              <i class="fa fa-file-pdf file-icon"></i>
+              <p class="file-name">{{ powerOfAttorneyFile.name }}</p>
+              <button class="remove-file-btn" (click)="powerOfAttorneyFile = null; powerOfAttorneyError = ''">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <input 
+              #fileInputPowerOfAttorney
+              type="file" 
+              accept=".jpeg,.jpg,.png,.pdf"
+              (change)="onFileSelect($event, 'power-of-attorney')"
+              style="display: none;">
+          </div>
+
+          <span class="error-message" *ngIf="powerOfAttorneyError">{{ powerOfAttorneyError }}</span>
+
+          <div class="warning-messages">
+            <div class="warning-item">
+              <i class="fa fa-exclamation-triangle warning-icon"></i>
+              <p class="warning-text">
+                Các văn bản đăng tải cần đầy đủ các mặt và không có dấu hiệu chỉnh sửa/ che/ cắt thông tin. Vui lòng đăng tải Giấy ủy quyền có thông tin trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="illustration-section">
+          <h3 class="illustration-title">Minh họa</h3>
+          <div class="illustration-image">
+            <img [src]="getIllustrationImage('power-of-attorney')" alt="Minh họa giấy ủy quyền" />
+          </div>
+          <div class="download-template-wrapper">
+            <app-button 
+              [type]="'primary'"
+              [size]="'medium'"
+              (click)="onDownloadTemplate()"
+              class="download-template-btn">
+              <i class="fa fa-download"></i>
+              Tải mẫu giấy ủy quyền
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Identification Documents Section -->
+    <div class="content-card authorization-section">
+      <div class="content-wrapper">
+        <!-- Left Side: File Upload -->
+        <div class="upload-section">
+          <label class="upload-label">Giấy tờ định danh (CCCD/ Hộ chiếu)<span class="required-star">*</span></label>
+          
+          <div 
+            class="upload-area"
+            [class.drag-over]="isDragOverIdentification"
+            (dragover)="onDragOverIdentification($event)"
+            (dragleave)="onDragLeaveIdentification($event)"
+            (drop)="onDropIdentification($event)">
+            <div class="upload-content" *ngIf="!identificationFile">
+              <p class="upload-instruction">Chọn hoặc kéo file vào đây</p>
+              <p class="upload-specs">Dung lượng tối đa 5MB, định dạng: jpeg, jpg, png, pdf</p>
+              <app-button 
+                [type]="'primary'"
+                [size]="'medium'"
+                (click)="onSelectFileClick($event, fileInputIdentification)"
+                class="upload-btn">
+                <i class="fa fa-upload"></i>
+                Chọn file
+              </app-button>
+            </div>
+            <div class="file-preview" *ngIf="identificationFile">
+              <i class="fa fa-file-pdf file-icon"></i>
+              <p class="file-name">{{ identificationFile.name }}</p>
+              <button class="remove-file-btn" (click)="identificationFile = null; identificationError = ''">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <input 
+              #fileInputIdentification
+              type="file" 
+              accept=".jpeg,.jpg,.png,.pdf"
+              (change)="onFileSelect($event, 'identification')"
+              style="display: none;">
+          </div>
+
+          <span class="error-message" *ngIf="identificationError">{{ identificationError }}</span>
+
+          <!-- Warning Messages -->
+          <div class="warning-messages">
+            <div class="warning-item">
+              <i class="fa fa-exclamation-triangle warning-icon"></i>
+              <p class="warning-text">
+                Các văn bản đăng tải cần đầy đủ các mặt và không có dấu hiệu chỉnh sửa/ che/ cắt thông tin
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Illustration -->
+        <div class="illustration-section">
+          <h3 class="illustration-title">Minh họa</h3>
+          <div class="illustration-image">
+            <img [src]="getIllustrationImage()" alt="Minh họa giấy tờ định danh" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Button -->
+  <div class="form-actions">
+    <app-button 
+      [type]="'primary'"
+      [size]="'medium'"
+      [disabled]="isSaving || (documentType === 'business-cert' ? !selectedFile : !identificationFile)"
+      [loading]="isSaving"
+      (click)="onSave()"
+      class="save-btn">
+      Lưu
+    </app-button>
+  </div>
+</div>
+

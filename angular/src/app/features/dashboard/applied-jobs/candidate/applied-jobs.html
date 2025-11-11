@@ -1,0 +1,238 @@
+<div class="applied-jobs-page">
+  <div class="container">
+    <div class="applied-jobs-wrapper">
+      <!-- Column 1: Applied Jobs Card -->
+      <div class="applied-jobs-main">
+        <div class="applied-jobs-card">
+          <!-- Header -->
+          <div class="applied-jobs-header">
+            <h1 class="page-title">Việc làm đã ứng tuyển</h1>
+            <div class="status-filter" (click)="$event.stopPropagation()">
+              <div class="status-dropdown-trigger" (click)="toggleStatusDropdown()">
+                <span class="status-label">
+                  {{ selectedStatusLabel }}
+                </span>
+                <i class="fa fa-chevron-down dropdown-icon" [class.rotated]="showStatusDropdown"></i>
+              </div>
+              <div class="status-dropdown-menu" *ngIf="showStatusDropdown" (click)="$event.stopPropagation()">
+                <div 
+                  class="status-option" 
+                  *ngFor="let option of statusOptions"
+                  (click)="selectStatus(option.value)"
+                  [class.selected]="selectedStatus === option.value">
+                  <span class="option-label">{{ option.label }}</span>
+                  <i class="fa fa-check option-checkmark" *ngIf="selectedStatus === option.value"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div class="loading-state" *ngIf="loading">
+            <div class="loading-spinner"></div>
+            <p>Đang tải...</p>
+          </div>
+
+        <!-- Applied Jobs List -->
+        <div class="applied-jobs-list" *ngIf="!loading && displayedJobs.length > 0">
+          <div class="applied-job-card" *ngFor="let job of displayedJobs; trackBy: trackByJobId">
+              <!-- Company Logo -->
+              <div class="company-logo">
+                <img 
+                  [src]="job.companyLogoImage || 'assets/images/companies/default-logo.png'" 
+                  [alt]="job.companyName"
+                  class="logo-image"
+                  (error)="$event.target.src='assets/images/companies/default-logo.png'">
+              </div>
+
+              <!-- Job Details -->
+              <div class="job-details">
+                <div class="job-title-row">
+                  <h2 class="job-title">{{ job.jobTitle }}</h2>
+                  <div class="salary-indicator" *ngIf="job.salary">
+                    <i class="fa fa-dollar-sign" *ngIf="job.salary === 'Thoả thuận'"></i>
+                    <span class="salary-text">{{ job.salary }}</span>
+                  </div>
+                </div>
+                <p class="company-name">{{ job.companyName }}</p>
+                <p class="applied-time">
+                  Thời gian ứng tuyển: {{ job.appliedDate }} {{ job.appliedTime }}
+                </p>
+                <div class="cv-info-row">
+                  <p class="cv-info">
+                    CV đã ứng tuyển: 
+                    <a href="#" class="cv-link">{{ job.cvName }}</a>
+                  </p>
+                  <div class="action-buttons">
+                    <app-button 
+                      [type]="'primary'"
+                      [size]="'small'"
+                      (click)="onViewCV(job)">
+                      Xem CV
+                    </app-button>
+                  </div>
+                </div>
+
+                <!-- Status Indicators -->
+                <div class="status-indicators" *ngIf="job.status === 'viewed' || job.status === 'suitable'">
+                  <div class="status-divider"></div>
+                  
+                  <div class="employer-status" *ngIf="job.status === 'viewed'">
+                    <span class="status-text viewed">NTD đã xem hồ sơ</span>
+                  </div>
+
+                  <div class="applied-date-status" *ngIf="job.status === 'suitable'">
+                    <span class="applied-date-text">
+                      Đã ứng tuyển ({{ job.appliedDate }} {{ job.appliedTime }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!loading && filteredJobs.length === 0">
+          <p>Chưa có việc làm nào đã ứng tuyển</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="!loading && filteredJobs.length > 0 && totalPages > 1">
+          <button 
+            class="pagination-btn"
+            [class.disabled]="currentPage === 1"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          
+          <div class="pagination-numbers">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              class="pagination-number"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-btn"
+            [class.disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+      <!-- Column 2: Profile Sidebar Section -->
+      <div class="profile-sidebar-section">
+        <!-- Profile Card -->
+        <div class="profile-card">
+          <div class="profile-layout">
+            <!-- Left Column - Profile Icon -->
+            <div class="profile-left-column">
+              <div class="profile-icon" (click)="openProfilePictureModal()">
+                <i class="fa fa-user-circle"></i>
+              </div>
+            </div>
+            
+            <!-- Right Column - Profile Info -->
+            <div class="profile-right-column">
+              <div class="profile-info">
+                <span class="profile-label">Profile</span>
+                <h3>{{ translate('profile_sidebar.welcome_back') }}, Uông Hoàng Duy</h3>
+              </div>
+              
+              <div class="account-status">
+                <span class="verified-badge">{{ translate('profile_sidebar.verified_account') }}</span>
+              </div>
+              
+              <app-button 
+                [type]="'primary'"
+                [size]="'small'"
+                class="upgrade-btn">
+                <i class="fa fa-arrow-up"></i>
+                {{ translate('profile_sidebar.upgrade_account') }}
+              </app-button>
+            </div>
+          </div>
+
+          <!-- Toggle Settings Section -->
+          <div class="toggle-settings-section">
+            <!-- Toggle 1: Job Search Status -->
+            <div class="toggle-setting-item">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">
+                  <input 
+                    type="checkbox" 
+                    class="toggle-input" 
+                    [ngModel]="jobSearchEnabled"
+                    (change)="onJobSearchToggle($event)"
+                    [checked]="jobSearchEnabled">
+                  <span class="toggle-slider" [class.active]="jobSearchEnabled"></span>
+                </label>
+                <div class="toggle-content">
+                  <span class="toggle-text" [class.inactive]="!jobSearchEnabled">
+                    {{ jobSearchEnabled ? 'Đang bật tìm việc' : 'Đang Tắt tìm việc' }}
+                  </span>
+                  <p class="toggle-description">
+                    Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Toggle 2: Allow Recruiter Search -->
+            <div class="toggle-setting-item">
+              <div class="toggle-wrapper">
+                <label class="toggle-label">
+                  <input 
+                    type="checkbox" 
+                    class="toggle-input" 
+                    [ngModel]="allowRecruiterSearch"
+                    (change)="onAllowRecruiterSearchToggle($event)"
+                    [checked]="allowRecruiterSearch">
+                  <span class="toggle-slider" [class.active]="allowRecruiterSearch"></span>
+                </label>
+                <div class="toggle-content">
+                  <span class="toggle-text">
+                    Cho phép NTD tìm kiếm hồ sơ
+                  </span>
+                  <div class="toggle-description-container">
+                    <p class="toggle-description">
+                      {{ translate('profile_sidebar.contact_description') }}
+                    </p>
+                    <div class="contact-method">
+                      <i class="fa fa-envelope contact-icon"></i>
+                      <span>{{ translate('profile_sidebar.email_phone') }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Profile Picture Edit Modal -->
+  <app-profile-picture-edit-modal
+    *ngIf="showProfilePictureModal"
+    (close)="closeProfilePictureModal()"
+    (changePicture)="onProfilePictureChange()"
+    (deletePicture)="onProfilePictureDelete()">
+  </app-profile-picture-edit-modal>
+</div>
+

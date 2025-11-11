@@ -6,6 +6,8 @@ import {
   OnInit,
   OnChanges,
   OnDestroy,
+  HostListener,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -77,7 +79,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private translationService: TranslationService,
     private categoryApi: CategoryApiService,
-    private locationApi: LocationApiService
+    private locationApi: LocationApiService,
+    private elementRef: ElementRef
   ) {
     // ✅ Setup debounce cho category search (300ms)
     this.categorySearchSubject
@@ -560,7 +563,20 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   closeDropdowns() {
     this.showCategoryDropdown = false;
     this.showLocationDropdown = false;
+  }
+
+  /**
+   * Đóng dropdown khi click ra ngoài
+   */
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    if (this.showCategoryDropdown || this.showLocationDropdown) {
+      const clickedInside = this.elementRef.nativeElement.contains(event.target);
+      if (!clickedInside) {
+        this.closeDropdowns();
+      }
     }
+  }
 
   /**
    * Get category count text for display

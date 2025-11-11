@@ -1,0 +1,230 @@
+<div class="create-company-form">
+  <!-- Logo Upload Section -->
+  <div class="company-logo-section">
+    <div class="logo-upload-container">
+      <div class="logo-placeholder" (click)="logoInput.click()">
+        <img *ngIf="logoPreview" [src]="logoPreview" alt="Company Logo" class="logo-preview">
+        <div *ngIf="!logoPreview" class="logo-placeholder-content">
+          <i class="fa fa-building logo-placeholder-icon"></i>
+          <i class="fa fa-camera logo-camera-icon"></i>
+          <p class="logo-placeholder-text">Logo công ty</p>
+        </div>
+      </div>
+      <input 
+        #logoInput
+        type="file" 
+        accept="image/*"
+        (change)="onLogoSelected($event)"
+        style="display: none;">
+    </div>
+
+    <!-- Company Type Selection -->
+    <div class="company-type-selection">
+      <label class="radio-option">
+        <input 
+          type="radio" 
+          name="companyType" 
+          value="enterprise"
+          [(ngModel)]="formData.companyType"
+          checked>
+        <span class="radio-label">Doanh nghiệp</span>
+      </label>
+      <label class="radio-option">
+        <input 
+          type="radio" 
+          name="companyType" 
+          value="household"
+          [(ngModel)]="formData.companyType">
+        <span class="radio-label">Hộ kinh doanh</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Warning Banner -->
+  <div class="warning-banner">
+    <i class="fa fa-exclamation-triangle warning-icon"></i>
+    <p class="warning-text">
+      <span *ngIf="formData.companyType === 'enterprise'">
+        Để tài khoản được xác thực nhanh chóng, vui lòng nhập Mã số thuế và Tên công ty trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế. Bạn có thể tra cứu thông tin doanh nghiệp <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" rel="noopener noreferrer" class="warning-link">Tại đây</a>.
+      </span>
+      <span *ngIf="formData.companyType === 'household'">
+        Để tài khoản được xác thực nhanh chóng, vui lòng nhập Mã số thuế và Tên hộ kinh doanh trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế. Bạn có thể tra cứu thông tin doanh nghiệp <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" rel="noopener noreferrer" class="warning-link">Tại đây</a>.
+      </span>
+    </p>
+  </div>
+
+  <!-- Company Information Form -->
+  <form class="company-form" (ngSubmit)="onSave($event)">
+    <div class="form-row">
+      <!-- Left Column -->
+      <div class="form-column">
+        <div class="form-group">
+          <label class="form-label">
+            <span *ngIf="formData.companyType === 'enterprise'">Mã số thuế</span>
+            <span *ngIf="formData.companyType === 'household'">Mã số thuế người đại diện</span>
+            <span class="required-star">*</span>
+            <i *ngIf="formData.companyType === 'household'" class="fa fa-info-circle info-icon" title="Mã số thuế của người đại diện hộ kinh doanh"></i>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="formErrors.taxId"
+            [placeholder]="formData.companyType === 'enterprise' ? 'Nhập mã số thuế' : 'Nhập mã số thuế người đại diện'"
+            [(ngModel)]="formData.taxId"
+            name="taxId"
+            (blur)="onFieldBlur('taxId')"
+            required>
+          <span class="error-message" *ngIf="formErrors.taxId">{{ formErrors.taxId }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input 
+            type="url" 
+            class="form-input"
+            [class.error]="formErrors.website"
+            placeholder="https://"
+            [(ngModel)]="formData.website"
+            name="website"
+            (blur)="onFieldBlur('website')">
+          <span class="error-message" *ngIf="formErrors.website">{{ formErrors.website }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quy mô<span class="required-star">*</span></label>
+          <div class="select-wrapper">
+            <select 
+              class="form-input"
+              [class.error]="formErrors.scale"
+              [(ngModel)]="formData.scale"
+              name="scale"
+              (change)="onFieldBlur('scale')"
+              required>
+              <option value="">Chọn quy mô công ty</option>
+              <option value="1-9">1-9 nhân viên</option>
+              <option value="10-24">10-24 nhân viên</option>
+              <option value="25-99">25-99 nhân viên</option>
+              <option value="100-499">100-499 nhân viên</option>
+              <option value="500+">500+ nhân viên</option>
+            </select>
+            <i class="fa fa-chevron-down select-arrow"></i>
+          </div>
+          <span class="error-message" *ngIf="formErrors.scale">{{ formErrors.scale }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email<span class="required-star">*</span></label>
+          <input 
+            type="email" 
+            class="form-input"
+            [class.error]="formErrors.email"
+            placeholder="Nhập email công ty"
+            [(ngModel)]="formData.email"
+            name="email"
+            (blur)="onFieldBlur('email')"
+            required>
+          <span class="error-message" *ngIf="formErrors.email">{{ formErrors.email }}</span>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="form-column">
+        <div class="form-group">
+          <label class="form-label">
+            <span *ngIf="formData.companyType === 'enterprise'">Tên công ty</span>
+            <span *ngIf="formData.companyType === 'household'">Tên hộ kinh doanh</span>
+            <span class="required-star">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="formErrors.companyName"
+            [placeholder]="formData.companyType === 'enterprise' ? 'Nhập tên công ty' : 'Nhập tên hộ kinh doanh'"
+            [(ngModel)]="formData.companyName"
+            name="companyName"
+            (blur)="onFieldBlur('companyName')"
+            required>
+          <span class="error-message" *ngIf="formErrors.companyName">{{ formErrors.companyName }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lĩnh vực hoạt động<span class="required-star">*</span></label>
+          <div class="select-wrapper">
+            <select 
+              class="form-input"
+              [class.error]="formErrors.industry"
+              [(ngModel)]="formData.industry"
+              name="industry"
+              (change)="onFieldBlur('industry')"
+              required>
+              <option value="">Chọn lĩnh vực hoạt động</option>
+              <option value="it">Công nghệ thông tin</option>
+              <option value="finance">Tài chính</option>
+              <option value="education">Giáo dục</option>
+              <option value="healthcare">Y tế</option>
+              <option value="retail">Bán lẻ</option>
+              <option value="manufacturing">Sản xuất</option>
+              <option value="other">Khác</option>
+            </select>
+            <i class="fa fa-chevron-down select-arrow"></i>
+          </div>
+          <span class="error-message" *ngIf="formErrors.industry">{{ formErrors.industry }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Địa chỉ<span class="required-star">*</span></label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="formErrors.address"
+            placeholder="Nhập địa chỉ công ty"
+            [(ngModel)]="formData.address"
+            name="address"
+            (blur)="onFieldBlur('address')"
+            required>
+          <span class="error-message" *ngIf="formErrors.address">{{ formErrors.address }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Số điện thoại<span class="required-star">*</span></label>
+          <input 
+            type="tel" 
+            class="form-input"
+            [class.error]="formErrors.phone"
+            placeholder="Nhập số điện thoại"
+            [(ngModel)]="formData.phone"
+            name="phone"
+            (blur)="onFieldBlur('phone')"
+            required>
+          <span class="error-message" *ngIf="formErrors.phone">{{ formErrors.phone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Description -->
+    <div class="form-group description-group">
+      <label class="form-label">Mô tả công ty</label>
+      <div class="description-editor">
+        <textarea 
+          class="description-textarea"
+          placeholder="Nhập mô tả công ty..."
+          [(ngModel)]="formData.description"
+          name="description"
+          rows="6"></textarea>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <app-button 
+        type="submit"
+        [buttonType]="'submit'"
+        [disabled]="isSaving"
+        [loading]="isSaving"
+        class="save-btn">
+        Lưu
+      </app-button>
+    </div>
+  </form>
+</div>
+

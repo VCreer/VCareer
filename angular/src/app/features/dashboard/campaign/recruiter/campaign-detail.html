@@ -1,0 +1,83 @@
+<div class="campaign-detail-container" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <button class="back-btn" (click)="onBack()">
+        <i class="fa fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      <h1 class="page-title">{{ campaignName }}</h1>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <app-campaign-summary-cards [cards]="summaryCards"></app-campaign-summary-cards>
+
+  <!-- Campaign Content Card -->
+  <div class="campaign-content-card">
+    <!-- Tabs -->
+    <div class="campaign-tabs">
+      <button
+        *ngFor="let tab of tabs"
+        class="tab-button"
+        [class.active]="activeTab === tab.id"
+        (click)="onTabChange(tab.id)">
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- Filter and Search Bar -->
+    <div class="filter-search-bar">
+      <div class="filter-left">
+        <span class="filter-label">Bộ lọc:</span>
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Tìm ứng viên"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()">
+          <i class="fa fa-search search-icon"></i>
+        </div>
+      </div>
+      <div class="filter-right">
+        <div class="filter-dropdown-wrapper">
+          <select class="filter-dropdown" [(ngModel)]="filterType">
+            <option value="all">Hiển thị tất cả CV</option>
+            <option value="applied">CV ứng tuyển</option>
+            <option value="viewed">Đã xem</option>
+          </select>
+          <button class="clear-filter-btn" *ngIf="filterType !== 'all'" (click)="filterType = 'all'">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <select class="filter-dropdown" [(ngModel)]="sortType">
+          <option value="default">Sắp xếp: Mặc định</option>
+          <option value="date">Ngày ứng tuyển</option>
+          <option value="name">Tên</option>
+        </select>
+        <app-button
+          type="primary"
+          size="medium"
+          (click)="onExportCvList()">
+          Xuất danh sách CV
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="campaign-content">
+      <!-- Empty State -->
+      <div class="empty-state">
+      <div class="empty-state-illustration">
+        <div class="folder-icon">
+          <i class="fa fa-folder-open"></i>
+        </div>
+      </div>
+        <p class="empty-message">Chưa có CV ứng tuyển nào</p>
+        <p class="empty-submessage">Hãy đăng tin tuyển dụng để nhận CV ứng tuyển</p>
+      </div>
+    </div>
+  </div>
+</div>
+

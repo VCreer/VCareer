@@ -1,0 +1,17 @@
+<div class="summary-cards">
+  <div
+    *ngFor="let card of cards"
+    class="summary-card"
+    [class.card-total]="card.type === 'total'"
+    [class.card-applied]="card.type === 'applied'"
+    [class.card-contact]="card.type === 'contact'">
+    <div class="card-icon">
+      <i class="fa" [class]="card.icon"></i>
+    </div>
+    <div class="card-content">
+      <div class="card-label">{{ card.label }}</div>
+      <div class="card-value">{{ card.value }}</div>
+    </div>
+  </div>
+</div>
+

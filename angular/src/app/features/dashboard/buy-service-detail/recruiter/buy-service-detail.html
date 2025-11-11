@@ -1,0 +1,155 @@
+<div class="buy-service-detail-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <button class="back-btn" (click)="onBack()">
+        <i class="fa fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      <h1 class="page-title">Chi tiết dịch vụ</h1>
+    </div>
+  </div>
+
+  <div class="container" *ngIf="serviceDetail">
+    <div class="detail-content">
+      <!-- Left Content -->
+      <div class="left-content">
+        <!-- Service Overview and Details -->
+        <div class="service-overview">
+          <h2 class="service-title">{{ serviceDetail.title }}</h2>
+          <div class="service-description">
+            <i class="fa fa-check-circle description-icon"></i>
+            <p>{{ serviceDetail.description }}</p>
+          </div>
+
+           <!-- Service Details -->
+           <div class="service-details-section">
+             <h3 class="details-title">Thông tin chi tiết dịch vụ</h3>
+             <div class="detail-item">
+               <i class="fa fa-clock detail-icon"></i>
+               <span class="detail-label">Thời gian hiệu lực:</span>
+               <span class="detail-value">{{ serviceDetail.validityPeriod }}</span>
+             </div>
+           </div>
+
+           <!-- Service Features -->
+           <div class="service-features-section">
+             <!-- Vị trí hiển thị ưu tiên/ Top Impression -->
+             <div class="features-group">
+               <div class="features-group-header">
+                 <div class="features-group-bar"></div>
+                 <h4 class="features-group-title">Vị trí hiển thị ưu tiên/ Top Impression</h4>
+               </div>
+               <ul class="features-list">
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>Hiển thị trong TOP đề xuất việc làm phù hợp</span>
+                 </li>
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>Hiển thị trong TOP đề xuất việc làm theo CV</span>
+                 </li>
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>Hiển thị trong TOP đề xuất việc làm liên quan</span>
+                 </li>
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>Hiển thị trong TOP kết quả tìm kiếm việc làm có nền nổi bật (màu xanh)</span>
+                 </li>
+               </ul>
+             </div>
+
+             <!-- Đẩy top tự động hàng tuần/ Re-Top -->
+             <div class="features-group">
+               <div class="features-group-header">
+                 <div class="features-group-bar"></div>
+                 <h4 class="features-group-title">Đẩy top tự động hàng tuần/ Re-Top</h4>
+               </div>
+               <ul class="features-list">
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>7 lần đầy top Khung giờ vàng</span>
+                 </li>
+                 <li class="feature-item">
+                   <i class="fa fa-check-circle feature-icon"></i>
+                   <span>7 lần đầy top Khung giờ thường</span>
+                 </li>
+               </ul>
+             </div>
+           </div>
+
+           <!-- Add-on Features Section -->
+           <div class="addon-features-section">
+             <div class="features-group-header">
+               <div class="features-group-bar"></div>
+               <h4 class="features-group-title">Tính năng</h4>
+             </div>
+
+             <!-- Add-on Gấp Box -->
+             <div class="addon-box">
+               <div class="addon-icon">
+                 <i class="fa fa-bolt"></i>
+               </div>
+               <div class="addon-content">
+                 <h5 class="addon-title">Add-on Gấp</h5>
+               </div>
+             </div>
+
+             <!-- Add-on Description -->
+             <div class="addon-description-section">
+               <p class="addon-description">
+                 Add-on Label: Gấp là gói dịch vụ của VCareer, thuộc nhóm dịch vụ Top Add-on – Dịch vụ cộng thêm, thêm tùy chọn giúp tin tuyển dụng nổi bật hơn với ứng viên.
+               </p>
+               <p class="addon-description">
+                 Khi sử dụng dịch vụ Add-on Label: Gấp, tin tuyển dụng được gắn nhãn GẤP vào tiêu đề tin.
+               </p>
+             </div>
+           </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="right-sidebar">
+        <div class="purchase-card">
+          <h3 class="purchase-title">Đăng tin tuyển dụng ({{ serviceDetail.title }})</h3>
+          
+          <div class="price-section">
+            <span class="price-amount">{{ serviceDetail.price }}</span>
+            <span class="price-currency">VND <span class="asterisk">*</span></span>
+          </div>
+
+          <div class="quantity-section">
+            <label class="quantity-label">Số lượng</label>
+            <div class="main-quantity d-flex align-items-center">
+              <button class="quantity-btn" type="button" disabled>-</button>
+              <div class="quantity-value">1</div>
+              <button class="quantity-btn" type="button" disabled>+</button>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-add-cart" (click)="onAddToCart()">
+              <i class="fa fa-shopping-cart"></i>
+              <span>Thêm vào giỏ</span>
+            </button>
+            <button class="btn-buy-now" (click)="onBuyNow()">
+              <span>Mua ngay</span>
+            </button>
+          </div>
+
+          <p class="price-disclaimer"><span class="asterisk">*</span> Giá dịch vụ chưa bao gồm VAT</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

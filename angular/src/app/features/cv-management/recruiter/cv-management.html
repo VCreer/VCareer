@@ -1,0 +1,195 @@
+<div class="recruiter-cv-management-container" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <span class="breadcrumb-item active">Quản lý CV ứng viên</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Filter Bar -->
+    <app-cv-filter-bar
+      [campaigns]="campaigns"
+      [statuses]="statuses"
+      [sources]="sources"
+      [labels]="labels"
+      (filterChange)="onFilterChange($event)">
+    </app-cv-filter-bar>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      <div class="content-header">
+        <div class="candidate-count">
+          <span>Tìm thấy <strong>{{ totalCount }}</strong> ứng viên</span>
+        </div>
+      </div>
+
+      <!-- CV List or Empty State -->
+      <div class="cv-list-container">
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
+      <app-cv-empty-state
+        *ngIf="!loading && filteredCvs.length === 0"
+        message="Bạn không có CV">
+      </app-cv-empty-state>
+
+      <!-- CV List Table -->
+      <div *ngIf="!loading && filteredCvs.length > 0" class="cv-table-wrapper">
+        <table class="cv-table">
+          <thead>
+            <tr>
+              <th>Ứng viên</th>
+              <th>Chiến dịch</th>
+              <th>Thông tin liên hệ</th>
+              <th>Nguồn CV</th>
+              <th>Ngày ứng tuyển</th>
+              <th>Trạng thái</th>
+              <th>Ghi chú</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cv of paginatedCvs">
+              <!-- Ứng viên Column -->
+              <td class="candidate-cell">
+                <div class="candidate-info">
+                  <div class="candidate-avatar">
+                    <img 
+                      *ngIf="cv.avatarImageUrl" 
+                      [src]="cv.avatarImageUrl" 
+                      [alt]="cv.name"
+                      class="avatar-image">
+                    <span *ngIf="!cv.avatarImageUrl">{{ cv.avatar || getInitials(cv.name) }}</span>
+                  </div>
+                  <div class="candidate-details">
+                    <div class="candidate-name">{{ cv.name }}</div>
+                    <div class="candidate-viewed" *ngIf="cv.isViewed">Đã xem</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Chiến dịch Column -->
+              <td class="campaign-cell">
+                <div class="campaign-info">
+                  <div class="campaign-name">{{ cv.campaignName }}</div>
+                  <div class="campaign-id">{{ cv.campaignId }}</div>
+                </div>
+              </td>
+
+              <!-- Thông tin liên hệ Column -->
+              <td class="contact-cell">
+                <div class="contact-info">
+                  <div class="contact-item">
+                    <i class="fa fa-envelope contact-icon"></i>
+                    <span class="contact-text">{{ cv.email }}</span>
+                  </div>
+                  <div class="contact-item">
+                    <i class="fa fa-phone contact-icon"></i>
+                    <span class="contact-text">{{ cv.phone }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Nguồn CV Column -->
+              <td class="source-cell">
+                <div class="source-info">
+                  <div class="source-type">
+                    <i class="fa" [class]="getSourceIcon(cv.source)"></i>
+                    <span>{{ getSourceName(cv.source) }}</span>
+                  </div>
+                  <div class="source-date">{{ formatDateTime(cv.addedDate) }}</div>
+                </div>
+              </td>
+
+              <!-- Ngày ứng tuyển Column -->
+              <td class="applied-date-cell">
+                <div class="applied-date-value">{{ formatDate(cv.appliedDate) }}</div>
+              </td>
+
+              <!-- Trạng thái Column -->
+              <td class="status-cell">
+                <span class="status-badge" [class]="getStatusBadgeClass(cv.status)">
+                  {{ getStatusName(cv.status) }}
+                </span>
+              </td>
+
+              <!-- Ghi chú Column -->
+              <td class="notes-cell">
+                <div class="notes-content" *ngIf="cv.notes">{{ cv.notes }}</div>
+                <div class="notes-empty" *ngIf="!cv.notes">-</div>
+              </td>
+
+              <!-- Thao tác Column -->
+              <td class="actions-cell">
+                <div class="actions-menu-wrapper">
+                  <button 
+                    class="actions-menu-btn"
+                    (click)="toggleActionsMenu(cv.id, $event)"
+                    type="button">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div 
+                    class="actions-menu"
+                    [attr.data-cv-id]="cv.id"
+                    [class.show]="showActionsMenu === cv.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onAddNote(cv)">
+                      <i class="fa fa-sticky-note menu-icon"></i>
+                      <span>Ghi chú</span>
+                    </div>
+                    <div class="menu-item" (click)="onDownloadCv(cv)">
+                      <i class="fa fa-download menu-icon"></i>
+                      <span>Tải CV</span>
+                    </div>
+                    <div class="menu-item" (click)="onCopyCandidateCode(cv)">
+                      <i class="fa fa-copy menu-icon"></i>
+                      <span>Sao chép mã ứng viên</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item" (click)="viewCv(cv.id)">
+                      <i class="fa fa-eye menu-icon"></i>
+                      <span>Xem CV</span>
+                    </div>
+                    <div class="menu-item" (click)="editCv(cv.id)">
+                      <i class="fa fa-edit menu-icon"></i>
+                      <span>Chỉnh sửa</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item delete-item" (click)="deleteCv(cv.id)">
+                      <i class="fa fa-trash menu-icon"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination
+        *ngIf="!loading && filteredCvs.length > 0 && totalPages > 1"
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalCount"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+

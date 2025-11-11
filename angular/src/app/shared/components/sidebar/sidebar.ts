@@ -23,6 +23,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   verificationLevel: string = 'Cấp 1/3';
   currentRoute: string = '';
   isVerified: boolean = false;
+  isEmployeeRoute: boolean = false;
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
 
@@ -46,11 +47,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentRoute = this.router.url;
+    this.updateRouteType(this.currentRoute);
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
+        this.updateRouteType(this.currentRoute);
       });
+  }
+
+  private updateRouteType(url: string): void {
+    this.isEmployeeRoute = url.startsWith('/employee');
+    // Update user role and name based on route
+    if (this.isEmployeeRoute) {
+      this.userRole = 'Employee';
+      this.userName = 'Employee User';
+    } else {
+      this.userRole = 'Employer';
+      this.userName = 'Uông Hoàng Duy';
+    }
   }
 
   ngOnDestroy() {
@@ -79,7 +94,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.navigationService.logout();
-    this.router.navigate(['/recruiter/about-us']);
+    if (this.isEmployeeRoute) {
+      this.router.navigate(['/employee/login']);
+    } else {
+      this.router.navigate(['/recruiter/about-us']);
+    }
     this.onClose();
   }
 

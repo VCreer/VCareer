@@ -1,0 +1,158 @@
+<div class="employee-job-management-detail-page" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <button type="button" class="back-btn" (click)="onBack()">
+          <i class="fa fa-arrow-left"></i>
+          <span>Quay lại</span>
+        </button>
+        <h1 class="page-title">Chi tiết tin tuyển dụng</h1>
+      </div>
+      <div class="breadcrumb-actions">
+        <button type="button" class="approve-btn" (click)="onApprove()">
+          <i class="fa fa-check"></i>
+          Duyệt
+        </button>
+        <button type="button" class="reject-btn" (click)="onReject()">
+          <i class="fa fa-times"></i>
+          Từ chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-content">
+    <div class="job-detail-container">
+      <!-- Left Column -->
+      <div class="job-detail__box--left">
+        <!-- Job Info Section -->
+        <div class="job-detail__info">
+          <!-- Job Title -->
+          <div class="job-detail__info--title">
+            <h1>FullStack Developer (NodeJS, ReactJS, Vue JS) - Sign On Bonus</h1>
+          </div>
+
+          <!-- Job Details Section -->
+          <div class="job-detail__info--sections">
+            <div class="job-detail__info-item">
+              <div class="job-detail__info-item-icon">
+                <i class="fa fa-dollar-sign"></i>
+              </div>
+              <div class="job-detail__info-item-content">
+                <div class="job-detail__info-item-title">Mức lương</div>
+                <div class="job-detail__info-item-value">Thoả thuận</div>
+              </div>
+            </div>
+            <div class="job-detail__info-item">
+              <div class="job-detail__info-item-icon">
+                <i class="fa fa-map-marker-alt"></i>
+              </div>
+              <div class="job-detail__info-item-content">
+                <div class="job-detail__info-item-title">Địa điểm</div>
+                <div class="job-detail__info-item-value">Hà Nội</div>
+              </div>
+            </div>
+            <div class="job-detail__info-item">
+              <div class="job-detail__info-item-icon">
+                <i class="fa fa-infinity"></i>
+              </div>
+              <div class="job-detail__info-item-content">
+                <div class="job-detail__info-item-title">Kinh nghiệm</div>
+                <div class="job-detail__info-item-value">4 năm</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deadline -->
+          <div class="job-deadline">
+            <i class="fa fa-clock"></i>
+            <span>Hạn nộp hồ sơ: 14/11/2025</span>
+          </div>
+        </div>
+
+        <!-- Job Description Section -->
+        <div class="job-detail__box--left-content">
+          <div class="recruitment-details-header">
+            <div class="section-title-bar"></div>
+            <h2 class="section-title">Chi tiết tuyển dụng</h2>
+          </div>
+
+          <div class="job-detail__info--section">
+            <h3 class="section-title">Mô tả công việc</h3>
+            <p>Nội dung mô tả công việc sẽ được hiển thị ở đây...</p>
+          </div>
+
+          <div class="job-detail__info--section">
+            <h3 class="section-title">Yêu cầu ứng viên</h3>
+            <p>Nội dung yêu cầu ứng viên sẽ được hiển thị ở đây...</p>
+          </div>
+
+          <div class="job-detail__info--section">
+            <h3 class="section-title">Quyền lợi</h3>
+            <p>Nội dung quyền lợi sẽ được hiển thị ở đây...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="job-detail__box--right">
+        <!-- Company Info -->
+        <div class="job-detail__company">
+          <div class="company-header">
+            <div class="company-logo">
+              <img [src]="getCompanyLogoUrl('CÔNG TY TNHH AIRCLOSET ENGINEERING')" alt="Company Logo" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiByeD0iOCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiI+QUM8L3RleHQ+Cjwvc3ZnPg==';" />
+            </div>
+            <h3 class="company-name">CÔNG TY TNHH AIRCLOSET ENGINEERING</h3>
+          </div>
+          <div class="company-details">
+            <div class="company-detail-item">
+              <i class="fa fa-users"></i>
+              <span class="label">Quy mô:</span>
+              <span>25-99 nhân viên</span>
+            </div>
+            <div class="company-detail-item">
+              <i class="fa fa-briefcase"></i>
+              <span class="label">Lĩnh vực:</span>
+              <span>IT - Phần mềm</span>
+            </div>
+            <div class="company-detail-item">
+              <i class="fa fa-map-marker-alt"></i>
+              <span class="label">Địa điểm:</span>
+              <span>Hà Nội</span>
+            </div>
+          </div>
+          <a href="#" class="company-link">
+            Xem trang công ty
+            <i class="fa fa-external-link-alt"></i>
+          </a>
+        </div>
+
+        <!-- General Information -->
+        <div class="job-detail__body-right--item job-detail__body-right--box-general">
+          <h3>Thông tin chung</h3>
+          <div class="info-item">
+            <i class="fa fa-user"></i>
+            <span class="label">Cấp bậc:</span>
+            <span>Nhân viên</span>
+          </div>
+          <div class="info-item">
+            <i class="fa fa-graduation-cap"></i>
+            <span class="label">Học vấn:</span>
+            <span>Cao Đẳng trở lên</span>
+          </div>
+          <div class="info-item">
+            <i class="fa fa-users"></i>
+            <span class="label">Số lượng tuyển:</span>
+            <span>4 người</span>
+          </div>
+          <div class="info-item">
+            <i class="fa fa-briefcase"></i>
+            <span class="label">Hình thức làm việc:</span>
+            <span>Toàn thời gian</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

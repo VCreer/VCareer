@@ -62,7 +62,7 @@ export class TranslationService {
       'sidebar.verification': 'Tài khoản xác thực',
       'sidebar.not_verified': 'Chưa xác thực',
       'sidebar.dashboard': 'Bảng tin',
-      'sidebar.insights': 'TopCV Insights',
+      'sidebar.insights': 'Đăng tuyển dụng',
       'sidebar.rewards': 'TopCV Rewards',
       'sidebar.redeem_gifts': 'Đổi quà',
       'sidebar.toppy_ai': 'Toppy AI - Đề xuất',
@@ -506,6 +506,10 @@ export class TranslationService {
       'profile_sidebar.upgrade_account': 'Nâng cấp tài khoản',
       'profile_sidebar.contact_description': 'Nhà tuyển dụng có thể liên hệ với bạn qua',
       'profile_sidebar.email_phone': 'Email & Số điện thoại',
+      'profile_sidebar.job_search_enabled': 'Đã bật tính năng tìm việc thành công',
+      'profile_sidebar.job_search_disabled': 'Đã tắt tính năng tìm việc',
+      'profile_sidebar.recruiter_search_enabled': 'Đã cho phép NTD tìm kiếm hồ sơ',
+      'profile_sidebar.recruiter_search_disabled': 'Đã tắt cho phép NTD tìm kiếm hồ sơ',
       
       // Profile Picture Edit
       'profile_picture_edit.title': 'Chỉnh sửa ảnh đại diện',
@@ -518,6 +522,14 @@ export class TranslationService {
       'profile_picture_edit.delete_success': 'Đã xóa ảnh đại diện',
       
       // Upload CV
+      'upload_cv.title': 'Tải lên CV',
+      'upload_cv.subtitle': 'Chia sẻ CV của bạn với nhà tuyển dụng',
+      'upload_cv.description': 'Tải lên CV của bạn để nhà tuyển dụng có thể tìm thấy và xem hồ sơ của bạn.',
+      'upload_cv.benefits': 'CV của bạn sẽ được hiển thị trong kết quả tìm kiếm và giúp nhà tuyển dụng dễ dàng tìm thấy bạn.',
+      'upload_cv.upload_instructions': 'Kéo thả file vào đây hoặc click để chọn file',
+      'upload_cv.supported_formats': 'Hỗ trợ định dạng: .doc, .docx, .pdf (Tối đa 5MB)',
+      'upload_cv.select_cv': 'Chọn CV',
+      'upload_cv.upload_button': 'Tải lên',
       'upload_cv.upload_success': 'Tải lên CV thành công',
       
       // Download CV
@@ -589,7 +601,7 @@ export class TranslationService {
       'sidebar.verification': 'Account verification',
       'sidebar.not_verified': 'Not verified',
       'sidebar.dashboard': 'Dashboard',
-      'sidebar.insights': 'TopCV Insights',
+      'sidebar.insights': 'Post Job',
       'sidebar.rewards': 'TopCV Rewards',
       'sidebar.redeem_gifts': 'Redeem Gifts',
       'sidebar.toppy_ai': 'Toppy AI - Suggestions',
@@ -1034,6 +1046,10 @@ export class TranslationService {
       'profile_sidebar.upgrade_account': 'Upgrade Account',
       'profile_sidebar.contact_description': 'Recruiters can contact you via',
       'profile_sidebar.email_phone': 'Email & Phone',
+      'profile_sidebar.job_search_enabled': 'Job search feature enabled successfully',
+      'profile_sidebar.job_search_disabled': 'Job search feature disabled',
+      'profile_sidebar.recruiter_search_enabled': 'Recruiter search enabled',
+      'profile_sidebar.recruiter_search_disabled': 'Recruiter search disabled',
       
       // Profile Picture Edit
       'profile_picture_edit.title': 'Edit Profile Picture',
@@ -1046,6 +1062,14 @@ export class TranslationService {
       'profile_picture_edit.delete_success': 'Profile picture deleted',
       
       // Upload CV
+      'upload_cv.title': 'Upload CV',
+      'upload_cv.subtitle': 'Share your CV with recruiters',
+      'upload_cv.description': 'Upload your CV so recruiters can find and view your profile.',
+      'upload_cv.benefits': 'Your CV will be displayed in search results and help recruiters easily find you.',
+      'upload_cv.upload_instructions': 'Drag and drop file here or click to select file',
+      'upload_cv.supported_formats': 'Supported formats: .doc, .docx, .pdf (Max 5MB)',
+      'upload_cv.select_cv': 'Select CV',
+      'upload_cv.upload_button': 'Upload',
       'upload_cv.upload_success': 'CV uploaded successfully',
       
       // Download CV

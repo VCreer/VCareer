@@ -1,0 +1,10 @@
+<div class="employee-layout">
+  <app-header-wrapper></app-header-wrapper>
+  <div class="layout-container">
+    <app-sidebar [show]="sidebarExpanded" (close)="onSidebarClose()"></app-sidebar>
+    <main class="main-content" [class.sidebar-expanded]="sidebarExpanded">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
