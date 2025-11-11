@@ -11,7 +11,7 @@ import {
 } from '../../../../shared/components';
 
 @Component({
-  selector: 'app-admin-login',
+  selector: 'app-employee-login',
   standalone: true,
   imports: [
     CommonModule, 
@@ -26,8 +26,8 @@ import {
   templateUrl: './employee-login.html',
   styleUrls: ['./employee-login.scss']
 })
-export class AdminLoginComponent implements OnInit {
-  adminLoginForm!: FormGroup;
+export class EmployeeLoginComponent implements OnInit {
+  employeeLoginForm!: FormGroup;
   isLoading: boolean = false;
   showToast: boolean = false;
   toastMessage: string = '';
@@ -43,7 +43,7 @@ export class AdminLoginComponent implements OnInit {
   }
 
   initializeForm(): void {
-    this.adminLoginForm = this.fb.group({
+    this.employeeLoginForm = this.fb.group({
       username: ['', [
         Validators.required,
         Validators.minLength(3),
@@ -58,7 +58,6 @@ export class AdminLoginComponent implements OnInit {
     });
   }
 
-  // Validator cho email hoặc username
   emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
@@ -74,7 +73,7 @@ export class AdminLoginComponent implements OnInit {
   }
 
   getFieldError(fieldName: string): string {
-    const field = this.adminLoginForm.get(fieldName);
+    const field = this.employeeLoginForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
         return `${this.getFieldLabel(fieldName)} là bắt buộc`;
@@ -111,21 +110,23 @@ export class AdminLoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.adminLoginForm.valid) {
+    if (this.employeeLoginForm.valid) {
       this.isLoading = true;
-      const formData = this.adminLoginForm.value;
+      const formData = this.employeeLoginForm.value;
       
-      // Simulate API call
       setTimeout(() => {
         this.isLoading = false;
         
-        // Mock admin credentials
-        if (formData.username === 'admin' && formData.password === 'admin123') {
+        if (formData.username === 'employee' && formData.password === 'employee123') {
           this.showToastMessage('Đăng nhập thành công!', 'success');
           
-          // Redirect to admin dashboard after 2 seconds
           setTimeout(() => {
-            this.router.navigate(['/admin/dashboard']);
+            this.router.navigate(['/employee/home']).catch(err => {
+              console.error('Navigation error:', err);
+              this.router.navigate(['/employee']).catch(() => {
+                console.error('Failed to navigate to employee routes');
+              });
+            });
           }, 2000);
         } else {
           this.showToastMessage('Tên đăng nhập hoặc mật khẩu không đúng!', 'error');
@@ -133,9 +134,8 @@ export class AdminLoginComponent implements OnInit {
       }, 2000);
     } else {
       this.showToastMessage('Vui lòng kiểm tra lại thông tin', 'error');
-      // Mark all fields as touched to show validation errors
-      Object.keys(this.adminLoginForm.controls).forEach(key => {
-        this.adminLoginForm.get(key)?.markAsTouched();
+      Object.keys(this.employeeLoginForm.controls).forEach(key => {
+        this.employeeLoginForm.get(key)?.markAsTouched();
       });
     }
   }

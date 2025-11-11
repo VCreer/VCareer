@@ -7,6 +7,7 @@ import { NavigationService } from '../../core/services/navigation.service';
 import { CandidateHeaderComponent } from './candidate-header/candidate-header';
 import { RecruiterHeaderComponent } from './recruiter-header/recruiter-header';
 import { RecruiterHeaderManagementComponent } from './recruiter-header-management/recruiter-header-management';
+import { EmployeeHeaderComponent } from './employee-header/employee-header';
 
 @Component({
   selector: 'app-header-wrapper',
@@ -15,13 +16,15 @@ import { RecruiterHeaderManagementComponent } from './recruiter-header-managemen
     CommonModule,
     CandidateHeaderComponent,
     RecruiterHeaderComponent,
-    RecruiterHeaderManagementComponent
+    RecruiterHeaderManagementComponent,
+    EmployeeHeaderComponent
   ],
   template: `
     <div class="header-container">
       <app-candidate-header *ngIf="currentHeaderType === 'candidate'" class="header-component"></app-candidate-header>
       <app-recruiter-header *ngIf="currentHeaderType === 'recruiter' && !isManagementHeader" class="header-component"></app-recruiter-header>
       <app-recruiter-header-management *ngIf="currentHeaderType === 'recruiter' && isManagementHeader" class="header-component"></app-recruiter-header-management>
+      <app-employee-header *ngIf="currentHeaderType === 'employee'" class="header-component"></app-employee-header>
     </div>
   `,
   styles: [`
@@ -115,6 +118,13 @@ export class HeaderWrapperComponent implements OnInit {
     // Extract pathname without query params
     const urlPath = currentUrl.split('?')[0];
     
+    // Check if employee route
+    if (urlPath.startsWith('/employee')) {
+      this.isManagementHeader = false;
+      this.headerTypeService.switchToEmployee();
+      return;
+    }
+
     // Check if we should show management header for recruiter management routes
     const managementRoutes = [
       '/recruiter/home',

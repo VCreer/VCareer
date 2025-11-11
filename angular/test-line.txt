@@ -1,0 +1,1 @@
+        loadComponent: () => import('./features/dashboard/manage-recruitment-information/employee/employee-manage-recruitment-information').then(c => c.EmployeeJobManagementComponent),
