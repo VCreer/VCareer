@@ -1,8 +1,8 @@
 
 export interface ActionResult<TValue = any> {
-  result?: ActionResult<TValue>;
+  // Compatible shape for ASP.NET Core ActionResult<T>
+  result?: any;
   value?: TValue;
 }
 
-export interface IActionResult {
-}
+export interface IActionResult {}

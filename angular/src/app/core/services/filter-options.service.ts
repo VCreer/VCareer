@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { FilterService } from '../../proxy/api/filter.service';
+import { FilterService } from '../../apiTest/api/filter.service';
 
 export interface FilterOption {
   id: string;

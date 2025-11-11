@@ -90,5 +90,10 @@ namespace VCareer.Application.Contracts.Applications
         /// Đánh giá ứng viên (Rating từ 1-10)
         /// </summary>
         Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input);
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId);
     }
 }

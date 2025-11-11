@@ -2,7 +2,7 @@ import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInpu
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
+import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -52,7 +52,7 @@ export class CompanyLegalInfoService {
   
 
   searchCompanies = (input: CompanySearchInputDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PagedResultDto<CompanyLegalInfoDto>>({
+    this.restService.request<any, ActionResult<PagedResultDto<CompanyLegalInfoDto>>>({
       method: 'POST',
       url: '/api/profile/company-legal-info/search',
       body: input,

@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
+using VCareer.IRepositories.Job;
 using VCareer.Models.Job;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
 namespace VCareer.Repositories.Job
 {
-    public class TagRepository : EfCoreRepository<VCareerDbContext, Tag, Guid>, ITagRepository
+    public class TagRepository : EfCoreRepository<VCareerDbContext, Tag, int>, ITagRepository
     {
         public TagRepository(IDbContextProvider<VCareerDbContext> dbContextProvider) : base(dbContextProvider) { }
 
@@ -26,9 +27,10 @@ namespace VCareer.Repositories.Job
         //tìm kei
         public async Task<List<Tag>> GetPopularTagsAsync(int topN)
         {
+            var dbContext = await GetDbContextAsync();
             // Query với join count.
             var query = (from t in await GetQueryableAsync()
-                         join jt in DbContext.Set<JobPostingTag>() on t.Id equals jt.TagId
+                         join jt in dbContext.Set<JobPostTag>() on t.Id equals jt.TagId
                          group t by t.Id into g
                          select new { Tag = g.FirstOrDefault(), Count = g.Count() })
                         .OrderByDescending(x => x.Count)

@@ -238,8 +238,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("UploadedCvId");
 
-                    b.HasIndex("JobId", "CandidateId")
-                        .IsUnique();
+                    b.HasIndex("JobId", "CandidateId");
 
                     b.ToTable("JobApplications", (string)null);
                 });
@@ -609,32 +608,25 @@ namespace VCareer.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BusinessLicenseFile")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("BusinessLicenseIssueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("BusinessLicenseIssuePlace")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BusinessLicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CompanySize")
+                    b.Property<int?>("CompanySize")
                         .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -645,15 +637,12 @@ namespace VCareer.Migrations
                         .HasColumnName("ConcurrencyStamp");
 
                     b.Property<string>("ContactEmail")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContactPhone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CoverImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreationTime")
@@ -665,7 +654,6 @@ namespace VCareer.Migrations
                         .HasColumnName("CreatorId");
 
                     b.Property<string>("CultureVideoUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("DeleterId")
@@ -677,7 +665,6 @@ namespace VCareer.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtraProperties")
@@ -685,14 +672,13 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<int>("FoundedYear")
+                    b.Property<int?>("FoundedYear")
                         .HasColumnType("int");
 
                     b.Property<string>("HeadquartersAddress")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IndustryId")
+                    b.Property<int?>("IndustryId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -710,13 +696,10 @@ namespace VCareer.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("LegalDocumentUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LegalRepresentative")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LegalReviewedAt")
                         .HasColumnType("datetime2");
@@ -725,58 +708,39 @@ namespace VCareer.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("LegalVerificationStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LogoUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OtherSupportFile")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RepresentativeIdCardFile")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
                     b.Property<string>("TaxCertificateFile")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaxCode")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("VerificationStatus")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("VerifyAt")
+                    b.Property<DateTime?>("VerifyAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("WebsiteUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessLicenseNumber")
-                        .IsUnique()
-                        .HasFilter("[BusinessLicenseNumber] IS NOT NULL");
-
-                    b.HasIndex("TaxCode")
-                        .IsUnique()
-                        .HasFilter("[TaxCode] IS NOT NULL");
-
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("VCareer.Models.Companies.CompanyIndustry", b =>
@@ -835,6 +799,10 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -973,84 +941,13 @@ namespace VCareer.Migrations
                     b.ToTable("IpAddresses", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProvinceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProvinceId");
-
-                    b.ToTable("Districts", (string)null);
-                });
-
-            modelBuilder.Entity("VCareer.Models.Job.JobPostingTag", b =>
+            modelBuilder.Entity("VCareer.Models.Job.JobPostTag", b =>
                 {
                     b.Property<Guid>("JobPostingId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("TagId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Id")
                         .HasColumnType("int");
@@ -1154,7 +1051,7 @@ namespace VCareer.Migrations
                     b.ToTable("JobCategories", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.Job_Posting", b =>
+            modelBuilder.Entity("VCareer.Models.Job.Job_Post", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -1164,9 +1061,24 @@ namespace VCareer.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<DateTime?>("ApproveAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Benefits")
-                        .IsRequired()
                         .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CompanyName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -1193,14 +1105,10 @@ namespace VCareer.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DistrictId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Education")
+                    b.Property<int>("DistrictCode")
                         .HasColumnType("int");
 
                     b.Property<int>("EmploymentType")
@@ -1220,21 +1128,11 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
-
-                    b.Property<bool>("IsUrgent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<Guid>("JobCategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -1253,7 +1151,7 @@ namespace VCareer.Migrations
                     b.Property<DateTime>("PostedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ProvinceId")
+                    b.Property<int>("ProvinceCode")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -1262,10 +1160,15 @@ namespace VCareer.Migrations
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RejectedReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Requirements")
-                        .IsRequired()
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RiskJobLevel")
+                        .HasColumnType("int");
 
                     b.Property<bool>("SalaryDeal")
                         .ValueGeneratedOnAdd()
@@ -1277,10 +1180,6 @@ namespace VCareer.Migrations
 
                     b.Property<decimal?>("SalaryMin")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SalaryText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -1298,27 +1197,26 @@ namespace VCareer.Migrations
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
 
+                    b.Property<int?>("WardCode")
+                        .HasColumnType("int");
+
                     b.Property<string>("WorkLocation")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("WorkTime")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("JobCategoryId");
 
-                    b.HasIndex("ProvinceId");
-
                     b.HasIndex("RecruiterId");
 
-                    b.ToTable("JobPostings", (string)null);
+                    b.ToTable("JobPost", (string)null);
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.Province", b =>
+            modelBuilder.Entity("VCareer.Models.Job.Job_Priority", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1326,133 +1224,32 @@ namespace VCareer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Provinces", (string)null);
-                });
-
-            modelBuilder.Entity("VCareer.Models.Job.SavedJob", b =>
-                {
-                    b.Property<Guid>("CandidateId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("DisplayArea")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("JobId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("PriorityLevel")
+                        .HasColumnType("int");
 
-                    b.HasKey("CandidateId", "JobId");
+                    b.Property<float>("SortScore")
+                        .HasColumnType("real");
 
-                    b.HasIndex("CandidateId");
+                    b.HasKey("Id");
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("CandidateId", "JobId")
-                        .IsUnique();
-
-                    b.ToTable("AppSavedJobs", (string)null);
+                    b.ToTable("JobPriory", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsDeleted")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1519,7 +1316,7 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("CreatorId");
 
-                    b.Property<DateTime>("DateOfbirth")
+                    b.Property<DateTime?>("DateOfbirth")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("DeleterId")
@@ -1530,12 +1327,15 @@ namespace VCareer.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<bool>("Gender")
+                    b.Property<bool?>("Gender")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("Id")
@@ -1556,16 +1356,15 @@ namespace VCareer.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("Location")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("MaxQuotaBytes")
+                    b.Property<long?>("MaxQuotaBytes")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("ProfileVisibility")
                         .HasColumnType("bit");
 
-                    b.Property<long>("QuotaUsedBytes")
+                    b.Property<long?>("QuotaUsedBytes")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("Status")
@@ -1605,10 +1404,12 @@ namespace VCareer.Migrations
                         .HasColumnName("DeletionTime");
 
                     b.Property<string>("Department")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -1653,9 +1454,6 @@ namespace VCareer.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CompanyId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -1678,6 +1476,10 @@ namespace VCareer.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
@@ -1704,11 +1506,14 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
-                    b.Property<long>("MaxQuotaBytes")
+                    b.Property<long?>("MaxQuotaBytes")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("QuotaUsedBytes")
+                    b.Property<long?>("QuotaUsedBytes")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("RecruiterLevel")
+                        .HasColumnType("int");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
@@ -1716,8 +1521,6 @@ namespace VCareer.Migrations
                     b.HasKey("UserId");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("CompanyId1");
 
                     b.ToTable("RecruiterProfile", (string)null);
                 });
@@ -3617,7 +3420,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("CandidateCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.CV.CvTemplate", "Template")
@@ -3636,7 +3439,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
                         .WithMany("UploadedCvs")
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.FileMetadata.FileDescriptor", "FileDescriptor")
@@ -3692,20 +3495,9 @@ namespace VCareer.Migrations
                     b.Navigation("IpAddress");
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.District", b =>
+            modelBuilder.Entity("VCareer.Models.Job.JobPostTag", b =>
                 {
-                    b.HasOne("VCareer.Models.Job.Province", "Province")
-                        .WithMany("Districts")
-                        .HasForeignKey("ProvinceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Province");
-                });
-
-            modelBuilder.Entity("VCareer.Models.Job.JobPostingTag", b =>
-                {
-                    b.HasOne("VCareer.Models.Job.Job_Posting", "JobPosting")
+                    b.HasOne("VCareer.Models.Job.Job_Post", "JobPosting")
                         .WithMany("JobPostingTags")
                         .HasForeignKey("JobPostingId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3732,18 +3524,12 @@ namespace VCareer.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.Job_Posting", b =>
+            modelBuilder.Entity("VCareer.Models.Job.Job_Post", b =>
                 {
                     b.HasOne("VCareer.Models.Job.Job_Category", "JobCategory")
                         .WithMany("JobPostings")
                         .HasForeignKey("JobCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VCareer.Models.Job.Province", "Province")
-                        .WithMany("Job_Posting")
-                        .HasForeignKey("ProvinceId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VCareer.Models.Users.RecruiterProfile", "RecruiterProfile")
@@ -3754,28 +3540,18 @@ namespace VCareer.Migrations
 
                     b.Navigation("JobCategory");
 
-                    b.Navigation("Province");
-
                     b.Navigation("RecruiterProfile");
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.SavedJob", b =>
+            modelBuilder.Entity("VCareer.Models.Job.Job_Priority", b =>
                 {
-                    b.HasOne("VCareer.Models.Users.CandidateProfile", "CandidateProfile")
-                        .WithMany()
-                        .HasForeignKey("CandidateId")
+                    b.HasOne("VCareer.Models.Job.Job_Post", "Job")
+                        .WithMany("Job_Priorities")
+                        .HasForeignKey("JobId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VCareer.Models.Job.Job_Posting", "JobPosting")
-                        .WithMany()
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CandidateProfile");
-
-                    b.Navigation("JobPosting");
+                    b.Navigation("Job");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
@@ -3802,16 +3578,10 @@ namespace VCareer.Migrations
 
             modelBuilder.Entity("VCareer.Models.Users.RecruiterProfile", b =>
                 {
-                    b.HasOne("VCareer.Models.Companies.Company", null)
+                    b.HasOne("VCareer.Models.Companies.Company", "Company")
                         .WithMany("RecruiterProfiles")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("VCareer.Models.Companies.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId1")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
@@ -4000,16 +3770,11 @@ namespace VCareer.Migrations
                     b.Navigation("JobPostings");
                 });
 
-            modelBuilder.Entity("VCareer.Models.Job.Job_Posting", b =>
+            modelBuilder.Entity("VCareer.Models.Job.Job_Post", b =>
                 {
                     b.Navigation("JobPostingTags");
-                });
 
-            modelBuilder.Entity("VCareer.Models.Job.Province", b =>
-                {
-                    b.Navigation("Districts");
-
-                    b.Navigation("Job_Posting");
+                    b.Navigation("Job_Priorities");
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>

@@ -5,7 +5,7 @@ using Volo.Abp.Domain.Entities;
 namespace VCareer.Models.Job
 {
     
-    public class SavedJob : Entity
+    public class SavedJob :Entity
     {
         public Guid CandidateId { get; set; }
 
@@ -19,7 +19,7 @@ namespace VCareer.Models.Job
         public virtual CandidateProfile CandidateProfile { get; set; }
 
        
-        public virtual Job_Posting JobPosting { get; set; }
+        public virtual Job_Post JobPosting { get; set; }
 
         /// <summary>
         /// Override để return composite key

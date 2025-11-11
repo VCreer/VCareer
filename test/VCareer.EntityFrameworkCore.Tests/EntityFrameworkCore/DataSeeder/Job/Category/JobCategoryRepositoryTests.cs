@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.IRepositories.Job;
 using VCareer.Job.Category;
-using VCareer.Repositories;
 using Xunit;
 
 namespace VCareer.EntityFrameworkCore.DataSeeder.Job.Category

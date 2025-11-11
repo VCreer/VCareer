@@ -7,17 +7,35 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
     children: [
       {
+        path: 'identity',
+        loadChildren: () => import('@abp/ng.identity').then(m => m.IdentityModule),
+      },
+      {
+        path: 'setting-management',
+        loadChildren: () =>
+          import('@abp/ng.setting-management').then(m => m.SettingManagementModule),
+      },
+      {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
+        loadComponent: () =>
+          import('./features/dashboard/homepage/candidate/candidate-homepage').then(
+            c => c.CandidateHomepageComponent
+          ),
       },
       {
         path: 'home',
-        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
+        loadComponent: () =>
+          import('./features/dashboard/homepage/candidate/candidate-homepage').then(
+            c => c.CandidateHomepageComponent
+          ),
       },
       {
         path: 'candidate/profile',
-        loadComponent: () => import('./features/dashboard/profile/candidate/candidate-profile').then(c => c.CandidateProfileComponent),
+        loadComponent: () =>
+          import('./features/dashboard/profile/candidate/candidate-profile').then(
+            c => c.CandidateProfileComponent
+          ),
       },
       // {
       //   path: 'candidate/cv-management',
@@ -90,13 +108,15 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'candidate/verify-otp',
-    loadComponent: () => import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+    loadComponent: () =>
+      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'candidate/reset-password',
-    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+    loadComponent: () =>
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
-  
+
   {
     path: 'recruiter/login',
     loadComponent: () => import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(c => c.RecruiterLoginComponent),
@@ -111,13 +131,15 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'recruiter/verify-otp',
-    loadComponent: () => import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+    loadComponent: () =>
+      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'recruiter/reset-password',
-    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+    loadComponent: () =>
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
-  
+
   // Recruiter main route
   {
     path: 'recruiter',
@@ -126,7 +148,10 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./features/dashboard/homepage/candidate/candidate-homepage').then(c => c.CandidateHomepageComponent),
+        loadComponent: () =>
+          import('./features/dashboard/homepage/candidate/candidate-homepage').then(
+            c => c.CandidateHomepageComponent
+          ),
       },
       {
         path: 'about-us',
@@ -152,9 +177,9 @@ export const APP_ROUTES: Routes = [
       //   path: 'performance-dashboard',
       //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
       // }
-    ]
+    ],
   },
-  
+
   {
     path: 'admin/login',
     loadComponent: () => import('./features/Auth/admin/login/admin-login').then(c => c.AdminLoginComponent),
@@ -164,17 +189,21 @@ export const APP_ROUTES: Routes = [
   {
     path: 'login',
     redirectTo: '/candidate/login',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'register',
     redirectTo: '/candidate/register',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'forgot-password',
     redirectTo: '/candidate/forget-password',
-    pathMatch: 'full'
+    pathMatch: 'full',
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
 
   // ABP routes
@@ -189,5 +218,15 @@ export const APP_ROUTES: Routes = [
   {
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
+  },
+  
+  // 404 - Wildcard route (phải đặt cuối cùng)
+  {
+    path: '404',
+    loadComponent: () => import('./features/not-found/not-found').then(c => c.NotFoundComponent),
+  },
+  {
+    path: '**',
+    redirectTo: '/404'
   },
 ];

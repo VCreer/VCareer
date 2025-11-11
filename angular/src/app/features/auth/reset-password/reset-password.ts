@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { 
@@ -7,6 +7,8 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../shared/components';
+import { AuthService } from '../../../proxy/services/auth/auth.service';
+import { ResetPasswordDto } from '../../../proxy/dto/auth-dto/models';
 
 @Component({
   selector: 'app-reset-password',
@@ -25,13 +27,16 @@ export class ResetPasswordComponent implements OnInit {
   resetPasswordForm: FormGroup;
   isLoading = false;
   email = '';
+  token = '';
   showToast = false;
   toastMessage = '';
-  toastType = 'success'; // 'success' | 'error'
+  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private router: Router,
-    private formBuilder: FormBuilder
+    private route: ActivatedRoute,
+    private formBuilder: FormBuilder,
+    private authService: AuthService
   ) {
     this.resetPasswordForm = this.formBuilder.group({
       password: ['', [
@@ -45,16 +50,19 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.email = localStorage.getItem('reset_email') || '';
-    if (!this.email) {
-      // Điều hướng đến trang đăng nhập phù hợp dựa trên route hiện tại
-      const currentUrl = this.router.url;
-      if (currentUrl.includes('/recruiter/')) {
-        this.router.navigate(['/recruiter/login']);
-      } else {
-        this.router.navigate(['/candidate/login']);
+    // Lấy email và token từ query params
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+      this.token = params['token'] || '';
+      
+      // Nếu không có email hoặc token, chuyển đến trang login
+      if (!this.email || !this.token) {
+        this.showToastMessage('Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.', 'error');
+        setTimeout(() => {
+          this.navigateToLogin();
+        }, 2000);
       }
-    }
+    });
   }
 
   // Validator cho độ mạnh mật khẩu (giống candidate register)
@@ -91,40 +99,68 @@ export class ResetPasswordComponent implements OnInit {
 
   onSubmit(): void {
     if (this.resetPasswordForm.valid) {
+      // Kiểm tra email và token
+      if (!this.email || !this.token) {
+        this.showToastMessage('Link đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu link mới.', 'error');
+        return;
+      }
+
       this.isLoading = true;
 
       const formData = this.resetPasswordForm.value;
 
-      // Mô phỏng API call
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        // Mô phỏng thành công - trong ứng dụng thực, gửi đến backend
-        this.showToastMessage('Mật khẩu đã được đặt lại thành công!', 'success');
-        
-        // Xóa form
-        this.resetPasswordForm.reset();
-        
-        // Điều hướng đến trang đăng nhập ngay sau 2 giây
-        setTimeout(() => {
-          this.navigateToLogin();
-        }, 2000);
-      }, 2000);
+      const input: ResetPasswordDto = {
+        email: this.email,
+        token: this.token,
+        newPassword: formData.password
+      };
+
+      // Gọi API ResetPassword
+      this.authService.resetPassword(input).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showToastMessage('Mật khẩu đã được đặt lại thành công!', 'success');
+          
+          // Xóa form và thông tin reset
+          this.resetPasswordForm.reset();
+          this.email = '';
+          this.token = '';
+          
+          // Điều hướng đến trang đăng nhập sau 2 giây
+          setTimeout(() => {
+            this.navigateToLogin();
+          }, 2000);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Reset password error:', error);
+          
+          // Xử lý lỗi
+          if (error.error?.error?.message) {
+            this.showToastMessage(error.error.error.message, 'error');
+          } else if (error.error?.error) {
+            const errorMessage = error.error.error;
+            if (typeof errorMessage === 'string') {
+              this.showToastMessage(errorMessage, 'error');
+            } else if (errorMessage.details) {
+              this.showToastMessage(errorMessage.details, 'error');
+            } else {
+              this.showToastMessage('Có lỗi xảy ra khi đặt lại mật khẩu.', 'error');
+            }
+          } else {
+            this.showToastMessage('Token không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu link mới.', 'error');
+          }
+        }
+      });
     } else {
       this.showToastMessage('Vui lòng kiểm tra lại thông tin', 'error');
     }
   }
 
   navigateToLogin(): void {
-    const currentUrl = this.router.url;
-    console.log('Current URL:', currentUrl);
-    if (currentUrl.includes('/recruiter/')) {
-      console.log('Navigating to recruiter login');
-      this.router.navigate(['/recruiter/login']);
-    } else {
-      console.log('Navigating to candidate login');
-      this.router.navigate(['/candidate/login']);
-    }
+    // Mặc định chuyển đến candidate login
+    // Có thể cải thiện bằng cách detect từ email hoặc lưu context
+    this.router.navigate(['/candidate/login']);
   }
 
   showToastMessage(message: string, type: 'success' | 'error'): void {

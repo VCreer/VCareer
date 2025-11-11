@@ -38,6 +38,12 @@ export interface ApplicationStatisticsDto {
   acceptanceRate: number;
 }
 
+export interface ApplicationStatusDto {
+  hasApplied: boolean;
+  applicationId?: string;
+  status?: string;
+}
+
 export interface ApplyWithOnlineCVDto {
   jobId: string;
   candidateCvId: string;

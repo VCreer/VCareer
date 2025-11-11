@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { CompanyService, CompanyLegalInfoDto, CompanySearchInputDto, PagedResultDto } from '../../../../apiTest/api/company.service';
+import { environment } from '../../../../../environments/environment';
 
 export interface Company {
   id: string;
@@ -31,7 +32,7 @@ export class CompanyListingComponent implements OnInit {
   
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 9;
+  itemsPerPage: number = 12; // Tăng số lượng hiển thị mỗi trang
   totalCompanies: number = 0;
   paginatedCompanies: CompanyLegalInfoDto[] = [];
   
@@ -90,22 +91,75 @@ export class CompanyListingComponent implements OnInit {
 
     this.isLoading = true;
     
+    // Đảm bảo skipCount và maxResultCount luôn có giá trị hợp lệ (không phải undefined)
+    const skipCount = (this.currentPage - 1) * this.itemsPerPage;
+    // ABP Framework giới hạn MaxResultCount tối đa 1000
+    // Đảm bảo maxResultCount không vượt quá 1000
+    let maxResultCount = this.itemsPerPage > 0 ? this.itemsPerPage : 12; // Default 12 nếu itemsPerPage = 0
+    if (maxResultCount > 1000) {
+      console.warn('[CompanyListing] MaxResultCount exceeds 1000, capping at 1000');
+      maxResultCount = 1000;
+    }
+    
+    // Build input object - đảm bảo tất cả giá trị đúng kiểu dữ liệu
     const input: CompanySearchInputDto = {
-      keyword: this.searchKeyword?.trim() || undefined,
-      status: true, // Chỉ lấy các công ty active
-      skipCount: (this.currentPage - 1) * this.itemsPerPage,
-      maxResultCount: this.itemsPerPage
+      skipCount: Number(skipCount),      // Đảm bảo là number
+      maxResultCount: Number(maxResultCount)  // Đảm bảo là number
     };
+    
+    // Chỉ thêm keyword nếu có giá trị (không trống)
+    // Nếu keyword trống hoặc undefined, không thêm vào input → backend sẽ trả về tất cả
+    if (this.searchKeyword && typeof this.searchKeyword === 'string' && this.searchKeyword.trim().length > 0) {
+      input.keyword = this.searchKeyword.trim();
+    }
+    // Nếu không có keyword, không thêm keyword vào input (undefined)
+    
+    // Thêm status = true để chỉ lấy công ty active
+    input.status = true;
+
+    console.log('[CompanyListing] Calling API with input:', JSON.stringify(input, null, 2));
+    console.log('[CompanyListing] Input types:', {
+      skipCount: typeof input.skipCount,
+      maxResultCount: typeof input.maxResultCount,
+      keyword: typeof input.keyword,
+      status: typeof input.status
+    });
+    console.log('[CompanyListing] searchKeyword:', this.searchKeyword);
+    console.log('[CompanyListing] activeTab:', this.activeTab);
 
     this.companyService.searchCompanies(input).subscribe({
       next: (result: PagedResultDto<CompanyLegalInfoDto>) => {
-        this.companies = result.items;
-        this.totalCompanies = result.totalCount;
-        this.paginatedCompanies = result.items;
+        console.log('[CompanyListing] ✅ API response received:', result);
+        console.log('[CompanyListing] Total count:', result.totalCount);
+        console.log('[CompanyListing] Items count:', result.items?.length || 0);
+        console.log('[CompanyListing] Items:', result.items);
+        
+        this.companies = result.items || [];
+        this.totalCompanies = result.totalCount || 0;
+        this.paginatedCompanies = result.items || [];
         this.isLoading = false;
+        
+        // Debug log để kiểm tra
+        if (this.paginatedCompanies.length === 0) {
+          console.warn('[CompanyListing] ⚠️ No companies found. Check backend data.');
+        } else {
+          console.log('[CompanyListing] ✅ Successfully loaded', this.paginatedCompanies.length, 'companies');
+        }
       },
       error: (error) => {
-        console.error('Error loading companies:', error);
+        console.error('[CompanyListing] ❌ Error loading companies:', error);
+        console.error('[CompanyListing] Error status:', error.status);
+        console.error('[CompanyListing] Error message:', error.message);
+        console.error('[CompanyListing] Error details:', error.error);
+        
+        // Log chi tiết validation errors
+        if (error.error && error.error.errors) {
+          console.error('[CompanyListing] Validation errors:', JSON.stringify(error.error.errors, null, 2));
+          Object.keys(error.error.errors || {}).forEach(key => {
+            console.error(`[CompanyListing] ${key}:`, error.error.errors[key]);
+          });
+        }
+        
         this.isLoading = false;
         // Fallback to empty array on error
         this.companies = [];
@@ -134,6 +188,31 @@ export class CompanyListingComponent implements OnInit {
     if (words.length <= 3) return fullName.toUpperCase();
     // Lấy 2-3 từ đầu
     return words.slice(0, 2).join(' ').toUpperCase();
+  }
+
+  /**
+   * Build full URL cho logo
+   * Nếu logoUrl là full URL (http/https) thì dùng trực tiếp
+   * Nếu là relative path thì append với base URL từ backend
+   */
+  getLogoUrl(logoUrl: string | undefined): string {
+    if (!logoUrl) {
+      return 'assets/images/default-company.png';
+    }
+
+    // Nếu đã là full URL (http/https), dùng trực tiếp
+    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+      return logoUrl;
+    }
+
+    // Nếu là relative path, append với base URL từ backend
+    const baseUrl = environment.apis?.default?.url || '';
+    if (baseUrl && logoUrl.startsWith('/')) {
+      return `${baseUrl}${logoUrl}`;
+    }
+
+    // Nếu không có baseUrl hoặc path không bắt đầu bằng /, dùng trực tiếp
+    return logoUrl;
   }
 
   loadTopCompanies() {
@@ -267,6 +346,7 @@ export class CompanyListingComponent implements OnInit {
   }
 
   onSearch() {
+    // Khi search, nếu keyword trống thì vẫn hiển thị tất cả công ty
     this.currentPage = 1; // Reset về trang 1 khi search
     this.loadCompanies();
   }
