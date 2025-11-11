@@ -453,12 +453,12 @@ namespace VCareer.Migrations
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ActivityType = table.Column<int>(type: "int", nullable: false),
                     EntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    EntityType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Metadata = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EntityType = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    IpAddress = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    UserAgent = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
+                    Metadata = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -1472,6 +1472,70 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "JobApplications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CandidateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
+                    CVType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CandidateCvId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UploadedCvId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CoverLetter = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    RecruiterNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Rating = table.Column<int>(type: "int", nullable: true),
+                    ViewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ViewedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RespondedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    InterviewDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    InterviewLocation = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    InterviewNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    WithdrawnAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    WithdrawalReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobApplications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_CandidateCvs_CandidateCvId",
+                        column: x => x.CandidateCvId,
+                        principalTable: "CandidateCvs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_CandidateProfile_CandidateId",
+                        column: x => x.CandidateId,
+                        principalTable: "CandidateProfile",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_UploadedCvs_UploadedCvId",
+                        column: x => x.UploadedCvId,
+                        principalTable: "UploadedCvs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppSavedJobs",
                 columns: table => new
                 {
@@ -1755,6 +1819,31 @@ namespace VCareer.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_ActivityType",
+                table: "ActivityLogs",
+                column: "ActivityType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_CreationTime",
+                table: "ActivityLogs",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_UserId",
+                table: "ActivityLogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_UserId_ActivityType",
+                table: "ActivityLogs",
+                columns: new[] { "UserId", "ActivityType" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLogs_UserId_CreationTime",
+                table: "ActivityLogs",
+                columns: new[] { "UserId", "CreationTime" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppRefreshTokens_Token",
                 table: "AppRefreshTokens",
                 column: "Token",
@@ -1870,6 +1959,52 @@ namespace VCareer.Migrations
                 name: "IX_EmployeeIpAddresses_IpAdressId",
                 table: "EmployeeIpAddresses",
                 column: "IpAdressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_CandidateCvId",
+                table: "JobApplications",
+                column: "CandidateCvId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_CandidateId",
+                table: "JobApplications",
+                column: "CandidateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_CompanyId",
+                table: "JobApplications",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_CreationTime",
+                table: "JobApplications",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_CVType",
+                table: "JobApplications",
+                column: "CVType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_JobId",
+                table: "JobApplications",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_JobId_CandidateId",
+                table: "JobApplications",
+                columns: new[] { "JobId", "CandidateId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_Status",
+                table: "JobApplications",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_UploadedCvId",
+                table: "JobApplications",
+                column: "UploadedCvId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobCategories_IsActive",
@@ -2073,9 +2208,6 @@ namespace VCareer.Migrations
                 name: "AppSavedJobs");
 
             migrationBuilder.DropTable(
-                name: "CandidateCvs");
-
-            migrationBuilder.DropTable(
                 name: "CompanyIndustries");
 
             migrationBuilder.DropTable(
@@ -2085,6 +2217,9 @@ namespace VCareer.Migrations
                 name: "EmployeeIpAddresses");
 
             migrationBuilder.DropTable(
+                name: "JobApplications");
+
+            migrationBuilder.DropTable(
                 name: "JobPostingTags");
 
             migrationBuilder.DropTable(
@@ -2092,9 +2227,6 @@ namespace VCareer.Migrations
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
-
-            migrationBuilder.DropTable(
-                name: "UploadedCvs");
 
             migrationBuilder.DropTable(
                 name: "AbpBlobContainers");
@@ -2112,9 +2244,6 @@ namespace VCareer.Migrations
                 name: "AbpRoles");
 
             migrationBuilder.DropTable(
-                name: "CvTemplates");
-
-            migrationBuilder.DropTable(
                 name: "Industries");
 
             migrationBuilder.DropTable(
@@ -2122,6 +2251,12 @@ namespace VCareer.Migrations
 
             migrationBuilder.DropTable(
                 name: "IpAddresses");
+
+            migrationBuilder.DropTable(
+                name: "CandidateCvs");
+
+            migrationBuilder.DropTable(
+                name: "UploadedCvs");
 
             migrationBuilder.DropTable(
                 name: "JobPostings");
@@ -2133,13 +2268,16 @@ namespace VCareer.Migrations
                 name: "OpenIddictAuthorizations");
 
             migrationBuilder.DropTable(
+                name: "AbpAuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "CvTemplates");
+
+            migrationBuilder.DropTable(
                 name: "CandidateProfile");
 
             migrationBuilder.DropTable(
                 name: "FileDescriptors");
-
-            migrationBuilder.DropTable(
-                name: "AbpAuditLogs");
 
             migrationBuilder.DropTable(
                 name: "JobCategories");
