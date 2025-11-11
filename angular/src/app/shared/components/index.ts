@@ -58,3 +58,5 @@ export { JobPreviewComponent, JobFormData } from './job-preview/job-preview';
 export { ToggleSwitchComponent } from './toggle-switch/toggle-switch';
 export { CampaignSummaryCardsComponent, SummaryCard } from './campaign-summary-cards/campaign-summary-cards';
 export { MultiSelectLocationComponent } from './multi-select-location/multi-select-location';
+export { ProfileCardComponent } from './profile-card/profile-card';
+export { MomoPaymentModalComponent } from './momo-payment-modal/momo-payment-modal';

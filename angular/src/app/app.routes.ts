@@ -71,6 +71,14 @@ export const APP_ROUTES: Routes = [
       {
         path: 'candidate/applied-jobs',
         loadComponent: () => import('./features/dashboard/applied-jobs/candidate/applied-jobs').then(c => c.AppliedJobsComponent),
+      },
+      {
+        path: 'candidate/service',
+        loadComponent: () => import('./features/dashboard/service/candidate/service').then(c => c.CandidateServiceComponent),
+      },
+      {
+        path: 'candidate/upgrade-account/pay',
+        loadComponent: () => import('./features/dashboard/upgrade-account/candidate/upgrade-account-pay').then(c => c.UpgradeAccountPayComponent),
       }
     ]
   },
