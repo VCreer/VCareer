@@ -144,7 +144,7 @@ export class LoginModalComponent {
     };
 
     this.proxyAuth
-      .login(payload)
+      .candidateLogin(payload)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (result: TokenResponseDto | any) => {

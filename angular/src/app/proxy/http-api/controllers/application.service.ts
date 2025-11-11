@@ -1,8 +1,8 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ApplicationDto, ApplicationStatisticsDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../application/contracts/applications/models';
-import type { IActionResult } from '../../microsoft/asp-net-core/mvc/models';
+import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../application/contracts/applications/models';
+import type { ActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +29,14 @@ export class ApplicationService {
     { apiName: this.apiName,...config });
   
 
+  checkApplicationStatus = (jobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ApplicationStatusDto>({
+      method: 'GET',
+      url: `/api/applications/check-status/${jobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   deleteApplication = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
@@ -38,7 +46,7 @@ export class ApplicationService {
   
 
   downloadApplicationCV = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
+    this.restService.request<any, ActionResult>({
       method: 'GET',
       url: `/api/applications/${id}/download-cv`,
     },
@@ -120,13 +128,6 @@ export class ApplicationService {
       method: 'PUT',
       url: `/api/applications/${id}/withdraw`,
       body: input,
-    },
-    { apiName: this.apiName,...config });
-
-  checkApplicationStatus = (jobId: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, { hasApplied: boolean; applicationId?: string; status?: string }>({
-      method: 'GET',
-      url: `/api/applications/check-status/${jobId}`,
     },
     { apiName: this.apiName,...config });
 

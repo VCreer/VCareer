@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CandidateRegisterDto, ForgotPasswordDto, GoogleLoginDto, LoginDto, RecruiterRegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
+import type { CandidateRegisterDto, CreateEmployeeDto, EmployeeLoginDto, ForgotPasswordDto, GoogleLoginDto, LoginDto, RecruiterRegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
 import type { TokenResponseDto } from '../../dto/jwt-dto/models';
 
 @Injectable({
@@ -10,10 +10,37 @@ export class AuthService {
   apiName = 'Default';
   
 
+  candidateLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TokenResponseDto>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-login',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   candidateRegister = (input: CandidateRegisterDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/candidate-register',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  createEmployee = (input: CreateEmployeeDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/employee',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  employeeLogin = (input: EmployeeLoginDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TokenResponseDto>({
+      method: 'POST',
+      url: '/api/app/auth/employee-login',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -44,19 +71,19 @@ export class AuthService {
     { apiName: this.apiName,...config });
   
 
-  login = (input: LoginDto, config?: Partial<Rest.Config>) =>
+  loginWithGoogle = (input: GoogleLoginDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TokenResponseDto>({
       method: 'POST',
-      url: '/api/app/auth/login',
+      url: '/api/app/auth/login-with-google',
       body: input,
     },
     { apiName: this.apiName,...config });
   
 
-  loginWithGoogle = (input: GoogleLoginDto, config?: Partial<Rest.Config>) =>
+  recruiterLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, TokenResponseDto>({
       method: 'POST',
-      url: '/api/app/auth/login-with-google',
+      url: '/api/app/auth/recruiter-login',
       body: input,
     },
     { apiName: this.apiName,...config });
