@@ -51,8 +51,8 @@ public class VCareerDbContext :
 
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
-    /*public DbSet<JobApplication> JobApplications { get; set; }
-    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
+    public DbSet<JobApplication> JobApplications { get; set; }
+    /*public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
     public DbSet<Job_Category> JobCategories { get; set; }
     public DbSet<Job_Post> JobPostings { get; set; }

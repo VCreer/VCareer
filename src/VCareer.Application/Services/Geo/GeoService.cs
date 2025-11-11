@@ -31,7 +31,7 @@ namespace VCareer.Services.Geo
             if (cached != null) return cached;
 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync("https://provinces.open-api.vn/api/?depth=3");
+            var response = await client.GetAsync("https://provinces.open-api.vn/api/v1/ depth==2");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
