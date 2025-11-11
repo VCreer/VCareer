@@ -11,7 +11,7 @@ export class JobCategoryService {
   
 
   getCategoryTree = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<CategoryTreeDto>>({
+    this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
       method: 'GET',
       url: '/api/job-categories/tree',
     },
@@ -19,7 +19,7 @@ export class JobCategoryService {
   
 
   searchCategories = (keyword: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<CategoryTreeDto>>({
+    this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
       method: 'POST',
       url: '/api/job-categories/search',
       params: { keyword },

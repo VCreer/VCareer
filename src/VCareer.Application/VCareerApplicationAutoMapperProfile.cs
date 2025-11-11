@@ -56,6 +56,7 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
 
         // FileDescriptor mappings
         CreateMap<FileDescriptor, FileDescriptorDto>();
+        CreateMap<FileDescriptorDto, FileDescriptor>();
 
         // Application mappings
         CreateMap<JobApplication, ApplicationDto>();
