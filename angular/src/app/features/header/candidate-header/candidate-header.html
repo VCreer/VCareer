@@ -137,8 +137,6 @@
               <div class="section-content" *ngIf="expandedSections.jobManagement">
                 <div class="menu-item" (click)="navigateToSavedJobs()">{{ translate('profile.saved_jobs') }}</div>
                 <div class="menu-item" (click)="navigateToAppliedJobs()">{{ translate('profile.applied_jobs') }}</div>
-                <div class="menu-item">{{ translate('profile.suitable_jobs') }}</div>
-                <div class="menu-item">{{ translate('profile.job_suggestions') }}</div>
               </div>
             </div>
 
@@ -154,9 +152,6 @@
               </div>
                           <div class="section-content" *ngIf="expandedSections.cvManagement">
                             <div class="menu-item" (click)="navigateToCvManagement()">{{ translate('profile.my_cv') }}</div>
-                            <div class="menu-item">{{ translate('profile.my_cover_letter') }}</div>
-                            <div class="menu-item">{{ translate('profile.recruiters_connect') }}</div>
-                            <div class="menu-item">{{ translate('profile.recruiters_view') }}</div>
                           </div>
             </div>
 
@@ -204,8 +199,7 @@
                             <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.upgradeAccount"></i>
                           </div>
                           <div class="section-content" *ngIf="expandedSections.upgradeAccount">
-                            <div class="menu-item">{{ translate('profile.upgrade_vip_account') }}</div>
-                            <div class="menu-item">{{ translate('profile.activate_gift') }}</div>
+                            <div class="menu-item" (click)="navigateToService()">{{ translate('profile.upgrade_vip_account') }}</div>
                           </div>
                         </div>
           </div>

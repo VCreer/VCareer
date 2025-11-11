@@ -1,0 +1,80 @@
+<div class="candidate-service-page">
+  <div class="service-header">
+    <h1 class="main-title">NÂNG CẤP TÀI KHOẢN</h1>
+    <p class="subtitle">Mở khóa nhiều quyền lợi hơn</p>
+  </div>
+
+  <div class="service-container">
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th class="feature-column">Loại tài khoản</th>
+            <th *ngFor="let account of accountTypes" class="account-column">
+              <div class="account-header">
+                <div class="account-name">
+                  <ng-container *ngIf="account.name.includes('VIP')">
+                    {{ account.name.replace(' VIP', '') }}
+                    <span class="vip-badge">VIP</span>
+                  </ng-container>
+                  <span *ngIf="!account.name.includes('VIP')">{{ account.name }}</span>
+                </div>
+                <div class="account-price">{{ account.price }}</div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let feature of features">
+            <tr>
+              <td class="feature-name-cell">
+                <span class="feature-name">{{ feature.name }}</span>
+                <span class="new-badge" *ngIf="feature.isNew">Mới</span>
+              </td>
+              <td class="feature-value-cell" [class.has-check]="getFeatureValue(feature, 'regular') === '✓'">
+                {{ getFeatureValue(feature, 'regular') }}
+              </td>
+              <td class="feature-value-cell" [class.has-check]="getFeatureValue(feature, 'verified') === '✓'">
+                {{ getFeatureValue(feature, 'verified') }}
+              </td>
+              <td class="feature-value-cell" [class.has-check]="getFeatureValue(feature, 'proVip') === '✓'">
+                {{ getFeatureValue(feature, 'proVip') }}
+              </td>
+              <td class="feature-value-cell" [class.has-check]="getFeatureValue(feature, 'premiumVip') === '✓'">
+                {{ getFeatureValue(feature, 'premiumVip') }}
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="action-cell"></td>
+            <td *ngFor="let account of accountTypes" class="action-cell">
+              <button 
+                *ngIf="account.buttonType === 'current'" 
+                class="btn-current"
+                disabled>
+                {{ account.buttonText }}
+              </button>
+              <button 
+                *ngIf="account.buttonType === 'verified'" 
+                class="btn-verified"
+                disabled>
+                {{ account.buttonText }}
+              </button>
+              <button 
+                *ngIf="account.buttonType === 'upgrade'" 
+                class="btn-upgrade"
+                (click)="onUpgrade(account.name)">
+                {{ account.buttonText }}
+              </button>
+              <p *ngIf="account.buttonType === 'info'" class="info-text">
+                {{ account.infoText }}
+              </p>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

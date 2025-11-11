@@ -1,0 +1,83 @@
+<div class="profile-card">
+  <div class="profile-layout">
+    <!-- Left Column - Profile Icon -->
+    <div class="profile-left-column">
+      <div class="profile-icon" (click)="onAvatarClick()">
+        <i class="fa fa-user-circle" *ngIf="!avatarUrl"></i>
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" />
+      </div>
+    </div>
+    
+    <!-- Right Column - Profile Info -->
+    <div class="profile-right-column">
+      <div class="profile-info">
+        <span class="profile-label">Profile</span>
+        <h3>Chào bạn trở lại, {{ userName }}</h3>
+      </div>
+      
+      <div class="account-status">
+        <span class="verified-badge">{{ accountStatus }}</span>
+      </div>
+      
+      <button class="upgrade-btn" (click)="onUpgradeClick()">
+        <i class="fa fa-arrow-up"></i>
+        Nâng cấp tài khoản
+      </button>
+    </div>
+  </div>
+
+  <!-- Toggle Settings Section -->
+  <div class="toggle-settings-section">
+    <!-- Toggle 1: Job Search Status -->
+    <div class="toggle-setting-item">
+      <div class="toggle-wrapper">
+        <label class="toggle-label">
+          <input 
+            type="checkbox" 
+            class="toggle-input" 
+            [ngModel]="jobSearchEnabled"
+            (change)="onJobSearchToggle($event)"
+            [checked]="jobSearchEnabled">
+          <span class="toggle-slider" [class.active]="jobSearchEnabled"></span>
+        </label>
+        <div class="toggle-content">
+          <span class="toggle-text" [class.inactive]="!jobSearchEnabled">
+            {{ jobSearchEnabled ? 'Đang bật tìm việc' : 'Đang Tắt tìm việc' }}
+          </span>
+          <p class="toggle-description">
+            Bật tìm việc giúp hồ sơ của bạn nổi bật hơn và được chú ý nhiều hơn trong danh sách tìm kiếm của NTD.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toggle 2: Allow Recruiter Search -->
+    <div class="toggle-setting-item">
+      <div class="toggle-wrapper">
+        <label class="toggle-label">
+          <input 
+            type="checkbox" 
+            class="toggle-input" 
+            [ngModel]="allowRecruiterSearch"
+            (change)="onAllowRecruiterSearchToggle($event)"
+            [checked]="allowRecruiterSearch">
+          <span class="toggle-slider" [class.active]="allowRecruiterSearch"></span>
+        </label>
+        <div class="toggle-content">
+          <span class="toggle-text">
+            Cho phép NTD tìm kiếm hồ sơ
+          </span>
+          <div class="toggle-description-container">
+            <p class="toggle-description">
+              Khi có cơ hội việc làm phù hợp, NTD sẽ liên hệ và trao đổi với bạn qua
+            </p>
+            <div class="contact-method">
+              <i class="fa fa-envelope contact-icon"></i>
+              <span>Email & Số điện thoại</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
