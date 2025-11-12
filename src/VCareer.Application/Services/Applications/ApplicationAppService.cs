@@ -427,7 +427,7 @@ namespace VCareer.Application.Applications
         //[Authorize(VCareerPermission.Application.DownloadCV)]
         public async Task<byte[]> DownloadApplicationCVAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
             var application = await _applicationRepository.GetAsync(id);
 
             // Kiểm tra quyền: Recruiter chỉ có thể download CV của applications thuộc công ty của họ
@@ -488,7 +488,7 @@ namespace VCareer.Application.Applications
         //[Authorize(VCareerPermission.Application.DownloadCV)]
         public async Task<DownloadApplicationCVResultDto> DownloadApplicationCVWithInfoAsync(Guid id)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
             var application = await _applicationRepository.GetAsync(id);
 
             // Kiểm tra quyền: Recruiter chỉ có thể download CV của applications thuộc công ty của họ
@@ -575,7 +575,7 @@ namespace VCareer.Application.Applications
         //[Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
         {
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
+            var userId = _currentUser.GetId();
             var application = await _applicationRepository.GetAsync(id);
 
             // Kiểm tra quyền: Chỉ recruiter của công ty mới có thể đánh giá ứng viên
@@ -669,8 +669,8 @@ namespace VCareer.Application.Applications
         public async Task<byte[]> BulkDownloadCompanyCVsAsync(BulkDownloadCVsDto input)
         {
             // Lấy thông tin user hiện tại
-            var userId = _tokenClaimsHelper.GetUserIdFromTokenOrThrow();
-            
+            var userId = _currentUser.GetId();
+
             // Kiểm tra user có phải là recruiter không (Leader Recruiter hoặc HR Staff)
             // IsLead = 1: Leader Recruiter, IsLead = 0: HR Staff
             var recruiter = await _recruiterProfileRepository.FirstOrDefaultAsync(r => r.UserId == userId);

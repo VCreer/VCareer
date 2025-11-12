@@ -1406,73 +1406,6 @@ namespace VCareer.Migrations
 
             migrationBuilder.CreateTable(
                 name: "JobApplications",
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251109160722_InitDatabaseVcareer.cs
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CandidateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CompanyId = table.Column<int>(type: "int", nullable: false),
-                    CVType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CandidateCvId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UploadedCvId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CoverLetter = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    RecruiterNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Rating = table.Column<int>(type: "int", nullable: true),
-                    ViewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ViewedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RespondedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    InterviewDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    InterviewLocation = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    InterviewNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    WithdrawnAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    WithdrawalReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_JobApplications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_CandidateCvs_CandidateCvId",
-                        column: x => x.CandidateCvId,
-                        principalTable: "CandidateCvs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_CandidateProfile_CandidateId",
-                        column: x => x.CandidateId,
-                        principalTable: "CandidateProfile",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_UploadedCvs_UploadedCvId",
-                        column: x => x.UploadedCvId,
-                        principalTable: "UploadedCvs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AppSavedJobs",
-========
->>>>>>>> quangvu:src/VCareer.EntityFrameworkCore/Migrations/20251111081034_InitDatabase.cs
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -1955,12 +1888,7 @@ namespace VCareer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_JobApplications_JobId_CandidateId",
                 table: "JobApplications",
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251109160722_InitDatabaseVcareer.cs
-                columns: new[] { "JobId", "CandidateId" },
-                unique: true);
-========
                 columns: new[] { "JobId", "CandidateId" });
->>>>>>>> quangvu:src/VCareer.EntityFrameworkCore/Migrations/20251111081034_InitDatabase.cs
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobApplications_Status",
@@ -2166,12 +2094,6 @@ namespace VCareer.Migrations
                 name: "AppRefreshTokens");
 
             migrationBuilder.DropTable(
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251109160722_InitDatabaseVcareer.cs
-                name: "AppSavedJobs");
-
-            migrationBuilder.DropTable(
-========
->>>>>>>> quangvu:src/VCareer.EntityFrameworkCore/Migrations/20251111081034_InitDatabase.cs
                 name: "CompanyIndustries");
 
             migrationBuilder.DropTable(
@@ -2221,12 +2143,6 @@ namespace VCareer.Migrations
 
             migrationBuilder.DropTable(
                 name: "UploadedCvs");
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251109160722_InitDatabaseVcareer.cs
-
-            migrationBuilder.DropTable(
-                name: "JobPostings");
-========
->>>>>>>> quangvu:src/VCareer.EntityFrameworkCore/Migrations/20251111081034_InitDatabase.cs
 
             migrationBuilder.DropTable(
                 name: "Tags");

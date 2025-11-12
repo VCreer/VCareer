@@ -60,8 +60,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
   // ✅ Internal selected items (Set for faster lookup) - renamed to avoid conflict with @Input()
   internalSelectedCategoryIds: Set<string> = new Set();
-  internalSelectedProvinceIds: Set<number> = new Set();
-  internalSelectedDistrictIds: Set<number> = new Set();
+  internalSelectedProvinceCodes: Set<number> = new Set(); // Changed to use code instead of id
+  internalSelectedDistrictCodes: Set<number> = new Set(); // Changed to use code instead of id
 
   // Hover state cho category multi-level
   hoveredLevel1Category: CategoryTreeDto | null = null;
@@ -147,12 +147,12 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
     if (changes['selectedProvinceIds'] && this.selectedProvinceIds) {
       console.log('✅ Restoring selected provinces:', this.selectedProvinceIds);
-      this.internalSelectedProvinceIds = new Set(this.selectedProvinceIds);
+      this.internalSelectedProvinceCodes = new Set(this.selectedProvinceIds);
     }
 
     if (changes['selectedDistrictIds'] && this.selectedDistrictIds) {
       console.log('✅ Restoring selected districts:', this.selectedDistrictIds);
-      this.internalSelectedDistrictIds = new Set(this.selectedDistrictIds);
+      this.internalSelectedDistrictCodes = new Set(this.selectedDistrictIds);
     }
   }
 
@@ -473,74 +473,82 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Toggle province selection (với cascade logic)
    */
-  toggleProvinceSelection(provinceId: number, event: Event) {
+  toggleProvinceSelection(provinceCode: number, event: Event) {
     event.stopPropagation();
 
-    const province = this.provinces.find(p => p.id === provinceId);
-    if (!province) return;
+    const province = this.provinces.find(p => p.code === provinceCode);
+    if (!province || !province.code) return;
 
-    if (this.internalSelectedProvinceIds.has(provinceId)) {
+    if (this.internalSelectedProvinceCodes.has(provinceCode)) {
       // Uncheck province → Uncheck all districts
-      this.internalSelectedProvinceIds.delete(provinceId);
-      province.districts.forEach(dist => {
-        this.internalSelectedDistrictIds.delete(dist.id);
-      });
+      this.internalSelectedProvinceCodes.delete(provinceCode);
+      if (province.districts) {
+        province.districts.forEach(dist => {
+          if (dist.code) {
+            this.internalSelectedDistrictCodes.delete(dist.code);
+          }
+        });
+      }
     } else {
       // Check province → Check all districts
-      this.internalSelectedProvinceIds.add(provinceId);
-      province.districts.forEach(dist => {
-        this.internalSelectedDistrictIds.add(dist.id);
-    });
-  }
+      this.internalSelectedProvinceCodes.add(provinceCode);
+      if (province.districts) {
+        province.districts.forEach(dist => {
+          if (dist.code) {
+            this.internalSelectedDistrictCodes.add(dist.code);
+          }
+        });
+      }
+    }
   }
 
   /**
    * Toggle district selection (với cascade logic)
    */
-  toggleDistrictSelection(provinceId: number, districtId: number, event: Event) {
+  toggleDistrictSelection(provinceCode: number, districtCode: number, event: Event) {
     event.stopPropagation();
 
-    const province = this.provinces.find(p => p.id === provinceId);
-    if (!province) return;
+    const province = this.provinces.find(p => p.code === provinceCode);
+    if (!province || !province.code) return;
 
-    if (this.internalSelectedDistrictIds.has(districtId)) {
+    if (this.internalSelectedDistrictCodes.has(districtCode)) {
       // Uncheck district
-      this.internalSelectedDistrictIds.delete(districtId);
+      this.internalSelectedDistrictCodes.delete(districtCode);
 
       // Nếu không còn district nào được chọn → Uncheck province
-      const hasOtherDistricts = province.districts.some(
-        d => d.id !== districtId && this.internalSelectedDistrictIds.has(d.id)
-      );
+      const hasOtherDistricts = province.districts?.some(
+        d => d.code && d.code !== districtCode && this.internalSelectedDistrictCodes.has(d.code)
+      ) || false;
       if (!hasOtherDistricts) {
-        this.internalSelectedProvinceIds.delete(provinceId);
+        this.internalSelectedProvinceCodes.delete(provinceCode);
       }
     } else {
       // Check district → Auto check province
-      this.internalSelectedDistrictIds.add(districtId);
-      this.internalSelectedProvinceIds.add(provinceId);
+      this.internalSelectedDistrictCodes.add(districtCode);
+      this.internalSelectedProvinceCodes.add(provinceCode);
     }
   }
 
   /**
    * Check if province is selected
    */
-  isProvinceSelected(provinceId: number): boolean {
-    return this.internalSelectedProvinceIds.has(provinceId);
+  isProvinceSelected(provinceCode: number | undefined): boolean {
+    return provinceCode !== undefined && this.internalSelectedProvinceCodes.has(provinceCode);
   }
 
   /**
    * Check if district is selected
    */
-  isDistrictSelected(districtId: number): boolean {
-    return this.internalSelectedDistrictIds.has(districtId);
+  isDistrictSelected(districtCode: number | undefined): boolean {
+    return districtCode !== undefined && this.internalSelectedDistrictCodes.has(districtCode);
   }
 
   /**
    * Clear all location selections
    */
   clearAllLocations() {
-    this.internalSelectedProvinceIds.clear();
-    this.internalSelectedDistrictIds.clear();
+    this.internalSelectedProvinceCodes.clear();
+    this.internalSelectedDistrictCodes.clear();
   }
 
   /**
@@ -548,8 +556,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    */
   applyLocationFilter() {
     this.locationSelected.emit({
-      provinceIds: Array.from(this.internalSelectedProvinceIds),
-      districtIds: Array.from(this.internalSelectedDistrictIds),
+      provinceIds: Array.from(this.internalSelectedProvinceCodes),
+      districtIds: Array.from(this.internalSelectedDistrictCodes),
     });
     this.showLocationDropdown = false;
   }
@@ -574,11 +582,11 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * Get location count text for display
    */
   getLocationCountText(): string {
-    const provinceCount = this.internalSelectedProvinceIds.size;
-    const districtCount = this.internalSelectedDistrictIds.size;
+    const provinceCount = this.internalSelectedProvinceCodes.size;
+    const districtCount = this.internalSelectedDistrictCodes.size;
     const totalCount = provinceCount + districtCount;
     return totalCount > 0 ? ` (${totalCount})` : '';
-    }
+  }
 
   /**
    * ✅ Cleanup subscriptions khi component bị destroy

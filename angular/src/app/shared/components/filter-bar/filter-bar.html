@@ -229,15 +229,15 @@
             <div
               *ngFor="let province of filteredProvinces"
               class="location-province-item"
-              [class.selected]="isProvinceSelected(province.id)"
-              [class.hovered]="hoveredProvince?.id === province.id"
+              [class.selected]="isProvinceSelected(province.code)"
+              [class.hovered]="hoveredProvince?.code === province.code"
               (mouseenter)="onProvinceHover(province)"
             >
               <label class="location-checkbox-label">
                 <input
                   type="checkbox"
-                  [checked]="isProvinceSelected(province.id)"
-                  (change)="toggleProvinceSelection(province.id, $event)"
+                  [checked]="isProvinceSelected(province.code)"
+                  (change)="toggleProvinceSelection(province.code || 0, $event)"
                 />
                 <span class="location-name">{{ province.name }}</span>
                 <span
@@ -268,13 +268,13 @@
       <div 
                 *ngFor="let district of hoveredProvince.districts"
                 class="location-district-item"
-                [class.selected]="isDistrictSelected(district.id)"
+                [class.selected]="isDistrictSelected(district.code)"
       >
                 <label class="location-checkbox-label">
                   <input
                     type="checkbox"
-                    [checked]="isDistrictSelected(district.id)"
-                    (change)="toggleDistrictSelection(hoveredProvince.id, district.id, $event)"
+                    [checked]="isDistrictSelected(district.code)"
+                    (change)="toggleDistrictSelection(hoveredProvince.code || 0, district.code || 0, $event)"
                   />
                   <span class="location-name">{{ district.name }}</span>
                 </label>
