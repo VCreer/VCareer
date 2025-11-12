@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using VCareer.Dto.Job;
 using VCareer.Job.JobPosting.ISerices;
+using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 
 namespace VCareer.Controllers.Job
@@ -71,7 +72,7 @@ namespace VCareer.Controllers.Job
                 var job = await _jobPostingService.GetJobBySlugAsync(slug);
                 return Ok(job);
             }
-            catch (Volo.Abp.BusinessException ex)
+            catch (UserFriendlyException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -95,7 +96,7 @@ namespace VCareer.Controllers.Job
                 var job = await _jobPostingService.GetJobByIdAsync(id);
                 return Ok(job);
             }
-            catch (Volo.Abp.BusinessException ex)
+            catch (UserFriendlyException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -210,7 +211,7 @@ namespace VCareer.Controllers.Job
                 await _jobPostingService.SaveJobAsync(jobId);
                 return Ok(new { message = "Đã lưu công việc thành công" });
             }
-            catch (Volo.Abp.BusinessException ex)
+            catch (UserFriendlyException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -234,7 +235,7 @@ namespace VCareer.Controllers.Job
                 await _jobPostingService.UnsaveJobAsync(jobId);
                 return Ok(new { message = "Đã bỏ lưu công việc thành công" });
             }
-            catch (Volo.Abp.BusinessException ex)
+            catch (UserFriendlyException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }

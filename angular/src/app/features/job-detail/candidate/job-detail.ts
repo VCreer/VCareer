@@ -82,8 +82,13 @@ export class JobDetailComponent implements OnInit {
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
       console.log('[JobDetail] isLoggedIn =', isLoggedIn);
-      // Check application status when authentication state changes
-      if (isLoggedIn && this.jobId) {
+      
+      // Kiểm tra token trực tiếp (vì có thể state chưa được set nhưng token vẫn có)
+      const hasToken = !!(localStorage.getItem('access_token') || sessionStorage.getItem('access_token'));
+      console.log('[JobDetail] hasToken =', hasToken);
+      
+      // Check application status when authentication state changes hoặc có token
+      if ((isLoggedIn || hasToken) && this.jobId) {
         this.checkApplicationStatus();
       } else {
         this.hasApplied = false;
@@ -130,8 +135,9 @@ export class JobDetailComponent implements OnInit {
         this.isHeartActive = jobDetail.isSaved;
         console.log('[JobDetail] isSaved from DTO =', jobDetail.isSaved);
 
-        // Check application status if authenticated
-        if (this.isAuthenticated && this.jobId) {
+        // Check application status if có token (không cần kiểm tra isAuthenticated)
+        const hasToken = !!(localStorage.getItem('access_token') || sessionStorage.getItem('access_token'));
+        if (hasToken && this.jobId) {
           this.checkApplicationStatus();
         }
         // } else {
@@ -574,20 +580,36 @@ export class JobDetailComponent implements OnInit {
    * Check if user has already applied for this job
    */
   checkApplicationStatus(): void {
-    if (!this.jobId || !this.isAuthenticated) {
+    if (!this.jobId) {
       this.hasApplied = false;
       return;
     }
 
+    // Kiểm tra token trước khi gọi API
+    const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    if (!token) {
+      console.log('[JobDetail] No token found, skipping checkApplicationStatus');
+      this.hasApplied = false;
+      return;
+    }
+
+    // Chỉ gọi API nếu có token (không cần kiểm tra isAuthenticated vì có thể state chưa được set)
     this.applicationService.checkApplicationStatus(this.jobId).subscribe({
       next: (status) => {
         this.hasApplied = status.hasApplied || false;
         this.cdr.detectChanges();
       },
       error: (error) => {
-        // Silently fail - user might not be authenticated or job doesn't exist
-        console.error('[JobDetail] Error checking application status:', error);
-        this.hasApplied = false;
+        // Xử lý lỗi 401 - token có thể hết hạn hoặc không hợp lệ
+        if (error.status === 401) {
+          console.warn('[JobDetail] 401 Unauthorized when checking application status - token may be invalid or expired');
+          // Không redirect, chỉ set hasApplied = false
+          this.hasApplied = false;
+        } else {
+          // Silently fail cho các lỗi khác
+          console.error('[JobDetail] Error checking application status:', error);
+          this.hasApplied = false;
+        }
       },
     });
   }

@@ -22,14 +22,51 @@ export class NavigationService {
   }
 
   private initializeAuthState() {
+    // Kiểm tra token từ localStorage hoặc sessionStorage
+    const accessToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const userRole = localStorage.getItem('userRole') as UserRole;
     const isVerified = localStorage.getItem('isVerified') === 'true';
     
-    if (isLoggedIn && userRole) {
+    console.log('[NavigationService] initializeAuthState:', {
+      hasToken: !!accessToken,
+      isLoggedIn,
+      userRole,
+      isVerified,
+      tokenSource: accessToken ? (localStorage.getItem('access_token') ? 'localStorage' : 'sessionStorage') : 'none'
+    });
+    
+    // Nếu có token, coi như đã đăng nhập (khôi phục trạng thái từ token)
+    if (accessToken) {
+      // Nếu có token nhưng chưa có isLoggedIn, khôi phục từ token
+      if (!isLoggedIn || !userRole) {
+        console.log('[NavigationService] Restoring auth state from token');
+        // Mặc định là candidate nếu có token nhưng không có role
+        // Hoặc có thể lấy từ token (nếu token có chứa role) - TODO: decode token để lấy role
+        const defaultRole: UserRole = userRole || 'candidate'; // Ưu tiên role có sẵn, nếu không thì mặc định candidate
+        this.isLoggedInSubject.next(true);
+        this.userRoleSubject.next(defaultRole);
+        localStorage.setItem('isLoggedIn', 'true');
+        if (!userRole) {
+          localStorage.setItem('userRole', defaultRole);
+        }
+        if (isVerified) {
+          this.isVerifiedSubject.next(isVerified);
+        }
+      } else {
+        // Đã có đầy đủ thông tin, khôi phục trạng thái
+        this.isLoggedInSubject.next(true);
+        this.userRoleSubject.next(userRole);
+        this.isVerifiedSubject.next(isVerified);
+      }
+    } else if (isLoggedIn && userRole) {
+      // Nếu không có token nhưng có isLoggedIn, vẫn giữ trạng thái (trường hợp đặc biệt)
+      console.log('[NavigationService] Restoring auth state from localStorage (no token)');
       this.isLoggedInSubject.next(true);
       this.userRoleSubject.next(userRole);
       this.isVerifiedSubject.next(isVerified);
+    } else {
+      console.log('[NavigationService] No auth state found, user is not logged in');
     }
   }
 
@@ -87,7 +124,22 @@ export class NavigationService {
 
   // Kiểm tra trạng thái đăng nhập
   isLoggedIn(): boolean {
-    return this.isLoggedInSubject.value;
+    // Kiểm tra cả token và trạng thái
+    const hasToken = !!(localStorage.getItem('access_token') || sessionStorage.getItem('access_token'));
+    const stateLoggedIn = this.isLoggedInSubject.value;
+    
+    // Nếu có token, coi như đã đăng nhập (ngay cả khi state chưa được set)
+    // State sẽ được set khi initializeAuthState() được gọi
+    if (hasToken) {
+      return true;
+    }
+    
+    return stateLoggedIn;
+  }
+  
+  // Kiểm tra xem có token không
+  hasToken(): boolean {
+    return !!(localStorage.getItem('access_token') || sessionStorage.getItem('access_token'));
   }
 
   // Lấy role hiện tại

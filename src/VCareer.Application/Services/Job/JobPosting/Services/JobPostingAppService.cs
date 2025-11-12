@@ -11,6 +11,7 @@ using VCareer.Models.Job;
 using VCareer.Models.Users;
 using VCareer.Repositories.Job;
 using VCareer.Services.Job.Search;
+using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
@@ -117,7 +118,7 @@ namespace VCareer.Services.Job.JobPosting.Services
 
             if (job == null)
             {
-                throw new Volo.Abp.BusinessException($"Job với slug '{slug}' không tồn tại hoặc đã bị xóa.");
+                throw new UserFriendlyException($"Job với slug '{slug}' không tồn tại hoặc đã bị xóa.");
             }
 
             // Tăng view count
@@ -135,7 +136,7 @@ namespace VCareer.Services.Job.JobPosting.Services
 
             if (job == null)
             {
-                throw new Volo.Abp.BusinessException($"Job với ID '{jobId}' không tồn tại hoặc đã bị xóa.");
+                throw new UserFriendlyException($"Job với ID '{jobId}' không tồn tại hoặc đã bị xóa.");
             }
 
             // Tăng view count
@@ -386,7 +387,7 @@ namespace VCareer.Services.Job.JobPosting.Services
         {
             if (!_currentUser.IsAuthenticated)
             {
-                throw new Volo.Abp.BusinessException("Bạn cần đăng nhập để lưu công việc.");
+                throw new UserFriendlyException("Bạn cần đăng nhập để lưu công việc.");
             }
 
             var userId = _currentUser.Id.Value;
@@ -395,14 +396,14 @@ namespace VCareer.Services.Job.JobPosting.Services
             var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
             if (candidateProfile == null)
             {
-                throw new Volo.Abp.BusinessException("Không tìm thấy thông tin ứng viên.");
+                throw new UserFriendlyException("Không tìm thấy thông tin ứng viên.");
             }
 
             // Kiểm tra job có tồn tại không
             var job = await _jobPostingRepository.GetAsync(jobId);
             if (job == null)
             {
-                throw new Volo.Abp.BusinessException("Công việc không tồn tại.");
+                throw new UserFriendlyException("Công việc không tồn tại.");
             }
 
             // Kiểm tra đã lưu chưa
@@ -430,7 +431,7 @@ namespace VCareer.Services.Job.JobPosting.Services
         {
             if (!_currentUser.IsAuthenticated)
             {
-                throw new Volo.Abp.BusinessException("Bạn cần đăng nhập để bỏ lưu công việc.");
+                throw new UserFriendlyException("Bạn cần đăng nhập để bỏ lưu công việc.");
             }
 
             var userId = _currentUser.Id.Value;
@@ -439,7 +440,7 @@ namespace VCareer.Services.Job.JobPosting.Services
             var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
             if (candidateProfile == null)
             {
-                throw new Volo.Abp.BusinessException("Không tìm thấy thông tin ứng viên.");
+                throw new UserFriendlyException("Không tìm thấy thông tin ứng viên.");
             }
 
             // Xóa SavedJob

@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251107022905_InitDatabase")]
-    partial class InitDatabase
+    [Migration("20251110102139_addDatabaseNew")]
+    partial class addDatabaseNew
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3604,7 +3604,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.CV.UploadedCv", "UploadedCv")
                         .WithMany()
                         .HasForeignKey("UploadedCvId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Candidate");
 

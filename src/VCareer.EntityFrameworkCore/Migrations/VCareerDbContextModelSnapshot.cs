@@ -3601,7 +3601,7 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.CV.UploadedCv", "UploadedCv")
                         .WithMany()
                         .HasForeignKey("UploadedCvId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Candidate");
 
