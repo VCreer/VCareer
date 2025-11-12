@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
@@ -12,6 +16,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 using Volo.Abp.Validation;
 
@@ -22,22 +27,77 @@ namespace VCareer.Services.Profile
     {
         private readonly IdentityUserManager _userManager;
         private readonly ICurrentUser _currentUser;
-              private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly IRepository<EmployeeProfile, Guid> _employeeProfileRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
 
         public ProfileAppService(
             IdentityUserManager userManager,
             ICurrentUser currentUser,
+            IHttpContextAccessor httpContextAccessor,
                     IRepository<CandidateProfile, Guid> candidateProfileRepository,
             IRepository<EmployeeProfile, Guid> employeeProfileRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository)
         {
             _userManager = userManager;
             _currentUser = currentUser;
-                      _candidateProfileRepository = candidateProfileRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _candidateProfileRepository = candidateProfileRepository;
             _employeeProfileRepository = employeeProfileRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
+        }
+
+        /// <summary>
+        /// Lấy UserId từ ICurrentUser hoặc HttpContext claims như phương án dự phòng
+        /// </summary>
+        private Guid GetCurrentUserId()
+        {
+            // Thử lấy từ ICurrentUser trước
+            if (_currentUser.Id.HasValue)
+            {
+                return _currentUser.Id.Value;
+            }
+
+            // Nếu không có, thử lấy từ HttpContext claims
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext?.User?.Identity?.IsAuthenticated == true)
+            {
+                // Thử nhiều cách để lấy user ID
+                var userIdClaim = httpContext.User.FindFirst(AbpClaimTypes.UserId)
+                    ?? httpContext.User.FindFirst(ClaimTypes.NameIdentifier)
+                    ?? httpContext.User.FindFirst("sub")
+                    ?? httpContext.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                    ?? httpContext.User.FindFirst(ClaimTypes.Name);
+
+                if (userIdClaim != null)
+                {
+                    // Thử parse như Guid
+                    if (Guid.TryParse(userIdClaim.Value, out Guid userId))
+                    {
+                        return userId;
+                    }
+
+                    // Nếu không phải Guid, có thể là string username - thử tìm user
+                    if (!string.IsNullOrEmpty(userIdClaim.Value))
+                    {
+                        // Thử tìm user bằng username hoặc email (dùng GetAwaiter().GetResult() để tránh deadlock)
+                        var user = _userManager.FindByNameAsync(userIdClaim.Value).GetAwaiter().GetResult()
+                            ?? _userManager.FindByEmailAsync(userIdClaim.Value).GetAwaiter().GetResult();
+                        
+                        if (user != null)
+                        {
+                            return user.Id;
+                        }
+                    }
+                }
+
+                // Log tất cả claims để debug (chỉ trong development)
+                var allClaims = httpContext.User.Claims.Select(c => $"{c.Type}={c.Value}").ToList();
+                Logger.LogWarning($"Không tìm thấy UserId claim. Các claims có sẵn: {string.Join(", ", allClaims)}");
+            }
+
+            throw new UserFriendlyException("Không thể xác định người dùng. Vui lòng đăng nhập lại.");
         }
 
         //ádadad
@@ -45,9 +105,9 @@ namespace VCareer.Services.Profile
         /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
-            var userId = _currentUser.GetId();
-                var user = await _userManager.GetByIdAsync(userId);
+            // Lấy UserId từ ICurrentUser hoặc HttpContext claims
+            var userId = GetCurrentUserId();
+            var user = await _userManager.GetByIdAsync(userId);
 
 
             if (user == null)
@@ -96,8 +156,8 @@ namespace VCareer.Services.Profile
         /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
-            var userId = _currentUser.GetId();
+            // Lấy UserId từ ICurrentUser hoặc HttpContext claims
+            var userId = GetCurrentUserId();
             var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)
@@ -125,8 +185,8 @@ namespace VCareer.Services.Profile
         // lấy thông tin id hiện tại
         public async Task<ProfileDto> GetCurrentUserProfileAsync()
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
-            var userId = _currentUser.GetId();
+            // Lấy UserId từ ICurrentUser hoặc HttpContext claims
+            var userId = GetCurrentUserId();
             var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)
@@ -165,8 +225,8 @@ namespace VCareer.Services.Profile
         [Authorize(VCareerPermission.Profile.DeleteAccount)]
         public async Task DeleteAccountAsync()
         {
-            // Lấy UserId từ token claims thay vì ICurrentUser
-            var userId = _currentUser.GetId();
+            // Lấy UserId từ ICurrentUser hoặc HttpContext claims
+            var userId = GetCurrentUserId();
             var user = await _userManager.GetByIdAsync(userId);
 
             if (user == null)

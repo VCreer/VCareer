@@ -62,21 +62,21 @@ namespace VCareer.Profile
             {
                 var errors = ModelState
                     .Where(x => x.Value?.Errors.Count > 0)
-                    .Select(x => new { 
-                        Field = x.Key, 
-                        Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToArray() 
+                    .Select(x => new {
+                        Field = x.Key,
+                        Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToArray()
                     })
                     .ToList();
-                
+
                 Logger.LogWarning($"Validation errors in UpdatePersonalInfoAsync: {System.Text.Json.JsonSerializer.Serialize(errors)}");
-                
+
                 // Return detailed validation errors
                 var problemDetails = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(ModelState)
                 {
                     Title = "Validation Error",
                     Status = 400
                 };
-                
+
                 return BadRequest(problemDetails);
             }
 

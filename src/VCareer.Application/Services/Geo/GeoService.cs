@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,8 +32,44 @@ namespace VCareer.Services.Geo
             if (cached != null) return cached;
 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync("https://provinces.open-api.vn/api/v1/ depth==2");
-            response.EnsureSuccessStatusCode();
+            client.Timeout = TimeSpan.FromSeconds(30);
+            
+            // Thử các URL khác nhau cho provinces.open-api.vn API
+            var apiUrls = new[]
+            {
+                "https://provinces.open-api.vn/api/p/?depth=2",  // URL với /p/ (provinces)
+                "https://provinces.open-api.vn/api/?depth=2",    // URL không có /p/
+                "https://provinces.open-api.vn/api/p"            // URL đơn giản nhất
+            };
+            
+            HttpResponseMessage? response = null;
+            string? successfulUrl = null;
+            
+            foreach (var apiUrl in apiUrls)
+            {
+                try
+                {
+                    response = await client.GetAsync(apiUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        successfulUrl = apiUrl;
+                        break;
+                    }
+                    Logger.LogWarning($"Failed to get provinces from {apiUrl}. Status: {response.StatusCode}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Error calling {apiUrl}");
+                }
+            }
+            
+            if (response == null || !response.IsSuccessStatusCode)
+            {
+                Logger.LogError($"Failed to get provinces from all API URLs. Last status: {response?.StatusCode}");
+                throw new BusinessException("Không thể lấy dữ liệu tỉnh/thành phố từ API bên ngoài. Vui lòng thử lại sau.");
+            }
+            
+            Logger.LogInformation($"Successfully fetched provinces from: {successfulUrl}");
 
             var content = await response.Content.ReadAsStringAsync();
             var provinces = JsonSerializer.Deserialize<List<ProvinceDto>>(content, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
