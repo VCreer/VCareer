@@ -70,9 +70,14 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   positionLevelOptions = this.jobOptionsService.POSITION_LEVEL_OPTIONS;
   educationOptions = this.jobOptionsService.EDUCATION_OPTIONS;
   employmentTypeOptions = this.jobOptionsService.EMPLOYMENT_TYPE_OPTIONS;
+  provinceOptions = this.jobOptionsService.PROVINCE_OPTIONS;
+  
+  // Dynamic options
+  districtOptions: any[] = [];
+  wardOptions: any[] = [];
 
   // Job form data
-  jobForm: JobFormData = {
+  jobForm: JobFormData & { province?: string; district?: string; ward?: string } = {
     companyName: '',
     companySize: '',
     companyIndustry: '',
@@ -86,6 +91,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     employmentType: '',
     jobTitle: '',
     location: '',
+    province: '',
+    district: '',
+    ward: '',
     salary: '',
     experience: '',
     applicationDeadline: '',
@@ -127,17 +135,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     }
   }
 
-  onCompanyImageSelected(file: File): void {
-    this.jobForm.companyImage = file;
-    
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.jobForm.companyImagePreview = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
   openPreviewModal(): void {
     this.showPreviewModal = true;
   }
@@ -148,38 +145,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
   validateForm(): boolean {
     this.validationErrors = {};
-
-    // Company Information Validation
-    if (!this.jobForm.companyName || this.jobForm.companyName.trim() === '') {
-      this.validationErrors['companyName'] = 'Vui lòng nhập tên công ty';
-    }
-
-    if (!this.jobForm.companySize || this.jobForm.companySize === '') {
-      this.validationErrors['companySize'] = 'Vui lòng chọn quy mô công ty';
-    }
-
-    if (!this.jobForm.companyIndustry || this.jobForm.companyIndustry === '') {
-      this.validationErrors['companyIndustry'] = 'Vui lòng chọn lĩnh vực công ty';
-    }
-
-    if (!this.jobForm.companyLocation || this.jobForm.companyLocation.trim() === '') {
-      this.validationErrors['companyLocation'] = 'Vui lòng nhập địa điểm công ty';
-    }
-
-    if (!this.jobForm.companyWebsite || this.jobForm.companyWebsite.trim() === '') {
-      this.validationErrors['companyWebsite'] = 'Vui lòng nhập trang web công ty';
-    } else {
-      // Validate URL format (more flexible pattern)
-      const urlPattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-      const trimmedUrl = this.jobForm.companyWebsite.trim();
-      if (!urlPattern.test(trimmedUrl)) {
-        this.validationErrors['companyWebsite'] = 'Vui lòng nhập URL hợp lệ (ví dụ: https://example.com)';
-      }
-    }
-
-    if (!this.jobForm.companyImage) {
-      this.validationErrors['companyImage'] = 'Vui lòng chọn ảnh công ty';
-    }
 
     // General Information Validation
     if (!this.jobForm.positionLevel || this.jobForm.positionLevel === '') {
@@ -208,12 +173,26 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       this.validationErrors['jobTitle'] = 'Vui lòng nhập tên công việc';
     }
 
-    if (!this.jobForm.location || this.jobForm.location === '') {
-      this.validationErrors['location'] = 'Vui lòng chọn địa điểm';
+    if (!this.jobForm.province || this.jobForm.province === '') {
+      this.validationErrors['province'] = 'Vui lòng chọn tỉnh/thành phố';
+    }
+    if (!this.jobForm.district || this.jobForm.district === '') {
+      this.validationErrors['district'] = 'Vui lòng chọn quận/huyện';
+    }
+    if (!this.jobForm.ward || this.jobForm.ward === '') {
+      this.validationErrors['ward'] = 'Vui lòng chọn xã/phường';
     }
 
-    if (!this.jobForm.salary || this.jobForm.salary === '') {
-      this.validationErrors['salary'] = 'Vui lòng chọn mức lương';
+    if (!this.jobForm.salary || this.jobForm.salary === '' || this.jobForm.salary === null) {
+      this.validationErrors['salary'] = 'Vui lòng nhập mức lương';
+    } else {
+      // Validate salary is a valid number
+      const salaryNum = parseFloat(this.jobForm.salary.toString());
+      if (isNaN(salaryNum)) {
+        this.validationErrors['salary'] = 'Mức lương phải là số';
+      } else if (salaryNum < 0) {
+        this.validationErrors['salary'] = 'Mức lương không được nhỏ hơn 0';
+      }
     }
 
     if (!this.jobForm.experience || this.jobForm.experience === '') {
@@ -257,10 +236,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
     if (!this.jobForm.workLocation || this.jobForm.workLocation.trim() === '') {
       this.validationErrors['workLocation'] = 'Vui lòng nhập địa điểm làm việc';
-    }
-
-    if (isRichTextEmpty(this.jobForm.applicationMethod)) {
-      this.validationErrors['applicationMethod'] = 'Vui lòng nhập cách thức ứng tuyển';
     }
 
     // Scroll to first error
@@ -327,6 +302,21 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   onFieldChange(fieldName: string): void {
     // Clear error when user starts typing
     this.clearFieldError(fieldName);
+    
+    // Handle cascade for location fields
+    if (fieldName === 'province') {
+      // Reset district and ward when province changes
+      this.jobForm.district = '';
+      this.jobForm.ward = '';
+      this.wardOptions = [];
+      // Load districts for selected province
+      this.districtOptions = this.jobOptionsService.getDistrictOptions(this.jobForm.province || '');
+    } else if (fieldName === 'district') {
+      // Reset ward when district changes
+      this.jobForm.ward = '';
+      // Load wards for selected district
+      this.wardOptions = this.jobOptionsService.getWardOptions(this.jobForm.district || '');
+    }
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
