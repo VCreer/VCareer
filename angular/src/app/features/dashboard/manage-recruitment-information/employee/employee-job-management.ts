@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PaginationComponent } from '../../../../shared/components';
+import { PaginationComponent, ToastNotificationComponent } from '../../../../shared/components';
 
 type JobStatus = 'pending' | 'approved' | 'rejected';
 
@@ -21,6 +21,11 @@ interface EmployeeJobPosting {
   keywords: string[];
   postedDate: string;
   campaignCode: string;
+  description?: string;
+  requirements?: string[];
+  benefits?: string[];
+  workLocation?: string[];
+  rejectReason?: string;
 }
 
 interface JobSummaryCard {
@@ -33,12 +38,13 @@ interface JobSummaryCard {
 @Component({
   selector: 'app-employee-job-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, ToastNotificationComponent],
   templateUrl: './manage-recruitment-information.html',
   styleUrls: ['./manage-recruitment-information.scss'],
 })
 export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   sidebarExpanded = false;
+  sidebarWidth = 0;
   private sidebarCheckInterval?: any;
 
   summaryCards: JobSummaryCard[] = [
@@ -73,7 +79,26 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       salary: 'Thoả thuận',
       keywords: ['Fullstack Developer', '4 năm kinh nghiệm', 'Đại học', 'NodeJS'],
       postedDate: 'Đăng 2 tuần trước',
-      campaignCode: '#2366831'
+      campaignCode: '#2366831',
+      description: 'Chúng tôi đang tìm kiếm một FullStack Developer có kinh nghiệm để tham gia vào đội ngũ phát triển sản phẩm. Bạn sẽ làm việc với các công nghệ hiện đại như NodeJS, ReactJS, Vue JS để xây dựng các ứng dụng web chất lượng cao.',
+      requirements: [
+        'Tốt nghiệp Đại học chuyên ngành Công nghệ thông tin hoặc tương đương',
+        'Có ít nhất 4 năm kinh nghiệm phát triển FullStack',
+        'Thành thạo NodeJS, ReactJS, Vue JS',
+        'Có kinh nghiệm với database (MongoDB, PostgreSQL)',
+        'Kỹ năng làm việc nhóm tốt, tư duy logic'
+      ],
+      benefits: [
+        'Mức lương cạnh tranh, thưởng theo hiệu suất',
+        'Bảo hiểm đầy đủ theo quy định',
+        'Môi trường làm việc trẻ trung, năng động',
+        'Cơ hội phát triển nghề nghiệp',
+        'Đào tạo và nâng cao kỹ năng'
+      ],
+      workLocation: [
+        'Hà Nội: Tầng 5, Tòa nhà ABC, 123 Đường XYZ, Quận Cầu Giấy',
+        'Làm việc từ xa: 2 ngày/tuần'
+      ]
     },
     { 
       id: 'JD-002', 
@@ -291,6 +316,18 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   currentPage = 1;
   totalPages = 0;
   totalItems = 0;
+  selectedJob: EmployeeJobPosting | null = null;
+  showRejectModal = false;
+  rejectReason = '';
+  hoveredJobId: string | null = null;
+  showViewRejectReasonModal = false;
+  editingRejectReason = false;
+  viewingRejectReasonJob: EmployeeJobPosting | null = null;
+  
+  // Toast notification properties
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
   constructor(private router: Router) {}
 
@@ -311,10 +348,36 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   }
 
   private checkSidebarState(): void {
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
       this.sidebarExpanded = sidebar.classList.contains('show');
+      const rect = sidebar.getBoundingClientRect();
+      this.sidebarWidth = rect.width;
+    } else {
+      this.sidebarWidth = 0;
     }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.checkSidebarState();
+  }
+
+  getModalPaddingLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getModalMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 40px)';
+    }
+    const overlayPadding = 40;
+    const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
+    return `${Math.min(500, availableWidth)}px`;
   }
 
   onSearchChange(term: string): void {
@@ -428,6 +491,132 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     if (!target.closest('.status-dropdown-wrapper')) {
       this.showStatusDropdown = false;
     }
+  }
+
+  onJobItemClick(posting: EmployeeJobPosting): void {
+    this.selectedJob = posting;
+  }
+
+  onCloseDetail(): void {
+    this.selectedJob = null;
+  }
+
+  onApprove(): void {
+    if (this.selectedJob) {
+      this.selectedJob.status = 'approved';
+      this.selectedJob.updatedDate = new Date().toLocaleDateString('vi-VN');
+      // Update in main array
+      const index = this.jobPostings.findIndex(j => j.id === this.selectedJob!.id);
+      if (index > -1) {
+        this.jobPostings[index].status = 'approved';
+        this.jobPostings[index].updatedDate = this.selectedJob.updatedDate;
+      }
+      this.updateFilteredPostings();
+      this.updateSummaryCounts();
+      this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
+    }
+  }
+
+  onReject(): void {
+    this.showRejectModal = true;
+    this.rejectReason = this.selectedJob?.rejectReason || '';
+  }
+
+  onCloseRejectModal(): void {
+    this.showRejectModal = false;
+    this.rejectReason = '';
+  }
+
+  onSubmitReject(): void {
+    if (this.selectedJob && this.rejectReason.trim()) {
+      this.selectedJob.status = 'rejected';
+      this.selectedJob.rejectReason = this.rejectReason.trim();
+      this.selectedJob.updatedDate = new Date().toLocaleDateString('vi-VN');
+      // Update in main array
+      const index = this.jobPostings.findIndex(j => j.id === this.selectedJob!.id);
+      if (index > -1) {
+        this.jobPostings[index].status = 'rejected';
+        this.jobPostings[index].rejectReason = this.rejectReason.trim();
+        this.jobPostings[index].updatedDate = this.selectedJob.updatedDate;
+      }
+      this.updateFilteredPostings();
+      this.updateSummaryCounts();
+      this.onCloseRejectModal();
+      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+    } else {
+      this.showErrorToast('Vui lòng nhập lý do từ chối');
+    }
+  }
+
+  onJobItemMouseEnter(jobId: string): void {
+    this.hoveredJobId = jobId;
+  }
+
+  onJobItemMouseLeave(): void {
+    this.hoveredJobId = null;
+  }
+
+  onViewRejectReason(posting: EmployeeJobPosting): void {
+    this.viewingRejectReasonJob = posting;
+    this.showViewRejectReasonModal = true;
+    this.editingRejectReason = false;
+    this.rejectReason = posting.rejectReason || '';
+  }
+
+  onCloseViewRejectReasonModal(): void {
+    this.showViewRejectReasonModal = false;
+    this.editingRejectReason = false;
+    this.rejectReason = '';
+    this.viewingRejectReasonJob = null;
+  }
+
+  onEditRejectReason(): void {
+    this.editingRejectReason = true;
+  }
+
+  onSaveRejectReason(): void {
+    if (this.viewingRejectReasonJob && this.rejectReason.trim()) {
+      this.viewingRejectReasonJob.rejectReason = this.rejectReason.trim();
+      // Update in main array
+      const index = this.jobPostings.findIndex(j => j.id === this.viewingRejectReasonJob!.id);
+      if (index > -1) {
+        this.jobPostings[index].rejectReason = this.rejectReason.trim();
+      }
+      // Update in filtered array if exists
+      const filteredIndex = this.filteredPostings.findIndex(j => j.id === this.viewingRejectReasonJob!.id);
+      if (filteredIndex > -1) {
+        this.filteredPostings[filteredIndex].rejectReason = this.rejectReason.trim();
+      }
+      // Update selectedJob if it's the same job
+      if (this.selectedJob && this.selectedJob.id === this.viewingRejectReasonJob.id) {
+        this.selectedJob.rejectReason = this.rejectReason.trim();
+      }
+      this.editingRejectReason = false;
+      this.showSuccessToast('Đã cập nhật lý do từ chối thành công');
+    } else {
+      this.showErrorToast('Vui lòng nhập lý do từ chối');
+    }
+  }
+
+  showSuccessToast(message: string): void {
+    this.toastMessage = message;
+    this.toastType = 'success';
+    this.showToast = true;
+  }
+
+  showErrorToast(message: string): void {
+    this.toastMessage = message;
+    this.toastType = 'error';
+    this.showToast = true;
+  }
+
+  onToastClose(): void {
+    this.showToast = false;
+  }
+
+  onCancelEditRejectReason(): void {
+    this.editingRejectReason = false;
+    this.rejectReason = this.viewingRejectReasonJob?.rejectReason || '';
   }
 
   viewDetail(posting: EmployeeJobPosting): void {
