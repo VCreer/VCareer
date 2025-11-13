@@ -94,7 +94,7 @@ export class CandidateServiceComponent implements OnInit {
       premiumVip: true
     },
     {
-      name: 'Ẩn biểu tượng @topcv.vn',
+      name: 'Ẩn biểu tượng @vcareer.vn',
       regular: false,
       verified: false,
       proVip: true,

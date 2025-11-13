@@ -1,5 +1,9 @@
-<div class="generic-modal-overlay" *ngIf="show" (click)="onOverlayClick()">
-  <div class="generic-modal-content" [style.max-width]="maxWidth" (click)="onContentClick($event)">
+<div class="generic-modal-overlay" *ngIf="show" 
+     [style.padding-left]="getOverlayPaddingLeft()"
+     (click)="onOverlayClick()">
+  <div class="generic-modal-content" 
+       [style.max-width]="getModalMaxWidth()" 
+       (click)="onContentClick($event)">
     <!-- Modal Header -->
     <div class="generic-modal-header" *ngIf="title || showCloseButton">
       <h2 class="generic-modal-title" *ngIf="title">{{ title }}</h2>

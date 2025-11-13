@@ -6,7 +6,15 @@
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.75rem;
   }
 }
 
@@ -16,6 +24,14 @@
   gap: 1.5rem;
   min-width: 0;
   width: 100%;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+  }
 }
 
 .preview-right-column {
@@ -26,6 +42,18 @@
   width: 100%;
   max-width: 100%;
   height: fit-content;
+
+  @media (max-width: 1024px) {
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+  }
 }
 
 // Job Info Section (job-detail__info)
@@ -35,8 +63,26 @@
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+    border-radius: 6px;
+  }
+
   .job-detail__info--title {
     margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 480px) {
+      margin-bottom: 1rem;
+    }
 
     h1 {
       font-size: 1.5rem;
@@ -44,6 +90,18 @@
       color: #1f2937;
       line-height: 1.4;
       margin: 0;
+
+      @media (max-width: 1024px) {
+        font-size: 1.375rem;
+      }
+
+      @media (max-width: 768px) {
+        font-size: 1.25rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.125rem;
+      }
     }
   }
 
@@ -93,9 +151,19 @@
       width: 40px;
       flex-shrink: 0;
 
+      @media (max-width: 480px) {
+        height: 36px;
+        width: 36px;
+        padding: 0.4rem;
+      }
+
       i {
         font-size: 1rem;
         color: white;
+
+        @media (max-width: 480px) {
+          font-size: 0.875rem;
+        }
       }
     }
 
@@ -136,6 +204,11 @@
 
     @media (max-width: 768px) {
       flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 480px) {
+      gap: 0.5rem;
     }
 
     .box-apply-current {
@@ -153,8 +226,22 @@
       justify-content: center;
       gap: 0.5rem;
 
+      @media (max-width: 768px) {
+        width: 100%;
+        padding: 0.625rem 1.25rem;
+      }
+
+      @media (max-width: 480px) {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+
       i {
         font-size: 1rem;
+
+        @media (max-width: 480px) {
+          font-size: 0.875rem;
+        }
       }
 
       &:hover {
@@ -176,10 +263,24 @@
       justify-content: center;
       gap: 0.5rem;
 
+      @media (max-width: 768px) {
+        width: 100%;
+        padding: 0.625rem 1.25rem;
+      }
+
+      @media (max-width: 480px) {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+
       i {
         color: #6b7280;
         -webkit-text-stroke: 1px #6b7280;
         font-size: 1rem;
+
+        @media (max-width: 480px) {
+          font-size: 0.875rem;
+        }
       }
 
       &:hover {
@@ -215,6 +316,16 @@
   min-width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+    border-radius: 6px;
+  }
 
   .company-logo {
     margin-bottom: 1rem;
@@ -258,6 +369,16 @@
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.9375rem;
+      margin-bottom: 1rem;
+    }
   }
 
   .company-details {
@@ -328,11 +449,21 @@
     gap: 1rem;
     position: relative;
 
+    @media (max-width: 480px) {
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
     .section-title-bar {
       width: 4px;
       height: 24px;
       background: #0F83BA;
       border-radius: 2px;
+
+      @media (max-width: 480px) {
+        height: 20px;
+        width: 3px;
+      }
     }
 
     .section-title {
@@ -341,6 +472,14 @@
       font-weight: 600;
       color: #1f2937;
       margin: 0;
+
+      @media (max-width: 768px) {
+        font-size: 1.125rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1rem;
+      }
     }
   }
 
@@ -407,6 +546,16 @@
   max-width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+    border-radius: 6px;
+  }
 
   &.job-detail__body-right--box-general {
     h3 {
