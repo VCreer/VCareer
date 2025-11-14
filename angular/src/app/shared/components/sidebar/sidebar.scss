@@ -2,7 +2,7 @@
   display: block;
 }
 
-/* Sidebar Overlay - chỉ hiển thị khi sidebar expanded */
+/* Sidebar Overlay - chỉ hiển thị khi sidebar expanded trên mobile */
 .sidebar-overlay {
   position: fixed;
   top: 64px; /* Bắt đầu từ dưới header */
@@ -15,11 +15,17 @@
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   pointer-events: none;
+  display: none; /* Ẩn mặc định trên desktop */
 
   &.show {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+  }
+
+  /* Chỉ hiển thị overlay trên mobile/tablet */
+  @media (max-width: 768px) {
+    display: block;
   }
 }
 
