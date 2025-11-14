@@ -1,0 +1,232 @@
+<div class="recruitment-report-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <div class="page-header">
+        <h1 class="page-title">Báo cáo tuyển dụng</h1>
+      </div>
+      <div class="action-buttons">
+        <div class="time-filter-wrapper">
+          <button class="time-filter-btn" (click)="toggleTimeFilter(); $event.stopPropagation()">
+            <i class="fas fa-calendar-alt"></i>
+            <span>{{ getSelectedTimeLabel() }}</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="time-filter-dropdown" *ngIf="showTimeFilter" (click)="$event.stopPropagation()">
+            <div 
+              class="filter-option" 
+              *ngFor="let range of timeRanges"
+              [class.active]="selectedTimeRange === range.value"
+              (click)="selectTimeRange(range.value)">
+              {{ range.label }}
+            </div>
+          </div>
+        </div>
+        <app-button
+          type="primary"
+          size="small"
+          (click)="onExportReport()">
+          <i class="fas fa-download"></i>
+          Xuất báo cáo
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+      <app-report-metric-card *ngFor="let metric of metrics" [metric]="metric"></app-report-metric-card>
+    </div>
+
+    <!-- Service Overview -->
+    <div class="service-overview-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-info-circle"></i>
+          Tổng quan dịch vụ tuyển dụng
+        </h3>
+      </div>
+      <p class="section-description">{{ serviceOverview.description }}</p>
+      
+      <div class="overview-charts">
+        <div class="overview-chart">
+          <h4>Theo chi phí thực tế</h4>
+          <p class="chart-subtitle">Ghi nhận theo giá trị đơn hàng đã thanh toán</p>
+          <div class="chart-bars">
+            <div class="chart-bar-item">
+              <div class="bar-container">
+                <div class="bar-fill" [style.height.%]="serviceOverview.costBreakdown.completed.percentage" style="background-color: #f59e0b;"></div>
+                <span class="bar-value">20M</span>
+              </div>
+              <span class="bar-label">{{ serviceOverview.costBreakdown.completed.label }}</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="bar-container">
+                <div class="bar-fill" [style.height.%]="serviceOverview.costBreakdown.inUse.percentage" style="background-color: #e5e7eb;"></div>
+                <span class="bar-value">8M</span>
+              </div>
+              <span class="bar-label">{{ serviceOverview.costBreakdown.inUse.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="overview-chart">
+          <h4>Theo giá trị dịch vụ</h4>
+          <p class="chart-subtitle">Không bao gồm các mục vụ đã được đơn hàng</p>
+          <div class="chart-bars">
+            <div class="chart-bar-item">
+              <div class="bar-container">
+                <div class="bar-fill" [style.height.%]="serviceOverview.valueBreakdown.activated.percentage" style="background-color: #0F83BA;"></div>
+                <span class="bar-value">16M</span>
+              </div>
+              <span class="bar-label">{{ serviceOverview.valueBreakdown.activated.label }}</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="bar-container">
+                <div class="bar-fill" [style.height.%]="serviceOverview.valueBreakdown.inUse.percentage" style="background-color: #e5e7eb;"></div>
+                <span class="bar-value">5M</span>
+              </div>
+              <span class="bar-label">{{ serviceOverview.valueBreakdown.inUse.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <!-- Campaign Status -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>
+            <i class="fas fa-briefcase"></i>
+            Trạng thái chiến dịch
+          </h3>
+        </div>
+        <div class="chart-body">
+          <div class="status-container">
+            <app-status-item *ngFor="let item of campaignStatus" [item]="item"></app-status-item>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recruitment Funnel & Cost -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>
+            <i class="fas fa-filter"></i>
+            Trạng thái hồ sơ
+          </h3>
+        </div>
+        <div class="chart-body">
+          <div class="funnel-cost-grid">
+            <div class="funnel-column">
+              <h4>Trạng thái hồ sơ</h4>
+              <div class="funnel-list">
+                <div class="funnel-item" *ngFor="let stage of recruitmentFunnel.stages">
+                  <div class="funnel-dot" [style.background-color]="stage.color"></div>
+                  <span class="funnel-name">{{ stage.name }}</span>
+                  <span class="funnel-count">{{ stage.count }}</span>
+                  <div class="funnel-bar">
+                    <div class="funnel-bar-fill" [style.width.%]="(stage.count / 1000) * 100" [style.background-color]="stage.color"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cost-column">
+              <h4>Chi phí chuyển đổi</h4>
+              <div class="cost-list">
+                <div class="cost-item" *ngFor="let stage of costBreakdown.stages">
+                  <div class="cost-dot" [style.background-color]="stage.color"></div>
+                  <span class="cost-name">{{ stage.name }}</span>
+                  <span class="cost-value">{{ stage.cost.toLocaleString('vi-VN') }} VNĐ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HR Staff Performance -->
+    <div class="staff-performance-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-user-tie"></i>
+          Hiệu suất HR Staff
+        </h3>
+      </div>
+      <div class="table-wrapper">
+        <table class="performance-table">
+          <thead>
+            <tr>
+              <th>Nhân viên</th>
+              <th>Chiến dịch</th>
+              <th>Ứng viên</th>
+              <th>Đã duyệt</th>
+              <th>Từ chối</th>
+              <th>Hiệu suất</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let staff of hrStaffPerformance">
+              <td class="staff-name">{{ staff.name }}</td>
+              <td class="text-center">{{ staff.campaigns }}</td>
+              <td class="text-center">{{ staff.candidates }}</td>
+              <td class="text-center text-success">{{ staff.approved }}</td>
+              <td class="text-center text-danger">{{ staff.rejected }}</td>
+              <td class="text-center">
+                <span class="efficiency-badge" [class.high]="staff.efficiency >= 70" [class.medium]="staff.efficiency >= 60 && staff.efficiency < 70" [class.low]="staff.efficiency < 60">
+                  {{ staff.efficiency }}%
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Campaigns -->
+    <div class="recent-campaigns-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-bullhorn"></i>
+          Chiến dịch gần đây
+        </h3>
+        <p class="section-subtitle">Danh sách các chiến dịch mới nhất</p>
+      </div>
+      <div class="campaigns-list">
+        <div class="campaign-item" *ngFor="let campaign of recentCampaigns">
+          <div class="campaign-header">
+            <div class="campaign-id">{{ campaign.id }}</div>
+            <span class="campaign-status" [ngClass]="campaign.statusClass">
+              {{ campaign.status }}
+            </span>
+          </div>
+          <h4 class="campaign-title">{{ campaign.title }}</h4>
+          <div class="campaign-stats">
+            <div class="stat-item">
+              <i class="fas fa-users"></i>
+              <span>{{ campaign.candidates }} ứng viên</span>
+            </div>
+            <div class="stat-item">
+              <i class="fas fa-eye"></i>
+              <span>{{ campaign.views }} lượt xem</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    *ngIf="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>

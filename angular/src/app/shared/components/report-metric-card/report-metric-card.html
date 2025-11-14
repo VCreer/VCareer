@@ -1,0 +1,13 @@
+<div class="metric-card">
+  <div class="metric-left">
+    <div class="metric-label">{{ metric.label }}</div>
+    <div class="metric-value">{{ metric.value }}</div>
+    <div class="metric-trend" *ngIf="metric.trend" [class.positive]="metric.trend.isPositive" [class.negative]="!metric.trend.isPositive">
+      <i class="fas" [ngClass]="metric.trend.isPositive ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+      <span>{{ metric.trend.isPositive ? '+' : '' }}{{ metric.trend.value }}% so với tháng trước</span>
+    </div>
+  </div>
+  <div class="metric-icon" [style.background-color]="metric.color + '15'">
+    <i class="fas" [ngClass]="metric.icon" [style.color]="metric.color"></i>
+  </div>
+</div>
