@@ -54,9 +54,9 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/rewards')" class="sidebar-link">
-            <i class="fa fa-gem sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.rewards') }}</span>
+          <a (click)="navigateTo('/recruiter/hr-staff-management')" class="sidebar-link" [class.active]="isActive('/recruiter/hr-staff-management')">
+            <i class="fa fa-users-cog sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lí nhân sự</span>
           </a>
         </li>
         <li class="sidebar-nav-item">

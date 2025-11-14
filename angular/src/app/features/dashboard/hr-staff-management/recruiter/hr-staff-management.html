@@ -1,0 +1,284 @@
+<div class="hr-staff-management-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <div class="page-header">
+        <h1 class="page-title">Quản lí nhân sự</h1>
+      </div>
+      <div class="action-buttons">
+        <app-button
+          type="primary"
+          size="small"
+          (click)="onExportExcel()">
+          <i class="fas fa-file-excel"></i>
+          Xuất file Excel
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Dashboard Statistics -->
+    <div class="stats-grid">
+      <app-stat-card 
+        [label]="'Tổng nhân viên'"
+        [value]="totalStaff"
+        [icon]="'fa-users'"
+        [color]="'#0F83BA'">
+      </app-stat-card>
+      
+      <app-stat-card 
+        [label]="'Đang hoạt động'"
+        [value]="activeStaff"
+        [icon]="'fa-user-check'"
+        [color]="'#10b981'">
+      </app-stat-card>
+      
+      <app-stat-card 
+        [label]="'Chờ duyệt'"
+        [value]="pendingStaff"
+        [icon]="'fa-user-clock'"
+        [color]="'#f59e0b'">
+      </app-stat-card>
+      
+      <app-stat-card 
+        [label]="'Ngừng hoạt động'"
+        [value]="inactiveStaff"
+        [icon]="'fa-user-times'"
+        [color]="'#ef4444'">
+      </app-stat-card>
+    </div>
+
+    <!-- Staff Table with Filter -->
+    <div class="staff-table-container">
+      <div class="table-header">
+        <div class="search-box" *ngIf="!showActivityLog">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+            [(ngModel)]="searchKeyword"
+            (ngModelChange)="applyFilters()">
+        </div>
+        <div class="search-box" *ngIf="showActivityLog">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm nhân viên..."
+            [(ngModel)]="activitySearchKeyword"
+            (ngModelChange)="filterActivityLogs()">
+        </div>
+        <div class="header-actions">
+          <div class="filter-dropdown" [class.open]="showFilterDropdown" *ngIf="!showActivityLog">
+            <button class="filter-select" (click)="toggleFilterDropdown($event)" type="button">
+              {{ getSelectedStatusLabel() }}
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu" [class.show]="showFilterDropdown">
+              <div 
+                *ngFor="let option of statusOptions; let i = index" 
+                class="dropdown-item"
+                [class.selected]="filterStatus === option.value"
+                (click)="selectStatus(option.value)"
+                [attr.data-index]="i">
+                <span>{{ option.label }}</span>
+                <i class="fas fa-check" *ngIf="filterStatus === option.value"></i>
+              </div>
+            </div>
+          </div>
+          <button class="activity-log-btn" [class.active]="showActivityLog" (click)="toggleActivityLog()">
+            <i [class]="showActivityLog ? 'fas fa-users' : 'fas fa-history'"></i>
+            {{ showActivityLog ? 'Danh sách nhân viên' : 'Nhật kí hoạt động' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Staff Table -->
+      <app-staff-table 
+        *ngIf="!showActivityLog"
+        [staffList]="paginatedStaffList"
+        (viewStaff)="openEditModal($event)">
+      </app-staff-table>
+
+      <!-- Activity Log Table -->
+      <app-activity-log-table 
+        *ngIf="showActivityLog"
+        [activityLogs]="paginatedActivityLogs">
+      </app-activity-log-table>
+    </div>
+
+    <!-- Pagination for Staff -->
+    <app-pagination
+      *ngIf="!showActivityLog"
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+    <!-- Pagination for Activity Log -->
+    <app-pagination
+      *ngIf="showActivityLog"
+      [currentPage]="activityCurrentPage"
+      [totalPages]="activityTotalPages"
+      (pageChange)="onActivityPageChange($event)">
+    </app-pagination>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!showActivityLog && filteredStaffList.length === 0">
+      <i class="fas fa-users"></i>
+      <h3>Không tìm thấy nhân sự</h3>
+      <p>Thử thay đổi bộ lọc hoặc thêm nhân sự mới</p>
+    </div>
+
+    <!-- Empty State for Activity Log -->
+    <div class="empty-state" *ngIf="showActivityLog && filteredActivityLogs.length === 0">
+      <i class="fas fa-history"></i>
+      <h3>Không có hoạt động nào</h3>
+      <p>Chưa có nhật kí hoạt động được ghi nhận</p>
+    </div>
+  </div>
+
+  <!-- Add Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Thêm nhân sự mới</h2>
+        <button class="close-btn" (click)="closeAddModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <app-input-field
+          label="Họ và tên"
+          type="text"
+          placeholder="Nhập họ và tên"
+          [required]="true"
+          [(ngModel)]="staffForm.name"
+          name="name">
+        </app-input-field>
+        
+        <app-input-field
+          label="Email"
+          type="email"
+          placeholder="Nhập email"
+          [required]="true"
+          [(ngModel)]="staffForm.email"
+          name="email">
+        </app-input-field>
+        
+        <app-input-field
+          label="Số điện thoại"
+          type="tel"
+          placeholder="Nhập số điện thoại"
+          [required]="true"
+          [(ngModel)]="staffForm.phone"
+          name="phone">
+        </app-input-field>
+        
+        <app-select-field
+          label="Vai trò"
+          placeholder="Chọn vai trò"
+          [required]="true"
+          [options]="roleOptions.slice(1)"
+          [(ngModel)]="staffForm.role"
+          name="role">
+        </app-select-field>
+        
+        <app-select-field
+          label="Phòng ban"
+          placeholder="Chọn phòng ban"
+          [required]="true"
+          [options]="departmentOptions.slice(1)"
+          [(ngModel)]="staffForm.department"
+          name="department">
+        </app-select-field>
+      </div>
+      <div class="modal-footer">
+        <app-button type="secondary" size="medium" (click)="closeAddModal()">
+          Hủy
+        </app-button>
+        <app-button type="primary" size="medium" (click)="onAddStaff()">
+          Thêm nhân sự
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Chỉnh sửa thông tin nhân sự</h2>
+        <button class="close-btn" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group-readonly">
+          <label>Họ và tên</label>
+          <div class="readonly-value">{{ staffForm.name }}</div>
+        </div>
+        
+        <div class="form-group-readonly">
+          <label>Email</label>
+          <div class="readonly-value">{{ staffForm.email }}</div>
+        </div>
+        
+        <div class="form-group-readonly">
+          <label>Số điện thoại</label>
+          <div class="readonly-value">{{ staffForm.phone }}</div>
+        </div>
+
+        <app-select-field
+          label="Trạng thái"
+          placeholder="Chọn trạng thái"
+          [required]="true"
+          [options]="statusOptions.slice(1)"
+          [(ngModel)]="staffForm.status"
+          name="status">
+        </app-select-field>
+      </div>
+      <div class="modal-footer">
+        <app-button type="secondary" size="medium" (click)="closeEditModal()">
+          Hủy
+        </app-button>
+        <app-button type="primary" size="medium" (click)="onUpdateStaff()">
+          Cập nhật
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Xác nhận xóa</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa nhân sự <strong>{{ selectedStaff?.name }}</strong>?</p>
+        <p class="warning-text">Hành động này không thể hoàn tác.</p>
+      </div>
+      <div class="modal-footer">
+        <app-button type="secondary" size="medium" (click)="closeDeleteModal()">
+          Hủy
+        </app-button>
+        <app-button type="danger" size="medium" (click)="onDeleteStaff()">
+          Xóa
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    *ngIf="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
