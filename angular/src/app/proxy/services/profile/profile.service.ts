@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ChangePasswordDto, ProfileDto, UpdatePersonalInfoDto } from '../../profile/models';
+import type { ChangePasswordDto, ProfileDto, UpdatePersonalInfoDto } from '../../dto/profile/models';
 
 @Injectable({
   providedIn: 'root',

@@ -18,6 +18,7 @@ namespace VCareer.Models.Users
         public string Email{ get; set; }
         public bool IsLead { get; set; }
         public bool Status { get; set; }
+        public bool IsVerified { get; set; } = false;
        
         public RecruiterLevel RecruiterLevel { get; set; } = RecruiterLevel.Unverified;
         public long? QuotaUsedBytes { get; set; } 

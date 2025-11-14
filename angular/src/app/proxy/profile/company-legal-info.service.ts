@@ -1,8 +1,8 @@
-import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ActionResult } from '../microsoft/asp-net-core/mvc/models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from '../dto/profile/models';
+import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +12,7 @@ export class CompanyLegalInfoService {
   
 
   deleteCompanyLegalInfo = (id: number, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, IActionResult>({
       method: 'DELETE',
       url: `/api/profile/company-legal-info/${id}`,
     },

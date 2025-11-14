@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CandidateRegisterDto, CreateEmployeeDto, EmployeeLoginDto, ForgotPasswordDto, GoogleLoginDto, LoginDto, RecruiterRegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
-import type { TokenResponseDto } from '../../dto/jwt-dto/models';
+import type { CandidateRegisterDto, CreateEmployeeDto, CurrentUserInfoDto, EmployeeLoginDto, ForgotPasswordDto, GoogleLoginDto, LoginDto, RecruiterRegisterDto, ResetPasswordDto } from '../../dto/auth-dto/models';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +10,7 @@ export class AuthService {
   
 
   candidateLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TokenResponseDto>({
+    this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/candidate-login',
       body: input,
@@ -38,7 +37,7 @@ export class AuthService {
   
 
   employeeLogin = (input: EmployeeLoginDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TokenResponseDto>({
+    this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/employee-login',
       body: input,
@@ -51,6 +50,14 @@ export class AuthService {
       method: 'POST',
       url: '/api/app/auth/forgot-password',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCurrentUser = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CurrentUserInfoDto>({
+      method: 'GET',
+      url: '/api/app/auth/current-user',
     },
     { apiName: this.apiName,...config });
   
@@ -72,7 +79,7 @@ export class AuthService {
   
 
   loginWithGoogle = (input: GoogleLoginDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TokenResponseDto>({
+    this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/login-with-google',
       body: input,
@@ -81,7 +88,7 @@ export class AuthService {
   
 
   recruiterLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, TokenResponseDto>({
+    this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/recruiter-login',
       body: input,
@@ -94,6 +101,14 @@ export class AuthService {
       method: 'POST',
       url: '/api/app/auth/recruiter-register',
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  refeshToken = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/refesh-token',
     },
     { apiName: this.apiName,...config });
   

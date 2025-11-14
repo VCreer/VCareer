@@ -1,4 +1,5 @@
 using System;
+using VCareer.Dto.Profile;
 using VCareer.Models.Companies;
 
 namespace VCareer.Profile;

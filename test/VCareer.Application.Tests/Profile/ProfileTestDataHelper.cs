@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using VCareer.Dto.Profile;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 

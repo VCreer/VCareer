@@ -4,7 +4,8 @@
     [show]="showToast"
     [message]="toastMessage"
     [type]="toastType"
-    (close)="onToastClose()">
+    (close)="onToastClose()"
+  >
   </app-toast-notification>
 
   <!-- Breadcrumb Box -->
@@ -12,29 +13,14 @@
     <div class="breadcrumb-container">
       <div class="page-header">
         <h1 class="page-title">Đăng tin tuyển dụng</h1>
-        <span class="campaign-badge" *ngIf="campaignName">
-          Chiến dịch: {{ campaignName }}
-        </span>
+        <span class="campaign-badge" *ngIf="campaignName"> Chiến dịch: {{ campaignName }} </span>
       </div>
       <div class="action-buttons">
-        <app-button 
-          type="secondary" 
-          size="small" 
-          (click)="openPreviewModal()">
+        <app-button type="secondary" size="small" (click)="openPreviewModal()">
           Xem trước
         </app-button>
-        <app-button 
-          type="secondary" 
-          size="small" 
-          (click)="onSaveJob()">
-          Lưu việc làm
-        </app-button>
-        <app-button 
-          type="primary" 
-          size="small" 
-          (click)="onPostJob()">
-          Đăng công việc
-        </app-button>
+        <app-button type="secondary" size="small" (click)="onSaveJob()"> Lưu việc làm </app-button>
+        <app-button type="primary" size="small" (click)="onPostJob()"> Đăng công việc </app-button>
       </div>
     </div>
   </div>
@@ -44,146 +30,12 @@
     <!-- Form -->
     <div class="form-wrapper">
       <h2 class="form-main-title">Thông tin công việc</h2>
-      
-      <!-- Company Information Section -->
-      <div class="form-section">
-        <h3 class="section-title">Thông tin công ty</h3>
-        
-        <!-- Company Name -->
-        <app-input-field
-          label="Tên công ty"
-          type="text"
-          placeholder="Nhập tên công ty"
-          [required]="true"
-          [error]="getFieldError('companyName')"
-          [(ngModel)]="jobForm.companyName"
-          (ngModelChange)="onFieldChange('companyName')"
-          name="companyName">
-        </app-input-field>
 
-        <!-- Company Size -->
-        <app-select-field
-          label="Quy mô"
-          placeholder="Chọn quy mô công ty"
-          [required]="true"
-          [options]="companySizeOptions"
-          [error]="getFieldError('companySize')"
-          [(ngModel)]="jobForm.companySize"
-          (ngModelChange)="onFieldChange('companySize')"
-          name="companySize">
-        </app-select-field>
-
-        <!-- Company Industry -->
-        <app-select-field
-          label="Lĩnh vực công ty"
-          placeholder="Chọn lĩnh vực công ty"
-          [required]="true"
-          [options]="companyIndustryOptions"
-          [error]="getFieldError('companyIndustry')"
-          [(ngModel)]="jobForm.companyIndustry"
-          (ngModelChange)="onFieldChange('companyIndustry')"
-          name="companyIndustry">
-        </app-select-field>
-
-        <!-- Company Location -->
-        <app-input-field
-          label="Địa điểm"
-          type="text"
-          placeholder="Nhập địa điểm công ty"
-          [required]="true"
-          [error]="getFieldError('companyLocation')"
-          [(ngModel)]="jobForm.companyLocation"
-          (ngModelChange)="onFieldChange('companyLocation')"
-          name="companyLocation">
-        </app-input-field>
-
-        <!-- Company Website -->
-        <app-input-field
-          label="Trang web công ty"
-          type="url"
-          placeholder="https://example.com"
-          [required]="true"
-          [error]="getFieldError('companyWebsite')"
-          [(ngModel)]="jobForm.companyWebsite"
-          (ngModelChange)="onFieldChange('companyWebsite')"
-          name="companyWebsite">
-        </app-input-field>
-
-        <!-- Company Image -->
-        <div class="company-image-section">
-          <app-file-upload
-            label="Ảnh công ty"
-            buttonText="Chọn ảnh"
-            accept="image/*"
-            [required]="true"
-            [fileName]="jobForm.companyImage?.name || ''"
-            [error]="getFieldError('companyImage')"
-            inputId="company-image-upload"
-            (fileSelected)="onCompanyImageSelected($event); onFieldChange('companyImage')">
-          </app-file-upload>
-          <div class="image-preview" *ngIf="jobForm.companyImagePreview">
-            <img [src]="jobForm.companyImagePreview" alt="Company preview">
-          </div>
-        </div>
-      </div>
-
-      <!-- General Information Section -->
-      <div class="form-section">
-        <h3 class="section-title">Thông tin chung</h3>
-        
-        <!-- Position Level -->
-        <app-select-field
-          label="Cấp bậc"
-          placeholder="Chọn cấp bậc"
-          [required]="true"
-          [options]="positionLevelOptions"
-          [error]="getFieldError('positionLevel')"
-          [(ngModel)]="jobForm.positionLevel"
-          (ngModelChange)="onFieldChange('positionLevel')"
-          name="positionLevel">
-        </app-select-field>
-
-        <!-- Education -->
-        <app-select-field
-          label="Học vấn"
-          placeholder="Chọn học vấn"
-          [required]="true"
-          [options]="educationOptions"
-          [error]="getFieldError('education')"
-          [(ngModel)]="jobForm.education"
-          (ngModelChange)="onFieldChange('education')"
-          name="education">
-        </app-select-field>
-
-        <!-- Quantity -->
-        <app-input-field
-          label="Số lượng tuyển"
-          type="number"
-          placeholder="Nhập số lượng tuyển"
-          [required]="true"
-          [error]="getFieldError('quantity')"
-          [(ngModel)]="jobForm.quantity"
-          (ngModelChange)="onFieldChange('quantity')"
-          name="quantity">
-        </app-input-field>
-
-        <!-- Employment Type -->
-        <app-select-field
-          label="Hình thức làm việc"
-          placeholder="Chọn hình thức làm việc"
-          [required]="true"
-          [options]="employmentTypeOptions"
-          [error]="getFieldError('employmentType')"
-          [(ngModel)]="jobForm.employmentType"
-          (ngModelChange)="onFieldChange('employmentType')"
-          name="employmentType">
-        </app-select-field>
-      </div>
-
+     
       <!-- Job Title Section -->
       <div class="form-section">
         <h3 class="section-title">Tên Công việc</h3>
-        
+
         <!-- Job Title -->
         <app-input-field
           label="Tên công việc"
@@ -193,20 +45,61 @@
           [error]="getFieldError('jobTitle')"
           [(ngModel)]="jobForm.jobTitle"
           (ngModelChange)="onFieldChange('jobTitle')"
-          name="jobTitle">
+          name="jobTitle"
+        >
         </app-input-field>
 
-        <!-- Location -->
-        <app-select-field
-          label="Địa điểm"
-          placeholder="Chọn địa điểm"
-          [required]="true"
-          [options]="locationOptions"
-          [error]="getFieldError('location')"
-          [(ngModel)]="jobForm.location"
-          (ngModelChange)="onFieldChange('location')"
-          name="location">
-        </app-select-field>
+      
+     <app-input-field
+    label="Tên công việc"
+    type="text"
+    placeholder="Nhập tên công việc"
+    [required]="true"
+    [error]="getFieldError('jobTitle')"
+    [(ngModel)]="jobForm.jobTitle"
+    (ngModelChange)="onFieldChange('jobTitle')"
+    name="jobTitle"
+  ></app-input-field>
+
+
+  <div class="geo-select-group">
+    <!-- Province -->
+    <app-select-field
+      label="Tỉnh / Thành phố"
+      placeholder="Chọn tỉnh / thành phố"
+      [required]="true"
+      [options]="provinceOptions"
+      [error]="getFieldError('provinceCode')"
+      [(ngModel)]="selectedProvince"
+      (ngModelChange)="onProvinceChange($event)"
+      name="provinceCode"
+    ></app-select-field>
+
+    <!-- District -->
+    <app-select-field
+      label="Quận / Huyện"
+      placeholder="Chọn quận / huyện"
+      [required]="true"
+      [disabled]="!selectedProvince"
+      [options]="districtOptions"
+      [error]="getFieldError('districtCode')"
+      [(ngModel)]="selectedDistrict"
+      (ngModelChange)="onDistrictChange($event)"
+      name="districtCode"
+    ></app-select-field>
+
+    <!-- Ward -->
+    <app-select-field
+      label="Phường / Xã"
+      placeholder="Chọn phường / xã"
+      [required]="true"
+      [disabled]="!selectedDistrict"
+      [options]="wardOptions"
+      [error]="getFieldError('wardCode')"
+      [(ngModel)]="selectedWard"
+      name="wardCode"
+    ></app-select-field>
+  </div>
 
         <!-- Salary -->
         <app-select-field
@@ -217,7 +110,8 @@
           [error]="getFieldError('salary')"
           [(ngModel)]="jobForm.salary"
           (ngModelChange)="onFieldChange('salary')"
-          name="salary">
+          name="salary"
+        >
         </app-select-field>
 
         <!-- Experience -->
@@ -229,7 +123,8 @@
           [error]="getFieldError('experience')"
           [(ngModel)]="jobForm.experience"
           (ngModelChange)="onFieldChange('experience')"
-          name="experience">
+          name="experience"
+        >
         </app-select-field>
 
         <!-- Application Deadline -->
@@ -241,14 +136,71 @@
           [error]="getFieldError('applicationDeadline')"
           [(ngModel)]="jobForm.applicationDeadline"
           (ngModelChange)="onFieldChange('applicationDeadline')"
-          name="applicationDeadline">
+          name="applicationDeadline"
+        >
         </app-input-field>
+      </div>
+      <!-- General Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">Thông tin chung</h3>
+
+        <!-- Position Level -->
+        <app-select-field
+          label="Cấp bậc"
+          placeholder="Chọn cấp bậc"
+          [required]="true"
+          [options]="positionLevelOptions"
+          [error]="getFieldError('positionLevel')"
+          [(ngModel)]="jobForm.positionLevel"
+          (ngModelChange)="onFieldChange('positionLevel')"
+          name="positionLevel"
+        >
+        </app-select-field>
+
+        <!-- Education -->
+        <app-select-field
+          label="Học vấn"
+          placeholder="Chọn học vấn"
+          [required]="true"
+          [options]="educationOptions"
+          [error]="getFieldError('education')"
+          [(ngModel)]="jobForm.education"
+          (ngModelChange)="onFieldChange('education')"
+          name="education"
+        >
+        </app-select-field>
+
+        <!-- Quantity -->
+        <app-input-field
+          label="Số lượng tuyển"
+          type="number"
+          placeholder="Nhập số lượng tuyển"
+          [required]="true"
+          [error]="getFieldError('quantity')"
+          [(ngModel)]="jobForm.quantity"
+          (ngModelChange)="onFieldChange('quantity')"
+          name="quantity"
+        >
+        </app-input-field>
+
+        <!-- Employment Type -->
+        <app-select-field
+          label="Hình thức làm việc"
+          placeholder="Chọn hình thức làm việc"
+          [required]="true"
+          [options]="employmentTypeOptions"
+          [error]="getFieldError('employmentType')"
+          [(ngModel)]="jobForm.employmentType"
+          (ngModelChange)="onFieldChange('employmentType')"
+          name="employmentType"
+        >
+        </app-select-field>
       </div>
 
       <!-- Job Description Section -->
       <div class="form-section">
         <h3 class="section-title">Mô tả công việc</h3>
-        
+
         <!-- Job Description (Rich Text Editor) -->
         <app-rich-text-editor
           label="Mô tả công việc"
@@ -256,7 +208,8 @@
           [required]="true"
           [(ngModel)]="jobForm.description"
           (ngModelChange)="onFieldChange('description')"
-          name="description">
+          name="description"
+        >
         </app-rich-text-editor>
         <div class="error-message" *ngIf="getFieldError('description')">
           {{ getFieldError('description') }}
@@ -266,7 +219,7 @@
       <!-- Requirements Section -->
       <div class="form-section">
         <h3 class="section-title">Yêu cầu ứng viên</h3>
-        
+
         <!-- Requirements (Rich Text Editor) -->
         <app-rich-text-editor
           label="Yêu cầu ứng viên"
@@ -274,7 +227,8 @@
           [required]="true"
           [(ngModel)]="jobForm.requirements"
           (ngModelChange)="onFieldChange('requirements')"
-          name="requirements">
+          name="requirements"
+        >
         </app-rich-text-editor>
         <div class="error-message" *ngIf="getFieldError('requirements')">
           {{ getFieldError('requirements') }}
@@ -284,7 +238,7 @@
       <!-- Benefits Section -->
       <div class="form-section">
         <h3 class="section-title">Quyền lợi</h3>
-        
+
         <!-- Benefits (Rich Text Editor) -->
         <app-rich-text-editor
           label="Quyền lợi"
@@ -292,7 +246,8 @@
           [required]="true"
           [(ngModel)]="jobForm.benefits"
           (ngModelChange)="onFieldChange('benefits')"
-          name="benefits">
+          name="benefits"
+        >
         </app-rich-text-editor>
         <div class="error-message" *ngIf="getFieldError('benefits')">
           {{ getFieldError('benefits') }}
@@ -302,7 +257,7 @@
       <!-- Work Location Section -->
       <div class="form-section">
         <h3 class="section-title">Địa điểm làm việc</h3>
-        
+
         <!-- Work Location -->
         <app-input-field
           label="Địa điểm làm việc"
@@ -312,14 +267,15 @@
           [error]="getFieldError('workLocation')"
           [(ngModel)]="jobForm.workLocation"
           (ngModelChange)="onFieldChange('workLocation')"
-          name="workLocation">
+          name="workLocation"
+        >
         </app-input-field>
       </div>
 
       <!-- Application Method Section -->
       <div class="form-section">
         <h3 class="section-title">Cách thức ứng tuyển</h3>
-        
+
         <!-- Application Method (Rich Text Editor) -->
         <app-rich-text-editor
           label="Cách thức ứng tuyển"
@@ -327,7 +283,8 @@
           [required]="true"
           [(ngModel)]="jobForm.applicationMethod"
           (ngModelChange)="onFieldChange('applicationMethod')"
-          name="applicationMethod">
+          name="applicationMethod"
+        >
         </app-rich-text-editor>
         <div class="error-message" *ngIf="getFieldError('applicationMethod')">
           {{ getFieldError('applicationMethod') }}
@@ -335,13 +292,15 @@
       </div>
     </div>
 
-  <!-- Preview Modal -->
-  <app-generic-modal
-    [show]="showPreviewModal"
-    title="Xem trước"
-    maxWidth="1400px"
-    bodyBackground="#f8fafc"
-    (close)="closePreviewModal()">
-    <app-job-preview [jobData]="jobForm"></app-job-preview>
-  </app-generic-modal>
+    <!-- Preview Modal -->
+    <app-generic-modal
+      [show]="showPreviewModal"
+      title="Xem trước"
+      maxWidth="1400px"
+      bodyBackground="#f8fafc"
+      (close)="closePreviewModal()"
+    >
+      <app-job-preview [jobData]="jobForm"></app-job-preview>
+    </app-generic-modal>
+  </div>
 </div>

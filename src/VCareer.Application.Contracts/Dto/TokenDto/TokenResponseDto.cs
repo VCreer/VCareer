@@ -10,5 +10,8 @@ namespace VCareer.Dto.JwtDto
     {
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
+        public string ExpireMinuteAcesstoken { get; set; }
+        public string ExpireHourRefreshToken { get; set; }
+
     }
 }

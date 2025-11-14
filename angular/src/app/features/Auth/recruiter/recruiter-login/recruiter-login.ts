@@ -1,16 +1,23 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CustomAuthService } from '../../../../core/services/custom-auth.service';
-import { NavigationService } from '../../../../core/services/navigation.service';
-import { 
-  InputFieldComponent, 
-  PasswordFieldComponent, 
-  ButtonComponent, 
-  ToastNotificationComponent 
+
+import {
+  InputFieldComponent,
+  PasswordFieldComponent,
+  ButtonComponent,
+  ToastNotificationComponent,
 } from '../../../../shared/components';
-import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
+
+import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 
 @Component({
   selector: 'app-recruiter-login',
@@ -18,21 +25,15 @@ import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth
   templateUrl: './recruiter-login.html',
   styleUrls: ['./recruiter-login.scss'],
   imports: [
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     CommonModule,
     InputFieldComponent,
     PasswordFieldComponent,
     ButtonComponent,
-    ToastNotificationComponent
-  ]
+    ToastNotificationComponent,
+  ],
 })
 export class RecruiterLoginComponent {
-  private customAuthService = inject(CustomAuthService);
-  private router = inject(Router);
-  private fb = inject(FormBuilder);
-  private navigationService = inject(NavigationService);
-   private proxyAuth = inject(ProxyAuthService);
-
   loginForm: FormGroup;
   isLoading = false;
   submitAttempted = false;
@@ -40,19 +41,15 @@ export class RecruiterLoginComponent {
   toastMessage = '';
   toastType: 'success' | 'error' = 'error';
 
-  constructor() {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authFacade: AuthFacadeService
+  ) {
     this.loginForm = this.fb.group({
-      email: ['', [
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(255)
-      ]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(6),
-        Validators.maxLength(100)
-      ]],
-      rememberMe: [false]
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+      rememberMe: [false],
     });
   }
 
@@ -74,97 +71,79 @@ export class RecruiterLoginComponent {
       return fieldName === 'email' ? 'Email công ty là bắt buộc' : 'Mật khẩu là bắt buộc';
     }
 
-    if (errors['email']) {
+    if (errors['email'] || errors['invalidEmail']) {
       return 'Email công ty không hợp lệ';
     }
 
     if (errors['minlength']) {
-      const requiredLength = errors['minlength'].requiredLength;
-      return `Mật khẩu phải có ít nhất ${requiredLength} ký tự`;
+      return `Mật khẩu phải có ít nhất ${errors['minlength'].requiredLength} ký tự`;
     }
 
     if (errors['maxlength']) {
       const requiredLength = errors['maxlength'].requiredLength;
-      return fieldName === 'email' 
+      return fieldName === 'email'
         ? `Email không được quá ${requiredLength} ký tự`
         : `Mật khẩu không được quá ${requiredLength} ký tự`;
-    }
-
-    if (errors['invalidEmail']) {
-      return 'Email công ty không hợp lệ';
     }
 
     return '';
   }
 
-  hasFieldError(fieldName: string): boolean {
-    const field = this.loginForm.get(fieldName);
-    return !!(field && field.invalid && (field.touched || this.submitAttempted));
-  }
-
-  showToastMessage(message: string, type: 'success' | 'error'): void {
+  showToastMessage(message: string, type: 'success' | 'error') {
     this.toastMessage = message;
     this.toastType = type;
-    this.showToast = true;
-    
-    setTimeout(() => {
-      this.showToast = false;
-    }, 3000);
+   	this.showToast = true;
+
+    setTimeout(() => (this.showToast = false), 3000);
   }
 
   onSubmit() {
-  this.submitAttempted = true;
+    this.submitAttempted = true;
 
-  Object.keys(this.loginForm.controls).forEach(key => {
-    this.loginForm.get(key)?.markAsTouched();
-  });
+    Object.keys(this.loginForm.controls).forEach(key => {
+      this.loginForm.get(key)?.markAsTouched();
+    });
 
-  if (this.loginForm.invalid) {
-    const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
-      this.loginForm.get(key)?.invalid
-    );
-    if (firstErrorField) {
-      const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    return;
-  }
-
-  this.isLoading = true;
-  const { email, password } = this.loginForm.value;
-
-  const input = { email, password };
-
-  this.proxyAuth.recruiterLogin(input).subscribe({
-    next: (res) => {
-      this.isLoading = false;
-      this.showToastMessage('Đăng nhập thành công!', 'success');
-
-      // Lưu token (nếu trả về TokenResponseDto)
-      if (res?.accessToken) {
-        localStorage.setItem('access_token', res.accessToken);
-        localStorage.setItem('user_role', 'recruiter');
+    if (this.loginForm.invalid) {
+      const firstErrorField = Object.keys(this.loginForm.controls).find(
+        key => this.loginForm.get(key)?.invalid
+      );
+      if (firstErrorField) {
+        const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-
-      // Điều hướng
-      setTimeout(() => {
-        this.navigationService.loginAsRecruiter();
-      }, 1500);
-    },
-    error: (err) => {
-      this.isLoading = false;
-
-      let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
-      if (err?.status === 401) msg = 'Email hoặc mật khẩu không đúng.';
-      else if (err?.status === 404) msg = 'Tài khoản không tồn tại.';
-      else if (err?.error?.message) msg = err.error.message;
-
-      this.showToastMessage(msg, 'error');
-      this.loginForm.patchValue({ password: '' });
+      return;
     }
-  });
-}
 
+    this.isLoading = true;
+
+    const { email, password } = this.loginForm.value;
+
+    this.authFacade
+      .loginRecruiter({ email, password })
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showToastMessage('Đăng nhập thành công!', 'success');
+
+          setTimeout(() => {
+            this.router.navigate(['/recruiter/home']);
+          }, 800);
+        },
+        error: err => {
+          this.isLoading = false;
+
+          let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
+          if (err?.status === 401) msg = 'Email hoặc mật khẩu không đúng.';
+          else if (err?.status === 404) msg = 'Tài khoản không tồn tại.';
+          else if (err?.error?.message) msg = err.error.message;
+
+          this.showToastMessage(msg, 'error');
+
+          this.loginForm.patchValue({ password: '' });
+        },
+      });
+  }
 
   navigateToSignUp() {
     this.router.navigate(['/recruiter/register']);
@@ -172,10 +151,6 @@ export class RecruiterLoginComponent {
 
   forgotPassword() {
     this.router.navigate(['/recruiter/forgot-password']);
-  }
-
-  signInWithGoogle() {
-    console.log('Đăng nhập bằng Google');
   }
 
   goToSelector() {

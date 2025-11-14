@@ -1,7 +1,8 @@
 import { mapEnumToOptions } from '@abp/ng.core';
 
 export enum JobStatus {
-  Draft = 1,
+  Draft = 0,
+  Pending = 1,
   Open = 2,
   Closed = 3,
   Expired = 4,

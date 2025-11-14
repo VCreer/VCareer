@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { 
@@ -12,8 +11,8 @@ import {
   ToastNotificationComponent 
 } from '../../../../shared/components';
 import { finalize } from 'rxjs/operators';
-import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
-import { TokenResponseDto } from '../../../../proxy/dto/jwt-dto/models';
+import {AuthFacadeService} from '../../../../core/services/auth-Cookiebased/auth-facade.service';
+
 
 
 
@@ -32,11 +31,10 @@ import { TokenResponseDto } from '../../../../proxy/dto/jwt-dto/models';
   ]
 })
 export class LoginComponent {
-  private customAuthService = inject(CustomAuthService);
   private navigationService = inject(NavigationService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
-  private proxyAuth = inject(ProxyAuthService);
+  private authFacade = inject(AuthFacadeService);
   private googleAuthService = inject(GoogleAuthService);
 
   loginForm: FormGroup;
@@ -131,74 +129,37 @@ export class LoginComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
-  onSubmit() {
-    console.log('onSubmit called');
-  console.log('Form valid:', this.loginForm.valid);
-  this.submitAttempted = true;
+ onSubmit() {
+    this.submitAttempted = true;
 
-  // Đánh dấu tất cả field touched để hiện lỗi
-  Object.keys(this.loginForm.controls).forEach(key => {
-    this.loginForm.get(key)?.markAsTouched();
-  });
-
-  // Nếu form không hợp lệ → cuộn đến ô đầu tiên lỗi
-  if (!this.loginForm.valid) {
-    const firstErrorField = Object.keys(this.loginForm.controls).find(key =>
-      this.loginForm.get(key)?.invalid
+    Object.keys(this.loginForm.controls).forEach(k =>
+      this.loginForm.get(k)?.markAsTouched()
     );
-    if (firstErrorField) {
-      const element = document.querySelector(`[formControlName="${firstErrorField}"]`);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    return;
+
+    if (this.loginForm.invalid) return;
+
+    this.isLoading = true;
+    const { username, password } = this.loginForm.value;
+
+    const payload = { email: username, password };
+
+    this.authFacade.loginCandidate(payload)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Đăng nhập thành công!', 'success');
+          setTimeout(() => this.router.navigate(['/']), 800);
+        },
+        error: (err) => {
+          const msg =
+            err?.error?.message ||
+            err?.error?.error_description ||
+            err?.error?.error ||
+            'Đăng nhập thất bại. Vui lòng thử lại.';
+          this.showToastMessage(msg, 'error');
+        }
+      });
   }
-
-  // Form hợp lệ → gọi API
-  this.isLoading = true;
-  const { username, password } = this.loginForm.value;
-
-  // Backend yêu cầu field 'email'
-  const payload = {
-    email: username,
-    password: password,
-  };
-
-  this.proxyAuth
-    .candidateLogin(payload)
-    .pipe(finalize(() => (this.isLoading = false)))
-    .subscribe({
-      next: (result: TokenResponseDto) => {
-        console.log('Login response:', result);
-        
-        const accessToken = result?.accessToken;
-        if (!accessToken) {
-          this.showToastMessage('Server không trả về token hợp lệ.', 'error');
-          return;
-        }
-
-        // Lưu token vào localStorage với prefix candidate
-        this.navigationService.setAccessToken(accessToken, 'candidate');
-        if (result?.refreshToken) {
-          this.navigationService.setRefreshToken(result.refreshToken, 'candidate');
-        }
-
-        this.showToastMessage('Đăng nhập thành công!', 'success');
-
-        // Chuyển hướng sau đăng nhập
-        this.navigationService.loginAsCandidate();
-        setTimeout(() => this.router.navigate(['/']), 800);
-      },
-      error: (err) => {
-        console.error('Login error:', err);
-        const msg =
-          err?.error?.message ||
-          err?.error?.error_description ||
-          err?.error?.error ||
-          'Đăng nhập thất bại. Vui lòng thử lại.';
-        this.showToastMessage(msg, 'error');
-      },
-    });
-}
 
 
 

@@ -49,12 +49,14 @@ namespace VCareer.Jwt
             var accessToken = await CreateAccessTokenAsync(user);
             var refreshToken = CreateRefreshTokenAsync(user);
 
-            await _refreshtokenRepository.InsertAsync(refreshToken);
+            await _refreshtokenRepository.InsertAsync(refreshToken,true);
 
             return new TokenResponseDto
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.Token
+                RefreshToken = refreshToken.Token,
+                ExpireMinuteAcesstoken = _jwtOptions.ExpireMinutes,
+                ExpireHourRefreshToken =_jwtOptions.RefreshTokenExpireHours,
             };
 
         }
@@ -116,7 +118,7 @@ namespace VCareer.Jwt
         {
 
             var tokens = await _refreshtokenRepository.GetListAsync(token => token.UserId == user.Id && token.IsRevoked == false);
-            if (tokens.Any()) return;
+            if (!tokens.Any()) return;
 
             foreach (var token in tokens)
             {

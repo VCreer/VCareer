@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using NSubstitute;
 using Shouldly;
+using VCareer.Dto.Profile;
+using VCareer.IServices.IProfileServices;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;

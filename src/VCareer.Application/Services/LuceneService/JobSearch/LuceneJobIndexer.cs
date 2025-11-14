@@ -34,11 +34,11 @@ namespace VCareer.Services.LuceneService.JobSearch
         private readonly string _indexPath; // Đường dẫn lưu index trên đĩa (App_Data/LuceneIndex)
         private readonly Analyzer _analyzer;// Analyzer để phân tích text thành tokens
         private FSDirectory _directory;  // Directory chứa Lucene index
-        private readonly IJobSearchRepository _jobPostingRepository;   // Load job để index
+        private readonly IJobPostRepository _jobPostingRepository;   // Load job để index
         private readonly IJobCategoryRepository _jobCategoryRepository; // Load category path
 
         public LuceneJobIndexer(
-        IJobSearchRepository jobPostingRepository,
+        IJobPostRepository jobPostingRepository,
         IJobCategoryRepository jobCategoryRepository
       )
         {

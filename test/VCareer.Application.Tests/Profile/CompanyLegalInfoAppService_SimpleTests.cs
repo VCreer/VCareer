@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NSubstitute;
 using Shouldly;
+using VCareer.Dto.Profile;
 using VCareer.Models.Companies;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;

@@ -2,11 +2,12 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using VCareer.Dto.Profile;
+using VCareer.IServices.IProfileServices;
 using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
-using VCareer.Profile;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;

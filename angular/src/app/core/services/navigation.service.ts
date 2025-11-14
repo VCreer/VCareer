@@ -88,37 +88,31 @@ export class NavigationService {
   }
 
   // Đăng nhập candidate
-  loginAsCandidate() {
-    this.isLoggedInSubject.next(true);
-    this.userRoleSubject.next('candidate');
-    this.isVerifiedSubject.next(false);
-    
-    // Lưu trạng thái vào localStorage với prefix candidate
-    localStorage.setItem(this.CANDIDATE_KEYS.isLoggedIn, 'true');
-    localStorage.setItem(this.CANDIDATE_KEYS.userRole, 'candidate');
-    
-    // Không navigate tự động, để component tự quyết định
+loginAsCandidate() {
+  this.isLoggedInSubject.next(true);
+  this.userRoleSubject.next('candidate');
+  this.isVerifiedSubject.next(false);
   }
 
   // Đăng nhập recruiter
   loginAsRecruiter() {
-    this.isLoggedInSubject.next(true);
-    this.userRoleSubject.next('recruiter');
+   // this.isLoggedInSubject.next(true);
+   // this.userRoleSubject.next('recruiter');
     
     // Lưu trạng thái vào localStorage với prefix recruiter
-    localStorage.setItem(this.RECRUITER_KEYS.isLoggedIn, 'true');
-    localStorage.setItem(this.RECRUITER_KEYS.userRole, 'recruiter');
+  //  localStorage.setItem(this.RECRUITER_KEYS.isLoggedIn, 'true');
+   // localStorage.setItem(this.RECRUITER_KEYS.userRole, 'recruiter');
     
     // Kiểm tra verification status
-    const isVerified = this.isVerified();
-    this.isVerifiedSubject.next(isVerified);
+    // const isVerified = this.isVerified();
+    // this.isVerifiedSubject.next(isVerified);
     
     // Nếu chưa verify, redirect đến trang verify, ngược lại redirect đến home
-    if (!isVerified) {
-      this.router.navigate(['/recruiter/recruiter-verify']);
-    } else {
-      this.router.navigate(['/recruiter/home']);
-    }
+    // if (!isVerified) {
+    //   this.router.navigate(['/recruiter/recruiter-verify']);
+    // } else {
+    //   this.router.navigate(['/recruiter/home']);
+    // }
   }
 
   // Đăng xuất - chỉ xóa keys của role hiện tại

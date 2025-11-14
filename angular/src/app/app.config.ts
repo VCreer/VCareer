@@ -55,6 +55,10 @@ export const appConfig: ApplicationConfig = {
           },
         ],
       } as SocialAuthServiceConfig,
+    }, {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
     },
     provideAbpCore(
       withOptions({
@@ -87,11 +91,7 @@ export const appConfig: ApplicationConfig = {
     //   multi: true,
     // }] : []),
     // Auth Interceptor - Tự động gắn token vào mọi request
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
-    },
+ 
     // Comment override AuthService để tránh circular dependency
     // {
     //   provide: AuthService,

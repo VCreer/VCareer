@@ -52,18 +52,19 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
              * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
             options.AddRepository<VCareer.Models.Job.Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
-            options.AddRepository<VCareer.Models.Job.Job_Post, VCareer.Repositories.Job.JobPostRepository>();
             options.AddRepository<CandidateProfile, CandidateRepository>();
             options.AddRepository<RecruiterProfile, RecruiterProfileRepository>();
             options.AddRepository<EmployeeProfile, EmployeeProfileRepository>();
-        });
+        options.AddRepository<VCareer.Models.Job.Job_Post, JobPostRepository>();
+                 });
 
 
         context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
-        context.Services.AddTransient<IJobSearchRepository, JobPostRepository>();
         context.Services.AddTransient<ICandidateProfileRepository, CandidateRepository>();
         context.Services.AddTransient<IRecruiterRepository, RecruiterProfileRepository>();
         context.Services.AddTransient<IEmployeeRepository, EmployeeProfileRepository>();
+        context.Services.AddTransient<IJobPostRepository, JobPostRepository>();
+       
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

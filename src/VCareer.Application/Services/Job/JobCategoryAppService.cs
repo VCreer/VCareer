@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Job;
+using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.Job;
@@ -18,6 +19,27 @@ namespace VCareer.Services.Job
         public JobCategoryAppService(IJobCategoryRepository categoryRepository)
         {
             _categoryRepository = categoryRepository;
+        }
+
+        public async Task CreaateCategoryAsync(CategoryUpdateCreateDto dto)
+        {
+            var category = new Job_Category
+            {
+                Name = dto.Name,
+                Slug = dto.Slug,
+                Description = dto.Description,
+                IsActive = dto.IsActive,
+                SortOrder = dto.SortOrder,
+            };
+            await _categoryRepository.InsertAsync(category,true);
+        }
+
+        public async Task DeleteCategoryAsync(Guid id)
+        {
+            var category = await _categoryRepository.FindAsync(id);
+            if (category == null) throw new Exception("Category not found");
+            if (category.Children.Any()) throw new Exception("Category has children");
+            await _categoryRepository.DeleteAsync(category, true);
         }
 
         /// Lấy toàn bộ cây phân cấp category với số lượng job
@@ -104,6 +126,23 @@ namespace VCareer.Services.Job
                 Logger.LogError(ex, "Error occurred while searching categories with keyword: {Keyword}", keyword);
                 throw;
             }
+        }
+
+
+        public async Task UpdateCategoryAsync(Guid id, CategoryUpdateCreateDto dto)
+        {
+            var category = await _categoryRepository.FindAsync(id);
+            if (category == null)
+                throw new Exception("Category not found");
+
+            category.Name = dto.Name;
+            category.Slug = dto.Slug;
+            category.Description = dto.Description;
+            category.IsActive = dto.IsActive;
+            category.SortOrder = dto.SortOrder;
+            category.ParentId = dto.ParentId;
+
+            await _categoryRepository.UpdateAsync(category, autoSave: true);
         }
 
         /// Hàm này sẽ tạo ra 1 tree dto từ 1 category, build path từ trên xuống

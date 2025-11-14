@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace VCareer.Profile
+namespace VCareer.Dto.Profile
 {
     public class ChangePasswordDto
     {

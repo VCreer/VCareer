@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using VCareer.Dto.Profile;
+using VCareer.IServices.IProfileServices;
 using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp.AspNetCore.Mvc;
