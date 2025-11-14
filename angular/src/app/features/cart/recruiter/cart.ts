@@ -71,9 +71,12 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   checkSidebarState(): void {
-    const sidebar = document.querySelector('app-sidebar .sidebar');
+    const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
     if (sidebar) {
-      this.sidebarExpanded = sidebar.classList.contains('show');
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
     }
   }
 

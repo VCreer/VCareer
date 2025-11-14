@@ -1,33 +1,31 @@
 .recruiter-verify-page {
   min-height: calc(100vh - 64px); // Subtract header height
   padding-top: 64px; // Header height
-  padding-left: 72px; // Sidebar collapsed width
   background: #f9fafb;
   transition: padding-left 0.3s ease; // Smooth transition when sidebar expands
   position: relative;
   z-index: 1; // Thấp hơn sidebar (z-index: 999)
-
-  // When sidebar is expanded, adjust padding
-  &.sidebar-expanded {
-    padding-left: 280px; // Sidebar expanded width
-  }
+  box-sizing: border-box;
 
   // Responsive: remove sidebar padding on mobile
   @media (max-width: 768px) {
-    padding-left: 0;
-    
-    &.sidebar-expanded {
-      padding-left: 0;
-    }
+    padding-left: 0 !important;
   }
 }
 
 .verify-container {
   display: flex;
   min-height: calc(100vh - 64px);
-  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+  transition: max-width 0.3s ease;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    max-width: 100% !important;
+    padding: 0 16px;
+  }
 }
 
 /* Left Section - Background Image */

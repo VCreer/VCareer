@@ -44,8 +44,9 @@ interface JobSummaryCard {
 })
 export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   sidebarExpanded = false;
-  sidebarWidth = 0;
+  sidebarWidth = 72; // Default collapsed sidebar width
   private sidebarCheckInterval?: any;
+  private resizeObserver?: ResizeObserver;
 
   summaryCards: JobSummaryCard[] = [
     { label: 'Tổng số tin', value: 0, icon: 'fa fa-file-alt', borderColor: '#0F83BA' },
@@ -332,10 +333,28 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    // Initial check
     this.checkSidebarState();
+    
+    // Use ResizeObserver to detect sidebar width changes (including hover)
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.checkSidebarState();
+      });
+      this.resizeObserver.observe(sidebar);
+    }
+    
+    // Also listen to mouse events on sidebar to catch hover state changes
+    if (sidebar) {
+      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
+      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
+    }
+    
+    // Periodic check as fallback (more frequent for hover detection)
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
-    }, 100);
+    }, 50);
 
     this.updateFilteredPostings();
     this.updateSummaryCounts();
@@ -345,16 +364,28 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
   private checkSidebarState(): void {
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
-      this.sidebarExpanded = sidebar.classList.contains('show');
       const rect = sidebar.getBoundingClientRect();
-      this.sidebarWidth = rect.width;
+      const width = rect.width;
+      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+      // Always use the actual width from DOM (includes hover state)
+      const newWidth = Math.round(width); // Round to avoid floating point issues
+      
+      // Always update to trigger change detection (needed for inline styles)
+      if (this.sidebarWidth !== newWidth) {
+        this.sidebarWidth = newWidth;
+      }
     } else {
-      this.sidebarWidth = 0;
+      // Default collapsed width if sidebar not found
+      this.sidebarWidth = 72;
     }
   }
 
@@ -378,6 +409,44 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     const overlayPadding = 40;
     const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
     return `${Math.min(500, availableWidth)}px`;
+  }
+
+  getPageMarginLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getPageWidth(): string {
+    if (window.innerWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getBreadcrumbLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    if (window.innerWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    const padding = 48; // 24px mỗi bên
+    const availableWidth = viewportWidth - this.sidebarWidth - padding;
+    return `${Math.max(0, availableWidth)}px`;
   }
 
   onSearchChange(term: string): void {

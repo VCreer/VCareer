@@ -43,8 +43,8 @@
         <!-- First Group -->
         <li class="sidebar-nav-item">
           <a (click)="navigateTo('/recruiter/home')" class="sidebar-link" [class.active]="isActive('/recruiter/home')">
-            <i class="fa fa-th sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.dashboard') }}</span>
+            <i class="fa fa-chart-bar sidebar-icon"></i>
+            <span class="sidebar-link-text">Báo cáo tuyển dụng</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
@@ -99,12 +99,6 @@
           <a (click)="navigateTo('/recruiter/cv-management')" class="sidebar-link sidebar-link-has-submenu" [class.active]="isActive('/recruiter/cv-management')">
             <i class="fa fa-user-circle sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.cv_management') }}</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/reports')" class="sidebar-link">
-            <i class="fa fa-chart-bar sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.recruitment_reports') }}</span>
           </a>
         </li>
 
