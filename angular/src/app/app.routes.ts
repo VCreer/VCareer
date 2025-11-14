@@ -198,6 +198,10 @@ export const APP_ROUTES: Routes = [
         path: 'recruitment-report',
         loadComponent: () => import('./features/dashboard/recruitment-report/recruiter/recruitment-report').then(c => c.RecruitmentReportComponent),
       },
+      {
+        path: 'hr-staff-management',
+        loadComponent: () => import('./features/dashboard/hr-staff-management/recruiter/hr-staff-management').then(c => c.HRStaffManagementComponent),
+      },
       // {
       //   path: 'performance-dashboard',
       //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),

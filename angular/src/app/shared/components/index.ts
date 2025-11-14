@@ -63,3 +63,5 @@ export { MomoPaymentModalComponent } from './momo-payment-modal/momo-payment-mod
 export { StatCardComponent } from './stat-card/stat-card';
 export { ReportMetricCardComponent, MetricData } from './report-metric-card/report-metric-card';
 export { StatusItemComponent, StatusItemData } from './status-item/status-item';
+export { StaffTableComponent, HRStaff } from './staff-table/staff-table';
+export { ActivityLogTableComponent, ActivityLog } from './activity-log-table/activity-log-table';

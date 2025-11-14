@@ -138,7 +138,8 @@ export class HeaderWrapperComponent implements OnInit {
       '/recruiter/buy-services/detail',
       '/recruiter/cart',
       '/recruiter/job-posting',
-      '/recruiter/recruitment-report'
+      '/recruiter/recruitment-report',
+      '/recruiter/hr-staff-management'
     ];
     
     const isManagementRoute = managementRoutes.some(route => 
