@@ -1,5 +1,5 @@
-<div class="employee-job-management-detail-page" [class.sidebar-expanded]="sidebarExpanded">
-  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+<div class="employee-job-management-detail-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="breadcrumb-left">
         <button type="button" class="back-btn" (click)="onBack()">
@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <div class="detail-content">
+  <div class="detail-content" [style.max-width]="getContentMaxWidth()">
     <div class="job-detail-container">
       <!-- Left Column -->
       <div class="job-detail__box--left">

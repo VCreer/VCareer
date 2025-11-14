@@ -109,5 +109,5 @@
 </header>
 
 <!-- Sidebar Component -->
-<app-sidebar [show]="showSidebar" (close)="closeSidebar()"></app-sidebar>
+<app-sidebar [show]="showSidebar" (close)="closeSidebar()" (showChange)="showSidebar = $event"></app-sidebar>
 

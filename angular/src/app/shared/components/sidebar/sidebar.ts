@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -13,9 +13,10 @@ import { NavigationService } from '../../../core/services/navigation.service';
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss']
 })
-export class SidebarComponent implements OnInit, OnDestroy {
+export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   @Input() show: boolean = false;
   @Output() close = new EventEmitter<void>();
+  @Output() showChange = new EventEmitter<boolean>();
   
   // Mock user data - can be replaced with actual user service later
   userName: string = 'Uông Hoàng Duy';
@@ -84,7 +85,47 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Track if sidebar was manually opened (not by hover)
+  private manuallyOpened = false;
+  private isHovering = false;
+
+  @HostListener('mouseenter')
+  onMouseEnter(): void {
+    // Only auto-open on hover if not manually opened
+    if (!this.manuallyOpened) {
+      this.isHovering = true;
+      // Don't change show state, let CSS handle the visual expansion
+      // CSS :hover will handle the visual expansion
+    }
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave(): void {
+    // Only auto-close if sidebar was opened by hover (not manually)
+    if (!this.manuallyOpened && this.isHovering) {
+      this.isHovering = false;
+      // CSS :hover will handle the visual collapse
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['show']) {
+      const newValue = changes['show'].currentValue;
+      // If show is set to true from parent (manual toggle), mark as manually opened
+      if (newValue) {
+        // This is a manual toggle from parent (hamburger menu)
+        this.manuallyOpened = true;
+        this.isHovering = false; // Reset hover state when manually opened
+      } else {
+        // If show is set to false from parent, reset manuallyOpened
+        this.manuallyOpened = false;
+        this.isHovering = false;
+      }
+    }
+  }
+
   onClose(): void {
+    this.manuallyOpened = false;
     this.close.emit();
   }
 

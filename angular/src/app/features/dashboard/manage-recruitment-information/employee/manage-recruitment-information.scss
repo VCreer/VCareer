@@ -3,25 +3,18 @@
   padding: 24px;
   padding-top: 80px;
   background: #f9fafb;
-  margin-left: 72px;
-  width: calc(100% - 72px);
   transition: margin-left 0.3s ease, width 0.3s ease;
-
-  &.sidebar-expanded {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-  }
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  // margin-left and width are controlled by inline styles from TypeScript
+  // to dynamically adjust based on sidebar width (including hover state)
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0 !important;
+    width: 100% !important;
     padding: 16px;
     padding-top: 80px;
-
-    &.sidebar-expanded {
-      margin-left: 0;
-      width: 100%;
-    }
   }
 }
 
@@ -35,22 +28,11 @@
   transition: left 0.3s ease, width 0.3s ease;
   border-bottom: 1px solid #e5e7eb;
   min-height: 56px;
-  left: 72px;
-  width: calc(100% - 72px);
-
-  &.sidebar-expanded {
-    left: 280px;
-    width: calc(100% - 280px);
-  }
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
-    left: 0;
-    width: 100%;
-
-    &.sidebar-expanded {
-      left: 0;
-      width: 100%;
-    }
+    left: 0 !important;
+    width: 100% !important;
   }
 
   .breadcrumb-container {
@@ -74,6 +56,15 @@
 }
 
 .job-management-content {
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  transition: max-width 0.3s ease;
+
+  @media (max-width: 768px) {
+    max-width: 100% !important;
+  }
+
   .summary-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -183,12 +174,19 @@
       flex-direction: column;
       gap: 0;
       transition: all 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
       
       // When showing detail, switch to 2-column layout
       &.show-detail-job {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
+
+        @media (max-width: 1024px) {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
       }
     }
 
@@ -994,8 +992,78 @@
 
       .box-view-job-detail {
         max-height: none;
+        position: static;
       }
     }
   }
 }
+
+// Ensure all content inside main-content respects max-width and is responsive
+.job-management-content {
+  .summary-cards {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-list-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .wrapper-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-list-column {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .box-view-job-detail {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .filter-bar {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+
+    .search-group {
+      flex: 1;
+      min-width: 200px;
+      max-width: 100%;
+
+      @media (max-width: 768px) {
+        min-width: 100%;
+      }
+    }
+
+    .filter-group {
+      flex: 0 0 auto;
+      min-width: 200px;
+
+      @media (max-width: 768px) {
+        min-width: 100%;
+      }
+    }
+  }
+
+  .job-item {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+
 
