@@ -1,29 +1,19 @@
-import type { JobStatus } from '../../constants/job-constant/job-status.enum';
+import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
 import type { EmploymentType } from '../../constants/job-constant/employment-type.enum';
 import type { PositionType } from '../../constants/job-constant/position-type.enum';
 import type { ExperienceLevel } from '../../constants/job-constant/experience-level.enum';
-import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
 import type { SalaryFilterType } from './salary-filter-type.enum';
+import type { JobStatus } from '../../constants/job-constant/job-status.enum';
 import type { JobDisplayArea } from '../../constants/job-constant/job-display-area.enum';
 import type { JobPriorityLevel } from '../../constants/job-constant/job-priority-level.enum';
 
-export interface JobViewDto {
-  companyImageUrl?: string;
-  companyId: number;
-  companyName?: string;
-  title?: string;
-  status?: JobStatus;
-  jobId?: string;
-  expiresAt?: string;
-  salaryMin?: number;
-  salaryMax?: number;
-  salaryDeal: boolean;
-  provinceCode: number;
-  districtCode: number;
-  employmentType?: EmploymentType;
-  positionType?: PositionType;
-  experience?: ExperienceLevel;
-  jobCategoryId?: string;
+export interface CategoryUpdateCreateDto {
+  name?: string;
+  slug?: string;
+  description?: string;
+  parentId?: string;
+  sortOrder: number;
+  isActive: boolean;
 }
 
 export interface JobApproveViewDto {
@@ -90,6 +80,25 @@ export interface JobSearchInputDto {
   sortBy?: string;
   skipCount: number;
   maxResultCount: number;
+}
+
+export interface JobViewDto {
+  companyImageUrl?: string;
+  companyId: number;
+  companyName?: string;
+  title?: string;
+  status?: JobStatus;
+  jobId?: string;
+  expiresAt?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryDeal: boolean;
+  provinceCode: number;
+  districtCode: number;
+  employmentType?: EmploymentType;
+  positionType?: PositionType;
+  experience?: ExperienceLevel;
+  jobCategoryId?: string;
 }
 
 export interface JobViewWithPriorityDto {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, FormControl } from '@angular/forms';
  import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
-import { ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto } from '../../../../proxy/profile/models';
+import { ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto } from '../../../../proxy/dto/profile';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';

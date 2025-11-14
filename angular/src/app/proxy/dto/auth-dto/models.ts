@@ -11,6 +11,13 @@ export interface CreateEmployeeDto {
   employeeRoles: string[];
 }
 
+export interface CurrentUserInfoDto {
+  userId?: string;
+  email?: string;
+  roles: string[];
+  fullName?: string;
+}
+
 export interface EmployeeLoginDto {
   email?: string;
   password?: string;

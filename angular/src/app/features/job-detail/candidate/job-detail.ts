@@ -6,7 +6,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
-import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
+// import { LoginModalComponent } from '../../../shared/services/login-modal/login-modal';
 import {
   JobApiService,
   EmploymentType,
@@ -32,7 +32,7 @@ import { ApplicationService } from '../../../proxy/http-api/controllers/applicat
     ToastNotificationComponent,
     SearchHeaderComponent,
     ApplyJobModalComponent,
-    LoginModalComponent,
+ 
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],

@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,13 +29,13 @@ using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
 using VCareer.Files.BlobContainers;
 using VCareer.HealthChecks;
+using VCareer.HttpApi.Host.Swagger;
 using VCareer.IServices.IAuth;
 using VCareer.Jwt;
 using VCareer.MultiTenancy;
 using VCareer.Security;
 using Volo.Abp;
 using Volo.Abp.Account;
-using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.AntiForgery;
@@ -39,33 +43,30 @@ using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
+using Volo.Abp.AspNetCore.Security;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Caching;
-using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
-using Volo.Abp.OpenIddict;
+//using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using Volo.Abp.Studio;
+//using Volo.Abp.Studio;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
-using System.IdentityModel.Tokens.Jwt;
-using VCareer.HttpApi.Host.Swagger;
 
 
 namespace VCareer;
 
 [DependsOn(
     typeof(VCareerHttpApiModule),
-    typeof(AbpStudioClientAspNetCoreModule),
+   typeof(AbpStudioClientAspNetCoreModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
@@ -80,10 +81,10 @@ public class VCareerHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-        /*  Configure<AbpAntiForgeryOptions>(options =>
-          {
-              options.AutoValidate = false;
-          });*/
+        Configure<AbpAntiForgeryOptions>(options =>
+        {
+            options.AutoValidate = false;
+        });
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -120,6 +121,12 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
         ConfigureDistributedCache(context, configuration);
+
+        //cái này để ghi đè cái trạng thái set cookie strict => chỉ gửi cookie nếu chung domain
+        //trong khi api hiện tịa của dự án và angular là 2 port khác nhau
+        ConfigureCookiePolicy(context);
+
+      
     }
 
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng
@@ -137,37 +144,60 @@ public class VCareerHttpApiHostModule : AbpModule
         Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
     }
 
+    private void ConfigureCookiePolicy(ServiceConfigurationContext context) {
+        Configure<CookiePolicyOptions>(opts =>
+        {
+            opts.MinimumSameSitePolicy = SameSiteMode.None;
+            opts.Secure = CookieSecurePolicy.Always;
+            opts.HttpOnly = HttpOnlyPolicy.Always;
+            opts.CheckConsentNeeded = _ => false; // rất quan trọng
+        });
+
+    }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
+{
+    context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
     {
-        //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-        context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
- {
-     options.IsDynamicClaimsEnabled = true;
- });
+        options.IsDynamicClaimsEnabled = true;
+    });
 
-        context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
+    context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
-        // cấu hình jwt
-        context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-      .AddJwtBearer(options =>
-      {
-          var configuration = context.Services.GetConfiguration();
-          options.TokenValidationParameters = new TokenValidationParameters
-          {
-              ValidateIssuer = true,
-              ValidateAudience = true,
-              ValidateLifetime = true,
-              ValidateIssuerSigningKey = true,
-              ValidIssuer = configuration["Authentication:Jwt:Issuer"],
-              ValidAudience = configuration["Authentication:Jwt:Audience"],
-              IssuerSigningKey = new SymmetricSecurityKey(
-                  Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
-              ),
-          };
-      });
-        context.Services.AddAuthorization();
-    }
+    context.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
+                ),
+                ClockSkew = TimeSpan.Zero
+            };
+
+            //  lấy token từ cookie
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                    return Task.CompletedTask;
+                }
+            };
+                  });
+     
+              context.Services.AddAuthorization();
+}
+
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
@@ -370,6 +400,7 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+        app.UseCookiePolicy();
 
         // Enable static files serving from wwwroot
         app.UseStaticFiles();
@@ -378,6 +409,7 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
+       
         app.UseAuthentication();
 
         if (MultiTenancyConsts.IsEnabled)

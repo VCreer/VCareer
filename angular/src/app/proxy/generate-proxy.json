@@ -4852,9 +4852,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -4864,8 +4864,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "type": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -4874,8 +4874,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -4897,9 +4897,9 @@
                 },
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -4921,8 +4921,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "type": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -4931,8 +4931,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -4946,9 +4946,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.CompanySearchInputDto",
-                  "typeSimple": "VCareer.Profile.CompanySearchInputDto",
+                  "typeAsString": "VCareer.Dto.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.CompanySearchInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.CompanySearchInputDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -4958,8 +4958,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.CompanySearchInputDto",
-                  "typeSimple": "VCareer.Profile.CompanySearchInputDto",
+                  "type": "VCareer.Dto.Profile.CompanySearchInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.CompanySearchInputDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -4968,8 +4968,8 @@
                 }
               ],
               "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>>"
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>>"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5005,8 +5005,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5020,8 +5020,8 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5035,8 +5035,8 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
-                "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.Profile.CompanyLegalInfoDto>",
+                "typeSimple": "[VCareer.Dto.Profile.CompanyLegalInfoDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5152,8 +5152,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5226,8 +5226,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyInfoForJobDetailDto",
-                "typeSimple": "VCareer.Profile.CompanyInfoForJobDetailDto"
+                "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
@@ -5252,8 +5252,8 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "VCareer.Profile.ProfileDto",
-                "typeSimple": "VCareer.Profile.ProfileDto"
+                "type": "VCareer.Dto.Profile.ProfileDto",
+                "typeSimple": "VCareer.Dto.Profile.ProfileDto"
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.ProfileController"
@@ -5267,9 +5267,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -5279,8 +5279,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "type": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -5304,9 +5304,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.ChangePasswordDto",
-                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "typeAsString": "VCareer.Dto.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -5316,8 +5316,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.ChangePasswordDto",
-                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "type": "VCareer.Dto.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -5819,8 +5819,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                    "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 },
                 {
@@ -5836,8 +5836,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                    "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 },
                 {
@@ -5903,8 +5903,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                    "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 },
                 {
@@ -5920,8 +5920,24 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                    "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RefeshTokenAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCurrentUserAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "VCareer.Dto.AuthDto.CurrentUserInfoDto",
+                    "typeSimple": "VCareer.Dto.AuthDto.CurrentUserInfoDto"
                   }
                 }
               ]
@@ -5996,8 +6012,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
@@ -6033,8 +6049,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
@@ -6070,8 +6086,8 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
@@ -6285,8 +6301,38 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Dto.JwtDto.TokenResponseDto",
-                "typeSimple": "VCareer.Dto.JwtDto.TokenResponseDto"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "RefeshTokenAsync": {
+              "uniqueName": "RefeshTokenAsync",
+              "name": "RefeshTokenAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/refesh-token",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "GetCurrentUserAsync": {
+              "uniqueName": "GetCurrentUserAsync",
+              "name": "GetCurrentUserAsync",
+              "httpMethod": "GET",
+              "url": "api/app/auth/current-user",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "VCareer.Dto.AuthDto.CurrentUserInfoDto",
+                "typeSimple": "VCareer.Dto.AuthDto.CurrentUserInfoDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
@@ -9061,11 +9107,144 @@
                     "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
                     "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
                   }
+                },
+                {
+                  "name": "DeleteCategoryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateCategoryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CreaateCategoryAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
           ],
           "actions": {
+            "CreaateCategoryAsyncByDto": {
+              "uniqueName": "CreaateCategoryAsyncByDto",
+              "name": "CreaateCategoryAsync",
+              "httpMethod": "POST",
+              "url": "api/app/job-category/creaate-category",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
+            },
+            "DeleteCategoryAsyncById": {
+              "uniqueName": "DeleteCategoryAsyncById",
+              "name": "DeleteCategoryAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/job-category/{id}/category",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
+            },
             "GetCategoryTreeAsync": {
               "uniqueName": "GetCategoryTreeAsync",
               "name": "GetCategoryTreeAsync",
@@ -9114,6 +9293,63 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
                 "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
+            },
+            "UpdateCategoryAsyncByIdAndDto": {
+              "uniqueName": "UpdateCategoryAsyncByIdAndDto",
+              "name": "UpdateCategoryAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/job-category/{id}/category",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
@@ -10659,7 +10895,7 @@
           "type": "VCareer.Services.Profile.CompanyLegalInfoAppService",
           "interfaces": [
             {
-              "type": "VCareer.Profile.ICompanyLegalInfoAppService",
+              "type": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService",
               "name": "ICompanyLegalInfoAppService",
               "methods": [
                 {
@@ -10667,16 +10903,16 @@
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                      "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                      "typeAsString": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
+                      "typeSimple": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyLegalInfoDto",
-                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
                   }
                 },
                 {
@@ -10692,16 +10928,16 @@
                     },
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                      "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                      "typeAsString": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
+                      "typeSimple": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyLegalInfoDto",
-                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
                   }
                 },
                 {
@@ -10717,24 +10953,24 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyLegalInfoDto",
-                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
                   }
                 },
                 {
                   "name": "GetCurrentUserCompanyLegalInfoAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyLegalInfoDto",
-                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
                   }
                 },
                 {
                   "name": "GetCurrentUserCompanyLegalInfoListAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
-                    "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Profile.CompanyLegalInfoDto>",
+                    "typeSimple": "[VCareer.Dto.Profile.CompanyLegalInfoDto]"
                   }
                 },
                 {
@@ -10799,8 +11035,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyLegalInfoDto",
-                    "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
                   }
                 },
                 {
@@ -10816,8 +11052,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Profile.CompanyInfoForJobDetailDto",
-                    "typeSimple": "VCareer.Profile.CompanyInfoForJobDetailDto"
+                    "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
                   }
                 },
                 {
@@ -10825,16 +11061,16 @@
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Profile.CompanySearchInputDto",
-                      "typeSimple": "VCareer.Profile.CompanySearchInputDto",
+                      "typeAsString": "VCareer.Dto.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.CompanySearchInputDto",
+                      "typeSimple": "VCareer.Dto.Profile.CompanySearchInputDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>"
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>"
                   }
                 }
               ]
@@ -10850,9 +11086,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -10862,8 +11098,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.SubmitCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.SubmitCompanyLegalInfoDto",
+                  "type": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -10872,11 +11108,11 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
               "uniqueName": "UpdateCompanyLegalInfoAsyncByIdAndInput",
@@ -10895,9 +11131,9 @@
                 },
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -10919,8 +11155,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.UpdateCompanyLegalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdateCompanyLegalInfoDto",
+                  "type": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -10929,11 +11165,11 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyLegalInfoAsyncById": {
               "uniqueName": "GetCompanyLegalInfoAsyncById",
@@ -10966,11 +11202,11 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoAsync": {
               "uniqueName": "GetCurrentUserCompanyLegalInfoAsync",
@@ -10981,11 +11217,11 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoListAsync": {
               "uniqueName": "GetCurrentUserCompanyLegalInfoListAsync",
@@ -10996,11 +11232,11 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Profile.CompanyLegalInfoDto>",
-                "typeSimple": "[VCareer.Profile.CompanyLegalInfoDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.Profile.CompanyLegalInfoDto>",
+                "typeSimple": "[VCareer.Dto.Profile.CompanyLegalInfoDto]"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "DeleteCompanyLegalInfoAsyncById": {
               "uniqueName": "DeleteCompanyLegalInfoAsyncById",
@@ -11037,7 +11273,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile": {
               "uniqueName": "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile",
@@ -11150,11 +11386,11 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyLegalInfoDto",
-                "typeSimple": "VCareer.Profile.CompanyLegalInfoDto"
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyByJobIdAsyncByJobId": {
               "uniqueName": "GetCompanyByJobIdAsyncByJobId",
@@ -11187,11 +11423,11 @@
                 }
               ],
               "returnValue": {
-                "type": "VCareer.Profile.CompanyInfoForJobDetailDto",
-                "typeSimple": "VCareer.Profile.CompanyInfoForJobDetailDto"
+                "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "SearchCompaniesAsyncByInput": {
               "uniqueName": "SearchCompaniesAsyncByInput",
@@ -11202,9 +11438,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.CompanySearchInputDto",
-                  "typeSimple": "VCareer.Profile.CompanySearchInputDto",
+                  "typeAsString": "VCareer.Dto.Profile.CompanySearchInputDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.CompanySearchInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.CompanySearchInputDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -11214,8 +11450,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.CompanySearchInputDto",
-                  "typeSimple": "VCareer.Profile.CompanySearchInputDto",
+                  "type": "VCareer.Dto.Profile.CompanySearchInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.CompanySearchInputDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -11224,11 +11460,11 @@
                 }
               ],
               "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Profile.CompanyLegalInfoDto>"
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.ICompanyLegalInfoAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             }
           }
         },
@@ -11241,7 +11477,7 @@
           "type": "VCareer.Services.Profile.ProfileAppService",
           "interfaces": [
             {
-              "type": "VCareer.Profile.IProfileAppService",
+              "type": "VCareer.IServices.IProfileServices.IProfileAppService",
               "name": "IProfileAppService",
               "methods": [
                 {
@@ -11249,9 +11485,9 @@
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Profile.UpdatePersonalInfoDto",
-                      "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                      "typeAsString": "VCareer.Dto.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
+                      "typeSimple": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -11266,9 +11502,9 @@
                   "parametersOnMethod": [
                     {
                       "name": "input",
-                      "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Profile.ChangePasswordDto",
-                      "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                      "typeAsString": "VCareer.Dto.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.ChangePasswordDto",
+                      "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -11282,8 +11518,8 @@
                   "name": "GetCurrentUserProfileAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
-                    "type": "VCareer.Profile.ProfileDto",
-                    "typeSimple": "VCareer.Profile.ProfileDto"
+                    "type": "VCareer.Dto.Profile.ProfileDto",
+                    "typeSimple": "VCareer.Dto.Profile.ProfileDto"
                   }
                 },
                 {
@@ -11307,9 +11543,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "typeAsString": "VCareer.Dto.Profile.UpdatePersonalInfoDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -11319,8 +11555,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.UpdatePersonalInfoDto",
-                  "typeSimple": "VCareer.Profile.UpdatePersonalInfoDto",
+                  "type": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
+                  "typeSimple": "VCareer.Dto.Profile.UpdatePersonalInfoDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -11333,7 +11569,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.IProfileAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "ChangePasswordAsyncByInput": {
               "uniqueName": "ChangePasswordAsyncByInput",
@@ -11344,9 +11580,9 @@
               "parametersOnMethod": [
                 {
                   "name": "input",
-                  "typeAsString": "VCareer.Profile.ChangePasswordDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Profile.ChangePasswordDto",
-                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "typeAsString": "VCareer.Dto.Profile.ChangePasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -11356,8 +11592,8 @@
                   "nameOnMethod": "input",
                   "name": "input",
                   "jsonName": null,
-                  "type": "VCareer.Profile.ChangePasswordDto",
-                  "typeSimple": "VCareer.Profile.ChangePasswordDto",
+                  "type": "VCareer.Dto.Profile.ChangePasswordDto",
+                  "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -11370,7 +11606,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.IProfileAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "GetCurrentUserProfileAsync": {
               "uniqueName": "GetCurrentUserProfileAsync",
@@ -11381,11 +11617,11 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "VCareer.Profile.ProfileDto",
-                "typeSimple": "VCareer.Profile.ProfileDto"
+                "type": "VCareer.Dto.Profile.ProfileDto",
+                "typeSimple": "VCareer.Dto.Profile.ProfileDto"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Profile.IProfileAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "DeleteAccountAsync": {
               "uniqueName": "DeleteAccountAsync",
@@ -11400,7 +11636,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.Profile.IProfileAppService"
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             }
           }
         },
@@ -17282,6 +17518,7 @@
       "isEnum": true,
       "enumNames": [
         "Draft",
+        "Pending",
         "Open",
         "Closed",
         "Expired",
@@ -17289,6 +17526,7 @@
         "Deleted"
       ],
       "enumValues": [
+        0,
         1,
         2,
         3,
@@ -18831,6 +19069,63 @@
           "type": "[System.String]",
           "typeSimple": "[string]",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.AuthDto.CurrentUserInfoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Roles",
+          "jsonName": null,
+          "type": "[System.String]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FullName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -20792,6 +21087,87 @@
         }
       ]
     },
+    "VCareer.Dto.JobDto.CategoryUpdateCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Slug",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ParentId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SortOrder",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.JobDto.JobApproveViewDto": {
       "baseType": null,
       "isEnum": false,
@@ -21947,7 +22323,7 @@
       "genericArguments": null,
       "properties": null
     },
-    "VCareer.Dto.JwtDto.TokenResponseDto": {
+    "VCareer.Dto.Profile.ChangePasswordDto": {
       "baseType": null,
       "isEnum": false,
       "enumNames": null,
@@ -21955,7 +22331,52 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "AccessToken",
+          "name": "CurrentPassword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 6,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NewPassword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 6,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ConfirmPassword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.CompanyInfoForJobDetailDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Int32>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CompanyName",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -21967,13 +22388,1267 @@
           "regex": null
         },
         {
-          "name": "RefreshToken",
+          "name": "LogoUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanySize",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HeadquartersAddress",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Industries",
+          "jsonName": null,
+          "type": "[System.String]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.CompanyLegalInfoDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Int32>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CompanyName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "VerificationStatus",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HeadquartersAddress",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactPhone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanySize",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IndustryId",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FoundedYear",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LogoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalDocumentUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CoverImageUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WebsiteUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CultureVideoUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "VerifyAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssuePlace",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalRepresentative",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCertificateFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RepresentativeIdCardFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OtherSupportFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalVerificationStatus",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalReviewedBy",
+          "jsonName": null,
+          "type": "System.Int64?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalReviewedAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.CompanySearchInputDto": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Keyword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.ProfileDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Surname",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DateOfBirth",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Gender",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Address",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Nationality",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MaritalStatus",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EmailConfirmed",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumberConfirmed",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.SubmitCompanyLegalInfoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CompanyName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HeadquartersAddress",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactPhone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 20,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanySize",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IndustryId",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FoundedYear",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssueDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssuePlace",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalRepresentative",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCertificateFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RepresentativeIdCardFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OtherSupportFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.UpdateCompanyLegalInfoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CompanyName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HeadquartersAddress",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactPhone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 20,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanySize",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IndustryId",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FoundedYear",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssueDate",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseIssuePlace",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LegalRepresentative",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 255,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BusinessLicenseFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TaxCertificateFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RepresentativeIdCardFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OtherSupportFile",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.UpdatePersonalInfoDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Surname",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 16,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Bio",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DateOfBirth",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Gender",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Address",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Nationality",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 100,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MaritalStatus",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -22448,1338 +24123,6 @@
       ],
       "genericArguments": null,
       "properties": null
-    },
-    "VCareer.Profile.ChangePasswordDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CurrentPassword",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 6,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "NewPassword",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 6,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ConfirmPassword",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.CompanyInfoForJobDetailDto": {
-      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Int32>",
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CompanyName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LogoUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanySize",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "HeadquartersAddress",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Industries",
-          "jsonName": null,
-          "type": "[System.String]",
-          "typeSimple": "[string]",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.CompanyLegalInfoDto": {
-      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Int32>",
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CompanyName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanyCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "VerificationStatus",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Description",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "HeadquartersAddress",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactEmail",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactPhone",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Status",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanySize",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IndustryId",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "FoundedYear",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LogoUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalDocumentUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CoverImageUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "WebsiteUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CultureVideoUrl",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "VerifyAt",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssueDate",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssuePlace",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalRepresentative",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCertificateFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "RepresentativeIdCardFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "OtherSupportFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalVerificationStatus",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalReviewedBy",
-          "jsonName": null,
-          "type": "System.Int64?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalReviewedAt",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CreationTime",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LastModificationTime",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.CompanySearchInputDto": {
-      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Keyword",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Status",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.ProfileDto": {
-      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Name",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Surname",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Email",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "PhoneNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Bio",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "DateOfBirth",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Gender",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Location",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Address",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Nationality",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "MaritalStatus",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "UserName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "EmailConfirmed",
-          "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "PhoneNumberConfirmed",
-          "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CreationTime",
-          "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LastModificationTime",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "UserType",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.SubmitCompanyLegalInfoDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CompanyName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanyCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Description",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 1000,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "HeadquartersAddress",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactEmail",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactPhone",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 20,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanySize",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IndustryId",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "FoundedYear",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssueDate",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssuePlace",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalRepresentative",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCertificateFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "RepresentativeIdCardFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "OtherSupportFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.UpdateCompanyLegalInfoDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CompanyName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanyCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Description",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 1000,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "HeadquartersAddress",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactEmail",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ContactPhone",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 20,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CompanySize",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IndustryId",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "FoundedYear",
-          "jsonName": null,
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssueDate",
-          "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseIssuePlace",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "LegalRepresentative",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 255,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "TaxCertificateFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "RepresentativeIdCardFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "OtherSupportFile",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Profile.UpdatePersonalInfoDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Name",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 256,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Surname",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 256,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Email",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 256,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "PhoneNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 16,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Bio",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 1000,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "DateOfBirth",
-          "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Gender",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Location",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 500,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Address",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 1000,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Nationality",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "MaritalStatus",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
     },
     "Volo.Abp.Account.ChangePasswordInput": {
       "baseType": null,

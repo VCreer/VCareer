@@ -5,12 +5,12 @@ import { ToastNotificationComponent } from '../toast-notification/toast-notifica
 import { JobApiService } from '../../../apiTest/api/job.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 // Import trực tiếp để tránh circular dependency
-import { LoginModalComponent } from '../login-modal/login-modal';
+//import { LoginModalComponent } from '../../services/login-modal/login-modal';
 
 @Component({
   selector: 'app-job-list',
   standalone: true,
-  imports: [CommonModule, ToastNotificationComponent, LoginModalComponent],
+  imports: [CommonModule, ToastNotificationComponent],
   templateUrl: './job-list.html',
   styleUrls: ['./job-list.scss']
 })

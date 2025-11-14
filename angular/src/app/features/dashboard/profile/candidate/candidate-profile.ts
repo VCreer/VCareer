@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
-import type { ProfileDto } from '../../../../proxy/profile/models';
+import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
 

@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ using VCareer.Dto.JwtDto;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Profile;
 using VCareer.IServices.IAuth;
+using VCareer.Jwt;
 using VCareer.Models.Companies;
 using VCareer.Models.Users;
 using VCareer.OptionConfigs;
@@ -31,6 +33,7 @@ using Volo.Abp.Identity.AspNetCore;
 using Volo.Abp.TextTemplating;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using static Google.Apis.Requests.BatchRequest;
 using static Volo.Abp.UI.Navigation.DefaultMenuNames.Application;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
 
@@ -54,6 +57,7 @@ namespace VCareer.Services.Auth
         private readonly ICompanyRepository _companyRepository;
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IHttpContextAccessor _httpContextAcessor;
 
         public AuthAppService(
             IdentityUserManager identityManager,
@@ -68,7 +72,8 @@ namespace VCareer.Services.Auth
             ICandidateProfileRepository candidateProfile,
             ICompanyRepository companyRepository,
             IRecruiterRepository recruiterProfile,
-            IEmployeeRepository employeeRepository
+            IEmployeeRepository employeeRepository,
+            IHttpContextAccessor httpContextAcessor
            )
         {
             _identityManager = identityManager;
@@ -84,6 +89,7 @@ namespace VCareer.Services.Auth
             _companyRepository = companyRepository;
             _recruiterRepository = recruiterProfile;
             _employeeRepository = employeeRepository;
+            _httpContextAcessor = httpContextAcessor;
         }
 
 
@@ -118,7 +124,7 @@ namespace VCareer.Services.Auth
             await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
         }
 
-        public async Task<TokenResponseDto> RecruiterLoginAsync(LoginDto input)
+        public async Task RecruiterLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
@@ -131,10 +137,12 @@ namespace VCareer.Services.Auth
             if (recruiterProfile == null) throw new UserFriendlyException("Login Failed");
             if (!recruiterProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
 
-            return await _tokenGenerator.CreateTokenAsync(user);
+            var tokens = await _tokenGenerator.CreateTokenAsync(user);
+            UpdateTokenToCookie(tokens);
+
         }
 
-        public async Task<TokenResponseDto> CandidateLoginAsync(LoginDto input)
+        public async Task CandidateLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
@@ -147,13 +155,14 @@ namespace VCareer.Services.Auth
             if (candidateProfile == null) throw new UserFriendlyException("Login Failed");
             if (!candidateProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
 
+            var tokens = await _tokenGenerator.CreateTokenAsync(user);
+            UpdateTokenToCookie(tokens);
 
-            return await _tokenGenerator.CreateTokenAsync(user);
 
         }
 
         //check role cái này 
-        public async Task<TokenResponseDto> LoginWithGoogleAsync(GoogleLoginDto input)
+        public async Task LoginWithGoogleAsync(GoogleLoginDto input)
         {
             var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
             {
@@ -161,7 +170,7 @@ namespace VCareer.Services.Auth
             });
             var user = await _identityManager.FindByEmailAsync(payload.Email);
 
-            if (user != null)
+            if (user == null)
             {
                 user = new IdentityUser(id: Guid.NewGuid(), userName: payload.Email, email: payload.Email)
                 {
@@ -171,7 +180,8 @@ namespace VCareer.Services.Auth
                 var result = await _identityManager.CreateAsync(user);
                 if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
             }
-            return await _tokenGenerator.CreateTokenAsync(user);
+            var tokens = await _tokenGenerator.CreateTokenAsync(user);
+            UpdateTokenToCookie(tokens);
         }
 
         public async Task LogOutAllDeviceAsync()
@@ -204,6 +214,10 @@ namespace VCareer.Services.Auth
 
             // Revoke tất cả refresh tokens của user (logout)
             await _tokenGenerator.CancleAsync(user);
+            //delete cookie token 
+            var response = _httpContextAcessor.HttpContext!.Response;
+            response.Cookies.Delete("access_token");
+            response.Cookies.Delete("refresh_token");
         }
 
         [UnitOfWork]
@@ -304,16 +318,17 @@ namespace VCareer.Services.Auth
                 if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
             }
 
-            var employeeProfile = new EmployeeProfile { 
-            Email = input.Email,
-            UserId =newUser.Id,
+            var employeeProfile = new EmployeeProfile
+            {
+                Email = input.Email,
+                UserId = newUser.Id,
             };
 
             await _employeeRepository.InsertAsync(employeeProfile);
             await CurrentUnitOfWork.SaveChangesAsync();
         }
 
-        public async Task<TokenResponseDto> EmployeeLoginAsync(EmployeeLoginDto input)
+        public async Task EmployeeLoginAsync(EmployeeLoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new UserFriendlyException("Email not found");
@@ -326,7 +341,69 @@ namespace VCareer.Services.Auth
             if (employeeProfile == null) throw new UserFriendlyException("Login Failed");
             if (!employeeProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
 
-            return await _tokenGenerator.CreateTokenAsync(user);
+            var tokens = await _tokenGenerator.CreateTokenAsync(user);
+            UpdateTokenToCookie(tokens);
+        }
+
+        public async Task RefeshTokenAsync()
+        {
+            var request = _httpContextAcessor.HttpContext!.Request;
+            var response = _httpContextAcessor.HttpContext.Response;
+
+            var refreshToken = request.Cookies["refresh_token"];
+            if (string.IsNullOrEmpty(refreshToken)) throw new BusinessException("cant get refresk token to Refresh");
+
+            var tokens = await _tokenGenerator.RefreshAsync(refreshToken);
+            if (tokens == null) throw new BusinessException("Refresh token create failed");
+            UpdateTokenToCookie(tokens);
+        }
+
+        private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
+        {
+            var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
+           // dù append ghi đè cookie nhưng có trường hợp ko xóa được thì lỗi
+           // ví dụ như cùng name nhưung khác path là ko apppend được rồi 
+            //response.Cookies.Delete("access_token", new CookieOptions { Path = "/" });
+            //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
+
+            response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddMinutes(double.Parse(tokenResonse.ExpireMinuteAcesstoken)),
+                Path = "/"
+            });
+
+            response.Cookies.Append("refresh_token", tokenResonse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddHours(double.Parse(tokenResonse.ExpireHourRefreshToken)),
+                Path = "/"
+            });
+        }
+        //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
+        //còn mục đích của token là để phục vụ auth backend , tạo current user
+        public async Task<CurrentUserInfoDto> GetCurrentUserAsync()
+        {
+            var email = _currentUser.Email;
+            var fullName = _currentUser.Name;
+            var roles = _currentUser.Roles;
+            var userId = _currentUser.Id;
+
+        /*    if (string.IsNullOrEmpty(email) ||
+               !roles.Any() ||
+               userId == null) throw new BusinessException("Cant get current user infomation");*/
+
+            return await Task.FromResult(new CurrentUserInfoDto
+            {
+                Email = email,
+                FullName = fullName,
+                Roles = roles,
+                UserId = userId
+            });
         }
     }
 }

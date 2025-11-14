@@ -227,6 +227,7 @@ public class VCareerDbContext :
         b.HasOne(x => x.RecruiterProfile)
          .WithMany(x => x.JobPostings)
          .HasForeignKey(x => x.RecruiterId)
+         .HasPrincipalKey(x => x.Id)
          .OnDelete(DeleteBehavior.Cascade); // Xóa job khi recruiter profile bị xóa
 
         b.HasMany(x => x.JobPostingTags)

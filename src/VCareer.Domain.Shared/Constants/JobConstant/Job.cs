@@ -21,7 +21,8 @@ namespace VCareer.Constants.JobConstant
     //enum cho job status
     public enum JobStatus
     {
-        Draft = 1,      // bài đăng đang chờ được duyệt
+        Draft = 0,        //bài đăng lưu tạm thời 
+        Pending = 1,      // bài đăng đang chờ được duyệt
         Open = 2,       // bài đăng đã được duyệt và đang mở 
         Closed = 3,     // đóng chủ đích của recruiter
         Expired = 4,    // đóng nhưng là thụ động 

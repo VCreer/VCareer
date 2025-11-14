@@ -14,7 +14,7 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace VCareer.Repositories.Job
 {
-    public class JobPostRepository : EfCoreRepository<VCareerDbContext, Job_Post, Guid>, IJobSearchRepository
+    public class JobPostRepository : EfCoreRepository<VCareerDbContext, Job_Post, Guid>, IJobPostRepository
     {
         private readonly IJobCategoryRepository _jobCategoryRepository;
 

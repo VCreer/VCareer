@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VCareer.Dto.Profile;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
-namespace VCareer.Profile
+namespace VCareer.IServices.IProfileServices
 {
     public interface ICompanyLegalInfoAppService : IApplicationService
     {

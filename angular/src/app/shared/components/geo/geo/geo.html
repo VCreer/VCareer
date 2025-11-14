@@ -1,0 +1,29 @@
+<app-select-field
+  label="Tỉnh/Thành phố"
+  placeholder="Chọn tỉnh"
+  [required]="true"
+  [options]="provinces.map(p => ({ label: p.name, value: p.code }))"
+  [value]="selectedProvince"
+  (valueChange)="selectedProvince = $event; onProvinceChange()"
+  name="province">
+</app-select-field>
+
+<app-select-field
+  label="Quận/Huyện"
+  placeholder="Chọn quận/huyện"
+  [options]="districts.map(d => ({ label: d.name, value: d.code }))"
+  [value]="selectedDistrict"
+  (valueChange)="selectedDistrict = $event; onDistrictChange()"
+  [disabled]="!districts.length"
+  name="district">
+</app-select-field>
+
+<app-select-field
+  label="Phường/Xã"
+  placeholder="Chọn phường/xã"
+  [options]="wards.map(w => ({ label: w.name, value: w.code }))"
+  [value]="selectedWard"
+  (valueChange)="selectedWard = $event"
+  [disabled]="!wards.length"
+  name="ward">
+</app-select-field>

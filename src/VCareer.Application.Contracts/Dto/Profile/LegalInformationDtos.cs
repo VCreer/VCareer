@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 
-namespace VCareer.Profile
+namespace VCareer.Dto.Profile
 {
     public class SubmitCompanyLegalInfoDto
     {

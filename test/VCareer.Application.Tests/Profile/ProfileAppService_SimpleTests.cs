@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NSubstitute;
 using Shouldly;
+using VCareer.Dto.Profile;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using Volo.Abp.Validation;

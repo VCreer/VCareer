@@ -1,6 +1,5 @@
 using AutoMapper;
 using VCareer.Books;
-using VCareer.Profile;
 using VCareer.Application;
 using VCareer.Application.Contracts.CV;
 using VCareer.Models.Users;
@@ -17,6 +16,7 @@ using VCareer.IServices.Books;
 using VCareer.Models;
 using VCareer.Application.Contracts.Applications;
 using VCareer.CV;
+using VCareer.Dto.Profile;
 
 namespace VCareer;
 
