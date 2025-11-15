@@ -66,6 +66,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
+  salaryMin: number = 100000;
+  salaryMax: number = 100000000;
+  salaryDeal: boolean = false;
 
   salaryOptions = this.jobOptionsService.SALARY_OPTIONS;
   educationOptions = this.jobOptionsService.EDUCATION_OPTIONS;
@@ -169,7 +172,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     });
   }
 
-
   onSaveJob() {
     console.log('Lưu việc làm nháp:', this.jobForm);
     this.showToastMessage('Đã lưu việc làm nháp', 'info');
@@ -237,9 +239,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       expiresAt: this.jobForm.applicationDeadline
         ? new Date(this.jobForm.applicationDeadline).toISOString()
         : undefined,
-      salaryMin: 5000000,
-      salaryMax: 15000000,
-      salaryDeal: false,
+      salaryMin: this.salaryDeal ? 0 : this.salaryMin,
+      salaryMax: this.salaryDeal ? 0 : this.salaryMax,
+      salaryDeal: this.salaryDeal,
       provinceCode,
       wardCode,
       slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
@@ -269,4 +271,34 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   closePreviewModal() {
     this.showPreviewModal = false;
   }
+
+  onSalaryChange() {
+  if (this.salaryDeal) return;
+
+  if (this.salaryMin > this.salaryMax) {
+    const temp = this.salaryMin;
+    this.salaryMin = this.salaryMax;
+    this.salaryMax = temp;
+  }
+
+  this.jobForm.salary = `${this.salaryMin}-${this.salaryMax}`;
+  this.clearFieldError('salary');
+}
+
+
+  onToggleSalaryDeal(event: any) {
+  const value = event.target.checked; // giá trị thực của checkbox
+  this.salaryDeal = value;
+
+  if (value) {
+    this.salaryMin = 0;
+    this.salaryMax = 0;
+    this.jobForm.salary = 'deal';
+  } else {
+    this.salaryMin = 100000;
+    this.salaryMax = 100000000;
+    this.onSalaryChange();
+  }
+}
+
 }

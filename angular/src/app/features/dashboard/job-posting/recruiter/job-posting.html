@@ -31,7 +31,6 @@
     <div class="form-wrapper">
       <h2 class="form-main-title">Thông tin công việc</h2>
 
-     
       <!-- Job Title Section -->
       <div class="form-section">
         <h3 class="section-title">Tên Công việc</h3>
@@ -49,57 +48,100 @@
         >
         </app-input-field>
 
-      
-     <app-input-field
-    label="Tên công việc"
-    type="text"
-    placeholder="Nhập tên công việc"
-    [required]="true"
-    [error]="getFieldError('jobTitle')"
-    [(ngModel)]="jobForm.jobTitle"
-    (ngModelChange)="onFieldChange('jobTitle')"
-    name="jobTitle"
-  ></app-input-field>
+        <div class="geo-select-group">
+          <!-- Province -->
+          <app-select-field
+            label="Tỉnh / Thành phố"
+            placeholder="Chọn tỉnh / thành phố"
+            [required]="true"
+            [options]="provinceOptions"
+            [error]="getFieldError('provinceCode')"
+            [(ngModel)]="selectedProvince"
+            (ngModelChange)="onProvinceChange($event)"
+            name="provinceCode"
+          ></app-select-field>
+
+          <!-- Ward -->
+          <app-select-field
+            label="Phường / Xã"
+            placeholder="Chọn phường / xã"
+            [required]="true"
+            [disabled]="!selectedProvince"
+            [options]="wardOptions"
+            [error]="getFieldError('wardCode')"
+            [(ngModel)]="selectedWard"
+            name="wardCode"
+          ></app-select-field>
+        </div>
+
+        <!-- lương -->
+        <label class="toggle-wrap">
+  <input type="checkbox" [(ngModel)]="salaryDeal" (ngModelChange)="onToggleSalaryDeal($event)" />
+  <span class="toggle-slider"></span>
+  <span class="toggle-label">Lương thỏa thuận</span>
+</label>
 
 
-  <div class="geo-select-group">
-    <!-- Province -->
-    <app-select-field
-      label="Tỉnh / Thành phố"
-      placeholder="Chọn tỉnh / thành phố"
-      [required]="true"
-      [options]="provinceOptions"
-      [error]="getFieldError('provinceCode')"
-      [(ngModel)]="selectedProvince"
-      (ngModelChange)="onProvinceChange($event)"
-      name="provinceCode"
-    ></app-select-field>
+        <div class="salary-range-wrapper">
+          <label class="salary-label">Mức lương (VNĐ)</label>
 
-    <!-- Ward -->
-    <app-select-field
-      label="Phường / Xã"
-      placeholder="Chọn phường / xã"
-      [required]="true"
-      [disabled]="!selectedProvince"
-      [options]="wardOptions"
-      [error]="getFieldError('wardCode')"
-      [(ngModel)]="selectedWard"
-      name="wardCode"
-    ></app-select-field>
-  </div>
+          <!-- Khi lựa chọn mức lương -->
+          <div class="salary-display-box" *ngIf="!salaryDeal">
+            <div class="salary-item">
+              <span class="salary-title">Tối thiểu</span>
+              <span class="salary-value">{{ salaryMin | number:'1.0-0' }}</span>
+            </div>
+            <div class="salary-item">
+              <span class="salary-title">Tối đa</span>
+              <span class="salary-value">{{ salaryMax | number:'1.0-0' }}</span>
+            </div>
+          </div>
 
-        <!-- Salary -->
-        <app-select-field
-          label="Mức lương"
-          placeholder="Chọn mức lương"
-          [required]="true"
-          [options]="salaryOptions"
-          [error]="getFieldError('salary')"
-          [(ngModel)]="jobForm.salary"
-          (ngModelChange)="onFieldChange('salary')"
-          name="salary"
-        >
-        </app-select-field>
+          <!-- Khi lương thỏa thuận -->
+          <div class="salary-display-box" *ngIf="salaryDeal">
+            <span style="font-weight: 600">Lương thỏa thuận</span>
+          </div>
+
+          <div class="salary-range-container">
+            <div class="track"></div>
+
+            <div
+              class="range-highlight"
+              *ngIf="!salaryDeal"
+              [ngStyle]="{
+        left: (salaryMin / 2000000000 * 100) + '%',
+        width: ((salaryMax - salaryMin) / 2000000000 * 100) + '%'
+      }"
+            ></div>
+
+            <input
+              type="range"
+              min="100000"
+              max="2000000000"
+              step="100000"
+              [(ngModel)]="salaryMin"
+              (input)="onSalaryChange()"
+              class="range-input"
+              [disabled]="salaryDeal"
+            />
+
+            <input
+              type="range"
+              min="100000"
+              max="2000000000"
+              step="100000"
+              [(ngModel)]="salaryMax"
+              (input)="onSalaryChange()"
+              class="range-input"
+              [disabled]="salaryDeal"
+            />
+          </div>
+
+          <!-- DI CHUYỂN LỖI RA ĐÂY -->
+          <div class="error-message" *ngIf="getFieldError('salary')">
+            {{ getFieldError('salary') }}
+          </div>
+        </div>
 
         <!-- Experience -->
         <app-select-field
@@ -141,19 +183,6 @@
           [(ngModel)]="jobForm.positionLevel"
           (ngModelChange)="onFieldChange('positionLevel')"
           name="positionLevel"
-        >
-        </app-select-field>
-
-        <!-- Education -->
-        <app-select-field
-          label="Học vấn"
-          placeholder="Chọn học vấn"
-          [required]="true"
-          [options]="educationOptions"
-          [error]="getFieldError('education')"
-          [(ngModel)]="jobForm.education"
-          (ngModelChange)="onFieldChange('education')"
-          name="education"
         >
         </app-select-field>
 
@@ -259,35 +288,16 @@
         </app-input-field>
       </div>
 
-      <!-- Application Method Section -->
-      <div class="form-section">
-        <h3 class="section-title">Cách thức ứng tuyển</h3>
-
-        <!-- Application Method (Rich Text Editor) -->
-        <app-rich-text-editor
-          label="Cách thức ứng tuyển"
-          placeholder="Nhập hướng dẫn cách thức ứng tuyển..."
-          [required]="true"
-          [(ngModel)]="jobForm.applicationMethod"
-          (ngModelChange)="onFieldChange('applicationMethod')"
-          name="applicationMethod"
-        >
-        </app-rich-text-editor>
-        <div class="error-message" *ngIf="getFieldError('applicationMethod')">
-          {{ getFieldError('applicationMethod') }}
-        </div>
-      </div>
+      <!-- Preview Modal -->
+      <app-generic-modal
+        [show]="showPreviewModal"
+        title="Xem trước"
+        maxWidth="1400px"
+        bodyBackground="#f8fafc"
+        (close)="closePreviewModal()"
+      >
+        <app-job-preview [jobData]="jobForm"></app-job-preview>
+      </app-generic-modal>
     </div>
-
-    <!-- Preview Modal -->
-    <app-generic-modal
-      [show]="showPreviewModal"
-      title="Xem trước"
-      maxWidth="1400px"
-      bodyBackground="#f8fafc"
-      (close)="closePreviewModal()"
-    >
-      <app-job-preview [jobData]="jobForm"></app-job-preview>
-    </app-generic-modal>
   </div>
 </div>
