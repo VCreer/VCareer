@@ -1,0 +1,77 @@
+.table-wrapper {
+  overflow-x: auto;
+
+  .activity-log-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: #f9fafb;
+
+      th {
+        padding: 16px;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+
+        @media (max-width: 768px) {
+          padding: 12px 8px;
+          font-size: 0.8125rem;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f9fafb;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 16px;
+          font-size: 0.9375rem;
+          color: #374151;
+          vertical-align: middle;
+
+          @media (max-width: 768px) {
+            padding: 12px 8px;
+            font-size: 0.875rem;
+          }
+
+          &.staff-id {
+            font-weight: 600;
+            color: #0F83BA;
+          }
+
+          &.staff-name {
+            font-weight: 600;
+            color: #1f2937;
+          }
+
+          &.activity-time {
+            color: #6b7280;
+            white-space: nowrap;
+          }
+
+          &.activity-detail {
+            color: #374151;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    overflow-x: auto;
+  }
+}

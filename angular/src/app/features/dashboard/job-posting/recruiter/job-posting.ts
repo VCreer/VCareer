@@ -93,6 +93,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     employmentType: '',
     jobTitle: '',
     location: '',
+    province: '',
+    district: '',
+    ward: '',
     salary: '',
     experience: '',
     applicationDeadline: '',
@@ -138,8 +141,13 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   checkSidebarState(): void {
-    const sidebar = document.querySelector('app-sidebar .sidebar');
-    this.sidebarExpanded = !!sidebar?.classList.contains('show');
+    const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+    }
   }
 
   //cái này là để hỗ trợ cho việc tạo select từ enum ở dưới backend
@@ -182,18 +190,52 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   validateForm(): boolean {
     this.validationErrors = {};
     if (!this.jobForm.jobTitle?.trim()) {
-      this.validationErrors['jobTitle'] = 'Vui lòng nhập tên công việc';
+        this.validationErrors['companyWebsite'] = 'Vui lòng nhập URL hợp lệ (ví dụ: https://example.com)';
+      }
     }
-    if (!this.jobForm.description?.trim()) {
-      this.validationErrors['description'] = 'Vui lòng nhập mô tả công việc';
+
+    if (!this.jobForm.companyImage) {
+      this.validationErrors['companyImage'] = 'Vui lòng chọn ảnh công ty';
     }
-    if (!this.jobForm.requirements?.trim()) {
-      this.validationErrors['requirements'] = 'Vui lòng nhập yêu cầu công việc';
-    }
-    if (!this.jobForm.workLocation?.trim()) {
-      this.validationErrors['workLocation'] = 'Vui lòng nhập địa điểm làm việc';
-    }
+
+    // General Information Validation
+    if (!this.jobForm.positionLevel || this.jobForm.positionLevel === '') {
+      this.validationErrors['positionLevel'] = 'Vui lòng chọn cấp bậc';
     return Object.keys(this.validationErrors).length === 0;
+            if (input) errorElement = input;
+          }
+        }
+        
+        if (errorElement) {
+          // Find the parent form-group, select-field-wrapper, rich-text-editor-wrapper, or form-section
+          const scrollTarget = errorElement.closest('.form-group, .select-field-wrapper, .rich-text-editor-wrapper, .form-section, app-input-field, app-select-field, app-rich-text-editor');
+          if (scrollTarget) {
+  onFieldChange(field: string) {
+    this.clearFieldError(field);
+          
+          // Try to focus on the input/select element if possible
+          const inputElement = errorElement.querySelector('input, select') as HTMLElement;
+          if (inputElement && (inputElement instanceof HTMLInputElement || inputElement instanceof HTMLSelectElement)) {
+            setTimeout(() => {
+              inputElement.focus();
+            }, 400);
+          }
+        } else {
+          // Fallback: scroll to form-wrapper top
+          const formWrapper = document.querySelector('.form-wrapper');
+          if (formWrapper) {
+            formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }, 150);
+      return false;
+    }
+
+    return true;
+  }
+
+  getFieldError(fieldName: string): string {
+    return this.validationErrors[fieldName] || '';
   }
 
   getFieldError(field: string) {
@@ -202,8 +244,10 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   clearFieldError(field: string) {
     delete this.validationErrors[field];
   }
-  onFieldChange(field: string) {
-    this.clearFieldError(field);
+
+  onFieldChange(fieldName: string): void {
+    // Clear error when user starts typing
+    this.clearFieldError(fieldName);
   }
 
   showToastMessage(msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {

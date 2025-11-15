@@ -43,6 +43,141 @@ export class JobOptionsService {
     { value: 'other', label: 'Tỉnh thành khác' }
   ];
 
+  // Province/City options (Tỉnh/Thành phố)
+  readonly PROVINCE_OPTIONS: SelectOption[] = [
+    { value: 'hanoi', label: 'Hà Nội' },
+    { value: 'hcm', label: 'TP. Hồ Chí Minh' },
+    { value: 'danang', label: 'Đà Nẵng' },
+    { value: 'haiphong', label: 'Hải Phòng' },
+    { value: 'cantho', label: 'Cần Thơ' },
+    { value: 'an-giang', label: 'An Giang' },
+    { value: 'ba-ria-vung-tau', label: 'Bà Rịa - Vũng Tàu' },
+    { value: 'bac-lieu', label: 'Bạc Liêu' },
+    { value: 'bac-kan', label: 'Bắc Kạn' },
+    { value: 'bac-giang', label: 'Bắc Giang' },
+    { value: 'bac-ninh', label: 'Bắc Ninh' },
+    { value: 'ben-tre', label: 'Bến Tre' },
+    { value: 'binh-dinh', label: 'Bình Định' },
+    { value: 'binh-duong', label: 'Bình Dương' },
+    { value: 'binh-phuoc', label: 'Bình Phước' },
+    { value: 'binh-thuan', label: 'Bình Thuận' },
+    { value: 'ca-mau', label: 'Cà Mau' },
+    { value: 'cao-bang', label: 'Cao Bằng' },
+    { value: 'dak-lak', label: 'Đắk Lắk' },
+    { value: 'dak-nong', label: 'Đắk Nông' },
+    { value: 'dien-bien', label: 'Điện Biên' },
+    { value: 'dong-nai', label: 'Đồng Nai' },
+    { value: 'dong-thap', label: 'Đồng Tháp' },
+    { value: 'gia-lai', label: 'Gia Lai' },
+    { value: 'ha-giang', label: 'Hà Giang' },
+    { value: 'ha-nam', label: 'Hà Nam' },
+    { value: 'ha-tinh', label: 'Hà Tĩnh' },
+    { value: 'hai-duong', label: 'Hải Dương' },
+    { value: 'hau-giang', label: 'Hậu Giang' },
+    { value: 'hoa-binh', label: 'Hòa Bình' },
+    { value: 'hung-yen', label: 'Hưng Yên' },
+    { value: 'khanh-hoa', label: 'Khánh Hòa' },
+    { value: 'kien-giang', label: 'Kiên Giang' },
+    { value: 'kon-tum', label: 'Kon Tum' },
+    { value: 'lai-chau', label: 'Lai Châu' },
+    { value: 'lam-dong', label: 'Lâm Đồng' },
+    { value: 'lang-son', label: 'Lạng Sơn' },
+    { value: 'lao-cai', label: 'Lào Cai' },
+    { value: 'long-an', label: 'Long An' },
+    { value: 'nam-dinh', label: 'Nam Định' },
+    { value: 'nghe-an', label: 'Nghệ An' },
+    { value: 'ninh-binh', label: 'Ninh Bình' },
+    { value: 'ninh-thuan', label: 'Ninh Thuận' },
+    { value: 'phu-tho', label: 'Phú Thọ' },
+    { value: 'phu-yen', label: 'Phú Yên' },
+    { value: 'quang-binh', label: 'Quảng Bình' },
+    { value: 'quang-nam', label: 'Quảng Nam' },
+    { value: 'quang-ngai', label: 'Quảng Ngãi' },
+    { value: 'quang-ninh', label: 'Quảng Ninh' },
+    { value: 'quang-tri', label: 'Quảng Trị' },
+    { value: 'soc-trang', label: 'Sóc Trăng' },
+    { value: 'son-la', label: 'Sơn La' },
+    { value: 'tay-ninh', label: 'Tây Ninh' },
+    { value: 'thai-binh', label: 'Thái Bình' },
+    { value: 'thai-nguyen', label: 'Thái Nguyên' },
+    { value: 'thanh-hoa', label: 'Thanh Hóa' },
+    { value: 'thua-thien-hue', label: 'Thừa Thiên Huế' },
+    { value: 'tien-giang', label: 'Tiền Giang' },
+    { value: 'tra-vinh', label: 'Trà Vinh' },
+    { value: 'tuyen-quang', label: 'Tuyên Quang' },
+    { value: 'vinh-long', label: 'Vĩnh Long' },
+    { value: 'vinh-phuc', label: 'Vĩnh Phúc' },
+    { value: 'yen-bai', label: 'Yên Bái' }
+  ];
+
+  // District options (Huyện/Quận) - sẽ được load động dựa trên tỉnh/thành
+  getDistrictOptions(provinceValue: string): SelectOption[] {
+    if (!provinceValue) return [];
+    
+    // Mock data - trong thực tế sẽ gọi API
+    const districts: { [key: string]: SelectOption[] } = {
+      'hanoi': [
+        { value: 'ba-dinh', label: 'Ba Đình' },
+        { value: 'hoan-kiem', label: 'Hoàn Kiếm' },
+        { value: 'tay-ho', label: 'Tây Hồ' },
+        { value: 'long-bien', label: 'Long Biên' },
+        { value: 'cau-giay', label: 'Cầu Giấy' },
+        { value: 'dong-da', label: 'Đống Đa' },
+        { value: 'hai-ba-trung', label: 'Hai Bà Trưng' },
+        { value: 'hoang-mai', label: 'Hoàng Mai' },
+        { value: 'thanh-xuan', label: 'Thanh Xuân' }
+      ],
+      'hcm': [
+        { value: 'quan-1', label: 'Quận 1' },
+        { value: 'quan-2', label: 'Quận 2' },
+        { value: 'quan-3', label: 'Quận 3' },
+        { value: 'quan-4', label: 'Quận 4' },
+        { value: 'quan-5', label: 'Quận 5' },
+        { value: 'quan-6', label: 'Quận 6' },
+        { value: 'quan-7', label: 'Quận 7' },
+        { value: 'quan-8', label: 'Quận 8' },
+        { value: 'quan-9', label: 'Quận 9' },
+        { value: 'quan-10', label: 'Quận 10' },
+        { value: 'quan-11', label: 'Quận 11' },
+        { value: 'quan-12', label: 'Quận 12' }
+      ]
+    };
+    
+    return districts[provinceValue] || [];
+  }
+
+  // Ward options (Xã/Phường) - sẽ được load động dựa trên huyện/quận
+  getWardOptions(districtValue: string): SelectOption[] {
+    if (!districtValue) return [];
+    
+    // Mock data - trong thực tế sẽ gọi API
+    const wards: { [key: string]: SelectOption[] } = {
+      'ba-dinh': [
+        { value: 'phuc-xa', label: 'Phúc Xá' },
+        { value: 'truc-bach', label: 'Trúc Bạch' },
+        { value: 'vinh-phuc', label: 'Vĩnh Phúc' },
+        { value: 'cong-vi', label: 'Cống Vị' },
+        { value: 'lieu-giai', label: 'Liễu Giai' }
+      ],
+      'hoan-kiem': [
+        { value: 'phuc-tan', label: 'Phúc Tân' },
+        { value: 'dong-xuan', label: 'Đồng Xuân' },
+        { value: 'hang-ma', label: 'Hàng Mã' },
+        { value: 'hang-buom', label: 'Hàng Buồm' },
+        { value: 'hang-dao', label: 'Hàng Đào' }
+      ],
+      'quan-1': [
+        { value: 'ben-nghe', label: 'Bến Nghé' },
+        { value: 'da-kao', label: 'Đa Kao' },
+        { value: 'ben-thanh', label: 'Bến Thành' },
+        { value: 'nguyen-thai-binh', label: 'Nguyễn Thái Bình' },
+        { value: 'pham-ngu-lao', label: 'Phạm Ngũ Lão' }
+      ]
+    };
+    
+    return wards[districtValue] || [];
+  }
+
   // Company size options (Quy mô)
   readonly COMPANY_SIZE_OPTIONS: SelectOption[] = [
     { value: '1-10', label: '1 - 10 nhân viên' },

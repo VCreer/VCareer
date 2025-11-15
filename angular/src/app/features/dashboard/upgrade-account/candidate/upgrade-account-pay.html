@@ -1,0 +1,78 @@
+<div class="upgrade-account-pay-page">
+  <div class="pay-container">
+    <div class="content-wrapper">
+      <div class="pay-card">
+      <div class="pay-header">
+        <h1 class="page-title">Thanh toán nâng cấp Tài khoản VIP</h1>
+      </div>
+
+      <div class="pay-content">
+        <!-- Section 1: Choose Package -->
+        <div class="section">
+          <h2 class="section-title">1) Chọn gói nâng cấp</h2>
+          <div class="package-options">
+            <label 
+              *ngFor="let pkg of packages" 
+              class="package-option"
+              [class.selected]="selectedPackage === pkg.id">
+              <input 
+                type="radio" 
+                name="package" 
+                [value]="pkg.id"
+                [(ngModel)]="selectedPackage"
+                (change)="onPackageSelect(pkg.id)">
+              <div class="package-info">
+                <div class="package-name">{{ pkg.name }} - {{ pkg.price }} / {{ pkg.duration }}</div>
+                <span class="discount-badge" *ngIf="pkg.discount">{{ pkg.discount }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Section 2: Choose Payment Method -->
+        <div class="section">
+          <h2 class="section-title">2) Chọn hình thức thanh toán</h2>
+          <div class="payment-methods">
+            <button 
+              type="button"
+              class="payment-method-btn momo selected"
+              (click)="onPaymentMethodSelect('momo')">
+              <div class="payment-icon">
+                <img src="assets/images/payment/momo.png" alt="MoMo" />
+              </div>
+              <span class="payment-name">Thanh toán bằng Ví MoMo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="contact-info">
+          Nếu có vấn đề về thanh toán và nâng cấp tài khoản vui lòng liên hệ: 
+          <a href="mailto:hotro&#64;vcareer.vn" class="contact-link">hotro&#64;vcareer.vn</a> 
+          hoặc hotline: 
+          <a href="tel:02471076480" class="contact-link">(024) 7107 6480</a> 
+          (Giờ hành chính)
+        </div>
+      </div>
+      </div>
+      
+      <div class="profile-card-wrapper">
+        <app-profile-card 
+          [userName]="userName"
+          [userEmail]="userEmail"
+          [avatarUrl]="avatarUrl"
+          [accountStatus]="accountStatus"
+          [jobSearchEnabled]="jobSearchEnabled"
+          [allowRecruiterSearch]="allowRecruiterSearch">
+        </app-profile-card>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MoMo Payment Modal -->
+<app-momo-payment-modal
+  [show]="showMomoModal"
+  (close)="onCloseMomoModal()"
+  (decline)="onCloseMomoModal()">
+</app-momo-payment-modal>

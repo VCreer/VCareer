@@ -42,9 +42,9 @@
       <ng-container *ngIf="!isEmployeeRoute">
         <!-- First Group -->
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/home')" class="sidebar-link" [class.active]="isActive('/recruiter/home')">
-            <i class="fa fa-th sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.dashboard') }}</span>
+          <a (click)="navigateTo('/recruiter/recruitment-report')" class="sidebar-link" [class.active]="isActive('/recruiter/recruitment-report')">
+            <i class="fa fa-chart-line sidebar-icon"></i>
+            <span class="sidebar-link-text">Báo cáo tuyển dụng</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
@@ -54,9 +54,9 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/rewards')" class="sidebar-link">
-            <i class="fa fa-gem sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.rewards') }}</span>
+          <a (click)="navigateTo('/recruiter/hr-staff-management')" class="sidebar-link" [class.active]="isActive('/recruiter/hr-staff-management')">
+            <i class="fa fa-users-cog sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lí nhân sự</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
@@ -99,12 +99,6 @@
           <a (click)="navigateTo('/recruiter/cv-management')" class="sidebar-link sidebar-link-has-submenu" [class.active]="isActive('/recruiter/cv-management')">
             <i class="fa fa-user-circle sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.cv_management') }}</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/reports')" class="sidebar-link">
-            <i class="fa fa-chart-bar sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.recruitment_reports') }}</span>
           </a>
         </li>
 

@@ -254,9 +254,12 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   }
 
   private checkSidebarState(): void {
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
-      this.sidebarExpanded = sidebar.classList.contains('show');
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
     }
   }
 

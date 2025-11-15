@@ -1,0 +1,13 @@
+<div class="stat-card">
+  <div class="stat-icon" [style.background-color]="color + '15'">
+    <i class="fas" [ngClass]="icon" [style.color]="color"></i>
+  </div>
+  <div class="stat-content">
+    <div class="stat-label">{{ label }}</div>
+    <div class="stat-value">{{ value }}</div>
+    <div class="stat-trend" *ngIf="trend" [class.positive]="trend.isPositive" [class.negative]="!trend.isPositive">
+      <i class="fas" [ngClass]="trend.isPositive ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+      {{ trend.value }}% so với tháng trước
+    </div>
+  </div>
+</div>

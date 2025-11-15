@@ -79,8 +79,12 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     if (!target.closest('.notification-menu-wrapper')) {
       this.showNotificationMenu = false;
     }
-    if (!target.closest('.sidebar') && !target.closest('.hamburger-menu')) {
-      this.showSidebar = false;
+    // Only close sidebar if it was manually opened (has .show class) and click is outside
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar && sidebar.classList.contains('show')) {
+      if (!target.closest('.sidebar') && !target.closest('.hamburger-menu')) {
+        this.showSidebar = false;
+      }
     }
   }
 
@@ -97,7 +101,10 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   }
 
   toggleSidebar() {
+    // Always toggle based on current showSidebar state, not DOM state
+    // This ensures consistent behavior
     this.showSidebar = !this.showSidebar;
+    
     if (this.showSidebar) {
       this.showDropdownMenu = false;
       this.showNotificationMenu = false;

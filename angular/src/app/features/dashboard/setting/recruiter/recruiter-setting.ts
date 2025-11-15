@@ -199,8 +199,15 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   }
 
   checkSidebarState(): void {
-    const sidebar = document.querySelector('.sidebar.show');
-    this.sidebarExpanded = !!sidebar;
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+    } else {
+      this.sidebarExpanded = false;
+    }
     
     // Update page class
     const page = document.querySelector('.recruiter-setting-page');
