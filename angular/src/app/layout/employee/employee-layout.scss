@@ -39,29 +39,19 @@
 .main-content {
   flex: 1;
   min-height: calc(100vh - 64px);
-  margin-left: 72px; // Default sidebar collapsed width (sidebar luôn hiển thị)
-  width: calc(100% - 72px);
+  margin-left: 0; // Let page components handle their own margin-left
+  width: 100%;
   transition: margin-left 0.3s ease, width 0.3s ease;
-  padding: 24px;
+  padding: 0; // Remove padding, let page components handle their own padding
   background: #f9fafb;
   position: relative;
   z-index: 1;
-
-  // When sidebar is expanded
-  &.sidebar-expanded {
-    margin-left: 280px; // Sidebar expanded width
-    width: calc(100% - 280px);
-  }
+  overflow-x: hidden; // Prevent horizontal scroll
 
   // Responsive: remove sidebar margin on mobile
   @media (max-width: 768px) {
     margin-left: 0;
     width: 100%;
-
-    &.sidebar-expanded {
-      margin-left: 0;
-      width: 100%;
-    }
   }
 }
 

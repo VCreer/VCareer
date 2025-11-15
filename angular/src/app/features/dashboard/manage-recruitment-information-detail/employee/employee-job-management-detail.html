@@ -1,5 +1,5 @@
-<div class="employee-job-management-detail-page" [class.sidebar-expanded]="sidebarExpanded">
-  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+<div class="employee-job-management-detail-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="breadcrumb-left">
         <button type="button" class="back-btn" (click)="onBack()">
@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <div class="detail-content">
+  <div class="detail-content" [style.max-width]="getContentMaxWidth()">
     <div class="job-detail-container">
       <!-- Left Column -->
       <div class="job-detail__box--left">
@@ -154,5 +154,48 @@
       </div>
     </div>
   </div>
+
+  <!-- Reject Modal -->
+  <div class="reject-modal-overlay" *ngIf="showRejectModal" (click)="onCloseRejectModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="reject-modal-content" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
+      <div class="reject-modal-header">
+        <h3 class="reject-modal-title">Từ chối tin tuyển dụng</h3>
+        <button type="button" class="close-modal-btn" (click)="onCloseRejectModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="reject-modal-body">
+        <div class="form-group">
+          <label class="form-label">Lý do từ chối <span class="required">*</span></label>
+          <textarea
+            class="form-textarea"
+            [(ngModel)]="rejectReason"
+            placeholder="Nhập lý do từ chối tin tuyển dụng này..."
+            rows="5"
+          ></textarea>
+        </div>
+      </div>
+      <div class="reject-modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="onCloseRejectModal()">
+          Hủy
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-submit" 
+          (click)="onSubmitReject()"
+          [disabled]="!rejectReason.trim()">
+          Xác nhận từ chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
 </div>
 

@@ -1,11 +1,11 @@
-<div class="employee-job-management-page" [class.sidebar-expanded]="sidebarExpanded">
-  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+<div class="employee-job-management-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <h1 class="page-title">Quản lý tin tuyển dụng</h1>
     </div>
   </div>
 
-  <div class="job-management-content">
+  <div class="job-management-content" [style.max-width]="getContentMaxWidth()">
     <div class="summary-cards">
       <div class="summary-card" *ngFor="let card of summaryCards">
         <div class="summary-card-icon" [style.border-color]="card.borderColor">
@@ -19,97 +19,256 @@
     </div>
 
     <div class="job-list-card">
-      <div class="filter-bar">
-        <div class="search-group">
-          <i class="fa fa-search"></i>
-          <input
-            type="text"
-            placeholder="Tìm kiếm tin tuyển dụng"
-            [value]="searchTerm"
-            (input)="onSearchChange($event.target.value)"
-          />
+      <div class="wrapper-content" [class.show-detail-job]="selectedJob">
+        <div class="job-list-column">
+          <div class="filter-bar">
+            <div class="search-group">
+              <i class="fa fa-search"></i>
+              <input
+                type="text"
+                placeholder="Tìm kiếm tin tuyển dụng"
+                [value]="searchTerm"
+                (input)="onSearchChange($event.target.value)"
+              />
+            </div>
+
+            <div class="filter-group status-dropdown-wrapper" (click)="$event.stopPropagation()">
+              <button type="button" class="status-dropdown" (click)="toggleStatusDropdown()">
+                <span>{{ selectedStatus.label }}</span>
+                <i class="fa fa-chevron-down"></i>
+              </button>
+              <div class="status-dropdown-menu" *ngIf="showStatusDropdown">
+                <button
+                  type="button"
+                  class="status-dropdown-item"
+                  *ngFor="let option of statusOptions"
+                  [class.active]="selectedStatus.value === option.value"
+                  (click)="selectStatus(option)"
+                >
+                  <span>{{ option.label }}</span>
+                  <i class="fa fa-check"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="job-list" *ngIf="paginatedPostings.length > 0; else emptyState">
+            <div class="job-item" 
+                 *ngFor="let posting of paginatedPostings"
+                 [class.selected]="selectedJob?.id === posting.id"
+                 (click)="onJobItemClick(posting)"
+                 (mouseenter)="onJobItemMouseEnter(posting.id)"
+                 (mouseleave)="onJobItemMouseLeave()">
+              <div class="job-item-left">
+                <div class="company-logo">
+                  <img [src]="getCompanyLogoUrl(posting.companyLogo || posting.companyName)" [alt]="posting.companyName" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNkI3MjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+PC90ZXh0Pgo8L3N2Zz4='; this.onerror=null;" />
+                </div>
+              </div>
+              
+              <div class="job-item-center">
+                <div class="job-header-top">
+                  <div class="campaign-code">Mã chiến dịch: {{ posting.campaignCode }}</div>
+                  <div class="job-salary">
+                    <i class="fa fa-dollar-sign"></i>
+                    <span>{{ posting.salary }}</span>
+                  </div>
+                </div>
+                <div class="job-header">
+                  <h3 class="job-title">{{ posting.title }}</h3>
+                </div>
+                
+                <div class="company-name-wrapper">
+                  <div class="company-name">{{ posting.companyName }}</div>
+                  <button type="button" class="view-detail-btn" (click)="viewDetail(posting); $event.stopPropagation()">Xem chi tiết</button>
+                </div>
+                
+                <div class="job-tags-wrapper">
+                  <div class="job-tags">
+                    <span class="tag tag-location">
+                      {{ posting.location }}
+                    </span>
+                    <span class="tag tag-experience">
+                      {{ posting.experience }}
+                    </span>
+                    <span class="reject-reason-tag" 
+                          *ngIf="posting.status === 'rejected' && posting.rejectReason && hoveredJobId === posting.id"
+                          (click)="onViewRejectReason(posting); $event.stopPropagation()">
+                      <i class="fa fa-info-circle"></i>
+                      Lý do từ chối
+                    </span>
+                  </div>
+                  <div class="job-status">
+                    <span [class]="getStatusBadgeClass(posting.status)">
+                      {{ getStatusLabel(posting.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #emptyState>
+            <div class="empty-list">
+              <i class="fa fa-clipboard-list"></i>
+              <p>Không có tin tuyển dụng nào phù hợp.</p>
+            </div>
+          </ng-template>
+
+          <app-pagination
+            *ngIf="totalPages > 1"
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            [totalItems]="totalItems"
+            [itemsPerPage]="itemsPerPage"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
         </div>
 
-        <div class="filter-group status-dropdown-wrapper" (click)="$event.stopPropagation()">
-          <button type="button" class="status-dropdown" (click)="toggleStatusDropdown()">
-            <span>{{ selectedStatus.label }}</span>
-            <i class="fa fa-chevron-down"></i>
-          </button>
-          <div class="status-dropdown-menu" *ngIf="showStatusDropdown">
-            <button
-              type="button"
-              class="status-dropdown-item"
-              *ngFor="let option of statusOptions"
-              [class.active]="selectedStatus.value === option.value"
-              (click)="selectStatus(option)"
-            >
-              <span>{{ option.label }}</span>
-              <i class="fa fa-check"></i>
+        <div class="box-view-job-detail" *ngIf="selectedJob">
+          <div class="job-detail-header">
+            <div class="campaign-code-header">Mã chiến dịch: {{ selectedJob.campaignCode }}</div>
+            <h2 class="job-detail-title">{{ selectedJob.title }}</h2>
+            <div class="job-tags-header" *ngIf="selectedJob.keywords && selectedJob.keywords.length > 0">
+              <span class="job-tag" *ngFor="let keyword of selectedJob.keywords">{{ keyword }}</span>
+            </div>
+            <button type="button" class="close-detail-btn" (click)="onCloseDetail()">
+              <i class="fa fa-times"></i>
             </button>
           </div>
-        </div>
-      </div>
-
-      <div class="job-list" *ngIf="paginatedPostings.length > 0; else emptyState">
-        <div class="job-item" *ngFor="let posting of paginatedPostings">
-          <div class="job-item-left">
-            <div class="company-logo">
-              <img [src]="getCompanyLogoUrl(posting.companyLogo || posting.companyName)" [alt]="posting.companyName" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNkI3MjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+PC90ZXh0Pgo8L3N2Zz4='; this.onerror=null;" />
-            </div>
-          </div>
           
-          <div class="job-item-center">
-            <div class="job-header-top">
-              <div class="campaign-code">Mã chiến dịch: {{ posting.campaignCode }}</div>
-              <div class="job-salary">
-                <i class="fa fa-dollar-sign"></i>
-                <span>{{ posting.salary }}</span>
-              </div>
-            </div>
-            <div class="job-header">
-              <h3 class="job-title">{{ posting.title }}</h3>
+          <div class="job-detail-content">
+            <div class="detail-section" *ngIf="selectedJob.description">
+              <h3 class="section-title">Mô tả công việc</h3>
+              <p class="section-content">{{ selectedJob.description }}</p>
             </div>
             
-            <div class="company-name-wrapper">
-              <div class="company-name">{{ posting.companyName }}</div>
-              <button type="button" class="view-detail-btn" (click)="viewDetail(posting)">Xem chi tiết</button>
+            <div class="detail-section" *ngIf="selectedJob.requirements && selectedJob.requirements.length > 0">
+              <h3 class="section-title">Yêu cầu ứng viên</h3>
+              <ul class="section-list">
+                <li *ngFor="let requirement of selectedJob.requirements">{{ requirement }}</li>
+              </ul>
             </div>
             
-            <div class="job-tags-wrapper">
-              <div class="job-tags">
-                <span class="tag tag-location">
-                  {{ posting.location }}
-                </span>
-                <span class="tag tag-experience">
-                  {{ posting.experience }}
-                </span>
-              </div>
-              <div class="job-status">
-                <span [class]="getStatusBadgeClass(posting.status)">
-                  {{ getStatusLabel(posting.status) }}
-                </span>
-              </div>
+            <div class="detail-section" *ngIf="selectedJob.benefits && selectedJob.benefits.length > 0">
+              <h3 class="section-title">Quyền lợi</h3>
+              <ul class="section-list">
+                <li *ngFor="let benefit of selectedJob.benefits">{{ benefit }}</li>
+              </ul>
+            </div>
+            
+            <div class="detail-section" *ngIf="selectedJob.workLocation && selectedJob.workLocation.length > 0">
+              <h3 class="section-title">Địa điểm làm việc</h3>
+              <ul class="section-list">
+                <li *ngFor="let location of selectedJob.workLocation">{{ location }}</li>
+              </ul>
+            </div>
+            
+            <div class="detail-actions">
+              <button type="button" class="action-btn approve-btn" (click)="onApprove()">
+                Duyệt
+              </button>
+              <button type="button" class="action-btn reject-btn" (click)="onReject()">
+                Từ chối
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      <ng-template #emptyState>
-        <div class="empty-list">
-          <i class="fa fa-clipboard-list"></i>
-          <p>Không có tin tuyển dụng nào phù hợp.</p>
-        </div>
-      </ng-template>
-
-      <app-pagination
-        *ngIf="totalPages > 1"
-        [currentPage]="currentPage"
-        [totalPages]="totalPages"
-        [totalItems]="totalItems"
-        [itemsPerPage]="itemsPerPage"
-        (pageChange)="onPageChange($event)">
-      </app-pagination>
     </div>
   </div>
+
+      <!-- View/Edit Reject Reason Modal -->
+      <div class="reject-modal-overlay" *ngIf="showViewRejectReasonModal" (click)="onCloseViewRejectReasonModal()" [style.padding-left]="getModalPaddingLeft()">
+        <div class="reject-modal-content" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
+      <div class="reject-modal-header">
+        <h3 class="reject-modal-title">Lý do từ chối</h3>
+        <button type="button" class="close-modal-btn" (click)="onCloseViewRejectReasonModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="reject-modal-body">
+        <div class="form-group">
+          <label class="form-label">Lý do từ chối <span class="required">*</span></label>
+          <textarea
+            class="form-textarea"
+            [(ngModel)]="rejectReason"
+            [readonly]="!editingRejectReason"
+            [class.readonly]="!editingRejectReason"
+            placeholder="Nhập lý do từ chối tin tuyển dụng này..."
+            rows="5"
+          ></textarea>
+        </div>
+      </div>
+      <div class="reject-modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="onCloseViewRejectReasonModal()">
+          Đóng
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-edit" 
+          *ngIf="!editingRejectReason"
+          (click)="onEditRejectReason()">
+          Sửa
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-save" 
+          *ngIf="editingRejectReason"
+          (click)="onSaveRejectReason()"
+          [disabled]="!rejectReason.trim()">
+          Lưu
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-cancel" 
+          *ngIf="editingRejectReason"
+          (click)="onCancelEditRejectReason()">
+          Hủy
+        </button>
+      </div>
+    </div>
+  </div>
+
+      <!-- Reject Modal -->
+      <div class="reject-modal-overlay" *ngIf="showRejectModal" (click)="onCloseRejectModal()" [style.padding-left]="getModalPaddingLeft()">
+        <div class="reject-modal-content" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
+      <div class="reject-modal-header">
+        <h3 class="reject-modal-title">Từ chối tin tuyển dụng</h3>
+        <button type="button" class="close-modal-btn" (click)="onCloseRejectModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="reject-modal-body">
+        <div class="form-group">
+          <label class="form-label">Lý do từ chối <span class="required">*</span></label>
+          <textarea
+            class="form-textarea"
+            [(ngModel)]="rejectReason"
+            placeholder="Nhập lý do từ chối tin tuyển dụng này..."
+            rows="5"
+          ></textarea>
+        </div>
+      </div>
+      <div class="reject-modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="onCloseRejectModal()">
+          Hủy
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-submit" 
+          (click)="onSubmitReject()"
+          [disabled]="!rejectReason.trim()">
+          Xác nhận từ chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
 </div>
 

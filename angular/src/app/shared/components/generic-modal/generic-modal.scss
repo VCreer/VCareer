@@ -10,16 +10,49 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-left: 20px; // Default, sẽ được override bởi inline style
   overflow-y: auto;
+  transition: padding-left 0.3s ease;
+
+  @media (max-width: 1024px) {
+    padding: 16px;
+    padding-left: 16px; // Sẽ được override bởi inline style nếu có sidebar
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    padding-left: 0 !important; // Trên mobile không cần padding-left cho sidebar
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px;
+    padding-left: 0 !important; // Trên mobile không cần padding-left cho sidebar
+    padding-top: 16px;
+  }
 
   .generic-modal-content {
     background: white;
     border-radius: 12px;
     width: 100%;
+    max-width: 100%;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    transition: max-width 0.3s ease;
+
+    @media (max-width: 768px) {
+      max-height: 95vh;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 480px) {
+      max-height: 98vh;
+      border-radius: 6px;
+    }
 
     .generic-modal-header {
       display: flex;
@@ -29,11 +62,41 @@
       border-bottom: 2px solid #e5e7eb;
       flex-shrink: 0;
 
+      @media (max-width: 1024px) {
+        padding: 20px;
+      }
+
+      @media (max-width: 768px) {
+        padding: 16px;
+        border-bottom-width: 1px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 12px;
+      }
+
       .generic-modal-title {
         font-size: 1.5rem;
         font-weight: 700;
         color: #1f2937;
         margin: 0;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        @media (max-width: 1024px) {
+          font-size: 1.375rem;
+        }
+
+        @media (max-width: 768px) {
+          font-size: 1.25rem;
+        }
+
+        @media (max-width: 480px) {
+          font-size: 1.125rem;
+        }
       }
 
       .generic-modal-close {
@@ -50,6 +113,22 @@
         justify-content: center;
         border-radius: 4px;
         transition: all 0.2s;
+        flex-shrink: 0;
+        margin-left: 12px;
+
+        @media (max-width: 768px) {
+          width: 28px;
+          height: 28px;
+          font-size: 1.25rem;
+          margin-left: 8px;
+        }
+
+        @media (max-width: 480px) {
+          width: 24px;
+          height: 24px;
+          font-size: 1.125rem;
+          margin-left: 6px;
+        }
 
         &:hover {
           background: #f3f4f6;
@@ -62,6 +141,19 @@
       padding: 24px;
       overflow-y: auto;
       flex: 1;
+      min-height: 0;
+
+      @media (max-width: 1024px) {
+        padding: 20px;
+      }
+
+      @media (max-width: 768px) {
+        padding: 16px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 12px;
+      }
     }
   }
 }

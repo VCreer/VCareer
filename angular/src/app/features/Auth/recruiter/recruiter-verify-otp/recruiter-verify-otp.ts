@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { SidebarLayoutService } from '../../../../core/services/sidebar-layout.service';
 
 export interface VerificationStep {
   id: string;
@@ -24,6 +25,7 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   jobPosition: string = 'Nhân viên Marketing';
   completionPercentage: number = 0;
   sidebarExpanded: boolean = false;
+  sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   
   verificationSteps: VerificationStep[] = [
@@ -41,7 +43,8 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private navigationService: NavigationService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private sidebarLayoutService: SidebarLayoutService
   ) {}
 
   ngOnInit(): void {
@@ -50,11 +53,17 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       return;
     }
     this.calculateCompletion();
-    this.checkSidebarState();
+    this.updateSidebarState();
     
-    // Check sidebar state periodically (since sidebar is in header component)
+    // Subscribe to sidebar width changes
+    this.sidebarLayoutService.sidebarWidth$.subscribe(width => {
+      this.sidebarWidth = width;
+      this.sidebarExpanded = width > 100;
+    });
+
+    // Check sidebar state periodically
     this.sidebarCheckInterval = setInterval(() => {
-      this.checkSidebarState();
+      this.updateSidebarState();
     }, 100);
   }
 
@@ -64,19 +73,38 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     }
   }
 
-  checkSidebarState(): void {
-    const sidebar = document.querySelector('.sidebar.show');
-    this.sidebarExpanded = !!sidebar;
-    
-    // Update page class
-    const page = document.querySelector('.recruiter-verify-page');
-    if (page) {
-      if (this.sidebarExpanded) {
-        page.classList.add('sidebar-expanded');
-      } else {
-        page.classList.remove('sidebar-expanded');
-      }
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateSidebarState();
+  }
+
+  private updateSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      this.sidebarWidth = rect.width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || rect.width > 100;
+    } else {
+      this.sidebarWidth = 0;
+      this.sidebarExpanded = false;
     }
+  }
+
+  getContentPaddingLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    const padding = 48; // 24px mỗi bên
+    const availableWidth = viewportWidth - this.sidebarWidth - padding;
+    return `${Math.max(0, availableWidth)}px`;
   }
 
   calculateCompletion(): void {
