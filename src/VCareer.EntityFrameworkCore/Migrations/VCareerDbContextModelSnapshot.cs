@@ -1110,9 +1110,6 @@ namespace VCareer.Migrations
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DistrictCode")
-                        .HasColumnType("int");
-
                     b.Property<int>("EmploymentType")
                         .HasColumnType("int");
 

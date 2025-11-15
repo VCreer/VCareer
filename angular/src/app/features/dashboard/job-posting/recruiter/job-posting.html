@@ -76,24 +76,30 @@
 
         <!-- lương -->
         <label class="toggle-wrap">
-  <input type="checkbox" [(ngModel)]="salaryDeal" (ngModelChange)="onToggleSalaryDeal($event)" />
-  <span class="toggle-slider"></span>
-  <span class="toggle-label">Lương thỏa thuận</span>
-</label>
-
+          <input
+            type="checkbox"
+            [(ngModel)]="salaryDeal"
+            (ngModelChange)="onToggleSalaryDeal($event)"
+          />
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Lương thỏa thuận</span>
+        </label>
 
         <div class="salary-range-wrapper">
           <label class="salary-label">Mức lương (VNĐ)</label>
 
-          <!-- Khi lựa chọn mức lương -->
           <div class="salary-display-box" *ngIf="!salaryDeal">
             <div class="salary-item">
               <span class="salary-title">Tối thiểu</span>
-              <span class="salary-value">{{ salaryMin | number:'1.0-0' }}</span>
+              <span class="salary-value">
+                {{ salaryMin | number:'1.0-0' }} ({{ formatSalary(salaryMin) }})
+              </span>
             </div>
             <div class="salary-item">
               <span class="salary-title">Tối đa</span>
-              <span class="salary-value">{{ salaryMax | number:'1.0-0' }}</span>
+              <span class="salary-value">
+                {{ salaryMax | number:'1.0-0' }} ({{ formatSalary(salaryMax) }})
+              </span>
             </div>
           </div>
 
@@ -109,15 +115,15 @@
               class="range-highlight"
               *ngIf="!salaryDeal"
               [ngStyle]="{
-        left: (salaryMin / 2000000000 * 100) + '%',
-        width: ((salaryMax - salaryMin) / 2000000000 * 100) + '%'
+        left: (salaryMin / 500000000 * 100) + '%',
+        width: ((salaryMax - salaryMin) / 500000000 * 100) + '%'
       }"
             ></div>
 
             <input
               type="range"
               min="100000"
-              max="2000000000"
+              max="500000000"
               step="100000"
               [(ngModel)]="salaryMin"
               (input)="onSalaryChange()"
@@ -128,7 +134,7 @@
             <input
               type="range"
               min="100000"
-              max="2000000000"
+              max="500000000"
               step="100000"
               [(ngModel)]="salaryMax"
               (input)="onSalaryChange()"
@@ -286,6 +292,21 @@
           name="workLocation"
         >
         </app-input-field>
+
+      </div>
+
+       <!-- Work Time -->
+        <app-input-field
+          label="Thời gian làm việc"
+          type="text"
+          placeholder="Nhập thời gian làm việc cụ thể"
+          [required]="true"
+          [error]="getFieldError('workTime')"
+          [(ngModel)]="jobForm.workTime"
+          (ngModelChange)="onFieldChange('workTime')"
+          name="workTime"
+        >
+        </app-input-field>
       </div>
 
       <!-- Preview Modal -->
@@ -300,4 +321,4 @@
       </app-generic-modal>
     </div>
   </div>
-</div>
+

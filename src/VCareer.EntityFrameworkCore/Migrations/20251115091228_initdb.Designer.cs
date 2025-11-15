@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251112043839_fixConstraint")]
-    partial class fixConstraint
+    [Migration("20251115091228_initdb")]
+    partial class initdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1112,9 +1112,6 @@ namespace VCareer.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DistrictCode")
-                        .HasColumnType("int");
 
                     b.Property<int>("EmploymentType")
                         .HasColumnType("int");

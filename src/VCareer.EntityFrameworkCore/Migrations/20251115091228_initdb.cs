@@ -1101,6 +1101,7 @@ namespace VCareer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RecruiterProfile", x => x.UserId);
+                    table.UniqueConstraint("AK_RecruiterProfile_Id", x => x.Id);
                     table.ForeignKey(
                         name: "FK_RecruiterProfile_AbpUsers_UserId",
                         column: x => x.UserId,
@@ -1329,7 +1330,6 @@ namespace VCareer.Migrations
                     ExperienceText = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WorkTime = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProvinceCode = table.Column<int>(type: "int", nullable: false),
-                    DistrictCode = table.Column<int>(type: "int", nullable: false),
                     WardCode = table.Column<int>(type: "int", nullable: true),
                     WorkLocation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Quantity = table.Column<int>(type: "int", nullable: false),
@@ -1367,7 +1367,7 @@ namespace VCareer.Migrations
                         name: "FK_JobPost_RecruiterProfile_RecruiterId",
                         column: x => x.RecruiterId,
                         principalTable: "RecruiterProfile",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
