@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { RestService, Rest } from '@abp/ng.core';
-import type { ProvinceDto, DistrictDto, WardDto } from '../../proxy/dto/geo-dto';
+import type { ProvinceDto, WardDto } from '../../proxy/dto/geo-dto';
 import { map, shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -27,23 +27,13 @@ export class GeoService {
     return this.provincesCache$;
   }
 
-  /** Lấy danh sách quận theo mã tỉnh */
-  getDistrictsByProvince(provinceCode: number): Observable<DistrictDto[]> {
-    return this.getProvinces().pipe(
-      map(provinces => {
-        const province = provinces.find(p => p.code === provinceCode);
-        return province ? province.districts || [] : [];
-      })
-    );
-  }
-
   /** Lấy danh sách phường theo mã quận */
   getWardsByDistrict(districtCode: number): Observable<WardDto[]> {
     return this.getProvinces().pipe(
       map(provinces => {
         for (const province of provinces) {
-          const district = province.districts?.find(d => d.code === districtCode);
-          if (district) return district.wards || [];
+          const district = province.wards.find(d => d.code === Number(districtCode));
+          if (district) return province.wards || [];
         }
         return [];
       })

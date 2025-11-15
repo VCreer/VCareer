@@ -75,25 +75,12 @@
       name="provinceCode"
     ></app-select-field>
 
-    <!-- District -->
-    <app-select-field
-      label="Quận / Huyện"
-      placeholder="Chọn quận / huyện"
-      [required]="true"
-      [disabled]="!selectedProvince"
-      [options]="districtOptions"
-      [error]="getFieldError('districtCode')"
-      [(ngModel)]="selectedDistrict"
-      (ngModelChange)="onDistrictChange($event)"
-      name="districtCode"
-    ></app-select-field>
-
     <!-- Ward -->
     <app-select-field
       label="Phường / Xã"
       placeholder="Chọn phường / xã"
       [required]="true"
-      [disabled]="!selectedDistrict"
+      [disabled]="!selectedProvince"
       [options]="wardOptions"
       [error]="getFieldError('wardCode')"
       [(ngModel)]="selectedWard"

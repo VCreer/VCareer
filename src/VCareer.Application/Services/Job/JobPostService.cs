@@ -204,7 +204,7 @@ namespace VCareer.Services.Job
         public async Task CreateJobPost(JobPostCreateDto dto)
         {
             if (_currentUser.IsAuthenticated == false) throw new AbpAuthorizationException("User is not authenticated");
-            var recruiter = await _recruiterRepository.FindAsync(r=>r.UserId == _currentUser.GetId());
+            var recruiter = await _recruiterRepository.FindAsync(r => r.UserId == _currentUser.GetId());
             var company = await _companyRepository.GetAsync(recruiter.CompanyId);
             if (company == null) throw new BusinessException("Company not found");
             var job = new Job_Post
@@ -217,7 +217,6 @@ namespace VCareer.Services.Job
                 IsDeleted = false,
                 PositionType = dto.PositionType,
                 EmploymentType = dto.EmploymentType,
-                DistrictCode = dto.DistrictCode,
                 ProvinceCode = dto.ProvinceCode,
                 Experience = dto.Experience,
                 ExpiresAt = dto.ExpiresAt,

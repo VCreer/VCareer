@@ -20448,51 +20448,6 @@
         }
       ]
     },
-    "VCareer.Dto.GeoDto.DistrictDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Code",
-          "jsonName": "code",
-          "type": "System.Int32?",
-          "typeSimple": "number?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Name",
-          "jsonName": "name",
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Wards",
-          "jsonName": null,
-          "type": "[VCareer.Dto.GeoDto.WardDto]",
-          "typeSimple": "[VCareer.Dto.GeoDto.WardDto]",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
     "VCareer.Dto.GeoDto.ProvinceDto": {
       "baseType": null,
       "isEnum": false,
@@ -20525,10 +20480,10 @@
           "regex": null
         },
         {
-          "name": "Districts",
-          "jsonName": "districts",
-          "type": "[VCareer.Dto.GeoDto.DistrictDto]",
-          "typeSimple": "[VCareer.Dto.GeoDto.DistrictDto]",
+          "name": "Ward",
+          "jsonName": "wards",
+          "type": "[VCareer.Dto.GeoDto.WardDto]",
+          "typeSimple": "[VCareer.Dto.GeoDto.WardDto]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -21426,18 +21381,6 @@
         },
         {
           "name": "ProvinceCode",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "DistrictCode",
           "jsonName": null,
           "type": "System.Int32",
           "typeSimple": "number",

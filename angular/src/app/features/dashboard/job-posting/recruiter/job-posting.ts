@@ -74,11 +74,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   employmentTypeOptions = this.enumToOptions(EmploymentType);
 
   provinceOptions: { label: string; value: number }[] = [];
-  districtOptions: { label: string; value: number }[] = [];
   wardOptions: { label: string; value: number }[] = [];
 
   selectedProvince?: number;
-  selectedDistrict?: number;
   selectedWard?: number;
 
   jobForm: JobFormData = {
@@ -156,15 +154,14 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
   onProvinceChange(provinceCode: number) {
     this.selectedProvince = provinceCode;
-    this.selectedDistrict = undefined;
     this.selectedWard = undefined;
 
     // Lấy lại danh sách huyện từ tỉnh đã chọn
     this.geoService.getProvinces().subscribe({
       next: res => {
         const selected = res.find(p => p.code === Number(provinceCode));
-        this.districtOptions =
-          selected?.districts?.map(d => ({
+        this.wardOptions =
+          selected?.wards.map(d => ({
             label: d.name ?? '',
             value: d.code ?? 0,
           })) ?? [];
@@ -172,23 +169,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     });
   }
 
-  onDistrictChange(districtCode: number) {
-    this.selectedDistrict = districtCode;
-    this.selectedWard = undefined;
-
-    // Tìm lại danh sách phường thuộc quận này
-    this.geoService.getProvinces().subscribe({
-      next: res => {
-        const province = res.find(p => p.code === Number(this.selectedProvince));
-        const district = province?.districts?.find(d => d.code === Number(districtCode));
-        this.wardOptions =
-          district?.wards?.map(w => ({
-            label: w.name ?? '',
-            value: w.code ?? 0,
-          })) ?? [];
-      },
-    });
-  }
 
   onSaveJob() {
     console.log('Lưu việc làm nháp:', this.jobForm);
@@ -242,7 +222,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     }
 
     const provinceCode = this.selectedProvince ?? 0;
-    const districtCode = this.selectedDistrict ?? 0;
     const wardCode = this.selectedWard ?? 0;
 
     const dto: JobPostCreateDto = {
@@ -262,7 +241,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       salaryMax: 15000000,
       salaryDeal: false,
       provinceCode,
-      districtCode,
       wardCode,
       slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
       jobCategoryId: 'c77cc78e-def4-b816-1d54-3a1d862a9a28',
