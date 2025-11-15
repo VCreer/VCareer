@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthApiService } from '../auth-Cookiebased/auth-api.service';
+import { AuthService } from '../../../proxy/services/auth';
 import { AuthStateService } from './auth-state.service';
 import {
   CurrentUserInfoDto,
@@ -17,7 +17,7 @@ import { Observable, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacadeService {
-  constructor(private authService: AuthApiService, private state: AuthStateService) {}
+  constructor(private authService: AuthService, private state: AuthStateService) {}
 
 
   loginCandidate(payload: { email: string; password: string }): Observable<void> {
@@ -37,7 +37,7 @@ export class AuthFacadeService {
   }
 
   refreshToken() {
-    return this.authService.refreshToken();
+    return this.authService.refeshToken();
   }
 
   logout() {
