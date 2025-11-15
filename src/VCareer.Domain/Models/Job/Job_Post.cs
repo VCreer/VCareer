@@ -15,6 +15,8 @@ namespace VCareer.Models.Job
 {
     public class Job_Post : FullAuditedAggregateRoot<Guid>
     {
+
+        //public Job_Post(Guid id) : base(id) { }
         #region Basic Job Description
         public string? CompanyImageUrl { get; set; }
         public int CompanyId { get; set; }
@@ -53,7 +55,7 @@ namespace VCareer.Models.Job
         public DateTime? ApproveAt { get; set; }
         #endregion
         public int ViewCount { get; set; }
-        public DateTime PostedAt { get => CreationTime; set => CreationTime = value; }
+        public DateTime PostedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ExpiresAt { get; set; }
         public int ApplyCount { get; set; } = 0; // Số lượng ứng viên đã nộp hồ sơ
         public Guid RecruiterId { get; set; }

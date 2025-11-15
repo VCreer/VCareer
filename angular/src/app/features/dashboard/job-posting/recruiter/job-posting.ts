@@ -54,27 +54,25 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   private queryParamsSubscription?: Subscription;
   showPreviewModal = false;
   currentCompanyInfo?: CompanyLegalInfoDto;
-
   private jobOptionsService = inject(JobOptionsService);
   private jobPostService = inject(JobPostService);
   private route = inject(ActivatedRoute);
   private geoService = inject(GeoService);
   private companyProfile = inject(CompanyLegalInfoService);
-
   campaignName = '';
   validationErrors: ValidationErrors = {};
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
   salaryMin: number = 100000;
-  salaryMax: number = 100000000;
+  salaryMax: number = 500000000;
   salaryDeal: boolean = false;
-
   salaryOptions = this.jobOptionsService.SALARY_OPTIONS;
   educationOptions = this.jobOptionsService.EDUCATION_OPTIONS;
   experienceOptions = this.enumToOptions(ExperienceLevel);
   positionLevelOptions = this.enumToOptions(PositionType);
   employmentTypeOptions = this.enumToOptions(EmploymentType);
+  private isSubmitting = false;
 
   provinceOptions: { label: string; value: number }[] = [];
   wardOptions: { label: string; value: number }[] = [];
@@ -104,6 +102,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     benefits: '',
     workLocation: '',
     applicationMethod: '',
+    workTime: '',
   };
 
   ngOnInit() {
@@ -140,21 +139,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     this.queryParamsSubscription?.unsubscribe();
   }
 
-  checkSidebarState(): void {
-    const sidebar = document.querySelector('app-sidebar .sidebar');
-    this.sidebarExpanded = !!sidebar?.classList.contains('show');
-  }
-
-  //cái này là để hỗ trợ cho việc tạo select từ enum ở dưới backend
-  enumToOptions(enumType: any) {
-    return Object.keys(enumType)
-      .filter(key => isNaN(Number(key)))
-      .map(key => ({
-        label: key.replace(/([A-Z])/g, ' $1').trim(),
-        value: enumType[key],
-      }));
-  }
-
+  //#region địa điểm
   onProvinceChange(provinceCode: number) {
     this.selectedProvince = provinceCode;
     this.selectedWard = undefined;
@@ -171,58 +156,24 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       },
     });
   }
+  //#endregion
 
+  //#region  job
   onSaveJob() {
     console.log('Lưu việc làm nháp:', this.jobForm);
     this.showToastMessage('Đã lưu việc làm nháp', 'info');
   }
 
   async onPostJob() {
-    await this.onSubmit();
-  }
-
-  validateForm(): boolean {
-    this.validationErrors = {};
-    if (!this.jobForm.jobTitle?.trim()) {
-      this.validationErrors['jobTitle'] = 'Vui lòng nhập tên công việc';
+    if (this.isSubmitting) {
+      return;
     }
-    if (!this.jobForm.description?.trim()) {
-      this.validationErrors['description'] = 'Vui lòng nhập mô tả công việc';
-    }
-    if (!this.jobForm.requirements?.trim()) {
-      this.validationErrors['requirements'] = 'Vui lòng nhập yêu cầu công việc';
-    }
-    if (!this.jobForm.workLocation?.trim()) {
-      this.validationErrors['workLocation'] = 'Vui lòng nhập địa điểm làm việc';
-    }
-    return Object.keys(this.validationErrors).length === 0;
-  }
 
-  getFieldError(field: string) {
-    return this.validationErrors[field] || '';
-  }
-  clearFieldError(field: string) {
-    delete this.validationErrors[field];
-  }
-  onFieldChange(field: string) {
-    this.clearFieldError(field);
-  }
-
-  showToastMessage(msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
-    this.toastMessage = msg;
-    this.toastType = type;
-    this.showToast = true;
-  }
-  onToastClose() {
-    this.showToast = false;
-  }
-
-  async onSubmit() {
     if (!this.validateForm()) {
       this.showToastMessage('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
       return;
     }
-
+    this.isSubmitting = true;
     const provinceCode = this.selectedProvince ?? 0;
     const wardCode = this.selectedWard ?? 0;
 
@@ -245,7 +196,8 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       provinceCode,
       wardCode,
       slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
-      jobCategoryId: 'c77cc78e-def4-b816-1d54-3a1d862a9a28',
+      jobCategoryId: '854214b1-1f6b-4253-b028-3a1d98fedef5',
+      workTime: this.jobForm.workTime,
     };
 
     try {
@@ -253,52 +205,128 @@ export class JobPostingComponent implements OnInit, OnDestroy {
         next: res => {
           console.log(res);
           this.showToastMessage('Đăng công việc thành công!', 'success');
+          this.isSubmitting = false;
         },
         error: err => {
           console.error(err);
           this.showToastMessage('Lỗi khi đăng công việc', 'error');
+          this.isSubmitting = false;
         },
       });
     } catch (error: any) {
       console.error('Error posting job:', error);
       this.showToastMessage('Lỗi khi đăng công việc', 'error');
+      this.isSubmitting = false;
     }
   }
 
+  //#endregion
+
+  //#region toast
+  showToastMessage(msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+    this.toastMessage = msg;
+    this.toastType = type;
+    this.showToast = true;
+  }
+  onToastClose() {
+    this.showToast = false;
+  }
+  //#endregion
+
+  //#region preview
   openPreviewModal() {
     this.showPreviewModal = true;
   }
   closePreviewModal() {
     this.showPreviewModal = false;
   }
+  //#endregion
 
+  //#region salary
   onSalaryChange() {
-  if (this.salaryDeal) return;
+    if (this.salaryDeal) return;
 
-  if (this.salaryMin > this.salaryMax) {
-    const temp = this.salaryMin;
-    this.salaryMin = this.salaryMax;
-    this.salaryMax = temp;
+    if (this.salaryMin > this.salaryMax) {
+      const temp = this.salaryMin;
+      this.salaryMin = this.salaryMax;
+      this.salaryMax = temp;
+    }
+    this.jobForm.salary = `${this.salaryMin}-${this.salaryMax}`;
+    if (this.salaryMin == this.salaryMax) this.jobForm.salary = `${this.salaryMin}`;
+    this.clearFieldError('salary');
   }
-
-  this.jobForm.salary = `${this.salaryMin}-${this.salaryMax}`;
-  this.clearFieldError('salary');
-}
-
 
   onToggleSalaryDeal(event: any) {
-  const value = event.target.checked; // giá trị thực của checkbox
-  this.salaryDeal = value;
+    const value = event.target.checked; // giá trị thực của checkbox
+    this.salaryDeal = value;
 
-  if (value) {
-    this.salaryMin = 0;
-    this.salaryMax = 0;
-    this.jobForm.salary = 'deal';
-  } else {
-    this.salaryMin = 100000;
-    this.salaryMax = 100000000;
-    this.onSalaryChange();
+    if (value) {
+      this.salaryMin = 0;
+      this.salaryMax = 0;
+      this.jobForm.salary = 'deal';
+    } else {
+      this.salaryMin = 100000;
+      this.salaryMax = 500000000;
+      this.onSalaryChange();
+    }
   }
-}
+  formatSalary(value: number): string {
+    if (value >= 1_000_000_000) {
+      return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + ' tỷ';
+    }
+    if (value >= 1_000_000) {
+      return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + ' triệu';
+    }
+    return value.toLocaleString('vi-VN');
+  }
+  //#endregion
 
+  //#region helper
+  getFieldError(field: string) {
+    return this.validationErrors[field] || '';
+  }
+
+  clearFieldError(field: string) {
+    delete this.validationErrors[field];
+  }
+
+  onFieldChange(field: string) {
+    this.clearFieldError(field);
+  }
+
+  validateForm(): boolean {
+    this.validationErrors = {};
+    if (!this.jobForm.jobTitle?.trim()) {
+      this.validationErrors['jobTitle'] = 'Vui lòng nhập tên công việc';
+    }
+    if (!this.jobForm.description?.trim()) {
+      this.validationErrors['description'] = 'Vui lòng nhập mô tả công việc';
+    }
+    if (!this.jobForm.requirements?.trim()) {
+      this.validationErrors['requirements'] = 'Vui lòng nhập yêu cầu công việc';
+    }
+    if (!this.jobForm.workLocation?.trim()) {
+      this.validationErrors['workLocation'] = 'Vui lòng nhập địa điểm làm việc';
+    }
+    if (!this.jobForm.workTime?.trim()) {
+      this.validationErrors['workTine'] = 'Vui lòng nhập thời gian làm việc ';
+    }
+    return Object.keys(this.validationErrors).length === 0;
+  }
+
+  //cái này là để hỗ trợ cho việc tạo select từ enum ở dưới backend
+  enumToOptions(enumType: any) {
+    return Object.keys(enumType)
+      .filter(key => isNaN(Number(key)))
+      .map(key => ({
+        label: key.replace(/([A-Z])/g, ' $1').trim(),
+        value: enumType[key],
+      }));
+  }
+
+  checkSidebarState(): void {
+    const sidebar = document.querySelector('app-sidebar .sidebar');
+    this.sidebarExpanded = !!sidebar?.classList.contains('show');
+  }
+  //#endregion
 }

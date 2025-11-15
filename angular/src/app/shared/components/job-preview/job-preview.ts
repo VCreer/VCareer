@@ -24,6 +24,7 @@ export interface JobFormData {
   benefits: string;
   workLocation: string;
   applicationMethod: string;
+  workTime:string;
 }
 
 @Component({

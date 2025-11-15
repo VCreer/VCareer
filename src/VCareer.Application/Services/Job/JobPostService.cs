@@ -232,7 +232,7 @@ namespace VCareer.Services.Job
                 WardCode = dto.WardCode,
                 WorkLocation = dto.WorkLocation,
                 WorkTime = dto.WorkTime,
-                CreatorId = _currentUser.GetId(),
+               /* CreatorId = _currentUser.GetId(),*/
                 SalaryDeal = dto.SalaryDeal,
                 PostedAt = DateTime.Now,
                 JobCategoryId = dto.JobCategoryId,
@@ -242,7 +242,7 @@ namespace VCareer.Services.Job
 
             if (recruiter.RecruiterLevel == RecruiterLevel.Premium) job.Status = JobStatus.Open;
 
-            await _jobPostRepository.InsertAsync(job, true);
+            await _jobPostRepository.InsertAsync(job);
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)
         {
