@@ -1,14 +1,8 @@
 
-export interface DistrictDto {
-  code?: number;
-  name?: string;
-  wards: WardDto[];
-}
-
 export interface ProvinceDto {
   code?: number;
   name?: string;
-  districts: DistrictDto[];
+  wards: WardDto[];
 }
 
 export interface WardDto {

@@ -386,6 +386,7 @@ namespace VCareer.Services.Auth
         }
         //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
         //còn mục đích của token là để phục vụ auth backend , tạo current user
+        //thực ra có khi vẫn dùng curent user bình thường , cái này ko b có tác dụng j ko 
         public async Task<CurrentUserInfoDto> GetCurrentUserAsync()
         {
             var email = _currentUser.Email;

@@ -15,22 +15,11 @@ namespace VCareer.Dto.GeoDto
         [JsonPropertyName("name")]
         public string? Name { get; set; }
 
-        [JsonPropertyName("districts")]
-        public ICollection<DistrictDto> Districts { get; set; } = new List<DistrictDto>();
+        [JsonPropertyName("wards")]
+        public ICollection<WardDto> Ward{ get; set; } = new List<WardDto>();
     }
 
-    public class DistrictDto
-    {
-        [JsonPropertyName("code")]
-        public int? Code { get; set; }
-
-        [JsonPropertyName("name")]
-        public string? Name { get; set; }
-
-         public ICollection<WardDto> Wards { get; set; } = new List<WardDto>();
-    }
-
-    public class WardDto
+      public class WardDto
     {
         [JsonPropertyName("code")]
         public int? Code { get; set; }

@@ -23,7 +23,6 @@ namespace VCareer.Dto.JobDto
         public ExperienceLevel Experience { get; set; } = ExperienceLevel.None;
         public string? WorkTime { get; set; }
         public int ProvinceCode { get; set; } // code thanh pho
-        public int DistrictCode { get; set; } // code Quận/Huyện
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
         public int Quantity { get; set; }

@@ -41,7 +41,6 @@ export interface JobPostCreateDto {
   experience?: ExperienceLevel;
   workTime?: string;
   provinceCode: number;
-  districtCode: number;
   wardCode?: number;
   workLocation?: string;
   quantity: number;

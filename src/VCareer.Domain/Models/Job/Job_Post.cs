@@ -37,7 +37,6 @@ namespace VCareer.Models.Job
         public string? ExperienceText { get; set; }
         public string? WorkTime { get; set; }
         public int ProvinceCode { get; set; } // code thanh pho
-        public int DistrictCode { get; set; } // code Quận/Huyện
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
         public int Quantity { get; set; }
