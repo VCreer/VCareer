@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class initdb : Migration
+    public partial class initDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1101,6 +1101,7 @@ namespace VCareer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RecruiterProfile", x => x.UserId);
+                    table.UniqueConstraint("AK_RecruiterProfile_Id", x => x.Id);
                     table.ForeignKey(
                         name: "FK_RecruiterProfile_AbpUsers_UserId",
                         column: x => x.UserId,
@@ -1367,7 +1368,7 @@ namespace VCareer.Migrations
                         name: "FK_JobPost_RecruiterProfile_RecruiterId",
                         column: x => x.RecruiterId,
                         principalTable: "RecruiterProfile",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
