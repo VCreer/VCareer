@@ -65,3 +65,4 @@ export { ReportMetricCardComponent, MetricData } from './report-metric-card/repo
 export { StatusItemComponent, StatusItemData } from './status-item/status-item';
 export { StaffTableComponent, HRStaff } from './staff-table/staff-table';
 export { ActivityLogTableComponent, ActivityLog } from './activity-log-table/activity-log-table';
+export { StatusDropdownComponent, StatusOption } from './status-dropdown/status-dropdown';
