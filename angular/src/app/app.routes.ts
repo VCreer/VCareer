@@ -183,6 +183,14 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/dashboard/campaign/recruiter/campaign-detail').then(c => c.CampaignDetailComponent),
       },
       {
+        path: 'campaign-job-management',
+        loadComponent: () => import('./features/dashboard/campaign-job-management/recruiter/campaign-job-management').then(c => c.CampaignJobManagementComponent),
+      },
+      {
+        path: 'campaign-job-management-view-cv',
+        loadComponent: () => import('./features/dashboard/campaign-job-management-view-cv/recruiter/campaign-job-management-view-cv').then(c => c.CampaignJobManagementViewCvComponent),
+      },
+      {
         path: 'buy-services',
         loadComponent: () => import('./features/dashboard/buy-service/recruiter/buy-services').then(c => c.BuyServicesComponent),
       },

@@ -1,0 +1,308 @@
+<div class="campaign-job-management-view-cv-page">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box">
+    <div class="breadcrumb-container">
+      <button class="back-btn" (click)="onBack()">
+        <i class="fa fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      <h1 class="page-title">Danh sách CV - {{ jobTitle }}</h1>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-group">
+        <i class="fa fa-search"></i>
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+          [value]="searchQuery"
+          (input)="onSearchChange($any($event.target).value)"
+        />
+      </div>
+
+      <div class="filter-group">
+        <app-status-dropdown
+          [options]="statusOptions"
+          [selectedValue]="selectedStatus"
+          placeholder="Tất cả trạng thái"
+          (statusChange)="onStatusChange($event)">
+        </app-status-dropdown>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div class="filter-group filter-dropdown-wrapper" (click)="$event.stopPropagation()">
+        <button
+          class="filter-dropdown-btn"
+          [class.active]="showDateRangeDropdown"
+          (click)="toggleDateRangeDropdown()"
+        >
+          <span class="filter-text">{{ getSelectedDateRangeName() }}</span>
+          <button
+            *ngIf="selectedTimeRange || dateRange.startDate || dateRange.endDate"
+            class="clear-filter-btn"
+            (click)="clearDateRangeFilter(); $event.stopPropagation()"
+          >
+            <i class="fa fa-times"></i>
+          </button>
+          <i class="fa fa-chevron-down" [class.rotated]="showDateRangeDropdown"></i>
+        </button>
+        <div 
+          class="filter-dropdown-menu dropdown-menu ltr show-calendar show-ranges opensleft linked" 
+          *ngIf="showDateRangeDropdown"
+        >
+          <div class="drp-container">
+            <!-- Preset Ranges (Left) -->
+            <div class="ranges">
+              <div
+                *ngFor="let timeRange of timeRanges"
+                class="range-item"
+                [class.selected]="isTimeRangeSelected(timeRange.id)"
+                (click)="selectTimeRange(timeRange.id)"
+              >
+                {{ timeRange.name }}
+              </div>
+            </div>
+            
+            <!-- Calendars Container (Right) -->
+            <div class="calendars-container">
+              <!-- Left Calendar -->
+              <div class="drp-calendar col left">
+                <div class="calendar-table">
+                  <div class="calendar-header">
+                    <button class="prev-month" (click)="previousMonth()">
+                      <i class="fa fa-chevron-left"></i>
+                    </button>
+                    <span class="month-year">{{ getCurrentMonthYear() }}</span>
+                    <button class="next-month" (click)="nextMonth()">
+                      <i class="fa fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                      <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                    </div>
+                    <div class="calendar-days">
+                      <div
+                        *ngFor="let day of calendarDays"
+                        class="calendar-day"
+                        [class.selected]="isDateSelected(day)"
+                        [class.in-range]="isDateInRange(day)"
+                        [class.start-date]="isStartDate(day)"
+                        [class.end-date]="isEndDate(day)"
+                        [class.disabled]="day.disabled"
+                        (click)="selectDate(day)"
+                      >
+                        {{ day.date }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Right Calendar -->
+              <div class="drp-calendar col right">
+                <div class="calendar-table">
+                  <div class="calendar-header">
+                    <button class="prev-month" (click)="nextMonth()">
+                      <i class="fa fa-chevron-left"></i>
+                    </button>
+                    <span class="month-year">{{ getNextMonthYear() }}</span>
+                    <button class="next-month" (click)="nextNextMonth()">
+                      <i class="fa fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                      <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                    </div>
+                    <div class="calendar-days">
+                      <div
+                        *ngFor="let day of nextCalendarDays"
+                        class="calendar-day"
+                        [class.selected]="isDateSelected(day)"
+                        [class.in-range]="isDateInRange(day)"
+                        [class.start-date]="isStartDate(day)"
+                        [class.end-date]="isEndDate(day)"
+                        [class.disabled]="day.disabled"
+                        (click)="selectDate(day)"
+                      >
+                        {{ day.date }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="calendar-footer">
+            <button class="btn-cancel" (click)="cancelDateRange()">Hủy</button>
+            <button class="btn-apply" (click)="applyDateRange()">Áp dụng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CVs Table -->
+    <div class="cvs-table-container">
+      <table class="cvs-table">
+        <thead>
+          <tr>
+            <th class="stt-col">STT</th>
+            <th class="name-col">Họ và Tên</th>
+            <th class="email-col">Email</th>
+            <th class="phone-col">Số điện thoại</th>
+            <th class="date-col">Ngày nộp</th>
+            <th class="status-col">Trạng thái</th>
+            <th class="notes-col">Ghi chú</th>
+            <th class="action-col">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cv of paginatedCvs; let i = index">
+            <!-- STT Column -->
+            <td class="stt-cell">
+              <span>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</span>
+            </td>
+
+            <!-- Họ và Tên Column -->
+            <td class="name-cell">
+              <div class="candidate-info">
+                <div class="candidate-name">{{ cv.fullName }}</div>
+              </div>
+            </td>
+
+            <!-- Email Column -->
+            <td class="email-cell">
+              <div class="email-content">
+                <i class="fa fa-envelope email-icon"></i>
+                <span>{{ cv.email }}</span>
+              </div>
+            </td>
+
+            <!-- Số điện thoại Column -->
+            <td class="phone-cell">
+              <div class="phone-content">
+                <i class="fa fa-phone phone-icon"></i>
+                <span>{{ cv.phone }}</span>
+              </div>
+            </td>
+
+            <!-- Ngày nộp Column -->
+            <td class="date-cell">
+              <span class="date-value">{{ formatDate(cv.appliedDate) }}</span>
+            </td>
+
+            <!-- Trạng thái Column -->
+            <td class="status-cell">
+              <span class="status-badge" [class]="getStatusClass(cv.status)">
+                {{ getStatusLabel(cv.status) }}
+              </span>
+            </td>
+
+            <!-- Ghi chú Column -->
+            <td class="notes-cell">
+              <div class="notes-content" *ngIf="cv.notes">{{ cv.notes }}</div>
+              <div class="notes-empty" *ngIf="!cv.notes">-</div>
+            </td>
+
+            <!-- Hành động Column -->
+            <td class="action-cell">
+              <div class="actions-menu-container">
+                <button 
+                  class="actions-menu-trigger"
+                  (click)="toggleActionsMenu(cv.id, $event)">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <div 
+                  class="actions-menu"
+                  *ngIf="showActionsMenu === cv.id"
+                  (click)="$event.stopPropagation()">
+                  <div class="menu-item" (click)="onViewCV(cv)">
+                    <i class="fa fa-file-alt menu-icon"></i>
+                    <span>Xem CV</span>
+                  </div>
+                  <div class="menu-item" (click)="onViewNotes(cv)">
+                    <i class="fa fa-sticky-note menu-icon"></i>
+                    <span>Ghi chú</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredCvs.length === 0">
+        <i class="fa fa-file-alt empty-icon"></i>
+        <p class="empty-message">Không tìm thấy CV nào</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="filteredCvs.length > 0">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="filteredCvs.length"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    *ngIf="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <!-- Notes Modal -->
+  <app-generic-modal
+    [show]="showNotesModal"
+    [title]="'Ghi chú'"
+    [maxWidth]="'600px'"
+    [closeOnOverlayClick]="true"
+    (close)="closeNotesModal()">
+    <div class="notes-modal-content">
+      <div class="candidate-info" *ngIf="selectedCV">
+        <div class="info-row">
+          <span class="info-label">Ứng viên:</span>
+          <span class="info-value">{{ selectedCV.fullName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ selectedCV.email }}</span>
+        </div>
+      </div>
+
+      <div class="notes-form">
+        <label class="form-label">Ghi chú</label>
+        <textarea
+          class="notes-textarea"
+          [(ngModel)]="notesText"
+          placeholder="Nhập ghi chú về ứng viên..."
+          rows="8"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeNotesModal()">
+          Hủy
+        </button>
+        <button class="btn-save" (click)="saveNotes()">
+          <i class="fa fa-save"></i>
+          Lưu
+        </button>
+      </div>
+    </div>
+  </app-generic-modal>
+</div>
+

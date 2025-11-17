@@ -101,6 +101,121 @@
             <option value="inactive">Chiến dịch đã tắt</option>
           </select>
         </div>
+        
+        <!-- Date Range Filter -->
+        <div class="filter-dropdown-wrapper" (click)="$event.stopPropagation()">
+          <button
+            class="filter-dropdown-btn"
+            [class.active]="showDateRangeDropdown"
+            (click)="toggleDateRangeDropdown()"
+          >
+            <span class="filter-text">{{ getSelectedDateRangeName() }}</span>
+            <button
+              *ngIf="selectedTimeRange || dateRange.startDate || dateRange.endDate"
+              class="clear-filter-btn"
+              (click)="clearDateRangeFilter(); $event.stopPropagation()"
+            >
+              <i class="fa fa-times"></i>
+            </button>
+            <i class="fa fa-chevron-down" [class.rotated]="showDateRangeDropdown"></i>
+          </button>
+          <div 
+            class="filter-dropdown-menu dropdown-menu ltr show-calendar show-ranges opensleft linked" 
+            *ngIf="showDateRangeDropdown"
+          >
+            <div class="drp-container">
+              <!-- Preset Ranges (Left) -->
+              <div class="ranges">
+                <div
+                  *ngFor="let timeRange of timeRanges"
+                  class="range-item"
+                  [class.selected]="isTimeRangeSelected(timeRange.id)"
+                  (click)="selectTimeRange(timeRange.id)"
+                >
+                  {{ timeRange.name }}
+                </div>
+              </div>
+              
+              <!-- Calendars Container (Right) -->
+              <div class="calendars-container">
+                <!-- Left Calendar -->
+                <div class="drp-calendar col left">
+                  <div class="calendar-table">
+                    <div class="calendar-header">
+                      <button class="prev-month" (click)="previousMonth()">
+                        <i class="fa fa-chevron-left"></i>
+                      </button>
+                      <span class="month-year">{{ getCurrentMonthYear() }}</span>
+                      <button class="next-month" (click)="nextMonth()">
+                        <i class="fa fa-chevron-right"></i>
+                      </button>
+                    </div>
+                    <div class="calendar-grid">
+                      <div class="calendar-weekdays">
+                        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                      </div>
+                      <div class="calendar-days">
+                        <div
+                          *ngFor="let day of calendarDays"
+                          class="calendar-day"
+                          [class.selected]="isDateSelected(day)"
+                          [class.in-range]="isDateInRange(day)"
+                          [class.start-date]="isStartDate(day)"
+                          [class.end-date]="isEndDate(day)"
+                          [class.disabled]="day.disabled"
+                          (click)="selectDate(day)"
+                        >
+                          {{ day.date }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Right Calendar -->
+                <div class="drp-calendar col right">
+                  <div class="calendar-table">
+                    <div class="calendar-header">
+                      <button class="prev-month" (click)="nextMonth()">
+                        <i class="fa fa-chevron-left"></i>
+                      </button>
+                      <span class="month-year">{{ getNextMonthYear() }}</span>
+                      <button class="next-month" (click)="nextNextMonth()">
+                        <i class="fa fa-chevron-right"></i>
+                      </button>
+                    </div>
+                    <div class="calendar-grid">
+                      <div class="calendar-weekdays">
+                        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                      </div>
+                      <div class="calendar-days">
+                        <div
+                          *ngFor="let day of nextCalendarDays"
+                          class="calendar-day"
+                          [class.selected]="isDateSelected(day)"
+                          [class.in-range]="isDateInRange(day)"
+                          [class.start-date]="isStartDate(day)"
+                          [class.end-date]="isEndDate(day)"
+                          [class.disabled]="day.disabled"
+                          (click)="selectDate(day)"
+                        >
+                          {{ day.date }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="calendar-footer">
+              <button class="btn-cancel" (click)="cancelDateRange()">Hủy</button>
+              <button class="btn-apply" (click)="applyDateRange()">Áp dụng</button>
+            </div>
+          </div>
+        </div>
+        
         <div class="search-input-wrapper">
           <input
             type="text"
@@ -133,7 +248,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let campaign of filteredCampaigns">
+          <tr *ngFor="let campaign of paginatedCampaigns">
             <!-- ID -->
             <td class="campaign-id-cell">
               <div class="campaign-id">{{ campaign.id }}</div>
@@ -201,6 +316,10 @@
                       <i class="fa fa-eye menu-icon"></i>
                       <span>Xem chi tiết</span>
                     </div>
+                    <div class="menu-item" (click)="onViewJobs(campaign)">
+                      <i class="fa fa-briefcase menu-icon"></i>
+                      <span>Xem các công việc</span>
+                    </div>
                     <div class="menu-item" (click)="onEditCampaign(campaign)">
                       <i class="fa fa-edit menu-icon"></i>
                       <span>Sửa</span>
@@ -229,6 +348,17 @@
             Hãy tạo chiến dịch tuyển dụng đầu tiên của bạn
           </p>
         </div>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredCampaigns.length > 0">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="filteredCampaigns.length"
+          [itemsPerPage]="itemsPerPage"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
       </div>
       </div>
     </div>
