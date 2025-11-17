@@ -6,8 +6,6 @@ import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
-import { ProfileService } from '../../../proxy/profile/profile.service';
-import type { ProfileDto } from '../../../proxy/profile/models';
 
 @Component({
   selector: 'app-candidate-header',
@@ -31,16 +29,12 @@ export class CandidateHeaderComponent implements OnInit {
     personalSecurity: false,
     upgradeAccount: false
   };
-  profileData: ProfileDto | null = null;
-  userName: string = '';
-  userEmail: string = '';
 
   constructor(
     private router: Router,
     private headerTypeService: HeaderTypeService,
     private navigationService: NavigationService,
-    private translationService: TranslationService,
-    private profileService: ProfileService
+    private translationService: TranslationService
   ) {}
 
   ngOnInit() {
@@ -58,33 +52,6 @@ export class CandidateHeaderComponent implements OnInit {
     // Subscribe to authentication state changes
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isLoggedIn = isLoggedIn;
-      if (isLoggedIn) {
-        this.loadProfileData();
-      } else {
-        this.profileData = null;
-        this.userName = '';
-        this.userEmail = '';
-      }
-    });
-  }
-
-  loadProfileData() {
-    this.profileService.getCurrentUserProfile().subscribe({
-      next: (response: ProfileDto) => {
-        this.profileData = response;
-        // Lấy tên từ AbpUser.Name (trong ProfileDto là trường name)
-        // Kết hợp name và surname nếu cả hai đều có
-        const name = response.name || '';
-        const surname = response.surname || '';
-        this.userName = `${name} ${surname}`.trim() || name || surname || '';
-        // Lấy email từ AbpUser.Email (trong ProfileDto là trường email)
-        this.userEmail = response.email || '';
-      },
-      error: (error) => {
-        console.error('Error loading profile data:', error);
-        this.userName = '';
-        this.userEmail = '';
-      }
     });
   }
 

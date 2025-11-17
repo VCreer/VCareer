@@ -71,11 +71,6 @@ namespace VCareer.Application.Contracts.Applications
         Task<byte[]> DownloadApplicationCVAsync(Guid id);
 
         /// <summary>
-        /// Tải xuống CV của đơn ứng tuyển với thông tin file (PDF hoặc render HTML)
-        /// </summary>
-        Task<DownloadApplicationCVResultDto> DownloadApplicationCVWithInfoAsync(Guid id);
-
-        /// <summary>
         /// Xóa đơn ứng tuyển (soft delete)
         /// </summary>
         Task DeleteApplicationAsync(Guid id);

@@ -1,0 +1,42 @@
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+      font-size: 20px;
+    }
+  }
+
+  .status-name {
+    flex: 1;
+    font-size: 1rem;
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .status-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    flex-shrink: 0;
+  }
+}

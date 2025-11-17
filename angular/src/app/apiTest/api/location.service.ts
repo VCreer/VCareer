@@ -5,31 +5,24 @@ import { environment } from '../../../environments/environment';
 
 /**
  * DistrictDto - ĐÚNG 100% với backend .NET
- * Match với VCareer.Dto.GeoDto.DistrictDto
+ * Match với VCareer.Dto.Job.DistrictDto
  */
 export interface DistrictDto {
-  code?: number;         // Mã quận/huyện
-  name?: string;
-  wards?: WardDto[];     // Danh sách phường/xã
-}
-
-/**
- * WardDto - Match với VCareer.Dto.GeoDto.WardDto
- */
-export interface WardDto {
-  code?: number;
-  name?: string;
-  divisionType?: string;
+  id: number;
+  name: string;
+  code: string;         // Mã quận/huyện
+  provinceId: number;
 }
 
 /**
  * ProvinceDto - ĐÚNG 100% với backend .NET
- * Match với VCareer.Dto.GeoDto.ProvinceDto
+ * Match với VCareer.Dto.Job.ProvinceDto
  */
 export interface ProvinceDto {
-  code?: number;             // Mã tỉnh/thành phố
-  name?: string;
-  districts?: DistrictDto[]; // Danh sách quận/huyện
+  id: number;
+  name: string;
+  code: string;             // Mã tỉnh/thành phố
+  districts: DistrictDto[]; // Danh sách quận/huyện
 }
 
 /**

@@ -121,37 +121,26 @@
                     formControlName="city"
                     class="form-input"
                     [class.error]="hasFieldError('city')"
-                    (change)="onProvinceChange($any($event.target).value)"
-                    [disabled]="isLoadingProvinces"
                   >
                     <option value="">Chọn tỉnh/thành phố</option>
-                    <option *ngFor="let province of provinces" [value]="province.code || ''">
-                      {{ province.name }}
-                    </option>
+                    <option value="hanoi">Hà Nội</option>
+                    <option value="hcm">TP. Hồ Chí Minh</option>
+                    <option value="danang">Đà Nẵng</option>
+                    <option value="haiphong">Hải Phòng</option>
+                    <option value="cantho">Cần Thơ</option>
                   </select>
                 </div>
                 <div class="error-message" *ngIf="hasFieldError('city')">
                   Tỉnh/thành phố không được để trống
                 </div>
-                <div *ngIf="isLoadingProvinces" class="loading-text">Đang tải danh sách tỉnh/thành phố...</div>
               </div>
               <div class="location-field">
-                <div class="input-with-icon">
-                  <select
-                    formControlName="district"
-                    class="form-input"
-                    [class.error]="hasFieldError('district')"
-                    [disabled]="!districts.length || isLoadingProvinces"
-                  >
-                    <option value="">Chọn quận/huyện</option>
-                    <option *ngFor="let district of districts" [value]="district.code || ''">
-                      {{ district.name }}
-                    </option>
-                  </select>
-                </div>
-                <div class="error-message" *ngIf="hasFieldError('district')">
-                  Quận/huyện không được để trống
-                </div>
+                <app-input-field
+                  placeholder="Chọn quận/huyện"
+                  [error]="getFieldError('district')"
+                  [required]="true"
+                  formControlName="district"
+                ></app-input-field>
               </div>
             </div>
           </div>

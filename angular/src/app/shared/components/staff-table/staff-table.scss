@@ -1,0 +1,132 @@
+.table-wrapper {
+  overflow-x: auto;
+
+  .staff-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: #f9fafb;
+
+      th {
+        padding: 16px;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+
+        @media (max-width: 768px) {
+          padding: 12px 8px;
+          font-size: 0.8125rem;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f9fafb;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 16px;
+          font-size: 0.9375rem;
+          color: #374151;
+          vertical-align: middle;
+
+          @media (max-width: 768px) {
+            padding: 12px 8px;
+            font-size: 0.875rem;
+          }
+
+          &.staff-id {
+            font-weight: 600;
+            color: #0F83BA;
+          }
+
+          &.staff-name {
+            font-weight: 600;
+            color: #1f2937;
+          }
+
+          &.staff-email,
+          &.staff-phone {
+            color: #6b7280;
+
+            i {
+              margin-right: 8px;
+              color: #9ca3af;
+              font-size: 0.875rem;
+            }
+          }
+
+          &.staff-status {
+            .status-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 12px;
+              font-size: 0.8125rem;
+              font-weight: 600;
+
+              &.status-active {
+                background-color: #10b98115;
+                color: #10b981;
+              }
+
+              &.status-pending {
+                background-color: #f59e0b15;
+                color: #f59e0b;
+              }
+
+              &.status-inactive {
+                background-color: #ef444415;
+                color: #ef4444;
+              }
+            }
+          }
+
+          &.staff-actions {
+            text-align: center;
+
+            .action-btn {
+              padding: 6px 16px;
+              border: none;
+              border-radius: 6px;
+              background: #0F83BA15;
+              color: #0F83BA;
+              font-size: 0.875rem;
+              font-weight: 500;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+
+              i {
+                font-size: 0.875rem;
+              }
+
+              &:hover {
+                background: #0F83BA;
+                color: white;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    overflow-x: auto;
+  }
+}

@@ -297,26 +297,10 @@ export class CandidateHomepageComponent implements OnInit {
       },
       error: error => {
         console.error('❌ Error loading initial data:', error);
-        console.error('Error details:', error);
-        console.error('Error status:', error?.status);
-        console.error('Error message:', error?.message);
-        console.error('Error URL:', error?.url);
+        console.error('Error details:', error.message);
         this.isLoadingData = false;
-        
-        // ✅ Show user-friendly message với thông tin chi tiết hơn
-        let errorMessage = 'Không thể tải dữ liệu. ';
-        if (error?.status === 0) {
-          errorMessage += 'Không thể kết nối đến backend API. Vui lòng kiểm tra backend có đang chạy không!';
-        } else if (error?.status === 403) {
-          errorMessage += 'Bạn không có quyền truy cập. Vui lòng đăng nhập lại!';
-        } else if (error?.status === 401) {
-          errorMessage += 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!';
-        } else if (error?.status >= 500) {
-          errorMessage += `Lỗi server (${error?.status}). Vui lòng thử lại sau!`;
-        } else {
-          errorMessage += `Lỗi: ${error?.message || 'Không xác định'}. Vui lòng kiểm tra backend API!`;
-        }
-        alert(errorMessage);
+        // ✅ Show user-friendly message
+        alert('Không thể tải dữ liệu. Vui lòng kiểm tra backend API có chạy không!');
       },
     });
   }

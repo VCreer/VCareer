@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
 
 export interface VerificationStep {
   id: string;
@@ -41,7 +42,8 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private navigationService: NavigationService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private teamManagementService: TeamManagementService
   ) {}
 
   ngOnInit(): void {
@@ -49,13 +51,36 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       this.router.navigate(['/recruiter/login']);
       return;
     }
-    this.calculateCompletion();
-    this.checkSidebarState();
     
-    // Check sidebar state periodically (since sidebar is in header component)
-    this.sidebarCheckInterval = setInterval(() => {
-      this.checkSidebarState();
-    }, 100);
+    // Kiểm tra nếu user là HR Staff (IsLead = false) thì redirect về trang chủ
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        // HR Staff là user có IsLead = false, không được phép truy cập trang verify
+        if (!userInfo.isLead) {
+          this.router.navigate(['/recruiter/recruiter-setting']);
+          return;
+        }
+        // Nếu là Leader thì tiếp tục hiển thị trang verify
+        this.calculateCompletion();
+        this.checkSidebarState();
+        
+        // Check sidebar state periodically (since sidebar is in header component)
+        this.sidebarCheckInterval = setInterval(() => {
+          this.checkSidebarState();
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Error loading user info:', error);
+        // Nếu không lấy được thông tin, vẫn cho phép truy cập (fallback)
+        this.calculateCompletion();
+        this.checkSidebarState();
+        
+        // Check sidebar state periodically (since sidebar is in header component)
+        this.sidebarCheckInterval = setInterval(() => {
+          this.checkSidebarState();
+        }, 100);
+      }
+    });
   }
 
   ngOnDestroy(): void {

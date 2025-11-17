@@ -170,6 +170,14 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(c => c.RecruiterVerifyOtpComponent),
       },
       {
+        path: 'hr-staff-management',
+        loadComponent: () => import('./features/dashboard/hr-staff-management/recruiter/hr-staff-management').then(c => c.HRStaffManagementComponent),
+      },
+      {
+        path: 'recruitment-report',
+        loadComponent: () => import('./features/dashboard/recruitment-report/recruiter/recruitment-report').then(c => c.RecruitmentReportComponent),
+      },
+      {
         path: 'recruiter-setting',
         loadComponent: () => import('./features/dashboard/setting/recruiter/recruiter-setting').then(c => c.RecruiterSettingComponent),
       },
