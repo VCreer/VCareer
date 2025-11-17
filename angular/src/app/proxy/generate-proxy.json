@@ -9049,6 +9049,48 @@
                     "type": "System.Collections.Generic.ICollection<VCareer.Dto.GeoDto.ProvinceDto>",
                     "typeSimple": "[VCareer.Dto.GeoDto.ProvinceDto]"
                   }
+                },
+                {
+                  "name": "GetProvinceNameByCode",
+                  "parametersOnMethod": [
+                    {
+                      "name": "provinceCode",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.String",
+                    "typeSimple": "string"
+                  }
+                },
+                {
+                  "name": "GetWardNameByCode",
+                  "parametersOnMethod": [
+                    {
+                      "name": "wardCode",
+                      "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Int32?",
+                      "typeSimple": "number?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "provinceCode",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.String",
+                    "typeSimple": "string"
+                  }
                 }
               ]
             }
@@ -9065,6 +9107,100 @@
               "returnValue": {
                 "type": "System.Collections.Generic.ICollection<VCareer.Dto.GeoDto.ProvinceDto>",
                 "typeSimple": "[VCareer.Dto.GeoDto.ProvinceDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IGeoServices.IGeoService"
+            },
+            "GetProvinceNameByCodeByProvinceCode": {
+              "uniqueName": "GetProvinceNameByCodeByProvinceCode",
+              "name": "GetProvinceNameByCode",
+              "httpMethod": "GET",
+              "url": "api/app/geo/province-name-by-code",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "provinceCode",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "provinceCode",
+                  "name": "provinceCode",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.String",
+                "typeSimple": "string"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IGeoServices.IGeoService"
+            },
+            "GetWardNameByCodeByWardCodeAndProvinceCode": {
+              "uniqueName": "GetWardNameByCodeByWardCodeAndProvinceCode",
+              "name": "GetWardNameByCode",
+              "httpMethod": "GET",
+              "url": "api/app/geo/ward-name-by-code",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "wardCode",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "provinceCode",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "wardCode",
+                  "name": "wardCode",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "provinceCode",
+                  "name": "provinceCode",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.String",
+                "typeSimple": "string"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IGeoServices.IGeoService"
@@ -9590,7 +9726,16 @@
                 },
                 {
                   "name": "ShowJobPostNeedApprove",
-                  "parametersOnMethod": [],
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.JobFilterDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.JobFilterDto",
+                      "typeSimple": "VCareer.Dto.JobDto.JobFilterDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
                   "returnValue": {
                     "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobApproveViewDto>",
                     "typeSimple": "[VCareer.Dto.JobDto.JobApproveViewDto]"
@@ -9691,14 +9836,36 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
-            "ShowJobPostNeedApprove": {
-              "uniqueName": "ShowJobPostNeedApprove",
+            "ShowJobPostNeedApproveByDto": {
+              "uniqueName": "ShowJobPostNeedApproveByDto",
               "name": "ShowJobPostNeedApprove",
               "httpMethod": "POST",
               "url": "api/app/job-post/show-job-post-need-approve",
               "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.JobFilterDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.JobFilterDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobFilterDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.JobFilterDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobFilterDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
               "returnValue": {
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobApproveViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.JobApproveViewDto]"
@@ -17501,14 +17668,16 @@
       "baseType": "System.Enum",
       "isEnum": true,
       "enumNames": [
-        "Normal",
-        "Feature",
-        "Vip"
+        "Low",
+        "Medium",
+        "High",
+        "Urgent"
       ],
       "enumValues": [
         0,
         1,
-        2
+        2,
+        3
       ],
       "genericArguments": null,
       "properties": null
@@ -17571,6 +17740,24 @@
       "genericArguments": null,
       "properties": null
     },
+    "VCareer.Constants.JobConstant.RecruiterLevel": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Verified",
+        "Trusted",
+        "Premium",
+        "Unverified"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        -1
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
     "VCareer.Constants.JobConstant.RiskJobLevel": {
       "baseType": "System.Enum",
       "isEnum": true,
@@ -17585,6 +17772,32 @@
         1,
         2,
         -1
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SalaryFilterType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "All",
+        "Under10",
+        "Range10To15",
+        "Range15To20",
+        "Range20To30",
+        "Range30To50",
+        "Over50",
+        "Deal"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
       ],
       "genericArguments": null,
       "properties": null
@@ -21131,10 +21344,10 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "RiskJobLevel",
+          "name": "Id",
           "jsonName": null,
-          "type": "VCareer.Constants.JobConstant.RiskJobLevel",
-          "typeSimple": "enum",
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -21191,9 +21404,261 @@
           "regex": null
         },
         {
-          "name": "JobId",
+          "name": "Slug",
           "jsonName": null,
           "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Requirements",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Benefits",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryMin",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryMax",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryDeal",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EmploymentType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.EmploymentType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PositionType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.PositionType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.ExperienceLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExperienceText",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkTime",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProvinceName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WardName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PriorityLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobPriorityLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RecruiterLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.RecruiterLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RiskJobLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.RiskJobLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectedReason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PostedAt",
+          "jsonName": null,
+          "type": "System.DateTime",
           "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
@@ -21215,7 +21680,88 @@
           "regex": null
         },
         {
-          "name": "ProvinceCode",
+          "name": "JobCategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CategoryName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.JobFilterDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PriorityLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobPriorityLevel?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RecruiterLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.RecruiterLevel?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RiskJobLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.RiskJobLevel?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Page",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PageSize",
           "jsonName": null,
           "type": "System.Int32",
           "typeSimple": "number",
@@ -21646,7 +22192,7 @@
           "regex": null
         },
         {
-          "name": "ProvinceIds",
+          "name": "ProvinceCode",
           "jsonName": null,
           "type": "[System.Int32]",
           "typeSimple": "[number]",
@@ -21658,7 +22204,7 @@
           "regex": null
         },
         {
-          "name": "DistrictIds",
+          "name": "WardCode",
           "jsonName": null,
           "type": "[System.Int32]",
           "typeSimple": "[number]",
@@ -21684,7 +22230,7 @@
         {
           "name": "SalaryFilter",
           "jsonName": null,
-          "type": "VCareer.Dto.JobDto.SalaryFilterType?",
+          "type": "VCareer.Constants.JobConstant.SalaryFilterType?",
           "typeSimple": "enum?",
           "isRequired": false,
           "minLength": null,
@@ -21710,18 +22256,6 @@
           "jsonName": null,
           "type": "[VCareer.Constants.JobConstant.PositionType]",
           "typeSimple": "[enum]",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IsUrgent",
-          "jsonName": null,
-          "type": "System.Boolean?",
-          "typeSimple": "boolean?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -22239,32 +22773,6 @@
           "regex": null
         }
       ]
-    },
-    "VCareer.Dto.JobDto.SalaryFilterType": {
-      "baseType": "System.Enum",
-      "isEnum": true,
-      "enumNames": [
-        "All",
-        "Under10",
-        "Range10To15",
-        "Range15To20",
-        "Range20To30",
-        "Range30To50",
-        "Over50",
-        "Deal"
-      ],
-      "enumValues": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
-      ],
-      "genericArguments": null,
-      "properties": null
     },
     "VCareer.Dto.Profile.ChangePasswordDto": {
       "baseType": null,

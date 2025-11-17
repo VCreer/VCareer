@@ -1,9 +1,10 @@
 import { mapEnumToOptions } from '@abp/ng.core';
 
 export enum JobPriorityLevel {
-  Normal = 0,
-  Feature = 1,
-  Vip = 2,
+  Low = 0,
+  Medium = 1,
+  High = 2,
+  Urgent = 3,
 }
 
 export const jobPriorityLevelOptions = mapEnumToOptions(JobPriorityLevel);

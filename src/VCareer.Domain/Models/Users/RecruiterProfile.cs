@@ -15,18 +15,19 @@ namespace VCareer.Models.Users
     {
         public Guid UserId { get; set; }
         public int CompanyId { get; set; }
-        public string Email{ get; set; }
+        public string Email { get; set; }
         public bool IsLead { get; set; }
         public bool Status { get; set; }
         public bool IsVerified { get; set; } = false;
-       
+
         public RecruiterLevel RecruiterLevel { get; set; } = RecruiterLevel.Unverified;
-        public long? QuotaUsedBytes { get; set; } 
+        public long? QuotaUsedBytes { get; set; }
         public long? MaxQuotaBytes { get; set; }
 
         //danh sách các jonPossting
         public virtual Company Company { get; set; }
         public virtual IdentityUser User { get; set; }
         public virtual ICollection<Job_Post> JobPostings { get; set; }
+        public virtual ICollection<RecruitmentCampaign> RecruitmentCampaigns { get; set; } = new HashSet<RecruitmentCampaign>();
     }
 }

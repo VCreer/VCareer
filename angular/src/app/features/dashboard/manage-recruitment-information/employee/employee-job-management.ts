@@ -3,30 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PaginationComponent, ToastNotificationComponent } from '../../../../shared/components';
-
-type JobStatus = 'pending' | 'approved' | 'rejected';
-
-interface EmployeeJobPosting {
-  id: string;
-  title: string;
-  position: string;
-  status: JobStatus;
-  createdDate: string;
-  updatedDate: string;
-  companyName: string;
-  companyLogo?: string;
-  location: string;
-  experience: string;
-  salary: string;
-  keywords: string[];
-  postedDate: string;
-  campaignCode: string;
-  description?: string;
-  requirements?: string[];
-  benefits?: string[];
-  workLocation?: string[];
-  rejectReason?: string;
-}
+import { JobApproveViewDto, JobFilterDto } from 'src/app/proxy/dto/job-dto';
+import { JobPostService } from 'src/app/proxy/services/job';
+import { JobStatus, JobPriorityLevel, RecruiterLevel, RiskJobLevel } from 'src/app/proxy/constants/job-constant';
 
 interface JobSummaryCard {
   label: string;
@@ -44,7 +23,7 @@ interface JobSummaryCard {
 })
 export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   sidebarExpanded = false;
-  sidebarWidth = 72; // Default collapsed sidebar width
+  sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
 
@@ -55,309 +34,65 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     { label: 'Từ chối', value: 0, icon: 'fa fa-times-circle', borderColor: '#ef4444' },
   ];
 
-  statusOptions = [
-    { label: 'Tất cả trạng thái', value: 'all' },
-    { label: 'Chờ duyệt', value: 'pending' },
-    { label: 'Đã duyệt', value: 'approved' },
-    { label: 'Từ chối', value: 'rejected' },
-  ];
-  selectedStatus = this.statusOptions[0];
-  showStatusDropdown = false;
-  searchTerm = '';
-
-  jobPostings: EmployeeJobPosting[] = [
-    { 
-      id: 'JD-001', 
-      title: 'FullStack Developer (NodeJS, ReactJS, Vue JS) - Sign On Bonus', 
-      position: 'Fullstack Developer', 
-      status: 'pending', 
-      createdDate: '02/11/2025', 
-      updatedDate: '02/11/2025',
-      companyName: 'CÔNG TY TNHH AIRCLOSET ENGINEERING',
-      companyLogo: 'airCloset',
-      location: 'Hà Nội',
-      experience: '4 năm',
-      salary: 'Thoả thuận',
-      keywords: ['Fullstack Developer', '4 năm kinh nghiệm', 'Đại học', 'NodeJS'],
-      postedDate: 'Đăng 2 tuần trước',
-      campaignCode: '#2366831',
-      description: 'Chúng tôi đang tìm kiếm một FullStack Developer có kinh nghiệm để tham gia vào đội ngũ phát triển sản phẩm. Bạn sẽ làm việc với các công nghệ hiện đại như NodeJS, ReactJS, Vue JS để xây dựng các ứng dụng web chất lượng cao.',
-      requirements: [
-        'Tốt nghiệp Đại học chuyên ngành Công nghệ thông tin hoặc tương đương',
-        'Có ít nhất 4 năm kinh nghiệm phát triển FullStack',
-        'Thành thạo NodeJS, ReactJS, Vue JS',
-        'Có kinh nghiệm với database (MongoDB, PostgreSQL)',
-        'Kỹ năng làm việc nhóm tốt, tư duy logic'
-      ],
-      benefits: [
-        'Mức lương cạnh tranh, thưởng theo hiệu suất',
-        'Bảo hiểm đầy đủ theo quy định',
-        'Môi trường làm việc trẻ trung, năng động',
-        'Cơ hội phát triển nghề nghiệp',
-        'Đào tạo và nâng cao kỹ năng'
-      ],
-      workLocation: [
-        'Hà Nội: Tầng 5, Tòa nhà ABC, 123 Đường XYZ, Quận Cầu Giấy',
-        'Làm việc từ xa: 2 ngày/tuần'
-      ]
-    },
-    { 
-      id: 'JD-002', 
-      title: 'Lập Trình Frontend (AI & Data)', 
-      position: 'Frontend Developer', 
-      status: 'approved', 
-      createdDate: '28/10/2025', 
-      updatedDate: '01/11/2025',
-      companyName: 'CÔNG TY CỔ PHẦN CÔNG NGHỆ FOXAI',
-      companyLogo: 'FOXAi',
-      location: 'Hà Nội',
-      experience: '2 năm',
-      salary: '2.5 - 3.5 triệu',
-      keywords: ['Frontend Developer', 'IT - Phần mềm', 'Công nghệ thông tin', 'React', 'Vue'],
-      postedDate: 'Đăng 1 ngày trước',
-      campaignCode: '#2366845'
-    },
-    { 
-      id: 'JD-003', 
-      title: 'Intern Game Developer - HTML5 (Children Educational Game)', 
-      position: 'Game Developer', 
-      status: 'approved', 
-      createdDate: '24/10/2025', 
-      updatedDate: '29/10/2025',
-      companyName: 'CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ LIFESTYLE VIỆT NAM',
-      companyLogo: 'LIFESTYLE',
-      location: 'Hà Nội',
-      experience: 'Không yêu cầu',
-      salary: '12 - 18 triệu',
-      keywords: ['Game Developer', 'Game', 'Giáo dục / Đào tạo', 'IT - Phần mềm', 'HTML5', 'JavaScript'],
-      postedDate: 'Đăng 3 ngày trước',
-      campaignCode: '#2366846'
-    },
-    { 
-      id: 'JD-004', 
-      title: 'Frontend Developer', 
-      position: 'Frontend Developer', 
-      status: 'pending', 
-      createdDate: '23/10/2025', 
-      updatedDate: '23/10/2025',
-      companyName: 'CÔNG TY CỔ PHẦN JARVIS GLOBAL',
-      companyLogo: 'Jarvis',
-      location: 'Hà Nội',
-      experience: '1 năm',
-      salary: 'Thoả thuận',
-      keywords: ['Frontend Developer', 'An ninh mạng', 'IT - Phần mềm', 'React', 'TypeScript', 'Vue'],
-      postedDate: 'Đăng 1 tuần trước',
-      campaignCode: '#2366847'
-    },
-    { 
-      id: 'JD-005', 
-      title: 'Chuyên viên Nhân sự tổng hợp', 
-      position: 'HR Generalist', 
-      status: 'approved', 
-      createdDate: '21/10/2025', 
-      updatedDate: '28/10/2025',
-      companyName: 'CÔNG TY TNHH ABC',
-      companyLogo: 'ABC',
-      location: 'Hà Nội',
-      experience: '3 năm',
-      salary: '15 - 20 triệu',
-      keywords: ['Nhân sự', 'HR', 'Quản trị nhân sự'],
-      postedDate: 'Đăng 5 ngày trước',
-      campaignCode: '#2366848'
-    },
-    { 
-      id: 'JD-006', 
-      title: 'Nhân viên Kinh doanh B2B', 
-      position: 'Sales Executive', 
-      status: 'pending', 
-      createdDate: '18/10/2025', 
-      updatedDate: '18/10/2025',
-      companyName: 'CÔNG TY TNHH XYZ',
-      companyLogo: 'XYZ',
-      location: 'Hà Nội',
-      experience: '2 năm',
-      salary: 'Thoả thuận',
-      keywords: ['Kinh doanh', 'Sales', 'B2B'],
-      postedDate: 'Đăng 2 tuần trước',
-      campaignCode: '#2366849'
-    },
-    { 
-      id: 'JD-007', 
-      title: 'Trưởng nhóm Marketing', 
-      position: 'Marketing Lead', 
-      status: 'approved', 
-      createdDate: '16/10/2025', 
-      updatedDate: '20/10/2025',
-      companyName: 'CÔNG TY CỔ PHẦN DEF',
-      companyLogo: 'DEF',
-      location: 'Hà Nội',
-      experience: '5 năm',
-      salary: '25 - 35 triệu',
-      keywords: ['Marketing', 'Digital Marketing', 'Quản lý'],
-      postedDate: 'Đăng 1 tuần trước',
-      campaignCode: '#2366850'
-    },
-    { 
-      id: 'JD-008', 
-      title: 'Nhân viên Hành chính văn phòng', 
-      position: 'Office Admin', 
-      status: 'rejected', 
-      createdDate: '15/10/2025', 
-      updatedDate: '17/10/2025',
-      companyName: 'CÔNG TY TNHH GHI',
-      companyLogo: 'GHI',
-      location: 'Hà Nội',
-      experience: '1 năm',
-      salary: '8 - 12 triệu',
-      keywords: ['Hành chính', 'Văn phòng', 'Admin'],
-      postedDate: 'Đăng 3 tuần trước',
-      campaignCode: '#2366851'
-    },
-    { 
-      id: 'JD-009', 
-      title: 'Kỹ sư Phần mềm .NET', 
-      position: '.NET Developer', 
-      status: 'pending', 
-      createdDate: '13/10/2025', 
-      updatedDate: '13/10/2025',
-      companyName: 'CÔNG TY TNHH JKL',
-      companyLogo: 'JKL',
-      location: 'Hà Nội',
-      experience: '3 năm',
-      salary: '20 - 30 triệu',
-      keywords: ['.NET', 'C#', 'Backend Developer'],
-      postedDate: 'Đăng 4 ngày trước',
-      campaignCode: '#2366852'
-    },
-    { 
-      id: 'JD-010', 
-      title: 'Nhân viên Thiết kế UI/UX', 
-      position: 'UI/UX Designer', 
-      status: 'approved', 
-      createdDate: '10/10/2025', 
-      updatedDate: '12/10/2025',
-      companyName: 'CÔNG TY CỔ PHẦN MNO',
-      companyLogo: 'MNO',
-      location: 'Hà Nội',
-      experience: '2 năm',
-      salary: '15 - 25 triệu',
-      keywords: ['UI/UX', 'Designer', 'Figma', 'Adobe XD'],
-      postedDate: 'Đăng 6 ngày trước',
-      campaignCode: '#2366853'
-    },
-    { 
-      id: 'JD-011', 
-      title: 'Chuyên viên Tuyển dụng', 
-      position: 'Talent Acquisition', 
-      status: 'approved', 
-      createdDate: '08/10/2025', 
-      updatedDate: '11/10/2025',
-      companyName: 'CÔNG TY TNHH PQR',
-      companyLogo: 'PQR',
-      location: 'Hà Nội',
-      experience: '2 năm',
-      salary: '12 - 18 triệu',
-      keywords: ['Tuyển dụng', 'Recruitment', 'HR'],
-      postedDate: 'Đăng 1 tuần trước',
-      campaignCode: '#2366854'
-    },
-    { 
-      id: 'JD-012', 
-      title: 'Nhân viên Chăm sóc khách hàng', 
-      position: 'Customer Success', 
-      status: 'rejected', 
-      createdDate: '05/10/2025', 
-      updatedDate: '07/10/2025',
-      companyName: 'CÔNG TY TNHH STU',
-      companyLogo: 'STU',
-      location: 'Hà Nội',
-      experience: '1 năm',
-      salary: '10 - 15 triệu',
-      keywords: ['Customer Service', 'Chăm sóc khách hàng'],
-      postedDate: 'Đăng 3 tuần trước',
-      campaignCode: '#2366855'
-    },
-    { 
-      id: 'JD-013', 
-      title: 'Kỹ sư QA Automation', 
-      position: 'QA Automation Engineer', 
-      status: 'pending', 
-      createdDate: '03/10/2025', 
-      updatedDate: '03/10/2025',
-      companyName: 'CÔNG TY CỔ PHẦN VWX',
-      companyLogo: 'VWX',
-      location: 'Hà Nội',
-      experience: '3 năm',
-      salary: '18 - 28 triệu',
-      keywords: ['QA', 'Automation', 'Testing', 'Selenium'],
-      postedDate: 'Đăng 5 ngày trước',
-      campaignCode: '#2366856'
-    },
-    { 
-      id: 'JD-014', 
-      title: 'Nhân viên Phát triển kinh doanh', 
-      position: 'Business Development', 
-      status: 'approved', 
-      createdDate: '01/10/2025', 
-      updatedDate: '04/10/2025',
-      companyName: 'CÔNG TY TNHH YZA',
-      companyLogo: 'YZA',
-      location: 'Hà Nội',
-      experience: '2 năm',
-      salary: 'Thoả thuận',
-      keywords: ['Business Development', 'Kinh doanh', 'Sales'],
-      postedDate: 'Đăng 2 tuần trước',
-      campaignCode: '#2366857'
-    },
+  // Filter options
+  priorityLevelOptions = [
+    { label: 'Tất cả mức độ ưu tiên', value: null },
+    { label: 'Thấp', value: JobPriorityLevel.Low},
+    { label: 'Trung bình', value: JobPriorityLevel.Medium },
+    { label: 'Cao', value: JobPriorityLevel.High },
+    { label: 'Khẩn cấp', value: JobPriorityLevel.Urgent },
   ];
 
-  filteredPostings: EmployeeJobPosting[] = [];
-  paginatedPostings: EmployeeJobPosting[] = [];
+  recruiterLevelOptions = [
+    { label: 'Tất cả cấp độ tuyển dụng', value: null },
+    { label: 'Đã xác thực', value: RecruiterLevel.Verified },
+    { label: 'Đáng tin', value: RecruiterLevel.Trusted },
+    { label: 'Rất đáng tin', value: RecruiterLevel.Premium },
+  ];
+
+  riskJobLevelOptions = [
+    { label: 'Tất cả mức độ rủi ro', value: null },
+    { label: 'Thấp', value: RiskJobLevel.Low },
+    { label: 'Trung bình', value: RiskJobLevel.Normal},
+    { label: 'Cao', value: RiskJobLevel.Hight},
+  ];
+
+  selectedPriorityLevel = this.priorityLevelOptions[0];
+  selectedRecruiterLevel = this.recruiterLevelOptions[0];
+  selectedRiskJobLevel = this.riskJobLevelOptions[0];
+
+  showPriorityDropdown = false;
+  showRecruiterDropdown = false;
+  showRiskJobDropdown = false;
+
+  jobPostings: JobApproveViewDto[] = [];
+  filteredPostings: JobApproveViewDto[] = [];
   itemsPerPage = 7;
   currentPage = 1;
   totalPages = 0;
   totalItems = 0;
-  selectedJob: EmployeeJobPosting | null = null;
+  selectedJob: JobApproveViewDto | null = null;
   showRejectModal = false;
   rejectReason = '';
-  hoveredJobId: string | null = null;
+  hoveredJobId: number | null = null;
   showViewRejectReasonModal = false;
   editingRejectReason = false;
-  viewingRejectReasonJob: EmployeeJobPosting | null = null;
-  
+  viewingRejectReasonJob: JobApproveViewDto | null = null;
+  isLoading = false;
+
   // Toast notification properties
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private jobPostService: JobPostService
+  ) {}
 
   ngOnInit(): void {
-    // Initial check
-    this.checkSidebarState();
-    
-    // Use ResizeObserver to detect sidebar width changes (including hover)
-    const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    if (sidebar) {
-      this.resizeObserver = new ResizeObserver(() => {
-        this.checkSidebarState();
-      });
-      this.resizeObserver.observe(sidebar);
-    }
-    
-    // Also listen to mouse events on sidebar to catch hover state changes
-    if (sidebar) {
-      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
-      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
-    }
-    
-    // Periodic check as fallback (more frequent for hover detection)
-    this.sidebarCheckInterval = setInterval(() => {
-      this.checkSidebarState();
-    }, 50);
-
-    this.updateFilteredPostings();
-    this.updateSummaryCounts();
+    this.initSidebarObserver();
+    this.loadJobPostings();
   }
 
   ngOnDestroy(): void {
@@ -369,22 +104,66 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  //#region API Calls
+
+  private loadJobPostings(): void {
+    this.isLoading = true;
+    const filterDto: JobFilterDto = {
+      priorityLevel: this.selectedPriorityLevel.value,
+      recruiterLevel: this.selectedRecruiterLevel.value,
+      riskJobLevel: this.selectedRiskJobLevel.value,
+      page: this.currentPage,
+      pageSize: this.itemsPerPage,
+    };
+
+    this.jobPostService.showJobPostNeedApproveByDto(filterDto).subscribe({
+      next: (data) => {
+        this.jobPostings = data;
+        this.filteredPostings = data;
+        this.totalItems = data.length;
+        this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
+        this.updateSummaryCounts();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading job postings:', error);
+        this.showErrorToast('Không thể tải danh sách tin tuyển dụng');
+        this.isLoading = false;
+      },
+    });
+  }
+
+  //#endregion
+
+  //#region Sidebar & UI
+
+  private initSidebarObserver(): void {
+    this.checkSidebarState();
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.checkSidebarState();
+      });
+      this.resizeObserver.observe(sidebar);
+      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
+      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
+    }
+    this.sidebarCheckInterval = setInterval(() => {
+      this.checkSidebarState();
+    }, 50);
+  }
+
   private checkSidebarState(): void {
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
       const rect = sidebar.getBoundingClientRect();
       const width = rect.width;
-      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
       this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
-      // Always use the actual width from DOM (includes hover state)
-      const newWidth = Math.round(width); // Round to avoid floating point issues
-      
-      // Always update to trigger change detection (needed for inline styles)
+      const newWidth = Math.round(width);
       if (this.sidebarWidth !== newWidth) {
         this.sidebarWidth = newWidth;
       }
     } else {
-      // Default collapsed width if sidebar not found
       this.sidebarWidth = 72;
     }
   }
@@ -395,229 +174,104 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   }
 
   getModalPaddingLeft(): string {
-    if (window.innerWidth <= 768) {
-      return '0';
-    }
+    if (window.innerWidth <= 768) return '0';
     return `${this.sidebarWidth}px`;
   }
 
   getModalMaxWidth(): string {
     const viewportWidth = window.innerWidth;
-    if (viewportWidth <= 768) {
-      return 'calc(100% - 40px)';
-    }
+    if (viewportWidth <= 768) return 'calc(100% - 40px)';
     const overlayPadding = 40;
     const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
     return `${Math.min(500, availableWidth)}px`;
   }
 
   getPageMarginLeft(): string {
-    if (window.innerWidth <= 768) {
-      return '0';
-    }
+    if (window.innerWidth <= 768) return '0';
     return `${this.sidebarWidth}px`;
   }
 
   getPageWidth(): string {
-    if (window.innerWidth <= 768) {
-      return '100%';
-    }
+    if (window.innerWidth <= 768) return '100%';
     return `calc(100% - ${this.sidebarWidth}px)`;
   }
 
   getBreadcrumbLeft(): string {
-    if (window.innerWidth <= 768) {
-      return '0';
-    }
+    if (window.innerWidth <= 768) return '0';
     return `${this.sidebarWidth}px`;
   }
 
   getBreadcrumbWidth(): string {
-    if (window.innerWidth <= 768) {
-      return '100%';
-    }
+    if (window.innerWidth <= 768) return '100%';
     return `calc(100% - ${this.sidebarWidth}px)`;
   }
 
   getContentMaxWidth(): string {
     const viewportWidth = window.innerWidth;
-    if (viewportWidth <= 768) {
-      return '100%';
-    }
-    const padding = 48; // 24px mỗi bên
+    if (viewportWidth <= 768) return '100%';
+    const padding = 48;
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
-  }
-
-  onSearchChange(term: string): void {
-    this.searchTerm = term;
-    this.currentPage = 1;
-    this.updateFilteredPostings();
-  }
-
-  toggleStatusDropdown(): void {
-    this.showStatusDropdown = !this.showStatusDropdown;
-  }
-
-  selectStatus(option: { label: string; value: string }): void {
-    this.selectedStatus = option;
-    this.showStatusDropdown = false;
-    this.currentPage = 1;
-    this.updateFilteredPostings();
-  }
-
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.updatePaginatedPostings();
-  }
-
-  getStatusBadgeClass(status: JobStatus): string {
-    return `status-badge ${status}`;
-  }
-
-  getStatusLabel(status: JobStatus): string {
-    switch (status) {
-      case 'pending':
-        return 'Chờ duyệt';
-      case 'approved':
-        return 'Đã duyệt';
-      case 'rejected':
-        return 'Từ chối';
-      default:
-        return status;
-    }
-  }
-
-  getCompanyLogoUrl(logoOrName: string): string {
-    // Try to get logo image, fallback to placeholder
-    const logoMap: { [key: string]: string } = {
-      'airCloset': 'assets/images/companies/aircloset.png',
-      'FOXAi': 'assets/images/companies/foxai.png',
-      'LIFESTYLE': 'assets/images/companies/lifestyle.png',
-      'Jarvis': 'assets/images/companies/jarvis.png',
-    };
-    
-    if (logoMap[logoOrName]) {
-      return logoMap[logoOrName];
-    }
-    
-    // Generate SVG with first letter as fallback
-    const firstLetter = logoOrName.charAt(0).toUpperCase();
-    const svg = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F3F4F6" rx="8"/><text x="50%" y="50%" font-size="24" font-weight="700" fill="#6B7280" text-anchor="middle" dy=".3em" font-family="Arial, sans-serif">${firstLetter}</text></svg>`;
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-  }
-
-  private updateFilteredPostings(): void {
-    const term = this.searchTerm.trim().toLowerCase();
-    this.filteredPostings = this.jobPostings.filter((posting) => {
-      const matchesSearch =
-        !term ||
-        posting.title.toLowerCase().includes(term) ||
-        posting.position.toLowerCase().includes(term) ||
-        posting.id.toLowerCase().includes(term) ||
-        posting.companyName.toLowerCase().includes(term) ||
-        posting.keywords.some(k => k.toLowerCase().includes(term));
-
-      const matchesStatus =
-        this.selectedStatus.value === 'all' ||
-        posting.status === this.selectedStatus.value;
-
-      return matchesSearch && matchesStatus;
-    });
-
-    this.totalItems = this.filteredPostings.length;
-    this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-    this.updatePaginatedPostings();
-    this.updateSummaryCounts();
-  }
-
-  private updateSummaryCounts(): void {
-    const total = this.jobPostings.length;
-    const pending = this.jobPostings.filter(p => p.status === 'pending').length;
-    const approved = this.jobPostings.filter(p => p.status === 'approved').length;
-    const rejected = this.jobPostings.filter(p => p.status === 'rejected').length;
-
-    this.summaryCards[0].value = total;
-    this.summaryCards[1].value = pending;
-    this.summaryCards[2].value = approved;
-    this.summaryCards[3].value = rejected;
-  }
-
-  private updatePaginatedPostings(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedPostings = this.filteredPostings.slice(
-      startIndex,
-      startIndex + this.itemsPerPage
-    );
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.status-dropdown-wrapper')) {
-      this.showStatusDropdown = false;
+    if (!target.closest('.filter-dropdown-wrapper')) {
+      this.showPriorityDropdown = false;
+      this.showRecruiterDropdown = false;
+      this.showRiskJobDropdown = false;
     }
   }
 
-  onJobItemClick(posting: EmployeeJobPosting): void {
-    this.selectedJob = posting;
+  //#endregion
+
+  //#region Filter & Dropdown
+
+  togglePriorityDropdown(): void {
+    this.showPriorityDropdown = !this.showPriorityDropdown;
+    this.showRecruiterDropdown = false;
+    this.showRiskJobDropdown = false;
   }
 
-  onCloseDetail(): void {
-    this.selectedJob = null;
+  toggleRecruiterDropdown(): void {
+    this.showRecruiterDropdown = !this.showRecruiterDropdown;
+    this.showPriorityDropdown = false;
+    this.showRiskJobDropdown = false;
   }
 
-  onApprove(): void {
-    if (this.selectedJob) {
-      this.selectedJob.status = 'approved';
-      this.selectedJob.updatedDate = new Date().toLocaleDateString('vi-VN');
-      // Update in main array
-      const index = this.jobPostings.findIndex(j => j.id === this.selectedJob!.id);
-      if (index > -1) {
-        this.jobPostings[index].status = 'approved';
-        this.jobPostings[index].updatedDate = this.selectedJob.updatedDate;
-      }
-      this.updateFilteredPostings();
-      this.updateSummaryCounts();
-      this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
-    }
+  toggleRiskJobDropdown(): void {
+    this.showRiskJobDropdown = !this.showRiskJobDropdown;
+    this.showPriorityDropdown = false;
+    this.showRecruiterDropdown = false;
   }
 
-  onReject(): void {
-    this.showRejectModal = true;
-    this.rejectReason = this.selectedJob?.rejectReason || '';
+  selectPriorityLevel(option: { label: string; value: any }): void {
+    this.selectedPriorityLevel = option;
+    this.showPriorityDropdown = false;
+    this.currentPage = 1;
+    this.loadJobPostings();
   }
 
-  onCloseRejectModal(): void {
-    this.showRejectModal = false;
-    this.rejectReason = '';
+  selectRecruiterLevel(option: { label: string; value: any }): void {
+    this.selectedRecruiterLevel = option;
+    this.showRecruiterDropdown = false;
+    this.currentPage = 1;
+    this.loadJobPostings();
   }
 
-  onSubmitReject(): void {
-    if (this.selectedJob && this.rejectReason.trim()) {
-      this.selectedJob.status = 'rejected';
-      this.selectedJob.rejectReason = this.rejectReason.trim();
-      this.selectedJob.updatedDate = new Date().toLocaleDateString('vi-VN');
-      // Update in main array
-      const index = this.jobPostings.findIndex(j => j.id === this.selectedJob!.id);
-      if (index > -1) {
-        this.jobPostings[index].status = 'rejected';
-        this.jobPostings[index].rejectReason = this.rejectReason.trim();
-        this.jobPostings[index].updatedDate = this.selectedJob.updatedDate;
-      }
-      this.updateFilteredPostings();
-      this.updateSummaryCounts();
-      this.onCloseRejectModal();
-      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
-    } else {
-      this.showErrorToast('Vui lòng nhập lý do từ chối');
-    }
+  selectRiskJobLevel(option: { label: string; value: any }): void {
+    this.selectedRiskJobLevel = option;
+    this.showRiskJobDropdown = false;
+    this.currentPage = 1;
+    this.loadJobPostings();
   }
 
-  onJobItemMouseEnter(jobId: string): void {
+  //#endregion
+
+  //#region Helper Methods
+
+  onJobItemMouseEnter(jobId: number): void {
     this.hoveredJobId = jobId;
   }
 
@@ -625,11 +279,140 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     this.hoveredJobId = null;
   }
 
-  onViewRejectReason(posting: EmployeeJobPosting): void {
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadJobPostings();
+  }
+
+  getStatusBadgeClass(status: JobStatus): string {
+    const statusMap: { [key: number]: string } = {
+      [JobStatus.Pending]: 'status-badge pending',
+      [JobStatus.Open]: 'status-badge approved',
+      [JobStatus.Rejected]: 'status-badge rejected',
+    };
+    return statusMap[status] || 'status-badge';
+  }
+
+  getStatusLabel(status: JobStatus): string {
+    const statusMap: { [key: number]: string } = {
+      [JobStatus.Pending]: 'Chờ duyệt',
+      [JobStatus.Open]: 'Đã duyệt',
+      [JobStatus.Rejected]: 'Từ chối',
+    };
+    return statusMap[status] || 'Không xác định';
+  }
+
+  getSalaryRangeText(job: JobApproveViewDto): string {
+    if (job.salaryDeal) return 'Thỏa thuận';
+    if (job.salaryMin && job.salaryMax) {
+      return `${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()} VNĐ`;
+    }
+    if (job.salaryMin) return `Từ ${job.salaryMin.toLocaleString()} VNĐ`;
+    if (job.salaryMax) return `Đến ${job.salaryMax.toLocaleString()} VNĐ`;
+    return 'Thỏa thuận';
+  }
+
+  getExperienceText(job: JobApproveViewDto): string {
+    return job.experienceText || 'Không yêu cầu';
+  }
+
+  getLocationText(job: JobApproveViewDto): string {
+    return job.provinceName || job.workLocation || 'Chưa cập nhật';
+  }
+
+  //#endregion
+
+  //#region Job Management
+
+  private updateSummaryCounts(): void {
+    const total = this.jobPostings.length;
+    const pending = this.jobPostings.filter(p => p.status === JobStatus.Pending).length;
+    const approved = this.jobPostings.filter(p => p.status === JobStatus.Open).length;
+    const rejected = this.jobPostings.filter(p => p.status === JobStatus.Rejected).length;
+
+    this.summaryCards[0].value = total;
+    this.summaryCards[1].value = pending;
+    this.summaryCards[2].value = approved;
+    this.summaryCards[3].value = rejected;
+  }
+
+  getCompanyLogoUrl(job: JobApproveViewDto): string {
+    if (job.companyImageUrl) {
+      return job.companyImageUrl;
+    }
+    const firstLetter = (job.companyName || 'C').charAt(0).toUpperCase();
+    const svg = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F3F4F6" rx="8"/><text x="50%" y="50%" font-size="24" font-weight="700" fill="#6B7280" text-anchor="middle" dy=".3em" font-family="Arial, sans-serif">${firstLetter}</text></svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  }
+
+  onCloseDetail(): void {
+    this.selectedJob = null;
+  }
+
+  viewDetail(posting: JobApproveViewDto): void {
+    this.router.navigate(['/employee/manage-recruitment-information-detail'], {
+      queryParams: { id: posting.id },
+    });
+  }
+
+  onJobItemClick(posting: JobApproveViewDto): void {
+    this.selectedJob = posting;
+  }
+
+  //#endregion
+
+  //#region Approve/Reject
+
+  onApprove(): void {
+  if (!this.selectedJob) return;
+
+  this.jobPostService.approveJobPost(this.selectedJob.id).subscribe({
+    next: () => {
+      this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
+      this.loadJobPostings();
+    },
+    error: () => {
+      this.showErrorToast('Duyệt tin tuyển dụng thất bại');
+    }
+  });
+}
+
+
+ onReject(): void {
+  this.showRejectModal = true;
+  this.rejectReason = this.selectedJob?.rejectedReason || '';
+}
+
+
+  onCloseRejectModal(): void {
+    this.showRejectModal = false;
+    this.rejectReason = '';
+  }
+
+ onSubmitReject(): void {
+  if (!this.selectedJob || !this.rejectReason.trim()) {
+    this.showErrorToast('Vui lòng nhập lý do từ chối');
+    return;
+  }
+
+  this.jobPostService.rejectJobPost(this.selectedJob.id).subscribe({
+    next: () => {
+      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+      this.onCloseRejectModal();
+      this.loadJobPostings();
+    },
+    error: () => {
+      this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+    }
+  });
+}
+
+
+  onViewRejectReason(posting: JobApproveViewDto): void {
     this.viewingRejectReasonJob = posting;
     this.showViewRejectReasonModal = true;
     this.editingRejectReason = false;
-    this.rejectReason = posting.rejectReason || '';
+    this.rejectReason = posting.rejectedReason || '';
   }
 
   onCloseViewRejectReasonModal(): void {
@@ -645,27 +428,23 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
 
   onSaveRejectReason(): void {
     if (this.viewingRejectReasonJob && this.rejectReason.trim()) {
-      this.viewingRejectReasonJob.rejectReason = this.rejectReason.trim();
-      // Update in main array
-      const index = this.jobPostings.findIndex(j => j.id === this.viewingRejectReasonJob!.id);
-      if (index > -1) {
-        this.jobPostings[index].rejectReason = this.rejectReason.trim();
-      }
-      // Update in filtered array if exists
-      const filteredIndex = this.filteredPostings.findIndex(j => j.id === this.viewingRejectReasonJob!.id);
-      if (filteredIndex > -1) {
-        this.filteredPostings[filteredIndex].rejectReason = this.rejectReason.trim();
-      }
-      // Update selectedJob if it's the same job
-      if (this.selectedJob && this.selectedJob.id === this.viewingRejectReasonJob.id) {
-        this.selectedJob.rejectReason = this.rejectReason.trim();
-      }
+      // TODO: Call API to update reject reason
       this.editingRejectReason = false;
       this.showSuccessToast('Đã cập nhật lý do từ chối thành công');
+      this.loadJobPostings();
     } else {
       this.showErrorToast('Vui lòng nhập lý do từ chối');
     }
   }
+
+  onCancelEditRejectReason(): void {
+    this.editingRejectReason = false;
+    this.rejectReason = this.viewingRejectReasonJob?.rejectedReason || '';
+  }
+
+  //#endregion
+
+  //#region Toast
 
   showSuccessToast(message: string): void {
     this.toastMessage = message;
@@ -683,14 +462,5 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
-  onCancelEditRejectReason(): void {
-    this.editingRejectReason = false;
-    this.rejectReason = this.viewingRejectReasonJob?.rejectReason || '';
-  }
-
-  viewDetail(posting: EmployeeJobPosting): void {
-    this.router.navigate(['/employee/manage-recruitment-information-detail'], {
-      queryParams: { id: posting.id }
-    });
-  }
+  //#endregion
 }

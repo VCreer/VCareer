@@ -27,8 +27,16 @@ namespace VCareer.Constants.JobConstant
         Closed = 3,     // đóng chủ đích của recruiter
         Expired = 4,    // đóng nhưng là thụ động 
         Rejected = 5,   // bị employee từ chối cho phép đăng 
-        Deleted = 7     // job bị xóa mềm 
+        Deleted = 7,     // job bị xóa mềm 
     }
+
+    public enum RecruitmentCampaignStatus
+    {
+        Deleted = 0,
+        Active = 1,
+        Closed = 2,
+    }
+
 
     public enum PositionType
     {
@@ -75,9 +83,10 @@ namespace VCareer.Constants.JobConstant
     }
     public enum JobPriorityLevel
     {
-        Normal = 0,
-        Feature = 1, //là mua gói nhưng ko có vip
-        Vip = 2
+        Low = 0,
+        Medium = 1,
+        High = 2,
+        Urgent = 3
 
     }
 
@@ -107,6 +116,18 @@ namespace VCareer.Constants.JobConstant
     {
         public const int SALARY_MIN = 100000;
         public static int SALARY_MAX = 100000000;
+    }
+
+    public enum SalaryFilterType
+    {
+        All = 0,        // Tất cả
+        Under10 = 1,    // Dưới 10 triệu
+        Range10To15 = 2,// 10 - 15 triệu
+        Range15To20 = 3,// 15 - 20 triệu
+        Range20To30 = 4,// 20 - 30 triệu
+        Range30To50 = 5,// 30 - 50 triệu
+        Over50 = 6,     // Trên 50 triệu
+        Deal = 7        // Thỏa thuận
     }
 
     public enum RiskJobLevel
