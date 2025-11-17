@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -41,6 +43,8 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
+using Volo.Abp.Caching;
+using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Identity;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
@@ -54,6 +58,8 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
 using System.IdentityModel.Tokens.Jwt;
+using VCareer.HttpApi.Host.Swagger;
+
 
 namespace VCareer;
 
@@ -63,57 +69,32 @@ namespace VCareer;
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
-      typeof(VCareerApplicationModule),
+    typeof(VCareerApplicationModule),
     typeof(VCareerEntityFrameworkCoreModule),
-    typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpBlobStoringFileSystemModule)
+
     )]
 public class VCareerHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-        var hostingEnvironment = context.Services.GetHostingEnvironment();
-        var configuration = context.Services.GetConfiguration();
-
-        PreConfigure<OpenIddictBuilder>(builder =>
-        {
-            builder.AddValidation(options =>
-            {
-                options.AddAudiences("VCareer");
-                options.UseLocalServer();
-                options.UseAspNetCore();
-            });
-        });
-
-        if (!hostingEnvironment.IsDevelopment())
-        {
-            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-            {
-                options.AddDevelopmentEncryptionAndSigningCertificate = false;
-            });
-
-            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
-            {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", configuration["AuthServer:CertificatePassPhrase"]!);
-                serverBuilder.SetIssuer(new Uri(configuration["AuthServer:Authority"]!));
-            });
-        }
+        /*  Configure<AbpAntiForgeryOptions>(options =>
+          {
+              options.AutoValidate = false;
+          });*/
     }
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-
-
         if (!configuration.GetValue<bool>("App:DisablePII"))
         {
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.LogCompleteSecurityArtifact = true;
         }
-
         if (!configuration.GetValue<bool>("AuthServer:RequireHttpsMetadata"))
         {
             Configure<OpenIddictServerAspNetCoreOptions>(options =>
@@ -138,196 +119,57 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
-        //  ConfigureClaims();
+        ConfigureDistributedCache(context, configuration);
+        // Bind FileBlobStorageConfig -> FilePolicyConfigs for file services
+        ConfigureFilePolicyConfigs(configuration);
     }
-
-
 
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng
     private void ConfigureJwtOptions(IConfiguration configuration)
     {
         Configure<JwtOptions>(configuration.GetSection("Authentication:Jwt"));
     }
-
     private void ConfigureGoogleOptions(IConfiguration configuration)
     {
         Configure<VCareer.OptionConfigs.GoogleOptions>(configuration.GetSection("Authentication:Google"));
     }
+
+    private void ConfigureFilePolicyConfigs(IConfiguration configuration)
+    {
+        Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
+    }
+
+
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        // KHÔNG ForwardIdentityAuthenticationForBearer vì nó sẽ force tất cả JWT Bearer authentication 
-        // đi qua OpenIddict validation (không validate được custom JWT tokens)
-        // context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-
+        //    context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
         });
 
-        //config DI token generator 
         context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
 
-        // Cấu hình Authorization để đảm bảo [Authorize] hoạt động đúng
-        context.Services.AddAuthorization(options =>
-        {
-            // Đảm bảo default policy yêu cầu authenticated user
-            if (options.DefaultPolicy == null)
-            {
-                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            }
-        });
-
-        // Cấu hình JWT Bearer Authentication cho custom JWT tokens
-        // Đặt JWT Bearer làm default authentication scheme để validate custom JWT tokens
-        context.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            // Đảm bảo unauthenticated requests được reject
-            options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-        {
-            // Đảm bảo token được save vào HttpContext để có thể access sau
-            options.SaveToken = true;
-
-            // Lấy JwtOptions từ configuration
-            var jwtSection = configuration.GetSection("Authentication:Jwt");
-            var jwtKey = jwtSection["Key"];
-            var jwtIssuer = jwtSection["Issuer"];
-            var jwtAudience = jwtSection["Audience"];
-
-            if (!string.IsNullOrEmpty(jwtKey) && !string.IsNullOrEmpty(jwtIssuer) && !string.IsNullOrEmpty(jwtAudience))
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtIssuer,
-                    ValidateAudience = true,
-                    ValidAudience = jwtAudience,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey)),
-                    ValidateIssuerSigningKey = true,
-                    // Map claims cho ABP Framework
-                    NameClaimType = ClaimTypes.NameIdentifier,
-                    RoleClaimType = ClaimTypes.Role,
-                    // KHÔNG set RequireExpirationTime = false - để đảm bảo token có expiration
-                    RequireExpirationTime = true,
-                    ClockSkew = TimeSpan.Zero // Không cho phép clock skew để tránh vấn đề về thời gian
-                };
-            }
-
-            //options.Events = new JwtBearerEvents
-            //{
-            //    OnTokenValidated = async context =>
-            //    {
-            //        // Đảm bảo claims được map đúng cho ABP Framework
-            //        var identity = context.Principal?.Identity as ClaimsIdentity;
-            //        if (identity != null)
-            //        {
-            //            // QUAN TRỌNG: Đảm bảo identity được đánh dấu là authenticated
-            //            // Nếu không có, JWT Bearer sẽ không set IsAuthenticated = true
-            //            if (!identity.IsAuthenticated)
-            //            {
-            //                // Tạo lại identity với authentication type "Bearer"
-            //                var newIdentity = new ClaimsIdentity(identity.Claims, "Bearer", identity.NameClaimType, identity.RoleClaimType);
-            //                context.Principal = new ClaimsPrincipal(newIdentity);
-            //                identity = newIdentity;
-            //            }
-
-            //            // QUAN TRỌNG: Đảm bảo HttpContext.User được set
-            //            if (context.HttpContext != null && context.Principal != null)
-            //            {
-            //                context.HttpContext.User = context.Principal;
-            //            }
-
-            //            System.Console.WriteLine($"[JWT Bearer] Token validated. IsAuthenticated: {identity.IsAuthenticated}, Claims count: {identity.Claims.Count()}");
-
-            //            // Tìm UserId từ các claims có thể có
-            //            var userIdClaim = identity.FindFirst(AbpClaimTypes.UserId) 
-            //                ?? identity.FindFirst(ClaimTypes.NameIdentifier)
-            //                ?? identity.FindFirst("sub")
-            //                ?? identity.FindFirst(JwtRegisteredClaimNames.Sub);
-
-            //            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
-            //            {
-            //                System.Console.WriteLine($"[JWT Bearer] Found UserId: {userId} from claim type: {userIdClaim.Type}");
-
-            //                // Đảm bảo có AbpClaimTypes.UserId claim (QUAN TRỌNG cho GetId())
-            //                if (!identity.HasClaim(c => c.Type == AbpClaimTypes.UserId))
-            //                {
-            //                    identity.AddClaim(new Claim(AbpClaimTypes.UserId, userId.ToString()));
-            //                    System.Console.WriteLine($"[JWT Bearer] Added AbpClaimTypes.UserId claim: {userId}");
-            //                }
-            //            }
-            //            else
-            //            {
-            //                System.Console.WriteLine("[JWT Bearer] UserId claim not found or invalid!");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            System.Console.WriteLine("[JWT Bearer] Identity is null!");
-            //        }
-
-            //        await Task.CompletedTask;
-            //    },
-            //    OnAuthenticationFailed = context =>
-            //    {
-            //        // Log lỗi authentication để debug
-            //        var exception = context.Exception;
-            //        // Log vào console để debug
-            //        System.Console.WriteLine($"[JWT Bearer] Authentication failed: {exception?.Message}");
-            //        if (exception?.InnerException != null)
-            //        {
-            //            System.Console.WriteLine($"[JWT Bearer] Inner exception: {exception.InnerException.Message}");
-            //        }
-            //        // KHÔNG handle response ở đây - để authorization middleware xử lý
-            //        // Nếu handle response, sẽ trả về 200 thay vì 401
-            //        return Task.CompletedTask;
-            //    },
-            //    OnMessageReceived = context =>
-            //    {
-            //        // Debug: Kiểm tra xem token có được gửi trong header không
-            //        var token = context.Token;
-            //        if (string.IsNullOrEmpty(token))
-            //        {
-            //            System.Console.WriteLine("[JWT Bearer] No token found in Authorization header");
-            //        }
-            //        else
-            //        {
-            //            System.Console.WriteLine($"[JWT Bearer] Token received: {token.Substring(0, Math.Min(20, token.Length))}...");
-            //        }
-            //        return Task.CompletedTask;
-            //    },
-            //    OnChallenge = context =>
-            //    {
-            //        // Set status code 401 cho unauthorized requests
-            //        // QUAN TRỌNG: Handle response và set status code + body
-            //        context.HandleResponse();
-            //        context.Response.StatusCode = 401;
-            //        context.Response.Headers.Append("WWW-Authenticate", "Bearer");
-
-            //        // Đảm bảo có response body để tránh empty body
-            //        var responseBody = System.Text.Json.JsonSerializer.Serialize(new
-            //        {
-            //            error = "Unauthorized",
-            //            error_description = "Authentication required. Please provide a valid token."
-            //        });
-
-            //        context.Response.ContentType = "application/json";
-            //        context.Response.WriteAsync(responseBody);
-
-            //        return Task.CompletedTask;
-            //    }
-            //};
-        });
+        // cấu hình jwt
+        context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+      .AddJwtBearer(options =>
+      {
+          var configuration = context.Services.GetConfiguration();
+          options.TokenValidationParameters = new TokenValidationParameters
+          {
+              ValidateIssuer = true,
+              ValidateAudience = true,
+              ValidateLifetime = true,
+              ValidateIssuerSigningKey = true,
+              ValidIssuer = configuration["Authentication:Jwt:Issuer"],
+              ValidAudience = configuration["Authentication:Jwt:Audience"],
+              IssuerSigningKey = new SymmetricSecurityKey(
+                  Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
+              ),
+          };
+      });
+        context.Services.AddAuthorization();
     }
-
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
@@ -338,7 +180,6 @@ public class VCareerHttpApiHostModule : AbpModule
             options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ?? Array.Empty<string>());
         });
     }
-
     private void ConfigureBundles()
     {
         Configure<AbpBundlingOptions>(options =>
@@ -360,7 +201,6 @@ public class VCareerHttpApiHostModule : AbpModule
             );
         });
     }
-
     private void ConfigureBlobStorings(ServiceConfigurationContext context)
     {
         Configure<AbpBlobStoringOptions>(options =>
@@ -400,8 +240,6 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         });
     }
-
-
     private void ConfigureVirtualFileSystem(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
@@ -417,38 +255,13 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         }
     }
-
     private void ConfigureConventionalControllers()
     {
         Configure<AbpAspNetCoreMvcOptions>(options =>
         {
             options.ConventionalControllers.Create(typeof(VCareerApplicationModule).Assembly);
         });
-
-        // Disable antiforgery token validation cho tất cả API controllers
-        // ABP Framework sẽ tự động validate antiforgery token cho các non-API controllers
-        Configure<AbpAntiForgeryOptions>(options =>
-        {
-            // Không validate antiforgery token cho các API controllers
-            // Các API endpoints đã có JWT Bearer authentication nên không cần antiforgery
-            options.AutoValidateFilter = type =>
-            {
-                // Nếu là API controller (namespace chứa "HttpApi" hoặc FullName chứa "HttpApi.Controllers")
-                // thì KHÔNG validate antiforgery (return false)
-                // Ngược lại, validate antiforgery (return true)
-                if (type.Namespace != null && type.Namespace.Contains("HttpApi"))
-                {
-                    return false; // Không validate cho API controllers
-                }
-                if (type.FullName != null && type.FullName.Contains("HttpApi.Controllers"))
-                {
-                    return false; // Không validate cho API controllers
-                }
-                return true; // Validate cho các controllers khác
-            };
-        });
     }
-
     private static void ConfigureSwagger(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddAbpSwaggerGen(
@@ -458,10 +271,21 @@ public class VCareerHttpApiHostModule : AbpModule
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
 
+                // Configure Swagger để handle file uploads (IFormFile)
+                // Map IFormFile to binary string for Swagger
+                options.MapType<Microsoft.AspNetCore.Http.IFormFile>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
+
+                // Add OperationFilter để handle IFormFile trong DTOs
+                options.OperationFilter<FileUploadOperationFilter>();
+
                 // Thêm JWT Bearer Authentication vào Swagger
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\nExample: \"Bearer 12345abcdef\"",
+                    Description = "Nhập 'Bearer {token}' (ví dụ: Bearer abc123...)",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
@@ -471,22 +295,24 @@ public class VCareerHttpApiHostModule : AbpModule
 
                 // Áp dụng security scheme cho tất cả endpoints
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
                         },
-                        Array.Empty<string>()
-                    }
-                });
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header
+                    },
+                    new List<string>()
+                }
+            });
             });
     }
-
     private void ConfigureCors(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.AddCors(options =>
@@ -508,12 +334,24 @@ public class VCareerHttpApiHostModule : AbpModule
             });
         });
     }
-
     private void ConfigureHealthChecks(ServiceConfigurationContext context)
     {
         context.Services.AddVCareerHealthChecks();
     }
+    private void ConfigureDistributedCache(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        context.Services.AddDistributedMemoryCache();
 
+        Configure<AbpDistributedCacheOptions>(options =>
+        {
+            options.KeyPrefix = "VCareerCache:";
+            options.GlobalCacheEntryOptions = new DistributedCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(20),
+            };
+        });
+
+    }
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
@@ -534,14 +372,15 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseRouting();
+
+        // Enable static files serving from wwwroot
+        app.UseStaticFiles();
+
         app.MapAbpStaticAssets();
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();
-        // Tạm thời comment UseAbpOpenIddictValidation để test JWT Bearer authentication
-        // Nếu bạn cần OpenIddict cho các tính năng khác, có thể bật lại sau
-        // app.UseAbpOpenIddictValidation();
 
         if (MultiTenancyConsts.IsEnabled)
         {
@@ -549,8 +388,8 @@ public class VCareerHttpApiHostModule : AbpModule
         }
 
         app.UseUnitOfWork();
-        app.UseDynamicClaims();
         app.UseAuthorization();
+        app.UseDynamicClaims();
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>

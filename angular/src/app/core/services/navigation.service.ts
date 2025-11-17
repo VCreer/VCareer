@@ -63,6 +63,17 @@ export class NavigationService {
     }
   }
 
+  // Đăng nhập recruiter mà không redirect đến verify (dùng cho HR Staff)
+  loginAsRecruiterWithoutVerify() {
+    this.isLoggedInSubject.next(true);
+    this.userRoleSubject.next('recruiter');
+    // Lưu trạng thái vào localStorage
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userRole', 'recruiter');
+    // HR Staff không cần verify, luôn redirect đến trang recruiter-setting
+    this.router.navigate(['/recruiter/recruiter-setting']);
+  }
+
   // Đăng xuất
   logout() {
     this.isLoggedInSubject.next(false);

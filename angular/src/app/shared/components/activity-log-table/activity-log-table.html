@@ -1,0 +1,20 @@
+<div class="table-wrapper">
+  <table class="activity-log-table">
+    <thead>
+      <tr>
+        <th>Mã nhân viên</th>
+        <th>Tên nhân viên</th>
+        <th>Thời gian</th>
+        <th>Chi tiết hoạt động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of activityLogs">
+        <td class="staff-id">{{ log.staffId }}</td>
+        <td class="staff-name">{{ log.staffName }}</td>
+        <td class="activity-time">{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="activity-detail">{{ log.detail }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

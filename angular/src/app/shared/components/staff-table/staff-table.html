@@ -1,0 +1,39 @@
+<div class="table-wrapper">
+  <table class="staff-table">
+    <thead>
+      <tr>
+        <th>Mã nhân viên</th>
+        <th>Họ và tên</th>
+        <th>Email</th>
+        <th>Điện thoại</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let staff of staffList">
+        <td class="staff-id">{{ staff.id }}</td>
+        <td class="staff-name">{{ staff.name }}</td>
+        <td class="staff-email">
+          <i class="fas fa-envelope"></i>
+          {{ staff.email }}
+        </td>
+        <td class="staff-phone">
+          <i class="fas fa-phone"></i>
+          {{ staff.phone }}
+        </td>
+        <td class="staff-status">
+          <span class="status-badge" [ngClass]="getStatusBadgeClass(staff.status)">
+            {{ getStatusLabel(staff.status) }}
+          </span>
+        </td>
+        <td class="staff-actions">
+          <button class="action-btn" (click)="onViewStaff(staff)">
+            <i class="fas fa-eye"></i>
+            Xem
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

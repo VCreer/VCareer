@@ -21,3 +21,7 @@ export { SidebarComponent } from './sidebar/sidebar';
 export { EnableJobSearchModalComponent } from './enable-job-search-modal/enable-job-search-modal';
 export { PaginationComponent } from './pagination/pagination';
 export { LoginModalComponent } from './login-modal/login-modal';
+export { StaffTableComponent, HRStaff } from './staff-table/staff-table';
+export { ActivityLogTableComponent, ActivityLog } from './activity-log-table/activity-log-table';
+export { ReportMetricCardComponent, MetricData } from './report-metric-card/report-metric-card';
+export { StatusItemComponent, StatusItemData } from './status-item/status-item';

@@ -11,6 +11,7 @@ import {
   ToastNotificationComponent 
 } from '../../../../shared/components';
 import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
 
 @Component({
   selector: 'app-recruiter-login',
@@ -31,7 +32,8 @@ export class RecruiterLoginComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private navigationService = inject(NavigationService);
-   private proxyAuth = inject(ProxyAuthService);
+  private proxyAuth = inject(ProxyAuthService);
+  private teamManagementService = inject(TeamManagementService);
 
   loginForm: FormGroup;
   isLoading = false;
@@ -146,9 +148,26 @@ export class RecruiterLoginComponent {
         localStorage.setItem('user_role', 'recruiter');
       }
 
-      // Điều hướng
+      // Điều hướng - kiểm tra xem có phải HR Staff không
       setTimeout(() => {
-        this.navigationService.loginAsRecruiter();
+        // Kiểm tra xem user có phải HR Staff (IsLead = false) không
+        this.teamManagementService.getCurrentUserInfo().subscribe({
+          next: (userInfo) => {
+            // HR Staff là user có IsLead = false, không được redirect đến recruiter-verify
+            if (!userInfo.isLead) {
+              // HR Staff: redirect đến trang chủ recruiter, không qua verify
+              this.navigationService.loginAsRecruiterWithoutVerify();
+            } else {
+              // Leader: sử dụng logic redirect bình thường (có thể redirect đến verify nếu chưa verify)
+              this.navigationService.loginAsRecruiter();
+            }
+          },
+          error: (error) => {
+            console.error('Error loading user info after login:', error);
+            // Nếu không lấy được thông tin, sử dụng logic redirect bình thường (fallback)
+            this.navigationService.loginAsRecruiter();
+          }
+        });
       }, 1500);
     },
     error: (err) => {

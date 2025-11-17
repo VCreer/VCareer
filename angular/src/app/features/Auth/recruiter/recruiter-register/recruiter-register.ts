@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
-import { LocationApiService, ProvinceDto } from '../../../../apiTest/api/location.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -31,7 +30,6 @@ export class RecruiterRegisterComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private googleAuthService = inject(GoogleAuthService);
-  private locationApi = inject(LocationApiService);
 
   registerForm!: FormGroup;
   isLoading = false;
@@ -39,41 +37,10 @@ export class RecruiterRegisterComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'error';
-  provinces: ProvinceDto[] = [];
-  districts: any[] = [];
-  isLoadingProvinces = false;
 
   ngOnInit(): void {
     this.initializeForm();
     this.googleAuthService.initialize();
-    this.loadProvinces();
-  }
-
-  loadProvinces(): void {
-    this.isLoadingProvinces = true;
-    this.locationApi.getAllProvinces().subscribe({
-      next: (provinces) => {
-        this.provinces = provinces;
-        this.isLoadingProvinces = false;
-      },
-      error: (error) => {
-        console.error('Error loading provinces:', error);
-        this.isLoadingProvinces = false;
-        this.showToastMessage('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại sau.', 'error');
-      }
-    });
-  }
-
-  onProvinceChange(provinceCode: string): void {
-    const code = parseInt(provinceCode, 10);
-    const province = this.provinces.find(p => p.code === code);
-    if (province && province.districts) {
-      this.districts = province.districts;
-      // Reset district selection when province changes
-      this.registerForm.patchValue({ district: '' });
-    } else {
-      this.districts = [];
-    }
   }
 
   private initializeForm(): void {
@@ -151,12 +118,6 @@ export class RecruiterRegisterComponent implements OnInit {
       agreeTerms: 'Đồng ý điều khoản'
     };
     return labels[fieldName] || fieldName;
-  }
-
-  getProvinceName(provinceCode: string): string {
-    const code = parseInt(provinceCode, 10);
-    const province = this.provinces.find(p => p.code === code);
-    return province?.name || '';
   }
 
   showToastMessage(message: string, type: 'success' | 'error'): void {

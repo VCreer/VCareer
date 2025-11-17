@@ -48,7 +48,7 @@ namespace VCareer.Application.Applications
         private readonly ICandidateCvAppService _candidateCvAppService;
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly ICurrentUser _currentUser;
-      
+
         public ApplicationAppService(
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
@@ -77,7 +77,7 @@ namespace VCareer.Application.Applications
             _candidateCvAppService = candidateCvAppService;
             _uploadedCvAppService = uploadedCvAppService;
             _currentUser = currentUser;
-                  }
+        }
 
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)
@@ -106,7 +106,7 @@ namespace VCareer.Application.Applications
             var job = await queryable
                 .Include(j => j.RecruiterProfile)
                 .FirstOrDefaultAsync(j => j.Id == input.JobId);
-            
+
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
@@ -166,7 +166,7 @@ namespace VCareer.Application.Applications
             var job = await queryable
                 .Include(j => j.RecruiterProfile)
                 .FirstOrDefaultAsync(j => j.Id == input.JobId);
-            
+
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
@@ -475,7 +475,7 @@ namespace VCareer.Application.Applications
                 // Download trực tiếp từ blob storage
                 var container = _blobFactory.Create(fileDescriptor.ContainerName);
                 var fileBytes = await container.GetAllBytesAsync(fileDescriptor.StorageName);
-                
+
                 return fileBytes;
             }
 
@@ -544,7 +544,7 @@ namespace VCareer.Application.Applications
                 // Download trực tiếp từ blob storage
                 var container = _blobFactory.Create(fileDescriptor.ContainerName);
                 fileBytes = await container.GetAllBytesAsync(fileDescriptor.StorageName);
-                
+
                 // Xác định content type và file name từ FileDescriptor
                 contentType = fileDescriptor.MimeType ?? "application/pdf";
                 var originalFileName = fileDescriptor.OriginalName ?? uploadedCv.CvName ?? $"CV_{id}";
@@ -553,7 +553,7 @@ namespace VCareer.Application.Applications
                     extension = Path.GetExtension(originalFileName);
                 if (string.IsNullOrEmpty(extension))
                     extension = ".pdf";
-                
+
                 fileName = $"{Path.GetFileNameWithoutExtension(originalFileName)}{extension}";
             }
             else
@@ -592,7 +592,7 @@ namespace VCareer.Application.Applications
 
             // Cập nhật rating
             application.Rating = input.Rating;
-            
+
             // Cập nhật notes nếu có
             if (!string.IsNullOrEmpty(input.Notes))
             {
@@ -629,7 +629,7 @@ namespace VCareer.Application.Applications
             {
                 var userId = _currentUser.GetId();
                 var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-                
+
                 if (candidate == null)
                 {
                     return new ApplicationStatusDto { HasApplied = false };
@@ -714,7 +714,7 @@ namespace VCareer.Application.Applications
                     int skipFileDescriptorNotFound = 0;
                     int skipBlobError = 0;
                     int skipRenderError = 0;
-                    
+
                     // Track các tên file đã sử dụng để tránh trùng lặp (không thể dùng archive.Entries trong Create mode)
                     var usedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -735,7 +735,7 @@ namespace VCareer.Application.Applications
                                 var candidateUser = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
                                 if (candidateUser != null)
                                 {
-                                    candidateName = !string.IsNullOrEmpty(candidateUser.Name) 
+                                    candidateName = !string.IsNullOrEmpty(candidateUser.Name)
                                         ? $"{candidateUser.Name}_{candidateUser.Surname}".Trim().Replace(" ", "_")
                                         : candidateUser.UserName ?? "Unknown";
                                 }
@@ -801,7 +801,7 @@ namespace VCareer.Application.Applications
                                 {
                                     var container = _blobFactory.Create(fileDescriptor.ContainerName);
                                     cvBytes = await container.GetAllBytesAsync(fileDescriptor.StorageName);
-                                    
+
                                     // Lấy tên file và extension từ FileDescriptor
                                     var originalFileName = fileDescriptor.OriginalName ?? uploadedCv.CvName;
                                     fileExtension = fileDescriptor.Extension;
@@ -809,7 +809,7 @@ namespace VCareer.Application.Applications
                                         fileExtension = Path.GetExtension(originalFileName);
                                     if (string.IsNullOrEmpty(fileExtension))
                                         fileExtension = ".pdf"; // Default to PDF if no extension
-                                    
+
                                     fileName = $"{candidateName}_{Path.GetFileNameWithoutExtension(originalFileName)}";
                                 }
                                 catch (Exception ex)
@@ -841,7 +841,7 @@ namespace VCareer.Application.Applications
                                     entryName = $"{fileName}_{counter}{fileExtension}";
                                     counter++;
                                 }
-                                
+
                                 // Thêm tên file vào HashSet
                                 usedFileNames.Add(entryName);
 
@@ -918,8 +918,8 @@ namespace VCareer.Application.Applications
                 var user = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
                 if (user != null)
                 {
-                    dto.CandidateName = !string.IsNullOrEmpty(user.Name) 
-                        ? $"{user.Name} {user.Surname}".Trim() 
+                    dto.CandidateName = !string.IsNullOrEmpty(user.Name)
+                        ? $"{user.Name} {user.Surname}".Trim()
                         : user.UserName;
                 }
             }
