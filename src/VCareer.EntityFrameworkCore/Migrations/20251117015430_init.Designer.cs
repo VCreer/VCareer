@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251115091228_initdb")]
-    partial class initdb
+    [Migration("20251117015430_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1162,6 +1162,9 @@ namespace VCareer.Migrations
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("RecruitmentCampaignId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("RejectedReason")
                         .HasColumnType("nvarchar(max)");
 
@@ -1215,6 +1218,8 @@ namespace VCareer.Migrations
 
                     b.HasIndex("RecruiterId");
 
+                    b.HasIndex("RecruitmentCampaignId");
+
                     b.ToTable("JobPost", (string)null);
                 });
 
@@ -1243,6 +1248,72 @@ namespace VCareer.Migrations
                     b.HasIndex("JobId");
 
                     b.ToTable("JobPriory", (string)null);
+                });
+
+            modelBuilder.Entity("VCareer.Models.Job.RecruitmentCampaign", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecruiterId");
+
+                    b.ToTable("RecruitmentCampaigns", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>
@@ -3540,13 +3611,19 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Users.RecruiterProfile", "RecruiterProfile")
                         .WithMany("JobPostings")
                         .HasForeignKey("RecruiterId")
-                        .HasPrincipalKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("VCareer.Models.Job.RecruitmentCampaign", "RecruitmentCampaign")
+                        .WithMany("Job_Posts")
+                        .HasForeignKey("RecruitmentCampaignId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("JobCategory");
 
                     b.Navigation("RecruiterProfile");
+
+                    b.Navigation("RecruitmentCampaign");
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.Job_Priority", b =>
@@ -3558,6 +3635,17 @@ namespace VCareer.Migrations
                         .IsRequired();
 
                     b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("VCareer.Models.Job.RecruitmentCampaign", b =>
+                {
+                    b.HasOne("VCareer.Models.Users.RecruiterProfile", "Recruiter")
+                        .WithMany("RecruitmentCampaigns")
+                        .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recruiter");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>
@@ -3783,6 +3871,11 @@ namespace VCareer.Migrations
                     b.Navigation("Job_Priorities");
                 });
 
+            modelBuilder.Entity("VCareer.Models.Job.RecruitmentCampaign", b =>
+                {
+                    b.Navigation("Job_Posts");
+                });
+
             modelBuilder.Entity("VCareer.Models.Job.Tag", b =>
                 {
                     b.Navigation("JobPostingTags");
@@ -3803,6 +3896,8 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Users.RecruiterProfile", b =>
                 {
                     b.Navigation("JobPostings");
+
+                    b.Navigation("RecruitmentCampaigns");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>

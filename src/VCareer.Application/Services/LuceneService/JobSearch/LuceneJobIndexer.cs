@@ -342,28 +342,28 @@ namespace VCareer.Services.LuceneService.JobSearch
             }
 
             // FILTER: Province IDs
-            if (input.ProvinceIds != null && input.ProvinceIds.Any())
-            {
-                var provinceQuery = new BooleanQuery();
-                foreach (var id in input.ProvinceIds)
-                {
-                    provinceQuery.Add(new TermQuery(new Term("ProvinceId", id.ToString())), Occur.SHOULD);
-                    // provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
-                }
-                boolQuery.Add(provinceQuery, Occur.MUST);
-            }
+            //if (input.ProvinceIds != null && input.ProvinceIds.Any())
+            //{
+            //    var provinceQuery = new BooleanQuery();
+            //    foreach (var id in input.ProvinceIds)
+            //    {
+            //        provinceQuery.Add(new TermQuery(new Term("ProvinceId", id.ToString())), Occur.SHOULD);
+            //        // provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
+            //    }
+            //    boolQuery.Add(provinceQuery, Occur.MUST);
+            //}
 
             // FILTER: District IDs
-            if (input.DistrictIds != null && input.DistrictIds.Any())
-            {
-                var districtQuery = new BooleanQuery();
-                foreach (var id in input.DistrictIds)
-                {
-                    districtQuery.Add(new TermQuery(new Term("DistrictId", id.ToString())), Occur.SHOULD);
-                    // districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
-                }
-                boolQuery.Add(districtQuery, Occur.MUST);
-            }
+            //if (input.DistrictIds != null && input.DistrictIds.Any())
+            //{
+            //    var districtQuery = new BooleanQuery();
+            //    foreach (var id in input.DistrictIds)
+            //    {
+            //        districtQuery.Add(new TermQuery(new Term("DistrictId", id.ToString())), Occur.SHOULD);
+            //        // districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
+            //    }
+            //    boolQuery.Add(districtQuery, Occur.MUST);
+            //}
 
             // Index
             //doc.Add(new Int32Field("ProvinceId", job.ProvinceId, Field.Store.NO));
@@ -402,10 +402,10 @@ namespace VCareer.Services.LuceneService.JobSearch
             }
 
             // FILTER: Is Urgent
-            if (input.IsUrgent.HasValue)
-            {
-                boolQuery.Add(new TermQuery(new Term("IsUrgent", input.IsUrgent.Value.ToString())), Occur.MUST);
-            }
+            //if (input.IsUrgent.HasValue)
+            //{
+            //    boolQuery.Add(new TermQuery(new Term("IsUrgent", input.IsUrgent.Value.ToString())), Occur.MUST);
+            //}
 
             // Return query (nếu không có clause nào, return match all)
             return boolQuery.Clauses.Count == 0 ? new MatchAllDocsQuery() : boolQuery;
