@@ -37,6 +37,17 @@ namespace VCareer.Constants.JobConstant
         Closed = 2,
     }
 
+    public enum SubscriptionType
+    {
+        RecruiterCompanyManagementPackage = 1, // gói mở rộng quản lý công ty & thương hiệu
+        RecruiterCvAccessPackage = 2,          // gói xem/tải CV trong pool
+        RecruiterJobPostingPackage = 3,      // gói đăng tin & tăng hiển thị bài tuyển dụng
+        CandidateBoostCvPoolPackage = 0,      // gói tăng hạng CV trong pool
+    }
+
+
+
+
 
     public enum PositionType
     {

@@ -7,7 +7,7 @@ using VCareer.Dto.Job;
 using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
 using VCareer.IServices.IJobServices;
-using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using Volo.Abp.Application.Services;
 
 namespace VCareer.Services.Job

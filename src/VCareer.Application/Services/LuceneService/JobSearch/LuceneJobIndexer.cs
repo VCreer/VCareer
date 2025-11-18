@@ -51,7 +51,7 @@ namespace VCareer.Services.LuceneService.JobSearch
                 System.IO.Directory.CreateDirectory(_indexPath);
 
             // Initialize analyzer và directory
-            // ✨ Dùng StandardAnalyzer KHÔNG có stop words (để index "it", "a", "an"...)
+            //  Dùng StandardAnalyzer KHÔNG có stop words (để index "it", "a", "an"...)
             // Lucene.NET 4.8: Dùng CharArraySet.Empty (property) thay vì EMPTY_SET (constant)
             var emptyStopWords = new CharArraySet(AppLuceneVersion, 0, ignoreCase: false);
             _analyzer = new StandardAnalyzer(AppLuceneVersion, emptyStopWords);
@@ -112,7 +112,7 @@ namespace VCareer.Services.LuceneService.JobSearch
 
         /// Index 1 job vào Lucene
         /// Gọi khi: Create job, Update job, Admin approve job
-        public async Task IndexJobAsync(Job_Post job)
+        public async Task UpsertJobAsync(Job_Post job)
         {
             // Chỉ index job đang active (Open + chưa hết hạn)
             if (job == null || !job.IsActive())
@@ -439,8 +439,6 @@ namespace VCareer.Services.LuceneService.JobSearch
             }
         }
 
-        /// ✨ FILTER LƯƠNG theo Radio Buttons UI
-        /// ⚠️ LOGIC MỚI (ĐÚNG):
         /// - Filter "Thỏa thuận" → CHỈ match jobs SalaryDeal = true
         /// - Filter ranges → CHỈ match jobs có SalaryMin/Max cụ thể (SalaryDeal = false)
         private void AddSalaryFilter(BooleanQuery boolQuery, SalaryFilterType? salaryFilter)

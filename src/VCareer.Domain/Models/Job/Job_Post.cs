@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using VCareer.Constants;
 using VCareer.Constants.JobConstant;
 using VCareer.Models.Companies;
+using VCareer.Models.JobCategory;
 using VCareer.Models.Users;
 using Volo.Abp.Domain.Entities.Auditing;
 
@@ -67,7 +68,7 @@ namespace VCareer.Models.Job
         public virtual RecruiterProfile RecruiterProfile { get; set; }
         public virtual RecruitmentCampaign RecruitmentCampaign { get; set; }
         public virtual Job_Category JobCategory { get; set; }
-        public virtual ICollection<JobPostTag> JobPostingTags { get; set; } = new List<JobPostTag>();
+        public virtual ICollection<JobTag> JobTags { get; set; } = new List<JobTag>();
         public virtual ICollection<Job_Priority> Job_Priorities { get; set; } = new List<Job_Priority>(); // List priority of job>
         #endregion
 

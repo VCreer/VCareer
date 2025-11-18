@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class initdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -647,22 +647,13 @@ namespace VCareer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SortOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    JobCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    JobCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -744,8 +735,7 @@ namespace VCareer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1167,6 +1157,32 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryTags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TagId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryTags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CategoryTags_JobCategories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "JobCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AbpEntityPropertyChanges",
                 columns: table => new
                 {
@@ -1441,17 +1457,17 @@ namespace VCareer.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RecruitmentCampaignId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CompanyImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CompanyImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: true),
-                    Requirements = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: true),
-                    Benefits = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Requirements = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Benefits = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SalaryMin = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     SalaryMax = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    SalaryDeal = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    SalaryDeal = table.Column<bool>(type: "bit", nullable: false),
                     EmploymentType = table.Column<int>(type: "int", nullable: false),
                     PositionType = table.Column<int>(type: "int", nullable: false),
                     Experience = table.Column<int>(type: "int", nullable: false),
@@ -1459,7 +1475,7 @@ namespace VCareer.Migrations
                     WorkTime = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProvinceCode = table.Column<int>(type: "int", nullable: false),
                     WardCode = table.Column<int>(type: "int", nullable: true),
-                    WorkLocation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    WorkLocation = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     RiskJobLevel = table.Column<int>(type: "int", nullable: false),
@@ -1469,7 +1485,7 @@ namespace VCareer.Migrations
                     ViewCount = table.Column<int>(type: "int", nullable: false),
                     PostedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ApplyCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    ApplyCount = table.Column<int>(type: "int", nullable: false),
                     RecruiterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JobCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -1490,7 +1506,7 @@ namespace VCareer.Migrations
                         column: x => x.JobCategoryId,
                         principalTable: "JobCategories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_JobPost_RecruiterProfile_RecruiterId",
                         column: x => x.RecruiterId,
@@ -1503,31 +1519,6 @@ namespace VCareer.Migrations
                         principalTable: "RecruitmentCampaigns",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "JobPostingTags",
-                columns: table => new
-                {
-                    JobPostingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TagId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_JobPostingTags", x => new { x.JobPostingId, x.TagId });
-                    table.ForeignKey(
-                        name: "FK_JobPostingTags_JobPost_JobPostingId",
-                        column: x => x.JobPostingId,
-                        principalTable: "JobPost",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_JobPostingTags_Tags_TagId",
-                        column: x => x.TagId,
-                        principalTable: "Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1548,6 +1539,32 @@ namespace VCareer.Migrations
                         name: "FK_JobPriory_JobPost_JobId",
                         column: x => x.JobId,
                         principalTable: "JobPost",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "JobTag",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TagId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobTag", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobTag_JobPost_JobId",
+                        column: x => x.JobId,
+                        principalTable: "JobPost",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobTag_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1847,6 +1864,16 @@ namespace VCareer.Migrations
                 column: "TemplateId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CategoryTags_CategoryId",
+                table: "CategoryTags",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryTags_TagId",
+                table: "CategoryTags",
+                column: "TagId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CompanyIndustries_CompanyId_IndustryId",
                 table: "CompanyIndustries",
                 columns: new[] { "CompanyId", "IndustryId" },
@@ -1939,20 +1966,9 @@ namespace VCareer.Migrations
                 column: "UploadedCvId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobCategories_IsActive",
-                table: "JobCategories",
-                column: "IsActive");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_JobCategories_ParentId",
                 table: "JobCategories",
                 column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_JobCategories_Slug",
-                table: "JobCategories",
-                column: "Slug",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobPost_JobCategoryId",
@@ -1970,14 +1986,19 @@ namespace VCareer.Migrations
                 column: "RecruitmentCampaignId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobPostingTags_TagId",
-                table: "JobPostingTags",
-                column: "TagId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_JobPriory_JobId",
                 table: "JobPriory",
                 column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobTag_JobId",
+                table: "JobTag",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobTag_TagId",
+                table: "JobTag",
+                column: "TagId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -2142,6 +2163,9 @@ namespace VCareer.Migrations
                 name: "AppRefreshTokens");
 
             migrationBuilder.DropTable(
+                name: "CategoryTags");
+
+            migrationBuilder.DropTable(
                 name: "CompanyIndustries");
 
             migrationBuilder.DropTable(
@@ -2151,10 +2175,10 @@ namespace VCareer.Migrations
                 name: "JobApplications");
 
             migrationBuilder.DropTable(
-                name: "JobPostingTags");
+                name: "JobPriory");
 
             migrationBuilder.DropTable(
-                name: "JobPriory");
+                name: "JobTag");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
@@ -2193,10 +2217,10 @@ namespace VCareer.Migrations
                 name: "UploadedCvs");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "JobPost");
 
             migrationBuilder.DropTable(
-                name: "JobPost");
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

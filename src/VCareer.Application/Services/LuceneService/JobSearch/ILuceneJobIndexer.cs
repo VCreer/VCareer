@@ -11,7 +11,7 @@ namespace VCareer.Services.LuceneService.JobSearch
     public interface ILuceneJobIndexer
     {
         //dùng để index 1 job , gọi khi update hoặc tạo job mới
-        Task IndexJobAsync(Job_Post job);
+        Task UpsertJobAsync(Job_Post job);
 
         // dùng để index nhiều job cùng lúc
         Task IndexMultipleJobsAsync(List<Job_Post> jobs);

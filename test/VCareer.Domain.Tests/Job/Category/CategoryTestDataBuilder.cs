@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using Volo.Abp.DependencyInjection;
 
 namespace VCareer.Job.Category

@@ -41,7 +41,7 @@ namespace VCareer.Repositories.Job
                 .Include(j => j.RecruiterProfile)
                     .ThenInclude(r => r.Company)
                 // Load tags
-                .Include(j => j.JobPostingTags)
+                .Include(j => j.JobTags)
                 .ThenInclude(jpt => jpt.Tag);
         }
         // build query chung dùng để tìm job : chưa hết hạn và open, chưa delete
@@ -140,7 +140,7 @@ namespace VCareer.Repositories.Job
                     .ThenInclude(p => p.Parent)
                 .Include(j => j.RecruiterProfile)
                     .ThenInclude(r => r.Company)
-                .Include(j => j.JobPostingTags)
+                .Include(j => j.JobTags)
                     .ThenInclude(jpt => jpt.Tag);
 
             return await query.FirstOrDefaultAsync();                            // Lấy tất cả job (kể cả inactive) để index

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VCareer.EntityFrameworkCore;
 using VCareer.IRepositories.Job;
-using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
