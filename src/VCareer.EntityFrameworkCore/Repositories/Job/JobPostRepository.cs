@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using VCareer.Constants;
 using VCareer.Constants.JobConstant;
 using VCareer.EntityFrameworkCore;
+using VCareer.IRepositories.Category;
 using VCareer.IRepositories.Job;
 using VCareer.Models.Job;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;

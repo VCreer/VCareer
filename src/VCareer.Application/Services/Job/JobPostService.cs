@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using VCareer.Constants.JobConstant;
 using VCareer.Dto.JobDto;
+using VCareer.IRepositories.Category;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using VCareer.Models.JobCategory;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer.IRepositories.Job
+namespace VCareer.IRepositories.Category
 {
     public interface IJobCategoryRepository : IRepository<Job_Category, Guid>
     {

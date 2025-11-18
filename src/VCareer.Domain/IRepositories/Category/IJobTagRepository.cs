@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using VCareer.Models.JobCategory;
 using Volo.Abp.Domain.Repositories;
 
-namespace VCareer.IRepositories.Job
+namespace VCareer.IRepositories.Category
 {
-    public interface ICategoryTagRepository : IRepository<Categoty_Tag, int>
+    public interface IJobTagRepository:IRepository<JobTag, int>
     {
     }
 }

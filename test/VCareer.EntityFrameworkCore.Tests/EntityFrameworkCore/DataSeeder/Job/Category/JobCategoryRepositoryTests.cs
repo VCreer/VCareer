@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Category;
 using VCareer.Job.Category;
 using Xunit;
 
