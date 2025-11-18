@@ -59,6 +59,9 @@ public class VCareerDomainModule : AbpModule
             options.Lockout.AllowedForNewUsers = lockoutConfig.GetValue("AllowedForNewUsers", true);
             options.Lockout.MaxFailedAccessAttempts = lockoutConfig.GetValue("MaxFailedAccessAttempts", 5);
             options.Lockout.DefaultLockoutTimeSpan = lockoutConfig.GetValue("DefaultLockoutTimeSpan", TimeSpan.FromMinutes(10));
+            
+            // Cấu hình password validation - tắt các yêu cầu chữ hoa, thường, số và ký tự đặc biệt
+           
         });
         ConfigureCustomClaimsPrincipalFactory(context);
 
