@@ -1,5 +1,5 @@
 
-export interface ActionResult<TValue =void> {
+export interface ActionResult<TValue=null> {
   result: ActionResult;
   value: TValue;
 }

@@ -27,7 +27,7 @@ namespace VCareer.IServices.IJobServices
         Task<List<JobViewWithPriorityDto>> GetJobByRecruiterId(Guid id, int maxCount = 10);
         Task<List<JobViewDto>> GetJobByCompanyId(int id, int maxCount = 10);
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id); //view ,aapply count
-        public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove();
+        public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto);
         public Task ExecuteExpiredJobPostAutomatically(string id);
 
 

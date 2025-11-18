@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +10,12 @@ using VCareer.Dto.JobDto;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
+using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IJobServices;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Job;
+using VCareer.Models.Users;
+using VCareer.Services.Geo;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
@@ -31,9 +34,11 @@ namespace VCareer.Services.Job
         private readonly ICurrentUser _currentUser;
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly IRecruiterRepository _recruiterRepository;
+        private readonly IGeoService _geoService;
+        private readonly IJobCategoryRepository _jobCategoryRepository;
 
 
-        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository)
+        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -42,6 +47,8 @@ namespace VCareer.Services.Job
             _currentUser = currentUser;
             _identityUserRepository = identityUserRepository;
             _recruiterRepository = recruiterRepository;
+            _geoService = geoService;
+            _jobCategoryRepository = jobCategoryRepository;
         }
 
         public async Task ApproveJobPostAsync(string id)
@@ -74,25 +81,63 @@ namespace VCareer.Services.Job
             //
         }
 
-        public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove()
+        public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
         {
-            var jobs = await _jobPostRepository.GetListAsync(x => x.Status == JobStatus.Draft);
-            List<JobApproveViewDto> listJob = new List<JobApproveViewDto>();
+            var jobs = await SortJobNeedApproved();
+            jobs = FilterJob(dto, jobs);
+            jobs = jobs.Where(x => x.Status == JobStatus.Pending);
+
+            int skip = (dto.Page - 1) * dto.PageSize;
+            var jobPaged = await jobs
+                .Skip(skip)
+                .Take(dto.PageSize)
+                .ToListAsync();
+
+            List<JobApproveViewDto> result = new List<JobApproveViewDto>();
             foreach (var job in jobs)
             {
+                var provinceName = await _geoService.GetProvinceNameByCode(job.ProvinceCode);
+                var wardName = await _geoService.GetWardNameByCode(job.WardCode, job.ProvinceCode);
+                var categoryName = await _jobCategoryRepository.FindAsync(job.JobCategoryId)
+                    ?? throw new BusinessException("Category not found");
+
                 await AutomationCheckJobPost(job);
-                listJob.Add(new JobApproveViewDto()
+                result.Add(new JobApproveViewDto
                 {
+                    Id = job.Id,
                     CompanyImageUrl = job.CompanyImageUrl,
                     CompanyName = job.CompanyName,
                     CompanyId = job.CompanyId,
                     ExpiresAt = job.ExpiresAt,
-                    ProvinceCode = job.ProvinceCode,
+                    ProvinceName = provinceName,
+                    WardName = wardName,
                     Title = job.Title,
-                    RiskJobLevel = job.RiskJobLevel
+                    RiskJobLevel = job.RiskJobLevel,
+                    Benefits = job.Benefits,
+                    Description = job.Description,
+                    Requirements = job.Requirements,
+                    EmploymentType = job.EmploymentType,
+                    SalaryMax = job.SalaryMax,
+                    SalaryMin = job.SalaryMin,
+                    SalaryDeal = job.SalaryDeal,
+                    PositionType = job.PositionType,
+                    Experience = job.Experience,
+                    Quantity = job.Quantity,
+                    ExperienceText = job.ExperienceText,
+                    WorkLocation = job.WorkLocation,
+                    WorkTime = job.WorkTime,
+                    Slug = job.Slug,
+                    JobCategoryId = job.JobCategoryId,
+                    PostedAt = job.PostedAt,
+                    RejectedReason = job.RejectedReason,
+                    CategoryName = categoryName.Name,
+                    RecruiterLevel = job.RecruiterProfile.RecruiterLevel,
+                    PriorityLevel = job.Job_Priorities.Max(p => p.PriorityLevel),
+                    Status = job.Status
+                    // sau thêm cả tag và category
                 });
             }
-            return listJob;
+            return result;
         }
 
         #region logic show list job  need approve
@@ -211,6 +256,7 @@ namespace VCareer.Services.Job
             var recruiter = await _recruiterRepository.FindAsync(r => r.UserId == _currentUser.GetId());
             var company = await _companyRepository.GetAsync(recruiter.CompanyId);
             if (company == null) throw new BusinessException("Company not found");
+
             var job = new Job_Post
             {
                 CompanyId = company.Id,
@@ -231,22 +277,19 @@ namespace VCareer.Services.Job
                 SalaryMin = dto.SalaryMin,
                 Status = JobStatus.Draft,
                 Title = dto.Title,
-                RecruiterId = recruiter.Id,
+                RecruiterId = recruiter.UserId,
                 Slug = dto.Slug,
                 WardCode = dto.WardCode,
                 WorkLocation = dto.WorkLocation,
                 WorkTime = dto.WorkTime,
-               /* CreatorId = _currentUser.GetId(),*/
                 SalaryDeal = dto.SalaryDeal,
                 PostedAt = DateTime.Now,
                 JobCategoryId = dto.JobCategoryId,
-                //        ExperienceText = dto.ExperienceText,
 
             };
 
-            if (recruiter.RecruiterLevel == RecruiterLevel.Premium) job.Status = JobStatus.Open;
-
             await _jobPostRepository.InsertAsync(job);
+            await AddDefaultJobPriority(job);
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)
         {
@@ -255,8 +298,9 @@ namespace VCareer.Services.Job
         public async Task DeleteJobPost(string id)
         {
             var job = await _jobPostRepository.FindAsync(Guid.Parse(id));
-            if (job == null || job.Status == JobStatus.Deleted) throw new BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            if (job == null || job.Status == JobStatus.Deleted) throw new BusinessException($"Job không tồn tại hoặc được xóa.");
             job.Status = JobStatus.Deleted;
+            if (job.Status == JobStatus.Open) throw new BusinessException($"Job trong trang thai Open khong the xóa.");
             await _jobPostRepository.UpdateAsync(job, true);
         }
         public async Task<List<JobViewDto>> GetJobPostBySatus(JobStatus status, int maxCount = 10) // check been job search cos chuaw
@@ -292,5 +336,80 @@ namespace VCareer.Services.Job
             throw new NotImplementedException();
         }
 
+        #region helper
+        private IQueryable<Job_Post> FilterJob(JobFilterDto dto, IQueryable<Job_Post> jobs)
+        {
+
+            if (dto.PriorityLevel != null)
+                jobs = jobs.Where(x => x.Job_Priorities.Any(p => p.PriorityLevel == dto.PriorityLevel));
+
+            if (dto.RecruiterLevel != null)
+                jobs = jobs.Where(x => x.RecruiterProfile.RecruiterLevel == dto.RecruiterLevel);
+
+            if (dto.RiskJobLevel != null)
+                jobs = jobs.Where(x => x.RiskJobLevel == dto.RiskJobLevel);
+
+            return jobs;
+        }
+
+        private async Task<IQueryable<Job_Post>> SortJobNeedApproved()
+        {
+            IQueryable<Job_Post> jobs = (await _jobPostRepository
+                .GetQueryableAsync())
+                .Include(job => job.RecruiterProfile)
+                .Include(job => job.Job_Priorities);
+
+            return jobs
+                .OrderByDescending(j => j.RecruiterProfile.RecruiterLevel)
+                .ThenByDescending(j => j.ExpiresAt)
+                .ThenByDescending(j =>
+                    j.Job_Priorities.Any()
+                        ? j.Job_Priorities.Max(p => p.PriorityLevel)
+                        : 0)
+                .ThenByDescending(j => j.RiskJobLevel)
+                .ThenByDescending(j => j.PostedAt);
+        }
+
+        private async Task AddDefaultJobPriority(Job_Post job)
+        {
+            try
+            {
+                await _jobPriorityRepository.InsertAsync(new Job_Priority
+                {
+                    DisplayArea = JobDisplayArea.JobCategorPage,
+                    JobId = job.Id,
+                    PriorityLevel = JobPriorityLevel.Low,
+                    SortScore = 0
+                });
+                await _jobPriorityRepository.InsertAsync(new Job_Priority
+                {
+                    DisplayArea = JobDisplayArea.JobLocationPage,
+                    JobId = job.Id,
+                    PriorityLevel = JobPriorityLevel.Low,
+                    SortScore = 0
+                });
+                await _jobPriorityRepository.InsertAsync(new Job_Priority
+                {
+                    DisplayArea = JobDisplayArea.JobSimilarPage,
+                    JobId = job.Id,
+                    PriorityLevel = JobPriorityLevel.Low,
+                    SortScore = 0
+                });
+                await _jobPriorityRepository.InsertAsync(new Job_Priority
+                {
+                    DisplayArea = JobDisplayArea.MainMenuPage,
+                    JobId = job.Id,
+                    PriorityLevel = JobPriorityLevel.Low,
+                    SortScore = 0
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessException("Error when create job priority" + ex.Message);
+            }
+
+
+        }
+        #endregion
     }
 }

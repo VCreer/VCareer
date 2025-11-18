@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { JobStatus } from '../../constants/job-constant/job-status.enum';
-import type { JobApproveViewDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, JobViewWithPriorityDto } from '../../dto/job-dto/models';
+import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, JobViewWithPriorityDto } from '../../dto/job-dto/models';
 
 @Injectable({
   providedIn: 'root',
@@ -103,10 +103,11 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  showJobPostNeedApprove = (config?: Partial<Rest.Config>) =>
+  showJobPostNeedApproveByDto = (dto: JobFilterDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobApproveViewDto[]>({
       method: 'POST',
       url: '/api/app/job-post/show-job-post-need-approve',
+      body: dto,
     },
     { apiName: this.apiName,...config });
   

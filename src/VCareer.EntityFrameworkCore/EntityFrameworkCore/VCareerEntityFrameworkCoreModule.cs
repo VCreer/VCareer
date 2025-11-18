@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
+using VCareer.Models.Job;
 using VCareer.Models.Users;
 // 🔧 Thêm using cho custom repositories
 using VCareer.Repositories.Job;
@@ -55,8 +56,9 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<CandidateProfile, CandidateRepository>();
             options.AddRepository<RecruiterProfile, RecruiterProfileRepository>();
             options.AddRepository<EmployeeProfile, EmployeeProfileRepository>();
-        options.AddRepository<VCareer.Models.Job.Job_Post, JobPostRepository>();
-                 });
+            options.AddRepository<VCareer.Models.Job.Job_Post, JobPostRepository>();
+            options.AddRepository<RecruitmentCampaign,RecruitmentCampainRepository>();
+        });
 
 
         context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
@@ -64,7 +66,8 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<IRecruiterRepository, RecruiterProfileRepository>();
         context.Services.AddTransient<IEmployeeRepository, EmployeeProfileRepository>();
         context.Services.AddTransient<IJobPostRepository, JobPostRepository>();
-       
+        context.Services.AddTransient<IRecruitmentCampainRepository, RecruitmentCampainRepository>();
+
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

@@ -7,8 +7,6 @@
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-  // margin-left and width are controlled by inline styles from TypeScript
-  // to dynamically adjust based on sidebar width (including hover state)
 
   @media (max-width: 768px) {
     margin-left: 0 !important;
@@ -68,8 +66,8 @@
   .summary-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
 
     @media (max-width: 1024px) {
       grid-template-columns: repeat(2, 1fr);
@@ -77,21 +75,28 @@
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .summary-card {
       background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       border: 2px solid;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
 
       .summary-card-icon {
-        width: 56px;
-        height: 56px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -99,7 +104,7 @@
         flex-shrink: 0;
 
         i {
-          font-size: 24px;
+          font-size: 18px;
         }
       }
 
@@ -107,14 +112,14 @@
         flex: 1;
 
         .summary-card-value {
-          font-size: 28px;
+          font-size: 22px;
           font-weight: 700;
           color: #1f2937;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
 
         .summary-card-label {
-          font-size: 0.875rem;
+          font-size: 0.8rem;
           font-weight: 500;
           color: #6b7280;
         }
@@ -122,7 +127,6 @@
 
       &:nth-child(1) {
         border-color: #0F83BA;
-
         .summary-card-icon {
           color: #0F83BA;
         }
@@ -130,7 +134,6 @@
 
       &:nth-child(2) {
         border-color: #f59e0b;
-
         .summary-card-icon {
           color: #f59e0b;
         }
@@ -138,7 +141,6 @@
 
       &:nth-child(3) {
         border-color: #10b981;
-
         .summary-card-icon {
           color: #10b981;
         }
@@ -146,17 +148,12 @@
 
       &:nth-child(4) {
         border-color: #ef4444;
-
         .summary-card-icon {
           color: #ef4444;
         }
       }
     }
   }
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 
   .job-list-card {
     background: transparent;
@@ -168,7 +165,6 @@
     flex-direction: column;
     gap: 0;
 
-    // Wrapper Content - contains job list and detail
     .wrapper-content {
       display: flex;
       flex-direction: column;
@@ -177,11 +173,11 @@
       width: 100%;
       box-sizing: border-box;
       
-      // When showing detail, switch to 2-column layout
       &.show-detail-job {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
+        align-items: start;
 
         @media (max-width: 1024px) {
           grid-template-columns: 1fr;
@@ -197,119 +193,177 @@
       background: white;
       border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      height: fit-content;
+      max-height: none;
+
+      @media (max-width: 1024px) {
+        max-height: none;
+      }
 
       .filter-bar {
-        padding: 24px;
+        padding: 16px 20px;
         border-bottom: 1px solid #e5e7eb;
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
         display: flex;
-        gap: 16px;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        background: white;
+        flex-direction: column;
+        gap: 12px;
+        flex-shrink: 0;
 
-        .search-group {
+        @media (max-width: 768px) {
+          padding: 14px 16px;
+        }
+
+        .filter-header {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: #ffffff;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          padding: 0 14px;
-          min-width: 260px;
+          margin-bottom: 2px;
 
-          i {
-            color: #6b7280;
+          .filter-icon {
+            font-size: 1rem;
+            color: #0f83ba;
           }
 
-          input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 12px 0;
+          .filter-title {
             font-size: 0.95rem;
-            color: #111827;
+            font-weight: 600;
+            color: #374151;
+          }
+        }
 
-            &:focus {
-              outline: none;
-            }
+        .filter-controls {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 10px;
           }
         }
 
         .filter-group {
-          min-width: 200px;
-        }
-
-        .status-dropdown-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
           position: relative;
 
-          .status-dropdown {
+          .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 1px;
+
+            i {
+              font-size: 0.75rem;
+              color: #9ca3af;
+            }
+          }
+
+          .filter-dropdown {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 10px 12px;
+            gap: 10px;
+            padding: 9px 12px;
             border-radius: 8px;
-            border: 1px solid #d1d5db;
+            border: 1.5px solid #e5e7eb;
             background: #ffffff;
             color: #111827;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             cursor: pointer;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
+            position: relative;
 
             &:hover {
               border-color: #0f83ba;
+              box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.08);
             }
 
-            i {
-              font-size: 0.875rem;
+            &:active {
+              transform: scale(0.99);
+            }
+
+            .filter-value {
+              flex: 1;
+              text-align: left;
+              font-weight: 500;
+            }
+
+            .dropdown-icon {
+              font-size: 0.7rem;
               color: #6b7280;
+              transition: transform 0.2s ease;
+
+              &.rotate {
+                transform: rotate(180deg);
+              }
             }
           }
 
-          .status-dropdown-menu {
+          .filter-dropdown-menu {
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 4px);
             left: 0;
             width: 100%;
             background: #ffffff;
-            border: 1px solid #d1d5db;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            box-shadow: 0 12px 32px rgba(15, 24, 36, 0.12);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            z-index: 10;
+            z-index: 100;
+            animation: dropdownSlideIn 0.2s ease;
+
+            @keyframes dropdownSlideIn {
+              from {
+                opacity: 0;
+                transform: translateY(-8px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
           }
 
-          .status-dropdown-item {
+          .filter-dropdown-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 10px 12px;
+            padding: 11px 14px;
             background: transparent;
             border: none;
             color: #111827;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease;
+            transition: all 0.15s ease;
+            text-align: left;
 
-            i {
+            .check-icon {
               color: transparent;
               font-size: 0.85rem;
+              transition: all 0.2s ease;
             }
 
             &:hover {
               background: #f3f4f6;
+              padding-left: 18px;
             }
 
             &.active {
-              background: #0f83ba;
+              background: linear-gradient(135deg, #0f83ba 0%, #0d6fa0 100%);
               color: #ffffff;
+              font-weight: 600;
 
-              i {
+              .check-icon {
                 color: #ffffff;
               }
             }
@@ -318,15 +372,69 @@
       }
     }
 
+    .loading-state {
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex: 1;
+
+      .loading-spinner {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0f83ba 0%, #0d6fa0 100%);
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(15, 131, 186, 0.3);
+
+        i {
+          font-size: 22px;
+          color: white;
+        }
+      }
+
+      .loading-text {
+        font-size: 0.9rem;
+        color: #6b7280;
+        font-weight: 500;
+        margin: 0;
+      }
+    }
+
     .job-list {
       display: flex;
       flex-direction: column;
+      overflow-y: visible;
+      flex: 1;
+      min-height: 0;
+
+      /* Custom scrollbar */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+
+        &:hover {
+          background: #94a3b8;
+        }
+      }
     }
 
     .job-item {
       display: flex;
       gap: 16px;
-      padding: 20px 24px;
+      padding: 18px 24px;
       border-bottom: 1px solid #f1f5f9;
       transition: all 0.2s ease;
       align-items: flex-start;
@@ -354,8 +462,8 @@
         flex-shrink: 0;
 
         .company-logo {
-          width: 80px;
-          height: 80px;
+          width: 72px;
+          height: 72px;
           border-radius: 8px;
           overflow: hidden;
           display: flex;
@@ -363,6 +471,7 @@
           justify-content: center;
           background: #f3f4f6;
           flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 
           img {
             width: 100%;
@@ -377,7 +486,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
         min-width: 0;
 
         .job-header-top {
@@ -385,22 +494,27 @@
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
 
           .campaign-code {
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             color: #6b7280;
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
           }
 
           .job-salary {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             color: #0F83BA;
             font-weight: 600;
             font-size: 0.95rem;
             flex-shrink: 0;
+            white-space: nowrap;
 
             i {
               font-size: 0.85rem;
@@ -415,12 +529,21 @@
           gap: 16px;
 
           .job-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: #111827;
             margin: 0;
-            line-height: 1.4;
+            line-height: 1.5;
             flex: 1;
+            transition: color 0.2s ease;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+
+            &:hover {
+              color: #0f83ba;
+            }
           }
         }
 
@@ -428,26 +551,35 @@
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-top: -4px;
+          gap: 12px;
+          margin-top: -2px;
 
           .company-name {
             font-size: 0.9rem;
             color: #6b7280;
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
 
           .view-detail-btn {
             background: transparent;
             border: none;
             color: #0f83ba;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.875rem;
+            font-weight: 600;
             cursor: pointer;
-            padding: 4px 8px;
-            transition: color 0.2s ease;
+            padding: 6px 10px;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
 
             &:hover {
               color: #0d6fa0;
-              text-decoration: underline;
+              background: #f0f9ff;
             }
           }
         }
@@ -457,23 +589,25 @@
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-          margin-top: 4px;
+          margin-top: 2px;
           flex-wrap: wrap;
 
           .job-tags {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            flex: 1;
 
             .tag {
               display: inline-flex;
               align-items: center;
-              padding: 4px 12px;
+              padding: 5px 12px;
               border-radius: 16px;
               background: #f3f4f6;
               color: #6b7280;
               font-size: 0.85rem;
               font-weight: 500;
+              white-space: nowrap;
             }
 
             .reject-reason-tag {
@@ -489,10 +623,13 @@
               cursor: pointer;
               transition: all 0.2s ease;
               border: 1px solid #fecaca;
+              white-space: nowrap;
 
               &:hover {
                 background: #fecaca;
                 border-color: #ef4444;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
               }
 
               i {
@@ -503,14 +640,17 @@
 
           .job-status {
             margin-left: auto;
+            flex-shrink: 0;
+            
             .status-badge {
               display: inline-flex;
               align-items: center;
               gap: 6px;
-              padding: 6px 12px;
+              padding: 6px 14px;
               border-radius: 999px;
               font-size: 0.85rem;
               font-weight: 600;
+              white-space: nowrap;
 
               &.pending {
                 color: #f59e0b;
@@ -537,40 +677,68 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       color: #6b7280;
+      flex: 1;
+      justify-content: center;
 
       i {
-        font-size: 3rem;
+        font-size: 3.5rem;
         color: #0f83ba;
-        opacity: 0.5;
+        opacity: 0.3;
       }
 
       p {
-        font-size: 1rem;
+        font-size: 0.95rem;
         margin: 0;
+        font-weight: 500;
       }
     }
 
     app-pagination {
       border-top: 1px solid #e5e7eb;
-      padding: 16px 24px;
+      padding: 12px 24px;
+      flex-shrink: 0;
     }
 
-    // Box View Job Detail
     .box-view-job-detail {
       background: white;
       border-radius: 12px;
       border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 2px rgba(15, 24, 36, 0.04);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 200px);
+      max-height: none;
       min-height: 600px;
-      overflow-y: auto;
-      position: sticky;
-      top: 100px;
+      overflow-y: visible;
       align-self: flex-start;
+      height: fit-content;
+      position: sticky;
+      top: 140px;
+
+      @media (max-width: 1024px) {
+        max-height: none;
+        position: static;
+        top: auto;
+      }
+
+      /* Custom scrollbar */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+
+        &:hover {
+          background: #94a3b8;
+        }
+      }
 
       .job-detail-header {
         padding: 24px;
@@ -703,9 +871,9 @@
           margin-top: 8px;
 
           .action-btn {
-            padding: 10px 24px;
+            padding: 12px 24px;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -713,11 +881,13 @@
             flex: 1;
 
             &.approve-btn {
-              background: #10b981;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
               color: white;
+              box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
 
               &:hover {
-                background: #059669;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
               }
 
               &:active {
@@ -726,11 +896,13 @@
             }
 
             &.reject-btn {
-              background: #ef4444;
+              background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
               color: white;
+              box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 
               &:hover {
-                background: #dc2626;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
               }
 
               &:active {
@@ -759,6 +931,16 @@
   padding: 20px;
   transition: padding-left 0.3s ease;
   box-sizing: border-box;
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
   @media (max-width: 768px) {
     padding: 10px;
@@ -777,6 +959,18 @@
   transition: max-width 0.3s ease;
   box-sizing: border-box;
   overflow: hidden;
+  animation: modalSlideIn 0.3s ease;
+
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
   .reject-modal-header {
     padding: 24px;
@@ -857,14 +1051,14 @@
       .form-textarea {
         width: 100%;
         padding: 12px;
-        border: 1px solid #d1d5db;
+        border: 1.5px solid #d1d5db;
         border-radius: 8px;
         font-size: 0.9rem;
         font-family: inherit;
         color: #111827;
         resize: vertical;
         min-height: 120px;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        transition: all 0.2s ease;
         box-sizing: border-box;
 
         @media (max-width: 768px) {
@@ -938,41 +1132,49 @@
       }
 
       &.btn-submit {
-        background: #ef4444;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         color: white;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 
         &:hover:not(:disabled) {
-          background: #dc2626;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
         &:disabled {
           background: #d1d5db;
           color: #9ca3af;
           cursor: not-allowed;
+          box-shadow: none;
         }
       }
 
       &.btn-edit {
-        background: #0f83ba;
+        background: linear-gradient(135deg, #0f83ba 0%, #0d6fa0 100%);
         color: white;
+        box-shadow: 0 2px 6px rgba(15, 131, 186, 0.3);
 
         &:hover {
-          background: #0d6fa0;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(15, 131, 186, 0.4);
         }
       }
 
       &.btn-save {
-        background: #10b981;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
 
         &:hover:not(:disabled) {
-          background: #059669;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
         }
 
         &:disabled {
           background: #d1d5db;
           color: #9ca3af;
           cursor: not-allowed;
+          box-shadow: none;
         }
       }
     }
@@ -992,13 +1194,12 @@
 
       .box-view-job-detail {
         max-height: none;
-        position: static;
       }
     }
   }
 }
 
-// Ensure all content inside main-content respects max-width and is responsive
+// Ensure all content respects max-width and is responsive
 .job-management-content {
   .summary-cards {
     width: 100%;
@@ -1036,26 +1237,6 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    flex-wrap: wrap;
-
-    .search-group {
-      flex: 1;
-      min-width: 200px;
-      max-width: 100%;
-
-      @media (max-width: 768px) {
-        min-width: 100%;
-      }
-    }
-
-    .filter-group {
-      flex: 0 0 auto;
-      min-width: 200px;
-
-      @media (max-width: 768px) {
-        min-width: 100%;
-      }
-    }
   }
 
   .job-item {
@@ -1065,5 +1246,3 @@
     overflow-x: hidden;
   }
 }
-
-

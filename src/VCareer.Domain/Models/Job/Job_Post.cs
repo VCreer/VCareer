@@ -18,6 +18,7 @@ namespace VCareer.Models.Job
 
         //public Job_Post(Guid id) : base(id) { }
         #region Basic Job Description
+        public Guid? RecruitmentCampaignId { get; set; } 
         public string? CompanyImageUrl { get; set; }
         public int CompanyId { get; set; }
         public string? CompanyName { get; set; }
@@ -64,9 +65,8 @@ namespace VCareer.Models.Job
 
         #region Navigate atribute
         public virtual RecruiterProfile RecruiterProfile { get; set; }
-
+        public virtual RecruitmentCampaign RecruitmentCampaign { get; set; }
         public virtual Job_Category JobCategory { get; set; }
-
         public virtual ICollection<JobPostTag> JobPostingTags { get; set; } = new List<JobPostTag>();
         public virtual ICollection<Job_Priority> Job_Priorities { get; set; } = new List<Job_Priority>(); // List priority of job>
         #endregion
