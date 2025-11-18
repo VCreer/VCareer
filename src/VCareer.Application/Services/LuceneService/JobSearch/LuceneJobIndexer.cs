@@ -23,6 +23,7 @@ using VCareer.Constants;
 using VCareer.IRepositories.Job;
 using VCareer.Constants.JobConstant;
 using VCareer.Dto.JobDto;
+using VCareer.IRepositories.Category;
 
 namespace VCareer.Services.LuceneService.JobSearch
 {

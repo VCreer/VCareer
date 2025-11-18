@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Job;
 using VCareer.Dto.JobDto;
-using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.JobCategory;
 using Volo.Abp.Application.Services;
