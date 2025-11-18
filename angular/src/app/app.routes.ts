@@ -149,21 +149,33 @@ export const APP_ROUTES: Routes = [
   {
     path: 'candidate/login',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/candidate/candidate-login/candidate-login').then(
+=======
+      import('./features/Auth/candidate/candidate-login/candidate-login').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.LoginComponent
       ),
   },
   {
     path: 'candidate/register',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/candidate/candidate-regsiter/candidate-register').then(
+=======
+      import('./features/Auth/candidate/candidate-regsiter/candidate-register').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.RegisterComponent
       ),
   },
   {
     path: 'candidate/forget-password',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/forgot-password/forgot-password').then(
+=======
+      import('./features/Auth/forgot-password/forgot-password').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.ForgotPasswordComponent
       ),
   },
@@ -181,21 +193,33 @@ export const APP_ROUTES: Routes = [
   {
     path: 'recruiter/login',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/recruiter/recruiter-login/recruiter-login').then(
+=======
+      import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.RecruiterLoginComponent
       ),
   },
   {
     path: 'recruiter/register',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/recruiter/recruiter-register/recruiter-register').then(
+=======
+      import('./features/Auth/recruiter/recruiter-register/recruiter-register').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.RecruiterRegisterComponent
       ),
   },
   {
     path: 'recruiter/forgot-password',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/forgot-password/forgot-password').then(
+=======
+      import('./features/Auth/forgot-password/forgot-password').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
         c => c.ForgotPasswordComponent
       ),
   },
@@ -214,7 +238,11 @@ export const APP_ROUTES: Routes = [
   {
     path: 'employee/login',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
+=======
+      import('./features/Auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
   },
 
   // Recruiter main route
@@ -254,7 +282,11 @@ export const APP_ROUTES: Routes = [
       {
         path: 'recruiter-verify',
         loadComponent: () =>
+<<<<<<< HEAD
           import('./features/auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
+=======
+          import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
             c => c.RecruiterVerifyOtpComponent
           ),
       },
@@ -386,7 +418,11 @@ export const APP_ROUTES: Routes = [
   {
     path: 'reset-password',
     loadComponent: () =>
+<<<<<<< HEAD
       import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+=======
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+>>>>>>> 77e1b4b19a0b094cfce1699eba21d2936d7f8392
   },
 
   // ABP routes
