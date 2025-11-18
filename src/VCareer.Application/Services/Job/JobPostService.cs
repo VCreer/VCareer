@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -201,8 +202,11 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
         }
+
+        [Authorize]
         public async Task CreateJobPost(JobPostCreateDto dto)
         {
+
             if (_currentUser.IsAuthenticated == false) throw new AbpAuthorizationException("User is not authenticated");
             var recruiter = await _recruiterRepository.FindAsync(r => r.UserId == _currentUser.GetId());
             var company = await _companyRepository.GetAsync(recruiter.CompanyId);
