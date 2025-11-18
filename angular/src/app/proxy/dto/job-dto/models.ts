@@ -1,11 +1,12 @@
-import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
 import type { EmploymentType } from '../../constants/job-constant/employment-type.enum';
 import type { PositionType } from '../../constants/job-constant/position-type.enum';
 import type { ExperienceLevel } from '../../constants/job-constant/experience-level.enum';
-import type { SalaryFilterType } from './salary-filter-type.enum';
 import type { JobStatus } from '../../constants/job-constant/job-status.enum';
-import type { JobDisplayArea } from '../../constants/job-constant/job-display-area.enum';
 import type { JobPriorityLevel } from '../../constants/job-constant/job-priority-level.enum';
+import type { RecruiterLevel } from '../../constants/job-constant/recruiter-level.enum';
+import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
+import type { SalaryFilterType } from '../../constants/job-constant/salary-filter-type.enum';
+import type { JobDisplayArea } from '../../constants/job-constant/job-display-area.enum';
 
 export interface CategoryUpdateCreateDto {
   name?: string;
@@ -17,14 +18,44 @@ export interface CategoryUpdateCreateDto {
 }
 
 export interface JobApproveViewDto {
-  riskJobLevel?: RiskJobLevel;
+  id?: string;
   companyImageUrl?: string;
   companyId: number;
   companyName?: string;
   title?: string;
-  jobId?: string;
+  slug?: string;
+  description?: string;
+  requirements?: string;
+  benefits?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryDeal: boolean;
+  employmentType?: EmploymentType;
+  positionType?: PositionType;
+  experience?: ExperienceLevel;
+  experienceText?: string;
+  workTime?: string;
+  provinceName?: string;
+  wardName?: string;
+  workLocation?: string;
+  quantity: number;
+  status?: JobStatus;
+  priorityLevel?: JobPriorityLevel;
+  recruiterLevel?: RecruiterLevel;
+  riskJobLevel?: RiskJobLevel;
+  rejectedReason?: string;
+  postedAt?: string;
   expiresAt?: string;
-  provinceCode: number;
+  jobCategoryId?: string;
+  categoryName?: string;
+}
+
+export interface JobFilterDto {
+  priorityLevel?: JobPriorityLevel;
+  recruiterLevel?: RecruiterLevel;
+  riskJobLevel?: RiskJobLevel;
+  page: number;
+  pageSize: number;
 }
 
 export interface JobPostCreateDto {
@@ -69,13 +100,12 @@ export interface JobPostUpdateDto {
 export interface JobSearchInputDto {
   keyword?: string;
   categoryIds: string[];
-  provinceIds: number[];
-  districtIds: number[];
+  provinceCode: number[];
+  wardCode: number[];
   experienceFilter?: ExperienceLevel;
   salaryFilter?: SalaryFilterType;
   employmentTypes?: EmploymentType[];
   positionTypes?: PositionType[];
-  isUrgent?: boolean;
   sortBy?: string;
   skipCount: number;
   maxResultCount: number;

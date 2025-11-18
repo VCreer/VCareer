@@ -47,7 +47,34 @@ namespace VCareer.Services.Geo
             Console.WriteLine(provinces);
 
             return provinces;
-                   }
+        } 
+
+        public async Task<string> GetProvinceNameByCode(int provinceCode)
+        {
+
+            var provinces = await GetProvincesAsync();
+            if (provinces == null) throw new BusinessException("Cannot get provinces data from external api");
+
+            var provinceName =provinces.FirstOrDefault(p=>p.Code==provinceCode)?.Name;
+            if(provinceName==null) throw new BusinessException("Cannot get province name from external api");
+
+            return provinceName;
+        }
+
+        public async Task<string> GetWardNameByCode(int? wardCode , int provinceCode )
+        {
+            if(wardCode==null) return string.Empty;
+            var provinces = await GetProvincesAsync();
+            if (provinces == null) throw new BusinessException("Cannot get provinces data from external api");
+            var wards =provinces.FirstOrDefault(p=>p.Code==provinceCode)?.Ward;
+            if(wards ==null) throw new BusinessException("Cannot get wards data from external api");
+
+            var wardName = wards.FirstOrDefault(w=>w.Code == wardCode)?.Name;
+            if (wardName== null) throw new BusinessException("Cannot get province name from external api");
+
+            return wardName;
+        }
+
 
     }
 }
