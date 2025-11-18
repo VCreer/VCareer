@@ -32,7 +32,7 @@ namespace VCareer.Services.Job
         public JobSearchService(
                 IJobPostRepository jobPostingRepository,
                 ILuceneJobIndexer luceneIndexer,
-                             ILogger<JobPostService> logger,
+                ILogger<JobPostService> logger,
         //        ISavedJobRepository savedJobRepository,
                 IRepository<CandidateProfile, Guid> candidateProfileRepository,
                 ICurrentUser currentUser,
@@ -41,10 +41,10 @@ namespace VCareer.Services.Job
             _jobPostingRepository = jobPostingRepository;
             _luceneIndexer = luceneIndexer;
             _logger = logger;
-          //  _savedJobRepository = savedJobRepository;
             _candidateProfileRepository = candidateProfileRepository;
             _currentUser = currentUser;
             _userManager = userManager;
+            //  _savedJobRepository = savedJobRepository;
             //_companyRepository = companyRepository;
             //_recruiterRepository = recruiterRepository;
         }
@@ -166,7 +166,7 @@ namespace VCareer.Services.Job
                 var job = await _jobPostingRepository.GetForIndexingAsync(jobId);
                 if (job != null)
                 {
-                    await _luceneIndexer.IndexJobAsync(job);
+                    await _luceneIndexer.UpsertJobAsync(job);
                     _logger.LogInformation($"Đã index job: {job.Title} (ID: {jobId})");
                 }
             }

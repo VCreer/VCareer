@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Models.Job;
 using Volo.Abp.Domain.Entities;
 
-namespace VCareer.Models.Job
+namespace VCareer.Models.JobCategory
 {
-    public class JobPostTag : Entity<int>
+    public class JobTag : Entity<int>
     {
-
-        public Guid JobPostingId { get; set; }
+        public Guid JobId { get; set; }
         public int TagId { get; set; }
-        public virtual Job_Post JobPosting { get; set; }
+        public virtual Job_Post Job { get; set; }
         public virtual Tag Tag { get; set; }
     }
 }

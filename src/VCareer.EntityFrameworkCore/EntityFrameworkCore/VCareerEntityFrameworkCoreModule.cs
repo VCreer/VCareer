@@ -3,6 +3,7 @@ using System;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using VCareer.Models.Users;
 // 🔧 Thêm using cho custom repositories
 using VCareer.Repositories.Job;
@@ -52,12 +53,14 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             /* Remove "includeAllEntities: true" to create
              * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
-            options.AddRepository<VCareer.Models.Job.Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
+            options.AddRepository<Job_Category, VCareer.Repositories.Job.JobCategoryRepository>();
             options.AddRepository<CandidateProfile, CandidateRepository>();
             options.AddRepository<RecruiterProfile, RecruiterProfileRepository>();
             options.AddRepository<EmployeeProfile, EmployeeProfileRepository>();
             options.AddRepository<VCareer.Models.Job.Job_Post, JobPostRepository>();
-            options.AddRepository<RecruitmentCampaign,RecruitmentCampainRepository>();
+            options.AddRepository<RecruitmentCampaign, RecruitmentCampainRepository>();
+            options.AddRepository<Tag, TagRepository>();
+            options.AddRepository<Categoty_Tag, TagRepository>();
         });
 
 
@@ -67,6 +70,8 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<IEmployeeRepository, EmployeeProfileRepository>();
         context.Services.AddTransient<IJobPostRepository, JobPostRepository>();
         context.Services.AddTransient<IRecruitmentCampainRepository, RecruitmentCampainRepository>();
+        context.Services.AddTransient<ITagRepository, TagRepository>();
+        context.Services.AddTransient<ICategoryTagRepository, CategoryTagRepository>();
 
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)

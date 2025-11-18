@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using Volo.Abp.Domain.Repositories;
 
 namespace VCareer.IRepositories.Job

@@ -10,21 +10,21 @@ export class JobCategoryService {
   apiName = 'Default';
   
 
-  getCategoryTree = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
-      method: 'GET',
-      url: '/api/job-categories/tree',
-    },
-    { apiName: this.apiName,...config });
+  // getCategoryTree = (config?: Partial<Rest.Config>) =>
+  //   this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
+  //     method: 'GET',
+  //     url: '/api/job-categories/tree',
+  //   },
+  //   { apiName: this.apiName,...config });
   
 
-  searchCategories = (keyword: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
-      method: 'POST',
-      url: '/api/job-categories/search',
-      params: { keyword },
-    },
-    { apiName: this.apiName,...config });
+  // searchCategories = (keyword: string, config?: Partial<Rest.Config>) =>
+  //   this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
+  //     method: 'POST',
+  //     url: '/api/job-categories/search',
+  //     params: { keyword },
+  //   },
+  //   { apiName: this.apiName,...config });
 
-  constructor(private restService: RestService) {}
+  // constructor(private restService: RestService) {}
 }

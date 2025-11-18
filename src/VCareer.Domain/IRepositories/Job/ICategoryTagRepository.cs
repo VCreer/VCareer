@@ -8,9 +8,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace VCareer.IRepositories.Job
 {
-    public interface ITagRepository : IRepository<Tag, int>
+    public interface ICategoryTagRepository : IRepository<Categoty_Tag, int>
     {
-        Task<Tag> GetByNameAsync(string name);
-        Task<List<Tag>> GetPopularTagsAsync(int topN);
     }
 }
