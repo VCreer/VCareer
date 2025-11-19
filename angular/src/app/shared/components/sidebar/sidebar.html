@@ -60,8 +60,8 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/redeem-gifts')" class="sidebar-link">
-            <i class="fa fa-gift sidebar-icon"></i>
+          <a (click)="navigateTo('/recruiter/my-services')" class="sidebar-link" [class.active]="isActive('/recruiter/my-services')">
+            <i class="fa-solid fa-wand-magic sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.redeem_gifts') }}</span>
           </a>
         </li>

@@ -9,7 +9,8 @@ import {
   ButtonComponent, 
   ToastNotificationComponent,
   CvEmptyStateComponent,
-  PaginationComponent
+  PaginationComponent,
+  GenericModalComponent
 } from '../../../shared/components';
 
 export interface CandidateCv {
@@ -42,7 +43,8 @@ export interface CandidateCv {
     CvEmptyStateComponent,
     ButtonComponent,
     ToastNotificationComponent,
-    PaginationComponent
+    PaginationComponent,
+    GenericModalComponent
   ],
   templateUrl: './cv-management.html',
   styleUrls: ['./cv-management.scss']
@@ -448,6 +450,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   showActionsMenu: string | null = null;
 
+  // Note modal
+  showNoteModal = false;
+  selectedCvForNote: CandidateCv | null = null;
+  noteText: string = '';
+
   toggleActionsMenu(cvId: string, event?: Event): void {
     if (event) {
       event.stopPropagation();
@@ -525,11 +532,25 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   onAddNote(cv: CandidateCv): void {
     this.showActionsMenu = null;
-    const note = prompt('Nhập ghi chú cho ứng viên:', cv.notes || '');
-    if (note !== null) {
-      cv.notes = note;
+    this.selectedCvForNote = cv;
+    this.noteText = cv.notes || '';
+    this.showNoteModal = true;
+  }
+
+  onCloseNoteModal(): void {
+    this.showNoteModal = false;
+    this.selectedCvForNote = null;
+    this.noteText = '';
+  }
+
+  onConfirmNote(): void {
+    if (this.selectedCvForNote) {
+      this.selectedCvForNote.notes = this.noteText;
       // TODO: Save to backend
       this.showToastMessage('Đã cập nhật ghi chú!', 'success');
+      this.showNoteModal = false;
+      this.selectedCvForNote = null;
+      this.noteText = '';
     }
   }
 

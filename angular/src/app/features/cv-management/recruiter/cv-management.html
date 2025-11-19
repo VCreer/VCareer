@@ -191,5 +191,36 @@
     [type]="toastType"
     (close)="onToastClose()">
   </app-toast-notification>
+
+  <!-- Note Modal -->
+  <app-generic-modal
+    [show]="showNoteModal"
+    [title]="'Ghi chú'"
+    [maxWidth]="'600px'"
+    [bodyBackground]="'white'"
+    [closeOnOverlayClick]="true"
+    (close)="onCloseNoteModal()">
+    <div class="note-modal-content">
+      <div *ngIf="selectedCvForNote" class="note-modal-section">
+        <div class="note-input-wrapper">
+          <label class="note-label">Ghi chú:</label>
+          <textarea 
+            class="note-textarea" 
+            [(ngModel)]="noteText"
+            placeholder="Nhập ghi chú cho ứng viên..."
+            rows="5"></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="onCloseNoteModal()">
+            Hủy
+          </button>
+          <button class="btn btn-primary" (click)="onConfirmNote()">
+            Lưu
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-generic-modal>
 </div>
 
