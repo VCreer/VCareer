@@ -203,6 +203,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
       {
+        path: 'my-services',
+        loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
+      },
+      {
         path: 'recruitment-report',
         loadComponent: () => import('./features/dashboard/recruitment-report/recruiter/recruitment-report').then(c => c.RecruitmentReportComponent),
       },

@@ -663,9 +663,12 @@
     .campaigns-table {
       width: 100%;
       border-collapse: collapse;
+      border-left: 1px solid #e5e7eb;
+      border-right: 1px solid #e5e7eb;
 
       thead {
         background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
         border-bottom: 2px solid #e5e7eb;
 
         th {
@@ -675,6 +678,11 @@
           font-weight: 600;
           color: #374151;
           white-space: nowrap;
+          border-right: 1px solid #e5e7eb;
+
+          &:last-child {
+            border-right: none;
+          }
         }
       }
 
@@ -688,12 +696,17 @@
           }
 
           &:last-child {
-            border-bottom: none;
+            border-bottom: 2px solid #e5e7eb;
           }
 
           td {
             padding: 16px;
             vertical-align: top;
+            border-right: 1px solid #e5e7eb;
+
+            &:last-child {
+              border-right: none;
+            }
           }
         }
       }

@@ -520,9 +520,12 @@
         border-collapse: collapse;
         table-layout: fixed;
         background: white;
+        border-left: 1px solid #e5e7eb;
+        border-right: 1px solid #e5e7eb;
 
         thead {
           background: #f9fafb;
+          border-top: 1px solid #e5e7eb;
           border-bottom: 2px solid #e5e7eb;
 
           tr {
@@ -534,6 +537,11 @@
               color: #374151;
               text-transform: uppercase;
               letter-spacing: 0.5px;
+              border-right: 1px solid #e5e7eb;
+
+              &:last-child {
+                border-right: none;
+              }
 
               &.stt-col {
                 width: 60px;
@@ -573,7 +581,7 @@
 
         tbody {
           tr {
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
             transition: background-color 0.2s ease;
 
             &:hover {
@@ -581,14 +589,19 @@
             }
 
             &:last-child {
-              border-bottom: none;
+              border-bottom: 2px solid #e5e7eb;
             }
 
             td {
               padding: 16px;
               font-size: 0.875rem;
               color: #374151;
+              border-right: 1px solid #e5e7eb;
               vertical-align: middle;
+
+              &:last-child {
+                border-right: none;
+              }
 
               // STT Cell
               &.stt-cell {

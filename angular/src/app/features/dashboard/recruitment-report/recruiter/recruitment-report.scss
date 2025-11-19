@@ -894,9 +894,12 @@
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
+        border-left: 1px solid #e5e7eb;
+        border-right: 1px solid #e5e7eb;
 
         thead {
           background: #f9fafb;
+          border-top: 1px solid #e5e7eb;
 
           th {
             padding: 12px 16px;
@@ -905,7 +908,12 @@
             font-weight: 600;
             color: #6b7280;
             border-bottom: 2px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
             white-space: nowrap;
+
+            &:last-child {
+              border-right: none;
+            }
 
             @media (max-width: 768px) {
               padding: 10px 12px;
@@ -928,10 +936,19 @@
               background-color: #f9fafb;
             }
 
+            &:last-child {
+              border-bottom: 2px solid #e5e7eb;
+            }
+
             td {
               padding: 16px;
               font-size: 0.9375rem;
               color: #374151;
+              border-right: 1px solid #e5e7eb;
+
+              &:last-child {
+                border-right: none;
+              }
 
               @media (max-width: 768px) {
                 padding: 12px;
