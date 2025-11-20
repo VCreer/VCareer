@@ -124,7 +124,6 @@ namespace VCareer.Services.Job
                     PositionType = job.PositionType,
                     Experience = job.Experience,
                     Quantity = job.Quantity,
-                    ExperienceText = job.ExperienceText,
                     WorkLocation = job.WorkLocation,
                     WorkTime = job.WorkTime,
                     Slug = job.Slug,

@@ -2,15 +2,21 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using VCareer.IRepositories.Category;
 using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Payment;
 using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.Subcriptions;
 using VCareer.Models.Job;
 using VCareer.Models.JobCategory;
+using VCareer.Models.Subcription;
+using VCareer.Models.Subcription_Payment;
 using VCareer.Models.Users;
 using VCareer.Repositories.Category;
 
 // 🔧 Thêm using cho custom repositories
 using VCareer.Repositories.Job;
 using VCareer.Repositories.Profile;
+using VCareer.Repositories.Subcription_Payment;
+using VCareer.Repositories.Subcriptions;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -61,23 +67,41 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<EmployeeProfile, EmployeeProfileRepository>();
             options.AddRepository<VCareer.Models.Job.Job_Post, JobPostRepository>();
             options.AddRepository<RecruitmentCampaign, RecruitmentCampainRepository>();
+
             options.AddRepository<Tag, TagRepository>();
             options.AddRepository<Categoty_Tag, TagRepository>();
             options.AddRepository<Job_Category, JobCategoryRepository>();
             options.AddRepository<JobTag, JobTagRepository>();
+
+            options.AddRepository<ChildService, ChildServiceRepository>();
+            options.AddRepository<ChildService_SubcriptionService, ChildService_SubcriptionServiceRepository>();
+            options.AddRepository<SubcriptionService, SubcriptionServiceRepository>();
+            options.AddRepository<User_SubcriptionService, User_SubcriptionServiceRepository>();
+            options.AddRepository<User_ChildService, User_ChildServiceRepository>();
+            options.AddRepository<SubcriptionPrice, SubcriptionPriceRepository>();
+            options.AddRepository<EffectingJobService, EffectingJobServiceRepository>();
+
         });
 
 
-        context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
         context.Services.AddTransient<ICandidateProfileRepository, CandidateRepository>();
         context.Services.AddTransient<IRecruiterRepository, RecruiterProfileRepository>();
         context.Services.AddTransient<IEmployeeRepository, EmployeeProfileRepository>();
         context.Services.AddTransient<IJobPostRepository, JobPostRepository>();
         context.Services.AddTransient<IRecruitmentCampainRepository, RecruitmentCampainRepository>();
+
+        context.Services.AddTransient<IJobCategoryRepository, JobCategoryRepository>();
         context.Services.AddTransient<ITagRepository, TagRepository>();
         context.Services.AddTransient<ICategoryTagRepository, CategoryTagRepository>();
         context.Services.AddTransient<IJobTagRepository, JobTagRepository>();
 
+        context.Services.AddTransient<IChildServiceRepository, ChildServiceRepository>();
+        context.Services.AddTransient<IChildService_SubcriptionServiceRepository, ChildService_SubcriptionServiceRepository>();
+        context.Services.AddTransient<ISubcriptionServiceRepository, SubcriptionServiceRepository>();
+        context.Services.AddTransient<IUser_SubcriptionServicerRepository, User_SubcriptionServiceRepository>();
+        context.Services.AddTransient<IUser_ChildServiceRepository, User_ChildServiceRepository>();
+        context.Services.AddTransient<ISubcriptionPriceRepository, SubcriptionPriceRepository>();
+        context.Services.AddTransient<IEffectingJobServiceRepository, EffectingJobServiceRepository>();
 
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)

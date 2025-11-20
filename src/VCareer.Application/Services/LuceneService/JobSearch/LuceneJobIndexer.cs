@@ -198,81 +198,23 @@ namespace VCareer.Services.LuceneService.JobSearch
 
             // ID Field (Store để retrieve sau khi search)
             doc.Add(new StringField("Id", job.Id.ToString(), Field.Store.YES));
-
-            // TEXT FIELDS (Full-text search với boost)
-            // Title - Boost 3.0 (quan trọng nhất)
             doc.Add(new TextField("Title", job.Title ?? "", Field.Store.NO) { Boost = 3.0f });
-
-            // Description - Boost 1.5
             doc.Add(new TextField("Description", StripHtmlTags(job.Description ?? ""), Field.Store.NO) { Boost = 1.5f });
-
-            // Requirements - Boost 1.2
             doc.Add(new TextField("Requirements", StripHtmlTags(job.Requirements ?? ""), Field.Store.NO) { Boost = 1.2f });
-
-            // Benefits
-            doc.Add(new TextField("Benefits", StripHtmlTags(job.Benefits ?? ""), Field.Store.NO));
-
-            // WorkLocation
-            doc.Add(new TextField("WorkLocation", job.WorkLocation ?? "", Field.Store.NO));
-
-            // ExperienceText để search keyword (VD: "không yêu cầu kinh nghiệm", "2 năm")
-            doc.Add(new TextField("ExperienceText", job.ExperienceText ?? "", Field.Store.NO));
-
-            // CATEGORY (Load category path để search theo parent categories)
+            doc.Add(new Int32Field("Experience", (int)job.Experience, Field.Store.NO));
             doc.Add(new StringField("CategoryId", job.JobCategoryId.ToString(), Field.Store.NO));
-
-            //// Category path: "Công nghệ thông tin > Phát triển phần mềm > Backend Developer"
-            //var categoryPath = await _jobCategoryRepository.GetCategoryPathAsync(job.JobCategoryId);
-            //doc.Add(new TextField("CategoryPath", categoryPath ?? "", Field.Store.NO) { Boost = 2.0f });
-
-            // ========================================
-            // LOCATION (Load province/district names để search)
-            // ========================================
-            //doc.Add(new Int32Field("ProvinceId", job.ProvinceId, Field.Store.NO));
-            //doc.Add(new Int32Field("DistrictId", job.DistrictId, Field.Store.NO));
-
-            /*    doc.Add(new StringField("ProvinceId", job.ProvinceId.ToString(), Field.Store.NO));
-                doc.Add(new StringField("DistrictId", job.DistrictId.ToString(), Field.Store.NO));*/
-
-            // Load province và district names
-            //var province = await _locationRepository.GetProvinceByIdAsync(job.ProvinceId);
-            //var district = await _locationRepository.GetDistrictByIdAsync(job.DistrictId);
-
-            //if (province != null)
-            //    doc.Add(new TextField("ProvinceName", province.Name ?? "", Field.Store.NO));
-
-            //if (district != null)
-            //    doc.Add(new TextField("DistrictName", district.Name ?? "", Field.Store.NO));
-
-            // ========================================
-            // SALARY (Index min/max để filter + text để display)
-            // ========================================
+            doc.Add(new Int32Field("ProvinceCode", job.ProvinceCode, Field.Store.NO));
+            if (job.WardCode.HasValue)  doc.Add(new Int32Field("WardCode", (int)job.WardCode, Field.Store.NO));
             doc.Add(new StringField("SalaryDeal", job.SalaryDeal.ToString(), Field.Store.NO));
-            doc.Add(new DoubleField("SalaryMin", (double)(job.SalaryMin ?? 0), Field.Store.NO));
-            doc.Add(new DoubleField("SalaryMax", (double)(job.SalaryMax ?? decimal.MaxValue), Field.Store.NO));
-
-            // SalaryText để hiển thị (không index vì không search text này)
-            //doc.Add(new StoredField("SalaryText", job.SalaryText ?? ""));
-
-            // ========================================
-            // EXPERIENCE (Enum + Text để search keyword)
-            // ========================================
             doc.Add(new StringField("Experience", ((int)job.Experience).ToString(), Field.Store.NO));
-
-            // ========================================
-            // OTHER FIELDS
-            // ========================================
             doc.Add(new StringField("EmploymentType", ((int)job.EmploymentType).ToString(), Field.Store.NO));
             doc.Add(new StringField("PositionType", ((int)job.PositionType).ToString(), Field.Store.NO));
-            /* doc.Add(new StringField("IsUrgent", job.IsUrgent.ToString(), Field.Store.NO));*/
             doc.Add(new StringField("Status", ((int)job.Status).ToString(), Field.Store.NO));
-
+            
             // Dates (store as ticks để sort)
             doc.Add(new Int64Field("PostedAt", job.PostedAt.Ticks, Field.Store.NO));
             doc.Add(new Int64Field("LastModifiedAt", (job.LastModificationTime ?? job.CreationTime).Ticks, Field.Store.NO));
-
-            if (job.ExpiresAt.HasValue)
-                doc.Add(new Int64Field("ExpiresAt", job.ExpiresAt.Value.Ticks, Field.Store.NO));
+            if (job.ExpiresAt.HasValue) doc.Add(new Int64Field("ExpiresAt", job.ExpiresAt.Value.Ticks, Field.Store.NO));
 
             return doc;
         }
@@ -510,34 +452,43 @@ namespace VCareer.Services.LuceneService.JobSearch
         }
 
         /// Build sort order từ sortBy parameter
-        private Sort BuildSortOrder(string sortBy)
+        private Sort BuildSortOrder(SortByField sortBy)
         {
-            sortBy = sortBy?.ToLower() ?? "relevance";
+            SortField sf1;
+            SortField sf2;
 
-            return sortBy switch
+            switch (sortBy)
             {
-                "salary" => new Sort(
-                    new SortField("SalaryMax", SortFieldType.DOUBLE, true),      // Lương cao → thấp
-                    new SortField("PostedAt", SortFieldType.INT64, true)         // Mới nhất
-                ),
+                case SortByField.Salary:
+                    sf1 = new SortField("SalaryMax", SortFieldType.DOUBLE, true);
+                    sf1.SetMissingValue(double.Min);
+                    sf2 = CreatePostedAtSort();
+                    return new Sort(sf1, sf2);
 
-                "experience" => new Sort(
-                    new SortField("Experience", SortFieldType.INT32, true),       // Kinh nghiệm cao → thấp
-                    new SortField("PostedAt", SortFieldType.INT64, true)
-                ),
+                case SortByField.Experience:
+                    sf1 = new SortField("Experience", SortFieldType.INT32, true);
+                    sf1.SetMissingValue(int.MinValue);
+                    sf2 = CreatePostedAtSort();
+                    return new Sort(sf1, sf2);
 
-                "urgent" => new Sort(
-                    new SortField("IsUrgent", SortFieldType.STRING, true),       // Tuyển gấp lên đầu
-                    new SortField("PostedAt", SortFieldType.INT64, true)
-                ),
+                case SortByField.ExpiredAt:
+                    sf1 = new SortField("ExpiresAt", SortFieldType.INT64, true);
+                    sf1.SetMissingValue(long.MinValue);
+                    sf2 = CreatePostedAtSort();
+                    return new Sort(sf1, sf2);
 
-                "updated" => new Sort(
-                    new SortField("LastModifiedAt", SortFieldType.INT64, true)   // Mới cập nhật
-                ),
-
-                _ => Sort.RELEVANCE                                              // Default: Relevance (Lucene score)
-            };
+                default:
+                    return Sort.RELEVANCE;
+            }
         }
+        private SortField CreatePostedAtSort()
+        {
+            var sf = new SortField("PostedAt", SortFieldType.INT64, true);
+            sf.SetMissingValue(long.MinValue);
+            return sf;
+        }
+
+
 
         #endregion
 
