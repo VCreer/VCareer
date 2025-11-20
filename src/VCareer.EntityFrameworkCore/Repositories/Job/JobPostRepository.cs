@@ -18,6 +18,7 @@ namespace VCareer.Repositories.Job
     public class JobPostRepository : EfCoreRepository<VCareerDbContext, Job_Post, Guid>, IJobPostRepository
     {
         private readonly IJobCategoryRepository _jobCategoryRepository;
+        private readonly VCareerDbContext _dbContext;
 
         public JobPostRepository(
             IDbContextProvider<VCareerDbContext> dbContextProvider,
@@ -25,6 +26,7 @@ namespace VCareer.Repositories.Job
            ) : base(dbContextProvider)
         {
             _jobCategoryRepository = jobCategoryRepository;
+            _dbContext = dbContextProvider.GetDbContextAsync().GetAwaiter().GetResult();
         }
 
         // base để include các bảng liên quan
@@ -131,9 +133,8 @@ namespace VCareer.Repositories.Job
         // llaasy full 1 job để indeex
         public async Task<Job_Post> GetForIndexingAsync(Guid jobId)
         {
-            var dbContext = await GetDbContextAsync();
-
-            var query = dbContext.JobPostings
+            
+            var query = _dbContext.JobPostings
                 .Where(j => j.Id == jobId)
                 // Load đầy đủ để index
                 .Include(j => j.JobCategory)

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using VCareer.Model;
 using Volo.Abp.Application.Dtos;
 
-namespace VCareer.Dto.Job
+namespace VCareer.Dto.Category
 {
     // cây category 
     public class CategoryTreeDto

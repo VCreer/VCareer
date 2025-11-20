@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VCareer.Models.SubcriptionService
+namespace VCareer.Services.Job
 {
-    internal class UserSubcription
+    internal class TagService
     {
     }
 }

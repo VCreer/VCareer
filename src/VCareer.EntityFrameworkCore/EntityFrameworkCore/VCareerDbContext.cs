@@ -27,6 +27,8 @@ using VCareer.Models.FileMetadata;
 using VCareer.Models.CV;
 using VCareer.Models.Applications;
 using VCareer.Models.JobCategory;
+using VCareer.Models.Subcription;
+using VCareer.Models.Subcription_Payment;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -49,7 +51,14 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-
+    //dich vu
+    public DbSet<ChildService> ChildServices { get; set; }
+    public DbSet<ChildService_SubcriptionService> ChildService_SubcriptionServices { get; set; }
+    public DbSet<SubcriptionService> SubcriptionServices { get; set; }
+    public DbSet<EffectingJobService> EffectingJobServices { get; set; }
+    public DbSet<SubcriptionPrice> SubcriptionPrices { get; set; }
+    public DbSet<User_ChildService> User_ChildServices { get; set; }
+    public DbSet<User_SubcriptionService> User_SubcriptionServices { get; set; }
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     /*public DbSet<JobApplication> JobApplications { get; set; }
@@ -129,7 +138,7 @@ public class VCareerDbContext :
         b.ConfigureByConvention();
         b.HasIndex(x => x.Name).IsUnique(); // Đảm bảo tag name unique
 
-        b.HasMany(x => x.JobTags )
+        b.HasMany(x => x.JobTags)
          .WithOne(x => x.Tag)
          .HasForeignKey(x => x.TagId)
          .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi tag bị xóa
@@ -138,7 +147,7 @@ public class VCareerDbContext :
         builder.Entity<JobTag>(b =>
 {
     b.ToTable("JobTag");
-    b.HasKey(x => x.Id); 
+    b.HasKey(x => x.Id);
 
     // Relationships
     b.HasOne(x => x.Job)
@@ -163,7 +172,7 @@ public class VCareerDbContext :
         .HasForeignKey(x => x.ParentId)
         .OnDelete(DeleteBehavior.Restrict);
 
-      });
+   });
 
         builder.Entity<Categoty_Tag>(b =>
         {
@@ -202,14 +211,14 @@ public class VCareerDbContext :
 
         // Relationships
         b.HasOne(x => x.JobCategory)
-         .WithMany(c=>c.JobPosts)
+         .WithMany(c => c.JobPosts)
          .HasForeignKey(x => x.JobCategoryId)
-         .OnDelete(DeleteBehavior.Restrict); 
+         .OnDelete(DeleteBehavior.Restrict);
 
-             b.HasOne(x => x.RecruitmentCampaign)
-        .WithMany(r => r.Job_Posts)
-        .HasForeignKey(x => x.RecruitmentCampaignId)
-        .OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.RecruitmentCampaign)
+   .WithMany(r => r.Job_Posts)
+   .HasForeignKey(x => x.RecruitmentCampaignId)
+   .OnDelete(DeleteBehavior.Restrict);
 
         b.HasMany(x => x.JobTags)
          .WithOne(x => x.Job)
@@ -659,6 +668,128 @@ public class VCareerDbContext :
             ad.HasIndex(x => x.DocumentType);
             ad.HasIndex(x => x.IsPrimary);
         });*/
+
+
+        builder.Entity<ChildService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+            b.ToTable("ChildServices");
+
+            b.HasMany(x => x.childService_Subcriptions)
+                .WithOne(x => x.ChildService)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.user_ChildServices)
+                .WithOne(x => x.ChildService)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<ChildService_SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.ChildService)
+                .WithMany(x => x.childService_Subcriptions)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.ChildService_SubcriptionServices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasMany(x => x.ChildService_SubcriptionServices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.user_SubcriptionServices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.subcriptionPrices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<SubcriptionPrice>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.subcriptionPrices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<User_SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.User)
+             .WithMany()
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.user_SubcriptionServices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<User_ChildService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.User)
+             .WithMany()
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+
+            b.HasOne(x => x.ChildService)
+                .WithMany(x => x.user_ChildServices)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<EffectingJobService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.JobPost)
+                .WithMany()
+                .HasForeignKey(x => x.JobPostId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.ChildService)
+                .WithMany()
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
 
     }
 }
