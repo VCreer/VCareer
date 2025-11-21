@@ -285,7 +285,7 @@ export class CandidateHomepageComponent implements OnInit {
       provinces: this.geoService.getProvinces(),
     }).subscribe({
       next: data => {
-        this.categories = data.categories;
+      //  this.categories = data.categories;
         this.provinces = data.provinces;
         this.isLoadingData = false;
         console.log('✅ CandidateHomepage - Loaded categories:', this.categories.length);
@@ -303,10 +303,10 @@ export class CandidateHomepageComponent implements OnInit {
   }
 
   toggleBookmark(jobId: number) {
-    const job = this.jobListings.find(j => j.id === jobId);
-    if (job) {
-      job.isBookmarked = !job.isBookmarked;
-    }
+    // const job = this.jobListings.find(j => j.id === jobId);
+    // if (job) {
+    //   job.isBookmarked = !job.isBookmarked;
+    // }
   }
 
   viewJobDetails(jobId: number) {
@@ -478,7 +478,7 @@ export class CandidateHomepageComponent implements OnInit {
 
   loadAllJobs() {
     // Load lại tất cả việc làm từ dữ liệu gốc
-    this.jobListings = [...this.originalJobListings];
+    //this.jobListings = [...this.originalJobListings];
     this.updatePagination();
   }
 

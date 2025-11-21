@@ -11,12 +11,12 @@ namespace VCareer.Dto.Subcriptions
     {
         public Guid UserId { get; set; }
         public Guid SubcriptionServiceId { get; set; }
-        public DateTime? EndDate { get; set; }
         public SubcriptionStatus status { get; set; }
 
     }
     public class User_SubcirptionUpdateDto
     {
+        public Guid User_SubcriptionId { get; set; }
         public DateTime? EndDate { get; set; }
         public SubcriptionStatus status { get; set; }
 

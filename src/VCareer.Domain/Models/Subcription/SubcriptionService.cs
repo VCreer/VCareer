@@ -18,9 +18,11 @@ namespace VCareer.Models.Subcription
         public decimal OriginalPrice { get; set; } // giá gốc , sau thêm giá thì chỉnh percent sale ơ bang price
         public bool IsLimited { get; set; } // giới hạn số lượng mua trong 1 khonảg thời gian của toàn bộ người dùng
         public bool IsBuyLimited { get; set; } // giới hạn số lượng mua của mỗi cá nhân
-        public int TotalBuyEachUser { get; set; } // số lượng tối đa mua của mỗi cá nhân
+        public int? TotalBuyEachUser { get; set; } // số lượng tối đa mua của mỗi cá nhân
+        public bool IsLifeTime { get; set; }
+        public int? DayDuration { get; set; }
         public bool IsActive { get; set; }
-        public virtual ICollection<ChildService_SubcriptionService> ChildService_SubcriptionServices{ get; set; } = new List<ChildService_SubcriptionService>();
+        public virtual ICollection<ChildService_SubcriptionService> ChildService_SubcriptionServices { get; set; } = new List<ChildService_SubcriptionService>();
         public virtual ICollection<User_SubcriptionService> user_SubcriptionServices { get; set; } = new List<User_SubcriptionService>();
         public virtual ICollection<SubcriptionPrice> subcriptionPrices { get; set; } = new List<SubcriptionPrice>();
 

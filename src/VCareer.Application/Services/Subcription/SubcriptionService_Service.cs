@@ -102,7 +102,9 @@ namespace VCareer.Services.Subcription
                 Target = dto.Target,
                 TotalBuyEachUser = dto.TotalBuyEachUser,
                 Status = dto.Status,
-                OriginalPrice = dto.OriginalPrice
+                OriginalPrice = dto.OriginalPrice,
+                IsLifeTime = dto.IsLifeTime,
+                DayDuration = dto.DayDuration
             };
 
             await _subcriptionServiceRepository.InsertAsync(newSubcription, true);
@@ -151,6 +153,20 @@ namespace VCareer.Services.Subcription
                 .ToList();
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
         }
+        public async Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive)
+        {
+            var query = await _childService_SubcriptionServiceRepository.GetQueryableAsync();
+            var childServiceIds = query.Where(x => x.SubcriptionServiceId == subcriptionId).Select(x => x.ChildServiceId);
+
+            var childServiceQuery = await _childServiceRepository.GetQueryableAsync();
+            if (isActive.HasValue) childServiceQuery = childServiceQuery.Where(x => x.IsActive == isActive);
+
+            var childServices = childServiceQuery
+                .Where(x => childServiceIds
+                .Contains(x.Id))
+                .ToList();
+            return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
+        }
 
         public async Task<SubcriptionsViewDto> GetSubcriptionService(Guid subcriptionId)
         {
@@ -188,9 +204,10 @@ namespace VCareer.Services.Subcription
             subcriptionService.Title = dto.Title;
             subcriptionService.Description = dto.Description;
             subcriptionService.IsActive = dto.IsActive;
+            subcriptionService.DayDuration = dto.DayDuration;
 
             await _subcriptionServiceRepository.UpdateAsync(subcriptionService);
         }
 
-       }
+    }
 }

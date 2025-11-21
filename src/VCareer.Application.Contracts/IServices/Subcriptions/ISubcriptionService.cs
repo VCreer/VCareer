@@ -17,6 +17,7 @@ namespace VCareer.IServices.Subcriptions
         public Task DeleteSubcriptionAsync(Guid subcriptionId);
         //child service
         public  Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive, PagingDto pagingDto);
+        public Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive);
         public Task AddChildServiceAsync(AddChildServicesDto dto);
         public Task RemoveChildServiceAsync(AddChildServicesDto dto);
         //price

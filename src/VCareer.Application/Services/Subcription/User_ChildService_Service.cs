@@ -11,7 +11,7 @@ using Volo.Abp.Application.Services;
 
 namespace VCareer.Services.Subcription
 {
-    public class User_ChildService : ApplicationService, IUser_ChildService
+    public class User_ChildService_Service : ApplicationService, IUser_ChildService
     {
         public Task ActiveServiceAsync(User_ChildServiceCreateDto dto)
         {
