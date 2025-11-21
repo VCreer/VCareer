@@ -15,7 +15,7 @@ namespace VCareer.IServices.Subcriptions
         public Task UpdateEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto);
         public Task CancleEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto);
         public Task<EffectingJobServiceViewDto> GetEffectingJobService(Guid effectingJobServiceId);
-        public Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, EffectingJobServiceStatus status, PagingDto pagingDto);
+        public Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, ChildServiceStatus status, PagingDto pagingDto);
 
     }
 }

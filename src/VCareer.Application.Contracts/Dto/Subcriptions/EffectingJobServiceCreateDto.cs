@@ -11,9 +11,6 @@ namespace VCareer.Dto.Subcriptions
     {
         public Guid JobPostId { get; set; }
         public Guid ChildServiceId { get; set; }
-        public DateTime? EndDate { get; set; }
-        public ChildServiceStatus Status { get; set; } = ChildServiceStatus.Active;
-
     }
     public class EffectingJobServiceUpdateDto
     {
