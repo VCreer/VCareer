@@ -9,6 +9,8 @@ import { ProfileService } from '../../../../proxy/profile/profile.service';
 import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
+import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
+import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 
 @Component({
   selector: 'app-candidate-profile',
@@ -49,7 +51,9 @@ export class CandidateProfileComponent implements OnInit {
     private router: Router,
     private profileService: ProfileService,
     private uploadedCvService: UploadedCvService,
-    private http: HttpClient
+    private http: HttpClient,
+    private authStateService: AuthStateService,
+    private authFacadeService: AuthFacadeService
   ) {}
 
   ngOnInit() {
@@ -58,18 +62,37 @@ export class CandidateProfileComponent implements OnInit {
 
   loadProfileData() {
     this.isLoading = true;
-    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
-    if (!token) {
-      this.showErrorMessage('Vui lòng đăng nhập lại');
-      this.isLoading = false;
-      this.router.navigate(['/candidate/login']);
+    
+    // Với cookies, kiểm tra user từ AuthStateService
+    // Nếu chưa có user, thử load từ cookies
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục load profile
+          this.loadProfileDataInternal();
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, redirect đến login
+          this.showErrorMessage('Vui lòng đăng nhập lại');
+          this.isLoading = false;
+          this.router.navigate(['/candidate/login']);
+        }
+      });
       return;
     }
 
+    // Đã có user, load profile
+    this.loadProfileDataInternal();
+  }
+
+  private loadProfileDataInternal() {
+    this.isLoading = true;
+    
+    // Với cookies, không cần Authorization header, cookies sẽ tự động được gửi kèm
     const apiUrl = `${environment.apis.default.url}/api/profile`;
     this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
       headers: {
-        Authorization: `Bearer ${token}`,
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       }
@@ -105,9 +128,8 @@ export class CandidateProfileComponent implements OnInit {
         console.error('Error loading profile:', error);
         if (error.status === 401 || error.status === 403) {
           this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
+          // Với cookies, không cần xóa localStorage, chỉ cần clear user state
+          this.authStateService.setUser(null);
           this.router.navigate(['/candidate/login']);
           return;
         }
@@ -137,13 +159,30 @@ export class CandidateProfileComponent implements OnInit {
     }
 
     this.isSaving = true;
-    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
-    if (!token) {
-      this.showErrorMessage('Vui lòng đăng nhập lại');
-      this.isSaving = false;
-      this.router.navigate(['/candidate/login']);
+    
+    // Với cookies, kiểm tra user từ AuthStateService
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục save
+          this.saveProfileDataInternal(profileData);
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, redirect đến login
+          this.showErrorMessage('Vui lòng đăng nhập lại');
+          this.isSaving = false;
+          this.router.navigate(['/candidate/login']);
+        }
+      });
       return;
     }
+
+    // Đã có user, save profile
+    this.saveProfileDataInternal(profileData);
+  }
+
+  private saveProfileDataInternal(profileData: any) {
+    this.isSaving = true;
 
     const nameParts = profileData.fullName.trim().split(' ').filter(x => x.length > 0);
     let name = '', surname = '';
@@ -173,8 +212,8 @@ export class CandidateProfileComponent implements OnInit {
 
     const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
     this.http.put(apiUrl, updateDto, {
+      withCredentials: true,
       headers: {
-        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
         Accept: 'application/json'
       }
@@ -189,7 +228,8 @@ export class CandidateProfileComponent implements OnInit {
         this.isSaving = false;
         if (error.status === 401 || error.status === 403) {
           this.showErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-          localStorage.clear();
+          // Với cookies, không cần xóa localStorage, chỉ cần clear user state
+          this.authStateService.setUser(null);
           this.router.navigate(['/candidate/login']);
           return;
         }

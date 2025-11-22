@@ -120,6 +120,7 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
+        ConfigureFilePolicyConfigs(configuration); // Cấu hình FilePolicyConfigs từ appsettings.json
         ConfigureDistributedCache(context, configuration);
 
         //cái này để ghi đè cái trạng thái set cookie strict => chỉ gửi cookie nếu chung domain

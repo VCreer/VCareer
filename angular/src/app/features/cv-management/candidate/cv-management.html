@@ -8,9 +8,40 @@
   </div>
 
       <!-- Main Content -->
-      <div class="cv-main-content">
-        <!-- Left Column - CV List and Upload Section -->
-        <div class="cv-left-column">
+      <div class="cv-main-content" [class.has-priority-cv]="defaultCv" [class.no-priority-cv]="!defaultCv">
+        <!-- Left Column - Priority CV (Default CV) -->
+        <div class="cv-priority-column" *ngIf="defaultCv">
+          <div class="priority-cv-card">
+            <div class="priority-cv-header">
+              <h3 class="priority-cv-title">
+                <i class="fa fa-star"></i>
+                CV Ưu tiên
+              </h3>
+            </div>
+            <div class="priority-cv-content" (click)="viewCv(defaultCv.id)">
+              <div class="priority-cv-preview">
+                <img 
+                  [src]="defaultCv.template?.previewImageUrl || 'assets/images/cv-management/cv-placeholder.png'" 
+                  [alt]="defaultCv.cvName || 'CV Preview'"
+                  class="priority-cv-image">
+              </div>
+              <div class="priority-cv-info">
+                <h4 class="priority-cv-name">{{ defaultCv.cvName || 'Untitled CV' }}</h4>
+                <p class="priority-cv-version">Version: {{ defaultCv.template?.version || '1.0' }}</p>
+                <p class="priority-cv-date">Cập nhật: {{ formatDate(defaultCv.publishedAt || defaultCv.creationTime) }}</p>
+              </div>
+              <div class="priority-cv-actions">
+                <button class="btn-priority-view" (click)="viewCv(defaultCv.id); $event.stopPropagation()">
+                  <i class="fa fa-eye"></i>
+                  Xem CV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Column - CV List and Upload Section -->
+        <div class="cv-left-column" [class.full-width]="!defaultCv">
           <!-- CV List -->
           <app-cv-list
             [cvs]="cvs"
@@ -69,7 +100,7 @@
         </div>
 
         <!-- Right Column - Profile Sidebar Section -->
-        <div class="profile-sidebar-section">
+        <div class="profile-sidebar-section" [class.full-width]="!defaultCv">
           <!-- Profile Card -->
           <div class="profile-card">
             <div class="profile-layout">
@@ -84,7 +115,7 @@
               <div class="profile-right-column">
                 <div class="profile-info">
                   <span class="profile-label">Profile</span>
-                  <h3>{{ translate('profile_sidebar.welcome_back') }}, Uông Hoàng Duy</h3>
+                  <h3>{{ translate('profile_sidebar.welcome_back') }}, {{ userName || 'Người dùng' }}</h3>
                 </div>
                 
                 <div class="account-status">
