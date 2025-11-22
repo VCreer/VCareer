@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,6 +52,7 @@ namespace VCareer.Services.Job
             _jobCategoryRepository = jobCategoryRepository;
         }
 
+        
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -169,6 +171,7 @@ namespace VCareer.Services.Job
             return msg;
 
         }
+
         private int CheckLengthInformation(Job_Post job, out string msg)
         {
             msg = "Description or title or Requirement or benefit is empty";
@@ -295,6 +298,20 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+
+        /*
+          public enum JobStatus
+    {
+        Draft = 0,        //bài đăng lưu tạm thời 
+        Pending = 1,      // bài đăng đang chờ được duyệt
+        Open = 2,       // bài đăng đã được duyệt và đang mở 
+        Closed = 3,     // đóng chủ đích của recruiter
+        Expired = 4,    // đóng nhưng là thụ động 
+        Rejected = 5,   // bị employee từ chối cho phép đăng 
+        Deleted = 7,     // job bị xóa mềm 
+    }
+         
+         */
         public async Task DeleteJobPost(string id)
         {
             var job = await _jobPostRepository.FindAsync(Guid.Parse(id));
