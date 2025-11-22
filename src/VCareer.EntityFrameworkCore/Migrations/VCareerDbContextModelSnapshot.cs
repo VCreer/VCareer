@@ -106,7 +106,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Applications.JobApplication", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CVType")
@@ -239,8 +238,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("UploadedCvId");
 
-                    b.HasIndex("JobId", "CandidateId")
-                        .IsUnique();
+                    b.HasIndex("JobId", "CandidateId");
 
                     b.ToTable("JobApplications", (string)null);
                 });

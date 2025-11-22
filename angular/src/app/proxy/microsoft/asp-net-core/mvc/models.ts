@@ -6,3 +6,5 @@ export interface ActionResult<TValue=null> {
 
 export interface IActionResult {
 }
+
+export interface IActionResult {}

@@ -1,6 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ChangePasswordDto, ProfileDto, UpdatePersonalInfoDto } from '../dto/profile/models';
 import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({

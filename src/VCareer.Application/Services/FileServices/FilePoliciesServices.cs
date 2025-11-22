@@ -114,11 +114,21 @@ namespace VCareer.Services.FileServices
             return containerConfig.MaxSizeMB * 1024L * 1024L;
 
         }
+        public long GetMaxFileSizeBytes(string containerTypeName)
+        {
+            var containerType = ResolveContainerType(containerTypeName);
+            return GetMaxFileSizeBytes(containerType);
+        }
         public float GetMaxFileSizeMb(object containterType)
         {
             var containerConfig = GetContainterConfig(containterType);
             return containerConfig.MaxSizeMB;
 
+        }
+        public float GetMaxFileSizeMb(string containerTypeName)
+        {
+            var containerType = ResolveContainerType(containerTypeName);
+            return GetMaxFileSizeMb(containerType);
         }
 
         public bool IsAllowedExtension(object containerType, string extension)
@@ -127,6 +137,11 @@ namespace VCareer.Services.FileServices
             return Array.Exists(containerConfig.AllowedExtensions,
                 ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase)
                 || ext == "*");
+        }
+        public bool IsAllowedExtension(string containerTypeName, string extension)
+        {
+            var containerType = ResolveContainerType(containerTypeName);
+            return IsAllowedExtension(containerType, extension);
         }
 
         public string GetPath(object containerType)
@@ -138,6 +153,11 @@ namespace VCareer.Services.FileServices
         {
             var containerConfig = GetContainterConfig(containerType);
             return containerConfig.AllowedExtensions;
+        }
+        public string[] GetAllowedExtensions(string containerTypeName)
+        {
+            var containerType = ResolveContainerType(containerTypeName);
+            return GetAllowedExtensions(containerType);
         }
         //vì container blob name được định nghĩa ko có phần ContainerType, mà cái hàm này mình tìm dựa trên mấy cái enum có tên là container +"ContainerType"
         public string GetContainerName(string containerTypeName)
@@ -151,6 +171,17 @@ namespace VCareer.Services.FileServices
             var path = _configuration[$"FileBlobStorageConfig:{containerName}:Containers:{containerTypeName}:Path"];
             if (string.IsNullOrEmpty(path)) throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
             return path;
+        }
+
+        public object ResolveContainerType(string containerTypeName)
+        {
+            var container = containers.FirstOrDefault(c => Enum.IsDefined(c, containerTypeName));
+            if (container == null)
+            {
+                throw new ArgumentException($"Container type {containerTypeName} not found or unsupport");
+            }
+            // Parse enum value of the matched enum type
+            return Enum.Parse(container, containerTypeName);
         }
 
      
