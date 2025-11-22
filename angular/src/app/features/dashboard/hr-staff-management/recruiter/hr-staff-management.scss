@@ -6,7 +6,7 @@
   padding-right: 0;
   padding-bottom: 20px;
   background: #f8fafc;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.3s ease, width 0.3s ease;
   position: relative;
   z-index: 1;
 
@@ -44,7 +44,7 @@
     top: 64px;
     z-index: 998;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: left 0.3s ease, width 0.3s ease;
     border-bottom: 1px solid #e5e7eb;
     min-height: 56px;
 
@@ -142,6 +142,132 @@
     @media (max-width: 768px) {
       padding: 16px 12px;
       margin-top: 120px;
+    }
+  }
+
+  // Leader Info Card
+  .leader-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: white;
+
+    @media (max-width: 768px) {
+      padding: 16px;
+    }
+
+    .leader-info-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .leader-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+          font-size: 28px;
+          color: white;
+        }
+      }
+
+      .leader-info-content {
+        flex: 1;
+
+        .leader-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0 0 16px 0;
+          color: white;
+
+          @media (max-width: 768px) {
+            font-size: 1.125rem;
+            margin-bottom: 12px;
+          }
+        }
+
+        .leader-details {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .leader-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .detail-label {
+              font-size: 0.875rem;
+              opacity: 0.9;
+              font-weight: 500;
+            }
+
+            .detail-value {
+              font-size: 1rem;
+              font-weight: 600;
+              color: white;
+
+              &.status-active {
+                color: #10b981;
+                background: rgba(16, 185, 129, 0.2);
+                padding: 4px 8px;
+                border-radius: 6px;
+                display: inline-block;
+                width: fit-content;
+              }
+
+              &.status-inactive {
+                color: #ef4444;
+                background: rgba(239, 68, 68, 0.2);
+                padding: 4px 8px;
+                border-radius: 6px;
+                display: inline-block;
+                width: fit-content;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Loading Leader Info
+  .loading-leader-info {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #6b7280;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    i {
+      font-size: 1.25rem;
+    }
+
+    span {
+      font-size: 0.875rem;
     }
   }
 
@@ -571,6 +697,36 @@
       @media (max-width: 768px) {
         overflow-x: auto;
       }
+    }
+  }
+
+  // Loading State
+  .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+
+    i {
+      font-size: 3rem;
+      color: #0F83BA;
+      margin-bottom: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    p {
+      font-size: 0.9375rem;
+      color: #6b7280;
+      margin: 0;
     }
   }
 

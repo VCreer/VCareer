@@ -26,6 +26,10 @@ export interface StaffListItemDto {
   companyName?: string;
 }
 
+export interface InviteStaffDto {
+  email: string;
+}
+
 export interface StaffStatusChangeDto {
   staffId?: string;
   fullName?: string;

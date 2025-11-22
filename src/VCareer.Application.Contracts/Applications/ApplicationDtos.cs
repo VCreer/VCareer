@@ -71,9 +71,9 @@ namespace VCareer.Application.Contracts.Applications
         public string? RecruiterNotes { get; set; }
 
         /// <summary>
-        /// Điểm đánh giá (1-5)
+        /// Điểm đánh giá (1-10)
         /// </summary>
-        [Range(1, 5)]
+        [Range(1, 10)]
         public int? Rating { get; set; }
 
         /// <summary>
@@ -354,5 +354,72 @@ namespace VCareer.Application.Contracts.Applications
         /// Tỷ lệ chấp nhận (%)
         /// </summary>
         public decimal AcceptanceRate { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để tải xuống hàng loạt CV của các ứng viên đã ứng tuyển vào công ty
+    /// Dành cho Leader Recruiter (IsLead = 1) và HR Staff (IsLead = 0)
+    /// </summary>
+    public class BulkDownloadCVsDto
+    {
+        /// <summary>
+        /// ID công việc (lọc theo công việc cụ thể, optional)
+        /// </summary>
+        public Guid? JobId { get; set; }
+
+        /// <summary>
+        /// Trạng thái ứng tuyển (lọc theo trạng thái, optional)
+        /// </summary>
+        public string? Status { get; set; }
+
+        /// <summary>
+        /// Từ ngày ứng tuyển (optional)
+        /// </summary>
+        public DateTime? FromDate { get; set; }
+
+        /// <summary>
+        /// Đến ngày ứng tuyển (optional)
+        /// </summary>
+        public DateTime? ToDate { get; set; }
+    }
+
+    /// <summary>
+    /// DTO chứa thông tin file CV để download
+    /// </summary>
+    public class DownloadApplicationCVResultDto
+    {
+        /// <summary>
+        /// File bytes
+        /// </summary>
+        public byte[] FileBytes { get; set; }
+
+        /// <summary>
+        /// Content type (MIME type)
+        /// </summary>
+        public string ContentType { get; set; }
+
+        /// <summary>
+        /// File name
+        /// </summary>
+        public string FileName { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để đánh giá ứng viên (Rating)
+    /// </summary>
+    public class RateApplicationDto
+    {
+        /// <summary>
+        /// Điểm đánh giá từ 1 đến 10
+        /// </summary>
+        [Required]
+        [Range(1, 10, ErrorMessage = "Rating must be between 1 and 10")]
+        public int Rating { get; set; }
+
+        /// <summary>
+        /// Ghi chú đánh giá (optional)
+        /// </summary>
+        [StringLength(1000)]
+        public string? Notes { get; set; }
     }
 }

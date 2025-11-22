@@ -60,3 +60,27 @@ namespace VCareer.IServices.IRecruitmentDashboard
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
