@@ -1139,6 +1139,48 @@
                   }
                 },
                 {
+                  "name": "BulkDownloadCompanyCVsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                      "typeSimple": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
+                  }
+                },
+                {
+                  "name": "RateApplicationAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Application.Contracts.Applications.RateApplicationDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                      "typeSimple": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
+                    "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
+                  }
+                },
+                {
                   "name": "CheckApplicationStatusAsync",
                   "parametersOnMethod": [
                     {
@@ -2281,6 +2323,100 @@
               "returnValue": {
                 "type": "VCareer.Application.Contracts.Applications.ApplicationStatusDto",
                 "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationStatusDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
+            },
+            "BulkDownloadCompanyCVsAsyncByInput": {
+              "uniqueName": "BulkDownloadCompanyCVsAsyncByInput",
+              "name": "BulkDownloadCompanyCVsAsync",
+              "httpMethod": "POST",
+              "url": "api/app/application/bulk-download-company-cVs",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                  "typeSimple": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                  "typeSimple": "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
+            },
+            "RateApplicationAsyncByIdAndInput": {
+              "uniqueName": "RateApplicationAsyncByIdAndInput",
+              "name": "RateApplicationAsync",
+              "httpMethod": "POST",
+              "url": "api/app/application/{id}/rate-application",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Application.Contracts.Applications.RateApplicationDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                  "typeSimple": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                  "typeSimple": "VCareer.Application.Contracts.Applications.RateApplicationDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
+                "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
@@ -13571,7 +13707,7 @@
                   }
                 },
                 {
-                  "name": "GetChildServices",
+                  "name": "GetChildServicesWithPaging",
                   "parametersOnMethod": [
                     {
                       "name": "subcriptionId",
@@ -13859,11 +13995,11 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
-            "GetChildServicesBySubcriptionIdAndIsActiveAndPagingDto": {
-              "uniqueName": "GetChildServicesBySubcriptionIdAndIsActiveAndPagingDto",
-              "name": "GetChildServices",
+            "GetChildServicesWithPagingBySubcriptionIdAndIsActiveAndPagingDto": {
+              "uniqueName": "GetChildServicesWithPagingBySubcriptionIdAndIsActiveAndPagingDto",
+              "name": "GetChildServicesWithPaging",
               "httpMethod": "GET",
-              "url": "api/app/subcription-service_/child-services/{subcriptionId}",
+              "url": "api/app/subcription-service_/child-services-with-paging/{subcriptionId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -14943,6 +15079,23 @@
                     "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                     "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
                   }
+                },
+                {
+                  "name": "InviteStaffAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.TeamManagementDto.InviteStaffDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                      "typeSimple": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.TeamManagementDto.StaffListItemDto",
+                    "typeSimple": "VCareer.Dto.TeamManagementDto.StaffListItemDto"
+                  }
                 }
               ]
             }
@@ -15011,6 +15164,43 @@
               "returnValue": {
                 "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
+            },
+            "InviteStaffAsyncByInput": {
+              "uniqueName": "InviteStaffAsyncByInput",
+              "name": "InviteStaffAsync",
+              "httpMethod": "POST",
+              "url": "api/app/team-management/invite-staff",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.TeamManagementDto.InviteStaffDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                  "typeSimple": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                  "typeSimple": "VCareer.Dto.TeamManagementDto.InviteStaffDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.TeamManagementDto.StaffListItemDto",
+                "typeSimple": "VCareer.Dto.TeamManagementDto.StaffListItemDto"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
@@ -19456,6 +19646,63 @@
         }
       ]
     },
+    "VCareer.Application.Contracts.Applications.BulkDownloadCVsDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "JobId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FromDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ToDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Application.Contracts.Applications.GetApplicationListDto": {
       "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
       "isEnum": false,
@@ -19573,6 +19820,39 @@
         }
       ]
     },
+    "VCareer.Application.Contracts.Applications.RateApplicationDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Rating",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "1",
+          "maximum": "10",
+          "regex": null
+        },
+        {
+          "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Application.Contracts.Applications.UpdateApplicationStatusDto": {
       "baseType": null,
       "isEnum": false,
@@ -19613,7 +19893,7 @@
           "minLength": null,
           "maxLength": null,
           "minimum": "1",
-          "maximum": "5",
+          "maximum": "10",
           "regex": null
         },
         {
@@ -28174,6 +28454,27 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 1000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.TeamManagementDto.InviteStaffDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null

@@ -15,6 +15,10 @@ export interface DeactivateStaffDto {
   notes?: string;
 }
 
+export interface InviteStaffDto {
+  email: string;
+}
+
 export interface StaffListItemDto {
   userId?: string;
   recruiterProfileId?: string;
@@ -24,10 +28,6 @@ export interface StaffListItemDto {
   status: boolean;
   companyId: number;
   companyName?: string;
-}
-
-export interface InviteStaffDto {
-  email: string;
 }
 
 export interface StaffStatusChangeDto {

@@ -45,10 +45,10 @@ export class SubcriptionService_Service {
     { apiName: this.apiName,...config });
   
 
-  getChildServicesBySubcriptionIdAndIsActiveAndPagingDto = (subcriptionId: string, isActive: boolean, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+  getChildServicesWithPagingBySubcriptionIdAndIsActiveAndPagingDto = (subcriptionId: string, isActive: boolean, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ChildServiceViewDto[]>({
       method: 'GET',
-      url: `/api/app/subcription-service_/child-services/${subcriptionId}`,
+      url: `/api/app/subcription-service_/child-services-with-paging/${subcriptionId}`,
       params: { isActive, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
     },
     { apiName: this.apiName,...config });
