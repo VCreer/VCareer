@@ -61,8 +61,8 @@ public class VCareerDbContext :
     public DbSet<User_SubcriptionService> User_SubcriptionServices { get; set; }
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
-    /*public DbSet<JobApplication> JobApplications { get; set; }
-    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
+    public DbSet<JobApplication> JobApplications { get; set; }
+    /*public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
     public DbSet<Job_Category> JobCategories { get; set; }
     public DbSet<Job_Post> JobPostings { get; set; }
@@ -617,7 +617,8 @@ public class VCareerDbContext :
             ja.HasIndex(x => x.CVType);
             ja.HasIndex(x => x.Status);
             ja.HasIndex(x => x.CreationTime);
-            ja.HasIndex(x => new { x.JobId, x.CandidateId }).IsUnique(); // Prevent duplicate applications
+            // Cho phép ứng tuyển lại: bỏ Unique constraint trên (JobId, CandidateId)
+            ja.HasIndex(x => new { x.JobId, x.CandidateId });
         });
 
         builder.Entity<ActivityLog>(a =>
