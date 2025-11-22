@@ -75,6 +75,9 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   filterType: string = 'all'; // 'all', 'active', 'inactive'
   showActionsMenu: string | null = null; // Track which campaign's action menu is open
+  private scrollListener?: () => void;
+  private currentMenuCampaignId: string | null = null;
+  private currentMenuButton: HTMLElement | null = null;
   
   // Pagination
   currentPage: number = 1;
@@ -282,6 +285,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.removeScrollListener();
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
@@ -558,42 +562,114 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     }
     
     if (this.showActionsMenu === campaignId) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     } else {
+      this.closeActionsMenu();
       this.showActionsMenu = campaignId;
-      // Position menu using fixed positioning
+      this.currentMenuCampaignId = campaignId;
+      if (event) {
+        const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
+        this.currentMenuButton = button || null;
+      }
       setTimeout(() => {
         this.positionActionsMenu(campaignId, event);
+        this.setupScrollListener(campaignId);
       }, 0);
     }
   }
 
-  private positionActionsMenu(campaignId: string, event?: Event): void {
-    if (!event) return;
+  private closeActionsMenu(): void {
+    this.showActionsMenu = null;
+    this.currentMenuCampaignId = null;
+    this.currentMenuButton = null;
+    this.removeScrollListener();
+  }
 
-    const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
-    if (!button) return;
+  private setupScrollListener(campaignId: string): void {
+    this.removeScrollListener();
+    
+    this.scrollListener = () => {
+      if (this.showActionsMenu === campaignId && this.currentMenuCampaignId === campaignId) {
+        this.updateMenuPosition(campaignId);
+      }
+    };
+    
+    window.addEventListener('scroll', this.scrollListener, true);
+    window.addEventListener('resize', this.scrollListener);
+  }
 
-    const container = button.closest(`[data-campaign-id="${campaignId}"]`);
-    if (!container) return;
+  private removeScrollListener(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener);
+      this.scrollListener = undefined;
+    }
+  }
 
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const pageElement = document.querySelector('.recruitment-campaign-page');
+    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
+      return 280;
+    }
+    return 72;
+  }
+
+  private updateMenuPosition(campaignId: string): void {
+    const container = document.querySelector(`[data-campaign-id="${campaignId}"]`);
+    if (!container) {
+      setTimeout(() => this.updateMenuPosition(campaignId), 10);
+      return;
+    }
+    
     const actionsMenu = container.querySelector('.actions-menu') as HTMLElement;
-    if (!actionsMenu) return;
-
+    const button = this.currentMenuButton;
+    
+    if (!actionsMenu || !button) {
+      // Retry after a short delay if menu not found
+      if (!actionsMenu) {
+        setTimeout(() => this.updateMenuPosition(campaignId), 10);
+      }
+      return;
+    }
+    
     const rect = button.getBoundingClientRect();
-    const menuWidth = 180; // min-width from CSS
+    const menuWidth = actionsMenu.offsetWidth || 180;
+    const sidebarWidth = this.getSidebarWidth();
+    const viewportWidth = window.innerWidth;
+    const padding = 8;
     
     // Position menu below button, aligned to right
-    // Use viewport coordinates for fixed positioning
     let left = rect.right - menuWidth;
     
-    // Ensure menu doesn't go off left edge
-    if (left < 8) {
-      left = rect.left;
+    // Ensure menu doesn't go off left edge (consider sidebar)
+    const minLeft = sidebarWidth + padding;
+    if (left < minLeft) {
+      left = Math.max(minLeft, rect.left);
+    }
+    
+    // Ensure menu doesn't go off right edge
+    const maxLeft = viewportWidth - menuWidth - padding;
+    if (left > maxLeft) {
+      left = maxLeft;
     }
     
     actionsMenu.style.top = `${rect.bottom + 4}px`;
     actionsMenu.style.left = `${left}px`;
+  }
+
+  private positionActionsMenu(campaignId: string, event?: Event): void {
+    // Use stored button reference if available, otherwise try to find from event
+    if (!this.currentMenuButton && event) {
+      const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
+      this.currentMenuButton = button || null;
+    }
+    
+    if (!this.currentMenuButton) return;
+    
+    this.updateMenuPosition(campaignId);
   }
 
   onViewCampaign(campaign: Campaign): void {
@@ -603,7 +679,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         campaignName: campaign.name
       }
     });
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onViewJobs(campaign: Campaign): void {
@@ -613,7 +689,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         campaignName: campaign.name
       }
     });
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onViewAppliedCvs(campaign: Campaign): void {
@@ -630,7 +706,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     this.editingCampaign = campaign;
     this.editCampaignName = campaign.name;
     this.showEditModal = true;
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onCloseEditModal(): void {
@@ -692,7 +768,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         this.showToastMessage('Không tìm thấy chiến dịch để xóa', 'error');
       }
     }
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   // Date Range Picker Methods
@@ -707,7 +783,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     
     // Close actions menu if clicking outside
     if (!target.closest('.actions-menu-container')) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     }
   }
 

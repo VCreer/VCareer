@@ -61,6 +61,9 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   
   // UI state
   showActionsMenu: string | null = null;
+  private scrollListener?: () => void;
+  private currentMenuJobId: string | null = null;
+  private currentMenuButton: HTMLElement | null = null;
   showDeleteModal = false;
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
@@ -151,6 +154,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
+    this.removeScrollListener();
   }
 
   loadJobs(): void {
@@ -274,10 +278,113 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     }
     
     if (this.showActionsMenu === jobId) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     } else {
+      this.closeActionsMenu();
       this.showActionsMenu = jobId;
+      this.currentMenuJobId = jobId;
+      if (event) {
+        const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
+        this.currentMenuButton = button || null;
+      }
+      setTimeout(() => {
+        this.positionActionsMenu(jobId, event);
+        this.setupScrollListener(jobId);
+      }, 0);
     }
+  }
+
+  private closeActionsMenu(): void {
+    this.closeActionsMenu();
+    this.currentMenuJobId = null;
+    this.currentMenuButton = null;
+    this.removeScrollListener();
+  }
+
+  private setupScrollListener(jobId: string): void {
+    this.removeScrollListener();
+    
+    this.scrollListener = () => {
+      if (this.showActionsMenu === jobId && this.currentMenuJobId === jobId) {
+        this.updateMenuPosition(jobId);
+      }
+    };
+    
+    window.addEventListener('scroll', this.scrollListener, true);
+    window.addEventListener('resize', this.scrollListener);
+  }
+
+  private removeScrollListener(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener);
+      this.scrollListener = undefined;
+    }
+  }
+
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const pageElement = document.querySelector('.campaign-job-management-page');
+    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
+      return 280;
+    }
+    return 72;
+  }
+
+  private updateMenuPosition(jobId: string): void {
+    const container = document.querySelector(`.actions-menu-container[data-job-id="${jobId}"]`);
+    if (!container) {
+      setTimeout(() => this.updateMenuPosition(jobId), 10);
+      return;
+    }
+    const menu = container.querySelector('.actions-menu') as HTMLElement;
+    const button = this.currentMenuButton;
+    
+    if (!menu || !button) {
+      // Retry after a short delay if menu not found
+      if (!menu) {
+        setTimeout(() => this.updateMenuPosition(jobId), 10);
+      }
+      return;
+    }
+    
+    const rect = button.getBoundingClientRect();
+    const menuWidth = menu.offsetWidth || 180;
+    const sidebarWidth = this.getSidebarWidth();
+    const viewportWidth = window.innerWidth;
+    const padding = 8;
+    
+    // Position menu below button, aligned to right
+    let left = rect.right - menuWidth;
+    
+    // Ensure menu doesn't go off left edge (consider sidebar)
+    const minLeft = sidebarWidth + padding;
+    if (left < minLeft) {
+      left = Math.max(minLeft, rect.left);
+    }
+    
+    // Ensure menu doesn't go off right edge
+    const maxLeft = viewportWidth - menuWidth - padding;
+    if (left > maxLeft) {
+      left = maxLeft;
+    }
+    
+    menu.style.top = `${rect.bottom + 4}px`;
+    menu.style.left = `${left}px`;
+  }
+
+  private positionActionsMenu(jobId: string, event?: Event): void {
+    // Use stored button reference if available, otherwise try to find from event
+    if (!this.currentMenuButton && event) {
+      const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
+      this.currentMenuButton = button || null;
+    }
+    
+    if (!this.currentMenuButton) return;
+    
+    this.updateMenuPosition(jobId);
   }
 
   onEditJob(job: CampaignJob): void {
@@ -285,7 +392,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: { jobId: job.id, campaignId: this.campaignId }
     });
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onViewCVs(job: CampaignJob): void {
@@ -298,13 +405,13 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         jobTitle: job.title
       }
     });
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onDeleteJob(job: CampaignJob): void {
     this.jobToDelete = job;
     this.showDeleteModal = true;
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   confirmDelete(): void {
@@ -328,14 +435,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     job.isPublic = !job.isPublic;
     // TODO: Call API to update job
     this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   onChangeStatusAction(job: CampaignJob): void {
     this.jobToChangeStatus = job;
     this.selectedStatusValue = job.status;
     this.showStatusDropdownModal = true;
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   closeStatusModal(): void {
@@ -437,7 +544,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     // Set active package là package đầu tiên nếu có
     this.activePackage = this.selectedPackages.length > 0 ? this.selectedPackages[0] : null;
     this.showPackageModal = true;
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
   }
 
   confirmAssignPackage(): void {
@@ -530,7 +637,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container')) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     }
   }
 }
