@@ -161,7 +161,7 @@
             type="button" 
             class="create-order-btn"
             (click)="onCreateOrder()">
-            Tạo đơn hàng
+            Thanh toán
           </button>
         </div>
       </div>
@@ -182,5 +182,13 @@
       </button>
     </div>
   </div>
+
+  <!-- VNPAY Payment Modal -->
+  <app-vnpay-payment-modal
+    [show]="showVnpayModal"
+    [paymentInfo]="paymentInfo"
+    (close)="onCloseVnpayModal()"
+    (decline)="onDeclineVnpayModal()">
+  </app-vnpay-payment-modal>
 </div>
 

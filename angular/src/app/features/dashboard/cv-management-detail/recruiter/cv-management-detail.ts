@@ -75,6 +75,7 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   cvId: string = '';
   cvDetail: CvDetail | null = null;
   loading = false;
+  returnUrl: string | null = null;
 
   // Toast notification
   showToast = false;
@@ -105,9 +106,10 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
       this.checkSidebarState();
     }, 100);
 
-    // Get CV ID from route
+    // Get CV ID and return URL from route
     this.route.queryParams.subscribe(params => {
       this.cvId = params['cvId'] || '';
+      this.returnUrl = params['returnUrl'] || null;
       if (this.cvId) {
         this.loadCvDetail();
       }
@@ -215,7 +217,12 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   onClose(): void {
-    this.router.navigate(['/recruiter/cv-management']);
+    // Navigate back to return URL if provided, otherwise default to cv-management
+    if (this.returnUrl) {
+      this.router.navigateByUrl(this.returnUrl);
+    } else {
+      this.router.navigate(['/recruiter/cv-management']);
+    }
   }
 
   onDownloadPdf(): void {

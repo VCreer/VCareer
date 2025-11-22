@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -33,8 +34,7 @@ import {
   styleUrls: ['./hr-staff-management.scss']
 })
 export class HRStaffManagementComponent implements OnInit, OnDestroy {
-  sidebarExpanded: boolean = false;
-  private sidebarCheckInterval?: any;
+  private readonly componentId = 'hr-staff-management';
   
   showToast = false;
   toastMessage = '';
@@ -345,26 +345,27 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return this.staffList.filter(s => s.status === 'inactive').length;
   }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private sidebarSync: SidebarSyncService
+  ) {}
 
   ngOnInit(): void {
-    this.checkSidebarState();
-    this.sidebarCheckInterval = setInterval(() => {
-      this.checkSidebarState();
-    }, 100);
+    this.sidebarSync.setupSync(
+      '.hr-staff-management-page',
+      '.breadcrumb-box',
+      this.componentId
+    );
     this.applyFilters();
     this.filteredActivityLogs = [...this.activityLogs];
     
-    // Close dropdown when clicking outside
     setTimeout(() => {
       document.addEventListener('click', this.handleClickOutside);
     }, 0);
   }
 
   ngOnDestroy(): void {
-    if (this.sidebarCheckInterval) {
-      clearInterval(this.sidebarCheckInterval);
-    }
+    this.sidebarSync.cleanup(this.componentId);
     document.removeEventListener('click', this.handleClickOutside);
   }
 
@@ -372,15 +373,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.filter-dropdown')) {
       this.showFilterDropdown = false;
-    }
-  }
-
-  checkSidebarState(): void {
-    const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
-    if (sidebar) {
-      const rect = sidebar.getBoundingClientRect();
-      const width = rect.width;
-      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
     }
   }
 

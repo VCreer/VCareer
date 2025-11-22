@@ -64,7 +64,7 @@ export class TranslationService {
       'sidebar.dashboard': 'Bảng tin',
       'sidebar.insights': 'Đăng tuyển dụng',
       'sidebar.rewards': 'TopCV Rewards',
-      'sidebar.redeem_gifts': 'Đổi quà',
+      'sidebar.redeem_gifts': 'Dịch vụ của tôi',
       'sidebar.toppy_ai': 'Toppy AI - Đề xuất',
       'sidebar.suggested_cv': 'CV đề xuất',
       'sidebar.recruitment_campaigns': 'Chiến dịch tuyển dụng',

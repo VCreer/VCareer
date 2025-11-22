@@ -10,7 +10,8 @@ import {
   GenericModalComponent,
   ToastNotificationComponent,
   MultiSelectLocationComponent,
-  ToggleSwitchComponent
+  ToggleSwitchComponent,
+  PaginationComponent
 } from '../../../../shared/components';
 import { JobOptionsService } from '../../../../shared/services/job-options.service';
 
@@ -53,7 +54,8 @@ export interface Campaign {
     GenericModalComponent,
     ToastNotificationComponent,
     MultiSelectLocationComponent,
-    ToggleSwitchComponent
+    ToggleSwitchComponent,
+    PaginationComponent
   ],
   templateUrl: './recruitment-campaign.html',
   styleUrls: ['./recruitment-campaign.scss']
@@ -69,9 +71,39 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Campaigns list
   campaigns: Campaign[] = [];
   filteredCampaigns: Campaign[] = [];
+  paginatedCampaigns: Campaign[] = [];
   searchQuery: string = '';
   filterType: string = 'all'; // 'all', 'active', 'inactive'
   showActionsMenu: string | null = null; // Track which campaign's action menu is open
+  
+  // Pagination
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 1;
+  
+  // Date Range Picker
+  showDateRangeDropdown = false;
+  selectedTimeRange = '';
+  timeRanges = [
+    { id: 'all', name: 'Tất cả thời gian' },
+    { id: 'today', name: 'Hôm nay' },
+    { id: 'week', name: 'Tuần này' },
+    { id: 'month', name: 'Tháng này' },
+    { id: 'year', name: 'Năm nay' }
+  ];
+  dateRange = {
+    startDate: null as Date | null,
+    endDate: null as Date | null
+  };
+  currentMonth = new Date().getMonth();
+  currentYear = new Date().getFullYear();
+  nextCalendarMonth = new Date().getMonth() + 1;
+  nextCalendarYear = new Date().getFullYear();
+  weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  calendarDays: any[] = [];
+  nextCalendarDays: any[] = [];
+  tempStartDate: Date | null = null;
+  tempEndDate: Date | null = null;
 
   // Form data
   campaignForm = {
@@ -158,6 +190,8 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     }
 
     // Initialize filtered campaigns
+    this.generateCalendar();
+    this.generateNextCalendar();
     this.filterCampaigns();
   }
 
@@ -290,13 +324,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    // Close actions menu when clicking outside
-    if (this.showActionsMenu) {
-      this.showActionsMenu = null;
-    }
-  }
 
   validateForm(): boolean {
     this.validationErrors = {};
@@ -434,10 +461,12 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   }
 
   onSearchCampaigns(): void {
+    this.currentPage = 1; // Reset to first page when searching
     this.filterCampaigns();
   }
 
   onFilterChange(): void {
+    this.currentPage = 1; // Reset to first page when filtering
     this.filterCampaigns();
   }
 
@@ -461,7 +490,44 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Filter by date range
+    if (this.dateRange.startDate || this.dateRange.endDate) {
+      filtered = filtered.filter(c => {
+        const startDate = new Date(c.startDate);
+        const endDate = new Date(c.endDate);
+        
+        if (this.dateRange.startDate && endDate < this.dateRange.startDate) {
+          return false;
+        }
+        if (this.dateRange.endDate) {
+          const filterEndDate = new Date(this.dateRange.endDate);
+          filterEndDate.setHours(23, 59, 59, 999);
+          if (startDate > filterEndDate) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
     this.filteredCampaigns = filtered;
+    this.updatePagination();
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredCampaigns.length / this.itemsPerPage);
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages;
+    }
+    
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedCampaigns = this.filteredCampaigns.slice(startIndex, endIndex);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.updatePagination();
   }
 
   onToggleCampaign(campaign: Campaign, isActive: boolean): void {
@@ -532,6 +598,16 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
   onViewCampaign(campaign: Campaign): void {
     this.router.navigate(['/recruiter/campaign-detail'], {
+      queryParams: {
+        campaignId: campaign.id,
+        campaignName: campaign.name
+      }
+    });
+    this.showActionsMenu = null;
+  }
+
+  onViewJobs(campaign: Campaign): void {
+    this.router.navigate(['/recruiter/campaign-job-management'], {
       queryParams: {
         campaignId: campaign.id,
         campaignName: campaign.name
@@ -619,5 +695,337 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     this.showActionsMenu = null;
   }
 
-}
+  // Date Range Picker Methods
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    
+    // Close date range dropdown if clicking outside
+    if (!target.closest('.filter-dropdown-wrapper')) {
+      this.showDateRangeDropdown = false;
+    }
+    
+    // Close actions menu if clicking outside
+    if (!target.closest('.actions-menu-container')) {
+      this.showActionsMenu = null;
+    }
+  }
 
+  toggleDateRangeDropdown(): void {
+    this.showDateRangeDropdown = !this.showDateRangeDropdown;
+    if (this.showDateRangeDropdown) {
+      this.tempStartDate = this.dateRange.startDate ? new Date(this.dateRange.startDate) : null;
+      this.tempEndDate = this.dateRange.endDate ? new Date(this.dateRange.endDate) : null;
+      if (this.tempStartDate) {
+        this.currentMonth = this.tempStartDate.getMonth();
+        this.currentYear = this.tempStartDate.getFullYear();
+      } else {
+        this.currentMonth = new Date().getMonth();
+        this.currentYear = new Date().getFullYear();
+      }
+      if (this.currentMonth === 11) {
+        this.nextCalendarMonth = 0;
+        this.nextCalendarYear = this.currentYear + 1;
+      } else {
+        this.nextCalendarMonth = this.currentMonth + 1;
+        this.nextCalendarYear = this.currentYear;
+      }
+      this.generateCalendar();
+      this.generateNextCalendar();
+    }
+  }
+
+  clearDateRangeFilter(): void {
+    this.selectedTimeRange = '';
+    this.dateRange.startDate = null;
+    this.dateRange.endDate = null;
+    this.tempStartDate = null;
+    this.tempEndDate = null;
+    this.generateCalendar();
+    this.generateNextCalendar();
+    this.currentPage = 1;
+    this.filterCampaigns();
+  }
+
+  selectTimeRange(timeRangeId: string): void {
+    this.selectedTimeRange = timeRangeId;
+    const today = new Date();
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+    
+    switch (timeRangeId) {
+      case 'all':
+        startDate = null;
+        endDate = null;
+        break;
+      case 'today':
+        startDate = new Date(today);
+        endDate = new Date(today);
+        break;
+      case 'week':
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        startDate = weekStart;
+        endDate = new Date(today);
+        break;
+      case 'month':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today);
+        break;
+      case 'year':
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today);
+        break;
+    }
+    
+    this.tempStartDate = startDate ? new Date(startDate) : null;
+    this.tempEndDate = endDate ? new Date(endDate) : null;
+    
+    if (startDate) {
+      this.currentMonth = startDate.getMonth();
+      this.currentYear = startDate.getFullYear();
+      if (this.currentMonth === 11) {
+        this.nextCalendarMonth = 0;
+        this.nextCalendarYear = this.currentYear + 1;
+      } else {
+        this.nextCalendarMonth = this.currentMonth + 1;
+        this.nextCalendarYear = this.currentYear;
+      }
+    }
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  generateCalendar(): void {
+    this.calendarDays = [];
+    const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      this.calendarDays.push({ date: '', disabled: true });
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(this.currentYear, this.currentMonth, day);
+      this.calendarDays.push({
+        date: day,
+        fullDate: date,
+        disabled: false
+      });
+    }
+  }
+
+  generateNextCalendar(): void {
+    this.nextCalendarDays = [];
+    const firstDay = new Date(this.nextCalendarYear, this.nextCalendarMonth, 1);
+    const lastDay = new Date(this.nextCalendarYear, this.nextCalendarMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      this.nextCalendarDays.push({ date: '', disabled: true });
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(this.nextCalendarYear, this.nextCalendarMonth, day);
+      this.nextCalendarDays.push({
+        date: day,
+        fullDate: date,
+        disabled: false
+      });
+    }
+  }
+
+  getCurrentMonthYear(): string {
+    const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    return `${months[this.currentMonth]} ${this.currentYear}`;
+  }
+
+  getNextMonthYear(): string {
+    const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    return `${months[this.nextCalendarMonth]} ${this.nextCalendarYear}`;
+  }
+
+  previousMonth(): void {
+    if (this.currentMonth === 0) {
+      this.currentMonth = 11;
+      this.currentYear--;
+    } else {
+      this.currentMonth--;
+    }
+    
+    if (this.currentMonth === 11) {
+      this.nextCalendarMonth = 0;
+      this.nextCalendarYear = this.currentYear + 1;
+    } else {
+      this.nextCalendarMonth = this.currentMonth + 1;
+      this.nextCalendarYear = this.currentYear;
+    }
+    
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  nextMonth(): void {
+    if (this.currentMonth === 11) {
+      this.currentMonth = 0;
+      this.currentYear++;
+    } else {
+      this.currentMonth++;
+    }
+    
+    if (this.currentMonth === 11) {
+      this.nextCalendarMonth = 0;
+      this.nextCalendarYear = this.currentYear + 1;
+    } else {
+      this.nextCalendarMonth = this.currentMonth + 1;
+      this.nextCalendarYear = this.currentYear;
+    }
+    
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  nextNextMonth(): void {
+    if (this.nextCalendarMonth === 11) {
+      this.nextCalendarMonth = 0;
+      this.nextCalendarYear++;
+    } else {
+      this.nextCalendarMonth++;
+    }
+    if (this.nextCalendarMonth === 0) {
+      this.currentMonth = 11;
+      this.currentYear = this.nextCalendarYear - 1;
+    } else {
+      this.currentMonth = this.nextCalendarMonth - 1;
+      this.currentYear = this.nextCalendarYear;
+    }
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  selectDate(day: any): void {
+    if (day.disabled || !day.fullDate) return;
+    
+    this.selectedTimeRange = '';
+    
+    if (!this.tempStartDate || (this.tempStartDate && this.tempEndDate)) {
+      this.tempStartDate = day.fullDate;
+      this.tempEndDate = null;
+    } else {
+      if (day.fullDate < this.tempStartDate!) {
+        this.tempEndDate = this.tempStartDate;
+        this.tempStartDate = day.fullDate;
+      } else {
+        this.tempEndDate = day.fullDate;
+      }
+    }
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  isDateSelected(day: any): boolean {
+    if (!day.fullDate) return false;
+    const date = day.fullDate;
+    return (this.tempStartDate && this.isSameDay(date, this.tempStartDate)) ||
+           (this.tempEndDate && this.isSameDay(date, this.tempEndDate));
+  }
+
+  isDateInRange(day: any): boolean {
+    if (!day.fullDate || !this.tempStartDate || !this.tempEndDate) return false;
+    const date = day.fullDate;
+    return date >= this.tempStartDate && date <= this.tempEndDate;
+  }
+
+  isStartDate(day: any): boolean {
+    if (!day.fullDate || !this.tempStartDate) return false;
+    return this.isSameDay(day.fullDate, this.tempStartDate);
+  }
+
+  isEndDate(day: any): boolean {
+    if (!day.fullDate || !this.tempEndDate) return false;
+    return this.isSameDay(day.fullDate, this.tempEndDate);
+  }
+
+  isSameDay(date1: Date, date2: Date): boolean {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+  }
+
+  applyDateRange(): void {
+    this.dateRange.startDate = this.tempStartDate;
+    this.dateRange.endDate = this.tempEndDate;
+    this.showDateRangeDropdown = false;
+    this.currentPage = 1;
+    this.filterCampaigns();
+  }
+
+  cancelDateRange(): void {
+    this.tempStartDate = this.dateRange.startDate ? new Date(this.dateRange.startDate) : null;
+    this.tempEndDate = this.dateRange.endDate ? new Date(this.dateRange.endDate) : null;
+    this.showDateRangeDropdown = false;
+    this.generateCalendar();
+    this.generateNextCalendar();
+  }
+
+  getSelectedDateRangeName(): string {
+    if (this.dateRange.startDate && this.dateRange.endDate) {
+      const start = this.formatDateRange(this.dateRange.startDate);
+      const end = this.formatDateRange(this.dateRange.endDate);
+      return `${start} - ${end}`;
+    }
+    const timeRange = this.timeRanges.find(t => t.id === this.selectedTimeRange);
+    return timeRange ? timeRange.name : 'Tất cả thời gian';
+  }
+
+  isTimeRangeSelected(timeRangeId: string): boolean {
+    if (this.selectedTimeRange === timeRangeId) {
+      return true;
+    }
+    const today = new Date();
+    let matches = false;
+    
+    switch (timeRangeId) {
+      case 'all':
+        matches = !this.tempStartDate && !this.tempEndDate;
+        break;
+      case 'today':
+        if (this.tempStartDate && this.tempEndDate) {
+          matches = this.isSameDay(this.tempStartDate, today) && this.isSameDay(this.tempEndDate, today);
+        }
+        break;
+      case 'week':
+        if (this.tempStartDate && this.tempEndDate) {
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          matches = this.isSameDay(this.tempStartDate, weekStart) && this.isSameDay(this.tempEndDate, today);
+        }
+        break;
+      case 'month':
+        if (this.tempStartDate && this.tempEndDate) {
+          const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+          matches = this.isSameDay(this.tempStartDate, monthStart) && this.isSameDay(this.tempEndDate, today);
+        }
+        break;
+      case 'year':
+        if (this.tempStartDate && this.tempEndDate) {
+          const yearStart = new Date(today.getFullYear(), 0, 1);
+          matches = this.isSameDay(this.tempStartDate, yearStart) && this.isSameDay(this.tempEndDate, today);
+        }
+        break;
+    }
+    
+    return matches;
+  }
+
+  formatDateRange(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}/${month}`;
+  }
+}

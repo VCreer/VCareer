@@ -62,7 +62,7 @@ export class UpgradeAccountPayComponent implements OnInit {
   paymentMethods: PaymentMethod[] = [
     {
       id: 'momo',
-      name: 'Thanh toán bằng Ví MoMo',
+      name: 'Thanh toán bằng VNPAY',
       icon: 'momo',
       type: 'momo'
     }
