@@ -147,6 +147,8 @@ export class LoginComponent {
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: () => {
+          // Lưu trạng thái đăng nhập vào navigation service
+          this.navigationService.loginAsCandidate();
           this.showToastMessage('Đăng nhập thành công!', 'success');
           setTimeout(() => this.router.navigate(['/']), 800);
         },

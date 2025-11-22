@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { AuthStateService } from './auth-Cookiebased/auth-state.service';
+import { AuthFacadeService } from './auth-Cookiebased/auth-facade.service';
 
 export type UserRole = 'candidate' | 'recruiter' | null;
 
@@ -16,146 +18,184 @@ export class NavigationService {
   public userRole$ = this.userRoleSubject.asObservable();
   public isVerified$ = this.isVerifiedSubject.asObservable();
 
-  // Storage keys with role prefix to separate candidate and recruiter
-  private readonly CANDIDATE_KEYS = {
-    isLoggedIn: 'candidate_isLoggedIn',
-    userRole: 'candidate_userRole',
-    accessToken: 'candidate_access_token',
-    refreshToken: 'candidate_refresh_token'
-  };
-
-  private readonly RECRUITER_KEYS = {
-    isLoggedIn: 'recruiter_isLoggedIn',
-    userRole: 'recruiter_userRole',
-    isVerified: 'recruiter_isVerified',
-    accessToken: 'recruiter_access_token',
-    refreshToken: 'recruiter_refresh_token'
-  };
-
-  constructor(private router: Router) {
-    // Khôi phục trạng thái từ localStorage khi khởi tạo
+  constructor(
+    private router: Router,
+    private authStateService: AuthStateService,
+    private authFacadeService: AuthFacadeService
+  ) {
+    // Khôi phục trạng thái từ cookies khi khởi tạo
     this.initializeAuthState();
+    
+    // Subscribe vào user changes để cập nhật trạng thái
+    this.authStateService.user$.subscribe(user => {
+      this.updateAuthStateFromUser(user);
+    });
   }
 
   private initializeAuthState() {
-    // Check candidate and recruiter login status
-    const candidateLoggedIn = localStorage.getItem(this.CANDIDATE_KEYS.isLoggedIn) === 'true';
-    const recruiterLoggedIn = localStorage.getItem(this.RECRUITER_KEYS.isLoggedIn) === 'true';
-    
-    // Determine role based on current route if both are logged in
-    // Otherwise, use whichever is logged in
-    if (candidateLoggedIn && recruiterLoggedIn) {
-      // Both logged in - determine by route
-      const currentPath = window.location.pathname;
-      if (currentPath.startsWith('/recruiter')) {
-        this.isLoggedInSubject.next(true);
-        this.userRoleSubject.next('recruiter');
-        const isVerified = localStorage.getItem(this.RECRUITER_KEYS.isVerified) === 'true';
-        this.isVerifiedSubject.next(isVerified);
-      } else {
-        this.isLoggedInSubject.next(true);
-        this.userRoleSubject.next('candidate');
+    // Kiểm tra trạng thái đăng nhập từ cookies bằng cách gọi API getCurrentUser
+    // Nếu có cookies hợp lệ, API sẽ trả về user info
+    this.authFacadeService.loadCurrentUser().subscribe({
+      next: (user) => {
+        // Có user từ cookies, cập nhật trạng thái
+        this.updateAuthStateFromUser(user);
+      },
+      error: (err) => {
+        // Không có cookies hoặc cookies không hợp lệ, set trạng thái chưa đăng nhập
+        this.isLoggedInSubject.next(false);
+        this.userRoleSubject.next(null);
         this.isVerifiedSubject.next(false);
       }
-    } else if (candidateLoggedIn) {
-      this.isLoggedInSubject.next(true);
-      this.userRoleSubject.next('candidate');
-      this.isVerifiedSubject.next(false); // Candidate doesn't have verification
-    } else if (recruiterLoggedIn) {
-      this.isLoggedInSubject.next(true);
-      this.userRoleSubject.next('recruiter');
-      const isVerified = localStorage.getItem(this.RECRUITER_KEYS.isVerified) === 'true';
-      this.isVerifiedSubject.next(isVerified);
+    });
+  }
+
+  private updateAuthStateFromUser(user: any) {
+    if (!user) {
+      this.isLoggedInSubject.next(false);
+      this.userRoleSubject.next(null);
+      this.isVerifiedSubject.next(false);
+      return;
     }
+
+    // Xác định role dựa vào roles array
+    const roles = user.roles || [];
+    let userRole: UserRole = null;
+    
+    if (roles.includes('recruiter') || roles.includes('hr_staff')) {
+      userRole = 'recruiter';
+    } else if (roles.includes('candidate')) {
+      userRole = 'candidate';
+    }
+
+    // Cập nhật trạng thái
+    this.isLoggedInSubject.next(true);
+    this.userRoleSubject.next(userRole);
+    
+    // Verification chỉ áp dụng cho recruiter (có thể check thêm logic nếu cần)
+    this.isVerifiedSubject.next(false); // Có thể cần logic khác để check verification
   }
 
   // Update auth state based on route context (call this when route changes)
   updateAuthStateFromRoute() {
-    const currentPath = window.location.pathname;
-    const candidateLoggedIn = localStorage.getItem(this.CANDIDATE_KEYS.isLoggedIn) === 'true';
-    const recruiterLoggedIn = localStorage.getItem(this.RECRUITER_KEYS.isLoggedIn) === 'true';
-    
-    if (currentPath.startsWith('/recruiter') && recruiterLoggedIn) {
-      this.isLoggedInSubject.next(true);
-      this.userRoleSubject.next('recruiter');
-      const isVerified = localStorage.getItem(this.RECRUITER_KEYS.isVerified) === 'true';
-      this.isVerifiedSubject.next(isVerified);
-    } else if (!currentPath.startsWith('/recruiter') && candidateLoggedIn) {
-      this.isLoggedInSubject.next(true);
-      this.userRoleSubject.next('candidate');
-      this.isVerifiedSubject.next(false);
-    }
+    // Với cookies, chỉ cần reload user từ API
+    this.authFacadeService.loadCurrentUser().subscribe({
+      next: (user) => {
+        this.updateAuthStateFromUser(user);
+      },
+      error: (err) => {
+        // Không có cookies hợp lệ
+        this.isLoggedInSubject.next(false);
+        this.userRoleSubject.next(null);
+        this.isVerifiedSubject.next(false);
+      }
+    });
   }
 
   // Đăng nhập candidate
-loginAsCandidate() {
-  this.isLoggedInSubject.next(true);
-  this.userRoleSubject.next('candidate');
-  this.isVerifiedSubject.next(false);
+  // Với cookies, không cần lưu vào localStorage
+  // Chỉ cần load current user để cập nhật state
+  loginAsCandidate() {
+    this.authFacadeService.loadCurrentUser().subscribe({
+      next: (user) => {
+        this.updateAuthStateFromUser(user);
+      },
+      error: (err) => {
+        // Nếu không load được, vẫn set state dựa vào route
+        const currentPath = window.location.pathname;
+        if (!currentPath.startsWith('/recruiter')) {
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('candidate');
+          this.isVerifiedSubject.next(false);
+        }
+      }
+    });
   }
 
   // Đăng nhập recruiter
+  // Với cookies, không cần lưu vào localStorage
+  // Chỉ cần load current user để cập nhật state
   loginAsRecruiter() {
-   // this.isLoggedInSubject.next(true);
-   // this.userRoleSubject.next('recruiter');
-    
-    // Lưu trạng thái vào localStorage với prefix recruiter
-  //  localStorage.setItem(this.RECRUITER_KEYS.isLoggedIn, 'true');
-   // localStorage.setItem(this.RECRUITER_KEYS.userRole, 'recruiter');
-    
-    // Kiểm tra verification status
-    // const isVerified = this.isVerified();
-    // this.isVerifiedSubject.next(isVerified);
-    
-    // Nếu chưa verify, redirect đến trang verify, ngược lại redirect đến home
-    // if (!isVerified) {
-    //   this.router.navigate(['/recruiter/recruiter-verify']);
-    // } else {
-    //   this.router.navigate(['/recruiter/home']);
-    // }
+    this.authFacadeService.loadCurrentUser().subscribe({
+      next: (user) => {
+        this.updateAuthStateFromUser(user);
+        
+        // Kiểm tra verification status và redirect
+        const isVerified = this.isVerified();
+        if (!isVerified) {
+          this.router.navigate(['/recruiter/recruiter-verify']);
+        } else {
+          this.router.navigate(['/recruiter/home']);
+        }
+      },
+      error: (err) => {
+        // Nếu không load được, vẫn set state dựa vào route
+        const currentPath = window.location.pathname;
+        if (currentPath.startsWith('/recruiter')) {
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('recruiter');
+          this.isVerifiedSubject.next(false);
+        }
+      }
+    });
   }
 
-  // Đăng xuất - chỉ xóa keys của role hiện tại
+  // Đăng nhập recruiter mà không redirect đến verify (dùng cho HR Staff)
+  loginAsRecruiterWithoutVerify() {
+    this.authFacadeService.loadCurrentUser().subscribe({
+      next: (user) => {
+        this.updateAuthStateFromUser(user);
+        // HR Staff không cần verify, luôn redirect đến trang recruiter-setting
+        this.router.navigate(['/recruiter/recruiter-setting']);
+      },
+      error: (err) => {
+        // Nếu không load được, vẫn set state và redirect
+        const currentPath = window.location.pathname;
+        if (currentPath.startsWith('/recruiter')) {
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('recruiter');
+          this.isVerifiedSubject.next(false);
+        }
+        this.router.navigate(['/recruiter/recruiter-setting']);
+      }
+    });
+  }
+
+  // Đăng xuất - với cookies, gọi API logout để xóa cookies ở backend
   logout() {
     const currentRole = this.getCurrentRole();
     
-    if (currentRole === 'candidate') {
-      // Xóa candidate keys
-      localStorage.removeItem(this.CANDIDATE_KEYS.isLoggedIn);
-      localStorage.removeItem(this.CANDIDATE_KEYS.userRole);
-      localStorage.removeItem(this.CANDIDATE_KEYS.accessToken);
-      localStorage.removeItem(this.CANDIDATE_KEYS.refreshToken);
-      
-      // Update subjects
-      this.isLoggedInSubject.next(false);
-      this.userRoleSubject.next(null);
-      this.isVerifiedSubject.next(false);
-      
-      // Redirect về trang chủ
-      this.router.navigate(['/']);
-    } else if (currentRole === 'recruiter') {
-      // Xóa recruiter keys
-      localStorage.removeItem(this.RECRUITER_KEYS.isLoggedIn);
-      localStorage.removeItem(this.RECRUITER_KEYS.userRole);
-      localStorage.removeItem(this.RECRUITER_KEYS.isVerified);
-      localStorage.removeItem(this.RECRUITER_KEYS.accessToken);
-      localStorage.removeItem(this.RECRUITER_KEYS.refreshToken);
-      
-      // Update subjects
-      this.isLoggedInSubject.next(false);
-      this.userRoleSubject.next(null);
-      this.isVerifiedSubject.next(false);
-      
-      // Redirect về trang recruiter about-us
-      this.router.navigate(['/recruiter/about-us']);
-    }
-    
-    // Clean up old shared keys if they exist (for backward compatibility)
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('isVerified');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    // Gọi API logout để xóa cookies
+    this.authFacadeService.logout().subscribe({
+      next: () => {
+        // Update subjects
+        this.isLoggedInSubject.next(false);
+        this.userRoleSubject.next(null);
+        this.isVerifiedSubject.next(false);
+        
+        // Redirect dựa vào role
+        if (currentRole === 'candidate') {
+          this.router.navigate(['/']);
+        } else if (currentRole === 'recruiter') {
+          this.router.navigate(['/recruiter/about-us']);
+        } else {
+          this.router.navigate(['/']);
+        }
+      },
+      error: (err) => {
+        // Ngay cả khi API logout fail, vẫn clear state và redirect
+        this.isLoggedInSubject.next(false);
+        this.userRoleSubject.next(null);
+        this.isVerifiedSubject.next(false);
+        
+        if (currentRole === 'candidate') {
+          this.router.navigate(['/']);
+        } else if (currentRole === 'recruiter') {
+          this.router.navigate(['/recruiter/about-us']);
+        } else {
+          this.router.navigate(['/']);
+        }
+      }
+    });
   }
 
   // Kiểm tra trạng thái đăng nhập
@@ -163,36 +203,36 @@ loginAsCandidate() {
     return this.isLoggedInSubject.value;
   }
 
-  // Lấy role hiện tại - check cả candidate và recruiter
+  // Lấy role hiện tại - check từ user trong AuthStateService
   getCurrentRole(): UserRole {
     // First check subject (for reactive updates)
     if (this.userRoleSubject.value) {
       return this.userRoleSubject.value;
     }
     
-    // Fallback to localStorage check
-    const candidateLoggedIn = localStorage.getItem(this.CANDIDATE_KEYS.isLoggedIn) === 'true';
-    const recruiterLoggedIn = localStorage.getItem(this.RECRUITER_KEYS.isLoggedIn) === 'true';
-    
-    if (candidateLoggedIn) {
-      return 'candidate';
-    } else if (recruiterLoggedIn) {
-      return 'recruiter';
+    // Fallback to check user from AuthStateService
+    const user = this.authStateService.user;
+    if (user && user.roles) {
+      if (user.roles.includes('recruiter') || user.roles.includes('hr_staff')) {
+        return 'recruiter';
+      } else if (user.roles.includes('candidate')) {
+        return 'candidate';
+      }
     }
     
     return null;
   }
 
   // Kiểm tra verification status (chỉ cho recruiter)
+  // Với cookies, có thể cần check từ user info hoặc API khác
   isVerified(): boolean {
-    const verified = localStorage.getItem(this.RECRUITER_KEYS.isVerified);
-    return verified === 'true';
+    return this.isVerifiedSubject.value;
   }
 
   // Set verification status (chỉ cho recruiter)
   setVerified(verified: boolean) {
     this.isVerifiedSubject.next(verified);
-    localStorage.setItem(this.RECRUITER_KEYS.isVerified, verified ? 'true' : 'false');
+    // Với cookies, không cần lưu vào localStorage
   }
 
   // Navigate dựa trên role
@@ -212,40 +252,24 @@ loginAsCandidate() {
     }
   }
 
-  // Helper methods để lưu/đọc token theo role
+  // Với cookies, không cần lưu/đọc token ở frontend
+  // Tokens được quản lý bởi backend thông qua cookies
+  // Giữ lại methods này để tương thích với code cũ, nhưng không làm gì
   setAccessToken(token: string, role: UserRole) {
-    if (role === 'candidate') {
-      localStorage.setItem(this.CANDIDATE_KEYS.accessToken, token);
-    } else if (role === 'recruiter') {
-      localStorage.setItem(this.RECRUITER_KEYS.accessToken, token);
-    }
+    // Với cookies, không cần lưu token
   }
 
   getAccessToken(role?: UserRole): string | null {
-    const targetRole = role || this.getCurrentRole();
-    if (targetRole === 'candidate') {
-      return localStorage.getItem(this.CANDIDATE_KEYS.accessToken);
-    } else if (targetRole === 'recruiter') {
-      return localStorage.getItem(this.RECRUITER_KEYS.accessToken);
-    }
+    // Với cookies, token được gửi tự động trong cookies
     return null;
   }
 
   setRefreshToken(token: string, role: UserRole) {
-    if (role === 'candidate') {
-      localStorage.setItem(this.CANDIDATE_KEYS.refreshToken, token);
-    } else if (role === 'recruiter') {
-      localStorage.setItem(this.RECRUITER_KEYS.refreshToken, token);
-    }
+    // Với cookies, không cần lưu token
   }
 
   getRefreshToken(role?: UserRole): string | null {
-    const targetRole = role || this.getCurrentRole();
-    if (targetRole === 'candidate') {
-      return localStorage.getItem(this.CANDIDATE_KEYS.refreshToken);
-    } else if (targetRole === 'recruiter') {
-      return localStorage.getItem(this.RECRUITER_KEYS.refreshToken);
-    }
+    // Với cookies, token được gửi tự động trong cookies
     return null;
   }
 }
