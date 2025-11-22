@@ -139,7 +139,7 @@ namespace VCareer.Services.Subcription
             await _subcriptionServiceRepository.UpdateAsync(subcription);
         }
 
-        public async Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive, PagingDto pagingDto)
+        public async Task<List<ChildServiceViewDto>> GetChildServicesWithPaging(Guid subcriptionId, bool? isActive, PagingDto pagingDto)
         {
             var query = await _childService_SubcriptionServiceRepository.GetQueryableAsync();
             var childServiceIds = query.Where(x => x.SubcriptionServiceId == subcriptionId).Select(x => x.ChildServiceId);

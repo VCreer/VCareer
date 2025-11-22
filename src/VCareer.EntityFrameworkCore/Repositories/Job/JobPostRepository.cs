@@ -26,7 +26,6 @@ namespace VCareer.Repositories.Job
            ) : base(dbContextProvider)
         {
             _jobCategoryRepository = jobCategoryRepository;
-            _dbContext = dbContextProvider.GetDbContextAsync().GetAwaiter().GetResult();
         }
 
         // base để include các bảng liên quan
@@ -58,23 +57,23 @@ namespace VCareer.Repositories.Job
         // search
         private IQueryable<Job_Post> ApplySorting(IQueryable<Job_Post> query, string sortBy)
         {
-           /* return sortBy?.ToLower() switch
-            {
-                "salary" => query
-                    .OrderByDescending(j => j.SalaryMax ?? 0)                    // Lương cao → thấp (ưu tiên SalaryMax)
-                    .ThenByDescending(j => j.CreationTime),                      // Nếu lương bằng nhau, ưu tiên mới hơn
+            /* return sortBy?.ToLower() switch
+             {
+                 "salary" => query
+                     .OrderByDescending(j => j.SalaryMax ?? 0)                    // Lương cao → thấp (ưu tiên SalaryMax)
+                     .ThenByDescending(j => j.CreationTime),                      // Nếu lương bằng nhau, ưu tiên mới hơn
 
-                "urgent" => query
-                    .OrderByDescending(j => j.IsUrgent)                          // Job tuyển gấp lên đầu
-                    .ThenByDescending(j => j.CreationTime),                      // Sau đó sort theo ngày tạo
+                 "urgent" => query
+                     .OrderByDescending(j => j.IsUrgent)                          // Job tuyển gấp lên đầu
+                     .ThenByDescending(j => j.CreationTime),                      // Sau đó sort theo ngày tạo
 
-                "updated" => query
-                    .OrderByDescending(j => j.LastModificationTime ?? j.CreationTime), // Mới cập nhật lên đầu
+                 "updated" => query
+                     .OrderByDescending(j => j.LastModificationTime ?? j.CreationTime), // Mới cập nhật lên đầu
 
-                _ => query                                                       // Default: theo thứ tự ngày tạo
-                    .OrderByDescending(j => j.CreationTime)
-            };*/
-           throw new NotImplementedException();
+                 _ => query                                                       // Default: theo thứ tự ngày tạo
+                     .OrderByDescending(j => j.CreationTime)
+             };*/
+            throw new NotImplementedException();
         }
         // lấy chi tiết 1 job thoe id
         public async Task<Job_Post> GetDetailByIdAsync(Guid jobId, bool includeDetails = true)
@@ -133,7 +132,8 @@ namespace VCareer.Repositories.Job
         // llaasy full 1 job để indeex
         public async Task<Job_Post> GetForIndexingAsync(Guid jobId)
         {
-            
+            var db = await GetDbContextAsync();
+
             var query = _dbContext.JobPostings
                 .Where(j => j.Id == jobId)
                 // Load đầy đủ để index
@@ -151,46 +151,46 @@ namespace VCareer.Repositories.Job
         public async Task<List<Job_Post>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
             throw new NotImplementedException();
-         /*   var dbContext = await GetDbContextAsync();
+            /*   var dbContext = await GetDbContextAsync();
 
-            // Lấy thông tin job hiện tại
-            var currentJob = await dbContext.JobPostings
-                .Where(j => j.Id == jobId)
-                .Select(j => new { j.JobCategoryId, j.ProvinceId, j.DistrictId })              // category và province và district
-                .FirstOrDefaultAsync();
+               // Lấy thông tin job hiện tại
+               var currentJob = await dbContext.JobPostings
+                   .Where(j => j.Id == jobId)
+                   .Select(j => new { j.JobCategoryId, j.ProvinceId, j.DistrictId })              // category và province và district
+                   .FirstOrDefaultAsync();
 
-            if (currentJob == null)
-                return new List<Job_Post>();
+               if (currentJob == null)
+                   return new List<Job_Post>();
 
-            // Build query job liên quan
-            var query = dbContext.JobPostings
-                .Where(j => j.Id != jobId)                                       // Loại trừ job hiện tại
-                .Where(j => j.JobCategoryId == currentJob.JobCategoryId          // Cùng category
-                         || j.ProvinceId == currentJob.ProvinceId
-                         || j.DistrictId == currentJob.DistrictId);    // HOẶC cùng province
+               // Build query job liên quan
+               var query = dbContext.JobPostings
+                   .Where(j => j.Id != jobId)                                       // Loại trừ job hiện tại
+                   .Where(j => j.JobCategoryId == currentJob.JobCategoryId          // Cùng category
+                            || j.ProvinceId == currentJob.ProvinceId
+                            || j.DistrictId == currentJob.DistrictId);    // HOẶC cùng province
 
-            query = BuildActiveJobQuery(query);                                  // Chỉ active jobs
-            query = ApplyIncludes(query, true);                                  // Load chi tiết
+               query = BuildActiveJobQuery(query);                                  // Chỉ active jobs
+               query = ApplyIncludes(query, true);                                  // Load chi tiết
 
-            // ========================================
-            // SẮP XẾP ƯU TIÊN theo điểm relevance:
-            // ========================================
-            // Điểm tối đa = 4 (cùng category + province + district)
-            // - Cùng category: +2 điểm
-            // - Cùng province: +1 điểm  
-            // - Cùng district (khi cùng province): +1 điểm
-            var relatedJobs = await query
-                .OrderByDescending(j =>
-                    (j.JobCategoryId == currentJob.JobCategoryId ? 2 : 0) +      // +2: Cùng category
-                    (j.ProvinceId == currentJob.ProvinceId ? 1 : 0) +            // +1: Cùng province
-                    (j.DistrictId == currentJob.DistrictId &&
-                     j.ProvinceId == currentJob.ProvinceId ? 1 : 0))            // +1: Cùng district (chỉ khi cùng province)
-                .ThenByDescending(j => j.IsUrgent)                               // Ưu tiên job tuyển gấp
-                .ThenByDescending(j => j.CreationTime)                           // Sort theo ngày mới nhất
-                .Take(maxCount)                                                  // Giới hạn số lượng
-                .ToListAsync();
+               // ========================================
+               // SẮP XẾP ƯU TIÊN theo điểm relevance:
+               // ========================================
+               // Điểm tối đa = 4 (cùng category + province + district)
+               // - Cùng category: +2 điểm
+               // - Cùng province: +1 điểm  
+               // - Cùng district (khi cùng province): +1 điểm
+               var relatedJobs = await query
+                   .OrderByDescending(j =>
+                       (j.JobCategoryId == currentJob.JobCategoryId ? 2 : 0) +      // +2: Cùng category
+                       (j.ProvinceId == currentJob.ProvinceId ? 1 : 0) +            // +1: Cùng province
+                       (j.DistrictId == currentJob.DistrictId &&
+                        j.ProvinceId == currentJob.ProvinceId ? 1 : 0))            // +1: Cùng district (chỉ khi cùng province)
+                   .ThenByDescending(j => j.IsUrgent)                               // Ưu tiên job tuyển gấp
+                   .ThenByDescending(j => j.CreationTime)                           // Sort theo ngày mới nhất
+                   .Take(maxCount)                                                  // Giới hạn số lượng
+                   .ToListAsync();
 
-            return relatedJobs;*/
+               return relatedJobs;*/
         }
         // đếm sô lượng job thoe category
         public async Task<int> CountActiveJobsByCategoryAsync(Guid categoryId)
@@ -207,19 +207,19 @@ namespace VCareer.Repositories.Job
         // đếm số lượng job theo địa điểm
         public async Task<int> CountActiveJobsByLocationAsync(int provinceId, int? districtId = null)
         {
-           /* var dbContext = await GetDbContextAsync();
+            /* var dbContext = await GetDbContextAsync();
 
-            var query = dbContext.JobPostings
-                .Where(j => j.ProvinceId == provinceId);                         // Filter theo province
+             var query = dbContext.JobPostings
+                 .Where(j => j.ProvinceId == provinceId);                         // Filter theo province
 
-            if (districtId.HasValue)
-            {
-                query = query.Where(j => j.DistrictId == districtId.Value);      // Filter thêm theo district nếu có
-            }
+             if (districtId.HasValue)
+             {
+                 query = query.Where(j => j.DistrictId == districtId.Value);      // Filter thêm theo district nếu có
+             }
 
-            query = BuildActiveJobQuery(query);                                  // Chỉ active jobs
+             query = BuildActiveJobQuery(query);                                  // Chỉ active jobs
 
-            return await query.CountAsync();            */                         // Count
+             return await query.CountAsync();            */                         // Count
             throw new NotImplementedException();
         }
 

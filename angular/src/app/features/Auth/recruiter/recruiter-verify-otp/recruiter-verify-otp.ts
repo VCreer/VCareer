@@ -44,7 +44,8 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private navigationService: NavigationService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private teamManagementService :TeamManagementService,
   ) {}
 
   ngOnInit(): void {
@@ -63,22 +64,22 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
         }
         // Nếu là Leader thì tiếp tục hiển thị trang verify
         this.calculateCompletion();
-        this.checkSidebarState();
+        // this.checkSidebarState();
         
         // Check sidebar state periodically (since sidebar is in header component)
         this.sidebarCheckInterval = setInterval(() => {
-          this.checkSidebarState();
+          // this.checkSidebarState();
         }, 100);
       },
       error: (error) => {
         console.error('Error loading user info:', error);
         // Nếu không lấy được thông tin, vẫn cho phép truy cập (fallback)
         this.calculateCompletion();
-        this.checkSidebarState();
+        // this.checkSidebarState();
         
         // Check sidebar state periodically (since sidebar is in header component)
         this.sidebarCheckInterval = setInterval(() => {
-          this.checkSidebarState();
+          // this.checkSidebarState();
         }, 100);
       }
     });

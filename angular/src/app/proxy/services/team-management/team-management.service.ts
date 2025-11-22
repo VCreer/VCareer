@@ -41,6 +41,7 @@ export class TeamManagementService {
       url: '/api/app/team-management/current-user-info',
     },
     { apiName: this.apiName,...config });
+  
 
   inviteStaff = (input: InviteStaffDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, StaffListItemDto>({
