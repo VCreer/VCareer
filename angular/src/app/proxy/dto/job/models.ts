@@ -2,17 +2,6 @@ import type { EmploymentType } from '../../constants/job-constant/employment-typ
 import type { PositionType } from '../../constants/job-constant/position-type.enum';
 import type { JobViewDto } from '../job-dto/models';
 
-export interface CategoryTreeDto {
-  categoryId?: string;
-  categoryName?: string;
-  slug?: string;
-  description?: string;
-  jobCount: number;
-  children: CategoryTreeDto[];
-  fullPath?: string;
-  isLeaf: boolean;
-}
-
 export interface JobViewDetail {
   id?: string;
   slug?: string;

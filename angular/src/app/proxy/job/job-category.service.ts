@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CategoryTreeDto } from '../dto/job/models';
+import type { CategoryTreeDto } from '../dto/category/models';
 import type { ActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
