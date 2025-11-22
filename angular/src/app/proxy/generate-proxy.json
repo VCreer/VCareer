@@ -2305,8 +2305,8 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>>"
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Controllers.Job.JobCategoryController"
@@ -2342,8 +2342,8 @@
                 }
               ],
               "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>>"
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.Controllers.Job.JobCategoryController"
@@ -9223,8 +9223,8 @@
                   "name": "GetCategoryTreeAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
-                    "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
+                    "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
                   }
                 },
                 {
@@ -9240,8 +9240,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
-                    "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
+                    "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
                   }
                 },
                 {
@@ -9274,9 +9274,9 @@
                     },
                     {
                       "name": "dto",
-                      "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                      "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "typeAsString": "VCareer.Dto.Category.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                      "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -9291,9 +9291,26 @@
                   "parametersOnMethod": [
                     {
                       "name": "dto",
-                      "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                      "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                      "typeAsString": "VCareer.Dto.Category.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                      "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetTagsByCategoryIdAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "categoryId",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -9316,9 +9333,9 @@
               "parametersOnMethod": [
                 {
                   "name": "dto",
-                  "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeAsString": "VCareer.Dto.Category.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -9328,8 +9345,8 @@
                   "nameOnMethod": "dto",
                   "name": "dto",
                   "jsonName": null,
-                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -9390,8 +9407,45 @@
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
-                "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
+                "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
+            },
+            "GetTagsByCategoryIdAsyncByCategoryId": {
+              "uniqueName": "GetTagsByCategoryIdAsyncByCategoryId",
+              "name": "GetTagsByCategoryIdAsync",
+              "httpMethod": "GET",
+              "url": "api/app/job-category/tags-by-category-id/{categoryId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "categoryId",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "categoryId",
+                  "name": "categoryId",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
@@ -9427,8 +9481,8 @@
                 }
               ],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.Job.CategoryTreeDto>",
-                "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
+                "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
@@ -9450,9 +9504,9 @@
                 },
                 {
                   "name": "dto",
-                  "typeAsString": "VCareer.Dto.JobDto.CategoryUpdateCreateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "typeAsString": "VCareer.Dto.Category.CategoryUpdateCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -9474,8 +9528,8 @@
                   "nameOnMethod": "dto",
                   "name": "dto",
                   "jsonName": null,
-                  "type": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
-                  "typeSimple": "VCareer.Dto.JobDto.CategoryUpdateCreateDto",
+                  "type": "VCareer.Dto.Category.CategoryUpdateCreateDto",
+                  "typeSimple": "VCareer.Dto.Category.CategoryUpdateCreateDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -12416,6 +12470,2415 @@
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IRecruitmentDashboard.IRecruitmentDashboardAppService"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.ChildService_Service": {
+          "controllerName": "ChildService_",
+          "controllerGroupName": "ChildService_",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.ChildService_Service",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.IChildService_Service",
+              "name": "IChildService_Service",
+              "methods": [
+                {
+                  "name": "CreateChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "childServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "StopAgentCHildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "childServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetChildServicesAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "action",
+                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
+                      "typeSimple": "enum?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "target",
+                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget?",
+                      "typeSimple": "enum?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "paging",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateChildServiceAsyncByDto": {
+              "uniqueName": "CreateChildServiceAsyncByDto",
+              "name": "CreateChildServiceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/child-service_/child-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            },
+            "DeleteChildServiceAsyncByChildServiceId": {
+              "uniqueName": "DeleteChildServiceAsyncByChildServiceId",
+              "name": "DeleteChildServiceAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/child-service_/child-service/{childServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "childServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "childServiceId",
+                  "name": "childServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            },
+            "StopAgentCHildServiceAsyncByChildServiceId": {
+              "uniqueName": "StopAgentCHildServiceAsyncByChildServiceId",
+              "name": "StopAgentCHildServiceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/child-service_/stop-agent-cHild-service/{childServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "childServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "childServiceId",
+                  "name": "childServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            },
+            "UpdateChildServiceAsyncByDto": {
+              "uniqueName": "UpdateChildServiceAsyncByDto",
+              "name": "UpdateChildServiceAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/child-service_/child-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            },
+            "GetChildServicesAsyncByActionAndTargetAndPaging": {
+              "uniqueName": "GetChildServicesAsyncByActionAndTargetAndPaging",
+              "name": "GetChildServicesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/child-service_/child-services",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "action",
+                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
+                  "typeSimple": "enum?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "target",
+                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget?",
+                  "typeSimple": "enum?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "paging",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "action",
+                  "name": "action",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "target",
+                  "name": "target",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "paging",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "paging"
+                },
+                {
+                  "nameOnMethod": "paging",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "paging"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.JobAffectingService": {
+          "controllerName": "JobAffecting",
+          "controllerGroupName": "JobAffecting",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.JobAffectingService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.IJobAffectingService",
+              "name": "IJobAffectingService",
+              "methods": [
+                {
+                  "name": "ApplyServiceToJob",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobAffectingDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateEffectingJobService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobAffectingDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CancleEffectingJobService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobAffectingDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetEffectingJobService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "effectingJobServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Subcriptions.EffectingJobServiceViewDto",
+                    "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceViewDto"
+                  }
+                },
+                {
+                  "name": "GetEffectingJobServices",
+                  "parametersOnMethod": [
+                    {
+                      "name": "JobId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "status",
+                      "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+                      "typeSimple": "enum",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.EffectingJobServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.EffectingJobServiceViewDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "ApplyServiceToJobByJobAffectingDto": {
+              "uniqueName": "ApplyServiceToJobByJobAffectingDto",
+              "name": "ApplyServiceToJob",
+              "httpMethod": "POST",
+              "url": "api/app/job-affecting/apply-service-to-job",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobAffectingDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobAffectingDto",
+                  "name": "jobAffectingDto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "CancleEffectingJobServiceByJobAffectingDto": {
+              "uniqueName": "CancleEffectingJobServiceByJobAffectingDto",
+              "name": "CancleEffectingJobService",
+              "httpMethod": "POST",
+              "url": "api/app/job-affecting/cancle-effecting-job-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobAffectingDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobAffectingDto",
+                  "name": "jobAffectingDto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "GetEffectingJobServiceByEffectingJobServiceId": {
+              "uniqueName": "GetEffectingJobServiceByEffectingJobServiceId",
+              "name": "GetEffectingJobService",
+              "httpMethod": "GET",
+              "url": "api/app/job-affecting/effecting-job-service/{effectingJobServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "effectingJobServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "effectingJobServiceId",
+                  "name": "effectingJobServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.EffectingJobServiceViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "GetEffectingJobServicesByJobIdAndStatusAndPagingDto": {
+              "uniqueName": "GetEffectingJobServicesByJobIdAndStatusAndPagingDto",
+              "name": "GetEffectingJobServices",
+              "httpMethod": "GET",
+              "url": "api/app/job-affecting/effecting-job-services/{JobId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "JobId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "status",
+                  "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+                  "typeSimple": "enum",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "JobId",
+                  "name": "JobId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.EffectingJobServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.EffectingJobServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "UpdateEffectingJobServiceByJobAffectingDto": {
+              "uniqueName": "UpdateEffectingJobServiceByJobAffectingDto",
+              "name": "UpdateEffectingJobService",
+              "httpMethod": "PUT",
+              "url": "api/app/job-affecting/effecting-job-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobAffectingDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobAffectingDto",
+                  "name": "jobAffectingDto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.SubcriptionPriceService": {
+          "controllerName": "SubcriptionPrice",
+          "controllerGroupName": "SubcriptionPrice",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.SubcriptionPriceService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.ISubcriptionPriceService",
+              "name": "ISubcriptionPriceService",
+              "methods": [
+                {
+                  "name": "CreateSubcriptionPrice",
+                  "parametersOnMethod": [
+                    {
+                      "name": "createSubCriptionDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateSubcriptionPriceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "createSubCriptionDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteSoftSubcriptionPriceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "createSubCriptionDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetSubcriptionPriceService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionPriceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto",
+                    "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateSubcriptionPriceByCreateSubCriptionDto": {
+              "uniqueName": "CreateSubcriptionPriceByCreateSubCriptionDto",
+              "name": "CreateSubcriptionPrice",
+              "httpMethod": "POST",
+              "url": "api/app/subcription-price/subcription-price",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "createSubCriptionDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "createSubCriptionDto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "DeleteSoftSubcriptionPriceAsyncByCreateSubCriptionDto": {
+              "uniqueName": "DeleteSoftSubcriptionPriceAsyncByCreateSubCriptionDto",
+              "name": "DeleteSoftSubcriptionPriceAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/subcription-price/soft-subcription-price",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "createSubCriptionDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "SubcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "createSubCriptionDto"
+                },
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "Title",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "createSubCriptionDto"
+                },
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "Description",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "createSubCriptionDto"
+                },
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "IsActive",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "createSubCriptionDto"
+                },
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "DayDuration",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "createSubCriptionDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "GetSubcriptionPriceServiceBySubcriptionPriceIdAndPagingDto": {
+              "uniqueName": "GetSubcriptionPriceServiceBySubcriptionPriceIdAndPagingDto",
+              "name": "GetSubcriptionPriceService",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-price/subcription-price-service/{subcriptionPriceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionPriceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionPriceId",
+                  "name": "subcriptionPriceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "UpdateSubcriptionPriceAsyncByCreateSubCriptionDto": {
+              "uniqueName": "UpdateSubcriptionPriceAsyncByCreateSubCriptionDto",
+              "name": "UpdateSubcriptionPriceAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/subcription-price/subcription-price",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "createSubCriptionDto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "createSubCriptionDto",
+                  "name": "createSubCriptionDto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.SubcriptionService_Service": {
+          "controllerName": "SubcriptionService_",
+          "controllerGroupName": "SubcriptionService_",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.SubcriptionService_Service",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.ISubcriptionService",
+              "name": "ISubcriptionService",
+              "methods": [
+                {
+                  "name": "CreateSubCriptionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "createSubCriptionDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateSubcriptionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "createSubCriptionDto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteSubcriptionAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetChildServices",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+                  }
+                },
+                {
+                  "name": "GetChildServices",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+                  }
+                },
+                {
+                  "name": "AddChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.AddChildServicesDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RemoveChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.AddChildServicesDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetSubcriptionsPrice",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isExpired",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionPriceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionPriceViewDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "AddChildServiceAsyncByDto": {
+              "uniqueName": "AddChildServiceAsyncByDto",
+              "name": "AddChildServiceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/subcription-service_/child-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.AddChildServicesDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "CreateSubCriptionAsyncByDto": {
+              "uniqueName": "CreateSubCriptionAsyncByDto",
+              "name": "CreateSubCriptionAsync",
+              "httpMethod": "POST",
+              "url": "api/app/subcription-service_/sub-cription",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "RemoveChildServiceAsyncByDto": {
+              "uniqueName": "RemoveChildServiceAsyncByDto",
+              "name": "RemoveChildServiceAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/subcription-service_/child-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.AddChildServicesDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.AddChildServicesDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "ChildServiceIds",
+                  "jsonName": null,
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "SubcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "DeleteSubcriptionAsyncBySubcriptionId": {
+              "uniqueName": "DeleteSubcriptionAsyncBySubcriptionId",
+              "name": "DeleteSubcriptionAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/subcription-service_/subcription/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "GetChildServicesBySubcriptionIdAndIsActiveAndPagingDto": {
+              "uniqueName": "GetChildServicesBySubcriptionIdAndIsActiveAndPagingDto",
+              "name": "GetChildServices",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/child-services/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "GetChildServicesBySubcriptionIdAndIsActive": {
+              "uniqueName": "GetChildServicesBySubcriptionIdAndIsActive",
+              "name": "GetChildServices",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/child-services/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "GetSubcriptionServiceBySubcriptionId": {
+              "uniqueName": "GetSubcriptionServiceBySubcriptionId",
+              "name": "GetSubcriptionService",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/subcription-service/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.SubcriptionsViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.Subcription.SubcriptionService_Service"
+            },
+            "GetSubcriptionsPriceBySubcriptionIdAndIsExpiredAndPagingDto": {
+              "uniqueName": "GetSubcriptionsPriceBySubcriptionIdAndIsExpiredAndPagingDto",
+              "name": "GetSubcriptionsPrice",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/subcriptions-price/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isExpired",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isExpired",
+                  "name": "isExpired",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionPriceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionPriceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "UpdateSubcriptionAsyncByDto": {
+              "uniqueName": "UpdateSubcriptionAsyncByDto",
+              "name": "UpdateSubcriptionAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/subcription-service_/subcription",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.User_ChildService_Service": {
+          "controllerName": "User_ChildService_",
+          "controllerGroupName": "User_ChildService_",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.User_ChildService_Service",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.IUser_ChildService",
+              "name": "IUser_ChildService",
+              "methods": [
+                {
+                  "name": "ActiveServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateUser_ChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetUser_ChildServiceAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userChildServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
+                    "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto"
+                  }
+                },
+                {
+                  "name": "GetAllChildServiceByUserAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "status",
+                      "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+                      "typeSimple": "enum",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "ActiveServiceAsyncByDto": {
+              "uniqueName": "ActiveServiceAsyncByDto",
+              "name": "ActiveServiceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user_Child-service_/active-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
+            },
+            "GetAllChildServiceByUserAsyncByUserIdAndStatusAndPagingDto": {
+              "uniqueName": "GetAllChildServiceByUserAsyncByUserIdAndStatusAndPagingDto",
+              "name": "GetAllChildServiceByUserAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user_Child-service_/child-service-by-user/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "status",
+                  "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+                  "typeSimple": "enum",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
+            },
+            "GetUser_ChildServiceAsyncByUserChildServiceId": {
+              "uniqueName": "GetUser_ChildServiceAsyncByUserChildServiceId",
+              "name": "GetUser_ChildServiceAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user_Child-service_/user_Child-service/{userChildServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userChildServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userChildServiceId",
+                  "name": "userChildServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
+            },
+            "UpdateUser_ChildServiceAsyncByDto": {
+              "uniqueName": "UpdateUser_ChildServiceAsyncByDto",
+              "name": "UpdateUser_ChildServiceAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/user_Child-service_/user_Child-service",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
+            }
+          }
+        },
+        "VCareer.Services.Subcription.UserSubcriptionService": {
+          "controllerName": "UserSubcription",
+          "controllerGroupName": "UserSubcription",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Subcription.UserSubcriptionService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Subcriptions.IUserSubcriptionService",
+              "name": "IUserSubcriptionService",
+              "methods": [
+                {
+                  "name": "BuySubcription",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CreateUserSubcription",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+                    "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto"
+                  }
+                },
+                {
+                  "name": "CancleUserSubcription",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserSubcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateUserSubcription",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetUserSubcriptionService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserSubcriptionServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+                    "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto"
+                  }
+                },
+                {
+                  "name": "GetAllSubcriptionsByUser",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "status",
+                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus?",
+                      "typeSimple": "enum?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.IServices.Common.PagingDto",
+                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "BuySubcriptionByDto": {
+              "uniqueName": "BuySubcriptionByDto",
+              "name": "BuySubcription",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/buy-subcription",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "CreateUserSubcriptionByDto": {
+              "uniqueName": "CreateUserSubcriptionByDto",
+              "name": "CreateUserSubcription",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/user-subcription",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "CancleUserSubcriptionByUserSubcriptionId": {
+              "uniqueName": "CancleUserSubcriptionByUserSubcriptionId",
+              "name": "CancleUserSubcription",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/cancle-user-subcription/{UserSubcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "UserSubcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "UserSubcriptionId",
+                  "name": "UserSubcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDto": {
+              "uniqueName": "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDto",
+              "name": "GetAllSubcriptionsByUser",
+              "httpMethod": "GET",
+              "url": "api/app/user-subcription/subcriptions-by-user/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "status",
+                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus?",
+                  "typeSimple": "enum?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "GetUserSubcriptionServiceByUserSubcriptionServiceId": {
+              "uniqueName": "GetUserSubcriptionServiceByUserSubcriptionServiceId",
+              "name": "GetUserSubcriptionService",
+              "httpMethod": "GET",
+              "url": "api/app/user-subcription/user-subcription-service/{UserSubcriptionServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "UserSubcriptionServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "UserSubcriptionServiceId",
+                  "name": "UserSubcriptionServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+                "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "UpdateUserSubcriptionByDto": {
+              "uniqueName": "UpdateUserSubcriptionByDto",
+              "name": "UpdateUserSubcription",
+              "httpMethod": "PUT",
+              "url": "api/app/user-subcription/user-subcription",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
             }
           }
         },
@@ -17802,6 +20265,126 @@
       "genericArguments": null,
       "properties": null
     },
+    "VCareer.Constants.JobConstant.SortByField": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Relevance",
+        "Salary",
+        "Experience",
+        "ExpiredAt"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Inactive",
+        "Active",
+        "Expired"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_CurrencyType": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "VND",
+        "USD"
+      ],
+      "enumValues": [
+        1,
+        2
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "BoostScoreCv",
+        "BoostScoreJob",
+        "TopList",
+        "VerifiedBadge",
+        "IncreaseQuota",
+        "ExtendExpiredDate"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Job",
+        "Company",
+        "Recruiter",
+        "Candidate"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Inactive",
+        "Active",
+        "Expired",
+        "Cancelled"
+      ],
+      "enumValues": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
+    "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget": {
+      "baseType": "System.Enum",
+      "isEnum": true,
+      "enumNames": [
+        "Candidate",
+        "Recruiter"
+      ],
+      "enumValues": [
+        0,
+        1
+      ],
+      "genericArguments": null,
+      "properties": null
+    },
     "VCareer.CV.CandidateCvDto": {
       "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
       "isEnum": false,
@@ -19662,6 +22245,192 @@
         }
       ]
     },
+    "VCareer.Dto.Category.CategoryTreeDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CategoryName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Slug",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Children",
+          "jsonName": null,
+          "type": "[VCareer.Dto.Category.CategoryTreeDto]",
+          "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FullPath",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLeaf",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Category.CategoryUpdateCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Slug",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ParentId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SortOrder",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.DashboardDto.ActivityTrendDto": {
       "baseType": null,
       "isEnum": false,
@@ -20751,111 +23520,6 @@
         }
       ]
     },
-    "VCareer.Dto.Job.CategoryTreeDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "CategoryId",
-          "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CategoryName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Slug",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Description",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "JobCount",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Children",
-          "jsonName": null,
-          "type": "[VCareer.Dto.Job.CategoryTreeDto]",
-          "typeSimple": "[VCareer.Dto.Job.CategoryTreeDto]",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "FullPath",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IsLeaf",
-          "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
     "VCareer.Dto.Job.JobViewDetail": {
       "baseType": null,
       "isEnum": false,
@@ -21255,87 +23919,6 @@
         }
       ]
     },
-    "VCareer.Dto.JobDto.CategoryUpdateCreateDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "Name",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Slug",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Description",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ParentId",
-          "jsonName": null,
-          "type": "System.Guid?",
-          "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "SortOrder",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "IsActive",
-          "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
     "VCareer.Dto.JobDto.JobApproveViewDto": {
       "baseType": null,
       "isEnum": false,
@@ -21516,18 +24099,6 @@
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.ExperienceLevel",
           "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ExperienceText",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -22266,8 +24837,8 @@
         {
           "name": "SortBy",
           "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
+          "type": "VCareer.Constants.JobConstant.SortByField",
+          "typeSimple": "enum",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -24106,6 +26677,1371 @@
         }
       ]
     },
+    "VCareer.Dto.Subcriptions.AddChildServicesDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ChildServiceIds",
+          "jsonName": null,
+          "type": "[System.Guid]",
+          "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SubcriptionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.ChildServiceCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Action",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLifeTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsAutoActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimitUsedTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TimeUsedLimit",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DayDuration",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Value",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.ChildServiceUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CHildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.ChildServiceViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CHildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Action",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimitUsedTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLifeTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsAutoActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TimeUsedLimit",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DayDuration",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Value",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.EffectingJobServiceCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "JobPostId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.EffectingJobServiceUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.EffectingJobServiceViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "JobPostId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Action",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Value",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SalePercent",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OriginalPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "type",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_CurrencyType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveFrom",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveTo",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.SubcriptionsCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OriginalPrice",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimited",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsBuyLimited",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalBuyEachUser",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLifeTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DayDuration",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SubcriptionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DayDuration",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.SubcriptionsViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimited",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsBuyLimited",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalBuyEachUser",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UsedTime",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalUsageLimit",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UsedTime",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalUsageLimit",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_ChildServiceViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLifeTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimitUsedTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UsedTime",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalUsageLimit",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_SubcirptionCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SubcriptionServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_SubcirptionUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "User_SubcriptionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.User_SubcirptionViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SubcriptionServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.TeamManagementDto.ActivateStaffDto": {
       "baseType": null,
       "isEnum": false,
@@ -24527,6 +28463,39 @@
           "type": "System.Single",
           "typeSimple": "number",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.IServices.Common.PagingDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PageSize",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PageIndex",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

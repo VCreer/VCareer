@@ -16,7 +16,7 @@ import {JobSearchInputDto,JobViewDto} from '../../../../proxy/dto/job-dto';
 import { JobPostService } from 'src/app/proxy/services/job'; 
 import { GeoService } from 'src/app/core/services/Geo.service';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto'
-import { CategoryTreeDto } from 'src/app/proxy/dto/job';
+import { CategoryTreeDto } from 'src/app/proxy/dto/category';
 import { JobCategoryService } from 'src/app/proxy/job';
 
 
