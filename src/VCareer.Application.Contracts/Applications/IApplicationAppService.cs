@@ -76,6 +76,17 @@ namespace VCareer.Application.Contracts.Applications
         Task DeleteApplicationAsync(Guid id);
 
         /// <summary>
+        /// Tải xuống hàng loạt CV của các ứng viên đã ứng tuyển vào công ty
+        /// Dành cho Leader Recruiter (IsLead = 1) và HR Staff (IsLead = 0)
+        /// </summary>
+        Task<byte[]> BulkDownloadCompanyCVsAsync(BulkDownloadCVsDto input);
+
+        /// <summary>
+        /// Đánh giá ứng viên (Rating từ 1-10)
+        /// </summary>
+        Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input);
+
+        /// <summary>
         /// Kiểm tra xem user đã ứng tuyển job chưa
         /// </summary>
         Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId);

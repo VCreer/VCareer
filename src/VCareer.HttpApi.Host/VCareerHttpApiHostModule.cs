@@ -306,7 +306,7 @@ public class VCareerHttpApiHostModule : AbpModule
                     Type = "string",
                     Format = "binary"
                 });
-                
+
                 // Add OperationFilter để handle IFormFile trong DTOs
                 options.OperationFilter<FileUploadOperationFilter>();
 

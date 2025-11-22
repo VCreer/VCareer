@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ActivateStaffDto, DeactivateStaffDto, StaffListItemDto, StaffStatusChangeDto } from '../../dto/team-management-dto/models';
+import type { ActivateStaffDto, DeactivateStaffDto, InviteStaffDto, StaffListItemDto, StaffStatusChangeDto } from '../../dto/team-management-dto/models';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +39,14 @@ export class TeamManagementService {
     this.restService.request<any, StaffListItemDto>({
       method: 'GET',
       url: '/api/app/team-management/current-user-info',
+    },
+    { apiName: this.apiName,...config });
+
+  inviteStaff = (input: InviteStaffDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, StaffListItemDto>({
+      method: 'POST',
+      url: '/api/app/team-management/invite-staff',
+      body: input,
     },
     { apiName: this.apiName,...config });
 
