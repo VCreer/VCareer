@@ -134,9 +134,12 @@ export class HeaderWrapperComponent implements OnInit {
       '/recruiter/cv-management-detail',
       '/recruiter/recruitment-campaign',
       '/recruiter/campaign-detail',
+      '/recruiter/campaign-job-management',
+      '/recruiter/campaign-job-management-view-cv',
       '/recruiter/buy-services',
       '/recruiter/buy-services/detail',
       '/recruiter/cart',
+      '/recruiter/my-services',
       '/recruiter/job-posting',
       '/recruiter/recruitment-report',
       '/recruiter/hr-staff-management'

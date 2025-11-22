@@ -172,7 +172,19 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
   }
 
   onBuyNow(packageId: string): void {
-    // TODO: Implement buy now functionality
+    const allPackages = [...this.trialPackages, ...this.regularPackages];
+    const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
+    
+    if (selectedPackage) {
+      const added = this.cartService.addToCart({
+        id: selectedPackage.id,
+        title: selectedPackage.title,
+        price: selectedPackage.price
+      });
+
+      if (added) {
+        this.router.navigate(['/recruiter/cart']);
+      }
+    }
   }
 }
-

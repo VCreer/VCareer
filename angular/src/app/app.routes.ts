@@ -291,6 +291,14 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'campaign-job-management',
+        loadComponent: () => import('./features/dashboard/campaign-job-management/recruiter/campaign-job-management').then(c => c.CampaignJobManagementComponent),
+      },
+      {
+        path: 'campaign-job-management-view-cv',
+        loadComponent: () => import('./features/dashboard/campaign-job-management-view-cv/recruiter/campaign-job-management-view-cv').then(c => c.CampaignJobManagementViewCvComponent),
+      },
+      {
         path: 'buy-services',
         loadComponent: () =>
           import('./features/dashboard/buy-service/recruiter/buy-services').then(
@@ -307,6 +315,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'cart',
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
+      },
+      {
+        path: 'my-services',
+        loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
       },
       {
         path: 'recruitment-report',

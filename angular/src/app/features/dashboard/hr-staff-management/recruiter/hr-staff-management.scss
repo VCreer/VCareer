@@ -6,7 +6,7 @@
   padding-right: 0;
   padding-bottom: 20px;
   background: #f8fafc;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
 
@@ -44,7 +44,7 @@
     top: 64px;
     z-index: 998;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: left 0.3s ease, width 0.3s ease;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-bottom: 1px solid #e5e7eb;
     min-height: 56px;
 
