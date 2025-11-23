@@ -106,13 +106,13 @@ namespace VCareer.Constants.JobConstant
         ExpiredAt = 3
     }
 
-    public enum JobDisplayArea
-    {
-        MainMenuPage = 0,
-        JobSimilarPage = 1,
-        JobLocationPage = 2,
-        JobCategorPage = 3
-    }
+    //public enum JobDisplayArea
+    //{
+    //    MainMenuPage = 0,
+    //    JobSimilarPage = 1,
+    //    JobLocationPage = 2,
+    //    JobCategorPage = 3
+    //}
     public enum JobPriorityLevel
     {
         Low = 0,

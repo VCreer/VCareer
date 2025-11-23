@@ -192,12 +192,13 @@ public class VCareerDbContext :
 
         builder.Entity<Job_Priority>(b =>
         {
-            b.ToTable("JobPriory");
+            b.ToTable("JobPriority");
             b.ConfigureByConvention();
             b.HasKey(j => j.Id);
+
             b.HasOne(j => j.Job)
-            .WithMany(j => j.Job_Priorities)
-            .HasForeignKey(j => j.JobId)
+            .WithOne(j => j.Job_Priority)
+            .HasForeignKey<Job_Priority>(j => j.JobId)
             .OnDelete(DeleteBehavior.Cascade);
 
         });

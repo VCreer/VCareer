@@ -132,7 +132,7 @@ namespace VCareer.Services.Job
                     RejectedReason = job.RejectedReason,
                     CategoryName = categoryName.Name,
                     RecruiterLevel = job.RecruiterProfile.RecruiterLevel,
-                    PriorityLevel = job.Job_Priorities.Max(p => p.PriorityLevel),
+                    PriorityLevel = job.Job_Priority.PriorityLevel,
                     Status = job.Status
                     // sau thêm cả tag và category
                 });
@@ -228,7 +228,10 @@ namespace VCareer.Services.Job
         }
 
         #endregion
-
+        public Task PostJobAsync(PostJobDto dto)
+        {
+            throw new NotImplementedException();
+        }
         public async Task CloseJobPost(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -338,7 +341,7 @@ namespace VCareer.Services.Job
         {
 
             if (dto.PriorityLevel != null)
-                jobs = jobs.Where(x => x.Job_Priorities.Any(p => p.PriorityLevel == dto.PriorityLevel));
+                jobs = jobs.Where(p => p.Job_Priority.PriorityLevel== dto.PriorityLevel);
 
             if (dto.RecruiterLevel != null)
                 jobs = jobs.Where(x => x.RecruiterProfile.RecruiterLevel == dto.RecruiterLevel);
@@ -354,15 +357,12 @@ namespace VCareer.Services.Job
             IQueryable<Job_Post> jobs = (await _jobPostRepository
                 .GetQueryableAsync())
                 .Include(job => job.RecruiterProfile)
-                .Include(job => job.Job_Priorities);
+                .Include(job => job.Job_Priority);
 
             return jobs
                 .OrderByDescending(j => j.RecruiterProfile.RecruiterLevel)
                 .ThenByDescending(j => j.ExpiresAt)
-                .ThenByDescending(j =>
-                    j.Job_Priorities.Any()
-                        ? j.Job_Priorities.Max(p => p.PriorityLevel)
-                        : 0)
+                .ThenByDescending(j => j.Job_Priority.PriorityLevel )
                 .ThenByDescending(j => j.RiskJobLevel)
                 .ThenByDescending(j => j.PostedAt);
         }
@@ -373,28 +373,6 @@ namespace VCareer.Services.Job
             {
                 await _jobPriorityRepository.InsertAsync(new Job_Priority
                 {
-                    DisplayArea = JobDisplayArea.JobCategorPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.JobLocationPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.JobSimilarPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.MainMenuPage,
                     JobId = job.Id,
                     PriorityLevel = JobPriorityLevel.Low,
                     SortScore = 0
@@ -407,6 +385,8 @@ namespace VCareer.Services.Job
 
 
         }
+
+
         #endregion
     }
 }

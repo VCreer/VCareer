@@ -10,7 +10,9 @@ namespace VCareer.Models.JobCategory
 {
     public class Tag : Entity<int>
     {
-        public string Name { get; set; } // Unique, lowercase.
+        public string Name { get; set; }
+        public Guid CategoryId { get; set; }
+
         public virtual ICollection<JobTag> JobTags { get; set; } = new List<JobTag>();
         public virtual ICollection<Categoty_Tag> CategotyTags { get; set; } = new List<Categoty_Tag>();
 

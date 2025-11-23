@@ -13,6 +13,7 @@ namespace VCareer.IServices.IJobServices
     public interface IJobPostService : IApplicationService
     {
         public Task CreateJobPost(JobPostCreateDto dto);
+        public Task PostJobAsync(PostJobDto dto);
         public Task CreateJobPostByOldPost(JobPostCreateDto dto);
         public Task UpdateJobPost(JobPostUpdateDto dto);
         public Task DeleteJobPost(string id);

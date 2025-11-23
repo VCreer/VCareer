@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VCareer.Constants.JobConstant;
 using VCareer.Dto.Job;
 using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
@@ -15,6 +17,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.ObjectMapping;
 using Volo.Abp.Users;
 
 namespace VCareer.Services.Job
@@ -50,91 +53,53 @@ namespace VCareer.Services.Job
             //_recruiterRepository = recruiterRepository;
         }
 
-        public async Task<PagedResultDto<JobViewWithPriorityDto>> SearchJobsAsync(JobSearchInputDto input)
+        public async Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
         {
             try
             {
-                // Step 1: Lucene search -> Get list of Guid
                 var jobIds = await _luceneIndexer.SearchJobIdsAsync(input);
-
                 if (!jobIds.Any())
-                {
-                    return new PagedResultDto<JobViewWithPriorityDto>(new List<JobViewWithPriorityDto>(), 0);
-                }
+                    return new List<JobViewDto>();
 
-                // Step 2: Load jobs từ DB theo thứ tự của Lucene
-                var jobs = await _jobPostingRepository.GetJobsByIdsAsync(jobIds);
+                var jobsQuery = await _jobPostingRepository.GetQueryableAsync();
+                var jobs = await jobsQuery
+                    .Where(j => jobIds.Contains(j.Id))
+                    .ToListAsync();
 
-                // Step 3: Sort theo thứ tự của Lucene (giữ nguyên relevance)
+                // Giữ thứ tự Lucene
                 var orderedJobs = jobIds
                     .Select(id => jobs.FirstOrDefault(j => j.Id == id))
                     .Where(j => j != null)
-
                     .ToList();
 
-                // Step 4: Map sang DTO
-                //var jobViewDtos = orderedJobs.Select(MapToJobViewDto).ToList();
-
-                //return new PagedResultDto<JobViewDto>(jobViewDtos, jobIds.Count);
-
-                List<JobViewWithPriorityDto> list = new List<JobViewWithPriorityDto>();
-                foreach (var relatedJob in orderedJobs)
-                {
-                    var job = await MapToJobViewDto(relatedJob);
-                    list.Add(job);
-                }
-                return new PagedResultDto<JobViewWithPriorityDto>(list, jobIds.Count);
-
+                return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi tìm kiếm jobs với input: {@Input}", input);
-                throw;
+                throw new BusinessException("Search job fail: " + ex.Message);
             }
         }
-        public async Task<JobViewDetail> GetJobBySlugAsync(string slug)
+
+        public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
-            var job = await _jobPostingRepository.GetBySlugAsync(slug);
-
-            if (job == null)
+            var job = await _jobPostingRepository.GetForIndexingAsync(jobId);
+            if (job == null) return new List<JobViewDto>();
+            var listPositionType = new List<PositionType>();
+            listPositionType.Add(job.PositionType);
+            var listCategoryId = new List<Guid>();
+            listCategoryId.Add(job.JobCategoryId);
+            var jobSearchInput = new JobSearchInputDto()
             {
-                throw new Volo.Abp.BusinessException($"Job với slug '{slug}' không tồn tại hoặc đã bị xóa.");
-            }
+                Keyword = job.Title,
+                PositionTypes = listPositionType,
+                CategoryIds = listCategoryId,
+                ExperienceFilter = job.Experience,
+            };
 
-            // Tăng view count
-            await _jobPostingRepository.IncrementViewCountAsync(job.Id);
-
-            return await MapToJobViewDetail(job);
+            var jobs = await SearchJobsAsync(jobSearchInput);
+            jobs = jobs.Where(x => x.JobId != jobId).Take(maxCount).ToList();
+            return jobs;
         }
-        public async Task<JobViewDetail> GetJobByIdAsync(Guid jobId)
-        {
-            var job = await _jobPostingRepository.GetDetailByIdAsync(jobId);
-
-            if (job == null)
-            {
-                throw new Volo.Abp.BusinessException($"Job với ID '{jobId}' không tồn tại hoặc đã bị xóa.");
-            }
-
-            // Tăng view count
-            await _jobPostingRepository.IncrementViewCountAsync(job.Id);
-
-            return await MapToJobViewDetail(job);
-        }
-        public async Task<List<JobViewWithPriorityDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
-        {
-            var relatedJobs = await _jobPostingRepository.GetRelatedJobsAsync(jobId, maxCount);
-            //   return relatedJobs.Select(MapToJobViewDto).ToList();
-
-            List<JobViewWithPriorityDto> list = new List<JobViewWithPriorityDto>();
-            foreach (var relatedJob in relatedJobs)
-            {
-                var job = await MapToJobViewDto(relatedJob);
-                list.Add(job);
-            }
-            return list;
-        }
-
-        // Reindex toàn bộ jobs (Admin only)
         public async Task ReindexAllJobsAsync()
         {
             try
@@ -158,8 +123,6 @@ namespace VCareer.Services.Job
                 throw;
             }
         }
-
-        // Index 1 job cụ thể (khi create/update job)
         public async Task IndexJobAsync(Guid jobId)
         {
             try
@@ -175,108 +138,31 @@ namespace VCareer.Services.Job
                 throw new BusinessException(ex.Message);
             }
         }
-
-        /// Xóa job khỏi index (khi delete job)
         public async Task RemoveJobFromIndexAsync(Guid jobId)
         {
             try
             {
                 await _luceneIndexer.DeleteJobFromIndexAsync(jobId);
-                _logger.LogInformation($"Đã xóa job khỏi index: {jobId}");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Lỗi khi xóa job khỏi index: {jobId}");
-                throw;
-            }
+            catch (Exception ex) { throw new BusinessException(ex.Message); }
         }
-
-        /// Map Job_Posting -> JobViewDto (thông tin cơ bản cho list)
-        private async Task<JobViewWithPriorityDto> MapToJobViewDto(Job_Post job)
+        public async Task<JobViewDetail> GetJobBySlugAsync(string slug)
         {
-            var namecompany = await _jobPostingRepository.GetNameComany(job.Id);
+            var job = await _jobPostingRepository.GetBySlugAsync(slug);
+            if (job == null) throw new Volo.Abp.BusinessException($"Job với slug '{slug}' không tồn tại hoặc đã bị xóa.");
+            await _jobPostingRepository.IncrementViewCountAsync(job.Id);
 
-            return new JobViewWithPriorityDto
-            {
-
-            };
-
-            // Nếu người dùng đã đăng nhập → kiểm tra đã lưu hay chưa
-            /*   if (_currentUser.IsAuthenticated)
-               {
-                   var userId = _currentUser.Id.Value;
-                   var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-                   if (candidate != null)
-                   {
-                       // CandidateProfile sử dụng UserId làm khóa chính → so sánh theo UserId
-                       var saved = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidate.UserId && s.JobId == job.Id);
-                       dto.IsSaved = saved != null;
-                   }
-               }
-
-               return dto;*/
+            return ObjectMapper.Map<Job_Post, JobViewDetail>(job);
         }
-
-        /// <summary>
-        /// Map Job_Posting -> JobViewDetail (chi tiết đầy đủ)
-        private async Task<JobViewDetail> MapToJobViewDetail(Job_Post job)
+        public async Task<JobViewDetail> GetJobByIdAsync(Guid jobId)
         {
+            var job = await _jobPostingRepository.FindAsync(jobId);
+            if (job == null) throw new Volo.Abp.BusinessException($"Job với ID '{jobId}' không tồn tại hoặc đã bị xóa.");
 
-            return new JobViewDetail
-            {
-            };
-
-            // Build category path (level 1 -> level 3)
-            /*  if (job.JobCategory != null)
-              {
-                  var items = new List<CategoryItemDto>();
-                  var level3 = job.JobCategory;
-                  var level2 = level3.Parent;
-                  var level1 = level2?.Parent;
-
-                  if (level1 != null)
-                  {
-                      items.Add(new CategoryItemDto { Id = level1.Id, Name = level1.Name, Slug = level1.Slug });
-                  }
-                  if (level2 != null)
-                  {
-                      items.Add(new CategoryItemDto { Id = level2.Id, Name = level2.Name, Slug = level2.Slug });
-                  }
-                  items.Add(new CategoryItemDto { Id = level3.Id, Name = level3.Name, Slug = level3.Slug });
-
-                  detail.CategoryPath = items;*/
+            return ObjectMapper.Map<Job_Post, JobViewDetail>(job);
         }
 
-        // Nếu người dùng đã đăng nhập → kiểm tra đã lưu hay chưa
-        /*   if (_currentUser.IsAuthenticated)
-           {
-               var userId = _currentUser.Id.Value;
-               var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-               if (candidate != null)
-               {
-                   // CandidateProfile sử dụng UserId làm khóa chính → so sánh theo UserId
-                   var saved = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidate.UserId && s.JobId == job.Id);
-                   detail.IsSaved = saved != null;
-               }
 
-           }
-           else detail.IsSaved = false;
-
-           return detail;
-       }*/
-
-
-        #region Debug & Admin Tools
-
-        /// <summary>
-        /// DEBUG: Test tokenization
-        /// </summary>
-        //public async Task<List<string>> TestTokenizeAsync(string text)
-        //{
-        //    return await Task.FromResult(_luceneJobIndexer.TestTokenize(text));
-        //}
-
-        #endregion
 
         #region Saved Jobs (Favorite)
 
@@ -386,6 +272,24 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+
+        // Nếu người dùng đã đăng nhập → kiểm tra đã lưu hay chưa
+        /*   if (_currentUser.IsAuthenticated)
+           {
+               var userId = _currentUser.Id.Value;
+               var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+               if (candidate != null)
+               {
+                   // CandidateProfile sử dụng UserId làm khóa chính → so sánh theo UserId
+                   var saved = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidate.UserId && s.JobId == job.Id);
+                   detail.IsSaved = saved != null;
+               }
+
+           }
+           else detail.IsSaved = false;
+
+           return detail;
+       }*/
 
         /// <summary>
         /// Lấy danh sách job đã lưu của user hiện tại

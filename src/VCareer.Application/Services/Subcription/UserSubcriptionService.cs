@@ -33,7 +33,7 @@ namespace VCareer.Services.Subcription
         }
         public async Task BuySubcription(User_SubcirptionCreateDto dto)
         {
-            // chạy luồng payment nếu thành công thì tạo 1 UserSubcription
+                      // chạy luồng payment nếu thành công thì tạo 1 UserSubcription
             var userSubcription = await CreateUserSubcription(dto);
             if (userSubcription == null) throw new BusinessException("Error when create user subcription");
             //logic chay cac child subcription ma auto active

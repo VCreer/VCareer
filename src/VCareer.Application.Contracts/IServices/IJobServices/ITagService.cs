@@ -10,11 +10,9 @@ namespace VCareer.IServices.IJobServices
 {
     public interface ITagService : IApplicationService
     {
-        public Task CreateTagsAsync(List<string> listName);
-        public Task CreateTagAsync(string name);
-        public Task GetTagsByIdAsync(int tagId);
+        public Task CreateTagsAsync(TagCreateDto dto);
         public Task UpdateTagAsync(TagUpdateDto tagUpdateDto);
-        public Task DeleteTagAsync(int tagId);
+        public Task DeleteTagsAsync(List<int> tagId);
 
     }
 }
