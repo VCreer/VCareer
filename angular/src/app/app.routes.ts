@@ -242,6 +242,24 @@ export const APP_ROUTES: Routes = [
       {
         path: 'manage-recruitment-information-detail',
         loadComponent: () => import('./features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail').then(c => c.EmployeeJobManagementDetailComponent),
+      },
+      {
+        path: 'user-management',
+        children: [
+          {
+            path: 'recruiter',
+            loadComponent: () => import('./features/user-management-employee/recruiting-user-management/recruiting-user-management').then(c => c.RecruitingUserManagementComponent),
+          },
+          {
+            path: 'candidate',
+            loadComponent: () => import('./features/user-management-employee/candidate-user-management/candidate-user-management').then(c => c.CandidateUserManagementComponent),
+          },
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'recruiter'
+          }
+        ]
       }
     ]
   },
