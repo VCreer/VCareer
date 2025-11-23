@@ -25,6 +25,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   currentRoute: string = '';
   isVerified: boolean = false;
   isEmployeeRoute: boolean = false;
+  showUserManagementDropdown: boolean = false;
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
 
@@ -150,6 +151,23 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
   isActive(path: string): boolean {
     return this.currentRoute === path || this.currentRoute.startsWith(path + '/');
+  }
+
+  toggleUserManagementDropdown(event: Event): void {
+    event.stopPropagation();
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
+  }
+
+  navigateToUserManagement(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showUserManagementDropdown = false;
+    this.navigateTo(path);
+  }
+
+  isUserManagementActive(): boolean {
+    return this.currentRoute.startsWith('/employee/user-management');
   }
 }
 

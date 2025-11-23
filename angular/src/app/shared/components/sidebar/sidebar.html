@@ -36,6 +36,25 @@
             <span class="sidebar-link-text">Quản lý tin tuyển dụng</span>
           </a>
         </li>
+        <li class="sidebar-nav-item sidebar-nav-item-dropdown" [class.dropdown-open]="showUserManagementDropdown">
+          <a (click)="toggleUserManagementDropdown($event)" class="sidebar-link sidebar-link-has-submenu" [class.active]="isUserManagementActive()">
+            <i class="fa fa-users sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lí người dùng</span>
+            <i class="fa fa-chevron-down sidebar-chevron" [class.rotated]="showUserManagementDropdown"></i>
+          </a>
+          <ul class="sidebar-submenu" [class.show]="showUserManagementDropdown">
+            <li class="sidebar-submenu-item">
+              <a (click)="navigateToUserManagement('/employee/user-management/recruiter', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/user-management/recruiter')">
+                <span class="sidebar-submenu-text">Quản lí tuyển dụng</span>
+              </a>
+            </li>
+            <li class="sidebar-submenu-item">
+              <a (click)="navigateToUserManagement('/employee/user-management/candidate', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/user-management/candidate')">
+                <span class="sidebar-submenu-text">Quản lí ứng viên</span>
+              </a>
+            </li>
+          </ul>
+        </li>
       </ng-container>
 
       <!-- Recruiter Menu -->
