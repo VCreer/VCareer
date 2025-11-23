@@ -311,11 +311,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
-        public Task<List<JobViewWithPriorityDto>> GetJobByRecruiterId(Guid id, int maxCount = 10)
-        {
-            throw new NotImplementedException();
-        }
-        public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
+              public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
             throw new NotImplementedException();
         }
@@ -384,6 +380,11 @@ namespace VCareer.Services.Job
             }
 
 
+        }
+
+        public Task<List<JobViewDto>> GetJobByRecruiterId(Guid id, int maxCount = 10)
+        {
+            throw new NotImplementedException();
         }
 
 
