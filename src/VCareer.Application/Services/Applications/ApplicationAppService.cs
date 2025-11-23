@@ -39,7 +39,7 @@ namespace VCareer.Application.Applications
         private readonly ICandidateCvAppService _candidateCvAppService;
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly ICurrentUser _currentUser;
-      
+
         public ApplicationAppService(
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
@@ -64,7 +64,7 @@ namespace VCareer.Application.Applications
             _candidateCvAppService = candidateCvAppService;
             _uploadedCvAppService = uploadedCvAppService;
             _currentUser = currentUser;
-                  }
+        }
 
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)
@@ -93,7 +93,7 @@ namespace VCareer.Application.Applications
             var job = await queryable
                 .Include(j => j.RecruiterProfile)
                 .FirstOrDefaultAsync(j => j.Id == input.JobId);
-            
+
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
@@ -153,7 +153,7 @@ namespace VCareer.Application.Applications
             var job = await queryable
                 .Include(j => j.RecruiterProfile)
                 .FirstOrDefaultAsync(j => j.Id == input.JobId);
-            
+
             if (job == null)
                 throw new UserFriendlyException("Công việc không tồn tại");
 
@@ -449,7 +449,7 @@ namespace VCareer.Application.Applications
             {
                 var userId = _currentUser.GetId();
                 var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-                
+
                 if (candidate == null)
                 {
                     return new ApplicationStatusDto { HasApplied = false };
@@ -511,8 +511,8 @@ namespace VCareer.Application.Applications
                 var user = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
                 if (user != null)
                 {
-                    dto.CandidateName = !string.IsNullOrEmpty(user.Name) 
-                        ? $"{user.Name} {user.Surname}".Trim() 
+                    dto.CandidateName = !string.IsNullOrEmpty(user.Name)
+                        ? $"{user.Name} {user.Surname}".Trim()
                         : user.UserName;
                 }
             }
@@ -536,6 +536,16 @@ namespace VCareer.Application.Applications
             }
 
             return dto;
+        }
+
+        public Task<byte[]> BulkDownloadCompanyCVsAsync(BulkDownloadCVsDto input)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
+        {
+            throw new NotImplementedException();
         }
     }
 }

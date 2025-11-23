@@ -3,18 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-
-// Import API Services
-//import { CategoryApiService, CategoryTreeDto } from '../../../../proxy/api/category.service';
-import { CategoryApiService, CategoryTreeDto } from '../../../../apiTest/api/category.service';
-import { LocationApiService, ProvinceDto } from '../../../../apiTest/api/location.service';
-import {
-  JobApiService,
-  JobSearchInputDto,
-  JobViewDto,
-  PagedResultDto,
-} from '../../../../apiTest/api/job.service';
-
 // Import shared components
 import { HeroSectionComponent } from '../../../../shared/components/hero-section/hero-section';
 import { FilterBarComponent } from '../../../../shared/components/filter-bar/filter-bar';
@@ -23,6 +11,16 @@ import { CategorySectionComponent } from '../../../../shared/components/category
 import { AboutUsComponent } from '../../../../shared/components/about-us/about-us';
 import { StatisticsComponent } from '../../../../shared/components/statistics/statistics';
 import { FutureHeroComponent } from '../../../../shared/components/future-hero/future-hero';
+// api thatj
+import {JobSearchInputDto,JobViewDto} from '../../../../proxy/dto/job-dto';
+import { JobPostService } from 'src/app/proxy/services/job'; 
+import { GeoService } from 'src/app/core/services/Geo.service';
+import { ProvinceDto } from 'src/app/proxy/dto/geo-dto'
+import { CategoryTreeDto } from 'src/app/proxy/dto/category';
+import { JobCategoryService } from 'src/app/proxy/job';
+
+
+
 
 @Component({
   selector: 'app-candidate-homepage',
@@ -82,9 +80,9 @@ export class CandidateHomepageComponent implements OnInit {
 
   // Selected filters (from FilterBar)
   selectedCategoryIds: string[] = [];
-  selectedProvinceIds: number[] = [];
-  selectedDistrictIds: number[] = [];
-  searchKeyword: string = ''; // ✅ Keyword từ search input
+  selectedProvinceCode: number[] = [];
+  selectedWardCode: number[] = [];
+  searchKeyword: string = ''; 
 
   // Pagination
   currentPage = 1;
@@ -97,7 +95,7 @@ export class CandidateHomepageComponent implements OnInit {
   categoriesPerPage = 8;
 
   // Dữ liệu danh sách việc làm hiển thị
-  jobListings: any[] = [];
+  jobListings: JobViewDto[] = [];
 
   // Mock data cho CategorySection (khác với categories từ API)
   mockCategoriesForSection = [
@@ -265,9 +263,9 @@ export class CandidateHomepageComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private categoryApi: CategoryApiService,
-    private locationApi: LocationApiService,
-    private jobApi: JobApiService
+    private categoryApi: JobCategoryService,
+    private geoService: GeoService,
+    private jobPostService:JobPostService  
   ) {}
 
   ngOnInit() {
@@ -283,11 +281,11 @@ export class CandidateHomepageComponent implements OnInit {
     this.isLoadingData = true;
 
     forkJoin({
-      categories: this.categoryApi.getCategoryTree(),
-      provinces: this.locationApi.getAllProvinces(),
+      categories: this.categories,
+      provinces: this.geoService.getProvinces(),
     }).subscribe({
       next: data => {
-        this.categories = data.categories;
+      //  this.categories = data.categories;
         this.provinces = data.provinces;
         this.isLoadingData = false;
         console.log('✅ CandidateHomepage - Loaded categories:', this.categories.length);
@@ -299,17 +297,16 @@ export class CandidateHomepageComponent implements OnInit {
         console.error('❌ Error loading initial data:', error);
         console.error('Error details:', error.message);
         this.isLoadingData = false;
-        // ✅ Show user-friendly message
         alert('Không thể tải dữ liệu. Vui lòng kiểm tra backend API có chạy không!');
       },
     });
   }
 
   toggleBookmark(jobId: number) {
-    const job = this.jobListings.find(j => j.id === jobId);
-    if (job) {
-      job.isBookmarked = !job.isBookmarked;
-    }
+    // const job = this.jobListings.find(j => j.id === jobId);
+    // if (job) {
+    //   job.isBookmarked = !job.isBookmarked;
+    // }
   }
 
   viewJobDetails(jobId: number) {
@@ -321,6 +318,7 @@ export class CandidateHomepageComponent implements OnInit {
     console.log('Viewing jobs for category:', categoryId);
   }
 
+  //#region Category
   previousCategoryPage() {
     if (this.currentCategoryPage > 1) {
       this.currentCategoryPage--;
@@ -345,6 +343,7 @@ export class CandidateHomepageComponent implements OnInit {
     return this.mockCategoriesForSection.slice(startIndex, endIndex);
   }
 
+  //#endregion
   viewAllJobs() {
     // Điều hướng đến trang tất cả việc làm
   }
@@ -359,10 +358,7 @@ export class CandidateHomepageComponent implements OnInit {
     this.router.navigate(['/about']);
   }
 
-  // ============================================
-  // ✅ NEW: JOB SEARCH LOGIC
-  // ============================================
-
+ 
   /**
    * Event handler: Khi user nhấn nút Search
    */
@@ -385,8 +381,8 @@ export class CandidateHomepageComponent implements OnInit {
     console.log('\n🚀 ===== NAVIGATING TO JOB SEARCH PAGE =====');
     console.log('   - Keyword:', this.searchKeyword);
     console.log('   - Category IDs:', this.selectedCategoryIds);
-    console.log('   - Province IDs:', this.selectedProvinceIds);
-    console.log('   - District IDs:', this.selectedDistrictIds);
+    console.log('   - Province IDs:', this.selectedProvinceCode);
+    console.log('   - Ward Codes:', this.selectedWardCode);
 
     // Build query params
     const queryParams: any = {};
@@ -399,12 +395,12 @@ export class CandidateHomepageComponent implements OnInit {
       queryParams.categoryIds = this.selectedCategoryIds.join(','); // Convert array to comma-separated string
     }
 
-    if (this.selectedProvinceIds.length > 0) {
-      queryParams.provinceIds = this.selectedProvinceIds.join(',');
+    if (this.selectedProvinceCode.length > 0) {
+      queryParams.provinceIds = this.selectedProvinceCode.join(',');
     }
 
-    if (this.selectedDistrictIds.length > 0) {
-      queryParams.districtIds = this.selectedDistrictIds.join(',');
+    if (this.selectedWardCode.length > 0) {
+      queryParams.districtIds = this.selectedWardCode.join(',');
     }
 
     console.log('📤 Query Params:', queryParams);
@@ -431,15 +427,15 @@ export class CandidateHomepageComponent implements OnInit {
    * Event handler: Khi user chọn locations từ FilterBar
    * ✅ AUTO NAVIGATE: Chuyển sang trang job ngay khi chọn location
    */
-  onLocationSelected(location: { provinceIds: number[]; districtIds: number[] }) {
-    this.selectedProvinceIds = location.provinceIds;
-    this.selectedDistrictIds = location.districtIds;
+  onLocationSelected(location: { provinceCodes: number[]; wardCodes: number[] }) {
+    this.selectedProvinceCode= location.provinceCodes;
+    this.selectedWardCode= location.wardCodes;
     console.log('✅ Locations selected:');
-    console.log('   - Province IDs:', location.provinceIds);
-    console.log('   - District IDs:', location.districtIds);
+    console.log('   - Province IDs:', location.provinceCodes);
+    console.log('   - District IDs:', location.wardCodes);
 
     // ✅ AUTO NAVIGATE: Chuyển sang trang job ngay lập tức
-    const totalLocationCount = location.provinceIds.length + location.districtIds.length;
+    const totalLocationCount = location.provinceCodes.length + location.wardCodes.length;
     if (totalLocationCount > 0) {
       this.performJobSearch();
     }
@@ -482,7 +478,7 @@ export class CandidateHomepageComponent implements OnInit {
 
   loadAllJobs() {
     // Load lại tất cả việc làm từ dữ liệu gốc
-    this.jobListings = [...this.originalJobListings];
+    //this.jobListings = [...this.originalJobListings];
     this.updatePagination();
   }
 

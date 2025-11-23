@@ -124,20 +124,20 @@ namespace VCareer.Services.FileServices
             };
 
         }
-        public async Task UploadAsync(UploadFileDto input)
+        public async Task<Guid> UploadAsync(UploadFileDto input)
         {
-            using (var stream = input.File.OpenReadStream())
-            {
-                FileDescriptorDto fileDescriptor = await CheckValidationAsync(input, stream);
-                await StorageLocalAsync(fileDescriptor, stream);
-                await StorageDataBaseAsync(fileDescriptor);
-            }
+            using var stream = input.File.OpenReadStream();
+            FileDescriptorDto fileDescriptor = await CheckValidationAsync(input, stream);
+            await StorageLocalAsync(fileDescriptor, stream);
+            var inserted = await StorageDataBaseAsync(fileDescriptor);
+            return inserted.Id;
         }
         #region upload file logic
 
         //xử lý file 
         private async Task<FileDescriptorDto> CheckValidationAsync(UploadFileDto input, Stream stream)
         {
+            // Resolve enum container type from name for validation APIs
             var sizeAllow = _filePoliciesServices.GetMaxFileSizeMb(input.ContainerType);
 
 
@@ -145,10 +145,11 @@ namespace VCareer.Services.FileServices
             if (input.UserId == null) throw new ArgumentNullException("UserId is null");
             if (input.ContainerType == null) throw new ArgumentNullException("ContainerType is null");
 
-            if (!_fileSecurityServices.ValidateExtension(input.File.FileName, input.ContainerType)) throw new UserFriendlyException("File extension is not allowed");
-            if (!_fileSecurityServices.ValidateSize(input.File.Length, input.ContainerType)) throw new UserFriendlyException($"File Size must be smaller than {sizeAllow}");
+            var containerEnum = _filePoliciesServices.ResolveContainerType(input.ContainerType);
+            if (!_fileSecurityServices.ValidateExtension(input.File.FileName, containerEnum)) throw new UserFriendlyException("File extension is not allowed");
+            if (!_fileSecurityServices.ValidateSize(input.File.Length, containerEnum)) throw new UserFriendlyException($"File Size must be smaller than {sizeAllow}");
             //ở hàm này có thể ghi log vì đây là trường hợp giả mạo nếu invalid 
-            if (!await _fileSecurityServices.ValidateMimeAndMagicAsync(stream, input.ContainerType)) throw new UserFriendlyException("FIle invalid!!");
+            if (!await _fileSecurityServices.ValidateMimeAndMagicAsync(stream, containerEnum)) throw new UserFriendlyException("File invalid");
 
             stream.Seek(0, SeekOrigin.Begin); // reset lại vị trí con trỏ về đầu stream sau khi đã đọc để kiểm tra mime và magic
             var safeName = _fileSecurityServices.GenerateSafeStorageName(input.File.FileName);
@@ -160,6 +161,7 @@ namespace VCareer.Services.FileServices
                 StorageName = safeName,
                 MimeType = input.File.ContentType,
                 OriginalName = input.File.FileName,
+                FileType = input.ContainerType,
                 CreatorId = input.UserId.ToString(),
                 Extension = Path.GetExtension(input.File.FileName),
                 ContainerName = containerName,
@@ -187,12 +189,13 @@ namespace VCareer.Services.FileServices
             }
         }
         //lưu file upload vào database
-        private async Task StorageDataBaseAsync(FileDescriptorDto input)
+        private async Task<FileDescriptor> StorageDataBaseAsync(FileDescriptorDto input)
         {
             var entity = ObjectMapper.Map<FileDescriptorDto, FileDescriptor>(input);
             try
             {
                 await _fileDescriptorRepository.InsertAsync(entity, autoSave: true);
+                return entity;
             }
             catch (Exception ex)
             {

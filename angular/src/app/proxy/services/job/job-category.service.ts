@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CategoryUpdateCreateDto } from '../../dto/job-dto/models';
-import type { CategoryTreeDto } from '../../dto/job/models';
+import type { CategoryTreeDto, CategoryUpdateCreateDto } from '../../dto/category/models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +30,14 @@ export class JobCategoryService {
     this.restService.request<any, CategoryTreeDto[]>({
       method: 'GET',
       url: '/api/app/job-category/category-tree',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTagsByCategoryId = (categoryId: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'GET',
+      url: `/api/app/job-category/tags-by-category-id/${categoryId}`,
     },
     { apiName: this.apiName,...config });
   

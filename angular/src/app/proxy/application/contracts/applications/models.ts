@@ -56,6 +56,13 @@ export interface ApplyWithUploadedCVDto {
   coverLetter?: string;
 }
 
+export interface BulkDownloadCVsDto {
+  jobId?: string;
+  status?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export interface GetApplicationListDto extends PagedAndSortedResultRequestDto {
   jobId?: string;
   candidateId?: string;
@@ -66,6 +73,11 @@ export interface GetApplicationListDto extends PagedAndSortedResultRequestDto {
   toDate?: string;
   isViewed?: boolean;
   isResponded?: boolean;
+}
+
+export interface RateApplicationDto {
+  rating: number;
+  notes?: string;
 }
 
 export interface UpdateApplicationStatusDto {

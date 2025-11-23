@@ -312,9 +312,9 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     return 'Thỏa thuận';
   }
 
-  getExperienceText(job: JobApproveViewDto): string {
-    return job.experienceText || 'Không yêu cầu';
-  }
+  // getExperienceText(job: JobApproveViewDto): string {
+  //   return job.experienceText || 'Không yêu cầu';
+  // }
 
   getLocationText(job: JobApproveViewDto): string {
     return job.provinceName || job.workLocation || 'Chưa cập nhật';

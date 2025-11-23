@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VCareer.Dto.Job;
+using VCareer.Dto.Category;
 using VCareer.IServices.IJobServices;
 using Volo.Abp.AspNetCore.Mvc;
 

@@ -3,11 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VCareer.Dto.Job;
-using VCareer.Dto.JobDto;
-using VCareer.IRepositories.Job;
+using VCareer.Dto.Category;
+using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
-using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
 using Volo.Abp.Application.Services;
 
 namespace VCareer.Services.Job
@@ -33,7 +32,6 @@ namespace VCareer.Services.Job
             };
             await _categoryRepository.InsertAsync(category,true);
         }
-
         public async Task DeleteCategoryAsync(Guid id)
         {
             var category = await _categoryRepository.FindAsync(id);
@@ -41,7 +39,6 @@ namespace VCareer.Services.Job
             if (category.Children.Any()) throw new Exception("Category has children");
             await _categoryRepository.DeleteAsync(category, true);
         }
-
         /// Lấy toàn bộ cây phân cấp category với số lượng job
         public async Task<List<CategoryTreeDto>> GetCategoryTreeAsync()
         {
@@ -75,6 +72,12 @@ namespace VCareer.Services.Job
                 throw;
             }
         }
+
+        public Task GetTagsByCategoryIdAsync(int categoryId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<CategoryTreeDto>> SearchCategoriesAsync(string keyword)
         {
             try
@@ -127,8 +130,6 @@ namespace VCareer.Services.Job
                 throw;
             }
         }
-
-
         public async Task UpdateCategoryAsync(Guid id, CategoryUpdateCreateDto dto)
         {
             var category = await _categoryRepository.FindAsync(id);
@@ -144,7 +145,6 @@ namespace VCareer.Services.Job
 
             await _categoryRepository.UpdateAsync(category, autoSave: true);
         }
-
         /// Hàm này sẽ tạo ra 1 tree dto từ 1 category, build path từ trên xuống
         private async Task<CategoryTreeDto> BuildCategoryTreeDtoAsync(
             Job_Category entity,
@@ -187,7 +187,6 @@ namespace VCareer.Services.Job
 
             return dto;
         }
-
         /// Tính tổng số job bao gồm cả children (đệ quy)
         private int CalculateTotalJobCount(Job_Category category)
         {

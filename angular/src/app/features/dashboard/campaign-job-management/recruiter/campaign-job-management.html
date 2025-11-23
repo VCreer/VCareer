@@ -1,0 +1,310 @@
+<div class="campaign-job-management-page">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box">
+    <div class="breadcrumb-container">
+      <button class="back-btn" (click)="onBack()">
+        <i class="fa fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      <h1 class="page-title">{{ campaignName }}</h1>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-group">
+        <i class="fa fa-search"></i>
+        <input
+          type="text"
+          placeholder="Tìm kiếm công việc..."
+          [value]="searchQuery"
+          (input)="onSearchChange($any($event.target).value)"
+        />
+      </div>
+
+      <div class="filter-group">
+        <app-status-dropdown
+          [options]="statusOptions"
+          [selectedValue]="selectedStatus"
+          placeholder="Tất cả trạng thái"
+          (statusChange)="onStatusChange($event)">
+        </app-status-dropdown>
+      </div>
+    </div>
+
+    <!-- Jobs Table -->
+    <div class="jobs-table-container">
+      <table class="jobs-table">
+        <thead>
+          <tr>
+            <th>Tiêu đề công việc</th>
+            <th>Vị trí</th>
+            <th>Địa điểm</th>
+            <th>Số CV</th>
+            <th>Trạng thái</th>
+            <th>Public/Private</th>
+            <th>Gói tuyển dụng</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let job of paginatedJobs">
+            <!-- Tiêu đề công việc Column -->
+            <td class="job-title-cell">
+              <div class="job-title-content">
+                <div class="job-title">{{ job.title }}</div>
+              </div>
+            </td>
+
+            <!-- Vị trí Column -->
+            <td class="position-cell">
+              <span>{{ job.position }}</span>
+            </td>
+
+            <!-- Địa điểm Column -->
+            <td class="location-cell">
+              <i class="fa fa-map-marker-alt"></i>
+              <span>{{ job.location }}</span>
+            </td>
+
+            <!-- Số CV Column -->
+            <td class="cv-count-cell">
+              <span>{{ job.appliedCount }}</span>
+            </td>
+
+            <!-- Trạng thái Column -->
+            <td class="status-cell">
+              <span class="status-badge" [class]="getStatusClass(job.status)">
+                {{ getStatusLabel(job.status) }}
+              </span>
+            </td>
+
+            <!-- Public/Private Column -->
+            <td class="public-cell">
+              <span class="public-badge" [class.public]="job.isPublic" [class.private]="!job.isPublic">
+                {{ job.isPublic ? 'Public' : 'Private' }}
+              </span>
+            </td>
+
+            <!-- Gói tuyển dụng Column -->
+            <td class="package-cell">
+              <div class="package-badges-container" *ngIf="job.packageTypes && job.packageTypes.length > 0">
+                <span 
+                  *ngFor="let pkgType of job.packageTypes" 
+                  class="package-badge" 
+                  [class]="getPackageClass(pkgType)">
+                  {{ getPackageLabel(pkgType) }}
+                </span>
+              </div>
+              <span class="package-badge package-empty" *ngIf="!job.packageTypes || job.packageTypes.length === 0">
+                Chưa gắn gói
+              </span>
+            </td>
+
+            <!-- Thao tác Column -->
+            <td class="actions-cell">
+              <div class="actions-menu-container" [attr.data-job-id]="job.id">
+                <button
+                  class="actions-btn"
+                  type="button"
+                  (click)="toggleActionsMenu(job.id, $event)">
+                  <i class="fa fa-ellipsis-h"></i>
+                </button>
+                
+                <div
+                  class="actions-menu"
+                  [class.show]="showActionsMenu === job.id"
+                  [attr.data-job-id]="job.id"
+                  (click)="$event.stopPropagation()">
+                  <div class="menu-item" (click)="onEditJob(job)">
+                    <i class="fa fa-edit menu-icon"></i>
+                    <span>Sửa</span>
+                  </div>
+                  <div class="menu-item" (click)="onViewCVs(job)">
+                    <i class="fa fa-file-alt menu-icon"></i>
+                    <span>Xem các CV</span>
+                  </div>
+                  <div class="menu-separator"></div>
+                  <div class="menu-item" (click)="onChangeStatusAction(job)">
+                    <i class="fa fa-tag menu-icon"></i>
+                    <span>Đặt trạng thái</span>
+                  </div>
+                  <div class="menu-item" (click)="onTogglePublicAction(job)">
+                    <i class="fa fa-eye menu-icon"></i>
+                    <span>{{ job.isPublic ? 'Đặt Private' : 'Đặt Public' }}</span>
+                  </div>
+                  <div class="menu-item" (click)="onAssignPackage(job)">
+                    <i class="fa fa-gift menu-icon"></i>
+                    <span>Gắn gói</span>
+                  </div>
+                  <div class="menu-separator"></div>
+                  <div class="menu-item delete-item" (click)="onDeleteJob(job)">
+                    <i class="fa fa-trash menu-icon"></i>
+                    <span>Xóa</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredJobs.length === 0">
+        <div class="empty-state-content">
+          <i class="fa fa-briefcase empty-icon"></i>
+          <p class="empty-message">
+            {{ searchQuery || selectedStatus !== 'all' ? 'Không tìm thấy công việc nào' : 'Chưa có công việc nào' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="filteredJobs.length > 0">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="filteredJobs.length"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Xác nhận xóa</h3>
+        <button class="modal-close" (click)="closeDeleteModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa công việc "<strong>{{ jobToDelete?.title }}</strong>"?</p>
+        <p class="warning-text">Hành động này không thể hoàn tác.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteModal()">Hủy</button>
+        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Status Modal -->
+  <div class="modal-overlay" *ngIf="showStatusDropdownModal" (click)="closeStatusModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Đặt trạng thái</h3>
+        <button class="modal-close" (click)="closeStatusModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Chọn trạng thái</label>
+          <div class="status-dropdown-list">
+            <div 
+              *ngFor="let status of statusOptions.slice(1)" 
+              class="status-option-item"
+              [class.active]="selectedStatusValue === status.value"
+              (click)="onSelectStatus(status.value)">
+              <div class="status-option-content">
+                <span class="status-option-label">{{ status.label }}</span>
+                <i class="fa fa-check status-check-icon" *ngIf="selectedStatusValue === status.value"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Package Modal -->
+  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()">
+    <div class="modal-content package-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Gắn gói tuyển dụng</h3>
+        <button class="modal-close" (click)="closePackageModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="package-modal-content-wrapper">
+          <div class="form-group packages-selection-group">
+            <label class="form-label">Chọn gói tuyển dụng (có thể chọn nhiều)</label>
+            <div class="packages-list">
+              <div 
+                *ngFor="let pkg of packageOptions.slice(1)" 
+                class="package-item"
+                [class.selected]="isPackageSelected(pkg.value)"
+                [class.active]="activePackage === pkg.value">
+                <div class="package-content" (click)="onPackageContentClick(pkg.value, $event)">
+                  <div class="package-header">
+                    <span class="package-name">{{ pkg.label }}</span>
+                  </div>
+                  <div class="package-features" *ngIf="pkg.features && pkg.features.length > 0">
+                    <div class="features-list">
+                      <div *ngFor="let feature of pkg.features" class="feature-item">
+                        <i class="fa fa-check-circle"></i>
+                        <span>{{ feature }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="package-check-icon" (click)="togglePackage(pkg.value, $event)">
+                  <div class="checkbox-icon" [class.checked]="isPackageSelected(pkg.value)">
+                    <i class="fa fa-check" *ngIf="isPackageSelected(pkg.value)"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Package Options Selection for active package only -->
+          <div class="form-group package-options-section" *ngIf="activePackage && getPackageOptions(activePackage).length > 0">
+            <label class="form-label">Chọn các tùy chọn trong gói</label>
+            <div class="packages-options-container">
+              <div class="package-options-group">
+                <div class="package-options-title">
+                  <span class="package-title-name">{{ getPackageLabel(activePackage) }}</span>
+                </div>
+                <div class="package-options-list">
+                  <div 
+                    *ngFor="let option of getPackageOptions(activePackage)" 
+                    class="package-option-item"
+                    [class.selected]="isPackageOptionSelected(activePackage, option.id)"
+                    (click)="togglePackageOption(activePackage, option.id)">
+                    <div class="option-content">
+                      <div class="option-header">
+                        <span class="option-name">{{ option.name }}</span>
+                        <i class="fa fa-check option-selected-check" *ngIf="isPackageOptionSelected(activePackage, option.id)"></i>
+                      </div>
+                      <p class="option-description" *ngIf="option.description">{{ option.description }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closePackageModal()">Hủy</button>
+        <button class="btn btn-primary" (click)="confirmAssignPackage()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+

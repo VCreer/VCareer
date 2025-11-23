@@ -26,6 +26,9 @@ using VCareer.Models.Job;
 using VCareer.Models.FileMetadata;
 using VCareer.Models.CV;
 using VCareer.Models.Applications;
+using VCareer.Models.JobCategory;
+using VCareer.Models.Subcription;
+using VCareer.Models.Subcription_Payment;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -48,16 +51,24 @@ public class VCareerDbContext :
     public DbSet<IpAddress> IpAddresses { get; set; }
     public DbSet<EmployeeIpAddress> EmployeeIpAdresses { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-
+    //dich vu
+    public DbSet<ChildService> ChildServices { get; set; }
+    public DbSet<ChildService_SubcriptionService> ChildService_SubcriptionServices { get; set; }
+    public DbSet<SubcriptionService> SubcriptionServices { get; set; }
+    public DbSet<EffectingJobService> EffectingJobServices { get; set; }
+    public DbSet<SubcriptionPrice> SubcriptionPrices { get; set; }
+    public DbSet<User_ChildService> User_ChildServices { get; set; }
+    public DbSet<User_SubcriptionService> User_SubcriptionServices { get; set; }
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
-    /*public DbSet<JobApplication> JobApplications { get; set; }
-    public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
+    public DbSet<JobApplication> JobApplications { get; set; }
+    /*public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }*/
 
     public DbSet<Job_Category> JobCategories { get; set; }
     public DbSet<Job_Post> JobPostings { get; set; }
     public DbSet<Tag> Tags { get; set; }
-    public DbSet<JobPostTag> JobPostingTags { get; set; }
+    public DbSet<JobTag> JobPostingTags { get; set; }
+    public DbSet<Categoty_Tag> CategoryTags { get; set; }
     /*   public DbSet<SavedJob> SavedJobs { get; set; }*/
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
     public DbSet<UploadedCv> UploadedCvs { get; set; }
@@ -125,34 +136,27 @@ public class VCareerDbContext :
     {
         b.ToTable("Tags");
         b.ConfigureByConvention();
-
-        // Properties
-        b.Property(x => x.Name).HasMaxLength(100).IsRequired();
-        b.Property(x => x.Slug).HasMaxLength(200).IsRequired();
-
-        // Unique index for Name
         b.HasIndex(x => x.Name).IsUnique(); // Đảm bảo tag name unique
 
-        // Relationships
-        b.HasMany(x => x.JobPostingTags)
+        b.HasMany(x => x.JobTags)
          .WithOne(x => x.Tag)
          .HasForeignKey(x => x.TagId)
          .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi tag bị xóa
     });
 
-        builder.Entity<JobPostTag>(b =>
+        builder.Entity<JobTag>(b =>
 {
-    b.ToTable("JobPostingTags");
-    b.HasKey(x => new { x.JobPostingId, x.TagId }); // Composite key
+    b.ToTable("JobTag");
+    b.HasKey(x => x.Id);
 
     // Relationships
-    b.HasOne(x => x.JobPosting)
-     .WithMany(x => x.JobPostingTags)
-     .HasForeignKey(x => x.JobPostingId)
+    b.HasOne(x => x.Job)
+     .WithMany(x => x.JobTags)
+     .HasForeignKey(x => x.JobId)
      .OnDelete(DeleteBehavior.Cascade);
 
     b.HasOne(x => x.Tag)
-     .WithMany(x => x.JobPostingTags)
+     .WithMany(x => x.JobTags)
      .HasForeignKey(x => x.TagId)
      .OnDelete(DeleteBehavior.Cascade);
 });
@@ -162,30 +166,29 @@ public class VCareerDbContext :
        b.ToTable("JobCategories");
        b.ConfigureByConvention();
 
-       // Properties configuration
-       b.Property(x => x.Name).HasMaxLength(200).IsRequired();
-       b.Property(x => x.Slug).HasMaxLength(250).IsRequired();
-       b.Property(x => x.Description).HasMaxLength(2000);
-       b.Property(x => x.SortOrder).HasDefaultValue(0);
-       b.Property(x => x.IsActive).HasDefaultValue(true);
-       b.Property(x => x.JobCount).HasDefaultValue(0);
-
-       // Indexes for performance
-       b.HasIndex(x => x.Slug).IsUnique();
-       b.HasIndex(x => x.ParentId);
-       b.HasIndex(x => x.IsActive);
-
        // Relationships
        b.HasOne(x => x.Parent)
         .WithMany(x => x.Children)
         .HasForeignKey(x => x.ParentId)
         .OnDelete(DeleteBehavior.Restrict);
 
-       b.HasMany(x => x.JobPostings)
-        .WithOne(x => x.JobCategory)
-        .HasForeignKey(x => x.JobCategoryId)
-        .OnDelete(DeleteBehavior.Cascade);
    });
+
+        builder.Entity<Categoty_Tag>(b =>
+        {
+            b.ToTable("CategoryTags");
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(ct => ct.Category)
+            .WithMany(c => c.Categoty_Tags)
+            .HasForeignKey(ct => ct.CategoryId);
+
+            b.HasOne(ct => ct.Tag)
+            .WithMany(t => t.CategotyTags)
+            .HasForeignKey(ct => ct.TagId);
+
+        });
 
         builder.Entity<Job_Priority>(b =>
         {
@@ -206,38 +209,20 @@ public class VCareerDbContext :
 
         b.HasKey(j => j.Id);
 
-
-        b.Property(j => j.Title).IsRequired().HasMaxLength(256);
-        b.Property(j => j.Slug).IsRequired().HasMaxLength(300);
-        b.Property(j => j.CompanyImageUrl).HasMaxLength(500);
-        b.Property(j => j.Description).HasMaxLength(5000);
-        b.Property(j => j.Requirements).HasMaxLength(5000);
-        b.Property(j => j.Benefits).HasMaxLength(5000);
-        b.Property(j => j.WorkLocation).HasMaxLength(500);
-
-        b.Property(x => x.SalaryDeal).HasDefaultValue(false);
-        b.Property(x => x.ApplyCount).HasDefaultValue(0);
-
-
         // Relationships
         b.HasOne(x => x.JobCategory)
-         .WithMany(x => x.JobPostings)
+         .WithMany(c => c.JobPosts)
          .HasForeignKey(x => x.JobCategoryId)
-         .OnDelete(DeleteBehavior.Cascade); // Xóa job khi category bị xóa
+         .OnDelete(DeleteBehavior.Restrict);
 
-        //b.HasOne(x => x.RecruiterProfile)
-        // .WithMany(x => x.JobPostings)
-        // .HasForeignKey(x => x.RecruiterId)
-        // .HasPrincipalKey(x => x.Id)
-        // .OnDelete(DeleteBehavior.Cascade); // Xóa job khi recruiter profile bị xóa
         b.HasOne(x => x.RecruitmentCampaign)
-        .WithMany(r => r.Job_Posts)
-        .HasForeignKey(x => x.RecruitmentCampaignId)
-        .OnDelete(DeleteBehavior.Restrict);
+   .WithMany(r => r.Job_Posts)
+   .HasForeignKey(x => x.RecruitmentCampaignId)
+   .OnDelete(DeleteBehavior.Restrict);
 
-        b.HasMany(x => x.JobPostingTags)
-         .WithOne(x => x.JobPosting)
-         .HasForeignKey(x => x.JobPostingId)
+        b.HasMany(x => x.JobTags)
+         .WithOne(x => x.Job)
+         .HasForeignKey(x => x.JobId)
          .OnDelete(DeleteBehavior.Cascade);
     });
         builder.Entity<RecruitmentCampaign>(r =>
@@ -632,7 +617,8 @@ public class VCareerDbContext :
             ja.HasIndex(x => x.CVType);
             ja.HasIndex(x => x.Status);
             ja.HasIndex(x => x.CreationTime);
-            ja.HasIndex(x => new { x.JobId, x.CandidateId }).IsUnique(); // Prevent duplicate applications
+            // Cho phép ứng tuyển lại: bỏ Unique constraint trên (JobId, CandidateId)
+            ja.HasIndex(x => new { x.JobId, x.CandidateId });
         });
 
         builder.Entity<ActivityLog>(a =>
@@ -683,6 +669,128 @@ public class VCareerDbContext :
             ad.HasIndex(x => x.DocumentType);
             ad.HasIndex(x => x.IsPrimary);
         });*/
+
+
+        builder.Entity<ChildService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+            b.ToTable("ChildServices");
+
+            b.HasMany(x => x.childService_Subcriptions)
+                .WithOne(x => x.ChildService)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.user_ChildServices)
+                .WithOne(x => x.ChildService)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<ChildService_SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.ChildService)
+                .WithMany(x => x.childService_Subcriptions)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.ChildService_SubcriptionServices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasMany(x => x.ChildService_SubcriptionServices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.user_SubcriptionServices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(x => x.subcriptionPrices)
+                .WithOne(x => x.SubcriptionService)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<SubcriptionPrice>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.subcriptionPrices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<User_SubcriptionService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.User)
+             .WithMany()
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany(x => x.user_SubcriptionServices)
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<User_ChildService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.User)
+             .WithMany()
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+
+            b.HasOne(x => x.ChildService)
+                .WithMany(x => x.user_ChildServices)
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        builder.Entity<EffectingJobService>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(j => j.Id);
+
+            b.HasOne(x => x.JobPost)
+                .WithMany()
+                .HasForeignKey(x => x.JobPostId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.ChildService)
+                .WithMany()
+                .HasForeignKey(x => x.ChildServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
 
     }
 }

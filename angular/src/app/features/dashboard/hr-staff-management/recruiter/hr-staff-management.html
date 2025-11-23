@@ -3,9 +3,16 @@
   <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
       <div class="page-header">
-        <h1 class="page-title">Quản lí nhân sự</h1>
+        <h1 class="page-title">Quản lí HR Staff</h1>
       </div>
       <div class="action-buttons">
+        <app-button
+          type="primary"
+          size="small"
+          (click)="openAddModal()">
+          <i class="fas fa-plus"></i>
+          Thêm HR Staff
+        </app-button>
         <app-button
           type="primary"
           size="small"
@@ -19,35 +26,85 @@
 
   <!-- Main Content -->
   <div class="main-content">
+    <!-- Current Leader Info Card -->
+    <div class="leader-info-card" *ngIf="currentLeaderInfo">
+      <div class="leader-info-header">
+        <div class="leader-icon">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="leader-info-content">
+          <h3 class="leader-title">Thông tin Leader Recruiter</h3>
+          <div class="leader-details">
+            <div class="leader-detail-item">
+              <span class="detail-label">Họ và tên:</span>
+              <span class="detail-value">{{ currentLeaderInfo.fullName || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="leader-detail-item">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value">{{ currentLeaderInfo.email }}</span>
+            </div>
+            <div class="leader-detail-item">
+              <span class="detail-label">Công ty:</span>
+              <span class="detail-value">{{ currentLeaderInfo.companyName || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="leader-detail-item">
+              <span class="detail-label">Trạng thái:</span>
+              <span class="detail-value" [class.status-active]="currentLeaderInfo.status" [class.status-inactive]="!currentLeaderInfo.status">
+                {{ currentLeaderInfo.status ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Leader Info -->
+    <div class="loading-leader-info" *ngIf="loadingLeaderInfo">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Đang tải thông tin...</span>
+    </div>
+
     <!-- Dashboard Statistics -->
     <div class="stats-grid">
-      <app-stat-card 
-        [label]="'Tổng nhân viên'"
-        [value]="totalStaff"
-        [icon]="'fa-users'"
-        [color]="'#0F83BA'">
-      </app-stat-card>
+      <div class="stat-card" style="border-left-color: #0F83BA;">
+        <div class="stat-icon" style="background-color: #0F83BA;">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Tổng nhân viên</div>
+          <div class="stat-value">{{ totalStaff }}</div>
+        </div>
+      </div>
       
-      <app-stat-card 
-        [label]="'Đang hoạt động'"
-        [value]="activeStaff"
-        [icon]="'fa-user-check'"
-        [color]="'#10b981'">
-      </app-stat-card>
+      <div class="stat-card" style="border-left-color: #10b981;">
+        <div class="stat-icon" style="background-color: #10b981;">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Đang hoạt động</div>
+          <div class="stat-value">{{ activeStaff }}</div>
+        </div>
+      </div>
       
-      <app-stat-card 
-        [label]="'Chờ duyệt'"
-        [value]="pendingStaff"
-        [icon]="'fa-user-clock'"
-        [color]="'#f59e0b'">
-      </app-stat-card>
+      <div class="stat-card" style="border-left-color: #f59e0b;">
+        <div class="stat-icon" style="background-color: #f59e0b;">
+          <i class="fas fa-user-clock"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Chờ duyệt</div>
+          <div class="stat-value">{{ pendingStaff }}</div>
+        </div>
+      </div>
       
-      <app-stat-card 
-        [label]="'Ngừng hoạt động'"
-        [value]="inactiveStaff"
-        [icon]="'fa-user-times'"
-        [color]="'#ef4444'">
-      </app-stat-card>
+      <div class="stat-card" style="border-left-color: #ef4444;">
+        <div class="stat-icon" style="background-color: #ef4444;">
+          <i class="fas fa-user-times"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Ngừng hoạt động</div>
+          <div class="stat-value">{{ inactiveStaff }}</div>
+        </div>
+      </div>
     </div>
 
     <!-- Staff Table with Filter -->
@@ -94,23 +151,35 @@
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải danh sách HR Staff...</p>
+      </div>
+
       <!-- Staff Table -->
       <app-staff-table 
-        *ngIf="!showActivityLog"
+        *ngIf="!showActivityLog && !loading"
         [staffList]="paginatedStaffList"
         (viewStaff)="openEditModal($event)">
       </app-staff-table>
 
+      <!-- Loading State for Activity Log -->
+      <div *ngIf="showActivityLog && loadingActivityLogs" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải nhật ký hoạt động...</p>
+      </div>
+
       <!-- Activity Log Table -->
       <app-activity-log-table 
-        *ngIf="showActivityLog"
+        *ngIf="showActivityLog && !loadingActivityLogs"
         [activityLogs]="paginatedActivityLogs">
       </app-activity-log-table>
     </div>
 
     <!-- Pagination for Staff -->
     <app-pagination
-      *ngIf="!showActivityLog"
+      *ngIf="!showActivityLog && !loading"
       [currentPage]="currentPage"
       [totalPages]="totalPages"
       (pageChange)="onPageChange($event)">
@@ -118,24 +187,25 @@
 
     <!-- Pagination for Activity Log -->
     <app-pagination
-      *ngIf="showActivityLog"
+      *ngIf="showActivityLog && !loadingActivityLogs"
       [currentPage]="activityCurrentPage"
       [totalPages]="activityTotalPages"
       (pageChange)="onActivityPageChange($event)">
     </app-pagination>
 
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!showActivityLog && filteredStaffList.length === 0">
+    <div class="empty-state" *ngIf="!showActivityLog && !loading && filteredStaffList.length === 0">
       <i class="fas fa-users"></i>
-      <h3>Không tìm thấy nhân sự</h3>
-      <p>Thử thay đổi bộ lọc hoặc thêm nhân sự mới</p>
+      <h3>Không tìm thấy HR Staff</h3>
+      <p>Thử thay đổi bộ lọc hoặc liên hệ quản trị viên</p>
     </div>
 
     <!-- Empty State for Activity Log -->
-    <div class="empty-state" *ngIf="showActivityLog && filteredActivityLogs.length === 0">
+    <div class="empty-state" *ngIf="showActivityLog && !loadingActivityLogs && filteredActivityLogs.length === 0">
       <i class="fas fa-history"></i>
       <h3>Không có hoạt động nào</h3>
-      <p>Chưa có nhật kí hoạt động được ghi nhận</p>
+      <p *ngIf="activitySearchKeyword">Không tìm thấy hoạt động phù hợp với từ khóa tìm kiếm</p>
+      <p *ngIf="!activitySearchKeyword">Chưa có nhật ký hoạt động được ghi nhận</p>
     </div>
   </div>
 
@@ -148,15 +218,7 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="modal-body">
-        <app-input-field
-          label="Họ và tên"
-          type="text"
-          placeholder="Nhập họ và tên"
-          [required]="true"
-          [(ngModel)]="staffForm.name"
-          name="name">
-        </app-input-field>
+      <div class="modal-body">     
         
         <app-input-field
           label="Email"
@@ -167,32 +229,7 @@
           name="email">
         </app-input-field>
         
-        <app-input-field
-          label="Số điện thoại"
-          type="tel"
-          placeholder="Nhập số điện thoại"
-          [required]="true"
-          [(ngModel)]="staffForm.phone"
-          name="phone">
-        </app-input-field>
-        
-        <app-select-field
-          label="Vai trò"
-          placeholder="Chọn vai trò"
-          [required]="true"
-          [options]="roleOptions.slice(1)"
-          [(ngModel)]="staffForm.role"
-          name="role">
-        </app-select-field>
-        
-        <app-select-field
-          label="Phòng ban"
-          placeholder="Chọn phòng ban"
-          [required]="true"
-          [options]="departmentOptions.slice(1)"
-          [(ngModel)]="staffForm.department"
-          name="department">
-        </app-select-field>
+      
       </div>
       <div class="modal-footer">
         <app-button type="secondary" size="medium" (click)="closeAddModal()">
@@ -230,14 +267,19 @@
           <div class="readonly-value">{{ staffForm.phone }}</div>
         </div>
 
-        <app-select-field
-          label="Trạng thái"
-          placeholder="Chọn trạng thái"
-          [required]="true"
-          [options]="statusOptions.slice(1)"
-          [(ngModel)]="staffForm.status"
-          name="status">
-        </app-select-field>
+        <div class="form-group">
+          <label>Trạng thái <span class="required">*</span></label>
+          <select 
+            class="form-control"
+            [(ngModel)]="staffForm.status"
+            name="status"
+            required>
+            <option value="">Chọn trạng thái</option>
+            <option *ngFor="let option of statusOptions.slice(1)" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
       </div>
       <div class="modal-footer">
         <app-button type="secondary" size="medium" (click)="closeEditModal()">

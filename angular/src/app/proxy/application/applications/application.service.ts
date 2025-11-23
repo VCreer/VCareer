@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, GetApplicationListDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../contracts/applications/models';
+import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, BulkDownloadCVsDto, GetApplicationListDto, RateApplicationDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../contracts/applications/models';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +23,15 @@ export class ApplicationService {
     this.restService.request<any, ApplicationDto>({
       method: 'POST',
       url: '/api/app/application/apply-with-uploaded-cV',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  bulkDownloadCompanyCVs = (input: BulkDownloadCVsDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'POST',
+      url: '/api/app/application/bulk-download-company-cVs',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -109,6 +118,15 @@ export class ApplicationService {
     this.restService.request<any, ApplicationDto>({
       method: 'POST',
       url: `/api/app/application/${id}/mark-as-viewed`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rateApplication = (id: string, input: RateApplicationDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ApplicationDto>({
+      method: 'POST',
+      url: `/api/app/application/${id}/rate-application`,
+      body: input,
     },
     { apiName: this.apiName,...config });
   
