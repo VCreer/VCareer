@@ -23,9 +23,6 @@ namespace VCareer.IRepositories.Job
         // lấy full 1 job để index
         Task<Job_Post> GetForIndexingAsync(Guid jobId);
 
-        // lấy danh sách job liên quan
-        Task<List<Job_Post>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10);
-
         // đếm số luowngj job theo category
         Task<int> CountActiveJobsByCategoryAsync(Guid categoryId);
 

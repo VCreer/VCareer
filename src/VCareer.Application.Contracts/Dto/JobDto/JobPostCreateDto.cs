@@ -30,4 +30,10 @@ namespace VCareer.Dto.JobDto
         public DateTime? ExpiresAt { get; set; }
         public Guid JobCategoryId { get; set; }
     }
+
+    public class PostJobDto
+    {
+        public Guid JobId { get; set; }
+
+    }
 }
