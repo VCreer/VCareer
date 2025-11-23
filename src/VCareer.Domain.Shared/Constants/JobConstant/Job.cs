@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VCareer.Constants.JobConstant
 {
-
+    #region thông tin căn bản 
     // enum loại hình công việc
     public enum EmploymentType
     {
@@ -16,6 +16,15 @@ namespace VCareer.Constants.JobConstant
         Contract = 4,        // Hợp đồng
         Freelance = 5,       // Tự do
         Other = 6           // Khác
+    }
+
+    public enum RecruiterLevel
+    {
+        Unverified = -1,    // Chua xac minh
+        Verified = 0,       // Đã xác minh cơ bản
+        Trusted = 1,        // Đáng tin (có lịch sử hoạt động tốt)
+        Premium = 2,        // Uy tín cao, lâu năm hoặc mua gói 
+
     }
 
     //enum cho job status
@@ -36,7 +45,6 @@ namespace VCareer.Constants.JobConstant
         Active = 1,
         Closed = 2,
     }
-
 
     public enum PositionType
     {
@@ -74,6 +82,30 @@ namespace VCareer.Constants.JobConstant
         Over10 = 12         // Trên 10 năm
     }
 
+    public enum SalaryFilterType
+    {
+        All = 0,        // Tất cả
+        Under10 = 1,    // Dưới 10 triệu
+        Range10To15 = 2,// 10 - 15 triệu
+        Range15To20 = 3,// 15 - 20 triệu
+        Range20To30 = 4,// 20 - 30 triệu
+        Range30To50 = 5,// 30 - 50 triệu
+        Over50 = 6,     // Trên 50 triệu
+        Deal = 7        // Thỏa thuận
+    }
+    #endregion
+
+  
+    #region phục vụ display job
+
+    public enum SortByField
+    {
+        Relevance = 0,
+        Salary = 1,
+        Experience = 2,
+        ExpiredAt = 3
+    }
+
     public enum JobDisplayArea
     {
         MainMenuPage = 0,
@@ -87,15 +119,6 @@ namespace VCareer.Constants.JobConstant
         Medium = 1,
         High = 2,
         Urgent = 3
-
-    }
-
-    public enum RecruiterLevel
-    {
-        Unverified = -1,    // Chua xac minh
-        Verified = 0,       // Đã xác minh cơ bản
-        Trusted = 1,        // Đáng tin (có lịch sử hoạt động tốt)
-        Premium = 2,        // Uy tín cao, lâu năm hoặc mua gói 
 
     }
 
@@ -118,18 +141,6 @@ namespace VCareer.Constants.JobConstant
         public static int SALARY_MAX = 100000000;
     }
 
-    public enum SalaryFilterType
-    {
-        All = 0,        // Tất cả
-        Under10 = 1,    // Dưới 10 triệu
-        Range10To15 = 2,// 10 - 15 triệu
-        Range15To20 = 3,// 15 - 20 triệu
-        Range20To30 = 4,// 20 - 30 triệu
-        Range30To50 = 5,// 30 - 50 triệu
-        Over50 = 6,     // Trên 50 triệu
-        Deal = 7        // Thỏa thuận
-    }
-
     public enum RiskJobLevel
     {
         NonCalculated = -1,
@@ -137,4 +148,6 @@ namespace VCareer.Constants.JobConstant
         Normal = 1,
         Hight = 2,
     }
+
+    #endregion
 }

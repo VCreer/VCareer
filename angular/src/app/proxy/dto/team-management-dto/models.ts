@@ -15,6 +15,10 @@ export interface DeactivateStaffDto {
   notes?: string;
 }
 
+export interface InviteStaffDto {
+  email: string;
+}
+
 export interface StaffListItemDto {
   userId?: string;
   recruiterProfileId?: string;

@@ -196,9 +196,12 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            border-left: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
 
             thead {
               background: #f9fafb;
+              border-top: 1px solid #e5e7eb;
               border-bottom: 2px solid #e5e7eb;
 
               th {
@@ -207,6 +210,11 @@
                 font-weight: 600;
                 color: #374151;
                 white-space: nowrap;
+                border-right: 1px solid #e5e7eb;
+
+                &:last-child {
+                  border-right: none;
+                }
               }
             }
 
@@ -219,10 +227,19 @@
                   background: #f9fafb;
                 }
 
+                &:last-child {
+                  border-bottom: 2px solid #e5e7eb;
+                }
+
                 td {
                   padding: 16px;
                   color: #374151;
                   vertical-align: top;
+                  border-right: 1px solid #e5e7eb;
+
+                  &:last-child {
+                    border-right: none;
+                  }
                 }
               }
             }
@@ -491,6 +508,83 @@
                 background: #e5e7eb;
                 margin: 4px 0;
               }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Note Modal
+  .note-modal-content {
+    padding: 1.5rem;
+
+    .note-modal-section {
+      .note-input-wrapper {
+        margin-bottom: 1.5rem;
+
+        .note-label {
+          display: block;
+          font-weight: 600;
+          color: #000000;
+          font-size: 0.875rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .note-textarea {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          font-size: 0.875rem;
+          color: #000000;
+          background: white;
+          resize: vertical;
+          font-family: inherit;
+          line-height: 1.5;
+
+          &:focus {
+            outline: none;
+            border-color: #0F83BA;
+            box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1.5rem;
+
+        .btn {
+          padding: 0.625rem 1.5rem;
+          border: none;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &.btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+
+            &:hover {
+              background: #d1d5db;
+            }
+          }
+
+          &.btn-primary {
+            background: #0F83BA;
+            color: white;
+
+            &:hover {
+              background: #0A6B96;
             }
           }
         }

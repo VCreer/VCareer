@@ -19,10 +19,10 @@ namespace VCareer.IServices.ITeamManagement
         Task<StaffListItemDto> GetCurrentUserInfoAsync();
         
         /// <summary>
-        /// Lấy danh sách tất cả staff trong company
-        /// Chỉ Leader trong cùng công ty mới có quyền
+        /// Lấy danh sách HR Staff (IsLead = 0) trong company
+        /// Chỉ Leader Recruiter (IsLead = 1) trong cùng công ty mới có quyền
         /// </summary>
-        /// <returns>Danh sách staff</returns>
+        /// <returns>Danh sách HR Staff</returns>
         Task<List<StaffListItemDto>> GetAllStaffAsync();
         
         /// <summary>
@@ -40,6 +40,15 @@ namespace VCareer.IServices.ITeamManagement
         /// <param name="input">Thông tin activate</param>
         /// <returns>Kết quả thay đổi status</returns>
         Task<StaffStatusChangeDto> ActivateStaffAsync(ActivateStaffDto input);
+        
+        /// <summary>
+        /// Invite HR Staff mới
+        /// Tạo tài khoản và gửi email với thông tin đăng nhập
+        /// Chỉ Leader trong cùng công ty mới có quyền
+        /// </summary>
+        /// <param name="input">Thông tin invite (email)</param>
+        /// <returns>Thông tin staff vừa được tạo</returns>
+        Task<StaffListItemDto> InviteStaffAsync(InviteStaffDto input);
     }
 }
 

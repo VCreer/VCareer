@@ -2,10 +2,10 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   ButtonComponent, 
-  ToastNotificationComponent,
-  ReportMetricCardComponent,
-  StatusItemComponent
+  ToastNotificationComponent
 } from '../../../../shared/components';
+import { ReportMetricCardComponent } from '../../../../shared/components/report-metric-card/report-metric-card';
+import { StatusItemComponent } from '../../../../shared/components/status-item/status-item';
 
 interface ReportMetric {
   label: string;

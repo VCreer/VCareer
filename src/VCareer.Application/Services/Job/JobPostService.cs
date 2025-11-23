@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using VCareer.Constants.JobConstant;
 using VCareer.Dto.JobDto;
+using VCareer.IRepositories.Category;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
@@ -125,7 +126,6 @@ namespace VCareer.Services.Job
                     PositionType = job.PositionType,
                     Experience = job.Experience,
                     Quantity = job.Quantity,
-                    ExperienceText = job.ExperienceText,
                     WorkLocation = job.WorkLocation,
                     WorkTime = job.WorkTime,
                     Slug = job.Slug,

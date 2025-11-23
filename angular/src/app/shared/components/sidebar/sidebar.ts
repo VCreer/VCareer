@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { TeamManagementService } from '../../../proxy/services/team-management';
 
 @Component({
   selector: 'app-sidebar',
@@ -24,14 +25,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   verificationLevel: string = 'Cấp 1/3';
   currentRoute: string = '';
   isVerified: boolean = false;
-  isEmployeeRoute: boolean = false;
+  isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
+  isEmployeeRoute: boolean = false; // Flag để kiểm tra xem có phải employee route không
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
 
   constructor(
     private translationService: TranslationService,
     private router: Router,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private teamManagementService: TeamManagementService
   ) {
     // Subscribe to verification status
     this.isVerified = this.navigationService.isVerified();
@@ -44,6 +47,9 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         this.verificationLevel = 'Cấp 1/3';
       }
     });
+    
+    // Check if user is HR Staff (IsLead = false)
+    this.checkUserRole();
   }
 
   ngOnInit() {
@@ -67,6 +73,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.userRole = 'Employer';
       this.userName = 'Uông Hoàng Duy';
     }
+  }
+
+  checkEmployeeRoute(): void {
+    // Kiểm tra xem route hiện tại có phải employee route không
+    this.isEmployeeRoute = this.currentRoute.startsWith('/employee');
   }
 
   ngOnDestroy() {
@@ -150,6 +161,21 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
   isActive(path: string): boolean {
     return this.currentRoute === path || this.currentRoute.startsWith(path + '/');
+  }
+
+  checkUserRole(): void {
+    // Kiểm tra xem user có phải HR Staff không (IsLead = false)
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        // HR Staff là user có IsLead = false
+        this.isHRStaff = !userInfo.isLead;
+      },
+      error: (error) => {
+        // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
+        console.error('Error loading user info in sidebar:', error);
+        this.isHRStaff = false;
+      }
+    });
   }
 }
 

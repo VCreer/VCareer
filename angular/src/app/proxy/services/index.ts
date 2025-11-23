@@ -6,6 +6,7 @@ import * as Geo from './geo';
 import * as Job from './job';
 import * as Profile from './profile';
 import * as RecruitmentDashboard from './recruitment-dashboard';
+import * as Subcription from './subcription';
 import * as TeamManagement from './team-management';
 import * as User from './user';
-export { Auth, Books, Cv, FileServices, Geo, Job, Profile, RecruitmentDashboard, TeamManagement, User };
+export { Auth, Books, Cv, FileServices, Geo, Job, Profile, RecruitmentDashboard, Subcription, TeamManagement, User };

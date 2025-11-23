@@ -6,11 +6,12 @@ import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CartService, CartItem } from '../../../core/services/cart.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
+import { VnpayPaymentModalComponent, PaymentInfo } from '../../../shared/components/vnpay-payment-modal/vnpay-payment-modal';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastNotificationComponent],
+  imports: [CommonModule, FormsModule, ToastNotificationComponent, VnpayPaymentModalComponent],
   templateUrl: './cart.html',
   styleUrls: ['./cart.scss']
 })
@@ -23,6 +24,8 @@ export class CartComponent implements OnInit, OnDestroy {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
+  showVnpayModal = false;
+  paymentInfo?: PaymentInfo;
   private cartSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
@@ -164,8 +167,30 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: Implement create order functionality
-    this.showToastMessage('success', 'Đơn hàng đã được tạo thành công');
+    // Prepare payment info
+    const selectedItems = this.getSelectedItems();
+    const orderId = `ORD-${Date.now()}`;
+    
+    this.paymentInfo = {
+      orderId: orderId,
+      totalAmount: this.getTotal(),
+      services: selectedItems.map(item => ({
+        name: item.title,
+        quantity: item.quantity,
+        price: parseFloat(item.price.replace(/,/g, ''))
+      }))
+    };
+
+    // Show VNPAY payment modal
+    this.showVnpayModal = true;
+  }
+
+  onCloseVnpayModal(): void {
+    this.showVnpayModal = false;
+  }
+
+  onDeclineVnpayModal(): void {
+    this.showVnpayModal = false;
   }
 
   showToastMessage(type: 'success' | 'error' | 'info' | 'warning', message: string): void {

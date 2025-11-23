@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -13,6 +14,11 @@ import {
   HRStaff,
   ActivityLog
 } from '../../../../shared/components';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
+import type { StaffListItemDto, ActivateStaffDto, DeactivateStaffDto, InviteStaffDto } from '../../../../proxy/dto/team-management-dto/models';
+import { ActivityLogService } from '../../../../proxy/services/auth/activity-log';
+import type { ActivityLogDto, ActivityLogFilterDto, ActivityLogListDto } from '../../../../proxy/dto/activity-log-dto/models';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-hr-staff-management',
@@ -90,100 +96,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   // Activity Log
   activitySearchKeyword = '';
-  activityLogs: ActivityLog[] = [
-    {
-      id: '1',
-      staffId: '1',
-      staffName: 'Nguyễn Văn A',
-      staffRole: 'HR Manager',
-      activityType: 'login',
-      detail: 'Đăng nhập vào hệ thống',
-      timestamp: new Date('2024-01-15T08:30:00')
-    },
-    {
-      id: '2',
-      staffId: '2',
-      staffName: 'Trần Thị B',
-      staffRole: 'Recruiter',
-      activityType: 'create_campaign',
-      detail: 'Tạo chiến dịch tuyển dụng "Senior Developer"',
-      timestamp: new Date('2024-01-15T09:15:00')
-    },
-    {
-      id: '3',
-      staffId: '1',
-      staffName: 'Nguyễn Văn A',
-      staffRole: 'HR Manager',
-      activityType: 'approve',
-      detail: 'Phê duyệt ứng viên "Lê Văn C"',
-      timestamp: new Date('2024-01-15T10:00:00')
-    },
-    {
-      id: '4',
-      staffId: '3',
-      staffName: 'Lê Văn C',
-      staffRole: 'HR Specialist',
-      activityType: 'update_profile',
-      detail: 'Cập nhật thông tin cá nhân',
-      timestamp: new Date('2024-01-15T11:20:00')
-    },
-    {
-      id: '5',
-      staffId: '2',
-      staffName: 'Trần Thị B',
-      staffRole: 'Recruiter',
-      activityType: 'review_cv',
-      detail: 'Xem xét 15 CV mới',
-      timestamp: new Date('2024-01-15T14:30:00')
-    },
-    {
-      id: '6',
-      staffId: '4',
-      staffName: 'Phạm Thị D',
-      staffRole: 'Recruiter',
-      activityType: 'logout',
-      detail: 'Đăng xuất khỏi hệ thống',
-      timestamp: new Date('2024-01-15T17:45:00')
-    },
-    {
-      id: '7',
-      staffId: '5',
-      staffName: 'Hoàng Văn E',
-      staffRole: 'HR Assistant',
-      activityType: 'login',
-      detail: 'Đăng nhập vào hệ thống',
-      timestamp: new Date('2024-01-16T08:00:00')
-    },
-    {
-      id: '8',
-      staffId: '6',
-      staffName: 'Đỗ Thị F',
-      staffRole: 'HR Specialist',
-      activityType: 'update_profile',
-      detail: 'Cập nhật thông tin liên hệ',
-      timestamp: new Date('2024-01-16T09:30:00')
-    },
-    {
-      id: '9',
-      staffId: '7',
-      staffName: 'Vũ Văn G',
-      staffRole: 'Recruiter',
-      activityType: 'create_campaign',
-      detail: 'Tạo chiến dịch tuyển dụng "Marketing Manager"',
-      timestamp: new Date('2024-01-16T10:15:00')
-    },
-    {
-      id: '10',
-      staffId: '8',
-      staffName: 'Bùi Thị H',
-      staffRole: 'HR Manager',
-      activityType: 'approve',
-      detail: 'Phê duyệt ứng viên "Nguyễn Văn X"',
-      timestamp: new Date('2024-01-16T11:00:00')
-    }
-  ];
+  activityLogs: ActivityLog[] = [];
   filteredActivityLogs: ActivityLog[] = [];
   paginatedActivityLogs: ActivityLog[] = [];
+  loadingActivityLogs = false;
 
   // Activity Log Pagination
   activityCurrentPage: number = 1;
@@ -193,129 +109,13 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return Math.ceil(this.filteredActivityLogs.length / this.activityItemsPerPage);
   }
 
+  // Current Leader Info
+  currentLeaderInfo: StaffListItemDto | null = null;
+  loadingLeaderInfo = false;
+
   // Staff list
-  staffList: HRStaff[] = [
-    {
-      id: '1',
-      name: 'Nguyễn Văn A',
-      email: 'nguyenvana@company.com',
-      phone: '0901234567',
-      role: 'HR Manager',
-      department: 'Tuyển dụng',
-      status: 'active',
-      joinDate: '2023-01-15',
-      campaigns: 8,
-      candidates: 342
-    },
-    {
-      id: '2',
-      name: 'Trần Thị B',
-      email: 'tranthib@company.com',
-      phone: '0902345678',
-      role: 'Recruiter',
-      department: 'Tuyển dụng',
-      status: 'active',
-      joinDate: '2023-03-20',
-      campaigns: 6,
-      candidates: 289
-    },
-    {
-      id: '3',
-      name: 'Lê Văn C',
-      email: 'levanc@company.com',
-      phone: '0903456789',
-      role: 'HR Specialist',
-      department: 'Đào tạo',
-      status: 'active',
-      joinDate: '2023-05-10',
-      campaigns: 5,
-      candidates: 256
-    },
-    {
-      id: '4',
-      name: 'Phạm Thị D',
-      email: 'phamthid@company.com',
-      phone: '0904567890',
-      role: 'Recruiter',
-      department: 'Tuyển dụng',
-      status: 'inactive',
-      joinDate: '2022-11-05',
-      campaigns: 5,
-      candidates: 360
-    },
-    {
-      id: '5',
-      name: 'Hoàng Văn E',
-      email: 'hoangvane@company.com',
-      phone: '0905678901',
-      role: 'HR Assistant',
-      department: 'Lương thưởng',
-      status: 'active',
-      joinDate: '2023-06-15',
-      campaigns: 3,
-      candidates: 145
-    },
-    {
-      id: '6',
-      name: 'Đỗ Thị F',
-      email: 'dothif@company.com',
-      phone: '0906789012',
-      role: 'HR Specialist',
-      department: 'Quan hệ nhân viên',
-      status: 'active',
-      joinDate: '2023-07-20',
-      campaigns: 4,
-      candidates: 198
-    },
-    {
-      id: '7',
-      name: 'Vũ Văn G',
-      email: 'vuvang@company.com',
-      phone: '0907890123',
-      role: 'Recruiter',
-      department: 'Tuyển dụng',
-      status: 'pending',
-      joinDate: '2023-08-10',
-      campaigns: 2,
-      candidates: 87
-    },
-    {
-      id: '8',
-      name: 'Bùi Thị H',
-      email: 'buithih@company.com',
-      phone: '0908901234',
-      role: 'HR Manager',
-      department: 'Đào tạo',
-      status: 'active',
-      joinDate: '2023-02-28',
-      campaigns: 7,
-      candidates: 312
-    },
-    {
-      id: '9',
-      name: 'Ngô Văn I',
-      email: 'ngovani@company.com',
-      phone: '0909012345',
-      role: 'HR Assistant',
-      department: 'Tuyển dụng',
-      status: 'active',
-      joinDate: '2023-09-05',
-      campaigns: 2,
-      candidates: 76
-    },
-    {
-      id: '10',
-      name: 'Đinh Thị K',
-      email: 'dinhthik@company.com',
-      phone: '0900123456',
-      role: 'Recruiter',
-      department: 'Tuyển dụng',
-      status: 'inactive',
-      joinDate: '2022-12-15',
-      campaigns: 6,
-      candidates: 278
-    }
-  ];
+  staffList: HRStaff[] = [];
+  loading = false;
 
   filteredStaffList: HRStaff[] = [];
   paginatedStaffList: HRStaff[] = [];
@@ -338,27 +138,51 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   get pendingStaff(): number {
-    return this.staffList.filter(s => s.status === 'pending').length;
+    return 0; // API không hỗ trợ pending status
   }
 
   get inactiveStaff(): number {
     return this.staffList.filter(s => s.status === 'inactive').length;
   }
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private teamManagementService: TeamManagementService,
+    private activityLogService: ActivityLogService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 100);
-    this.applyFilters();
-    this.filteredActivityLogs = [...this.activityLogs];
+    
+    // Load current user info for debugging
+    this.loadCurrentUserInfo();
+    this.loadStaffList();
     
     // Close dropdown when clicking outside
     setTimeout(() => {
       document.addEventListener('click', this.handleClickOutside);
     }, 0);
+  }
+
+  loadCurrentUserInfo(): void {
+    this.loadingLeaderInfo = true;
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        this.currentLeaderInfo = userInfo;
+        this.loadingLeaderInfo = false;
+        console.log('Current user info:', userInfo);
+        console.log('IsLead:', userInfo.isLead);
+        console.log('CompanyId:', userInfo.companyId);
+        console.log('CompanyName:', userInfo.companyName);
+      },
+      error: (error) => {
+        console.error('Error loading current user info:', error);
+        this.loadingLeaderInfo = false;
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -420,11 +244,57 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   onExportExcel(): void {
-    this.showToastMessage('Đang xuất file Excel...', 'info');
-    // TODO: Implement Excel export
-    setTimeout(() => {
+    try {
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+      
+      // Chuẩn bị dữ liệu để export
+      const exportData = this.filteredStaffList.map(staff => ({
+        'Mã nhân viên': staff.id,
+        'Họ và tên': staff.name,
+        'Email': staff.email,
+        'Điện thoại': staff.phone || 'N/A',
+        'Trạng thái': this.getStatusLabel(staff.status)
+      }));
+
+      // Tạo workbook và worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'HR Staff');
+
+      // Đặt độ rộng cột
+      const columnWidths = [
+        { wch: 20 }, // Mã nhân viên
+        { wch: 30 }, // Họ và tên
+        { wch: 35 }, // Email
+        { wch: 15 }, // Điện thoại
+        { wch: 20 }  // Trạng thái
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Tạo tên file với timestamp
+      const fileName = `HR_Staff_Management_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      // Xuất file
+      XLSX.writeFile(workbook, fileName);
+      
       this.showToastMessage('Xuất file Excel thành công!', 'success');
-    }, 1000);
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'Đang hoạt động';
+      case 'inactive':
+        return 'Ngừng hoạt động';
+      case 'pending':
+        return 'Chờ duyệt';
+      default:
+        return status;
+    }
   }
 
   toggleFilterDropdown(event?: Event): void {
@@ -453,17 +323,119 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.showActivityLog = !this.showActivityLog;
     if (this.showActivityLog) {
       this.activitySearchKeyword = '';
-      this.filteredActivityLogs = [...this.activityLogs];
-      this.activityCurrentPage = 1;
-      this.updatePaginatedActivityLogs();
+      this.loadActivityLogs();
     }
   }
 
+  loadActivityLogs(): void {
+    if (this.staffList.length === 0) {
+      // Nếu chưa có staff list, load lại
+      this.loadStaffList();
+      return;
+    }
+
+    this.loadingActivityLogs = true;
+    this.activityLogs = [];
+
+    // Lấy activity logs cho tất cả HR Staff
+    const activityPromises = this.staffList.map(staff => {
+      if (!staff.id) return Promise.resolve(null);
+
+      const filter: ActivityLogFilterDto = {
+        skipCount: 0,
+        maxResultCount: 100, // Lấy tối đa 100 logs mỗi staff
+        sorting: 'creationTime DESC',
+        searchKeyword: '' // Truyền empty string để tránh validation error (backend sẽ check IsNullOrWhiteSpace)
+      };
+
+      return this.activityLogService.getStaffActivityLogs(staff.id, filter).toPromise()
+        .then((response: ActivityLogListDto | undefined) => {
+          if (response && response.activities) {
+            return response.activities.map((activity: ActivityLogDto) => ({
+              id: activity.id || '',
+              staffId: staff.id,
+              staffName: staff.name,
+              staffRole: staff.role,
+              activityType: this.mapActivityType(String(activity.activityType || '')),
+              detail: this.formatActivityDetail(activity),
+              timestamp: activity.creationTime ? new Date(activity.creationTime) : new Date()
+            }));
+          }
+          return [];
+        })
+        .catch(error => {
+          console.error(`Error loading activity logs for staff ${staff.id}:`, error);
+          return [];
+        });
+    });
+
+    Promise.all(activityPromises)
+      .then(allLogs => {
+        // Merge tất cả logs và sort theo thời gian (mới nhất trước)
+        // Sử dụng reduce thay vì flat() để tương thích với TypeScript cũ hơn
+        this.activityLogs = allLogs
+          .reduce((acc: ActivityLog[], logs) => {
+            if (logs && Array.isArray(logs)) {
+              acc.push(...logs);
+            }
+            return acc;
+          }, [])
+          .filter(log => log !== null)
+          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        this.filterActivityLogs();
+        this.loadingActivityLogs = false;
+      })
+      .catch(error => {
+        console.error('Error loading activity logs:', error);
+        this.showToastMessage('Không thể tải nhật ký hoạt động. Vui lòng thử lại.', 'error');
+        this.loadingActivityLogs = false;
+      });
+  }
+
+  mapActivityType(activityType: string): string {
+    // Map ActivityType enum sang string dễ hiểu
+    const typeMap: { [key: string]: string } = {
+      'Login': 'login',
+      'Logout': 'logout',
+      'JobPosted': 'create_campaign',
+      'JobUpdated': 'update_campaign',
+      'JobDeleted': 'delete_campaign',
+      'ApplicationSubmitted': 'submit_application',
+      'ApplicationApproved': 'approve',
+      'ApplicationRejected': 'reject',
+      'CandidateEvaluated': 'review_cv',
+      'ProfileUpdated': 'update_profile',
+      'EmailSent': 'send_email',
+      'InterviewScheduled': 'schedule_interview',
+      'InterviewCompleted': 'complete_interview'
+    };
+
+    return typeMap[activityType] || activityType.toLowerCase();
+  }
+
+  formatActivityDetail(activity: ActivityLogDto): string {
+    // Format activity detail từ action và description
+    if (activity.description) {
+      return activity.description;
+    }
+    if (activity.action) {
+      return activity.action;
+    }
+    return 'Hoạt động không có mô tả';
+  }
+
   filterActivityLogs(): void {
-    this.filteredActivityLogs = this.activityLogs.filter(log => 
-      log.staffName.toLowerCase().includes(this.activitySearchKeyword.toLowerCase()) ||
-      log.detail.toLowerCase().includes(this.activitySearchKeyword.toLowerCase())
-    );
+    if (!this.activitySearchKeyword || this.activitySearchKeyword.trim() === '') {
+      this.filteredActivityLogs = [...this.activityLogs];
+    } else {
+      const keyword = this.activitySearchKeyword.toLowerCase();
+      this.filteredActivityLogs = this.activityLogs.filter(log => 
+        log.staffName.toLowerCase().includes(keyword) ||
+        log.detail.toLowerCase().includes(keyword) ||
+        log.activityType.toLowerCase().includes(keyword)
+      );
+    }
     this.activityCurrentPage = 1;
     this.updatePaginatedActivityLogs();
   }
@@ -487,12 +459,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   openAddModal(): void {
     this.staffForm = {
-      name: '',
-      email: '',
-      phone: '',
-      role: '',
-      department: '',
-      status: 'active'
+      email: ''
     };
     this.showAddModal = true;
   }
@@ -523,21 +490,197 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   onAddStaff(): void {
-    // TODO: Implement API call
-    this.showToastMessage('Thêm nhân sự thành công!', 'success');
-    this.closeAddModal();
+    // Validate email
+    if (!this.staffForm.email || !this.staffForm.email.trim()) {
+      this.showToastMessage('Vui lòng nhập email.', 'error');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.staffForm.email.trim())) {
+      this.showToastMessage('Email không hợp lệ. Vui lòng nhập lại.', 'error');
+      return;
+    }
+
+    // Prepare data for API
+    const inviteStaffDto: InviteStaffDto = {
+      email: this.staffForm.email.trim()
+    };
+
+    this.loading = true;
+    this.showToastMessage('Đang tạo tài khoản và gửi email...', 'info');
+
+    // Call API to invite HR Staff
+    this.teamManagementService.inviteStaff(inviteStaffDto).subscribe({
+      next: (response) => {
+        this.showToastMessage(
+          'Thêm HR Staff thành công! Thông tin đăng nhập đã được gửi đến email: ' + this.staffForm.email,
+          'success'
+        );
+        this.loadStaffList(); // Reload list to show new staff
+        this.closeAddModal();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error inviting staff:', error);
+        let errorMessage = 'Không thể thêm HR Staff. Vui lòng thử lại.';
+        
+        if (error.error?.error?.message) {
+          errorMessage = error.error.error.message;
+        } else if (error.error?.error?.details) {
+          errorMessage = error.error.error.details;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.loading = false;
+      }
+    });
   }
 
   onUpdateStaff(): void {
-    // TODO: Implement API call
-    this.showToastMessage('Cập nhật nhân sự thành công!', 'success');
-    this.closeEditModal();
+    if (!this.selectedStaff) {
+      return;
+    }
+
+    const newStatus = this.staffForm.status;
+    const currentStatus = this.selectedStaff.status;
+
+    // Nếu status không thay đổi, không cần gọi API
+    if (newStatus === currentStatus) {
+      this.closeEditModal();
+      return;
+    }
+
+    // Activate hoặc Deactivate dựa trên status mới
+    if (newStatus === 'active') {
+      this.activateStaff(this.selectedStaff);
+    } else if (newStatus === 'inactive') {
+      this.deactivateStaff(this.selectedStaff);
+    } else {
+      this.showToastMessage('Trạng thái không hợp lệ.', 'error');
+    }
   }
 
   onDeleteStaff(): void {
     // TODO: Implement API call
     this.showToastMessage('Xóa nhân sự thành công!', 'success');
     this.closeDeleteModal();
+  }
+
+  loadStaffList(): void {
+    this.loading = true;
+    this.teamManagementService.getAllStaff().subscribe({
+      next: (response: StaffListItemDto[]) => {
+        console.log('Staff list loaded:', response);
+        // Map StaffListItemDto to HRStaff
+        this.staffList = response.map((staff: StaffListItemDto) => ({
+          id: staff.recruiterProfileId || staff.userId || '',
+          name: staff.fullName || '',
+          email: staff.email || '',
+          phone: '', // API không trả về phone, có thể để trống hoặc lấy từ profile khác
+          role: 'HR Staff', // HR Staff role
+          department: 'Tuyển dụng', // Default department
+          status: staff.status ? 'active' : 'inactive',
+          joinDate: '', // API không trả về joinDate
+          campaigns: 0, // Có thể tính sau
+          candidates: 0 // Có thể tính sau
+        }));
+        console.log('Mapped staff list:', this.staffList);
+        this.applyFilters();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading staff list:', error);
+        console.error('Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          message: error.message
+        });
+        
+        let errorMessage = 'Không thể tải danh sách HR Staff. Vui lòng thử lại.';
+        
+        if (error.error?.error?.message) {
+          errorMessage = error.error.error.message;
+        } else if (error.error?.error?.details) {
+          errorMessage = error.error.error.details;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.loading = false;
+      }
+    });
+  }
+
+  activateStaff(staff: HRStaff): void {
+    if (!staff.id) {
+      this.showToastMessage('Không tìm thấy ID nhân viên.', 'error');
+      return;
+    }
+
+    const input: ActivateStaffDto = {
+      staffId: staff.id,
+      reason: 'Kích hoạt lại HR Staff',
+      sendNotification: true
+    };
+
+    this.loading = true;
+    this.teamManagementService.activateStaff(input).subscribe({
+      next: (response) => {
+        this.showToastMessage(
+          response.message || 'Kích hoạt HR Staff thành công!',
+          'success'
+        );
+        this.loadStaffList(); // Reload list
+        this.closeEditModal();
+      },
+      error: (error) => {
+        console.error('Error activating staff:', error);
+        this.showToastMessage(
+          error.error?.error?.message || 'Không thể kích hoạt HR Staff. Vui lòng thử lại.',
+          'error'
+        );
+        this.loading = false;
+      }
+    });
+  }
+
+  deactivateStaff(staff: HRStaff): void {
+    if (!staff.id) {
+      this.showToastMessage('Không tìm thấy ID nhân viên.', 'error');
+      return;
+    }
+
+    const input: DeactivateStaffDto = {
+      staffId: staff.id,
+      reason: 'Vô hiệu hóa HR Staff',
+      sendNotification: true
+    };
+
+    this.loading = true;
+    this.teamManagementService.deactivateStaff(input).subscribe({
+      next: (response) => {
+        this.showToastMessage(
+          response.message || 'Vô hiệu hóa HR Staff thành công!',
+          'success'
+        );
+        this.loadStaffList(); // Reload list
+        this.closeEditModal();
+      },
+      error: (error) => {
+        console.error('Error deactivating staff:', error);
+        this.showToastMessage(
+          error.error?.error?.message || 'Không thể vô hiệu hóa HR Staff. Vui lòng thử lại.',
+          'error'
+        );
+        this.loading = false;
+      }
+    });
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {

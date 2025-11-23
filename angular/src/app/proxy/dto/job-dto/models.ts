@@ -6,16 +6,8 @@ import type { JobPriorityLevel } from '../../constants/job-constant/job-priority
 import type { RecruiterLevel } from '../../constants/job-constant/recruiter-level.enum';
 import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
 import type { SalaryFilterType } from '../../constants/job-constant/salary-filter-type.enum';
+import type { SortByField } from '../../constants/job-constant/sort-by-field.enum';
 import type { JobDisplayArea } from '../../constants/job-constant/job-display-area.enum';
-
-export interface CategoryUpdateCreateDto {
-  name?: string;
-  slug?: string;
-  description?: string;
-  parentId?: string;
-  sortOrder: number;
-  isActive: boolean;
-}
 
 export interface JobApproveViewDto {
   id?: string;
@@ -33,7 +25,6 @@ export interface JobApproveViewDto {
   employmentType?: EmploymentType;
   positionType?: PositionType;
   experience?: ExperienceLevel;
-  experienceText?: string;
   workTime?: string;
   provinceName?: string;
   wardName?: string;
@@ -106,7 +97,7 @@ export interface JobSearchInputDto {
   salaryFilter?: SalaryFilterType;
   employmentTypes?: EmploymentType[];
   positionTypes?: PositionType[];
-  sortBy?: string;
+  sortBy?: SortByField;
   skipCount: number;
   maxResultCount: number;
 }

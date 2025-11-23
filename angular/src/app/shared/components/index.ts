@@ -60,8 +60,10 @@ export { CampaignSummaryCardsComponent, SummaryCard } from './campaign-summary-c
 export { MultiSelectLocationComponent } from './multi-select-location/multi-select-location';
 export { ProfileCardComponent } from './profile-card/profile-card';
 export { MomoPaymentModalComponent } from './momo-payment-modal/momo-payment-modal';
+export { VnpayPaymentModalComponent, PaymentInfo } from './vnpay-payment-modal/vnpay-payment-modal';
 export { StatCardComponent } from './stat-card/stat-card';
 export { ReportMetricCardComponent, MetricData } from './report-metric-card/report-metric-card';
 export { StatusItemComponent, StatusItemData } from './status-item/status-item';
 export { StaffTableComponent, HRStaff } from './staff-table/staff-table';
 export { ActivityLogTableComponent, ActivityLog } from './activity-log-table/activity-log-table';
+export { StatusDropdownComponent, StatusOption } from './status-dropdown/status-dropdown';

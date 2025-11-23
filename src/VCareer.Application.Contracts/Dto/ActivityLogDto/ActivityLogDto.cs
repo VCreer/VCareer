@@ -28,3 +28,31 @@ namespace VCareer.Dto.ActivityLogDto
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

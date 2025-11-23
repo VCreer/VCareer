@@ -145,7 +145,7 @@ export const APP_ROUTES: Routes = [
     ],
   },
 
-  // Auth routes (standalone - no layout)
+  //#region  auth route
   {
     path: 'candidate/login',
     loadComponent: () =>
@@ -247,16 +247,24 @@ export const APP_ROUTES: Routes = [
             c => c.JobPostingComponent
           ),
       },
-      // {
-      //   path: 'home',
-      //   loadComponent: () => import('./features/dashboard/homepage/recruiter/recruiter-homepage').then(c => c.RecruiterHomepageComponent),
-      // },
       {
         path: 'recruiter-verify',
         loadComponent: () =>
           import('./features/auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
+        loadComponent: () =>
+          import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
+            c => c.RecruiterVerifyOtpComponent
+          ),
+      },
+      {
+        path: 'hr-staff-management',
+        loadComponent: () => import('./features/dashboard/hr-staff-management/recruiter/hr-staff-management').then(c => c.HRStaffManagementComponent),
+      },
+      {
+        path: 'recruitment-report',
+        loadComponent: () => import('./features/dashboard/recruitment-report/recruiter/recruitment-report').then(c => c.RecruitmentReportComponent),
       },
       {
         path: 'recruiter-setting',
@@ -294,6 +302,14 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'campaign-job-management',
+        loadComponent: () => import('./features/dashboard/campaign-job-management/recruiter/campaign-job-management').then(c => c.CampaignJobManagementComponent),
+      },
+      {
+        path: 'campaign-job-management-view-cv',
+        loadComponent: () => import('./features/dashboard/campaign-job-management-view-cv/recruiter/campaign-job-management-view-cv').then(c => c.CampaignJobManagementViewCvComponent),
+      },
+      {
         path: 'buy-services',
         loadComponent: () =>
           import('./features/dashboard/buy-service/recruiter/buy-services').then(
@@ -310,6 +326,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'cart',
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
+      },
+      {
+        path: 'my-services',
+        loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
       },
       {
         path: 'recruitment-report',
@@ -388,8 +408,9 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
+  //#endregion
 
-  // ABP routes
+  //#region  ABP routes
   {
     path: 'identity',
     loadChildren: () => import('@abp/ng.identity').then(c => c.createRoutes()),
@@ -412,4 +433,5 @@ export const APP_ROUTES: Routes = [
     path: '**',
     redirectTo: '/404',
   },
+  //#endregion
 ];

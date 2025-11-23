@@ -4,9 +4,12 @@
   .activity-log-table {
     width: 100%;
     border-collapse: collapse;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
 
     thead {
       background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
 
       th {
         padding: 16px;
@@ -15,7 +18,12 @@
         font-weight: 600;
         color: #6b7280;
         border-bottom: 2px solid #e5e7eb;
+        border-right: 1px solid #e5e7eb;
         white-space: nowrap;
+
+        &:last-child {
+          border-right: none;
+        }
 
         @media (max-width: 768px) {
           padding: 12px 8px;
@@ -34,7 +42,7 @@
         }
 
         &:last-child {
-          border-bottom: none;
+          border-bottom: 2px solid #e5e7eb;
         }
 
         td {
@@ -42,6 +50,11 @@
           font-size: 0.9375rem;
           color: #374151;
           vertical-align: middle;
+          border-right: 1px solid #e5e7eb;
+
+          &:last-child {
+            border-right: none;
+          }
 
           @media (max-width: 768px) {
             padding: 12px 8px;
