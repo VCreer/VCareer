@@ -254,7 +254,7 @@ export const APP_ROUTES: Routes = [
           import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
-      },
+      },    
       {
         path: 'hr-staff-management',
         loadComponent: () => import('./features/dashboard/hr-staff-management/recruiter/hr-staff-management').then(c => c.HRStaffManagementComponent),

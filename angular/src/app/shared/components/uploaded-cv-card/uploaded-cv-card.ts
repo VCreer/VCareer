@@ -13,6 +13,7 @@ export class UploadedCvCard {
   @Input() cvName: string = '';
   @Input() uploadDate: string = '';
   @Input() isStarred: boolean = false;
+  @Output() view = new EventEmitter<void>();
   @Output() download = new EventEmitter<void>();
   @Output() toggleStar = new EventEmitter<void>();
   @Output() copyLink = new EventEmitter<void>();
@@ -26,6 +27,10 @@ export class UploadedCvCard {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  onView() {
+    this.view.emit();
   }
 
   onDownload() {

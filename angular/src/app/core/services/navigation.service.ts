@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { BehaviorSubject, combineLatest } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { AuthStateService } from './auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from './auth-Cookiebased/auth-facade.service';
 
@@ -13,6 +14,7 @@ export class NavigationService {
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
   private userRoleSubject = new BehaviorSubject<UserRole>(null);
   private isVerifiedSubject = new BehaviorSubject<boolean>(false);
+  private authStateInitialized = false; // Flag để tránh gọi API nhiều lần
   
   public isLoggedIn$ = this.isLoggedInSubject.asObservable();
   public userRole$ = this.userRoleSubject.asObservable();
@@ -23,13 +25,81 @@ export class NavigationService {
     private authStateService: AuthStateService,
     private authFacadeService: AuthFacadeService
   ) {
-    // Khôi phục trạng thái từ cookies khi khởi tạo
-    this.initializeAuthState();
+    // Khôi phục trạng thái từ cookies khi khởi tạo - chỉ khi vào route yêu cầu auth
+    this.initializeAuthStateIfNeeded();
     
     // Subscribe vào user changes để cập nhật trạng thái
     this.authStateService.user$.subscribe(user => {
       this.updateAuthStateFromUser(user);
     });
+    
+    // Subscribe vào route changes để load auth state khi cần
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.initializeAuthStateIfNeeded();
+      });
+  }
+  
+  private initializeAuthStateIfNeeded() {
+    const currentUrl = this.router.url;
+    
+    // Danh sách các route public không cần auth
+    const publicRoutes = [
+      '/',
+      '/home',
+      '/candidate/about-us',
+      '/candidate/contact',
+      '/candidate/job',
+      '/candidate/company',
+      '/recruiter/about-us',
+      '/recruiter/service',
+      '/candidate/login',
+      '/candidate/register',
+      '/recruiter/login',
+      '/recruiter/register',
+      '/employee/login',
+      '/common/forgot-password',
+      '/common/reset-password'
+    ];
+    
+    // Nếu đang ở route public, không tự động load user
+    const isPublicRoute = publicRoutes.some(route => 
+      currentUrl === route || currentUrl.startsWith(route + '?')
+    );
+    
+    if (isPublicRoute) {
+      // Với route public, verify cookies bằng cách gọi API một lần
+      // Chỉ gọi API nếu chưa được initialize
+      if (!this.authStateInitialized) {
+        this.authFacadeService.loadCurrentUser().subscribe({
+          next: (user) => {
+            // Có cookies hợp lệ, cập nhật state
+            this.updateAuthStateFromUser(user);
+            this.authStateInitialized = true;
+          },
+          error: (err) => {
+            // Không có cookies hoặc cookies không hợp lệ
+            // Clear state và cookies
+            this.clearAuthState();
+            this.clearAuthCookies();
+            this.authStateInitialized = true;
+          }
+        });
+      }
+      return;
+    }
+    
+    // Với route yêu cầu auth, load user từ cookies
+    this.initializeAuthState();
+  }
+  
+  // Clear auth state
+  private clearAuthState() {
+    this.isLoggedInSubject.next(false);
+    this.userRoleSubject.next(null);
+    this.isVerifiedSubject.next(false);
+    this.authStateService.setUser(null);
   }
 
   private initializeAuthState() {
@@ -41,35 +111,54 @@ export class NavigationService {
         this.updateAuthStateFromUser(user);
       },
       error: (err) => {
-        // Không có cookies hoặc cookies không hợp lệ, set trạng thái chưa đăng nhập
-        this.isLoggedInSubject.next(false);
-        this.userRoleSubject.next(null);
-        this.isVerifiedSubject.next(false);
+        // Không có cookies hoặc cookies không hợp lệ
+        // Clear state và cookies
+        this.clearAuthState();
+        this.clearAuthCookies();
       }
     });
   }
 
   private updateAuthStateFromUser(user: any) {
+    console.log('[NavigationService] updateAuthStateFromUser called with user:', user);
+    
     if (!user) {
+      console.log('[NavigationService] No user, setting logged out state');
       this.isLoggedInSubject.next(false);
       this.userRoleSubject.next(null);
       this.isVerifiedSubject.next(false);
+      this.authStateInitialized = true; // Đã verify rồi
       return;
     }
 
     // Xác định role dựa vào roles array
     const roles = user.roles || [];
+    console.log('[NavigationService] User roles:', roles);
+    console.log('[NavigationService] Roles type:', typeof roles, 'isArray:', Array.isArray(roles));
+    
     let userRole: UserRole = null;
     
-    if (roles.includes('recruiter') || roles.includes('hr_staff')) {
+    // Convert roles to lowercase để so sánh
+    const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
+    console.log('[NavigationService] Roles lowercase:', rolesLowerCase);
+    
+    // Check cho recruiter: recruiter, hr_staff, lead_recruiter, LEAD_RECRUITER, etc.
+    if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
       userRole = 'recruiter';
-    } else if (roles.includes('candidate')) {
+      console.log('[NavigationService] Setting role to recruiter');
+    } else if (rolesLowerCase.includes('candidate')) {
       userRole = 'candidate';
+      console.log('[NavigationService] Setting role to candidate');
+    } else {
+      console.log('[NavigationService] No matching role found, role will be null');
     }
+
+    console.log('[NavigationService] Final userRole:', userRole);
 
     // Cập nhật trạng thái
     this.isLoggedInSubject.next(true);
     this.userRoleSubject.next(userRole);
+    this.authStateInitialized = true; // Đã load user thành công
     
     // Verification chỉ áp dụng cho recruiter (có thể check thêm logic nếu cần)
     this.isVerifiedSubject.next(false); // Có thể cần logic khác để check verification
@@ -95,6 +184,7 @@ export class NavigationService {
   // Với cookies, không cần lưu vào localStorage
   // Chỉ cần load current user để cập nhật state
   loginAsCandidate() {
+    this.authStateInitialized = false; // Reset flag để load lại
     this.authFacadeService.loadCurrentUser().subscribe({
       next: (user) => {
         this.updateAuthStateFromUser(user);
@@ -106,6 +196,7 @@ export class NavigationService {
           this.isLoggedInSubject.next(true);
           this.userRoleSubject.next('candidate');
           this.isVerifiedSubject.next(false);
+          this.authStateInitialized = true;
         }
       }
     });
@@ -115,6 +206,7 @@ export class NavigationService {
   // Với cookies, không cần lưu vào localStorage
   // Chỉ cần load current user để cập nhật state
   loginAsRecruiter() {
+    this.authStateInitialized = false; // Reset flag để load lại
     this.authFacadeService.loadCurrentUser().subscribe({
       next: (user) => {
         this.updateAuthStateFromUser(user);
@@ -134,6 +226,7 @@ export class NavigationService {
           this.isLoggedInSubject.next(true);
           this.userRoleSubject.next('recruiter');
           this.isVerifiedSubject.next(false);
+          this.authStateInitialized = true;
         }
       }
     });
@@ -141,6 +234,7 @@ export class NavigationService {
 
   // Đăng nhập recruiter mà không redirect đến verify (dùng cho HR Staff)
   loginAsRecruiterWithoutVerify() {
+    this.authStateInitialized = false; // Reset flag để load lại
     this.authFacadeService.loadCurrentUser().subscribe({
       next: (user) => {
         this.updateAuthStateFromUser(user);
@@ -154,6 +248,7 @@ export class NavigationService {
           this.isLoggedInSubject.next(true);
           this.userRoleSubject.next('recruiter');
           this.isVerifiedSubject.next(false);
+          this.authStateInitialized = true;
         }
         this.router.navigate(['/recruiter/recruiter-setting']);
       }
@@ -164,14 +259,18 @@ export class NavigationService {
   logout() {
     const currentRole = this.getCurrentRole();
     
-    // Gọi API logout để xóa cookies
+    // Clear auth state trước khi gọi API
+    this.isLoggedInSubject.next(false);
+    this.userRoleSubject.next(null);
+    this.isVerifiedSubject.next(false);
+    this.authStateInitialized = false; // Reset flag để có thể load lại sau khi đăng nhập
+    
+    // Clear cookies client-side để đảm bảo logout hoàn toàn
+    this.clearAuthCookies();
+    
+    // Gọi API logout để xóa cookies ở backend
     this.authFacadeService.logout().subscribe({
       next: () => {
-        // Update subjects
-        this.isLoggedInSubject.next(false);
-        this.userRoleSubject.next(null);
-        this.isVerifiedSubject.next(false);
-        
         // Redirect dựa vào role
         if (currentRole === 'candidate') {
           this.router.navigate(['/']);
@@ -182,11 +281,8 @@ export class NavigationService {
         }
       },
       error: (err) => {
-        // Ngay cả khi API logout fail, vẫn clear state và redirect
-        this.isLoggedInSubject.next(false);
-        this.userRoleSubject.next(null);
-        this.isVerifiedSubject.next(false);
-        
+        console.error('Logout error:', err);
+        // Ngay cả khi API logout fail, vẫn redirect
         if (currentRole === 'candidate') {
           this.router.navigate(['/']);
         } else if (currentRole === 'recruiter') {
@@ -195,6 +291,24 @@ export class NavigationService {
           this.router.navigate(['/']);
         }
       }
+    });
+  }
+  
+  // Xóa tất cả cookies liên quan đến authentication
+  private clearAuthCookies() {
+    const cookies = [
+      'access_token',
+      'refresh_token',
+      'XSRF-TOKEN',
+      '.AspNetCore.Identity.Application',
+      '.AspNetCore.Antiforgery'
+    ];
+    
+    cookies.forEach(cookieName => {
+      // Xóa cookie với path /
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      // Xóa cookie với path domain hiện tại
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
     });
   }
 
@@ -213,9 +327,10 @@ export class NavigationService {
     // Fallback to check user from AuthStateService
     const user = this.authStateService.user;
     if (user && user.roles) {
-      if (user.roles.includes('recruiter') || user.roles.includes('hr_staff')) {
+      const rolesLowerCase = user.roles.map((r: string) => r.toLowerCase());
+      if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
         return 'recruiter';
-      } else if (user.roles.includes('candidate')) {
+      } else if (rolesLowerCase.includes('candidate')) {
         return 'candidate';
       }
     }

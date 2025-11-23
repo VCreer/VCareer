@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
-import { SidebarLayoutService } from '../../../../core/services/sidebar-layout.service';
+import { combineLatest, firstValueFrom, timeout, of } from 'rxjs';
+import { filter, take, catchError } from 'rxjs/operators';
 
 export interface VerificationStep {
   id: string;
@@ -45,44 +46,79 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     private router: Router,
     private navigationService: NavigationService,
     private translationService: TranslationService,
-    private teamManagementService :TeamManagementService,
+    private teamManagementService: TeamManagementService
   ) {}
 
-  ngOnInit(): void {
-    if (!this.navigationService.isLoggedIn() || this.navigationService.getCurrentRole() !== 'recruiter') {
-      this.router.navigate(['/recruiter/login']);
-      return;
-    }
+  async ngOnInit(): Promise<void> {
+    console.log('RecruiterVerifyOtpComponent: ngOnInit started');
     
-    // Kiểm tra nếu user là HR Staff (IsLead = false) thì redirect về trang chủ
-    this.teamManagementService.getCurrentUserInfo().subscribe({
-      next: (userInfo) => {
-        // HR Staff là user có IsLead = false, không được phép truy cập trang verify
-        if (!userInfo.isLead) {
-          this.router.navigate(['/recruiter/recruiter-setting']);
-          return;
-        }
-        // Nếu là Leader thì tiếp tục hiển thị trang verify
-        this.calculateCompletion();
-        // this.checkSidebarState();
-        
-        // Check sidebar state periodically (since sidebar is in header component)
-        this.sidebarCheckInterval = setInterval(() => {
-          // this.checkSidebarState();
-        }, 100);
-      },
-      error: (error) => {
-        console.error('Error loading user info:', error);
-        // Nếu không lấy được thông tin, vẫn cho phép truy cập (fallback)
-        this.calculateCompletion();
-        // this.checkSidebarState();
-        
-        // Check sidebar state periodically (since sidebar is in header component)
-        this.sidebarCheckInterval = setInterval(() => {
-          // this.checkSidebarState();
-        }, 100);
+    // Cập nhật auth state từ cookies trước khi kiểm tra
+    this.navigationService.updateAuthStateFromRoute();
+    
+    try {
+      // Đợi auth state được cập nhật thực sự bằng Observable (max 5 giây)
+      const [isLoggedIn, userRole] = await firstValueFrom(
+        combineLatest([
+          this.navigationService.isLoggedIn$,
+          this.navigationService.userRole$
+        ]).pipe(
+          timeout(5000), // Timeout sau 5 giây
+          take(1), // Chỉ lấy giá trị đầu tiên
+          catchError((error) => {
+            console.error('Timeout waiting for auth state:', error);
+            // Fallback: lấy giá trị hiện tại
+            return of([
+              this.navigationService.isLoggedIn(),
+              this.navigationService.getCurrentRole()
+            ]);
+          })
+        )
+      );
+      
+      console.log('Auth state loaded:', { isLoggedIn, userRole });
+      console.log('isLoggedIn type:', typeof isLoggedIn, 'value:', isLoggedIn);
+      console.log('userRole type:', typeof userRole, 'value:', userRole);
+      console.log('Check result:', !isLoggedIn, userRole !== 'recruiter');
+      
+      // Kiểm tra đăng nhập và role
+      if (!isLoggedIn || userRole !== 'recruiter') {
+        console.log('Not logged in or not recruiter, redirecting to login');
+        console.log('Redirect reason: isLoggedIn =', isLoggedIn, ', userRole =', userRole);
+        this.router.navigate(['/recruiter/login']);
+        return;
       }
-    });
+
+      console.log('Auth check passed, loading component...');
+      this.calculateCompletion();
+      this.checkSidebarState();
+
+      // Kiểm tra nếu user là HR Staff (IsLead = false) thì redirect về setting
+      this.teamManagementService.getCurrentUserInfo().subscribe({
+        next: (userInfo) => {
+          console.log('User info loaded:', userInfo);
+          // HR Staff là user có IsLead = false, không được phép truy cập trang verify
+          if (!userInfo.isLead) {
+            console.log('User is HR Staff, redirecting to settings');
+            this.router.navigate(['/recruiter/recruiter-setting']);
+            return;
+          }
+          console.log('User is Leader, showing verify page');
+          // Nếu là Leader thì tiếp tục hiển thị trang verify
+        },
+        error: (error) => {
+          console.error('Error loading user info:', error);
+          // Nếu không lấy được thông tin user nhưng đã đăng nhập, vẫn cho phép truy cập (fallback)
+        }
+      });
+      
+      // Check sidebar state periodically (since sidebar is in header component)
+      this.sidebarCheckInterval = setInterval(() => {
+        this.checkSidebarState();
+      }, 100);
+    } catch (error) {
+      console.error('Error in ngOnInit:', error);
+      this.router.navigate(['/recruiter/login']);
+    }
   }
 
   ngOnDestroy(): void {
@@ -91,12 +127,7 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:resize')
-  onWindowResize(): void {
-    this.updateSidebarState();
-  }
-
-  private updateSidebarState(): void {
+  checkSidebarState(): void {
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
       const rect = sidebar.getBoundingClientRect();
@@ -105,6 +136,16 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     } else {
       this.sidebarWidth = 0;
       this.sidebarExpanded = false;
+    }
+    
+    // Update page class
+    const page = document.querySelector('.recruiter-verify-page');
+    if (page) {
+      if (this.sidebarExpanded) {
+        page.classList.add('sidebar-expanded');
+      } else {
+        page.classList.remove('sidebar-expanded');
+      }
     }
   }
 
