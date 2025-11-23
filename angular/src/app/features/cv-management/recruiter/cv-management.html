@@ -112,9 +112,17 @@
 
               <!-- Trạng thái Column -->
               <td class="status-cell">
-                <span class="status-badge" [class]="getStatusBadgeClass(cv.status)">
-                  {{ getStatusName(cv.status) }}
-                </span>
+                <select 
+                  class="status-dropdown" 
+                  [class]="getStatusBadgeClass(cv.status)"
+                  [value]="cv.status"
+                  [disabled]="changingStatusFor === cv.id"
+                  (change)="onChangeStatus(cv, $event)"
+                  (click)="$event.stopPropagation()">
+                  <option *ngFor="let status of statuses" [value]="status.id">
+                    {{ status.name }}
+                  </option>
+                </select>
               </td>
 
               <!-- Ghi chú Column -->

@@ -419,8 +419,52 @@ export class CvManagementComponent implements OnInit {
   }
 
   // CV Card methods for uploaded CVs
-  onCvDownload() {
-    this.showDownloadModal = true;
+  onCvView(cv: any) {
+    // Tìm CV trong uploadedCvs để lấy ID
+    const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
+    if (uploadedCv && (uploadedCv as any).id) {
+      const cvId = (uploadedCv as any).id;
+      
+      // Fetch file as blob để hiển thị trong browser thay vì download
+      const viewUrl = `${environment.apis.default.url}/api/cv/uploaded/${cvId}/download?inline=true`;
+      
+      this.http.get(viewUrl, { 
+        responseType: 'blob',
+        withCredentials: true 
+      }).subscribe({
+        next: (blob: Blob) => {
+          // Tạo blob URL từ file PDF
+          const blobUrl = URL.createObjectURL(blob);
+          
+          // Mở trong tab mới để xem
+          const newWindow = window.open(blobUrl, '_blank');
+          
+          if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            this.showToastMessage('Vui lòng cho phép popup để xem CV.', 'warning');
+            URL.revokeObjectURL(blobUrl);
+          }
+        },
+        error: (error) => {
+          console.error('Error viewing CV:', error);
+          this.showToastMessage('Không thể xem CV. Vui lòng thử lại.', 'error');
+        }
+      });
+    } else {
+      this.showToastMessage('Không thể xem CV. Vui lòng thử lại.', 'error');
+    }
+  }
+
+  onCvDownload(cv: any) {
+    // Tìm CV trong uploadedCvs để lấy ID
+    const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
+    if (uploadedCv && (uploadedCv as any).id) {
+      const cvId = (uploadedCv as any).id;
+      // Download file với inline=false
+      const downloadUrl = `${environment.apis.default.url}/api/cv/uploaded/${cvId}/download?inline=false`;
+      window.open(downloadUrl, '_blank');
+    } else {
+      this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+    }
   }
 
   onCvToggleStar(cv: any) {

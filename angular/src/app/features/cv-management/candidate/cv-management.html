@@ -81,7 +81,8 @@
               <div class="uploaded-cv-item" *ngFor="let cv of uploadedCvs; trackBy: trackByCvName">
                 <app-uploaded-cv-card
                   [isStarred]="cv.isStarred"
-                  (download)="onCvDownload()"
+                  (view)="onCvView(cv)"
+                  (download)="onCvDownload(cv)"
                   (toggleStar)="onCvToggleStar(cv)"
                   (copyLink)="onCvCopyLink()"
                   (shareFacebook)="onCvShareFacebook()"

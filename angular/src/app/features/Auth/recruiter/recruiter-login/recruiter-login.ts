@@ -18,6 +18,7 @@ import {
 } from '../../../../shared/components';
 
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
 
 @Component({
   selector: 'app-recruiter-login',
@@ -44,7 +45,8 @@ export class RecruiterLoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authFacade: AuthFacadeService
+    private authFacade: AuthFacadeService,
+    private teamManagementService: TeamManagementService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
@@ -124,11 +126,53 @@ export class RecruiterLoginComponent {
       .subscribe({
         next: () => {
           this.isLoading = false;
-          this.showToastMessage('Đăng nhập thành công!', 'success');
 
-          setTimeout(() => {
-            this.router.navigate(['/recruiter/home']);
-          }, 800);
+          // Kiểm tra role trước khi redirect
+          // Nếu không phải recruiter role → hiển thị lỗi
+          this.authFacade.loadCurrentUser().subscribe({
+            next: (user) => {
+              const roles = user?.roles || [];
+              const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
+              const isRecruiter = rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff');
+
+              if (!isRecruiter) {
+                this.isLoading = false;
+                this.showToastMessage('Tài khoản này không có quyền truy cập vào hệ thống recruiter!', 'error');
+                // Logout user
+                this.authFacade.logout().subscribe();
+                return;
+              }
+
+              this.showToastMessage('Đăng nhập thành công!', 'success');
+
+              // Kiểm tra xem user có phải là Leader không để redirect đúng trang
+              this.teamManagementService.getCurrentUserInfo().subscribe({
+                next: (userInfo) => {
+                  setTimeout(() => {
+                    if (userInfo.isLead) {
+                      // Leader recruiter -> redirect đến trang verify
+                      this.router.navigate(['/recruiter/recruiter-verify']);
+                    } else {
+                      // HR Staff -> redirect đến trang setting
+                      this.router.navigate(['/recruiter/recruiter-setting']);
+                    }
+                  }, 800);
+                },
+                error: (error) => {
+                  console.error('Error loading user info after login:', error);
+                  // Fallback: redirect đến trang home nếu không lấy được thông tin
+                  setTimeout(() => {
+                    this.router.navigate(['/recruiter/home']);
+                  }, 800);
+                }
+              });
+            },
+            error: (error) => {
+              console.error('Error loading current user after login:', error);
+              this.isLoading = false;
+              this.showToastMessage('Không thể xác thực tài khoản. Vui lòng thử lại.', 'error');
+            }
+          });
         },
         error: err => {
           this.isLoading = false;
