@@ -37,7 +37,6 @@ export interface CandidateUser {
     ButtonComponent,
     ToastNotificationComponent,
     InputFieldComponent,
-    SelectFieldComponent,
     PaginationComponent,
     GenericModalComponent,
     StatusDropdownComponent

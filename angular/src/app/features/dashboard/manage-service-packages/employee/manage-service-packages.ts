@@ -46,6 +46,34 @@ export interface SelectedServiceAction {
   options?: string[];
 }
 
+interface ServiceActionOption {
+  value: string;
+  label: string;
+}
+
+interface ServiceActionItem {
+  actionKey: string;
+  label: string;
+  description: string;
+  options: ServiceActionOption[];
+  expanded: boolean;
+  selectedOptions: string[];
+}
+
+interface ServiceActionOptionConfig {
+  value: string;
+  label: string;
+}
+
+interface ServiceActionItem {
+  actionKey: string;
+  label: string;
+  description: string;
+  options: ServiceActionOptionConfig[];
+  expanded: boolean;
+  selectedOptions: string[];
+}
+
 export interface ServicePackage {
   id: string;
   title: string;
@@ -152,6 +180,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   saleCurrentPage = 1;
   saleItemsPerPage = 10;
   saleTotalPages = 1;
+  salePackageOptions: { value: string; label: string }[] = [];
 
   // Package Form
   packageForm: Partial<ServicePackage> = {
@@ -169,8 +198,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     childService_SubcriptionServices: []
   };
 
-  // Service Actions
-  serviceActionsConfig = [
+  private readonly serviceActionDefinitions: ServiceActionItem[] = [
     {
       actionKey: 'BoostScoreCv',
       label: 'BoostScoreCv',
@@ -179,7 +207,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'boost5', label: 'Tăng 5 điểm' },
         { value: 'boost10', label: 'Tăng 10 điểm' },
         { value: 'boost20', label: 'Tăng 20 điểm' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     },
     {
       actionKey: 'BoostScoreJob',
@@ -189,7 +219,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'boost5', label: 'Tăng 5 điểm' },
         { value: 'boost10', label: 'Tăng 10 điểm' },
         { value: 'boost20', label: 'Tăng 20 điểm' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     },
     {
       actionKey: 'TopList',
@@ -199,7 +231,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'top5', label: 'Top 5' },
         { value: 'top10', label: 'Top 10' },
         { value: 'top20', label: 'Top 20' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     },
     {
       actionKey: 'VerifiedBadge',
@@ -209,7 +243,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'urgent', label: 'Gắn nhãn khẩn cấp' },
         { value: 'new', label: 'Gắn nhãn mới' },
         { value: 'hot', label: 'Gắn nhãn nổi bật' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     },
     {
       actionKey: 'IncreaseQuota',
@@ -219,7 +255,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'plus5', label: 'Tăng thêm 5 job' },
         { value: 'plus10', label: 'Tăng thêm 10 job' },
         { value: 'plus20', label: 'Tăng thêm 20 job' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     },
     {
       actionKey: 'ExtendExpiredDate',
@@ -229,14 +267,18 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         { value: 'extend7', label: 'Gia hạn 7 ngày' },
         { value: 'extend14', label: 'Gia hạn 14 ngày' },
         { value: 'extend30', label: 'Gia hạn 30 ngày' }
-      ]
+      ],
+      expanded: false,
+      selectedOptions: []
     }
   ];
-  selectedServiceActionOptions: Record<string, string[]> = {};
-  expandedServiceActions: Record<string, boolean> = {};
+  serviceActions: ServiceActionItem[] = [];
 
   isSavingPackage = false;
   isSavingPackageEdit = false;
+  isSavingSale = false;
+  validationErrors: Record<string, string> = {};
+  saleValidationErrors: Record<string, string> = {};
 
   // Sale Form
   saleForm: Partial<PackageSale> = {
@@ -277,53 +319,13 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       this.checkSidebarState();
     }, 50);
 
-    this.loadPackages();
-    // Load sales after packages are loaded
-    setTimeout(() => this.loadSales(), 100);
-  }
-
-  loadSales(): void {
-    // Mock data - replace with API call
-    // Only show sales for active packages
-    const activePackages = this.allPackages.filter(p => p.isActive && p.status === 'active');
-    
-    this.allSales = [
-      {
-        id: 'sale1',
-        packageId: '1',
-        package: activePackages.find(p => p.id === '1'),
-        salePercent: 20,
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        status: 'expired',
-        isActive: false,
-        createdDate: '2023-12-15T00:00:00'
-      },
-      {
-        id: 'sale2',
-        packageId: '2',
-        package: activePackages.find(p => p.id === '2'),
-        salePercent: 15,
-        startDate: '2024-02-01',
-        endDate: '2024-02-29',
-        status: 'active',
-        isActive: true,
-        createdDate: '2024-01-20T00:00:00'
-      },
-      {
-        id: 'sale3',
-        packageId: '3',
-        package: activePackages.find(p => p.id === '3'),
-        salePercent: 30,
-        startDate: '2024-03-01',
-        endDate: '2024-03-31',
-        status: 'upcoming',
-        isActive: false,
-        createdDate: '2024-02-15T00:00:00'
-      }
-    ];
-
+    // Bắt đầu với bảng trống
+    this.allPackages = [];
+    this.filteredPackages = [];
+    this.paginatedPackages = [];
+    this.applyFilters();
     this.applySaleFilters();
+    this.initializeServiceActions();
   }
 
   applySaleFilters(): void {
@@ -369,12 +371,11 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.updateSalePagination();
   }
 
-  getActivePackages(): ServicePackage[] {
-    return this.allPackages.filter(p => p.isActive && p.status === 'active');
-  }
-
-  get activePackageOptions() {
-    return this.getActivePackages().map(p => ({ value: p.id, label: p.title }));
+  private refreshSalePackageOptions(): void {
+    this.salePackageOptions = this.allPackages.map(pkg => ({
+      value: pkg.id,
+      label: pkg.title || 'Gói chưa có tên'
+    }));
   }
 
   getSaleStatusLabel(sale: PackageSale): string {
@@ -393,10 +394,12 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
   onCreateSale(): void {
     this.resetSaleForm();
+    this.resetSaleValidationErrors();
     this.showCreateSaleModal = true;
   }
 
   onEditSale(sale: PackageSale): void {
+    this.resetSaleValidationErrors();
     this.selectedSale = sale;
     this.saleForm = {
       id: sale.id,
@@ -423,24 +426,13 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onConfirmCreateSale(): void {
-    // Validate
-    if (!this.saleForm.packageId || !this.saleForm.salePercent || !this.saleForm.startDate || !this.saleForm.endDate) {
-      this.showToastMessage('Vui lòng điền đầy đủ thông tin', 'error');
+    if (this.isSavingSale) {
       return;
     }
-
-    if (this.saleForm.salePercent <= 0 || this.saleForm.salePercent > 100) {
-      this.showToastMessage('Phần trăm sale phải từ 1 đến 100', 'error');
+    if (!this.validateSaleForm()) {
       return;
     }
-
-    const startDate = new Date(this.saleForm.startDate);
-    const endDate = new Date(this.saleForm.endDate);
-    if (endDate <= startDate) {
-      this.showToastMessage('Ngày kết thúc phải sau ngày bắt đầu', 'error');
-      return;
-    }
-
+    this.isSavingSale = true;
     // TODO: Call API to create sale
     const newSale: PackageSale = {
       id: `sale_${Date.now()}`,
@@ -454,30 +446,16 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       createdDate: new Date().toISOString()
     };
 
-    this.allSales.push(newSale);
+    this.allSales = [newSale, ...this.allSales];
     this.showToastMessage('Tạo sale thành công', 'success');
     this.showCreateSaleModal = false;
     this.applySaleFilters();
+    setTimeout(() => (this.isSavingSale = false), 250);
   }
 
   onConfirmEditSale(): void {
     if (!this.selectedSale) return;
-
-    // Validate (same as create)
-    if (!this.saleForm.packageId || !this.saleForm.salePercent || !this.saleForm.startDate || !this.saleForm.endDate) {
-      this.showToastMessage('Vui lòng điền đầy đủ thông tin', 'error');
-      return;
-    }
-
-    if (this.saleForm.salePercent <= 0 || this.saleForm.salePercent > 100) {
-      this.showToastMessage('Phần trăm sale phải từ 1 đến 100', 'error');
-      return;
-    }
-
-    const startDate = new Date(this.saleForm.startDate);
-    const endDate = new Date(this.saleForm.endDate);
-    if (endDate <= startDate) {
-      this.showToastMessage('Ngày kết thúc phải sau ngày bắt đầu', 'error');
+    if (!this.validateSaleForm()) {
       return;
     }
 
@@ -676,157 +654,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   loadPackages(): void {
-    // Mock data - replace with API call
-    this.allPackages = [
-      {
-        id: '1',
-        title: 'Gói Cơ Bản',
-        description: 'Gói dịch vụ cơ bản cho các nhà tuyển dụng mới bắt đầu',
-        target: 'recruiter',
-        status: 'active',
-        originalPrice: 500000,
-        isLimited: false,
-        isBuyLimited: true,
-        totalBuyEachUser: 1,
-        isLifeTime: false,
-        dayDuration: 30,
-        isActive: true,
-        childService_SubcriptionServices: [
-          {
-            id: '1',
-            childServiceId: 'cs1',
-            subscriptionServiceId: '1',
-            childService: {
-              id: 'cs1',
-              title: 'Đăng tin tuyển dụng',
-              description: 'Cho phép đăng 10 tin tuyển dụng/tháng',
-              type: 'typeA',
-              originalPrice: 200000,
-              isActive: true
-            }
-          }
-        ],
-        createdDate: '2024-01-01T00:00:00',
-        updatedDate: '2024-01-15T00:00:00'
-      },
-      {
-        id: '2',
-        title: 'Gói Cao Cấp',
-        description: 'Gói dịch vụ cao cấp với nhiều tính năng mở rộng',
-        target: 'recruiter',
-        status: 'active',
-        originalPrice: 1500000,
-        isLimited: true,
-        isBuyLimited: true,
-        totalBuyEachUser: 3,
-        isLifeTime: false,
-        dayDuration: 30,
-        isActive: true,
-        childService_SubcriptionServices: [
-          {
-            id: '2',
-            childServiceId: 'cs2',
-            subscriptionServiceId: '2',
-            childService: {
-              id: 'cs2',
-              title: 'Đăng tin tuyển dụng nâng cao',
-              description: 'Cho phép đăng 50 tin tuyển dụng/tháng',
-              type: 'typeA',
-              originalPrice: 800000,
-              isActive: true
-            }
-          },
-          {
-            id: '3',
-            childServiceId: 'cs3',
-            subscriptionServiceId: '2',
-            childService: {
-              id: 'cs3',
-              title: 'Xem CV ứng viên',
-              description: 'Xem 200 CV/tháng',
-              type: 'typeB',
-              originalPrice: 700000,
-              isActive: true
-            }
-          }
-        ],
-        createdDate: '2024-01-01T00:00:00',
-        updatedDate: '2024-01-20T00:00:00'
-      },
-      {
-        id: '3',
-        title: 'Gói Doanh Nghiệp',
-        description: 'Gói dịch vụ dành cho doanh nghiệp lớn',
-        target: 'recruiter',
-        status: 'active',
-        originalPrice: 5000000,
-        isLimited: true,
-        isBuyLimited: false,
-        isLifeTime: true,
-        dayDuration: undefined,
-        isActive: true,
-        childService_SubcriptionServices: [
-          {
-            id: '4',
-            childServiceId: 'cs4',
-            subscriptionServiceId: '3',
-            childService: {
-              id: 'cs4',
-              title: 'Đăng tin không giới hạn',
-              description: 'Đăng không giới hạn tin tuyển dụng',
-              type: 'typeA',
-              originalPrice: 2000000,
-              isActive: true
-            }
-          },
-          {
-            id: '5',
-            childServiceId: 'cs5',
-            subscriptionServiceId: '3',
-            childService: {
-              id: 'cs5',
-              title: 'Xem CV không giới hạn',
-              description: 'Xem không giới hạn CV',
-              type: 'typeB',
-              originalPrice: 2000000,
-              isActive: true
-            }
-          },
-          {
-            id: '6',
-            childServiceId: 'cs6',
-            subscriptionServiceId: '3',
-            childService: {
-              id: 'cs6',
-              title: 'Tư vấn chuyên nghiệp',
-              description: 'Dịch vụ tư vấn chuyên nghiệp',
-              type: 'typeC',
-              originalPrice: 1000000,
-              isActive: true
-            }
-          }
-        ],
-        createdDate: '2024-01-01T00:00:00',
-        updatedDate: '2024-01-25T00:00:00'
-      },
-      {
-        id: '4',
-        title: 'Gói Thử Nghiệm',
-        description: 'Gói thử nghiệm miễn phí',
-        target: 'candidate',
-        status: 'inactive',
-        originalPrice: 0,
-        isLimited: false,
-        isBuyLimited: true,
-        totalBuyEachUser: 1,
-        isLifeTime: false,
-        dayDuration: 7,
-        isActive: false,
-        childService_SubcriptionServices: [],
-        createdDate: '2024-02-01T00:00:00'
-      }
-    ];
-
+    this.allPackages = [];
     this.applyFilters();
   }
 
@@ -884,6 +712,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.filteredPackages = result;
     this.totalPages = Math.ceil(this.filteredPackages.length / this.itemsPerPage);
     this.updatePagination();
+    this.refreshSalePackageOptions();
   }
 
   updatePagination(): void {
@@ -920,8 +749,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   // Actions
   onCreatePackage(): void {
     this.resetPackageForm();
-    this.selectedServiceActionOptions = {};
-    this.expandedServiceActions = {};
+    this.initializeServiceActions();
+    this.resetValidationErrors();
     this.showCreatePackageModal = true;
   }
 
@@ -942,14 +771,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       isActive: pkg.isActive,
       childService_SubcriptionServices: pkg.childService_SubcriptionServices
     };
-    this.selectedServiceActionOptions = {};
-    this.expandedServiceActions = {};
-    pkg.serviceActions?.forEach(action => {
-      if (action.options?.length) {
-        this.selectedServiceActionOptions[action.actionKey] = [...action.options];
-        this.expandedServiceActions[action.actionKey] = false;
-      }
-    });
+    this.initializeServiceActions(pkg.serviceActions);
+    this.resetValidationErrors();
     this.showEditPackageModal = true;
   }
 
@@ -969,8 +792,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       childService_SubcriptionServices: []
     };
     this.selectedPackage = null;
-    this.selectedServiceActionOptions = {};
-    this.expandedServiceActions = {};
+    this.initializeServiceActions();
+    this.resetValidationErrors();
   }
 
   onConfirmCreatePackage(): void {
@@ -984,25 +807,29 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         return;
       }
 
+      const normalizedStatus = this.packageForm.status || 'draft';
+      const normalizedIsActive = normalizedStatus === 'active';
+
       const newPackage: ServicePackage = {
         id: this.generatePackageId(),
         title: this.packageForm.title!,
         description: this.packageForm.description!,
         target: this.packageForm.target!,
-        status: this.packageForm.status!,
+        status: normalizedStatus,
         originalPrice: this.packageForm.originalPrice!,
         isLimited: this.packageForm.isLimited || false,
         isBuyLimited: this.packageForm.isBuyLimited || false,
         totalBuyEachUser: this.packageForm.totalBuyEachUser,
         isLifeTime: this.packageForm.isLifeTime || false,
         dayDuration: this.packageForm.dayDuration,
-        isActive: this.packageForm.isActive || false,
+        isActive: normalizedIsActive,
         childService_SubcriptionServices: [],
         serviceActions: this.getSelectedServiceActions(),
         createdDate: new Date().toISOString()
       };
 
-      this.allPackages = [...this.allPackages, newPackage];
+      this.allPackages = [newPackage, ...this.allPackages];
+      this.refreshSalePackageOptions();
       this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
       this.showCreatePackageModal = false;
       this.applyFilters();
@@ -1024,19 +851,22 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
       const index = this.allPackages.findIndex(p => p.id === this.selectedPackage!.id);
       if (index !== -1) {
+        const normalizedStatus = this.packageForm.status || 'draft';
+        const normalizedIsActive = normalizedStatus === 'active';
+
         const updatedPackage: ServicePackage = {
           ...this.allPackages[index],
           title: this.packageForm.title!,
           description: this.packageForm.description!,
           target: this.packageForm.target!,
-          status: this.packageForm.status!,
+          status: normalizedStatus,
           originalPrice: this.packageForm.originalPrice!,
           isLimited: this.packageForm.isLimited || false,
           isBuyLimited: this.packageForm.isBuyLimited || false,
           totalBuyEachUser: this.packageForm.totalBuyEachUser,
           isLifeTime: this.packageForm.isLifeTime || false,
           dayDuration: this.packageForm.dayDuration,
-          isActive: this.packageForm.isActive || false,
+          isActive: normalizedIsActive,
           childService_SubcriptionServices: this.selectedPackage?.childService_SubcriptionServices || [],
           serviceActions: this.getSelectedServiceActions(),
           updatedDate: new Date().toISOString()
@@ -1047,6 +877,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
           updatedPackage,
           ...this.allPackages.slice(index + 1)
         ];
+        this.refreshSalePackageOptions();
       }
 
       this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
@@ -1058,55 +889,43 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   toggleServiceAction(actionKey: string): void {
-    if (!this.selectedServiceActionOptions[actionKey]) {
-      this.selectedServiceActionOptions = {
-        ...this.selectedServiceActionOptions,
-        [actionKey]: []
-      };
-    }
-
-    const isExpanded = !!this.expandedServiceActions[actionKey];
-    this.expandedServiceActions = {
-      ...this.expandedServiceActions,
-      [actionKey]: !isExpanded
-    };
+    this.serviceActions = this.serviceActions.map(action =>
+      action.actionKey === actionKey
+        ? { ...action, expanded: !action.expanded }
+        : { ...action, expanded: false }
+    );
+    this.cdr.detectChanges();
   }
 
   isServiceActionSelected(actionKey: string): boolean {
-    return (this.selectedServiceActionOptions[actionKey]?.length || 0) > 0;
+    return !!this.serviceActions.find(action => action.actionKey === actionKey && action.selectedOptions.length > 0);
   }
 
   isServiceActionExpanded(actionKey: string): boolean {
-    return !!this.expandedServiceActions[actionKey];
+    return !!this.serviceActions.find(action => action.actionKey === actionKey && action.expanded);
   }
 
   toggleServiceActionOption(actionKey: string, optionValue: string): void {
-    const current = this.selectedServiceActionOptions[actionKey] || [];
-    const options = [...current];
-    const index = options.indexOf(optionValue);
-    if (index > -1) {
-      options.splice(index, 1);
-    } else {
-      options.push(optionValue);
-    }
+    this.serviceActions = this.serviceActions.map(action => {
+      if (action.actionKey !== actionKey) {
+        return action;
+      }
+      const selected = action.selectedOptions.includes(optionValue)
+        ? action.selectedOptions.filter(opt => opt !== optionValue)
+        : [...action.selectedOptions, optionValue];
 
-    if (options.length === 0) {
-      const { [actionKey]: _, ...rest } = this.selectedServiceActionOptions;
-      this.selectedServiceActionOptions = { ...rest };
-      this.expandedServiceActions = {
-        ...this.expandedServiceActions,
-        [actionKey]: true
+      return {
+        ...action,
+        selectedOptions: selected,
+        expanded: selected.length === 0 ? true : action.expanded
       };
-    } else {
-      this.selectedServiceActionOptions = {
-        ...this.selectedServiceActionOptions,
-        [actionKey]: options
-      };
-    }
+    });
+
+    this.cdr.detectChanges();
   }
 
   isServiceActionOptionSelected(actionKey: string, optionValue: string): boolean {
-    return (this.selectedServiceActionOptions[actionKey] || []).includes(optionValue);
+    return !!this.serviceActions.find(action => action.actionKey === actionKey && action.selectedOptions.includes(optionValue));
   }
 
   private resetSavingFlag(type: 'create' | 'edit'): void {
@@ -1120,31 +939,116 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   private validatePackageForm(): boolean {
-    if (!this.packageForm.title || !this.packageForm.description || !this.packageForm.originalPrice) {
-      this.showToastMessage('Vui lòng điền đầy đủ thông tin', 'error');
-      return false;
+    this.resetValidationErrors();
+    const errors: Record<string, string> = {};
+    let isValid = true;
+
+    if (!this.packageForm.title || !this.packageForm.title.trim()) {
+      errors['title'] = 'Vui lòng nhập tên gói dịch vụ';
+      isValid = false;
+    }
+
+    if (!this.packageForm.description || !this.packageForm.description.trim()) {
+      errors['description'] = 'Vui lòng nhập mô tả gói dịch vụ';
+      isValid = false;
+    }
+
+    if (this.packageForm.originalPrice === null || this.packageForm.originalPrice === undefined || this.packageForm.originalPrice < 0) {
+      errors['originalPrice'] = 'Giá gốc phải lớn hơn hoặc bằng 0';
+      isValid = false;
     }
 
     if (!this.packageForm.isLifeTime && (!this.packageForm.dayDuration || this.packageForm.dayDuration <= 0)) {
-      this.showToastMessage('Vui lòng nhập số ngày hợp lệ', 'error');
-      return false;
+      errors['dayDuration'] = 'Vui lòng nhập số ngày hợp lệ';
+      isValid = false;
     }
 
     if (this.packageForm.isBuyLimited && (!this.packageForm.totalBuyEachUser || this.packageForm.totalBuyEachUser <= 0)) {
-      this.showToastMessage('Vui lòng nhập số lượng tối đa mua của mỗi cá nhân', 'error');
-      return false;
+      errors['totalBuyEachUser'] = 'Vui lòng nhập số lượng tối đa mua của mỗi cá nhân';
+      isValid = false;
     }
 
-    return true;
+    const hasServiceAction = this.serviceActions.some(action => action.selectedOptions.length > 0);
+    if (!hasServiceAction) {
+      errors['serviceActions'] = 'Vui lòng chọn ít nhất một tính năng dịch vụ';
+      isValid = false;
+    }
+
+    this.validationErrors = errors;
+    return isValid;
+  }
+
+  private resetValidationErrors(): void {
+    this.validationErrors = {};
+  }
+
+  private validateSaleForm(): boolean {
+    this.resetSaleValidationErrors();
+    const errors: Record<string, string> = {};
+    let isValid = true;
+
+    if (!this.saleForm.packageId) {
+      errors['salePackageId'] = 'Vui lòng chọn gói dịch vụ';
+      isValid = false;
+    }
+
+    if (!this.saleForm.salePercent || this.saleForm.salePercent <= 0 || this.saleForm.salePercent > 100) {
+      errors['salePercent'] = 'Phần trăm sale phải từ 1 đến 100';
+      isValid = false;
+    }
+
+    if (!this.saleForm.startDate) {
+      errors['saleStartDate'] = 'Vui lòng chọn ngày bắt đầu';
+      isValid = false;
+    }
+
+    if (!this.saleForm.endDate) {
+      errors['saleEndDate'] = 'Vui lòng chọn ngày kết thúc';
+      isValid = false;
+    }
+
+    if (this.saleForm.startDate && this.saleForm.endDate) {
+      const startDate = new Date(this.saleForm.startDate);
+      const endDate = new Date(this.saleForm.endDate);
+      if (endDate <= startDate) {
+        errors['saleEndDate'] = 'Ngày kết thúc phải sau ngày bắt đầu';
+        isValid = false;
+      }
+    }
+
+    this.saleValidationErrors = errors;
+    return isValid;
+  }
+
+  private resetSaleValidationErrors(): void {
+    this.saleValidationErrors = {};
   }
 
   private getSelectedServiceActions(): SelectedServiceAction[] {
-    return Object.entries(this.selectedServiceActionOptions)
-      .filter(([, options]) => options && options.length > 0)
-      .map(([actionKey, options]) => ({
-        actionKey,
-        options: [...options]
+    return this.serviceActions
+      .filter(action => action.selectedOptions.length > 0)
+      .map(action => ({
+        actionKey: action.actionKey,
+        options: [...action.selectedOptions]
       }));
+  }
+
+  private initializeServiceActions(existing?: SelectedServiceAction[]): void {
+    const existingMap = new Map<string, string[]>();
+
+    existing?.forEach(action => {
+      existingMap.set(action.actionKey, action.options ? [...action.options] : []);
+    });
+
+    this.serviceActions = this.serviceActionDefinitions.map(config => {
+      const selected = existingMap.get(config.actionKey) || [];
+      return {
+        ...config,
+        options: [...config.options],
+        selectedOptions: selected,
+        expanded: selected.length > 0
+      };
+    });
   }
 
   private generatePackageId(): string {

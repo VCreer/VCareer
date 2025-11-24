@@ -326,6 +326,7 @@
         [(ngModel)]="packageForm.title"
         [required]="true">
       </app-input-field>
+      <div class="field-error" *ngIf="validationErrors.title">{{ validationErrors.title }}</div>
     </div>
     <div class="form-group">
       <app-input-field
@@ -335,6 +336,7 @@
         [(ngModel)]="packageForm.description"
         [required]="true">
       </app-input-field>
+      <div class="field-error" *ngIf="validationErrors.description">{{ validationErrors.description }}</div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -371,6 +373,7 @@
         [(ngModel)]="packageForm.originalPrice"
         [required]="true">
       </app-input-field>
+      <div class="field-error" *ngIf="validationErrors.originalPrice">{{ validationErrors.originalPrice }}</div>
     </div>
     <div class="form-row">
       <div class="form-group checkbox-group">
@@ -394,6 +397,7 @@
         [(ngModel)]="packageForm.totalBuyEachUser"
         [required]="packageForm.isBuyLimited">
       </app-input-field>
+      <div class="field-error" *ngIf="validationErrors.totalBuyEachUser">{{ validationErrors.totalBuyEachUser }}</div>
     </div>
     <div class="form-group checkbox-group">
       <label class="checkbox-label">
@@ -409,6 +413,7 @@
         [(ngModel)]="packageForm.dayDuration"
         [required]="!packageForm.isLifeTime">
       </app-input-field>
+      <div class="field-error" *ngIf="validationErrors.dayDuration">{{ validationErrors.dayDuration }}</div>
     </div>
     <div class="form-group checkbox-group">
       <label class="checkbox-label">
@@ -423,8 +428,8 @@
       <div class="service-actions-list">
         <div 
           class="service-action-item" 
-          *ngFor="let action of serviceActionsConfig"
-          [class.selected]="isServiceActionSelected(action.actionKey)">
+          *ngFor="let action of serviceActions"
+          [class.selected]="action.selectedOptions.length > 0">
           <button 
             type="button" 
             class="action-toggle"
@@ -438,18 +443,18 @@
                 class="fa fa-check action-selected-icon" 
                 *ngIf="isServiceActionSelected(action.actionKey)">
               </i>
-              <span class="selected-count" *ngIf="selectedServiceActionOptions[action.actionKey]?.length">
-                Đã chọn {{ selectedServiceActionOptions[action.actionKey]?.length }}
+              <span class="selected-count" *ngIf="action.selectedOptions.length">
+                Đã chọn {{ action.selectedOptions.length }}
               </span>
-              <i class="fa fa-chevron-down" [class.rotated]="isServiceActionExpanded(action.actionKey)"></i>
+              <i class="fa fa-chevron-down" [class.rotated]="action.expanded"></i>
             </div>
           </button>
-          <div class="action-options" *ngIf="isServiceActionExpanded(action.actionKey) && action.options?.length">
+          <div class="action-options" *ngIf="action.expanded && action.options?.length">
             <div class="action-option" *ngFor="let option of action.options">
               <label class="option-checkbox">
                 <input 
                   type="checkbox" 
-                  [checked]="isServiceActionOptionSelected(action.actionKey, option.value)"
+                  [checked]="action.selectedOptions.includes(option.value)"
                   (change)="toggleServiceActionOption(action.actionKey, option.value)">
                 <span>{{ option.label }}</span>
               </label>
@@ -457,6 +462,7 @@
           </div>
         </div>
       </div>
+      <div class="field-error" *ngIf="validationErrors.serviceActions">{{ validationErrors.serviceActions }}</div>
     </div>
 
     <div class="modal-actions">
@@ -590,8 +596,8 @@
       <div class="service-actions-list">
         <div 
           class="service-action-item" 
-          *ngFor="let action of serviceActionsConfig"
-          [class.selected]="isServiceActionSelected(action.actionKey)">
+          *ngFor="let action of serviceActions"
+          [class.selected]="action.selectedOptions.length > 0">
           <button 
             type="button" 
             class="action-toggle"
@@ -600,14 +606,16 @@
               <span class="action-label">{{ action.label }}</span>
               <small class="action-description">{{ action.description }}</small>
             </div>
-            <i class="fa" [class.fa-check]="isServiceActionSelected(action.actionKey)"></i>
+            <div class="action-meta">
+              <i class="fa" [class.fa-check]="action.selectedOptions.length > 0"></i>
+            </div>
           </button>
-          <div class="action-options" *ngIf="isServiceActionSelected(action.actionKey) && action.options?.length">
+          <div class="action-options" *ngIf="action.expanded && action.options?.length">
             <div class="action-option" *ngFor="let option of action.options">
               <label class="option-checkbox">
                 <input 
                   type="checkbox" 
-                  [checked]="isServiceActionOptionSelected(action.actionKey, option.value)"
+                  [checked]="action.selectedOptions.includes(option.value)"
                   (change)="toggleServiceActionOption(action.actionKey, option.value)">
                 <span>{{ option.label }}</span>
               </label>
@@ -647,10 +655,13 @@
       <app-select-field
         label="Gói dịch vụ"
         placeholder="Chọn gói dịch vụ"
-        [options]="activePackageOptions"
+        [options]="salePackageOptions"
         [(ngModel)]="saleForm.packageId"
         [required]="true">
       </app-select-field>
+      <div class="field-error" *ngIf="saleValidationErrors['salePackageId']">
+        {{ saleValidationErrors['salePackageId'] }}
+      </div>
     </div>
     <div class="form-group">
       <app-input-field
@@ -660,6 +671,9 @@
         [(ngModel)]="saleForm.salePercent"
         [required]="true">
       </app-input-field>
+      <div class="field-error" *ngIf="saleValidationErrors['salePercent']">
+        {{ saleValidationErrors['salePercent'] }}
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -670,6 +684,9 @@
           [(ngModel)]="saleForm.startDate"
           [required]="true">
         </app-input-field>
+        <div class="field-error" *ngIf="saleValidationErrors['saleStartDate']">
+          {{ saleValidationErrors['saleStartDate'] }}
+        </div>
       </div>
       <div class="form-group">
         <app-input-field
@@ -679,27 +696,10 @@
           [(ngModel)]="saleForm.endDate"
           [required]="true">
         </app-input-field>
+        <div class="field-error" *ngIf="saleValidationErrors['saleEndDate']">
+          {{ saleValidationErrors['saleEndDate'] }}
+        </div>
       </div>
-    </div>
-    <div class="form-group">
-      <app-select-field
-        label="Trạng thái"
-        placeholder="Chọn trạng thái"
-        [options]="[
-          { value: 'upcoming', label: 'Sắp tới' },
-          { value: 'active', label: 'Đang áp dụng' },
-          { value: 'inactive', label: 'Ngừng áp dụng' },
-          { value: 'expired', label: 'Hết hạn' }
-        ]"
-        [(ngModel)]="saleForm.status"
-        [required]="true">
-      </app-select-field>
-    </div>
-    <div class="form-group checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="saleForm.isActive">
-        <span>Kích hoạt</span>
-      </label>
     </div>
     <div class="modal-actions">
       <app-button
@@ -730,10 +730,13 @@
       <app-select-field
         label="Gói dịch vụ"
         placeholder="Chọn gói dịch vụ"
-        [options]="activePackageOptions"
+        [options]="salePackageOptions"
         [(ngModel)]="saleForm.packageId"
         [required]="true">
       </app-select-field>
+      <div class="field-error" *ngIf="saleValidationErrors['salePackageId']">
+        {{ saleValidationErrors['salePackageId'] }}
+      </div>
     </div>
     <div class="form-group">
       <app-input-field
@@ -743,6 +746,9 @@
         [(ngModel)]="saleForm.salePercent"
         [required]="true">
       </app-input-field>
+      <div class="field-error" *ngIf="saleValidationErrors['salePercent']">
+        {{ saleValidationErrors['salePercent'] }}
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -753,6 +759,9 @@
           [(ngModel)]="saleForm.startDate"
           [required]="true">
         </app-input-field>
+        <div class="field-error" *ngIf="saleValidationErrors['saleStartDate']">
+          {{ saleValidationErrors['saleStartDate'] }}
+        </div>
       </div>
       <div class="form-group">
         <app-input-field
@@ -762,27 +771,10 @@
           [(ngModel)]="saleForm.endDate"
           [required]="true">
         </app-input-field>
+        <div class="field-error" *ngIf="saleValidationErrors['saleEndDate']">
+          {{ saleValidationErrors['saleEndDate'] }}
+        </div>
       </div>
-    </div>
-    <div class="form-group">
-      <app-select-field
-        label="Trạng thái"
-        placeholder="Chọn trạng thái"
-        [options]="[
-          { value: 'upcoming', label: 'Sắp tới' },
-          { value: 'active', label: 'Đang áp dụng' },
-          { value: 'inactive', label: 'Ngừng áp dụng' },
-          { value: 'expired', label: 'Hết hạn' }
-        ]"
-        [(ngModel)]="saleForm.status"
-        [required]="true">
-      </app-select-field>
-    </div>
-    <div class="form-group checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="saleForm.isActive">
-        <span>Kích hoạt</span>
-      </label>
     </div>
     <div class="modal-actions">
       <app-button
