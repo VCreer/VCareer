@@ -213,17 +213,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   
   private mapApplicationsToCvs(applications: ApplicationDto[]): CandidateCv[] {
     return applications.map(app => {
-      // Generate placeholder email/phone từ candidateId nếu có
-      // TODO: Backend nên thêm email và phone vào ApplicationDto
-      const candidateIdShort = app.candidateId?.substring(0, 8) || 'unknown';
-      const email = app.candidateId ? `candidate_${candidateIdShort}@vcareer.vn` : 'N/A';
-      const phone = app.candidateId ? candidateIdShort.padEnd(10, '0') : 'N/A';
-      
       return {
         id: app.id || '',
         name: app.candidateName || 'N/A',
-        email: email,
-        phone: phone,
+        email: app.candidateEmail || 'N/A',
+        phone: app.candidatePhone || 'N/A',
         position: app.jobTitle || 'N/A',
         status: app.status || 'received', // Default: CV tiếp nhận
         source: this.getCvSource(app.cvType),
