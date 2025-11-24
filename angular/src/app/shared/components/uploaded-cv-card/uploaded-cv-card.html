@@ -5,12 +5,16 @@
   </div>
 
   <!-- CV Folder Icon -->
-  <div class="cv-preview-image">
+  <div class="cv-preview-image" (click)="onView()">
     <img src="assets/images/cv-management/folder-cv.png" alt="CV Folder" class="cv-image">
   </div>
 
   <!-- Action Buttons -->
   <div class="cv-hover-actions">
+    <button class="action-btn view-btn" (click)="onView()">
+      <i class="fa fa-eye btn-icon"></i>
+      <span class="btn-text">Xem CV</span>
+    </button>
     <button class="action-btn download-btn" (click)="onDownload()">
       <i class="fa fa-download btn-icon"></i>
       <span class="btn-text">{{ translate('cv_card.download') }}</span>

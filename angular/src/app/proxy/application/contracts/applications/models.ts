@@ -5,6 +5,8 @@ export interface ApplicationDto extends FullAuditedEntityDto<string> {
   jobTitle?: string;
   candidateId?: string;
   candidateName?: string;
+  candidateEmail?: string;
+  candidatePhone?: string;
   companyId: number;
   companyName?: string;
   cvType?: string;
