@@ -46,12 +46,14 @@ export class CartComponent implements OnInit, OnDestroy {
       this.selectedLanguage = lang;
     });
 
-    // Load cart items
+    // Load cart items from API
     this.loadCartItems();
 
     // Subscribe to cart changes
-    this.cartSubscription = this.cartService.cartItems$.subscribe(() => {
-      this.loadCartItems();
+    this.cartSubscription = this.cartService.cartItems$.subscribe((items) => {
+      this.cartItems = items;
+      // Auto-select all items
+      this.selectedItems = new Set(this.cartItems.map(item => item.id));
     });
 
     // Check sidebar state
@@ -71,6 +73,10 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   loadCartItems() {
+    // Load from API - this will update cartItems$ observable
+    this.cartService.loadCartFromApi();
+    
+    // Get current items (may be empty initially, will update via subscription)
     this.cartItems = this.cartService.getCartItems();
     // Auto-select all items
     this.selectedItems = new Set(this.cartItems.map(item => item.id));
@@ -118,10 +124,104 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   // Remove item
-  removeItem(itemId: string): void {
-    this.cartService.removeFromCart(itemId);
-    this.selectedItems.delete(itemId);
-    this.showToastMessage('success', 'Đã xóa sản phẩm khỏi giỏ hàng');
+  removeItem(cartId: string): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+    this.cartService.removeFromCart(cartId).subscribe({
+      next: () => {
+        this.selectedItems.delete(cartId);
+        this.isProcessing = false;
+        this.showToastMessage('success', 'Đã xóa sản phẩm khỏi giỏ hàng');
+      },
+      error: (error) => {
+        console.error('Error removing item from cart:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể xóa sản phẩm. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Increase quantity
+  increaseQuantity(cartId: string, currentQuantity: number): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+    const newQuantity = currentQuantity + 1;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Decrease quantity
+  decreaseQuantity(cartId: string, currentQuantity: number): void {
+    if (this.isProcessing || currentQuantity <= 1) {
+      return;
+    }
+
+    this.isProcessing = true;
+    const newQuantity = currentQuantity - 1;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Handle manual quantity input change
+  onQuantityChange(cartId: string, event: Event): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    const newQuantity = parseInt(input.value, 10);
+
+    if (isNaN(newQuantity) || newQuantity < 1) {
+      // Reset to current quantity if invalid
+      const currentItem = this.cartItems.find(item => item.id === cartId);
+      if (currentItem) {
+        input.value = currentItem.quantity.toString();
+      }
+      return;
+    }
+
+    this.isProcessing = true;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+        // Reset to current quantity on error
+        const currentItem = this.cartItems.find(item => item.id === cartId);
+        if (currentItem) {
+          input.value = currentItem.quantity.toString();
+        }
+      }
+    });
   }
 
   // Calculations
@@ -131,9 +231,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   getSubtotal(): number {
     return this.getSelectedItems().reduce((total, item) => {
-      // Use originalPrice if available, otherwise parse from formatted price
-      const price = item.originalPrice || parseFloat(item.price.replace(/,/g, ''));
-      return total + (price * item.quantity);
+      return total + (item.subscriptionServicePrice * item.quantity);
     }, 0);
   }
 
@@ -150,9 +248,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getItemAmount(item: CartItem): number {
-    // Use originalPrice if available, otherwise parse from formatted price
-    const price = item.originalPrice || parseFloat(item.price.replace(/,/g, ''));
-    return price * item.quantity;
+    return item.subscriptionServicePrice * item.quantity;
   }
 
   // Actions
@@ -182,9 +278,9 @@ export class CartComponent implements OnInit, OnDestroy {
     // Create order DTO
     const createOrderDto: CreateOrderDto = {
       orderDetails: selectedItems.map(item => ({
-        subcriptionServiceId: item.id,
+        subcriptionServiceId: item.subscriptionServiceId,
         quantity: item.quantity,
-        unitPrice: item.originalPrice || parseFloat(item.price.replace(/,/g, ''))
+        unitPrice: item.subscriptionServicePrice
       }))
     };
 
