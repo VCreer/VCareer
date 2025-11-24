@@ -55,6 +55,12 @@
             </li>
           </ul>
         </li>
+        <li class="sidebar-nav-item">
+          <a (click)="navigateTo('/employee/manage-service-packages')" class="sidebar-link" [class.active]="isActive('/employee/manage-service-packages')">
+            <i class="fa fa-box sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lí các gói dịch vụ</span>
+          </a>
+        </li>
       </ng-container>
 
       <!-- Recruiter Menu -->
