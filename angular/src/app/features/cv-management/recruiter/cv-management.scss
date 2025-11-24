@@ -463,6 +463,64 @@
           }
         }
 
+        // Rating Cell
+        .rating-cell {
+          .rating-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-start;
+
+            .rating-stars {
+              display: flex;
+              gap: 2px;
+              align-items: center;
+
+              i {
+                font-size: 16px;
+                color: #d1d5db;
+                cursor: pointer;
+                transition: color 0.2s ease, transform 0.1s ease;
+
+                &.fa-star {
+                  color: #fbbf24; // Yellow for full star
+                }
+
+                &.fa-star-half-o {
+                  color: #fbbf24; // Yellow for half star
+                }
+
+                &.fa-star-o {
+                  color: #d1d5db; // Gray for empty star
+                }
+
+                &.clickable {
+                  &:hover {
+                    color: #fbbf24;
+                    transform: scale(1.1);
+                  }
+                }
+
+                &.rated {
+                  cursor: pointer;
+                }
+              }
+            }
+
+            .rating-value {
+              font-size: 12px;
+              color: #6b7280;
+              font-weight: 500;
+            }
+
+            .rating-empty {
+              font-size: 12px;
+              color: #9ca3af;
+              font-style: italic;
+            }
+          }
+        }
+
         // Notes Cell
         .notes-cell {
           max-width: 200px;

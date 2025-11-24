@@ -48,6 +48,7 @@
               <th>Nguồn CV</th>
               <th>Ngày ứng tuyển</th>
               <th>Trạng thái</th>
+              <th>Đánh giá</th>
               <th>Ghi chú</th>
               <th>Thao tác</th>
             </tr>
@@ -125,6 +126,31 @@
                 </select>
               </td>
 
+              <!-- Đánh giá Column -->
+              <td class="rating-cell">
+                <div class="rating-container" (click)="$event.stopPropagation()">
+                  <div class="rating-stars">
+                    <i 
+                      *ngFor="let star of [1,2,3,4,5]" 
+                      class="fa"
+                      [class.fa-star]="getStarState(cv.rating, star) === 'full'"
+                      [class.fa-star-half-o]="getStarState(cv.rating, star) === 'half'"
+                      [class.fa-star-o]="getStarState(cv.rating, star) === 'empty'"
+                      [class.rated]="cv.rating"
+                      [class.clickable]="true"
+                      (click)="onRateCandidate(cv, star * 2)"
+                      [title]="'Đánh giá ' + (star * 2) + '/10'">
+                    </i>
+                  </div>
+                  <div class="rating-value" *ngIf="cv.rating">
+                    {{ cv.rating }}/10
+                  </div>
+                  <div class="rating-empty" *ngIf="!cv.rating">
+                    Chưa đánh giá
+                  </div>
+                </div>
+              </td>
+
               <!-- Ghi chú Column -->
               <td class="notes-cell">
                 <div class="notes-content" *ngIf="cv.notes">{{ cv.notes }}</div>
@@ -161,10 +187,6 @@
                     <div class="menu-item" (click)="viewCv(cv.id)">
                       <i class="fa fa-eye menu-icon"></i>
                       <span>Xem CV</span>
-                    </div>
-                    <div class="menu-item" (click)="editCv(cv.id)">
-                      <i class="fa fa-edit menu-icon"></i>
-                      <span>Chỉnh sửa</span>
                     </div>
                     <div class="menu-separator"></div>
                     <div class="menu-item delete-item" (click)="deleteCv(cv.id)">
