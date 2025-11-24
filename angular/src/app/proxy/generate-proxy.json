@@ -1441,7 +1441,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "GetApplicationAsyncById": {
@@ -1478,7 +1478,7 @@
                 "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "UpdateApplicationStatusAsyncByIdAndInput": {
@@ -1535,7 +1535,7 @@
                 "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "WithdrawApplicationAsyncByIdAndInput": {
@@ -1592,7 +1592,7 @@
                 "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "MarkAsViewedAsyncById": {
@@ -1629,7 +1629,7 @@
                 "type": "VCareer.Application.Contracts.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Application.Contracts.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "GetApplicationStatisticsAsyncByJobIdAndCompanyId": {
@@ -2024,7 +2024,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "GetJobApplicationsAsyncByJobIdAndInput": {
@@ -2213,7 +2213,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Application.Contracts.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "DownloadApplicationCVAsyncById": {
@@ -2250,7 +2250,7 @@
                 "type": "System.Byte[]",
                 "typeSimple": "[number]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "DeleteApplicationAsyncById": {
@@ -2287,7 +2287,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Application.Contracts.Applications.IApplicationAppService"
             },
             "CheckApplicationStatusAsyncByJobId": {
