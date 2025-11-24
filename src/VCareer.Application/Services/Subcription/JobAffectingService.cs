@@ -10,6 +10,7 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
+using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -22,12 +23,14 @@ namespace VCareer.Services.Subcription
         private readonly IJobPostRepository _jobPostRepository;
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
+        private readonly IJobPriorityRepository _jobPriorityRepository;
 
-        public JobAffectingService(IJobPostRepository jobPostRepository, IChildServiceRepository childServiceRepository, IEffectingJobServiceRepository effectingJobServiceRepository)
+        public JobAffectingService(IJobPostRepository jobPostRepository, IChildServiceRepository childServiceRepository, IEffectingJobServiceRepository effectingJobServiceRepository, IJobPriorityRepository jobPriorityRepository)
         {
             _jobPostRepository = jobPostRepository;
             _childServiceRepository = childServiceRepository;
             _effectingJobServiceRepository = effectingJobServiceRepository;
+            _jobPriorityRepository = jobPriorityRepository;
         }
         public async Task ApplyServiceToJob(EffectingJobServiceCreateDto jobAffectingDto)
         {
@@ -48,8 +51,10 @@ namespace VCareer.Services.Subcription
             DateTime? endDate = null;
             if (!childService.IsLifeTime) endDate = DateTime.Now.AddDays((double)childService.DayDuration);
 
+            //tao 1 effectingJobService
             var effectService = new EffectingJobService
             {
+                User_ChildServiceId = jobAffectingDto.User_ChildServiceId,
                 JobPostId = jobAffectingDto.JobPostId,
                 ChildServiceId = jobAffectingDto.ChildServiceId,
                 StartDate = DateTime.UtcNow,
@@ -57,10 +62,26 @@ namespace VCareer.Services.Subcription
                 Status = SubcriptionContance.ChildServiceStatus.Active,
                 Target = childService.Target,
                 Value = childService.Value,
+                PriorityLevel = childService.Priority,
                 EndDate = endDate,
             };
             await _effectingJobServiceRepository.InsertAsync(effectService);
 
+            if (childService.Target == ServiceTarget.JobPost && childService.Action == ServiceAction.BoostScoreJob)
+                await AddJobBoostLogic(job, effectService);
+            //co the them logic xu ly cac job voi target =job voi action khac
+        }
+
+        private async Task AddJobBoostLogic(Job_Post job, EffectingJobService effectService)
+        {
+            var priority = job.Job_Priority;
+            if (priority == null) throw new BusinessException("Job_Priority not found");
+            if (effectService.PriorityLevel != null)
+            {
+                if (effectService.PriorityLevel > priority.PriorityLevel) priority.PriorityLevel = effectService.PriorityLevel ?? priority.PriorityLevel;
+            }
+            if (effectService.Value != null) priority.SortScore += (float)effectService.Value;
+            await _jobPriorityRepository.UpdateAsync(priority);
         }
 
         public async Task CancleEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
@@ -81,7 +102,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<EffectingJobService, EffectingJobServiceViewDto>(effectService);
         }
 
-        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServicesWithPaging(Guid JobId,ChildServiceStatus? status, PagingDto pagingDto)
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServicesWithPaging(Guid JobId, ChildServiceStatus? status, PagingDto pagingDto)
         {
             var query = await _effectingJobServiceRepository.GetQueryableAsync();
             query = query.Where(x => x.JobPostId == JobId);
@@ -93,7 +114,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
         }
 
-        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId,ChildServiceStatus? status)
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, ChildServiceStatus? status)
         {
             var query = await _effectingJobServiceRepository.GetQueryableAsync();
             query = query.Where(x => x.JobPostId == JobId);
@@ -102,7 +123,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
         }
 
-        public async  Task UpdateEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
+        public async Task UpdateEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
         {
             var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == jobAffectingDto.EffectingJobServiceId);
             if (effectService == null) throw new BusinessException("EffectingJobService not found");

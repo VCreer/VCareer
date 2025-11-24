@@ -25,6 +25,7 @@ namespace VCareer.Models.Subcription
         // liên kết đến abp user
         public virtual ChildService ChildService { get; set; }
         public virtual IdentityUser User { get; set; }
+        public virtual ICollection<EffectingJobService> EffectingJobServices { get; set; }
 
     }
 }

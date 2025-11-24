@@ -9,6 +9,7 @@ namespace VCareer.Dto.Subcriptions
 {
     public class EffectingJobServiceCreateDto
     {
+        public Guid User_ChildServiceId { get; set; }
         public Guid JobPostId { get; set; }
         public Guid ChildServiceId { get; set; }
     }

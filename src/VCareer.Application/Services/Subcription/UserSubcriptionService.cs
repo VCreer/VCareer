@@ -24,44 +24,33 @@ namespace VCareer.Services.Subcription
         private readonly IUser_SubcriptionServicerRepository _user_SubcriptionServicerRepository;
         private readonly ISubcriptionService _subcriptionService;
         private readonly IUser_ChildServiceRepository _user_ChildServiceRepository;
-        public UserSubcriptionService(ISubcriptionServiceRepository subcriptionServiceRepository, IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository, ISubcriptionService subcriptionService, IUser_ChildServiceRepository user_ChildServiceRepository)
+        private readonly IUser_ChildService _user_ChildService_Service;
+        public UserSubcriptionService(ISubcriptionServiceRepository subcriptionServiceRepository, IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository, ISubcriptionService subcriptionService, IUser_ChildServiceRepository user_ChildServiceRepository, IUser_ChildService user_ChildService_Service)
         {
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _user_SubcriptionServicerRepository = user_SubcriptionServicerRepository;
             _subcriptionService = subcriptionService;
             _user_ChildServiceRepository = user_ChildServiceRepository;
+            _user_ChildService_Service = user_ChildService_Service;
         }
         public async Task BuySubcription(User_SubcirptionCreateDto dto)
         {
-                      // chạy luồng payment nếu thành công thì tạo 1 UserSubcription
+            // chạy luồng payment nếu thành công thì tạo 1 UserSubcription
             var userSubcription = await CreateUserSubcription(dto);
             if (userSubcription == null) throw new BusinessException("Error when create user subcription");
+
             //logic chay cac child subcription ma auto active
-            //các phần xử lý khác như giao diện , job sẽ check ở đây để xử lý logic
-            //đang phân vân dùng unit of work
             var childServices = await _subcriptionService.GetChildServices(userSubcription.SubcriptionServiceId, true);
-            List<User_ChildService> list = new List<User_ChildService>();
             foreach (var childService in childServices)
             {
                 if (childService.IsAutoActive)
                 {
-                    list.Add(new User_ChildService()
+                    await _user_ChildService_Service.ActiveServiceAsync(new User_ChildServiceCreateDto()
                     {
-                        ChildServiceId = childService.CHildServiceId,
                         UserId = dto.UserId,
-                        IsLifeTime = childService.IsLifeTime,
-                        Status = SubcriptionContance.ChildServiceStatus.Active,
-                        StartDate = DateTime.UtcNow,
-                        EndDate = childService.IsLifeTime ? null : DateTime.Now.AddDays((double)childService.DayDuration),
-                        IsLimitUsedTime = childService.IsLimitUsedTime,
-                        TotalUsageLimit = childService.TimeUsedLimit,
-                        UsedTime = 0,
+                        ChildServiceId = childService.CHildServiceId,
                     });
                 }
-            }
-            if (list.Count > 0)
-            {
-                await _user_ChildServiceRepository.InsertManyAsync(list);
             }
         }
         public async Task<User_SubcirptionViewDto> CreateUserSubcription(User_SubcirptionCreateDto dto)
@@ -128,7 +117,7 @@ namespace VCareer.Services.Subcription
 
             await _user_SubcriptionServicerRepository.UpdateAsync(userSubcriptionService);
         }
-       
+
 
     }
 }
