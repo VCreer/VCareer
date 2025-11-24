@@ -43,7 +43,18 @@
         Nhà tuyển dụng sẽ chỉ được mua và kích hoạt duy nhất 1 gói Top Job Trial
       </p>
 
-      <div class="service-cards">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Đang tải danh sách dịch vụ...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && trialPackages.length === 0 && regularPackages.length === 0" class="empty-state">
+        <p>Hiện tại không có dịch vụ nào khả dụng.</p>
+      </div>
+
+      <div class="service-cards" *ngIf="!isLoading && trialPackages.length > 0">
         <div *ngFor="let pkg of trialPackages" class="service-card" (click)="onViewDetail(pkg.id)">
           <div class="card-header">
             <h3 class="card-title">{{ pkg.title }}</h3>
@@ -75,7 +86,7 @@
         Cộng hưởng sức mạnh công nghệ tạo ra hiệu quả đột phá cho tin tuyển dụng của Doanh nghiệp
       </p>
 
-      <div class="service-cards">
+      <div class="service-cards" *ngIf="!isLoading && regularPackages.length > 0">
         <div *ngFor="let pkg of regularPackages" class="service-card" [class.has-vip]="pkg.isVip" (click)="onViewDetail(pkg.id)">
           <div class="card-header">
             <h3 class="card-title">{{ pkg.title }}</h3>

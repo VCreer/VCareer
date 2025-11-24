@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CartService, CartItem } from '../../../core/services/cart.service';
+import { OrderService, CreateOrderDto } from '../../../core/services/order.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { VnpayPaymentModalComponent, PaymentInfo } from '../../../shared/components/vnpay-payment-modal/vnpay-payment-modal';
 
@@ -26,6 +27,7 @@ export class CartComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
   showVnpayModal = false;
   paymentInfo?: PaymentInfo;
+  isProcessing = false;
   private cartSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
@@ -35,7 +37,8 @@ export class CartComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private cartService: CartService
+    private cartService: CartService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit() {
@@ -128,7 +131,8 @@ export class CartComponent implements OnInit, OnDestroy {
 
   getSubtotal(): number {
     return this.getSelectedItems().reduce((total, item) => {
-      const price = parseFloat(item.price.replace(/,/g, ''));
+      // Use originalPrice if available, otherwise parse from formatted price
+      const price = item.originalPrice || parseFloat(item.price.replace(/,/g, ''));
       return total + (price * item.quantity);
     }, 0);
   }
@@ -146,7 +150,8 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getItemAmount(item: CartItem): number {
-    const price = parseFloat(item.price.replace(/,/g, ''));
+    // Use originalPrice if available, otherwise parse from formatted price
+    const price = item.originalPrice || parseFloat(item.price.replace(/,/g, ''));
     return price * item.quantity;
   }
 
@@ -167,22 +172,46 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Prepare payment info
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
     const selectedItems = this.getSelectedItems();
-    const orderId = `ORD-${Date.now()}`;
-    
-    this.paymentInfo = {
-      orderId: orderId,
-      totalAmount: this.getTotal(),
-      services: selectedItems.map(item => ({
-        name: item.title,
+
+    // Create order DTO
+    const createOrderDto: CreateOrderDto = {
+      orderDetails: selectedItems.map(item => ({
+        subcriptionServiceId: item.id,
         quantity: item.quantity,
-        price: parseFloat(item.price.replace(/,/g, ''))
+        unitPrice: item.originalPrice || parseFloat(item.price.replace(/,/g, ''))
       }))
     };
 
-    // Show VNPAY payment modal
-    this.showVnpayModal = true;
+    // Create order
+    this.orderService.createOrder(createOrderDto).subscribe({
+      next: (order) => {
+        // Create VNPay payment URL
+        this.orderService.createVnpayPaymentUrl({ orderId: order.id }).subscribe({
+          next: (paymentResponse) => {
+            this.isProcessing = false;
+            // Redirect to VNPay payment page
+            window.location.href = paymentResponse.paymentUrl;
+          },
+          error: (error) => {
+            console.error('Error creating payment URL:', error);
+            this.isProcessing = false;
+            this.showToastMessage('error', 'Không thể tạo liên kết thanh toán. Vui lòng thử lại.');
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error creating order:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể tạo đơn hàng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
   }
 
   onCloseVnpayModal(): void {
