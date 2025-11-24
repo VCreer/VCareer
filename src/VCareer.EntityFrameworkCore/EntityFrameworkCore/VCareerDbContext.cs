@@ -30,6 +30,8 @@ using VCareer.Models.JobCategory;
 using VCareer.Models.Subcription;
 using VCareer.Models.Subcription_Payment;
 using VCareer.Models.Order;
+using VCareer.Models.Cart;
+using CartEntity = VCareer.Models.Cart.Cart;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -64,6 +66,9 @@ public class VCareerDbContext :
     // Order Management
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
+
+    // Cart Management
+    public DbSet<CartEntity> Carts { get; set; }
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     public DbSet<JobApplication> JobApplications { get; set; }
@@ -865,6 +870,34 @@ public class VCareerDbContext :
             // Indexes
             b.HasIndex(x => x.OrderId);
             b.HasIndex(x => x.SubcriptionServiceId);
+        });
+
+        // ========== Cart Configuration ==========
+        builder.Entity<CartEntity>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(x => x.Id);
+            b.ToTable("Carts");
+
+            // Properties
+            b.Property(x => x.Quantity).IsRequired().HasDefaultValue(1);
+            b.Property(x => x.CreationTime).IsRequired();
+
+            // Relationships
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.SubscriptionService)
+                .WithMany()
+                .HasForeignKey(x => x.SubscriptionServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            b.HasIndex(x => x.UserId);
+            b.HasIndex(x => x.SubscriptionServiceId);
+            b.HasIndex(x => new { x.UserId, x.SubscriptionServiceId }).IsUnique(); // Prevent duplicate items
         });
 
 

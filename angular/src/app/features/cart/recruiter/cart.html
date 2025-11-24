@@ -57,21 +57,22 @@
               </td>
               <td class="service-name-col">
                 <div class="service-info">
-                  <h3 class="service-name">{{ item.title }}</h3>
+                  <h3 class="service-name">{{ item.subscriptionServiceTitle }}</h3>
                   <p class="service-description">
                     Trải nghiệm đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất kết hợp cùng các dịch vụ cao cấp, giá dùng thử hấp dẫn.
                   </p>
                 </div>
               </td>
               <td class="price-col">
-                <span class="unit-price">{{ item.price }}</span>
+                <span class="unit-price">{{ formatCurrency(item.subscriptionServicePrice) }}</span>
               </td>
               <td class="quantity-col">
                 <div class="quantity-control">
                   <button 
                     type="button" 
                     class="quantity-btn minus-btn"
-                    disabled>
+                    (click)="decreaseQuantity(item.id, item.quantity)"
+                    [disabled]="isProcessing || item.quantity <= 1">
                     -
                   </button>
                   <input 
@@ -79,11 +80,13 @@
                     class="quantity-input"
                     [value]="item.quantity"
                     min="1"
-                    disabled>
+                    (change)="onQuantityChange(item.id, $event)"
+                    [disabled]="isProcessing">
                   <button 
                     type="button" 
                     class="quantity-btn plus-btn"
-                    disabled>
+                    (click)="increaseQuantity(item.id, item.quantity)"
+                    [disabled]="isProcessing">
                     +
                   </button>
                 </div>
@@ -96,7 +99,8 @@
                   type="button" 
                   class="remove-btn"
                   (click)="removeItem(item.id)"
-                  aria-label="Xóa sản phẩm">
+                  aria-label="Xóa sản phẩm"
+                  [disabled]="isProcessing">
                   <i class="fa fa-trash"></i>
                 </button>
               </td>

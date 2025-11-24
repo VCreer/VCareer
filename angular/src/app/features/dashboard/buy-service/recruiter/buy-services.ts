@@ -147,16 +147,19 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
     
     if (selectedPackage) {
-      const added = this.cartService.addToCart({
+      this.cartService.addToCart({
         id: selectedPackage.id,
-        title: selectedPackage.title,
-        price: selectedPackage.price,
-        originalPrice: selectedPackage.originalPrice
+        subscriptionServiceId: selectedPackage.id
+      }).subscribe({
+        next: () => {
+          this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
+        },
+        error: (error) => {
+          console.error('Error adding to cart:', error);
+          const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+          this.showToastMessage('error', errorMessage);
+        }
       });
-
-      if (added) {
-        this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
-      }
     }
   }
 
@@ -175,15 +178,28 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
     
     if (selectedPackage) {
-      const added = this.cartService.addToCart({
-        id: selectedPackage.id,
-        title: selectedPackage.title,
-        price: selectedPackage.price,
-        originalPrice: selectedPackage.originalPrice
-      });
-
-      if (added) {
+      // Check if item already exists in cart
+      const cartItems = this.cartService.getCartItems();
+      const existingItem = cartItems.find(item => item.subscriptionServiceId === packageId);
+      
+      if (existingItem) {
+        // Item already exists, just navigate to cart without adding
         this.router.navigate(['/recruiter/cart']);
+      } else {
+        // Item doesn't exist, add to cart first
+        this.cartService.addToCart({
+          id: selectedPackage.id,
+          subscriptionServiceId: selectedPackage.id
+        }).subscribe({
+          next: () => {
+            this.router.navigate(['/recruiter/cart']);
+          },
+          error: (error) => {
+            console.error('Error adding to cart:', error);
+            const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+            this.showToastMessage('error', errorMessage);
+          }
+        });
       }
     }
   }

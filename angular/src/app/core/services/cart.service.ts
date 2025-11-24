@@ -1,91 +1,148 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface CartItem {
   id: string;
-  title: string;
-  price: string; // Formatted price for display
-  originalPrice: number; // Original price from database for calculation
+  userId: string;
+  subscriptionServiceId: string;
+  subscriptionServiceTitle: string;
+  subscriptionServicePrice: number;
   quantity: number;
+  creationTime?: string;
+  lastModificationTime?: string;
+}
+
+export interface CartListDto {
+  items: CartItem[];
+  totalCount: number;
+}
+
+export interface AddToCartDto {
+  subscriptionServiceId: string;
+  quantity?: number;
+}
+
+export interface UpdateCartQuantityDto {
+  cartId: string;
+  quantity: number;
+}
+
+export interface RemoveFromCartDto {
+  cartId: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.loadCartFromStorage());
+  private apiUrl = environment.apis.default.url || 'https://localhost:44385';
+  private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   public cartItems$: Observable<CartItem[]> = this.cartItemsSubject.asObservable();
+  private isLoading = false;
 
-  private readonly CART_STORAGE_KEY = 'recruiter_cart';
-
-  constructor() {
-    this.loadCartFromStorage();
+  constructor(private http: HttpClient) {
+    // Load cart from API on service initialization
+    this.loadCartFromApi();
   }
 
-  private loadCartFromStorage(): CartItem[] {
-    try {
-      const stored = localStorage.getItem(this.CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
+  /**
+   * Load cart items from API
+   */
+  loadCartFromApi(): void {
+    if (this.isLoading) {
+      return; // Prevent multiple simultaneous requests
     }
+
+    this.isLoading = true;
+    this.http.get<CartListDto>(`${this.apiUrl}/api/app/cart/my-cart`).subscribe({
+      next: (response) => {
+        this.cartItemsSubject.next(response.items || []);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading cart from API:', error);
+        this.cartItemsSubject.next([]);
+        this.isLoading = false;
+      }
+    });
   }
 
-  private saveCartToStorage(items: CartItem[]): void {
-    try {
-      localStorage.setItem(this.CART_STORAGE_KEY, JSON.stringify(items));
-    } catch (error) {
-      console.error('Error saving cart to storage:', error);
-    }
-  }
-
+  /**
+   * Get current cart items (synchronous)
+   */
   getCartItems(): CartItem[] {
     return this.cartItemsSubject.value;
   }
 
+  /**
+   * Get cart count
+   */
   getCartCount(): number {
     return this.cartItemsSubject.value.reduce((total, item) => total + item.quantity, 0);
   }
 
-  addToCart(item: Omit<CartItem, 'quantity'>): boolean {
-    const currentItems = this.cartItemsSubject.value;
-    const existingItemIndex = currentItems.findIndex(cartItem => cartItem.id === item.id);
+  /**
+   * Add item to cart
+   */
+  addToCart(item: Omit<CartItem, 'quantity' | 'userId' | 'subscriptionServiceTitle' | 'subscriptionServicePrice' | 'creationTime' | 'lastModificationTime'>): Observable<CartItem> {
+    const addToCartDto: AddToCartDto = {
+      subscriptionServiceId: item.subscriptionServiceId,
+      quantity: 1 // Default quantity is 1
+    };
 
-    if (existingItemIndex >= 0) {
-      // Item already exists, increase quantity
-      currentItems[existingItemIndex].quantity += 1;
-    } else {
-      // New item, add with quantity 1
-      currentItems.push({ ...item, quantity: 1 });
-    }
-
-    this.cartItemsSubject.next([...currentItems]);
-    this.saveCartToStorage(currentItems);
-    return true;
-  }
-
-  removeFromCart(itemId: string): void {
-    const currentItems = this.cartItemsSubject.value.filter(item => item.id !== itemId);
-    this.cartItemsSubject.next(currentItems);
-    this.saveCartToStorage(currentItems);
-  }
-
-  updateQuantity(itemId: string, quantity: number): void {
-    if (quantity <= 0) {
-      this.removeFromCart(itemId);
-      return;
-    }
-
-    const currentItems = this.cartItemsSubject.value.map(item =>
-      item.id === itemId ? { ...item, quantity } : item
+    return this.http.post<CartItem>(`${this.apiUrl}/api/app/cart/add-to-cart`, addToCartDto).pipe(
+      tap(() => {
+        // Reload cart from API to get updated list after a short delay
+        setTimeout(() => {
+          this.loadCartFromApi();
+        }, 100);
+      })
     );
-    this.cartItemsSubject.next(currentItems);
-    this.saveCartToStorage(currentItems);
   }
 
-  clearCart(): void {
-    this.cartItemsSubject.next([]);
-    this.saveCartToStorage([]);
+  /**
+   * Update quantity of a cart item
+   */
+  updateQuantity(cartId: string, quantity: number): Observable<CartItem> {
+    const updateDto: UpdateCartQuantityDto = {
+      cartId: cartId,
+      quantity: quantity
+    };
+
+    return this.http.put<CartItem>(`${this.apiUrl}/api/app/cart/update-quantity`, updateDto).pipe(
+      tap(() => {
+        // Reload cart from API to get updated list
+        this.loadCartFromApi();
+      })
+    );
+  }
+
+  /**
+   * Remove item from cart
+   */
+  removeFromCart(cartId: string): Observable<void> {
+    const removeDto: RemoveFromCartDto = {
+      cartId: cartId
+    };
+
+    return this.http.post<void>(`${this.apiUrl}/api/app/cart/remove-from-cart`, removeDto).pipe(
+      tap(() => {
+        // Reload cart from API to get updated list
+        this.loadCartFromApi();
+      })
+    );
+  }
+
+  /**
+   * Clear entire cart
+   */
+  clearCart(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/api/app/cart/clear-cart`, {}).pipe(
+      tap(() => {
+        this.cartItemsSubject.next([]);
+      })
+    );
   }
 }
-
