@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VCareer.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    partial class VCareerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123141840_updaetDatabse")]
+    partial class updaetDatabse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1374,10 +1377,6 @@ namespace VCareer.Migrations
                     b.Property<decimal>("VATAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("VnpayPaymentId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("VnpayResponseCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -1398,8 +1397,6 @@ namespace VCareer.Migrations
                     b.HasIndex("Status");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("VnpayPaymentId");
 
                     b.ToTable("Orders", (string)null);
                 });

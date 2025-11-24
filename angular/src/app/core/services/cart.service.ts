@@ -4,7 +4,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export interface CartItem {
   id: string;
   title: string;
-  price: string;
+  price: string; // Formatted price for display
+  originalPrice: number; // Original price from database for calculation
   quantity: number;
 }
 

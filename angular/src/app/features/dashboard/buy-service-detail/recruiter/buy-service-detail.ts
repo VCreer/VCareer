@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation.service';
-import { CartService } from '../../../../core/services/cart.service';
+// import { CartService } from '../../../../core/services/cart.service'; // TODO: Uncomment when cart feature is needed
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 
@@ -178,8 +178,8 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private translationService: TranslationService,
-    private cartService: CartService
+    private translationService: TranslationService
+    // private cartService: CartService // TODO: Uncomment when cart feature is needed
   ) {}
 
   ngOnInit() {
@@ -234,17 +234,20 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   onAddToCart(): void {
-    if (this.serviceDetail) {
-      const added = this.cartService.addToCart({
-        id: this.serviceDetail.id,
-        title: this.serviceDetail.title,
-        price: this.serviceDetail.price
-      });
-
-      if (added) {
-        this.showToastMessage('success', `Đã thêm "${this.serviceDetail.title}" vào giỏ hàng`);
-      }
-    }
+    // TODO: Implement cart functionality when needed
+    // if (this.serviceDetail) {
+    //   const added = this.cartService.addToCart({
+    //     id: this.serviceDetail.id,
+    //     title: this.serviceDetail.title,
+    //     price: this.serviceDetail.price,
+    //     originalPrice: parseFloat(this.serviceDetail.price.replace(/,/g, ''))
+    //   });
+    //
+    //   if (added) {
+    //     this.showToastMessage('success', `Đã thêm "${this.serviceDetail.title}" vào giỏ hàng`);
+    //   }
+    // }
+    this.showToastMessage('info', 'Tính năng giỏ hàng đang được phát triển');
   }
 
   showToastMessage(type: 'success' | 'error' | 'info' | 'warning', message: string): void {

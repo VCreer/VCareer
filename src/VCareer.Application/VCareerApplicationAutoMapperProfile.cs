@@ -17,6 +17,9 @@ using VCareer.Models;
 using VCareer.Application.Contracts.Applications;
 using VCareer.CV;
 using VCareer.Dto.Profile;
+using VCareer.Dto.Order;
+using VCareer.Models.Order;
+using VCareer.Models.Subcription;
 
 namespace VCareer;
 
@@ -60,6 +63,13 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
 
         // Application mappings
         CreateMap<JobApplication, ApplicationDto>();
+
+        // Order mappings
+        CreateMap<Order, OrderDto>();
+        CreateMap<OrderDetail, OrderDetailDto>();
+
+        // Subscription Service mappings
+        CreateMap<Models.Subcription.SubcriptionService, Dto.Subcriptions.SubcriptionsViewDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

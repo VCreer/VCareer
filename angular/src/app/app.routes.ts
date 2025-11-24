@@ -325,6 +325,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
       {
+        path: 'payment/callback',
+        loadComponent: () => import('./features/payment/payment-callback/payment-callback').then(c => c.PaymentCallbackComponent),
+      },
+      {
         path: 'my-services',
         loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
       },
