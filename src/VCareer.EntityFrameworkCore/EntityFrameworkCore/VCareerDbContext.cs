@@ -200,7 +200,6 @@ public class VCareerDbContext :
             .WithOne(j => j.Job_Priority)
             .HasForeignKey<Job_Priority>(j => j.JobId)
             .OnDelete(DeleteBehavior.Cascade);
-
         });
 
         builder.Entity<Job_Post>(b =>
@@ -790,6 +789,11 @@ public class VCareerDbContext :
                 .WithMany()
                 .HasForeignKey(x => x.ChildServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(e => e.User_ChildService)
+            .WithMany(j => j.EffectingJobServices)
+            .HasForeignKey(e => e.User_ChildServiceId);
+
         });
 
 
