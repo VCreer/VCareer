@@ -502,7 +502,7 @@ namespace VCareer.Application.Applications
                 dto.CompanyName = company.CompanyName;
             }
 
-            // Load Candidate để lấy CandidateName
+            // Load Candidate để lấy CandidateName, Email, Phone
             // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId (không phải CandidateProfile.Id)
             var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
             if (candidate != null)
@@ -514,6 +514,8 @@ namespace VCareer.Application.Applications
                     dto.CandidateName = !string.IsNullOrEmpty(user.Name)
                         ? $"{user.Name} {user.Surname}".Trim()
                         : user.UserName;
+                    dto.CandidateEmail = user.Email;
+                    dto.CandidatePhone = user.PhoneNumber;
                 }
             }
 
