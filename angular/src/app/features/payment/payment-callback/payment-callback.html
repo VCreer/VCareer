@@ -1,0 +1,69 @@
+<div class="payment-callback-page">
+  <div class="container">
+    <div class="payment-result-card" *ngIf="!isLoading">
+      <!-- Status Icon -->
+      <div class="status-icon" [class.success]="paymentStatus === 'success'" 
+           [class.failed]="paymentStatus === 'failed'" 
+           [class.pending]="paymentStatus === 'pending'"
+           [class.error]="paymentStatus === 'error'">
+        <i class="fa" [ngClass]="getStatusIcon()"></i>
+      </div>
+
+      <!-- Status Message -->
+      <h2 class="status-title">{{ getStatusMessage() }}</h2>
+
+      <!-- Order Details -->
+      <div class="order-details" *ngIf="orderDetails">
+        <div class="detail-row">
+          <span class="label">Mã đơn hàng:</span>
+          <span class="value">{{ orderDetails.orderCode }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Tổng tiền:</span>
+          <span class="value amount">{{ formatCurrency(orderDetails.totalAmount) }} VND</span>
+        </div>
+        <div class="detail-row" *ngIf="orderDetails.paidAt">
+          <span class="label">Thời gian thanh toán:</span>
+          <span class="value">{{ formatDate(orderDetails.paidAt) }}</span>
+        </div>
+        <div class="detail-row" *ngIf="orderDetails.vnpayTransactionId">
+          <span class="label">Mã giao dịch:</span>
+          <span class="value">{{ orderDetails.vnpayTransactionId }}</span>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="error && paymentStatus === 'error'">
+        <p>{{ error }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button *ngIf="paymentStatus === 'success'" 
+                class="btn btn-primary" 
+                (click)="goToOrders()">
+          <i class="fa fa-list"></i>
+          Xem đơn hàng của tôi
+        </button>
+        <button *ngIf="paymentStatus === 'failed' || paymentStatus === 'error'" 
+                class="btn btn-primary" 
+                (click)="goToBuyServices()">
+          <i class="fa fa-shopping-cart"></i>
+          Mua lại dịch vụ
+        </button>
+        <button class="btn btn-secondary" 
+                (click)="goToBuyServices()">
+          <i class="fa fa-home"></i>
+          Về trang chủ
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Đang xử lý thông tin thanh toán...</p>
+    </div>
+  </div>
+</div>
+

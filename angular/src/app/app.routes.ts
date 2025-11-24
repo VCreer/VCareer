@@ -149,76 +149,75 @@ export const APP_ROUTES: Routes = [
   {
     path: 'candidate/login',
     loadComponent: () =>
-      import('./features/Auth/candidate/candidate-login/candidate-login').then(
+      import('./features/auth/candidate/candidate-login/candidate-login').then(
         c => c.LoginComponent
       ),
   },
   {
     path: 'candidate/register',
     loadComponent: () =>
-      import('./features/Auth/candidate/candidate-regsiter/candidate-register').then(
+      import('./features/auth/candidate/candidate-regsiter/candidate-register').then(
         c => c.RegisterComponent
       ),
   },
   {
     path: 'candidate/forget-password',
     loadComponent: () =>
-      import('./features/Auth/forgot-password/forgot-password').then(
+      import('./features/auth/forgot-password/forgot-password').then(
         c => c.ForgotPasswordComponent
       ),
   },
   {
     path: 'candidate/verify-otp',
     loadComponent: () =>
-      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+      import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'candidate/reset-password',
     loadComponent: () =>
-      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
 
   {
     path: 'recruiter/login',
     loadComponent: () =>
-      import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(
+      import('./features/auth/recruiter/recruiter-login/recruiter-login').then(
         c => c.RecruiterLoginComponent
       ),
   },
   {
     path: 'recruiter/register',
     loadComponent: () =>
-      import('./features/Auth/recruiter/recruiter-register/recruiter-register').then(
+      import('./features/auth/recruiter/recruiter-register/recruiter-register').then(
         c => c.RecruiterRegisterComponent
       ),
   },
   {
     path: 'recruiter/forgot-password',
     loadComponent: () =>
-      import('./features/Auth/forgot-password/forgot-password').then(
+      import('./features/auth/forgot-password/forgot-password').then(
         c => c.ForgotPasswordComponent
       ),
   },
   {
     path: 'recruiter/verify-otp',
     loadComponent: () =>
-      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+      import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'recruiter/reset-password',
     loadComponent: () =>
-      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
 
   // Employee login route (must be before all employee routes)
   {
     path: 'employee/login',
     loadComponent: () =>
-      import('./features/Auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
+      import('./features/auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
   },
-  //#endregion
 
-  //#region  Recruiter main route
+  // Recruiter main route
   {
     path: 'recruiter',
     loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
@@ -251,9 +250,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'recruiter-verify',
         loadComponent: () =>
-          import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
+          import('./features/auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
+       
       },
       {
         path: 'hr-staff-management',
@@ -325,6 +325,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
       {
+        path: 'payment/callback',
+        loadComponent: () => import('./features/payment/payment-callback/payment-callback').then(c => c.PaymentCallbackComponent),
+      },
+      {
         path: 'my-services',
         loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
       },
@@ -348,9 +352,8 @@ export const APP_ROUTES: Routes = [
       // }
     ],
   },
-  //#endregion
 
-  //#region  Employee main route with layout (must be after login route)
+  // Employee main route with layout (must be after login route)
   {
     path: 'employee',
     loadComponent: () =>
@@ -384,6 +387,28 @@ export const APP_ROUTES: Routes = [
       },
     ],
   },
+
+  // Legacy redirects
+  {
+    path: 'login',
+    redirectTo: '/candidate/login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'register',
+    redirectTo: '/candidate/register',
+    pathMatch: 'full',
+  },
+  {
+    path: 'forgot-password',
+    redirectTo: '/candidate/forget-password',
+    pathMatch: 'full',
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+  },
   //#endregion
 
   //#region  ABP routes
@@ -399,9 +424,8 @@ export const APP_ROUTES: Routes = [
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
   },
-  //#endregion
 
-  //#region  404 - Wildcard route (phải đặt cuối cùng)
+  // 404 - Wildcard route (phải đặt cuối cùng)
   {
     path: '404',
     loadComponent: () => import('./features/not-found/not-found').then(c => c.NotFoundComponent),

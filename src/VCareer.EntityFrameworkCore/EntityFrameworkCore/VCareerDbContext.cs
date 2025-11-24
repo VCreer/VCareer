@@ -29,6 +29,9 @@ using VCareer.Models.Applications;
 using VCareer.Models.JobCategory;
 using VCareer.Models.Subcription;
 using VCareer.Models.Subcription_Payment;
+using VCareer.Models.Order;
+using VCareer.Models.Cart;
+using CartEntity = VCareer.Models.Cart.Cart;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -59,6 +62,13 @@ public class VCareerDbContext :
     public DbSet<SubcriptionPrice> SubcriptionPrices { get; set; }
     public DbSet<User_ChildService> User_ChildServices { get; set; }
     public DbSet<User_SubcriptionService> User_SubcriptionServices { get; set; }
+
+    // Order Management
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
+
+    // Cart Management
+    public DbSet<CartEntity> Carts { get; set; }
 
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     public DbSet<JobApplication> JobApplications { get; set; }
@@ -794,6 +804,105 @@ public class VCareerDbContext :
             .WithMany(j => j.EffectingJobServices)
             .HasForeignKey(e => e.User_ChildServiceId);
 
+        });
+
+        // ========== Order Configuration ==========
+        builder.Entity<Order>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(x => x.Id);
+            b.ToTable("Orders");
+
+            // Properties
+            b.Property(x => x.OrderCode).IsRequired().HasMaxLength(50);
+            b.Property(x => x.SubTotal).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(x => x.VATAmount).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(x => x.DiscountCode).HasMaxLength(50).IsRequired(false);
+            b.Property(x => x.DiscountAmount).HasColumnType("decimal(18,2)").IsRequired(false);
+            b.Property(x => x.VnpayPaymentId).HasMaxLength(100).IsRequired(false);
+            b.Property(x => x.Status).IsRequired();
+            b.Property(x => x.PaymentStatus).IsRequired();
+            b.Property(x => x.PaymentMethod).IsRequired();
+            b.Property(x => x.VnpayTransactionId).HasMaxLength(100).IsRequired(false);
+            b.Property(x => x.VnpayResponseCode).HasMaxLength(50).IsRequired(false);
+            b.Property(x => x.Notes).HasMaxLength(1000).IsRequired(false);
+
+            // Relationships
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(x => x.OrderDetails)
+                .WithOne(x => x.Order)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            b.HasIndex(x => x.OrderCode).IsUnique();
+            b.HasIndex(x => x.UserId);
+            b.HasIndex(x => x.Status);
+            b.HasIndex(x => x.PaymentStatus);
+            b.HasIndex(x => x.CreationTime);
+            b.HasIndex(x => x.VnpayPaymentId); // Index for PaymentId lookup
+        });
+
+        // ========== OrderDetail Configuration ==========
+        builder.Entity<OrderDetail>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(x => x.Id);
+            b.ToTable("OrderDetails");
+
+            // Properties
+            b.Property(x => x.Quantity).IsRequired();
+            b.Property(x => x.UnitPrice).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(x => x.TotalPrice).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(x => x.Notes).HasMaxLength(500).IsRequired(false);
+
+            // Relationships
+            b.HasOne(x => x.Order)
+                .WithMany(x => x.OrderDetails)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.SubcriptionService)
+                .WithMany()
+                .HasForeignKey(x => x.SubcriptionServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            b.HasIndex(x => x.OrderId);
+            b.HasIndex(x => x.SubcriptionServiceId);
+        });
+
+        // ========== Cart Configuration ==========
+        builder.Entity<CartEntity>(b =>
+        {
+            b.ConfigureByConvention();
+            b.HasKey(x => x.Id);
+            b.ToTable("Carts");
+
+            // Properties
+            b.Property(x => x.Quantity).IsRequired().HasDefaultValue(1);
+            b.Property(x => x.CreationTime).IsRequired();
+
+            // Relationships
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.SubscriptionService)
+                .WithMany()
+                .HasForeignKey(x => x.SubscriptionServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            b.HasIndex(x => x.UserId);
+            b.HasIndex(x => x.SubscriptionServiceId);
+            b.HasIndex(x => new { x.UserId, x.SubscriptionServiceId }).IsUnique(); // Prevent duplicate items
         });
 
 
