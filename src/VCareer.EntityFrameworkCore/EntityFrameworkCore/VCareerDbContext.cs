@@ -790,7 +790,7 @@ public class VCareerDbContext :
             b.ConfigureByConvention();
             b.HasKey(j => j.Id);
 
-            b.HasOne(x => x.JobPost)
+            b.HasOne(x => x.Job_Post)
                 .WithMany()
                 .HasForeignKey(x => x.JobPostId)
                 .OnDelete(DeleteBehavior.Restrict);

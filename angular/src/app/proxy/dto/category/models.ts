@@ -18,3 +18,13 @@ export interface CategoryUpdateCreateDto {
   sortOrder: number;
   isActive: boolean;
 }
+
+export interface TagCreateDto {
+  names: string[];
+  categoryId?: string;
+}
+
+export interface TagUpdateDto {
+  tagId: number;
+  newName?: string;
+}

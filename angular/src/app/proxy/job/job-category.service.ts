@@ -1,30 +1,29 @@
-import { RestService, Rest } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
-import type { CategoryTreeDto } from '../dto/category/models';
-import type { ActionResult } from '../microsoft/asp-net-core/mvc/models';
+import { Rest, RestService } from "@abp/ng.core";
+import { CategoryTreeDto } from "../dto/category";
 
-@Injectable({
-  providedIn: 'root',
-})
 export class JobCategoryService {
   apiName = 'Default';
-  
 
-  // getCategoryTree = (config?: Partial<Rest.Config>) =>
-  //   this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
-  //     method: 'GET',
-  //     url: '/api/job-categories/tree',
-  //   },
-  //   { apiName: this.apiName,...config });
-  
+  constructor(private restService: RestService) {}
 
-  // searchCategories = (keyword: string, config?: Partial<Rest.Config>) =>
-  //   this.restService.request<any, ActionResult<any<CategoryTreeDto>>>({
-  //     method: 'POST',
-  //     url: '/api/job-categories/search',
-  //     params: { keyword },
-  //   },
-  //   { apiName: this.apiName,...config });
+  getCategoryTree(config?: Partial<Rest.Config>) {
+    return this.restService.request<any, CategoryTreeDto[]>(
+      {
+        method: 'GET',
+        url: '/api/job-categories/tree',
+      },
+      { apiName: this.apiName, ...config }
+    );
+  }
 
-  // constructor(private restService: RestService) {}
+  searchCategories(keyword: string, config?: Partial<Rest.Config>) {
+    return this.restService.request<any, CategoryTreeDto[]>(
+      {
+        method: 'POST',
+        url: '/api/job-categories/search',
+        params: { keyword },
+      },
+      { apiName: this.apiName, ...config }
+    );
+  }
 }

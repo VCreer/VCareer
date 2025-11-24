@@ -70,7 +70,7 @@ namespace VCareer.Models.Job
         public virtual Job_Category JobCategory { get; set; }
         public virtual ICollection<JobTag> JobTags { get; set; } = new List<JobTag>();
         public virtual Job_Priority Job_Priority { get; set; }  // List priority of job>
-        public virtual ICollection<EffectingJobService> EffectingJobServices { get; set; } = new List<EffectingJobService>(); // List priority of job>
+        public virtual ICollection<EffectingJobService> EffectingJobServices { get; set; } 
         #endregion
 
         #region Helper Methods
