@@ -24,7 +24,7 @@ namespace VCareer.Models.Subcription
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
-        public virtual Job_Post JobPost { get; set; }
+        public virtual Job_Post Job_Post { get; set; }
         public virtual ChildService ChildService { get; set; }
         public virtual User_ChildService User_ChildService { get; set; }
 

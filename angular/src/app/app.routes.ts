@@ -145,76 +145,76 @@ export const APP_ROUTES: Routes = [
     ],
   },
 
-  //#region  auth route
+  //#region  Auth route
   {
     path: 'candidate/login',
     loadComponent: () =>
-      import('./features/auth/candidate/candidate-login/candidate-login').then(
+      import('./features/Auth/candidate/candidate-login/candidate-login').then(
         c => c.LoginComponent
       ),
   },
   {
     path: 'candidate/register',
     loadComponent: () =>
-      import('./features/auth/candidate/candidate-regsiter/candidate-register').then(
+      import('./features/Auth/candidate/candidate-regsiter/candidate-register').then(
         c => c.RegisterComponent
       ),
   },
   {
     path: 'candidate/forget-password',
     loadComponent: () =>
-      import('./features/auth/forgot-password/forgot-password').then(
+      import('./features/Auth/forgot-password/forgot-password').then(
         c => c.ForgotPasswordComponent
       ),
   },
   {
     path: 'candidate/verify-otp',
     loadComponent: () =>
-      import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'candidate/reset-password',
     loadComponent: () =>
-      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
 
   {
     path: 'recruiter/login',
     loadComponent: () =>
-      import('./features/auth/recruiter/recruiter-login/recruiter-login').then(
+      import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(
         c => c.RecruiterLoginComponent
       ),
-  },
+  }, 
   {
     path: 'recruiter/register',
     loadComponent: () =>
-      import('./features/auth/recruiter/recruiter-register/recruiter-register').then(
+      import('./features/Auth/recruiter/recruiter-register/recruiter-register').then(
         c => c.RecruiterRegisterComponent
       ),
   },
   {
     path: 'recruiter/forgot-password',
     loadComponent: () =>
-      import('./features/auth/forgot-password/forgot-password').then(
+      import('./features/Auth/forgot-password/forgot-password').then(
         c => c.ForgotPasswordComponent
       ),
   },
   {
     path: 'recruiter/verify-otp',
     loadComponent: () =>
-      import('./features/auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
+      import('./features/Auth/verify-otp/verify-otp').then(c => c.VerifyOtpComponent),
   },
   {
     path: 'recruiter/reset-password',
     loadComponent: () =>
-      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
 
   // Employee login route (must be before all employee routes)
   {
     path: 'employee/login',
     loadComponent: () =>
-      import('./features/auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
+      import('./features/Auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
   },
 
   // Recruiter main route
@@ -250,7 +250,7 @@ export const APP_ROUTES: Routes = [
       {
         path: 'recruiter-verify',
         loadComponent: () =>
-          import('./features/auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
+          import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
        
@@ -407,7 +407,7 @@ export const APP_ROUTES: Routes = [
   {
     path: 'reset-password',
     loadComponent: () =>
-      import('./features/auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   //#endregion
 

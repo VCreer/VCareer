@@ -58,7 +58,7 @@ namespace VCareer.Services.LuceneService.JobSearch
         /// Gọi khi: Create job, Update job, Admin approve job
         public async Task UpsertJobAsync(Job_Post job)
         {
-            if (job == null || !job.IsActive())
+            if (job == null)
                 return;
 
             await Task.Run(() =>
@@ -119,38 +119,39 @@ namespace VCareer.Services.LuceneService.JobSearch
                 writer.Commit();
             });
         }
-        public async Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto input)
+        public Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto input)
         {
-            return await Task.Run(() =>
+            using var reader = DirectoryReader.Open(_directory);
+            var totalDocs = reader.NumDocs;
+            var searcher = new IndexSearcher(reader);
+
+            var query = BuildSearchQuery(input);
+            var sortQuery = BuildSortQuery();
+
+            int maxResults = (input.SkipCount + input.MaxResultCount) * 3;
+            if (maxResults < 100) maxResults = 100;
+
+            //     var topDocs = searcher.Search(new MatchAllDocsQuery(), 100);
+            var topDocs = searcher.Search(query, maxResults, sortQuery);
+
+            var jobIds = new List<Guid>();
+
+            foreach (var scoreDoc in topDocs.ScoreDocs)
             {
-                using var reader = DirectoryReader.Open(_directory);
-                var searcher = new IndexSearcher(reader);
+                var doc = searcher.Doc(scoreDoc.Doc);
+                if (Guid.TryParse(doc.Get("Id"), out var jobId))
+                    jobIds.Add(jobId);
+            }
 
-                // Build query từ input
-                var query = BuildSearchQuery(input);
 
-                var sortQuery = BuildSortQuery();
+            var pagingJobIds = jobIds
+                .Skip(input.SkipCount)
+                .Take((input.MaxResultCount <= 0) ? 30 : input.MaxResultCount)
+                .ToList();
 
-                //phải lấy nhiều hơn số trang  để khi skip ko bị thiếu    
-                int maxResults = (input.SkipCount + input.MaxResultCount) * 3;
-                if (maxResults < 100) maxResults = 100;
-
-                // Execute search
-                var topDocs = searcher.Search(query, maxResults,sortQuery);
-
-                // Extract job IDs
-                var jobIds = new List<Guid>();
-                foreach (var scoreDoc in topDocs.ScoreDocs)
-                {
-                    var doc = searcher.Doc(scoreDoc.Doc);
-                    if (Guid.TryParse(doc.Get("Id"), out var jobId))
-                        jobIds.Add(jobId);
-                }
-
-                var pagingJobIds = jobIds.Skip(input.SkipCount).Take(input.MaxResultCount).ToList();
-                return pagingJobIds;
-            });
+            return Task.FromResult(pagingJobIds);
         }
+
         private Sort BuildSortQuery()
         {
             return new Sort(
@@ -162,7 +163,7 @@ namespace VCareer.Services.LuceneService.JobSearch
         {
             var boolQuery = new BooleanQuery();
 
-            boolQuery.Add(NumericRangeQuery.NewInt64Range("ExpiresAt", DateTime.UtcNow.Ticks, null, true, true), Occur.MUST);
+           boolQuery.Add(NumericRangeQuery.NewInt64Range("ExpiresAt", DateTime.UtcNow.Ticks, null, true, true), Occur.MUST);
 
             // KEYWORD Search (Full-text)
             if (!string.IsNullOrWhiteSpace(input.Keyword))

@@ -34,6 +34,7 @@ namespace VCareer.Dto.JobDto
     public class PostJobDto
     {
         public Guid JobId { get; set; }
+        public List<Guid>? ChildServiceIds { get; set; } 
 
     }
 }

@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { JobStatus } from '../../constants/job-constant/job-status.enum';
-import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, JobViewWithPriorityDto } from '../../dto/job-dto/models';
+import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, PostJobDto } from '../../dto/job-dto/models';
 
 @Injectable({
   providedIn: 'root',
@@ -70,7 +70,7 @@ export class JobPostService {
   
 
   getJobByRecruiterIdByIdAndMaxCount = (id: string, maxCount: number = 10, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, JobViewWithPriorityDto[]>({
+    this.restService.request<any, JobViewDto[]>({
       method: 'GET',
       url: `/api/app/job-post/${id}/job-by-recruiter-id`,
       params: { maxCount },
@@ -91,6 +91,15 @@ export class JobPostService {
     this.restService.request<any, JobPostStatisticDto>({
       method: 'GET',
       url: `/api/app/job-post/${id}/job-post-statistic`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  postJob = (dto: PostJobDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/job-post/job',
+      body: dto,
     },
     { apiName: this.apiName,...config });
   

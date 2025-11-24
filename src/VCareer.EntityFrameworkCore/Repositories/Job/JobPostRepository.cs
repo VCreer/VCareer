@@ -132,7 +132,7 @@ namespace VCareer.Repositories.Job
         // llaasy full 1 job để indeex
         public async Task<Job_Post> GetForIndexingAsync(Guid jobId)
         {
-            var db = await GetDbContextAsync();
+            var _dbContext = await GetDbContextAsync();
 
             var query = _dbContext.JobPostings
                 .Where(j => j.Id == jobId)

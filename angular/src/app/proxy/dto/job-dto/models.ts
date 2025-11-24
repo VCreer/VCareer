@@ -5,9 +5,6 @@ import type { JobStatus } from '../../constants/job-constant/job-status.enum';
 import type { JobPriorityLevel } from '../../constants/job-constant/job-priority-level.enum';
 import type { RecruiterLevel } from '../../constants/job-constant/recruiter-level.enum';
 import type { RiskJobLevel } from '../../constants/job-constant/risk-job-level.enum';
-import type { SalaryFilterType } from '../../constants/job-constant/salary-filter-type.enum';
-import type { SortByField } from '../../constants/job-constant/sort-by-field.enum';
-import type { JobDisplayArea } from '../../constants/job-constant/job-display-area.enum';
 
 export interface JobApproveViewDto {
   id?: string;
@@ -91,13 +88,14 @@ export interface JobPostUpdateDto {
 export interface JobSearchInputDto {
   keyword?: string;
   categoryIds: string[];
-  provinceCode: number[];
-  wardCode: number[];
+  provinceCodes: number[];
+  wardCodes: number[];
   experienceFilter?: ExperienceLevel;
-  salaryFilter?: SalaryFilterType;
+  minSalary?: number;
+  maxSalary?: number;
+  salaryDeal?: boolean;
   employmentTypes?: EmploymentType[];
   positionTypes?: PositionType[];
-  sortBy?: SortByField;
   skipCount: number;
   maxResultCount: number;
 }
@@ -121,29 +119,12 @@ export interface JobViewDto {
   jobCategoryId?: string;
 }
 
-export interface JobViewWithPriorityDto {
-  jobPriorityId?: string;
-  displayArea?: JobDisplayArea;
-  priorityLevel?: JobPriorityLevel;
-  sortScore: number;
-  companyImageUrl?: string;
-  companyName?: string;
-  title?: string;
-  status?: JobStatus;
-  jobId?: string;
-  expiresAt?: string;
-  salaryMin?: number;
-  salaryMax?: number;
-  salaryDeal: boolean;
-  provinceCode: number;
-  districtCode: number;
-  employmentType?: EmploymentType;
-  positionType?: PositionType;
-  experience?: ExperienceLevel;
-  jobCategoryId?: string;
-}
-
 export interface PagedResultDto<T> {
   items: T[];
   totalCount: number;
+}
+
+export interface PostJobDto {
+  jobId?: string;
+  childServiceIds: string[];
 }
