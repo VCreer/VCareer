@@ -196,7 +196,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       provinceCode,
       wardCode,
       slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
-      jobCategoryId: 'adc622bf-2ecf-0596-8140-3a1dbbb13188',
+      jobCategoryId: 'bb3b0c2d-d6ef-4c36-ae69-e644ec8515cc',
       workTime: this.jobForm.workTime,
     };
 

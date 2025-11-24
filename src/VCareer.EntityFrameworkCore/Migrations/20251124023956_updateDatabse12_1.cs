@@ -5,7 +5,7 @@
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class dichvu22 : Migration
+    public partial class updateDatabse12_1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

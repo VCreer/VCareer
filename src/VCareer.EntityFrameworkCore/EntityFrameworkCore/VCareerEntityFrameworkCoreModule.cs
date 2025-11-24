@@ -5,6 +5,7 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Payment;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
+using VCareer.IRepositories.Cart;
 using VCareer.Models.Job;
 using VCareer.Models.JobCategory;
 using VCareer.Models.Subcription;
@@ -17,6 +18,8 @@ using VCareer.Repositories.Job;
 using VCareer.Repositories.Profile;
 using VCareer.Repositories.Subcription_Payment;
 using VCareer.Repositories.Subcriptions;
+using VCareer.Repositories.Cart;
+using CartEntity = VCareer.Models.Cart.Cart;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -81,6 +84,8 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<SubcriptionPrice, SubcriptionPriceRepository>();
             options.AddRepository<EffectingJobService, EffectingJobServiceRepository>();
 
+            options.AddRepository<CartEntity, CartRepository>();
+
         });
 
 
@@ -102,6 +107,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<IUser_ChildServiceRepository, User_ChildServiceRepository>();
         context.Services.AddTransient<ISubcriptionPriceRepository, SubcriptionPriceRepository>();
         context.Services.AddTransient<IEffectingJobServiceRepository, EffectingJobServiceRepository>();
+        context.Services.AddTransient<ICartRepository, CartRepository>();
 
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
