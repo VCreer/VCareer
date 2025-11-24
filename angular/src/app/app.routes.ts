@@ -37,10 +37,10 @@ export const APP_ROUTES: Routes = [
             c => c.CandidateProfileComponent
           ),
       },
-      // {
-      //   path: 'candidate/cv-management',
-      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      // },
+      {
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
       {
         path: 'candidate/cv-management/view/:cvId',
         loadComponent: () =>
@@ -253,8 +253,7 @@ export const APP_ROUTES: Routes = [
           import('./features/auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
-       
-      },
+      },    
       {
         path: 'hr-staff-management',
         loadComponent: () => import('./features/dashboard/hr-staff-management/recruiter/hr-staff-management').then(c => c.HRStaffManagementComponent),
