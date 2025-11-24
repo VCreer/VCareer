@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251124023956_updateDatabse12_1")]
-    partial class updateDatabse12_1
+    [Migration("20251124163054_updateDatabase")]
+    partial class updateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -615,39 +615,12 @@ namespace VCareer.Migrations
                         .HasColumnName("ConcurrencyStamp");
 
                     b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
 
                     b.Property<int>("Quantity")
                         .ValueGeneratedOnAdd()
