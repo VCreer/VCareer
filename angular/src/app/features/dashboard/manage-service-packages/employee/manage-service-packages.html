@@ -1,0 +1,803 @@
+<div class="manage-service-packages-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí các gói dịch vụ</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        *ngIf="activeTab === 'packages'"
+        type="primary"
+        size="medium"
+        (click)="onCreatePackage()">
+        <i class="fa fa-plus"></i>
+        Tạo gói dịch vụ
+      </app-button>
+      <app-button
+        *ngIf="activeTab === 'sales'"
+        type="primary"
+        size="medium"
+        (click)="onCreateSale()">
+        <i class="fa fa-plus"></i>
+        Tạo Sale
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <button 
+          class="tab-button" 
+          [class.active]="activeTab === 'packages'"
+          (click)="switchTab('packages')">
+          <i class="fa fa-box"></i>
+          <span>Gói dịch vụ</span>
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="activeTab === 'sales'"
+          (click)="switchTab('sales')">
+          <i class="fa fa-tag"></i>
+          <span>Quản lý Sale</span>
+        </button>
+      </div>
+
+      <!-- Packages Tab -->
+      <ng-container *ngIf="activeTab === 'packages'">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên, mô tả, đối tượng..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="onSearchChange()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-status-dropdown
+              [options]="statusOptions"
+              [selectedValue]="filterStatus"
+              (statusChange)="filterStatus = $event; onFilterChange()">
+            </app-status-dropdown>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả loại"
+              [options]="typeOptions"
+              [(ngModel)]="filterType"
+              (ngModelChange)="onFilterChange()">
+            </app-select-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Packages Table -->
+      <div class="table-container">
+        <table class="packages-table">
+          <thead>
+            <tr>
+              <th (click)="onSort('title')" class="sortable">
+                Tên gói
+                <i class="fa fa-sort" *ngIf="sortField !== 'title'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'title' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'title' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Mô tả</th>
+              <th (click)="onSort('target')" class="sortable">
+                Đối tượng
+                <i class="fa fa-sort" *ngIf="sortField !== 'target'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'target' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'target' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('originalPrice')" class="sortable">
+                Giá gốc
+                <i class="fa fa-sort" *ngIf="sortField !== 'originalPrice'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'originalPrice' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'originalPrice' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('dayDuration')" class="sortable">
+                Thời hạn
+                <i class="fa fa-sort" *ngIf="sortField !== 'dayDuration'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'dayDuration' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'dayDuration' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Số dịch vụ con</th>
+              <th (click)="onSort('status')" class="sortable">
+                Trạng thái
+                <i class="fa fa-sort" *ngIf="sortField !== 'status'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'status' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'status' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('createdDate')" class="sortable">
+                Ngày tạo
+                <i class="fa fa-sort" *ngIf="sortField !== 'createdDate'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'createdDate' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'createdDate' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pkg of paginatedPackages">
+              <td class="name-cell">{{ pkg.title }}</td>
+              <td class="description-cell">{{ pkg.description }}</td>
+              <td>
+                <span class="target-badge" [ngClass]="getTargetClass(pkg.target)">
+                  {{ getTargetLabel(pkg.target) }}
+                </span>
+              </td>
+              <td class="price-cell">{{ formatPrice(pkg.originalPrice) }}</td>
+              <td>{{ getDurationLabel(pkg) }}</td>
+              <td>{{ pkg.childService_SubcriptionServices?.length || 0 }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(pkg)">
+                  {{ getStatusLabel(pkg) }}
+                </span>
+              </td>
+              <td>{{ formatDate(pkg.createdDate) }}</td>
+              <td class="actions-cell">
+                <div class="actions-menu-container">
+                  <button class="actions-menu-btn" (click)="toggleActionsMenu(pkg.id, $event)">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div 
+                    class="actions-menu" 
+                    [class.show]="showActionsMenu === pkg.id"
+                    [attr.data-package-id]="pkg.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onEditPackage(pkg); closeActionsMenu()">
+                      <i class="fa fa-edit"></i>
+                      <span>Chỉnh sửa</span>
+                    </div>
+                    <div class="menu-item" (click)="onToggleActive(pkg); closeActionsMenu()">
+                      <i class="fa" [class.fa-toggle-on]="pkg.isActive" [class.fa-toggle-off]="!pkg.isActive"></i>
+                      <span>{{ pkg.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
+                    </div>
+                    <div class="menu-item" (click)="onDeletePackage(pkg); closeActionsMenu()">
+                      <i class="fa fa-trash"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="paginatedPackages.length === 0" class="empty-state">
+          <i class="fa fa-box"></i>
+          <p>Không có gói dịch vụ nào</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredPackages.length > 0">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+      </ng-container>
+
+      <!-- Sales Tab -->
+      <ng-container *ngIf="activeTab === 'sales'">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên gói, ID sale..."
+              [(ngModel)]="saleSearchKeyword"
+              (ngModelChange)="onSaleSearchChange()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-status-dropdown
+              [options]="saleStatusOptions"
+              [selectedValue]="saleFilterStatus"
+              (statusChange)="saleFilterStatus = $event; onSaleFilterChange()">
+            </app-status-dropdown>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Table -->
+      <div class="table-container">
+        <table class="packages-table">
+          <thead>
+            <tr>
+              <th>Gói dịch vụ</th>
+              <th>Sale %</th>
+              <th>Ngày bắt đầu</th>
+              <th>Ngày kết thúc</th>
+              <th>Trạng thái</th>
+              <th>Ngày tạo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sale of paginatedSales">
+              <td class="name-cell">{{ sale.package?.title || '-' }}</td>
+              <td class="price-cell">{{ sale.salePercent }}%</td>
+              <td>{{ formatDate(sale.startDate) }}</td>
+              <td>{{ formatDate(sale.endDate) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getSaleStatusClass(sale)">
+                  {{ getSaleStatusLabel(sale) }}
+                </span>
+              </td>
+              <td>{{ formatDate(sale.createdDate) }}</td>
+              <td class="actions-cell">
+                <div class="actions-menu-container">
+                  <button class="actions-menu-btn" (click)="toggleActionsMenu(sale.id, $event)">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div 
+                    class="actions-menu" 
+                    [class.show]="showActionsMenu === sale.id"
+                    [attr.data-package-id]="sale.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onEditSale(sale); closeActionsMenu()">
+                      <i class="fa fa-edit"></i>
+                      <span>Chỉnh sửa</span>
+                    </div>
+                    <div class="menu-item" (click)="onToggleSaleActive(sale); closeActionsMenu()">
+                      <i class="fa" [class.fa-toggle-on]="sale.isActive" [class.fa-toggle-off]="!sale.isActive"></i>
+                      <span>{{ sale.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
+                    </div>
+                    <div class="menu-item" (click)="onDeleteSale(sale); closeActionsMenu()">
+                      <i class="fa fa-trash"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="paginatedSales.length === 0" class="empty-state">
+          <i class="fa fa-tag"></i>
+          <p>Không có sale nào</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredSales.length > 0">
+        <app-pagination
+          [currentPage]="saleCurrentPage"
+          [totalPages]="saleTotalPages"
+          (pageChange)="onSalePageChange($event)">
+        </app-pagination>
+      </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Create Package Modal -->
+<app-generic-modal
+  [show]="showCreatePackageModal"
+  title="Tạo gói dịch vụ"
+  [maxWidth]="'800px'"
+  [bodyBackground]="'white'"
+  (close)="showCreatePackageModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên gói"
+        type="text"
+        placeholder="Nhập tên gói dịch vụ"
+        [(ngModel)]="packageForm.title"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Mô tả"
+        type="text"
+        placeholder="Nhập mô tả gói dịch vụ"
+        [(ngModel)]="packageForm.description"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-select-field
+          label="Đối tượng"
+          placeholder="Chọn đối tượng"
+          [options]="[
+            { value: 'candidate', label: 'Ứng viên' },
+            { value: 'recruiter', label: 'Nhà tuyển dụng' }
+          ]"
+          [(ngModel)]="packageForm.target"
+          [required]="true">
+        </app-select-field>
+      </div>
+      <div class="form-group">
+        <app-select-field
+          label="Trạng thái"
+          placeholder="Chọn trạng thái"
+          [options]="[
+            { value: 'draft', label: 'Bản nháp' },
+            { value: 'active', label: 'Đang hoạt động' },
+            { value: 'inactive', label: 'Ngừng hoạt động' }
+          ]"
+          [(ngModel)]="packageForm.status"
+          [required]="true">
+        </app-select-field>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Giá gốc (VND)"
+        type="number"
+        placeholder="Nhập giá gốc"
+        [(ngModel)]="packageForm.originalPrice"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="packageForm.isLimited">
+          <span>Giới hạn số lượng mua (toàn bộ người dùng)</span>
+        </label>
+      </div>
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="packageForm.isBuyLimited">
+          <span>Giới hạn số lượng mua (mỗi cá nhân)</span>
+        </label>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="packageForm.isBuyLimited">
+      <app-input-field
+        label="Số lượng tối đa mua của mỗi cá nhân"
+        type="number"
+        placeholder="Nhập số lượng"
+        [(ngModel)]="packageForm.totalBuyEachUser"
+        [required]="packageForm.isBuyLimited">
+      </app-input-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="packageForm.isLifeTime">
+        <span>Vĩnh viễn</span>
+      </label>
+    </div>
+    <div class="form-group" *ngIf="!packageForm.isLifeTime">
+      <app-input-field
+        label="Số ngày"
+        type="number"
+        placeholder="Nhập số ngày"
+        [(ngModel)]="packageForm.dayDuration"
+        [required]="!packageForm.isLifeTime">
+      </app-input-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="packageForm.isActive">
+        <span>Kích hoạt</span>
+      </label>
+    </div>
+    
+    <!-- Service Actions -->
+    <div class="form-group">
+      <label class="form-label">Tính năng dịch vụ</label>
+      <div class="service-actions-list">
+        <div 
+          class="service-action-item" 
+          *ngFor="let action of serviceActionsConfig"
+          [class.selected]="isServiceActionSelected(action.actionKey)">
+          <button 
+            type="button" 
+            class="action-toggle"
+            (click)="toggleServiceAction(action.actionKey)">
+            <div class="action-info">
+              <span class="action-label">{{ action.label }}</span>
+              <small class="action-description">{{ action.description }}</small>
+            </div>
+            <div class="action-meta">
+              <i 
+                class="fa fa-check action-selected-icon" 
+                *ngIf="isServiceActionSelected(action.actionKey)">
+              </i>
+              <span class="selected-count" *ngIf="selectedServiceActionOptions[action.actionKey]?.length">
+                Đã chọn {{ selectedServiceActionOptions[action.actionKey]?.length }}
+              </span>
+              <i class="fa fa-chevron-down" [class.rotated]="isServiceActionExpanded(action.actionKey)"></i>
+            </div>
+          </button>
+          <div class="action-options" *ngIf="isServiceActionExpanded(action.actionKey) && action.options?.length">
+            <div class="action-option" *ngFor="let option of action.options">
+              <label class="option-checkbox">
+                <input 
+                  type="checkbox" 
+                  [checked]="isServiceActionOptionSelected(action.actionKey, option.value)"
+                  (change)="toggleServiceActionOption(action.actionKey, option.value)">
+                <span>{{ option.label }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showCreatePackageModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        [disabled]="isSavingPackage"
+        (click)="onConfirmCreatePackage()">
+        Tạo gói
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Edit Package Modal -->
+<app-generic-modal
+  [show]="showEditPackageModal"
+  title="Chỉnh sửa gói dịch vụ"
+  [maxWidth]="'800px'"
+  [bodyBackground]="'white'"
+  (close)="showEditPackageModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên gói"
+        type="text"
+        placeholder="Nhập tên gói dịch vụ"
+        [(ngModel)]="packageForm.title"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Mô tả"
+        type="text"
+        placeholder="Nhập mô tả gói dịch vụ"
+        [(ngModel)]="packageForm.description"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-select-field
+          label="Đối tượng"
+          placeholder="Chọn đối tượng"
+          [options]="[
+            { value: 'candidate', label: 'Ứng viên' },
+            { value: 'recruiter', label: 'Nhà tuyển dụng' }
+          ]"
+          [(ngModel)]="packageForm.target"
+          [required]="true">
+        </app-select-field>
+      </div>
+      <div class="form-group">
+        <app-select-field
+          label="Trạng thái"
+          placeholder="Chọn trạng thái"
+          [options]="[
+            { value: 'draft', label: 'Bản nháp' },
+            { value: 'active', label: 'Đang hoạt động' },
+            { value: 'inactive', label: 'Ngừng hoạt động' }
+          ]"
+          [(ngModel)]="packageForm.status"
+          [required]="true">
+        </app-select-field>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Giá gốc (VND)"
+        type="number"
+        placeholder="Nhập giá gốc"
+        [(ngModel)]="packageForm.originalPrice"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="packageForm.isLimited">
+          <span>Giới hạn số lượng mua (toàn bộ người dùng)</span>
+        </label>
+      </div>
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="packageForm.isBuyLimited">
+          <span>Giới hạn số lượng mua (mỗi cá nhân)</span>
+        </label>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="packageForm.isBuyLimited">
+      <app-input-field
+        label="Số lượng tối đa mua của mỗi cá nhân"
+        type="number"
+        placeholder="Nhập số lượng"
+        [(ngModel)]="packageForm.totalBuyEachUser"
+        [required]="packageForm.isBuyLimited">
+      </app-input-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="packageForm.isLifeTime">
+        <span>Vĩnh viễn</span>
+      </label>
+    </div>
+    <div class="form-group" *ngIf="!packageForm.isLifeTime">
+      <app-input-field
+        label="Số ngày"
+        type="number"
+        placeholder="Nhập số ngày"
+        [(ngModel)]="packageForm.dayDuration"
+        [required]="!packageForm.isLifeTime">
+      </app-input-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="packageForm.isActive">
+        <span>Kích hoạt</span>
+      </label>
+    </div>
+    
+    <!-- Service Actions -->
+    <div class="form-group">
+      <label class="form-label">Tính năng dịch vụ</label>
+      <div class="service-actions-list">
+        <div 
+          class="service-action-item" 
+          *ngFor="let action of serviceActionsConfig"
+          [class.selected]="isServiceActionSelected(action.actionKey)">
+          <button 
+            type="button" 
+            class="action-toggle"
+            (click)="toggleServiceAction(action.actionKey)">
+            <div class="action-info">
+              <span class="action-label">{{ action.label }}</span>
+              <small class="action-description">{{ action.description }}</small>
+            </div>
+            <i class="fa" [class.fa-check]="isServiceActionSelected(action.actionKey)"></i>
+          </button>
+          <div class="action-options" *ngIf="isServiceActionSelected(action.actionKey) && action.options?.length">
+            <div class="action-option" *ngFor="let option of action.options">
+              <label class="option-checkbox">
+                <input 
+                  type="checkbox" 
+                  [checked]="isServiceActionOptionSelected(action.actionKey, option.value)"
+                  (change)="toggleServiceActionOption(action.actionKey, option.value)">
+                <span>{{ option.label }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showEditPackageModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        [disabled]="isSavingPackageEdit"
+        (click)="onConfirmEditPackage()">
+        Cập nhật
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Create Sale Modal -->
+<app-generic-modal
+  [show]="showCreateSaleModal"
+  title="Tạo Sale"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showCreateSaleModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-select-field
+        label="Gói dịch vụ"
+        placeholder="Chọn gói dịch vụ"
+        [options]="activePackageOptions"
+        [(ngModel)]="saleForm.packageId"
+        [required]="true">
+      </app-select-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Phần trăm Sale (%)"
+        type="number"
+        placeholder="Nhập phần trăm sale (1-100)"
+        [(ngModel)]="saleForm.salePercent"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-input-field
+          label="Ngày bắt đầu"
+          type="date"
+          placeholder="Chọn ngày bắt đầu"
+          [(ngModel)]="saleForm.startDate"
+          [required]="true">
+        </app-input-field>
+      </div>
+      <div class="form-group">
+        <app-input-field
+          label="Ngày kết thúc"
+          type="date"
+          placeholder="Chọn ngày kết thúc"
+          [(ngModel)]="saleForm.endDate"
+          [required]="true">
+        </app-input-field>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-select-field
+        label="Trạng thái"
+        placeholder="Chọn trạng thái"
+        [options]="[
+          { value: 'upcoming', label: 'Sắp tới' },
+          { value: 'active', label: 'Đang áp dụng' },
+          { value: 'inactive', label: 'Ngừng áp dụng' },
+          { value: 'expired', label: 'Hết hạn' }
+        ]"
+        [(ngModel)]="saleForm.status"
+        [required]="true">
+      </app-select-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="saleForm.isActive">
+        <span>Kích hoạt</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showCreateSaleModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmCreateSale()">
+        Tạo Sale
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Edit Sale Modal -->
+<app-generic-modal
+  [show]="showEditSaleModal"
+  title="Chỉnh sửa Sale"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showEditSaleModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-select-field
+        label="Gói dịch vụ"
+        placeholder="Chọn gói dịch vụ"
+        [options]="activePackageOptions"
+        [(ngModel)]="saleForm.packageId"
+        [required]="true">
+      </app-select-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Phần trăm Sale (%)"
+        type="number"
+        placeholder="Nhập phần trăm sale (1-100)"
+        [(ngModel)]="saleForm.salePercent"
+        [required]="true">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-input-field
+          label="Ngày bắt đầu"
+          type="date"
+          placeholder="Chọn ngày bắt đầu"
+          [(ngModel)]="saleForm.startDate"
+          [required]="true">
+        </app-input-field>
+      </div>
+      <div class="form-group">
+        <app-input-field
+          label="Ngày kết thúc"
+          type="date"
+          placeholder="Chọn ngày kết thúc"
+          [(ngModel)]="saleForm.endDate"
+          [required]="true">
+        </app-input-field>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-select-field
+        label="Trạng thái"
+        placeholder="Chọn trạng thái"
+        [options]="[
+          { value: 'upcoming', label: 'Sắp tới' },
+          { value: 'active', label: 'Đang áp dụng' },
+          { value: 'inactive', label: 'Ngừng áp dụng' },
+          { value: 'expired', label: 'Hết hạn' }
+        ]"
+        [(ngModel)]="saleForm.status"
+        [required]="true">
+      </app-select-field>
+    </div>
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="saleForm.isActive">
+        <span>Kích hoạt</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showEditSaleModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmEditSale()">
+        Cập nhật
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+

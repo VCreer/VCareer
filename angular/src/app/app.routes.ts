@@ -260,6 +260,10 @@ export const APP_ROUTES: Routes = [
             redirectTo: 'recruiter'
           }
         ]
+      },
+      {
+        path: 'manage-service-packages',
+        loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
       }
     ]
   },
