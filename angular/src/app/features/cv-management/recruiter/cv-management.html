@@ -116,9 +116,9 @@
                 <select 
                   class="status-dropdown" 
                   [class]="getStatusBadgeClass(cv.status)"
-                  [value]="cv.status"
+                  [ngModel]="cv.status"
                   [disabled]="changingStatusFor === cv.id"
-                  (change)="onChangeStatus(cv, $event)"
+                  (ngModelChange)="onChangeStatus(cv, $event)"
                   (click)="$event.stopPropagation()">
                   <option *ngFor="let status of statuses" [value]="status.id">
                     {{ status.name }}
