@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using VCareer.Dto.FileDto;
 using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
 using VCareer.Permission;
@@ -139,6 +141,36 @@ namespace VCareer.Profile
         {
             return await _companyLegalInfoAppService.UpdateFileUrlsAsync(id, businessLicenseFile,
                 taxCertificateFile, representativeIdCardFile, otherSupportFile);
+        }
+
+        /// <summary>
+        /// Upload Giấy đăng ký doanh nghiệp (legal document) cho công ty
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="file">File giấy tờ</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        [HttpPost("{id}/upload-legal-document")]
+        [Consumes("multipart/form-data")]
+        [IgnoreAntiforgeryToken]
+        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, [FromForm] IFormFile file)
+        {
+            return await _companyLegalInfoAppService.UploadLegalDocumentAsync(id, file);
+        }
+
+        /// <summary>
+        /// Download/Xem file Giấy đăng ký doanh nghiệp theo storagePath
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
+        /// <returns>File stream</returns>
+        [HttpGet("legal-document")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> GetLegalDocumentAsync([FromQuery] string storagePath)
+        {
+            var fileResult = await _companyLegalInfoAppService.GetLegalDocumentFileAsync(storagePath);
+
+            // Hiển thị trực tiếp trên tab mới (inline), không bắt tải về
+            Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileResult.FileName}\"";
+            return File(fileResult.Data, fileResult.MimeType);
         }
 
         /// <summary>

@@ -14,10 +14,15 @@ export class BusinessRegistrationComponent {
   @Input() documentType: string = 'business-cert'; // 'business-cert' or 'authorization'
   @Input() selectedFile: File | null = null;
   @Input() isSaving: boolean = false;
+  @Input() legalStatus: string | null = null; // pending, approved, rejected
+  @Input() documentUrl: string | null = null; // Link xem file đã nộp
+  @Input() isEditing: boolean = false; // Chế độ chỉnh sửa (hiện form upload)
 
   @Output() documentTypeChange = new EventEmitter<string>();
   @Output() fileSelected = new EventEmitter<{type: string, file: File}>();
   @Output() save = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
 
   // For authorization type: identification documents only (Giấy ủy quyền section is commented out)
   identificationFile: File | null = null;
@@ -134,6 +139,14 @@ export class BusinessRegistrationComponent {
     }
   }
 
+  onEditClick() {
+    this.edit.emit();
+  }
+
+  onCancelClick() {
+    this.cancel.emit();
+  }
+
   onSave() {
     if (this.documentType === 'business-cert') {
       if (!this.selectedFile) {
@@ -148,6 +161,32 @@ export class BusinessRegistrationComponent {
       }
     }
     this.save.emit();
+  }
+
+  getStatusLabel(): string {
+    if (!this.legalStatus) {
+      return '';
+    }
+
+    switch (this.legalStatus) {
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Bị từ chối';
+      default:
+        return 'Chờ duyệt';
+    }
+  }
+
+  getStatusClass(): string {
+    switch (this.legalStatus) {
+      case 'approved':
+        return 'status-approved';
+      case 'rejected':
+        return 'status-rejected';
+      default:
+        return 'status-pending';
+    }
   }
 
   getIllustrationImage(): string {

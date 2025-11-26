@@ -491,8 +491,13 @@
           [documentType]="businessCertDocumentType"
           [selectedFile]="businessCertFile"
           [isSaving]="isSavingBusinessCert"
+          [legalStatus]="legalVerificationStatus"
+          [documentUrl]="businessCertDocumentUrl"
+          [isEditing]="isEditingBusinessCert"
           (documentTypeChange)="onBusinessCertDocumentTypeChange($event)"
           (fileSelected)="onBusinessCertFileSelected($event)"
+          (edit)="onEditBusinessCert()"
+          (cancel)="onCancelBusinessCert()"
           (save)="onSaveBusinessCert()">
         </app-business-registration>
       </div>
