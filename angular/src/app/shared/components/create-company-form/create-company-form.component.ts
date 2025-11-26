@@ -27,6 +27,7 @@ export class CreateCompanyFormComponent {
   @Input() logoPreview: string | null = null;
   @Input() formErrors: any = {};
   @Input() isSaving: boolean = false;
+  @Input() submitLabel: string = 'Lưu';
 
   @Output() logoSelected = new EventEmitter<any>();
   @Output() fieldValidate = new EventEmitter<string>();

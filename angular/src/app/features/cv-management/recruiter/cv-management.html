@@ -67,7 +67,9 @@
                   </div>
                   <div class="candidate-details">
                     <div class="candidate-name">{{ cv.name }}</div>
-                    <div class="candidate-viewed" *ngIf="cv.isViewed">Đã xem</div>
+                    <div class="candidate-viewed" [class.viewed]="cv.isViewed" [class.not-viewed]="!cv.isViewed">
+                      {{ cv.isViewed ? 'Đã xem' : 'Chưa xem' }}
+                    </div>
                   </div>
                 </div>
               </td>

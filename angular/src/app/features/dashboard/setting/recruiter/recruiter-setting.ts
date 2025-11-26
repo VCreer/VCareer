@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, FormControl } from '@angular/forms';
- import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
-import { ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto } from '../../../../proxy/dto/profile';
+import { CompanyLegalInfoDto, ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto, VerifyPhoneNumberDto, VerifyEmailNumberDto, SendEmailOtpDto, SelectCompanyDto, UpdateCompanyLegalInfoDto } from '../../../../proxy/dto/profile';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
@@ -14,6 +16,22 @@ import { SearchCompanyComponent } from '../../../../shared/components/search-com
 import { CreateCompanyFormComponent } from '../../../../shared/components/create-company-form/create-company-form.component';
 import { BusinessRegistrationComponent } from '../../../../shared/components/business-registration/business-registration.component';
 import { PasswordFormActionsComponent } from '../../../../shared/components/password-form-actions/password-form-actions.component';
+import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
+import { environment } from '../../../../../environments/environment';
+
+interface CompanyCard {
+  id: number;
+  name: string;
+  taxId: string;
+  address: string;
+  employeeRange: string;
+  logoBgColor: string;
+  logoText?: string;
+  logoImage?: string;
+  tags: string[];
+  raw?: CompanyLegalInfoDto;
+  isOwned: boolean;
+}
 
 @Component({
   selector: 'app-recruiter-setting',
@@ -47,7 +65,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     fullName: '',
     email: '',
     phone: '',
-    gender: 'male',
+    gender: '',
     avatarUrl: ''
   };
   
@@ -70,19 +88,26 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   verificationLevel: string = 'Cấp 1/3';
   verificationProgress: number = 0;
   verificationSteps = [
-    { id: 1, label: 'Xác thực số điện thoại', completed: false },
+    { id: 1, label: 'Xác thực email', completed: false },
     { id: 2, label: 'Cập nhật thông tin công ty', completed: false },
     { id: 3, label: 'Xác thực Giấy đăng ký doanh nghiệp', completed: false }
   ];
+  verificationProgressSteps: number = 0;
+  isEmailVerified = false;
 
   // Company info
   companyTab: string = 'search'; // 'search' or 'create'
   companySearchKeyword: string = '';
-  companyList: any[] = [];
+  companyList: CompanyCard[] = [];
   isSearchingCompany: boolean = false;
+  hasLoadedCompanyList = false;
+  selectedCompanyCard: CompanyCard | null = null;
+  selectedCompanyDetail: CompanyLegalInfoDto | null = null;
+  isLoadingCompanyDetail = false;
+  selectedCompanyId: number | null = null; // CompanyId from RecruiterProfile
   
   // Create company form data
-  companyFormData = {
+  private readonly companyFormDefaults = {
     companyType: 'enterprise',
     taxId: '',
     website: '',
@@ -94,9 +119,29 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     phone: '',
     description: ''
   };
+  companyFormData = { ...this.companyFormDefaults };
   companyLogoPreview: string | null = null;
   isSavingCompany: boolean = false;
   companyFormErrors: any = {};
+  isEditingCompany = false;
+  editingCompanyId: number | null = null;
+  editingCompanyDetail: CompanyLegalInfoDto | null = null;
+  private readonly industrySelectionMap: Record<string, number> = {
+    it: 1,
+    finance: 2,
+    education: 3,
+    healthcare: 4,
+    retail: 5,
+    manufacturing: 6,
+    other: 0
+  };
+  private readonly companyScaleMap: Record<string, number> = {
+    '1-9': 9,
+    '10-24': 24,
+    '25-99': 99,
+    '100-499': 499,
+    '500+': 500
+  };
 
   // Settings
   cvApplicationNotificationEnabled: boolean = true;
@@ -106,10 +151,24 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   businessCertFile: File | null = null;
   isSavingBusinessCert: boolean = false;
 
+  // Email verification modal
+  readonly emailVerificationStepId = 1;
+  isEmailVerificationModalOpen = false;
+  emailVerification = {
+    email: '',
+    otp: '',
+    isSendingOtp: false,
+    isVerifying: false,
+    countdown: 0
+  };
+  private emailVerificationTimer?: any;
+  private readonly logoColorPalette = ['#0F83BA', '#2563eb', '#7c3aed', '#14b8a6', '#92400e', '#f97316'];
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private profileService: ProfileService,
+    private companyLegalInfoService: CompanyLegalInfoService,
     private navigationService: NavigationService,
     private cdr: ChangeDetectorRef,
     private formBuilder: FormBuilder
@@ -179,6 +238,10 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       if (params['tab']) {
         this.activeTab = params['tab'];
         this.cdr.detectChanges();
+
+        if (this.activeTab === 'company-info') {
+          this.ensureCompanyListLoaded();
+        }
       }
     });
     
@@ -196,6 +259,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    this.clearEmailVerificationTimer();
   }
 
   checkSidebarState(): void {
@@ -235,9 +299,12 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           fullName: `${name} ${surname}`.trim() || 'User',
           email: profile.email || '',
           phone: profile.phoneNumber || '',
-          gender: profile.gender === true ? 'male' : profile.gender === false ? 'female' : 'male',
+          gender: profile.gender === true ? 'male' : profile.gender === false ? 'female' : '',
           avatarUrl: ''
         };
+
+        this.isEmailVerified = !!profile.emailConfirmed;
+        this.updateEmailVerificationStepStatus(this.isEmailVerified);
         
         // TODO: Check if user is Google user from backend
         // For now, we'll check via userType or a specific field
@@ -247,6 +314,12 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
         // If Google user, assume password not set initially (will be updated after first set)
         // TODO: Add a field in ProfileDto to check if password is set
         this.hasPasswordSet = !this.isGoogleUser || profile.emailConfirmed; // Temporary logic
+        
+        // Load selected company if CompanyId exists
+        this.selectedCompanyId = profile.companyId || null;
+        if (this.selectedCompanyId) {
+          this.loadSelectedCompany(this.selectedCompanyId);
+        }
         
         this.isLoading = false;
       },
@@ -265,6 +338,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
         // Default to non-Google user if error
         this.isGoogleUser = false;
         this.hasPasswordSet = true;
+        this.isEmailVerified = false;
+        this.updateEmailVerificationStepStatus(false);
       }
     });
   }
@@ -285,6 +360,10 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       replaceUrl: true,
       skipLocationChange: false
     });
+
+    if (tab === 'company-info') {
+      this.ensureCompanyListLoaded();
+    }
   }
 
   onSaveProfile(event?: Event) {
@@ -294,7 +373,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     }
     
     if (!this.validateForm()) {
-      this.showToastMessage('Vui lòng kiểm tra lại thông tin', 'error');
       return false;
     }
 
@@ -305,11 +383,23 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     const name = nameParts.join(' ') || '';
 
     const updateDto: UpdatePersonalInfoDto = {
-      name: name,
-      surname: surname,
-      phoneNumber: this.profileData.phone,
-      gender: this.profileData.gender === 'male' ? true : this.profileData.gender === 'female' ? false : undefined
+      name,
+      surname
     };
+
+    if (this.profileData.email?.trim()) {
+      updateDto.email = this.profileData.email.trim();
+    }
+
+    if (this.profileData.phone?.trim()) {
+      updateDto.phoneNumber = this.profileData.phone.trim();
+    }
+
+    if (this.profileData.gender === 'male') {
+      updateDto.gender = true;
+    } else if (this.profileData.gender === 'female') {
+      updateDto.gender = false;
+    }
 
     const targetUrl = '/recruiter/recruiter-setting?tab=personal-info';
     
@@ -346,21 +436,31 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   validateForm(): boolean {
     if (!this.profileData.fullName?.trim()) {
+      this.showToastMessage('Họ và tên là bắt buộc', 'error');
+      return false;
+    }
+    if (!this.profileData.email?.trim()) {
+      this.showToastMessage('Email là bắt buộc', 'error');
       return false;
     }
     if (!this.profileData.phone?.trim()) {
+      this.showToastMessage('Số điện thoại là bắt buộc', 'error');
       return false;
     }
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(this.profileData.phone)) {
+      this.showToastMessage('Số điện thoại phải có 10-11 chữ số', 'error');
+      return false;
+    }
+    if (!this.profileData.gender) {
+      this.showToastMessage('Vui lòng chọn giới tính', 'error');
       return false;
     }
     return true;
   }
 
-  onVerifyPhone() {
-    // TODO: Implement phone verification
-    this.showToastMessage('Chức năng xác thực số điện thoại đang được phát triển', 'info');
+  onVerifyEmail() {
+    this.openEmailVerificationModal();
   }
 
   onChangeAvatar(file: File) {
@@ -713,6 +813,174 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.setActiveTab('change-password');
   }
 
+  onVerificationStepClick(step: { id: number }) {
+    if (step.id === this.emailVerificationStepId && !this.isEmailVerified) {
+      this.openEmailVerificationModal();
+    }
+  }
+
+  isEmailVerificationStep(step: { id: number }): boolean {
+    return step.id === this.emailVerificationStepId;
+  }
+
+  openEmailVerificationModal() {
+    this.emailVerification.email = this.profileData.email || '';
+    this.emailVerification.otp = '';
+    this.emailVerification.isVerifying = false;
+    this.isEmailVerificationModalOpen = true;
+  }
+
+  closeEmailVerificationModal() {
+    this.isEmailVerificationModalOpen = false;
+    this.emailVerification.otp = '';
+    this.clearEmailVerificationTimer();
+  }
+
+  sendEmailVerificationOtp() {
+    const email = this.emailVerification.email?.trim();
+    if (!email) {
+      this.showToastMessage('Vui lòng nhập email', 'error');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.showToastMessage('Email không hợp lệ', 'error');
+      return;
+    }
+
+    if (this.emailVerification.isSendingOtp || this.emailVerification.countdown > 0) {
+      return;
+    }
+
+    this.emailVerification.isSendingOtp = true;
+
+    const payload: SendEmailOtpDto = {
+      email: email
+    };
+
+    this.profileService.sendEmailOtp(payload).subscribe({
+      next: () => {
+        this.emailVerification.isSendingOtp = false;
+        this.showToastMessage('Đã gửi mã OTP đến email của bạn', 'success');
+        this.startEmailVerificationTimer(60);
+      },
+      error: (error) => {
+        this.emailVerification.isSendingOtp = false;
+        const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Không thể gửi mã OTP. Vui lòng thử lại.';
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
+  }
+
+  submitEmailVerification() {
+    const email = this.emailVerification.email?.trim();
+    const otp = this.emailVerification.otp?.trim();
+
+    if (!email) {
+      this.showToastMessage('Vui lòng nhập email', 'error');
+      return;
+    }
+
+    if (!otp) {
+      this.showToastMessage('Vui lòng nhập mã OTP', 'error');
+      return;
+    }
+
+    this.emailVerification.isVerifying = true;
+
+    const payload: VerifyEmailNumberDto = {
+      email: email,
+      otpCode: otp
+    };
+
+    this.profileService.verifyEmailNumber(payload).pipe(
+      catchError((error) => {
+        const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Xác thực email thất bại';
+        if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('has already been changed by another user')) {
+          this.handleEmailVerificationSuccess(email);
+          return of(null);
+        }
+        this.emailVerification.isVerifying = false;
+        this.showToastMessage(errorMessage, 'error');
+        return of(null);
+      })
+    ).subscribe((result) => {
+      if (result === null) {
+        return;
+      }
+      this.handleEmailVerificationSuccess(email);
+    });
+  }
+
+  private startEmailVerificationTimer(duration: number) {
+    this.clearEmailVerificationTimer();
+    this.emailVerification.countdown = duration;
+    this.emailVerificationTimer = setInterval(() => {
+      if (this.emailVerification.countdown <= 1) {
+        this.clearEmailVerificationTimer();
+        return;
+      }
+      this.emailVerification.countdown -= 1;
+    }, 1000);
+  }
+
+  private clearEmailVerificationTimer() {
+    if (this.emailVerificationTimer) {
+      clearInterval(this.emailVerificationTimer);
+      this.emailVerificationTimer = undefined;
+    }
+    this.emailVerification.countdown = 0;
+  }
+
+  private updateEmailVerificationStepStatus(isCompleted: boolean) {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (this.isEmailVerificationStep(step)) {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  private updateCompanyVerificationStepStatus(isCompleted: boolean) {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (step.id === 2) {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  private updateLegalVerificationStepStatus(isCompleted: boolean) {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (step.id === 3) {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  private handleEmailVerificationSuccess(email: string) {
+    this.emailVerification.isVerifying = false;
+    this.profileData.email = email;
+    this.isEmailVerified = true;
+    this.updateEmailVerificationStepStatus(true);
+    this.showToastMessage('Xác thực email thành công', 'success');
+    this.closeEmailVerificationModal();
+    this.loadProfileData();
+  }
+
+  private updateVerificationProgress() {
+    const completed = this.verificationSteps.filter(step => step.completed).length;
+    this.verificationProgressSteps = completed;
+    this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
+    const levelStep = completed === 0 ? 1 : completed;
+    this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
+  }
+
   getTabTitle(tab: string): string {
     const titles: { [key: string]: string } = {
       'change-password': 'Đổi mật khẩu',
@@ -727,92 +995,74 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   setCompanyTab(tab: string) {
     this.companyTab = tab;
+
+    if (tab === 'search') {
+      this.ensureCompanyListLoaded();
+    } else {
+      this.selectedCompanyCard = null;
+      this.selectedCompanyDetail = null;
+    }
   }
 
   onSearchCompany(keyword?: string) {
-    const searchKeyword = keyword || this.companySearchKeyword;
-    if (!searchKeyword || !searchKeyword.trim()) {
-      this.showToastMessage('Vui lòng nhập tên công ty', 'warning');
-      return;
-    }
-
-    this.companySearchKeyword = searchKeyword;
-    this.isSearchingCompany = true;
-    this.companyList = [];
-
-    // TODO: Call API to search companies
-    // Mock data for now
-    setTimeout(() => {
-      this.companyList = [
-        {
-          id: 1,
-          name: 'Trần Quốc Phong',
-          taxId: '0401526431',
-          address: '68 Lý Tự Trọng, phường Thạch Than...',
-          employeeRange: '10-24 nhân viên',
-          logoBgColor: '#9ca3af',
-          logoText: 'TP',
-          tags: ['Thời trang']
-        },
-        {
-          id: 2,
-          name: 'Ge Media',
-          taxId: '0312345678',
-          address: '2/26 đường Đông Tây 1, phường ...',
-          employeeRange: '25-99 nhân viên',
-          logoBgColor: '#7c3aed',
-          logoText: 'GM',
-          tags: ['Internet / Online', 'Marketing / Truyền...']
-        },
-        {
-          id: 3,
-          name: 'CÔNG TY TRÁCH NHIỆM HỮU HẠN CÔNG NGHỆ VÀ GIẢI PHÁP WIS',
-          taxId: '0123456789',
-          address: '123 Đường ABC, Quận 1, TP.HCM',
-          employeeRange: '10-24 nhân viên',
-          logoBgColor: '#14b8a6',
-          logoText: 'CW',
-          tags: ['Thương mại tổng hợp']
-        },
-        {
-          id: 4,
-          name: 'CÔNG TY TNHH NGỌC TRÂN AQUAS',
-          taxId: '0987654321',
-          address: '456 Đường XYZ, Quận 2, TP.HCM',
-          employeeRange: '25-99 nhân viên',
-          logoBgColor: '#92400e',
-          logoText: 'CA',
-          tags: ['Sản xuất']
-        },
-        {
-          id: 5,
-          name: 'CÔNG TY TNHH SX TM HÀ VINH',
-          taxId: '0111222333',
-          address: '789 Đường DEF, Quận 3, TP.HCM',
-          employeeRange: '10-24 nhân viên',
-          logoBgColor: '#ffffff',
-          logoText: 'topcv',
-          logoImage: 'assets/images/logo/logo.png',
-          tags: ['Giáo dục / Đào tạo']
-        },
-        {
-          id: 6,
-          name: 'CÔNG TY TRÁCH NHIỆM HỮU HẠN PHU MY HUR HOLDINGS',
-          taxId: '0444555666',
-          address: '321 Đường GHI, Quận 4, TP.HCM',
-          employeeRange: '25-99 nhân viên',
-          logoBgColor: '#fbbf24',
-          logoText: 'PM',
-          tags: ['Khác']
-        }
-      ];
-      this.isSearchingCompany = false;
-    }, 800);
+    const searchedKeyword = (keyword ?? this.companySearchKeyword ?? '').trim();
+    this.companySearchKeyword = searchedKeyword;
+    this.fetchCompanyList(searchedKeyword);
   }
 
   onSelectCompany(company: any) {
-    // TODO: Handle company selection
-    this.showToastMessage(`Đã chọn công ty: ${company.name}`, 'success');
+    const card = company as CompanyCard;
+    
+    // Call API to save CompanyId to RecruiterProfile
+    this.profileService.selectCompany({ companyId: card.id }).subscribe({
+      next: () => {
+        this.selectedCompanyId = card.id;
+        this.loadSelectedCompany(card.id);
+        this.showToastMessage(`Đã chọn công ty: ${card.name}`, 'success');
+      },
+      error: (error) => {
+        this.showToastMessage('Không thể lưu công ty đã chọn. Vui lòng thử lại.', 'error');
+        console.error('Select company failed:', error);
+      }
+    });
+  }
+
+  private loadSelectedCompany(companyId: number) {
+    this.selectedCompanyCard = null;
+    this.selectedCompanyDetail = null;
+    this.isLoadingCompanyDetail = true;
+
+    this.companyLegalInfoService.getCompanyLegalInfo(companyId).subscribe({
+      next: (detail) => {
+        this.selectedCompanyDetail = detail;
+        // Create card from detail
+        this.selectedCompanyCard = {
+          id: detail.id!,
+          name: detail.companyName || 'Chưa cập nhật tên',
+          taxId: detail.taxCode || 'Chưa cập nhật',
+          address: detail.headquartersAddress || 'Chưa cập nhật',
+          employeeRange: this.getEmployeeRange(detail.companySize),
+          logoBgColor: this.logoColorPalette[0],
+          logoText: this.getLogoInitials(detail.companyName || ''),
+          logoImage: this.resolveLogoUrl(detail.logoUrl),
+          tags: detail.verificationStatus ? ['Đã xác thực'] : ['Chưa xác thực'],
+          raw: detail,
+          isOwned: false // Company selected from list, not owned by user
+        };
+        this.isLoadingCompanyDetail = false;
+        this.isLoadingCompanyDetail = false;
+        this.updateCompanyVerificationStepStatus(true);
+        const legalApproved = detail.legalVerificationStatus === 'approved';
+        this.updateLegalVerificationStepStatus(legalApproved);
+      },
+      error: (error) => {
+        this.isLoadingCompanyDetail = false;
+        this.showToastMessage('Không thể tải thông tin chi tiết công ty.', 'error');
+        console.error('Load company detail failed:', error);
+        this.updateCompanyVerificationStepStatus(false);
+        this.updateLegalVerificationStepStatus(false);
+      }
+    });
   }
 
   onToggleCvApplicationNotification() {
@@ -830,6 +1080,237 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  private ensureCompanyListLoaded(force: boolean = false) {
+    if (this.companyTab !== 'search') {
+      return;
+    }
+
+    if (!this.hasLoadedCompanyList || force) {
+      this.fetchCompanyList(this.companySearchKeyword);
+    }
+  }
+
+  private fetchCompanyList(keyword?: string) {
+    this.isSearchingCompany = true;
+
+    this.companyLegalInfoService.getCurrentUserCompanyLegalInfoList().subscribe({
+      next: (companies) => {
+        const filtered = this.filterCompaniesByKeyword(companies || [], keyword);
+        this.companyList = filtered.map((company, index) => this.mapCompanyToCard(company, index));
+        this.isSearchingCompany = false;
+        this.hasLoadedCompanyList = true;
+
+        if (this.companyList.length === 0) {
+          const message = keyword
+            ? `Không tìm thấy công ty nào khớp với "${keyword}".`
+            : 'Chưa có công ty nào được tạo.';
+          this.showToastMessage(message, 'info');
+        }
+      },
+      error: (error) => {
+        this.isSearchingCompany = false;
+        this.showToastMessage('Không thể tải danh sách công ty. Vui lòng thử lại.', 'error');
+        console.error('Load company list failed:', error);
+      }
+    });
+  }
+
+  private filterCompaniesByKeyword(companies: CompanyLegalInfoDto[], keyword?: string): CompanyLegalInfoDto[] {
+    if (!keyword) {
+      return companies;
+    }
+
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    return companies.filter(company => (company.companyName || '').toLowerCase().includes(normalizedKeyword));
+  }
+
+  private mapCompanyToCard(company: CompanyLegalInfoDto, index: number): CompanyCard {
+    const name = company.companyName || 'Chưa cập nhật tên';
+    const employeeRange = this.getEmployeeRange(company.companySize);
+    const tags: string[] = [];
+
+    if (company.verificationStatus !== undefined) {
+      tags.push(company.verificationStatus ? 'Đã xác thực' : 'Chưa xác thực');
+    }
+
+    if (company.industryId) {
+      tags.push(`Ngành #${company.industryId}`);
+    }
+
+    return {
+      id: company.id!,
+      name,
+      taxId: company.taxCode || 'Chưa cập nhật',
+      address: company.headquartersAddress || 'Chưa cập nhật',
+      employeeRange,
+      logoBgColor: this.logoColorPalette[index % this.logoColorPalette.length],
+      logoText: this.getLogoInitials(name),
+      logoImage: this.resolveLogoUrl(company.logoUrl),
+      tags,
+      raw: company,
+      isOwned: this.isCompanyOwned(company)
+    };
+  }
+
+  private getEmployeeRange(companySize?: number): string {
+    if (!companySize || companySize <= 0) {
+      return 'Quy mô chưa cập nhật';
+    }
+
+    if (companySize < 20) return 'Dưới 20 nhân viên';
+    if (companySize < 50) return '20 - 49 nhân viên';
+    if (companySize < 100) return '50 - 99 nhân viên';
+    if (companySize < 200) return '100 - 199 nhân viên';
+    if (companySize < 500) return '200 - 499 nhân viên';
+    return '500+ nhân viên';
+  }
+
+  private resetCompanyForm() {
+    this.companyFormData = { ...this.companyFormDefaults };
+    this.companyFormErrors = {};
+  }
+
+  private getCompanySizeFromScale(scale: string): number | undefined {
+    if (!scale) {
+      return undefined;
+    }
+    if (this.companyScaleMap[scale] !== undefined) {
+      return this.companyScaleMap[scale];
+    }
+    const parsed = parseInt(scale, 10);
+    return isNaN(parsed) ? undefined : parsed;
+  }
+
+  private getScaleSelectionFromSize(size?: number): string {
+    if (!size) {
+      return '';
+    }
+    if (size <= 9) return '1-9';
+    if (size <= 24) return '10-24';
+    if (size <= 99) return '25-99';
+    if (size <= 499) return '100-499';
+    return '500+';
+  }
+
+  private getIndustryIdFromSelection(selection: string, fallback?: number): number | undefined {
+    if (!selection) {
+      return fallback;
+    }
+    if (this.industrySelectionMap[selection] !== undefined) {
+      return this.industrySelectionMap[selection];
+    }
+    const parsed = parseInt(selection, 10);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+
+  private getIndustrySelectionFromId(industryId?: number): string {
+    if (industryId === undefined || industryId === null) {
+      return '';
+    }
+    const entry = Object.entries(this.industrySelectionMap).find(([, value]) => value === industryId);
+    return entry ? entry[0] : 'other';
+  }
+
+  private buildUpdateCompanyDtoFromForm(detail: CompanyLegalInfoDto): UpdateCompanyLegalInfoDto {
+    const companySize = this.getCompanySizeFromScale(this.companyFormData.scale) ?? detail.companySize ?? 10;
+    const industryId = this.getIndustryIdFromSelection(this.companyFormData.industry, detail.industryId);
+    const issueDate = detail.businessLicenseIssueDate || new Date().toISOString();
+
+    return {
+      companyName: this.companyFormData.companyName || detail.companyName || 'Chưa cập nhật',
+      companyCode: detail.companyCode,
+      description: this.companyFormData.description || detail.description,
+      headquartersAddress: this.companyFormData.address || detail.headquartersAddress || 'Chưa cập nhật',
+      contactEmail: this.companyFormData.email || detail.contactEmail || 'contact@example.com',
+      contactPhone: this.companyFormData.phone || detail.contactPhone || '0000000000',
+      companySize,
+      industryId,
+      foundedYear: detail.foundedYear ?? new Date().getFullYear(),
+      taxCode: this.companyFormData.taxId || detail.taxCode || '0000000000',
+      businessLicenseNumber: detail.businessLicenseNumber || 'Đang cập nhật',
+      businessLicenseIssueDate: issueDate,
+      businessLicenseIssuePlace: detail.businessLicenseIssuePlace || 'Đang cập nhật',
+      legalRepresentative: detail.legalRepresentative || 'Đang cập nhật',
+      businessLicenseFile: detail.businessLicenseFile,
+      taxCertificateFile: detail.taxCertificateFile,
+      representativeIdCardFile: detail.representativeIdCardFile,
+      otherSupportFile: detail.otherSupportFile
+    };
+  }
+
+  private getLogoInitials(name: string): string {
+    if (!name) return 'VC';
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  }
+
+  private resolveLogoUrl(logoUrl?: string): string | undefined {
+    if (!logoUrl) {
+      return undefined;
+    }
+
+    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+      return logoUrl;
+    }
+
+    const baseUrl = environment.apis?.default?.url || '';
+    if (baseUrl && logoUrl.startsWith('/')) {
+      return `${baseUrl}${logoUrl}`;
+    }
+
+    return logoUrl;
+  }
+
+  private isCompanyOwned(company: CompanyLegalInfoDto): boolean {
+    const currentEmail = (this.profileData.email || '').trim().toLowerCase();
+    const contactEmail = (company.contactEmail || '').trim().toLowerCase();
+    return !!currentEmail && currentEmail === contactEmail;
+  }
+
+  onEditSelectedCompany() {
+    if (!this.selectedCompanyDetail || !this.selectedCompanyDetail.id) {
+      this.showToastMessage('Không tìm thấy thông tin chi tiết công ty để chỉnh sửa.', 'error');
+      return;
+    }
+
+    this.isEditingCompany = true;
+    this.editingCompanyId = this.selectedCompanyDetail.id;
+    this.editingCompanyDetail = { ...this.selectedCompanyDetail };
+    this.companyFormData = {
+      ...this.companyFormDefaults,
+      companyType: 'enterprise',
+      companyName: this.selectedCompanyDetail.companyName || '',
+      taxId: this.selectedCompanyDetail.taxCode || '',
+      address: this.selectedCompanyDetail.headquartersAddress || '',
+      phone: this.selectedCompanyDetail.contactPhone || '',
+      email: this.selectedCompanyDetail.contactEmail || '',
+      description: this.selectedCompanyDetail.description || '',
+      website: this.selectedCompanyDetail.websiteUrl || '',
+      scale: this.getScaleSelectionFromSize(this.selectedCompanyDetail.companySize),
+      industry: this.getIndustrySelectionFromId(this.selectedCompanyDetail.industryId)
+    };
+    this.companyFormErrors = {};
+    this.companyTab = 'create';
+  }
+
+  cancelEditCompany() {
+    this.isEditingCompany = false;
+    this.editingCompanyId = null;
+    this.editingCompanyDetail = null;
+    this.companyTab = 'search';
+    this.resetCompanyForm();
+  }
+
+  get selectedCompanyEmployeeRange(): string {
+    if (this.selectedCompanyDetail?.companySize) {
+      return this.getEmployeeRange(this.selectedCompanyDetail.companySize);
+    }
+    return this.selectedCompanyCard?.employeeRange || 'Quy mô chưa cập nhật';
   }
 
   validateField(fieldName: string) {
@@ -935,12 +1416,39 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isEditingCompany && this.editingCompanyId && this.editingCompanyDetail) {
+      const updateDto = this.buildUpdateCompanyDtoFromForm(this.editingCompanyDetail);
+      this.isSavingCompany = true;
+      this.companyLegalInfoService.updateCompanyLegalInfo(this.editingCompanyId, updateDto).subscribe({
+        next: () => {
+          this.isSavingCompany = false;
+          this.showToastMessage('Cập nhật thông tin công ty thành công!', 'success');
+          this.isEditingCompany = false;
+          this.companyTab = 'search';
+          const companyId = this.selectedCompanyId ?? this.editingCompanyId;
+          this.editingCompanyId = null;
+          this.editingCompanyDetail = null;
+          this.resetCompanyForm();
+          if (companyId) {
+            this.loadSelectedCompany(companyId);
+          }
+        },
+        error: (error) => {
+          this.isSavingCompany = false;
+          const message = error?.error?.error?.message || 'Không thể cập nhật thông tin công ty.';
+          this.showToastMessage(message, 'error');
+        }
+      });
+      return;
+    }
+
     this.isSavingCompany = true;
 
     // TODO: Call API to save company
     setTimeout(() => {
       this.isSavingCompany = false;
       this.showToastMessage('Tạo công ty thành công!', 'success');
+      this.resetCompanyForm();
     }, 1000);
   }
 

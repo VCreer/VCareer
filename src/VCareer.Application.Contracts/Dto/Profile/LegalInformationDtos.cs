@@ -70,26 +70,22 @@ namespace VCareer.Dto.Profile
 
     public class UpdateCompanyLegalInfoDto
     {
-        [Required]
         [StringLength(255)]
-        public string CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         [StringLength(50)]
         public string? CompanyCode { get; set; }
 
-        [StringLength(1000)]
+        [StringLength(4000)]
         public string? Description { get; set; }
 
-        [Required]
         [StringLength(255)]
         public string? HeadquartersAddress { get; set; }
 
-        [Required]
         [EmailAddress]
         [StringLength(100)]
         public string? ContactEmail { get; set; }
 
-        [Required]
         [StringLength(20)]
         public string? ContactPhone { get; set; }
 
@@ -98,37 +94,33 @@ namespace VCareer.Dto.Profile
         public int? FoundedYear { get; set; }
 
         // Legal Information fields
-        [Required]
         [StringLength(50)]
-        public string TaxCode { get; set; }
+        public string? TaxCode { get; set; }
 
-        [Required]
+        // Các trường pháp lý còn lại cho phép để trống khi chỉ cập nhật thông tin cơ bản
         [StringLength(100)]
-        public string BusinessLicenseNumber { get; set; }
+        public string? BusinessLicenseNumber { get; set; }
 
-        [Required]
-        public DateTime BusinessLicenseIssueDate { get; set; }
+        public DateTime? BusinessLicenseIssueDate { get; set; }
 
-        [Required]
         [StringLength(255)]
-        public string BusinessLicenseIssuePlace { get; set; }
+        public string? BusinessLicenseIssuePlace { get; set; }
 
-        [Required]
         [StringLength(255)]
-        public string LegalRepresentative { get; set; }
+        public string? LegalRepresentative { get; set; }
 
         // File URLs
         [StringLength(500)]
-        public string BusinessLicenseFile { get; set; }
+        public string? BusinessLicenseFile { get; set; }
 
         [StringLength(500)]
-        public string TaxCertificateFile { get; set; }
+        public string? TaxCertificateFile { get; set; }
 
         [StringLength(500)]
-        public string RepresentativeIdCardFile { get; set; }
+        public string? RepresentativeIdCardFile { get; set; }
 
         [StringLength(500)]
-        public string OtherSupportFile { get; set; }
+        public string? OtherSupportFile { get; set; }
     }
 
     public class CompanyLegalInfoDto : EntityDto<int>
@@ -200,5 +192,14 @@ namespace VCareer.Dto.Profile
         /// Lọc theo status (true = active, false = inactive, null = all)
         /// </summary>
         public bool? Status { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để chọn công ty cho RecruiterProfile
+    /// </summary>
+    public class SelectCompanyDto
+    {
+        [Required]
+        public int CompanyId { get; set; }
     }
 }
