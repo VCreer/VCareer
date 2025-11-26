@@ -194,6 +194,11 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
+  navigateToJobSuggestionSettings() {
+    this.router.navigate(['/candidate/job-suggestion-settings']);
+    this.showProfileMenu = false;
+  }
+
   navigateToService() {
     this.router.navigate(['/candidate/service']);
     this.showProfileMenu = false;
