@@ -83,6 +83,7 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   cvDetail: CvDetail | null = null;
   loading = false;
   returnUrl: string | null = null;
+  isViewed: boolean = false;
 
   // CV Display
   pdfUrl: SafeResourceUrl | null = null;
@@ -156,6 +157,12 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
     this.applicationService.getApplication(this.applicationId).subscribe({
       next: (application: ApplicationDto) => {
         this.application = application;
+        this.isViewed = !!application.viewedAt;
+        
+        // Mark as viewed if not viewed yet
+        if (!this.isViewed) {
+          this.markAsViewed();
+        }
         
         // Map ApplicationDto to CvDetail
         this.cvDetail = {
@@ -236,6 +243,28 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
         console.error('Error loading uploaded CV:', error);
         this.loading = false;
         this.showToastMessage('Không thể tải CV đã upload', 'error');
+      }
+    });
+  }
+
+  markAsViewed(): void {
+    if (!this.applicationId) {
+      return;
+    }
+
+    this.applicationService.markAsViewed(this.applicationId).subscribe({
+      next: (application: ApplicationDto) => {
+        this.application = application;
+        this.isViewed = true;
+        if (this.cvDetail) {
+          this.cvDetail.contactOpenedDate = application.viewedAt 
+            ? new Date(application.viewedAt).toLocaleDateString('vi-VN') 
+            : undefined;
+        }
+      },
+      error: (error) => {
+        console.error('Error marking as viewed:', error);
+        // Don't show error toast, just log it
       }
     });
   }

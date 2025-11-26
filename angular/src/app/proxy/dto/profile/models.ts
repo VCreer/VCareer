@@ -6,6 +6,20 @@ export interface ChangePasswordDto {
   confirmPassword: string;
 }
 
+export interface VerifyPhoneNumberDto {
+  phoneNumber: string;
+  otpCode?: string;
+}
+
+export interface VerifyEmailNumberDto {
+  email: string;
+  otpCode?: string;
+}
+
+export interface SendEmailOtpDto {
+  email: string;
+}
+
 export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
   companyName?: string;
   logoUrl?: string;
@@ -71,6 +85,7 @@ export interface ProfileDto extends EntityDto<string> {
   creationTime?: string;
   lastModificationTime?: string;
   userType?: string;
+  companyId?: number;
 }
 
 export interface SubmitCompanyLegalInfoDto {
@@ -127,4 +142,8 @@ export interface UpdatePersonalInfoDto {
   address?: string;
   nationality?: string;
   maritalStatus?: string;
+}
+
+export interface SelectCompanyDto {
+  companyId: number;
 }

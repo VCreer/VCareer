@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using VCareer.Dto.Profile;
@@ -93,7 +94,7 @@ namespace VCareer.Services.Profile
 
 
 
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -223,7 +224,7 @@ namespace VCareer.Services.Profile
 
 
 
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
             string taxCertificateFile = null, string representativeIdCardFile = null, string otherSupportFile = null)
         {
@@ -294,29 +295,38 @@ namespace VCareer.Services.Profile
         /// </summary>
         public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input)
         {
-            /*   // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
-               // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
-               var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
-               var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            if (input == null)
+            {
+                throw new AbpValidationException("Input không hợp lệ.");
+            }
 
-               // Gọi repository để thực hiện query (logic query ở Repository layer)
-               var result = await _companyCustomRepository.SearchCompaniesAsync(
-                   keyword: input.Keyword,
-                   status: input.Status,
-                   skipCount: skipCount,
-                   maxResultCount: maxResultCount,
-                   sorting: input.Sorting
-               );
+            var skipCount = input.SkipCount >= 0 ? input.SkipCount : 0;
+            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            var keyword = input.Keyword?.Trim();
 
-               // Map sang DTO (Application Service chỉ làm việc với mapping)
-               var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
+            var queryable = await _companyRepository.GetQueryableAsync();
 
-               return new PagedResultDto<CompanyLegalInfoDto>
-               {
-                   TotalCount = result.TotalCount,
-                   Items = dtos
-               };*/
-            throw new  NotImplementedException();
+            queryable = queryable
+                .WhereIf(!string.IsNullOrWhiteSpace(keyword),
+                    c => c.CompanyName != null && c.CompanyName.Contains(keyword))
+                .WhereIf(input.Status.HasValue, c => c.Status == input.Status);
+
+            var sorting = !string.IsNullOrWhiteSpace(input.Sorting)
+                ? input.Sorting
+                : nameof(Company.CompanyName);
+
+            queryable = queryable.OrderBy(sorting);
+
+            var totalCount = await AsyncExecuter.CountAsync(queryable);
+
+            var companies = await AsyncExecuter.ToListAsync(
+                queryable
+                    .Skip(skipCount)
+                    .Take(maxResultCount));
+
+            var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
+
+            return new PagedResultDto<CompanyLegalInfoDto>(totalCount, dtos);
         }
     }
 }

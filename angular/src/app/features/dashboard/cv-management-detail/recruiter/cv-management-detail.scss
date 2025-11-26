@@ -498,6 +498,26 @@
             line-height: 1.4;
           }
 
+          .view-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            line-height: 1.2;
+
+            &.viewed {
+              background-color: #d1fae5 !important;
+              color: #065f46 !important;
+            }
+
+            &.not-viewed {
+              background-color: #fee2e2 !important;
+              color: #991b1b !important;
+            }
+          }
+
           .contact-opened-summary {
             font-size: 12px;
             color: #6b7280;
