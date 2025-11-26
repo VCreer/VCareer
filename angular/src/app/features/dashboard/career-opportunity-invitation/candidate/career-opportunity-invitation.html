@@ -1,0 +1,133 @@
+<div class="career-invitation-page">
+  <div class="career-invitation-layout">
+    <!-- Left Column: Career Invitations -->
+    <div class="left-column">
+      <div class="invitation-section">
+        <h1 class="page-title">Lời mời cơ hội nghề nghiệp</h1>
+        
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!hasInvitations">
+          <div class="empty-state-content">
+            <div class="empty-illustration">
+              <i class="fa fa-robot"></i>
+            </div>
+            <p class="empty-message">Bạn chưa có lời mời kết nối nào</p>
+            <p class="empty-description">
+              Để dừng cho phép NTD tìm kiếm và xem CV ẩn danh của bạn, 
+              truy cập giao diện <a (click)="navigateToCvManagement()" class="cv-management-link">Quản lý CV tại đây</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Invitations List -->
+        <div class="invitations-content" *ngIf="hasInvitations">
+          <div class="greeting-section">
+            <p class="greeting">Xin chào {{ userName }},</p>
+            <p class="intro-text">
+              {{ invitations.length }} nhà tuyển dụng dưới đây rất ấn tượng với hồ sơ của bạn 
+              và muốn kết nối để trao đổi về cơ hội việc làm tiềm năng:
+            </p>
+          </div>
+
+          <div class="invitations-list">
+            <div class="invitation-card" *ngFor="let invitation of invitations">
+              <div class="card-content">
+                <div class="company-logo">
+                  <img [src]="invitation.companyLogo" [alt]="invitation.companyName" 
+                       onerror="this.src='assets/images/placeholder-company.png'">
+                </div>
+                
+                <div class="card-info">
+                  <h3 class="company-name">{{ invitation.companyName }}</h3>
+                  <p class="job-title">{{ invitation.jobTitle }}</p>
+                  <p class="deadline">
+                    <i class="fa fa-clock"></i>
+                    Thời hạn: {{ invitation.deadline }}
+                  </p>
+                </div>
+
+                <div class="card-actions">
+                  <app-button
+                    [type]="'primary'"
+                    [size]="'small'"
+                    (click)="acceptInvitation(invitation)"
+                    [disabled]="invitation.status !== 'pending'">
+                    Đồng ý
+                  </app-button>
+                  <app-button
+                    [type]="'secondary'"
+                    [size]="'small'"
+                    (click)="declineInvitation(invitation)"
+                    [disabled]="invitation.status !== 'pending'">
+                    Từ chối
+                  </app-button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="view-all-section">
+            <app-button
+              [type]="'primary'"
+              [size]="'large'"
+              [fullWidth]="true"
+              (click)="viewAllInvitations()">
+              Xem tất cả lời mới kết nối
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Job Suggestions -->
+    <div class="right-column">
+      <div class="job-suggestions-section">
+        <h2 class="suggestions-title">Gợi ý việc làm phù hợp</h2>
+        
+        <div class="job-suggestions-list">
+          <div class="job-card" *ngFor="let job of jobSuggestions">
+            <div class="job-card-content">
+              <div class="job-logo">
+                <img [src]="job.companyLogo" [alt]="job.companyName"
+                     onerror="this.src='assets/images/placeholder-company.png'">
+              </div>
+              
+              <div class="job-info">
+                <h3 class="job-title">{{ job.jobTitle }}</h3>
+                <p class="job-experience" *ngIf="job.experience">{{ job.experience }}</p>
+                <p class="company-name">{{ job.companyName }}</p>
+                
+                <div class="job-tags">
+                  <span class="salary-tag">{{ job.salary }}</span>
+                  <span class="location-tag">{{ job.location }}</span>
+                </div>
+              </div>
+
+              <div class="job-action">
+                <button class="save-job-btn">
+                  <i class="fa fa-heart"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view-more-jobs-section">
+          <a class="view-more-link" (click)="navigateToJobs(); $event.preventDefault()">
+            Xem thêm việc làm
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    [duration]="3000"
+    (close)="onToastClose()">
+  </app-toast-notification>
+</div>
+

@@ -77,6 +77,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/dashboard/job-suggestion-settings/candidate/job-suggestion-settings').then(c => c.JobSuggestionSettingsComponent),
       },
       {
+        path: 'candidate/career-opportunity-invitation',
+        loadComponent: () => import('./features/dashboard/career-opportunity-invitation/candidate/career-opportunity-invitation').then(c => c.CareerOpportunityInvitationComponent),
+      },
+      {
         path: 'candidate/service',
         loadComponent: () => import('./features/dashboard/service/candidate/service').then(c => c.CandidateServiceComponent),
       },
