@@ -16,6 +16,8 @@ export class MultiSelectLocationComponent {
   @Input() options: SelectOption[] = [];
   @Input() selectedValues: string[] = [];
   @Input() error: string = '';
+  // Cho phép tái sử dụng cho vị trí công việc nếu cần
+  @Input() labelType: 'location' | 'jobPosition' = 'location';
   @Output() selectedValuesChange = new EventEmitter<string[]>();
   @Output() errorChange = new EventEmitter<string>();
 
@@ -74,6 +76,9 @@ export class MultiSelectLocationComponent {
   }
 
   getLocationLabel(value: string): string {
+    if (this.labelType === 'jobPosition') {
+      return this.jobOptionsService.getJobPositionLabel(value);
+    }
     return this.jobOptionsService.getLocationLabel(value);
   }
 

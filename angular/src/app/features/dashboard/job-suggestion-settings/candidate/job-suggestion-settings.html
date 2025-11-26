@@ -1,0 +1,192 @@
+<div class="job-suggestion-settings-page">
+  <div class="job-suggestion-settings-layout">
+    <!-- Left Panel - Job suggestion settings -->
+    <div class="left-panel">
+      <div class="settings-container">
+        <!-- Box header -->
+        <div class="box-header">
+          <h1 class="settings-title">Bạn vui lòng hoàn thiện các thông tin dưới đây</h1>
+          <p class="settings-note">(*) Các thông tin bắt buộc</p>
+        </div>
+
+        <!-- Profile-form style wrapper -->
+        <form
+          #settingsForm="ngForm"
+          class="profile-form"
+          (ngSubmit)="onSubmit(settingsForm)">
+          <div class="box-content">
+            <!-- Thông tin cá nhân -->
+            <div class="box-info">
+              <h2 class="box-section-title">Thông tin cá nhân</h2>
+              <div class="field-group">
+                <label class="required">Giới tính</label>
+                <div class="radio-group">
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      [(ngModel)]="gender"
+                    />
+                    <span>Nam</span>
+                  </label>
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      [(ngModel)]="gender"
+                    />
+                    <span>Nữ</span>
+                  </label>
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="unspecified"
+                      [(ngModel)]="gender"
+                    />
+                    <span>Không xác định</span>
+                  </label>
+                </div>
+                <div class="field-error" *ngIf="formSubmitted && !gender">
+                  Vui lòng chọn giới tính.
+                </div>
+              </div>
+            </div>
+
+            <!-- Nhu cầu công việc -->
+            <div class="box-need-work">
+              <h2 class="box-section-title">Nhu cầu công việc</h2>
+              <div class="form-grid">
+                <div class="field-group span-2">
+                  <app-multi-select-location
+                    [label]="'Vị trí chuyên môn (chọn tối đa 5 vị trí từ danh mục)'"
+                    [required]="true"
+                    [options]="positionOptions"
+                    [(selectedValues)]="selectedPositions"
+                    [(error)]="positionError"
+                    [labelType]="'jobPosition'">
+                  </app-multi-select-location>
+                </div>
+
+                <div class="field-group span-2">
+                  <label>Nhập vị trí chuyên môn không có trong danh mục (nhập tối đa 5 vị trí)</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="jobPreference.customPosition"
+                    name="customPosition"
+                    placeholder="Nhập thêm vị trí mong muốn khác"
+                  />
+                  <div class="field-error" *ngIf="customPositionError">
+                    {{ customPositionError }}
+                  </div>
+                </div>
+
+                <div class="field-group span-2">
+                  <label>Kỹ năng</label>
+                  <select
+                    [(ngModel)]="jobPreference.skillsText"
+                    name="skillsText">
+                    <option value="" disabled>Chọn kỹ năng</option>
+                    <option *ngFor="let skill of skillOptions" [value]="skill">
+                      {{ skill }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="field-group span-2">
+                  <label class="required">Kinh nghiệm</label>
+                  <select
+                    [(ngModel)]="jobPreference.experienceLevel"
+                    name="experienceLevel"
+                    required
+                    #experienceLevelModel="ngModel"
+                    [class.error]="formSubmitted && experienceLevelModel.invalid">
+                    <option value="" disabled>Chọn kinh nghiệm</option>
+                    <option value="intern">Thực tập</option>
+                    <option value="fresher">Fresher</option>
+                    <option value="junior">Junior</option>
+                    <option value="mid">Middle</option>
+                  </select>
+                  <div class="field-error" *ngIf="formSubmitted && experienceLevelModel.invalid">
+                    Vui lòng chọn kinh nghiệm làm việc.
+                  </div>
+                </div>
+
+                <div class="field-group span-2">
+                  <label class="required">Mức lương</label>
+                  <div class="salary-input">
+                    <input
+                      type="number"
+                      min="0"
+                      [(ngModel)]="jobPreference.salaryFrom"
+                      name="salaryFrom"
+                      required
+                      #salaryFromModel="ngModel"
+                      placeholder="0"
+                    />
+                    <span class="currency-label">VND</span>
+                  </div>
+                  <div class="field-error" *ngIf="formSubmitted && salaryFromModel.invalid">
+                    Vui lòng nhập mức lương.
+                  </div>
+                </div>
+
+                <div class="field-group span-2">
+                  <app-multi-select-location
+                    [label]="'Địa điểm làm việc'"
+                    [required]="true"
+                    [options]="locationOptions"
+                    [(selectedValues)]="selectedLocations"
+                    [(error)]="locationError">
+                  </app-multi-select-location>
+                </div>
+
+                <div class="field-group span-2 checkbox-row">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="jobPreference.canChangeLocation"
+                      name="canChangeLocation"
+                    />
+                    <span>Tôi có thể thay đổi địa điểm làm việc</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form actions -->
+          <div class="form-actions-row">
+            <app-button
+              [type]="'primary'"
+              [size]="'medium'"
+              [fullWidth]="true"
+              [buttonType]="'submit'">
+              Cập nhật
+            </app-button>
+          </div>
+
+          <div class="feedback-banner" *ngIf="lastSavedMessage">
+            <i class="fa fa-circle-check"></i>
+            {{ lastSavedMessage }}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Sidebar - profile card nằm bên phải -->
+    <div class="right-sidebar">
+      <app-profile-card
+        [userName]="profileUser.name"
+        [accountStatus]="profileUser.accountStatus"
+        [jobSearchEnabled]="profileUser.jobSearchEnabled"
+        [allowRecruiterSearch]="profileUser.allowRecruiterSearch"
+        (jobSearchToggle)="onJobSearchToggle($event)"
+        (recruiterSearchToggle)="onRecruiterSearchToggle($event)"
+        (upgradeClick)="onUpgradeAccount()"
+      ></app-profile-card>
+    </div>
+  </div>
+</div>
