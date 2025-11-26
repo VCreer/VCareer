@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, FormControl } from '@angular/forms';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
@@ -150,6 +151,9 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   businessCertDocumentType: string = 'business-cert';
   businessCertFile: File | null = null;
   isSavingBusinessCert: boolean = false;
+  legalVerificationStatus: string | null = null;
+  businessCertDocumentUrl: string | null = null;
+  isEditingBusinessCert: boolean = false;
 
   // Email verification modal
   readonly emailVerificationStepId = 1;
@@ -171,7 +175,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     private companyLegalInfoService: CompanyLegalInfoService,
     private navigationService: NavigationService,
     private cdr: ChangeDetectorRef,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private http: HttpClient
   ) {
     // Initialize change password form (for users who already have password)
     this.changePasswordForm = this.formBuilder.group({
@@ -1050,9 +1055,11 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           isOwned: false // Company selected from list, not owned by user
         };
         this.isLoadingCompanyDetail = false;
-        this.isLoadingCompanyDetail = false;
         this.updateCompanyVerificationStepStatus(true);
         const legalApproved = detail.legalVerificationStatus === 'approved';
+        this.legalVerificationStatus = detail.legalVerificationStatus || null;
+        this.businessCertDocumentUrl = this.resolveFileUrl(detail.legalDocumentUrl);
+        this.isEditingBusinessCert = !this.businessCertDocumentUrl;
         this.updateLegalVerificationStepStatus(legalApproved);
       },
       error: (error) => {
@@ -1472,13 +1479,85 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.selectedCompanyId) {
+      this.showToastMessage('Không tìm thấy công ty để nộp giấy tờ. Vui lòng kiểm tra lại thông tin công ty.', 'error');
+      return;
+    }
+
     this.isSavingBusinessCert = true;
 
-    // TODO: Call API to save business certificate
-    setTimeout(() => {
-      this.isSavingBusinessCert = false;
-      this.showToastMessage('Lưu giấy đăng ký doanh nghiệp thành công!', 'success');
-    }, 1000);
+    const formData = new FormData();
+    formData.append('file', this.businessCertFile);
+
+    const apiUrl = `${environment.apis.default.url}/api/profile/company-legal-info/${this.selectedCompanyId}/upload-legal-document`;
+
+    this.http.post<any>(apiUrl, formData, {
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        this.isSavingBusinessCert = false;
+
+        let updatedCompany: any = null;
+        if (response && response.result) {
+          updatedCompany = response.result;
+        } else if (response && response.value) {
+          updatedCompany = response.value;
+        } else {
+          updatedCompany = response;
+        }
+
+        if (updatedCompany) {
+          this.selectedCompanyDetail = updatedCompany;
+          this.legalVerificationStatus = updatedCompany.legalVerificationStatus || null;
+          const legalApproved = updatedCompany.legalVerificationStatus === 'approved';
+          this.businessCertDocumentUrl = this.resolveFileUrl(updatedCompany.legalDocumentUrl);
+          this.isEditingBusinessCert = false;
+          this.businessCertFile = null;
+          this.updateLegalVerificationStepStatus(legalApproved);
+        }
+
+        this.showToastMessage('Nộp Giấy đăng ký doanh nghiệp thành công! Hồ sơ đang chờ duyệt.', 'success');
+      },
+      error: (error) => {
+        this.isSavingBusinessCert = false;
+        console.error('Upload legal document failed:', error);
+
+        let errorMessage = 'Không thể nộp Giấy đăng ký doanh nghiệp. Vui lòng thử lại.';
+        if (error.error?.error?.message) {
+          errorMessage = error.error.error.message;
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
+  }
+
+  onEditBusinessCert() {
+    this.isEditingBusinessCert = true;
+    this.businessCertFile = null;
+  }
+
+  onCancelBusinessCert() {
+    this.isEditingBusinessCert = false;
+    this.businessCertFile = null;
+  }
+
+  private resolveFileUrl(path?: string | null): string | null {
+    if (!path) {
+      return null;
+    }
+
+    // Nếu backend đã trả về full URL thì dùng luôn
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+
+    // Mặc định: gọi qua API download để stream file từ storage
+    const apiBase = environment.apis.default.url;
+    const encodedPath = encodeURIComponent(path);
+    return `${apiBase}/api/profile/company-legal-info/legal-document?storagePath=${encodedPath}`;
   }
 }
 
