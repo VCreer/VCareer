@@ -22,5 +22,6 @@ namespace VCareer.Dto.Profile
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public string UserType { get; set; } // Candidate, Employee, Recruiter
+        public int? CompanyId { get; set; } // Company ID for Recruiter
     }
 }

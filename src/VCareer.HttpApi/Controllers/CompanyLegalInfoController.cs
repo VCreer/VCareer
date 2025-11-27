@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using VCareer.Dto.FileDto;
 using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
 using VCareer.Permission;
@@ -32,7 +34,7 @@ namespace VCareer.Profile
         /// <param name="input">Company legal information to submit</param>
         /// <returns>Created company legal information</returns>
         [HttpPost]
-        [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.SubmitLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync([FromBody] SubmitCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.SubmitCompanyLegalInfoAsync(input);
@@ -45,7 +47,7 @@ namespace VCareer.Profile
         /// <param name="input">Updated company legal information</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}")]
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, [FromBody] UpdateCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.UpdateCompanyLegalInfoAsync(id, input);
@@ -58,6 +60,7 @@ namespace VCareer.Profile
         /// <param name="input">Input tìm kiếm</param>
         /// <returns>Danh sách công ty đã phân trang</returns>
         [HttpPost("search")]
+        [IgnoreAntiforgeryToken]
         public async Task<ActionResult<PagedResultDto<CompanyLegalInfoDto>>> SearchCompaniesAsync([FromBody] CompanySearchInputDto input)
         {
             try
@@ -129,7 +132,7 @@ namespace VCareer.Profile
         /// <param name="otherSupportFile">Other support file URL</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}/files")]
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id,
             [FromQuery] string businessLicenseFile = null,
             [FromQuery] string taxCertificateFile = null,
@@ -138,6 +141,36 @@ namespace VCareer.Profile
         {
             return await _companyLegalInfoAppService.UpdateFileUrlsAsync(id, businessLicenseFile,
                 taxCertificateFile, representativeIdCardFile, otherSupportFile);
+        }
+
+        /// <summary>
+        /// Upload Giấy đăng ký doanh nghiệp (legal document) cho công ty
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="file">File giấy tờ</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        [HttpPost("{id}/upload-legal-document")]
+        [Consumes("multipart/form-data")]
+        [IgnoreAntiforgeryToken]
+        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, [FromForm] IFormFile file)
+        {
+            return await _companyLegalInfoAppService.UploadLegalDocumentAsync(id, file);
+        }
+
+        /// <summary>
+        /// Download/Xem file Giấy đăng ký doanh nghiệp theo storagePath
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
+        /// <returns>File stream</returns>
+        [HttpGet("legal-document")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> GetLegalDocumentAsync([FromQuery] string storagePath)
+        {
+            var fileResult = await _companyLegalInfoAppService.GetLegalDocumentFileAsync(storagePath);
+
+            // Hiển thị trực tiếp trên tab mới (inline), không bắt tải về
+            Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileResult.FileName}\"";
+            return File(fileResult.Data, fileResult.MimeType);
         }
 
         /// <summary>

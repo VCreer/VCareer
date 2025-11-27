@@ -1,11 +1,28 @@
 <div class="business-registration">
   <!-- Section Header -->
   <div class="section-header">
-    <h2 class="section-title">Thông tin Giấy đăng ký doanh nghiệp</h2>
-    <p class="section-instruction">
-      Vui lòng lựa chọn phương thức đăng tải, xem hướng dẫn đăng tải 
-      <a href="#" class="instruction-link" target="_blank">Tại đây</a>.
-    </p>
+    <div class="section-header-left">
+      <h2 class="section-title">Thông tin Giấy đăng ký doanh nghiệp</h2>
+      <p class="section-instruction">
+        Vui lòng lựa chọn phương thức đăng tải, xem hướng dẫn đăng tải 
+        <a href="#" class="instruction-link" target="_blank">Tại đây</a>.
+      </p>
+    </div>
+    <div class="section-header-right" *ngIf="legalStatus || documentUrl">
+      <div class="status-and-link" *ngIf="legalStatus">
+        <span class="status-badge" [ngClass]="getStatusClass()">
+          {{ getStatusLabel() }}
+        </span>
+      </div>
+      <button
+        *ngIf="documentUrl && !isEditing"
+        type="button"
+        class="edit-button"
+        (click)="onEditClick()"
+      >
+        Chỉnh sửa
+      </button>
+    </div>
   </div>
 
   <!-- Document Type Selection -->
@@ -33,7 +50,34 @@
 
   <!-- Content Card -->
   <div class="content-card" *ngIf="documentType === 'business-cert'">
-    <div class="content-wrapper">
+    <!-- View mode: đã có file và không ở chế độ chỉnh sửa -->
+    <div class="content-wrapper view-mode" *ngIf="documentUrl && !isEditing">
+      <div class="upload-section">
+        <label class="upload-label">
+          Giấy tờ<span class="required-star">*</span>
+        </label>
+        <div class="uploaded-file-info">
+          <i class="fa fa-file-pdf file-icon"></i>
+          <a
+            class="file-link"
+            [href]="documentUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Giấy đăng ký doanh nghiệp
+          </a>
+        </div>
+      </div>
+      <div class="illustration-section">
+        <h3 class="illustration-title">Minh họa</h3>
+        <div class="illustration-image">
+          <img [src]="getIllustrationImage()" alt="Minh họa giấy tờ" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit mode / lần đầu nộp: hiện khu vực upload -->
+    <div class="content-wrapper" *ngIf="!documentUrl || isEditing">
       <!-- Left Side: File Upload -->
       <div class="upload-section">
         <label class="upload-label">Giấy tờ<span class="required-star">*</span></label>
@@ -231,16 +275,25 @@
   </div>
 
   <!-- Save Button -->
-  <div class="form-actions">
-    <app-button 
-      [type]="'primary'"
-      [size]="'medium'"
-      [disabled]="isSaving || (documentType === 'business-cert' ? !selectedFile : !identificationFile)"
-      [loading]="isSaving"
-      (click)="onSave()"
-      class="save-btn">
-      Lưu
-    </app-button>
+  <div class="form-actions" *ngIf="documentType === 'authorization' || !documentUrl || isEditing">
+    <div class="actions-wrapper">
+      <app-button 
+        [type]="'primary'"
+        [size]="'medium'"
+        [disabled]="isSaving || (documentType === 'business-cert' ? !selectedFile : !identificationFile)"
+        [loading]="isSaving"
+        (click)="onSave()"
+        class="save-btn">
+        Lưu
+      </app-button>
+      <button
+        *ngIf="documentType === 'business-cert' && documentUrl && isEditing"
+        type="button"
+        class="cancel-btn"
+        (click)="onCancelClick()">
+        Hủy
+      </button>
+    </div>
   </div>
 </div>
 

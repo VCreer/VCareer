@@ -138,6 +138,16 @@ namespace VCareer.Application.Contracts.Applications
         public string? CandidateName { get; set; }
 
         /// <summary>
+        /// Email ứng viên
+        /// </summary>
+        public string? CandidateEmail { get; set; }
+
+        /// <summary>
+        /// Số điện thoại ứng viên
+        /// </summary>
+        public string? CandidatePhone { get; set; }
+
+        /// <summary>
         /// ID công ty
         /// </summary>
         public int CompanyId { get; set; }
