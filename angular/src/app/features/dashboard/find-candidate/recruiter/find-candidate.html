@@ -1,0 +1,301 @@
+<div class="find-candidate-container">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-box">
+    <div class="breadcrumb-container">
+      <span class="breadcrumb-item active">Tìm kiếm ứng viên</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Left Sidebar - Filters -->
+    <div class="sidebar-filters">
+      <!-- Saved Filters Section -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">TÌM KIẾM THEO BỘ LỌC CÓ SẴN</h3>
+        <div class="saved-filter-dropdown">
+          <select 
+            class="filter-select"
+            [(ngModel)]="selectedSavedFilter"
+            (change)="onSavedFilterChange()">
+            <option value="">Chọn bộ lọc có sẵn</option>
+            <option *ngFor="let filter of savedFilters" [value]="filter.id">
+              {{ filter.name }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <app-button 
+            [type]="'primary'"
+            [size]="'small'"
+            (click)="onCreateNewFilter()"
+            class="create-filter-btn">
+            + Tạo mới bộ lọc
+          </app-button>
+          <app-button 
+            [type]="'secondary'"
+            [size]="'small'"
+            (click)="onUpdateFilter()"
+            class="update-filter-btn">
+            Cập nhật bộ lọc
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Basic Search Section -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">TÌM KIẾM CƠ BẢN</h3>
+        
+        <!-- Keywords -->
+        <div class="filter-field">
+          <label class="filter-label">Từ khóa cần tìm</label>
+          <input 
+            type="text" 
+            class="filter-input"
+            [(ngModel)]="keyword"
+            placeholder="Nhập từ khóa">
+        </div>
+
+        <!-- Search Scope -->
+        <div class="filter-field">
+          <label class="filter-label">Phạm vi tìm kiếm</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="searchScope.appliedPosition"
+                (change)="onSearchScopeChange()">
+              <span>Vị trí ứng tuyển</span>
+            </label>
+            <label class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="searchScope.activity"
+                (change)="onSearchScopeChange()">
+              <span>Hoạt động</span>
+            </label>
+            <label class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="searchScope.education"
+                (change)="onSearchScopeChange()">
+              <span>Học vấn</span>
+            </label>
+            <label class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="searchScope.experience"
+                (change)="onSearchScopeChange()">
+              <span>Kinh nghiệm</span>
+            </label>
+            <label class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="searchScope.skills"
+                (change)="onSearchScopeChange()">
+              <span>Kỹ năng</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="filter-field">
+          <label class="filter-label">Địa điểm</label>
+          <input 
+            type="text" 
+            class="filter-input"
+            [(ngModel)]="location"
+            placeholder="Nhập địa điểm">
+        </div>
+
+        <!-- CV Classification -->
+        <div class="filter-field">
+          <label class="filter-label">Phân loại CV</label>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input 
+                type="radio" 
+                name="cvClassification"
+                value="all"
+                [(ngModel)]="cvClassification"
+                (change)="onCvClassificationChange()">
+              <span>Tất cả</span>
+            </label>
+            <label class="radio-item">
+              <input 
+                type="radio" 
+                name="cvClassification"
+                value="unseen"
+                [(ngModel)]="cvClassification"
+                (change)="onCvClassificationChange()">
+              <span>Chưa xem</span>
+            </label>
+            <label class="radio-item">
+              <input 
+                type="radio" 
+                name="cvClassification"
+                value="seen"
+                [(ngModel)]="cvClassification"
+                (change)="onCvClassificationChange()">
+              <span>Đã xem</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Button -->
+      <app-button 
+        [type]="'primary'"
+        [size]="'large'"
+        (click)="onSearchClick()"
+        [loading]="loading"
+        class="search-btn">
+        TÌM CV
+      </app-button>
+    </div>
+
+    <!-- Right Section - Results -->
+    <div class="results-section">
+      <!-- Top Bar - Display Priority -->
+      <div class="results-header">
+        <div class="display-priority">
+          <span class="priority-label">Ưu tiên hiển thị:</span>
+          <div class="priority-radio-group">
+            <label class="priority-radio-item">
+              <input 
+                type="radio" 
+                name="displayPriority"
+                value="newest"
+                [(ngModel)]="displayPriority"
+                (change)="onDisplayPriorityChange()">
+              <span>Mới cập nhật</span>
+            </label>
+            <label class="priority-radio-item">
+              <input 
+                type="radio" 
+                name="displayPriority"
+                value="seeking"
+                [(ngModel)]="displayPriority"
+                (change)="onDisplayPriorityChange()">
+              <span>Đang tìm việc</span>
+            </label>
+            <label class="priority-radio-item">
+              <input 
+                type="radio" 
+                name="displayPriority"
+                value="experienced"
+                [(ngModel)]="displayPriority"
+                (change)="onDisplayPriorityChange()">
+              <span>Có kinh nghiệm</span>
+            </label>
+            <label class="priority-radio-item">
+              <input 
+                type="radio" 
+                name="displayPriority"
+                value="suitable"
+                [(ngModel)]="displayPriority"
+                (change)="onDisplayPriorityChange()">
+              <span>Ứng viên phù hợp</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-count">
+        <h2>TÌM THẤY {{ totalResults }} ỨNG VIÊN PHÙ HỢP</h2>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Đang tìm kiếm...</p>
+      </div>
+
+      <!-- Candidate List -->
+      <div *ngIf="!loading && candidates.length > 0" class="candidates-list">
+        <div 
+          *ngFor="let candidate of candidates" 
+          class="candidate-card"
+          (click)="onCandidateClick(candidate)">
+          <div class="candidate-header">
+            <div class="candidate-avatar">
+              <span>{{ candidate.avatar || getInitials(candidate.name) }}</span>
+            </div>
+            <div class="candidate-info">
+              <div class="candidate-name-row">
+                <h3 class="candidate-name">{{ candidate.name }}</h3>
+                <span *ngIf="candidate.isSeekingJob" class="seeking-job-badge">Đang tìm việc</span>
+              </div>
+              <p class="candidate-job-title">{{ candidate.jobTitle }}</p>
+              <p class="candidate-location">{{ candidate.location }}</p>
+              <p class="candidate-updated">Cập nhật: {{ candidate.updatedTime }}</p>
+              <div class="candidate-stats">
+                <span class="stat-item">Lương mong muốn: {{ candidate.salary }}</span>
+                <span class="stat-item">{{ candidate.viewCount }} lượt xem</span>
+                <span class="stat-item">{{ candidate.contactOpenCount }} lượt mở liên hệ</span>
+              </div>
+            </div>
+            <button 
+              class="bookmark-btn"
+              (click)="onBookmarkClick(candidate.id, $event)">
+              <i class="fa fa-bookmark"></i>
+            </button>
+          </div>
+
+          <!-- Experience Section -->
+          <div *ngIf="candidate.experienceEntries && candidate.experienceEntries.length > 0" class="candidate-section">
+            <h4 class="section-title">
+              Kinh nghiệm
+              <span>
+                ({{ formatExperience(candidate.experience) || 'Chưa cập nhật' }})
+              </span>
+            </h4>
+            <div class="experience-list">
+              <div *ngFor="let exp of candidate.experienceEntries" class="experience-item">
+                <span class="experience-position">{{ exp.position }}</span>
+                <span *ngIf="exp.company" class="experience-company">{{ exp.company }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills Section -->
+          <div *ngIf="candidate.skills && candidate.skills.length > 0" class="candidate-section">
+            <h4 class="section-title">Kỹ năng</h4>
+            <div class="skills-list">
+              <div *ngFor="let skill of candidate.skills" class="skill-item">
+                <strong>{{ skill }}</strong>
+                <span *ngIf="skill === 'TIN HỌC VĂN PHÒNG ASPHALT'" class="skill-description">
+                  Sử dụng thành thạo các công cụ Word, Excel, Power Point
+                </span>
+                <span *ngIf="skill === 'TIẾNG ANH'" class="skill-description">
+                  Khả năng giao tiếp Tiếng Anh trôi chảy
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Education Section -->
+          <div *ngIf="candidate.education" class="candidate-section">
+            <h4 class="section-title">Học Văn</h4>
+            <p class="education-text">{{ candidate.education }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && candidates.length === 0" class="empty-state">
+        <p>Không tìm thấy ứng viên phù hợp</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<app-toast-notification
+  [show]="showToast"
+  [message]="toastMessage"
+  [type]="toastType"
+  (close)="onToastClose()">
+</app-toast-notification>
+

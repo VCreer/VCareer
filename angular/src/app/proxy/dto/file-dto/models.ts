@@ -12,3 +12,9 @@ export interface FileDescriptorDto {
   status: number;
   uploadTime?: string;
 }
+
+export interface FileStreamResultDto {
+  data: any;
+  mimeType?: string;
+  fileName?: string;
+}

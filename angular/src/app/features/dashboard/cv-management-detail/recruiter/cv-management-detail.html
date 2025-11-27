@@ -63,6 +63,9 @@
           </div>
           <div class="candidate-info-summary">
             <div class="candidate-name-summary">{{ cvDetail.name }}</div>
+            <div class="view-status-badge" [class.viewed]="isViewed" [class.not-viewed]="!isViewed">
+              {{ isViewed ? 'Đã xem' : 'Chưa xem' }}
+            </div>
             <div class="contact-opened-summary" *ngIf="cvDetail.contactOpenedDate">
               Đã mở liên hệ ngày {{ cvDetail.contactOpenedDate }}
             </div>

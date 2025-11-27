@@ -22,6 +22,13 @@ namespace VCareer.Models.Users
         public long? QuotaUsedBytes { get; set; } 
         public long? MaxQuotaBytes { get; set; }
 
+        // Thông tin nghề nghiệp
+        public string? JobTitle { get; set; } // Vị trí chuyên môn
+        public string? Skills { get; set; } // Kỹ năng (có thể lưu dạng JSON hoặc string phân cách)
+        public int? Experience { get; set; } // Kinh nghiệm (số năm)
+        public decimal? Salary { get; set; } // Mức lương mong muốn (decimal 18,2)
+        public string? WorkLocation { get; set; } // Địa điểm làm việc
+
         // === NAVIGATION PROPERTIES ===
 
         /// <summary>
