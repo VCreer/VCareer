@@ -12,7 +12,6 @@ namespace VCareer.IServices.IJobServices
         public Task<List<CategoryTreeDto>> SearchCategoriesAsync(string keyword); // Trả về danh sách các leaf categories có path chứa từ khóa
         public Task DeleteCategoryAsync(Guid id);
         public Task UpdateCategoryAsync(Guid id, CategoryUpdateCreateDto dto);
-        public Task CreaateCategoryAsync(CategoryUpdateCreateDto dto);
-        public Task GetTagsByCategoryIdAsync(int categoryId);
+        public Task CreateCategoryAsync(CategoryUpdateCreateDto dto);
     }
 }

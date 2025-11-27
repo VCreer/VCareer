@@ -14,7 +14,7 @@ namespace VCareer.Dto.JobDto
         public string? CompanyName { get; set; }
         public string Title { get; set; }
         public JobStatus Status { get; set; }
-        public Guid JobId { get; set; }
+        public Guid Id { get; set; }
         public DateTime? ExpiresAt { get; set; }
         public decimal? SalaryMin { get; set; }
         public decimal? SalaryMax { get; set; }

@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { TagCreateDto, TagUpdateDto } from '../../dto/category/models';
+import type { TagCreateDto, TagUpdateDto, TagViewDto } from '../../dto/category/models';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +23,14 @@ export class TagService {
       method: 'DELETE',
       url: '/api/app/tag/tags',
       params: { tagIds },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getTagsByCategoryId = (categoryId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, TagViewDto[]>({
+      method: 'GET',
+      url: `/api/app/tag/tags-by-category-id/${categoryId}`,
     },
     { apiName: this.apiName,...config });
   

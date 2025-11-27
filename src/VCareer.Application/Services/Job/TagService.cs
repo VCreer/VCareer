@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Dto.Category;
+using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.JobCategory;
@@ -16,11 +17,13 @@ namespace VCareer.Services.Job
     {
         private readonly ITagRepository _tagRepository;
         private readonly IJobTagRepository _jobTagRepository;
+        private readonly IJobCategoryRepository _jobCategoryRepository;
 
-        public TagService(ITagRepository tagRepository, IJobTagRepository jobTagRepository)
+        public TagService(ITagRepository tagRepository, IJobTagRepository jobTagRepository,IJobCategoryRepository jobCategoryRepository)
         {
             _tagRepository = tagRepository;
             _jobTagRepository = jobTagRepository;
+            _jobCategoryRepository = jobCategoryRepository;
         }
         public async Task CreateTagsAsync(TagCreateDto dto)
         {
@@ -45,6 +48,15 @@ namespace VCareer.Services.Job
             await _tagRepository.DeleteManyAsync(listAllowedToDelete);
         }
 
+        public async Task<List<TagViewDto>> GetTagsByCategoryIdAsync(Guid categoryId)
+        {
+            var category = await _jobCategoryRepository.GetAsync(categoryId);
+            if (category == null) throw new UserFriendlyException("Category not found.");
+
+            var tags = await _tagRepository.GetListAsync(x => x.CategoryId == categoryId);
+            if (tags == null) return new List<TagViewDto>();
+            return ObjectMapper.Map<List<Tag>, List<TagViewDto>>(tags);
+        }
 
         public async Task UpdateTagAsync(TagUpdateDto tagUpdateDto)
         {

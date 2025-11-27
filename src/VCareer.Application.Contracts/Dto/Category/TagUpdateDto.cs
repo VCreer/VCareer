@@ -23,4 +23,11 @@ namespace VCareer.Dto.Category
         public List<int> TagIds { get; set; }
         public Guid JobId { get; set; }
     }
+
+    public class TagViewDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public Guid CategoryId { get; set; }
+    }
 }

@@ -28,3 +28,9 @@ export interface TagUpdateDto {
   tagId: number;
   newName?: string;
 }
+
+export interface TagViewDto {
+  id: number;
+  name?: string;
+  categoryId?: string;
+}

@@ -35,25 +35,34 @@
       </app-filter-bar>
     </div>
 
-    <!-- Inline statistics row under search bar -->
+    <!-- Inline statistics row under search bar - ✅ Hiển thị thông tin từ API -->
     <div class="hero-stats">
       <div class="hero-stat">
         <div class="icon-box">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg>
         </div>
-        <div class="content"><div class="num">25,850</div><div class="label">{{ translate('homepage.stats.jobs') }}</div></div>
+        <div class="content">
+          <div class="num">{{ formatNumber(totalJobCount) }}</div>
+          <div class="label">{{ translate('homepage.stats.jobs') || 'Việc làm' }}</div>
+        </div>
       </div>
       <div class="hero-stat">
         <div class="icon-box">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
-        <div class="content"><div class="num">10,250</div><div class="label">{{ translate('homepage.stats.candidates') }}</div></div>
+        <div class="content">
+          <div class="num">{{ formatNumber(totalCategoryCount) }}</div>
+          <div class="label">{{ translate('homepage.stats.categories') || 'Danh mục nghề' }}</div>
+        </div>
       </div>
       <div class="hero-stat">
         <div class="icon-box">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V12h6v9"/></svg>
         </div>
-        <div class="content"><div class="num">18,400</div><div class="label">{{ translate('homepage.stats.companies') }}</div></div>
+        <div class="content">
+          <div class="num">{{ formatNumber(totalProvinceCount) }}</div>
+          <div class="label">{{ translate('homepage.stats.provinces') || 'Tỉnh/Thành phố' }}</div>
+        </div>
       </div>
     </div>
   </div>

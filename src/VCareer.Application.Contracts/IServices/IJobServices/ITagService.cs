@@ -13,6 +13,7 @@ namespace VCareer.IServices.IJobServices
         public Task CreateTagsAsync(TagCreateDto dto);
         public Task UpdateTagAsync(TagUpdateDto tagUpdateDto);
         public Task DeleteTagsAsync(List<int> tagId);
+        public Task<List<TagViewDto>> GetTagsByCategoryIdAsync(Guid categoryId);
 
     }
 }

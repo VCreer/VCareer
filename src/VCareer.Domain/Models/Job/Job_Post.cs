@@ -20,7 +20,7 @@ namespace VCareer.Models.Job
 
         //public Job_Post(Guid id) : base(id) { }
         #region Basic Job Description
-        public Guid? RecruitmentCampaignId { get; set; }
+        public Guid RecruitmentCampaignId { get; set; }
         public string? CompanyImageUrl { get; set; }
         public int CompanyId { get; set; }
         public string? CompanyName { get; set; }
