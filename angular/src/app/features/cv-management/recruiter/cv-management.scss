@@ -288,8 +288,22 @@
               }
 
               .candidate-viewed {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
                 font-size: 12px;
-                color: #6b7280;
+                font-weight: 500;
+                margin-top: 2px;
+
+                &.viewed {
+                  background-color: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.not-viewed {
+                  background-color: #fee2e2;
+                  color: #991b1b;
+                }
               }
             }
           }

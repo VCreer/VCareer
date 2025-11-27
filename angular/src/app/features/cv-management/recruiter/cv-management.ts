@@ -233,8 +233,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       return {
         id: app.id || '',
         name: app.candidateName || 'N/A',
-        email: email,
-        phone: phone,
+        email: app.candidateEmail || 'N/A',
+        phone: app.candidatePhone || 'N/A',
         position: app.jobTitle || 'N/A',
         status: normalizedStatus, // Normalize backend status to frontend status
         source: this.getCvSource(app.cvType),

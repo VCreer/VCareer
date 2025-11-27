@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using VCareer.Dto.FileDto;
 using VCareer.Dto.Profile;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -104,5 +106,20 @@ namespace VCareer.IServices.IProfileServices
         /// <param name="input">Filter và pagination</param>
         /// <returns>Danh sách công ty đã được xác minh</returns>
         Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input);
+
+        /// <summary>
+        /// Upload Giấy đăng ký doanh nghiệp cho công ty
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="file">File giấy tờ</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, IFormFile file);
+
+        /// <summary>
+        /// Lấy file Giấy đăng ký doanh nghiệp theo StoragePath
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
+        /// <returns>File stream DTO</returns>
+        Task<FileStreamResultDto> GetLegalDocumentFileAsync(string storagePath);
     }
 }
