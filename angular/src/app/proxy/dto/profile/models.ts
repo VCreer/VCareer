@@ -128,6 +128,7 @@ export interface CompanyVerificationViewDto extends EntityDto<number> {
   taxCertificateFile?: string;
   representativeIdCardFile?: string;
   otherSupportFile?: string;
+  legalDocumentUrl?: string; // File upload từ business-cert tab
   verificationStatus?: boolean;
   legalVerificationStatus?: string;
   legalReviewedBy?: number;
@@ -158,6 +159,7 @@ export interface UpdateCompanyLegalInfoDto {
   companySize?: number;
   industryId?: number;
   foundedYear?: number;
+  websiteUrl?: string;
   taxCode: string;
   businessLicenseNumber: string;
   businessLicenseIssueDate: string;

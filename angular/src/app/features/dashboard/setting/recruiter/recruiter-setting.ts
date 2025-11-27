@@ -1235,6 +1235,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       companySize,
       industryId,
       foundedYear: detail.foundedYear ?? new Date().getFullYear(),
+      websiteUrl: this.companyFormData.website || detail.websiteUrl || null,
       taxCode: this.companyFormData.taxId || detail.taxCode || '0000000000',
       businessLicenseNumber: detail.businessLicenseNumber || 'Đang cập nhật',
       businessLicenseIssueDate: issueDate,
@@ -1429,7 +1430,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       this.companyLegalInfoService.updateCompanyLegalInfo(this.editingCompanyId, updateDto).subscribe({
         next: () => {
           this.isSavingCompany = false;
-          this.showToastMessage('Cập nhật thông tin công ty thành công!', 'success');
+          this.showToastMessage('Cập nhật thông tin công ty thành công! Hồ sơ đang chờ xác thực lại từ phía Employee.', 'success');
           this.isEditingCompany = false;
           this.companyTab = 'search';
           const companyId = this.selectedCompanyId ?? this.editingCompanyId;

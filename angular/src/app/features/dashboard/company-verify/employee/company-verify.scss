@@ -399,6 +399,11 @@
                   background: #d1fae5;
                   color: #059669;
                 }
+
+                &.rejected {
+                  background: #fee2e2;
+                  color: #dc2626;
+                }
               }
             }
           }
@@ -522,6 +527,18 @@
                     text-decoration: underline;
                   }
                 }
+
+                .rejection-notes {
+                  margin-top: 8px;
+                  padding: 12px;
+                  background: #fef2f2;
+                  border-left: 3px solid #ef4444;
+                  border-radius: 4px;
+                  color: #991b1b;
+                  font-size: 14px;
+                  line-height: 1.5;
+                  white-space: pre-wrap;
+                }
               }
             }
 
@@ -553,54 +570,284 @@
                 }
               }
             }
-          }
 
-          .detail-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid #e5e7eb;
+            // Legal document items with images
+            .legal-document-item {
+              margin-bottom: 24px;
+              padding-bottom: 24px;
+              border-bottom: 1px solid #f3f4f6;
 
-            .action-btn {
-              flex: 1;
-              padding: 12px 20px;
-              border: none;
-              border-radius: 8px;
-              font-size: 14px;
-              font-weight: 500;
-              cursor: pointer;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-              transition: all 0.2s;
-
-              &:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
+              &:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
               }
 
-              &.approve-btn {
-                background: #10b981;
-                color: white;
+              .document-label {
+                margin-bottom: 12px;
+                font-size: 14px;
 
-                &:hover:not(:disabled) {
-                  background: #059669;
+                strong {
+                  color: #111827;
+                  font-weight: 600;
                 }
               }
 
-              &.reject-btn {
-                background: #ef4444;
-                color: white;
+              .document-preview {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
 
-                &:hover:not(:disabled) {
-                  background: #dc2626;
+                .document-image {
+                  max-width: 100%;
+                  max-height: 500px;
+                  width: auto;
+                  height: auto;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                  cursor: pointer;
+                  transition: transform 0.2s, box-shadow 0.2s;
+                  object-fit: contain;
+                  background: #f9fafb;
+
+                  &:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                  }
+                }
+
+                .document-pdf-placeholder {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  padding: 40px 20px;
+                  background: #f9fafb;
+                  border: 2px dashed #e5e7eb;
+                  border-radius: 8px;
+                  color: #6b7280;
+                  gap: 12px;
+
+                  i {
+                    font-size: 48px;
+                    color: #dc2626;
+                  }
+
+                  span {
+                    font-size: 14px;
+                    font-weight: 500;
+                  }
+
+                  .view-pdf-link {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 16px;
+                    background: #0f83ba;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    transition: background 0.2s;
+
+                    &:hover {
+                      background: #0d6fa0;
+                    }
+                  }
+                }
+
+                .document-download-link {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 8px;
+                  padding: 10px 16px;
+                  background: #f9fafb;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 6px;
+                  color: #0f83ba;
+                  text-decoration: none;
+                  font-size: 14px;
+                  transition: all 0.2s;
+
+                  &:hover {
+                    background: #f0f9ff;
+                    border-color: #0f83ba;
+                  }
+
+                  i {
+                    font-size: 16px;
+                  }
+                }
+              }
+            }
+
+            .no-documents {
+              padding: 20px;
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+              background: #f9fafb;
+              border-radius: 8px;
+            }
+
+            .detail-actions {
+              display: flex;
+              gap: 12px;
+              margin-top: 24px;
+              padding-top: 24px;
+              border-top: 1px solid #e5e7eb;
+
+              ::ng-deep button.action-btn,
+              button.action-btn {
+                flex: 1;
+                padding: 12px 24px !important;
+                border: none !important;
+                border-radius: 8px !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                cursor: pointer;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.2s ease;
+                min-height: 44px;
+                width: auto !important;
+                margin: 0 !important;
+
+                &:disabled {
+                  opacity: 0.6;
+                  cursor: not-allowed;
+                }
+
+                i {
+                  font-size: 14px;
+                }
+
+                &.approve-btn {
+                  background: #0F83BA !important;
+                  background-color: #0F83BA !important;
+                  color: white !important;
+
+                  &:hover:not(:disabled) {
+                    background: #0d6fa0 !important;
+                    background-color: #0d6fa0 !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(15, 131, 186, 0.3);
+                  }
+
+                  &:active:not(:disabled) {
+                    transform: translateY(0);
+                    box-shadow: 0 2px 4px rgba(15, 131, 186, 0.2);
+                  }
+
+                  &:focus {
+                    outline: 2px solid #0F83BA;
+                    outline-offset: 2px;
+                  }
+                }
+
+                &.reject-btn {
+                  background: #ef4444 !important;
+                  background-color: #ef4444 !important;
+                  color: white !important;
+
+                  &:hover:not(:disabled) {
+                    background: #dc2626 !important;
+                    background-color: #dc2626 !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+                  }
+
+                  &:active:not(:disabled) {
+                    transform: translateY(0);
+                    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+                  }
+
+                  &:focus {
+                    outline: 2px solid #ef4444;
+                    outline-offset: 2px;
+                  }
                 }
               }
             }
           }
         }
+      }
+    }
+  }
+}
+
+// Image Modal Styles
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  box-sizing: border-box;
+
+  .image-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    .image-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+
+      .image-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+      }
+
+      .close-image-modal-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #111827;
+        }
+      }
+    }
+
+    .image-modal-body {
+      padding: 20px;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: calc(90vh - 80px);
+
+      .full-size-image {
+        max-width: 100%;
+        max-height: calc(90vh - 120px);
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        object-fit: contain;
       }
     }
   }
@@ -755,6 +1002,53 @@
         }
       }
     }
+  }
+}
+
+// Force override for action buttons - add at end of file for highest specificity
+:host ::ng-deep .detail-actions button.action-btn.approve-btn,
+.company-verify-page .detail-actions button.action-btn.approve-btn {
+  background: #0F83BA !important;
+  background-color: #0F83BA !important;
+  color: white !important;
+  padding: 12px 24px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  min-height: 44px !important;
+
+  &:hover:not(:disabled) {
+    background: #0d6fa0 !important;
+    background-color: #0d6fa0 !important;
+  }
+}
+
+:host ::ng-deep .detail-actions button.action-btn.reject-btn,
+.company-verify-page .detail-actions button.action-btn.reject-btn {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: white !important;
+  padding: 12px 24px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  min-height: 44px !important;
+
+  &:hover:not(:disabled) {
+    background: #dc2626 !important;
+    background-color: #dc2626 !important;
   }
 }
 

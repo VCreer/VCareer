@@ -93,6 +93,9 @@ namespace VCareer.Dto.Profile
         public int? IndustryId { get; set; }
         public int? FoundedYear { get; set; }
 
+        [StringLength(500)]
+        public string? WebsiteUrl { get; set; }
+
         // Legal Information fields
         [StringLength(50)]
         public string? TaxCode { get; set; }
@@ -221,6 +224,7 @@ namespace VCareer.Dto.Profile
         public string? TaxCertificateFile { get; set; }
         public string? RepresentativeIdCardFile { get; set; }
         public string? OtherSupportFile { get; set; }
+        public string? LegalDocumentUrl { get; set; } // File upload từ business-cert tab
         
         // Verification status
         public bool? VerificationStatus { get; set; }

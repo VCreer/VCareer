@@ -108,6 +108,13 @@ namespace VCareer.IServices.IProfileServices
         Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input);
 
         /// <summary>
+        /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã bị từ chối</returns>
+        Task<PagedResultDto<CompanyVerificationViewDto>> GetRejectedCompaniesAsync(CompanyVerificationFilterDto input);
+
+        /// <summary>
         /// Upload Giấy đăng ký doanh nghiệp cho công ty
         /// </summary>
         /// <param name="id">Company ID</param>
