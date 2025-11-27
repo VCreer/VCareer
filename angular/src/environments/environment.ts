@@ -3,12 +3,7 @@ import { Environment } from '@abp/ng.core';
 const baseUrl = 'http://localhost:4200';
 
 const oAuthConfig = {
-  issuer: 'https://localhost:44385/',
-  redirectUri: baseUrl,
-  clientId: 'VCareer_App',
-  responseType: 'code',
-  scope: 'offline_access VCareer',
-  requireHttps: true,
+  skipOidc: true,
   skipIssuerCheck: true,
 };
 
@@ -23,11 +18,7 @@ export const environment = {
     default: {
       url: 'https://localhost:44385',
       rootNamespace: 'VCareer',
-    },
-    AbpAccountPublic: {
-      url: oAuthConfig.issuer,
-      rootNamespace: 'AbpAccountPublic',
-    },
+    }
   },
   // API Configuration
   apiUrl: 'http://localhost:3000/api',

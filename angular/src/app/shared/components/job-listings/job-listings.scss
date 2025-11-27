@@ -1,5 +1,5 @@
 .job-listings-section {
-  padding: 20px 120px 40px 120px; /* add a bit of top spacing back */
+  padding: 20px 120px 40px 120px;
   max-width: 100%;
   overflow-x: hidden;
   
@@ -40,10 +40,9 @@
 .job-listings-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  /* Don't force fixed number of rows to avoid big empty space */
   grid-auto-rows: max-content;
   gap: 20px;
-  margin-top: 24px; /* comfortable spacing below filters */
+  margin-top: 24px;
   max-width: 100%;
   overflow-x: hidden;
   padding: 0;
@@ -64,30 +63,44 @@
   }
 }
 
+/* ✅ FIXED: Đưa .job-card ra ngoài, không lồng vào .pagination */
 .job-card {
   background: white;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid #e5e7eb;
   position: relative;
   overflow: hidden;
   max-width: 100%;
   box-sizing: border-box;
+  cursor: pointer; /* ✅ THÊM: Hiển thị cursor pointer */
+  
+  /* ✅ FIXED: Đảm bảo click event hoạt động */
+  pointer-events: auto;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   }
-
-
+  
+  &:active {
+    transform: translateY(-2px);
+  }
 
   .job-card-body {
     display: grid;
     grid-template-columns: 64px 1fr;
     gap: 16px;
     align-items: start;
+    /* ✅ CRITICAL: Đảm bảo body không chặn click */
+    //pointer-events: none;
+    
+    /* ✅ Cho phép các children nhận click events */
+    //> * {
+    //  pointer-events: auto;
+    //}
   }
 
   .job-image {
@@ -105,11 +118,11 @@
       color: #1f2937;
       margin-bottom: 8px;
       line-height: 1.3;
-      cursor: pointer;
       transition: color 0.2s ease;
 
       &:hover {
         color: #0F83BA;
+        text-decoration: underline;
       }
     }
 
@@ -120,60 +133,58 @@
       font-weight: 500;
     }
 
-    .job-details {
+    .job-detail-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 8px;
 
-      .detail-text {
+      .job-detail-item {
         font-size: 13px;
         color: #6b7280;
-        background: #f8f9fa;
-        padding: 4px 8px;
-        border-radius: 12px;
-        white-space: nowrap;
-        border: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        i {
+          font-size: 12px;
+          color: #9ca3af;
+        }
+      }
+      
+      &.job-expires {
+        color: #ef4444;
+        font-weight: 500;
       }
     }
-
   }
+  
   .job-meta {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-  }
-
-  .job-tags {
-    display: flex;
-    gap: 6px;
-    
-    .detail-text {
-      font-size: 13px;
-      color: #6b7280;
-      background: #f8f9fa;
-      padding: 6px 12px;
-      border-radius: 16px;
-      white-space: nowrap;
-      border: 1px solid #e9ecef;
-    }
+    justify-content: flex-end;
+    margin-top: 12px;
   }
 
   .heart-btn {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 18px;
     color: #d1d5db;
     cursor: pointer;
     transition: all 0.2s ease;
+    /* ✅ CRITICAL: Z-index cao để có thể click được */
+    position: relative;
+    z-index: 10;
+    /* ✅ CRITICAL: Đảm bảo button nhận click event */
+    pointer-events: auto;
 
     &.active {
       background: #0F83BA;
@@ -182,7 +193,7 @@
     }
 
     &:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
   }
 }
@@ -196,7 +207,7 @@
 
   .page-btn {
     background: transparent;
-    border: 1px solid #0F83BA; /* site primary */
+    border: 1px solid #0F83BA;
     color: #0F83BA;
     border-radius: 50%;
     width: 40px;
@@ -230,7 +241,7 @@
     font-weight: 600;
     
     .current-page {
-      color: #0F83BA; /* site primary */
+      color: #0F83BA;
     }
     
     .total-pages {

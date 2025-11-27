@@ -52,6 +52,7 @@ export interface JobPostCreateDto {
   description?: string;
   requirements?: string;
   benefits?: string;
+  recruitmentCampaignId?: string;
   salaryMin?: number;
   salaryMax?: number;
   salaryDeal: boolean;
@@ -63,6 +64,7 @@ export interface JobPostCreateDto {
   wardCode?: number;
   workLocation?: string;
   quantity: number;
+  tagIds: number[];
   expiresAt?: string;
   jobCategoryId?: string;
 }
@@ -100,13 +102,23 @@ export interface JobSearchInputDto {
   maxResultCount: number;
 }
 
+export interface JobTagViewDto {
+  jobId?: string;
+  tagId: number;
+}
+
+export interface JobTagViewDto_JobTagCreateUpdateDto {
+  jobId?: string;
+  tagIds: number[];
+}
+
 export interface JobViewDto {
   companyImageUrl?: string;
   companyId: number;
   companyName?: string;
   title?: string;
   status?: JobStatus;
-  jobId?: string;
+  id?: string;
   expiresAt?: string;
   salaryMin?: number;
   salaryMax?: number;
@@ -127,4 +139,28 @@ export interface PagedResultDto<T> {
 export interface PostJobDto {
   jobId?: string;
   childServiceIds: string[];
+}
+
+export interface RecruimentCampainCreateDto {
+  name?: string;
+  isActive: boolean;
+  description?: string;
+}
+
+export interface RecruimentCampainUpdateDto {
+  id?: string;
+  name?: string;
+  description?: string;
+}
+
+export interface RecruimentCampainViewDto {
+  id?: string;
+  name?: string;
+  isActive: boolean;
+  description?: string;
+  companyId: number;
+  creationTime?: string;
+  creatorId?: string;
+  lastModificationTime?: string;
+  lastModifierId?: string;
 }

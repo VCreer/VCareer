@@ -31,7 +31,13 @@
   <!-- ============================================ -->
   <!-- CATEGORY DROPDOWN (3 cấp với hover) -->
   <!-- ============================================ -->
-  <div class="filter-dropdown category-dropdown" *ngIf="showCategoryDropdown" (click)="$event.stopPropagation()">
+  <!-- Debug: showCategoryDropdown={{ showCategoryDropdown }}, categories={{ categories?.length || 0 }} -->
+  <div 
+    class="filter-dropdown category-dropdown" 
+    *ngIf="showCategoryDropdown" 
+    (click)="$event.stopPropagation()"
+    [style.display]="showCategoryDropdown ? 'flex' : 'none'"
+  >
     <!-- Header -->
     <div class="dropdown-header">
       <h3 class="dropdown-title">Chọn Nhóm nghề, Nghề hoặc Chuyên môn</h3>
@@ -104,7 +110,7 @@
 
         <!-- CỘT TRÁI: Danh sách Category cấp 1 -->
         <div class="category-level1-list" *ngIf="filteredCategories.length > 0">
-          <div class="list-header">NHÓM NGHỀ ({{ filteredCategories.length }})</div>
+          <div class="list-header">NHÓM NGHỀ ({{ filteredCategories.length }} nhóm nghề có sẵn)</div>
           <div class="scrollable-list">
             <div
               *ngFor="let category of filteredCategories"
@@ -185,14 +191,8 @@
     <div class="dropdown-footer">
       <button class="btn-text" (click)="clearAllCategories()">Bỏ chọn tất cả</button>
       <button class="btn-primary" (click)="applyCategoryFilter()">Chọn</button>
-      </div>
-      <div class="filter-option" [class.active]="selectedFilter==='Mức lương'" (click)="selectFilter('Mức lương')">
-        {{ translate('filter.salary') || 'Mức lương' }}
-        <span class="checkmark" *ngIf="selectedFilter==='Mức lương'">✓</span>
-      </div>
-
-  <!-- ✅ BỎ OVERLAY (không làm mờ background) -->
-      </div>
+    </div>
+  </div>
 
   <!-- ============================================ -->
   <!-- LOCATION DROPDOWN - RIÊNG BIỆT, KHÔNG DÙNG CLASS CATEGORY -->
@@ -230,31 +230,31 @@
 
         <!-- CỘT TRÁI: Provinces -->
         <div class="location-provinces" *ngIf="filteredProvinces.length > 0">
-          <div class="location-list-header">TỈNH/THÀNH PHỐ ({{ filteredProvinces.length }})</div>
+          <div class="location-list-header">TỈNH/THÀNH PHỐ ({{ filteredProvinces.length }} tỉnh/thành phố có sẵn)</div>
           <div class="location-scrollable">
             <div
               *ngFor="let province of filteredProvinces"
               class="location-province-item"
-              [class.selected]="isProvinceSelected(province.id)"
-              [class.hovered]="hoveredProvince?.id === province.id"
+              [class.selected]="isProvinceSelected(province.code)"
+              [class.hovered]="hoveredProvince?.code === province.code"
               (mouseenter)="onProvinceHover(province)"
             >
               <label class="location-checkbox-label">
                 <input
                   type="checkbox"
-                  [checked]="isProvinceSelected(province.id)"
-                  (change)="toggleProvinceSelection(province.id, $event)"
+                  [checked]="isProvinceSelected(province.code)"
+                  (change)="toggleProvinceSelection(province.code, $event)"
                 />
                 <span class="location-name">{{ province.name }}</span>
                 <span
                   class="location-count"
-                  *ngIf="province.districts && province.districts.length > 0"
+                  *ngIf="province.wards && province.wards.length > 0"
                 >
-                  ({{ province.districts.length }})
+                  ({{ province.wards.length }})
                 </span>
                 <span
                   class="location-arrow"
-                  *ngIf="province.districts && province.districts.length > 0"
+                  *ngIf="province.wards && province.wards.length > 0"
                   >›</span
                 >
               </label>
@@ -267,35 +267,35 @@
           <!-- Có province được hover và có districts -->
           <div
             class="location-district-wrapper"
-            *ngIf="hoveredProvince && hoveredProvince.districts && hoveredProvince.districts.length > 0"
+            *ngIf="hoveredProvince && hoveredProvince.wards && hoveredProvince.wards.length > 0"
           >
             <div class="location-list-header">QUẬN/HUYỆN - {{ hoveredProvince.name }}</div>
             <div class="location-scrollable">
       <div 
-                *ngFor="let district of hoveredProvince.districts"
+                *ngFor="let ward of hoveredProvince.wards"
                 class="location-district-item"
-                [class.selected]="isDistrictSelected(district.id)"
+                [class.selected]="isDistrictSelected(ward.code)"
       >
                 <label class="location-checkbox-label">
                   <input
                     type="checkbox"
-                    [checked]="isDistrictSelected(district.id)"
-                    (change)="toggleDistrictSelection(hoveredProvince.id, district.id, $event)"
+                    [checked]="isDistrictSelected(ward.code)"
+                    (change)="toggleDistrictSelection(hoveredProvince.code, ward.code, $event)"
                   />
-                  <span class="location-name">{{ district.name }}</span>
+                  <span class="location-name">{{ ward.name }}</span>
                 </label>
               </div>
       </div>
     </div>
     
-          <!-- Empty state: Chưa hover hoặc province không có districts -->
+          <!-- Empty state: Chưa hover hoặc province không có wards -->
           <div
-            *ngIf="!hoveredProvince || !hoveredProvince.districts || hoveredProvince.districts.length === 0"
+            *ngIf="!hoveredProvince || !hoveredProvince.wards || hoveredProvince.wards.length === 0"
             class="location-districts-empty"
           >
             <p *ngIf="!hoveredProvince">Vui lòng chọn Tỉnh/Thành phố</p>
             <p
-              *ngIf="hoveredProvince && (!hoveredProvince.districts || hoveredProvince.districts.length === 0)"
+              *ngIf="hoveredProvince && (!hoveredProvince.wards || hoveredProvince.wards.length === 0)"
             >
               {{ hoveredProvince.name }} không có quận/huyện
             </p>

@@ -44,10 +44,12 @@ namespace VCareer.Services.Job
         private readonly IJobCategoryRepository _jobCategoryRepository;
         private readonly IJobAffectingService _effectingJobService;
         private readonly IChildServiceRepository _childServiceRepository;
+        private readonly ITagService _tagService;
+        private readonly IJobTagService _jobTagService;
 
 
         public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
-            IChildServiceRepository childServiceRepository)
+            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -60,6 +62,8 @@ namespace VCareer.Services.Job
             _jobCategoryRepository = jobCategoryRepository;
             _effectingJobService = jobAffectingService;
             _childServiceRepository = childServiceRepository;
+            _tagService = tagService;
+            _jobTagService = jobTagService;
         }
 
         public async Task ApproveJobPostAsync(string id)
@@ -247,14 +251,14 @@ namespace VCareer.Services.Job
             if (job.Status == JobStatus.Closed || job.Status == JobStatus.Rejected || job.Status == JobStatus.Expired) throw new Volo.Abp.UserFriendlyException($"This job is expired or rejected , you have to update to post!");
             if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open) throw new Volo.Abp.BusinessException($"This job is already open or waiting for approval.");
 
-          
+
             //chay cac child service duoc gan vao job
             if (dto.ChildServiceIds != null && dto.ChildServiceIds.Count > 0)
             {
                 foreach (var childServiceId in dto.ChildServiceIds)
                 {
                     var childService = await _childServiceRepository.GetAsync(childServiceId);
-                    if(childService == null|| childService.IsDeleted== true||childService.IsActive==false) throw new Volo.Abp.BusinessException($"This child service doesn't exist or deleted.");
+                    if (childService == null || childService.IsDeleted == true || childService.IsActive == false) throw new Volo.Abp.BusinessException($"This child service doesn't exist or deleted.");
                     await _effectingJobService.ApplyServiceToJob(new EffectingJobServiceCreateDto()
                     {
                         ChildServiceId = childServiceId,
@@ -320,10 +324,12 @@ namespace VCareer.Services.Job
                 SalaryDeal = dto.SalaryDeal,
                 PostedAt = DateTime.Now,
                 JobCategoryId = dto.JobCategoryId,
+                RecruitmentCampaignId = dto.RecruitmentCampaignId
 
             };
-
-            await _jobPostRepository.InsertAsync(job);
+            await _jobPostRepository.InsertAsync(job,true);
+            if (dto.TagIds != null && dto.TagIds.Count > 0) await _jobTagService
+                    .AddTagsToJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = job.Id, TagIds = dto.TagIds });
             await AddDefaultJobPriority(job);
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)

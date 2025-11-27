@@ -72,6 +72,7 @@ namespace VCareer.Services.Job
                     .Where(j => j != null)
                     .ToList();
 
+                if(orderedJobs.Count == 0) return new List<JobViewDto>();
                 return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
             }
             catch (Exception ex)
@@ -97,7 +98,7 @@ namespace VCareer.Services.Job
             };
 
             var jobs = await SearchJobsAsync(jobSearchInput);
-            jobs = jobs.Where(x => x.JobId != jobId).Take(maxCount).ToList();
+            jobs = jobs.Where(x => x.Id!= jobId).Take(maxCount).ToList();
             return jobs;
         }
         public async Task ReindexAllJobsAsync()

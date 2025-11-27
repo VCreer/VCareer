@@ -2575,69 +2575,6 @@
             }
           }
         },
-        "VCareer.Controllers.Job.JobCategoryController": {
-          "controllerName": "JobCategory",
-          "controllerGroupName": null,
-          "isRemoteService": false,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Controllers.Job.JobCategoryController",
-          "interfaces": [],
-          "actions": {
-            "GetCategoryTreeAsync": {
-              "uniqueName": "GetCategoryTreeAsync",
-              "name": "GetCategoryTreeAsync",
-              "httpMethod": "GET",
-              "url": "api/job-categories/tree",
-              "supportedVersions": [],
-              "parametersOnMethod": [],
-              "parameters": [],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.Controllers.Job.JobCategoryController"
-            },
-            "SearchCategoriesAsyncByKeyword": {
-              "uniqueName": "SearchCategoriesAsyncByKeyword",
-              "name": "SearchCategoriesAsync",
-              "httpMethod": "POST",
-              "url": "api/job-categories/search",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "keyword",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "keyword",
-                  "name": "keyword",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>>"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.Controllers.Job.JobCategoryController"
-            }
-          }
-        },
         "VCareer.Controllers.OrderController": {
           "controllerName": "Order",
           "controllerGroupName": null,
@@ -9775,7 +9712,7 @@
                   }
                 },
                 {
-                  "name": "CreaateCategoryAsync",
+                  "name": "CreateCategoryAsync",
                   "parametersOnMethod": [
                     {
                       "name": "dto",
@@ -9790,33 +9727,16 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
-                },
-                {
-                  "name": "GetTagsByCategoryIdAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "categoryId",
-                      "typeAsString": "System.Int32, System.Private.CoreLib",
-                      "type": "System.Int32",
-                      "typeSimple": "number",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
                 }
               ]
             }
           ],
           "actions": {
-            "CreaateCategoryAsyncByDto": {
-              "uniqueName": "CreaateCategoryAsyncByDto",
-              "name": "CreaateCategoryAsync",
+            "CreateCategoryAsyncByDto": {
+              "uniqueName": "CreateCategoryAsyncByDto",
+              "name": "CreateCategoryAsync",
               "httpMethod": "POST",
-              "url": "api/app/job-category/creaate-category",
+              "url": "api/app/job-category/category",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -9897,43 +9817,6 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
                 "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
-            },
-            "GetTagsByCategoryIdAsyncByCategoryId": {
-              "uniqueName": "GetTagsByCategoryIdAsyncByCategoryId",
-              "name": "GetTagsByCategoryIdAsync",
-              "httpMethod": "GET",
-              "url": "api/app/job-category/tags-by-category-id/{categoryId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "categoryId",
-                  "typeAsString": "System.Int32, System.Private.CoreLib",
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "categoryId",
-                  "name": "categoryId",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
@@ -11649,6 +11532,774 @@
             }
           }
         },
+        "VCareer.Services.Job.JobTagService": {
+          "controllerName": "JobTag",
+          "controllerGroupName": "JobTag",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Job.JobTagService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.IJobServices.IJobTagService",
+              "name": "IJobTagService",
+              "methods": [
+                {
+                  "name": "AddTagsToJob",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetTagByJobId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobTagViewDto>",
+                    "typeSimple": "[VCareer.Dto.JobDto.JobTagViewDto]"
+                  }
+                },
+                {
+                  "name": "GetTagByTagId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "tagId",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.JobDto.JobTagViewDto",
+                    "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto"
+                  }
+                },
+                {
+                  "name": "UpdateTagOfJob",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "AddTagsToJobByDto": {
+              "uniqueName": "AddTagsToJobByDto",
+              "name": "AddTagsToJob",
+              "httpMethod": "POST",
+              "url": "api/app/job-tag/tags-to-job",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobTagService"
+            },
+            "GetTagByJobIdByJobId": {
+              "uniqueName": "GetTagByJobIdByJobId",
+              "name": "GetTagByJobId",
+              "httpMethod": "GET",
+              "url": "api/app/job-tag/tag-by-job-id/{jobId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobTagViewDto>",
+                "typeSimple": "[VCareer.Dto.JobDto.JobTagViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobTagService"
+            },
+            "GetTagByTagIdByTagId": {
+              "uniqueName": "GetTagByTagIdByTagId",
+              "name": "GetTagByTagId",
+              "httpMethod": "GET",
+              "url": "api/app/job-tag/tag-by-tag-id/{tagId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "tagId",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "tagId",
+                  "name": "tagId",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.JobDto.JobTagViewDto",
+                "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobTagService"
+            },
+            "UpdateTagOfJobByDto": {
+              "uniqueName": "UpdateTagOfJobByDto",
+              "name": "UpdateTagOfJob",
+              "httpMethod": "PUT",
+              "url": "api/app/job-tag/tag-of-job",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IJobTagService"
+            }
+          }
+        },
+        "VCareer.Services.Job.RecruitmentCompainService": {
+          "controllerName": "RecruitmentCompain",
+          "controllerGroupName": "RecruitmentCompain",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Job.RecruitmentCompainService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.IJobServices.IRecruitmentCompainService",
+              "name": "IRecruitmentCompainService",
+              "methods": [
+                {
+                  "name": "LoadRecruitmentCompain",
+                  "parametersOnMethod": [
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                    "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+                  }
+                },
+                {
+                  "name": "CreateRecruitmentCompain",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.JobDto.RecruimentCampainCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "SetRecruitmentCompainStatus",
+                  "parametersOnMethod": [
+                    {
+                      "name": "compainId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateRecruitmentCompain",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                      "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCompainByCompanyId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "companyId",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                    "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+                  }
+                },
+                {
+                  "name": "GetJobsByCompainId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "compainId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Job.JobViewDetail>",
+                    "typeSimple": "[VCareer.Dto.Job.JobViewDetail]"
+                  }
+                },
+                {
+                  "name": "GetCompainsByRecruiterId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "recruiterId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isActive",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                    "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+                  }
+                },
+                {
+                  "name": "GetCompainById",
+                  "parametersOnMethod": [
+                    {
+                      "name": "recruimentId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.JobDto.RecruimentCampainViewDto",
+                    "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainViewDto"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "LoadRecruitmentCompainByIsActive": {
+              "uniqueName": "LoadRecruitmentCompainByIsActive",
+              "name": "LoadRecruitmentCompain",
+              "httpMethod": "POST",
+              "url": "api/app/recruitment-compain/load-recruitment-compain",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "CreateRecruitmentCompainByInput": {
+              "uniqueName": "CreateRecruitmentCompainByInput",
+              "name": "CreateRecruitmentCompain",
+              "httpMethod": "POST",
+              "url": "api/app/recruitment-compain/recruitment-compain",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.JobDto.RecruimentCampainCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "SetRecruitmentCompainStatusByCompainIdAndIsActive": {
+              "uniqueName": "SetRecruitmentCompainStatusByCompainIdAndIsActive",
+              "name": "SetRecruitmentCompainStatus",
+              "httpMethod": "POST",
+              "url": "api/app/recruitment-compain/set-recruitment-compain-status/{compainId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "compainId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "compainId",
+                  "name": "compainId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "UpdateRecruitmentCompainByInput": {
+              "uniqueName": "UpdateRecruitmentCompainByInput",
+              "name": "UpdateRecruitmentCompain",
+              "httpMethod": "PUT",
+              "url": "api/app/recruitment-compain/recruitment-compain",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                  "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "GetCompainByCompanyIdByCompanyIdAndIsActive": {
+              "uniqueName": "GetCompainByCompanyIdByCompanyIdAndIsActive",
+              "name": "GetCompainByCompanyId",
+              "httpMethod": "GET",
+              "url": "api/app/recruitment-compain/compain-by-company-id/{companyId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "companyId",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "companyId",
+                  "name": "companyId",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "GetJobsByCompainIdByCompainId": {
+              "uniqueName": "GetJobsByCompainIdByCompainId",
+              "name": "GetJobsByCompainId",
+              "httpMethod": "GET",
+              "url": "api/app/recruitment-compain/jobs-by-compain-id/{compainId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "compainId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "compainId",
+                  "name": "compainId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Job.JobViewDetail>",
+                "typeSimple": "[VCareer.Dto.Job.JobViewDetail]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "GetCompainsByRecruiterIdByRecruiterIdAndIsActive": {
+              "uniqueName": "GetCompainsByRecruiterIdByRecruiterIdAndIsActive",
+              "name": "GetCompainsByRecruiterId",
+              "httpMethod": "GET",
+              "url": "api/app/recruitment-compain/compains-by-recruiter-id/{recruiterId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "recruiterId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "recruiterId",
+                  "name": "recruiterId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
+                "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "GetCompainByIdByRecruimentId": {
+              "uniqueName": "GetCompainByIdByRecruimentId",
+              "name": "GetCompainById",
+              "httpMethod": "GET",
+              "url": "api/app/recruitment-compain/compain-by-id/{recruimentId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "recruimentId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "recruimentId",
+                  "name": "recruimentId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.JobDto.RecruimentCampainViewDto",
+                "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            }
+          }
+        },
         "VCareer.Services.Job.TagService": {
           "controllerName": "Tag",
           "controllerGroupName": "Tag",
@@ -11710,6 +12361,23 @@
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetTagsByCategoryIdAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "categoryId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Category.TagViewDto>",
+                    "typeSimple": "[VCareer.Dto.Category.TagViewDto]"
                   }
                 }
               ]
@@ -11786,6 +12454,43 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IJobServices.ITagService"
+            },
+            "GetTagsByCategoryIdAsyncByCategoryId": {
+              "uniqueName": "GetTagsByCategoryIdAsyncByCategoryId",
+              "name": "GetTagsByCategoryIdAsync",
+              "httpMethod": "GET",
+              "url": "api/app/tag/tags-by-category-id/{categoryId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "categoryId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "categoryId",
+                  "name": "categoryId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Category.TagViewDto>",
+                "typeSimple": "[VCareer.Dto.Category.TagViewDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.ITagService"
@@ -23979,6 +24684,51 @@
         }
       ]
     },
+    "VCareer.Dto.Category.TagViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.DashboardDto.ActivityTrendDto": {
       "baseType": null,
       "isEnum": false,
@@ -25088,7 +25838,31 @@
           "regex": null
         },
         {
-          "name": "Slug",
+          "name": "CompanyImageUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyId",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyName",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -25101,6 +25875,18 @@
         },
         {
           "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Slug",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -25148,10 +25934,10 @@
           "regex": null
         },
         {
-          "name": "CompanyLogo",
+          "name": "SalaryMin",
           "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25160,10 +25946,10 @@
           "regex": null
         },
         {
-          "name": "CompanyId",
+          "name": "SalaryMax",
           "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25172,94 +25958,10 @@
           "regex": null
         },
         {
-          "name": "CompanyName",
+          "name": "SalaryDeal",
           "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "SalaryText",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ExperienceText",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Quantity",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "CategoryName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ProvinceName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "DistrictName",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "WorkLocation",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25292,10 +25994,82 @@
           "regex": null
         },
         {
-          "name": "IsUrgent",
+          "name": "Experience",
           "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
+          "type": "VCareer.Constants.JobConstant.ExperienceLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkTime",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProvinceCode",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WardCode",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ViewCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25318,8 +26092,8 @@
         {
           "name": "ExpiresAt",
           "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25332,6 +26106,18 @@
           "jsonName": null,
           "type": "System.Int32",
           "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobCategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -25961,6 +26747,18 @@
           "regex": null
         },
         {
+          "name": "RecruitmentCampaignId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "SalaryMin",
           "jsonName": null,
           "type": "System.Decimal?",
@@ -26085,6 +26883,18 @@
           "jsonName": null,
           "type": "System.Int32",
           "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TagIds",
+          "jsonName": null,
+          "type": "[System.Int32]",
+          "typeSimple": "[number]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -26432,6 +27242,72 @@
         }
       ]
     },
+    "VCareer.Dto.JobDto.JobTagViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "JobId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TagId",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.JobTagViewDto_JobTagCreateUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "JobId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TagIds",
+          "jsonName": null,
+          "type": "[System.Int32]",
+          "typeSimple": "[number]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.JobDto.JobViewDto": {
       "baseType": null,
       "isEnum": false,
@@ -26500,7 +27376,7 @@
           "regex": null
         },
         {
-          "name": "JobId",
+          "name": "Id",
           "jsonName": null,
           "type": "System.Guid",
           "typeSimple": "string",
@@ -26692,6 +27568,213 @@
           "jsonName": null,
           "type": "[System.Guid]",
           "typeSimple": "[string]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.RecruimentCampainCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.RecruimentCampainUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.RecruimentCampainViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyId",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatorId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModificationTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastModifierId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

@@ -247,10 +247,10 @@ public class VCareerDbContext :
                    .HasForeignKey(j => j.RecruitmentCampaignId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-
             r.HasOne(rc => rc.Recruiter)
-     .WithMany(rp => rp.RecruitmentCampaigns)
-     .HasForeignKey(rc => rc.RecruiterId);
+                .WithMany(rp => rp.RecruitmentCampaigns)
+                .HasForeignKey(rc => rc.RecruiterId)  
+                .HasPrincipalKey(rp => rp.UserId);
 
         });
 

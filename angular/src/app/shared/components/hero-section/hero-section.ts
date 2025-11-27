@@ -22,6 +22,11 @@ export class HeroSectionComponent {
   // ✅ NEW: Nhận data từ parent (candidate-homepage)
   @Input() categories: CategoryTreeDto[] = [];
   @Input() provinces: ProvinceDto[] = [];
+  
+  // ✅ Statistics từ API
+  @Input() totalJobCount: number = 0;
+  @Input() totalCategoryCount: number = 0;
+  @Input() totalProvinceCount: number = 0;
 
   // ✅ Emit filter events
   @Output() searchJobs = new EventEmitter<any>();
@@ -47,5 +52,25 @@ export class HeroSectionComponent {
   constructor(private translationService: TranslationService) {}
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  /**
+   * ✅ Format số với dấu phẩy (ví dụ: 25850 -> "25,850")
+   */
+  formatNumber(num: number): string {
+    if (!num && num !== 0) return '0';
+    return num.toLocaleString('vi-VN');
+  }
+
+  /**
+   * ✅ Format số với ký hiệu k+ (ví dụ: 25850 -> "25.8k+")
+   */
+  formatNumberShort(num: number): string {
+    if (!num && num !== 0) return '0';
+    if (num >= 1000) {
+      const k = num / 1000;
+      return k % 1 === 0 ? `${k}k+` : `${k.toFixed(1)}k+`;
+    }
+    return num.toString();
   }
 }

@@ -9,10 +9,10 @@ export class JobCategoryService {
   apiName = 'Default';
   
 
-  creaateCategory = (dto: CategoryUpdateCreateDto, config?: Partial<Rest.Config>) =>
+  createCategory = (dto: CategoryUpdateCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/job-category/creaate-category',
+      url: '/api/app/job-category/category',
       body: dto,
     },
     { apiName: this.apiName,...config });
@@ -30,14 +30,6 @@ export class JobCategoryService {
     this.restService.request<any, CategoryTreeDto[]>({
       method: 'GET',
       url: '/api/app/job-category/category-tree',
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getTagsByCategoryId = (categoryId: number, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'GET',
-      url: `/api/app/job-category/tags-by-category-id/${categoryId}`,
     },
     { apiName: this.apiName,...config });
   

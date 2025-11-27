@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace VCareer.Constants.JobConstant
@@ -41,9 +42,9 @@ namespace VCareer.Constants.JobConstant
 
     public enum RecruitmentCampaignStatus
     {
-        Deleted = 0,
+        Default= 0,
         Active = 1,
-        Closed = 2,
+        Closed = 2
     }
 
     public enum PositionType
@@ -95,7 +96,7 @@ namespace VCareer.Constants.JobConstant
     }
     #endregion
 
-  
+
     #region phục vụ display job
 
     public enum SortByField
