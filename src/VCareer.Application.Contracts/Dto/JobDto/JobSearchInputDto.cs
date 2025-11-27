@@ -10,13 +10,14 @@ namespace VCareer.Dto.JobDto
         public string? Keyword { get; set; }
         /// Danh sách Category IDs (FE gửi leaf nodes)
         public List<Guid>? CategoryIds { get; set; }
-        public List<int>? ProvinceCode { get; set; }
-        public List<int>? WardCode { get; set; }
+        public List<int>? ProvinceCodes { get; set; }
+        public List<int>? WardCodes { get; set; }
         public ExperienceLevel? ExperienceFilter { get; set; }
-        public SalaryFilterType? SalaryFilter { get; set; }
+        public double? MinSalary { get; set; }
+        public double? MaxSalary { get; set; }
+        public bool? SalaryDeal { get; set; }
         public List<EmploymentType>? EmploymentTypes { get; set; } /// Loại hình công việc (Full-time, Part-time, Remote...)
         public List<PositionType>? PositionTypes { get; set; }  /// Vị trí (Intern, Junior, Senior...)
-        public SortByField SortBy { get; set; } = SortByField.Relevance; /// Sort by: relevance (default), salary, experience, urgent, updated
         public int SkipCount { get; set; } = 0; /// Skip count (cho pagination)
         public int MaxResultCount { get; set; } = 20;    /// Max result count (default 20)
     }

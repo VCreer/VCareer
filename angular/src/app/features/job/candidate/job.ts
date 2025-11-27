@@ -7,9 +7,12 @@ import { JobFilterComponent } from '../../../shared/components/job-filter/job-fi
 import { JobListComponent } from '../../../shared/components/job-list/job-list';
 import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
 import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
-// ✅ Import API Services & DTOs
-import { CategoryApiService, CategoryTreeDto } from '../../../apiTest/api/category.service';
-import { LocationApiService, ProvinceDto } from '../../../apiTest/api/location.service';
+// ✅ Import API Services & DTOs - Sử dụng từ proxy để match với geo API
+import { CategoryTreeDto } from '../../../proxy/dto/category/models';
+import { ProvinceDto } from '../../../proxy/dto/geo-dto/models';
+import { JobCategoryService } from '../../../proxy/services/job/job-category.service';
+import { GeoService } from '../../../core/services/Geo.service';
+import { CategoryApiService } from '../../../apiTest/api/category.service';
 import {
   JobApiService,
   JobSearchInputDto,
@@ -42,20 +45,14 @@ export class JobComponent implements OnInit {
 
   selectedLanguage: string = 'vi';
 
-  // ============================================
-  // ✅ API DATA
-  // ============================================
   categories: CategoryTreeDto[] = [];
   provinces: ProvinceDto[] = [];
   isLoadingData = false;
 
-  // ============================================
-  // ✅ SEARCH FILTERS (From Home or local)
-  // ============================================
   searchKeyword: string = '';
   selectedCategoryIds: string[] = [];
-  selectedProvinceIds: number[] = [];
-  selectedDistrictIds: number[] = [];
+  selectedProvinceCodes: number[] = []; 
+  selectedWardCodes: number[] = []; 
 
   // Left-side Filters
   selectedEmploymentTypes: EmploymentType[] = [];
@@ -63,9 +60,6 @@ export class JobComponent implements OnInit {
   selectedSalaryFilter: SalaryFilterType | null = null;
   selectedPositionTypes: PositionType[] = [];
 
-  // ============================================
-  // ✅ JOB RESULTS
-  // ============================================
   jobs: JobViewDto[] = [];
   totalCount = 0;
   currentPage = 1;
@@ -78,29 +72,22 @@ export class JobComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private translationService: TranslationService,
-    private categoryApi: CategoryApiService,
-    private locationApi: LocationApiService,
+    private categoryService: JobCategoryService, 
+    private geoService: GeoService, 
+    private categoryApi: CategoryApiService, 
     private jobApi: JobApiService
   ) {}
 
   ngOnInit() {
-    console.log('\n\n');
-    console.log('🚀 ===== JOB COMPONENT INITIALIZED =====');
-    console.log('⏰ Timestamp:', new Date().toISOString());
 
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
     });
 
-    // ✅ Load initial data (categories, provinces)
     this.loadInitialData();
 
-    // ✅ Read query params from URL (filters từ Home page)
+    //  Read query params from URL (filters từ Home page)
     this.route.queryParams.subscribe(params => {
-      console.log('\n📥 ===== QUERY PARAMS RECEIVED =====');
-      console.log('Full params object:', params);
-      console.log('Has params?', Object.keys(params).length > 0);
-
       // Restore filters from query params
       if (params['keyword']) {
         this.searchKeyword = params['keyword'];
@@ -111,13 +98,13 @@ export class JobComponent implements OnInit {
       }
 
       if (params['provinceIds']) {
-        this.selectedProvinceIds = params['provinceIds']
+        this.selectedProvinceCodes = params['provinceIds']
           .split(',')
           .map((id: string) => parseInt(id));
       }
 
       if (params['districtIds']) {
-        this.selectedDistrictIds = params['districtIds']
+        this.selectedWardCodes = params['districtIds']
           .split(',')
           .map((id: string) => parseInt(id));
       }
@@ -125,36 +112,34 @@ export class JobComponent implements OnInit {
       console.log('✅ Restored filters:', {
         keyword: this.searchKeyword,
         categoryIds: this.selectedCategoryIds,
-        provinceIds: this.selectedProvinceIds,
-        districtIds: this.selectedDistrictIds,
+        provinceCodes: this.selectedProvinceCodes,
+        wardCodes: this.selectedWardCodes,
       });
 
-      // ✅ Perform search with restored filters
       this.performJobSearch();
     });
   }
 
-  /**
-   * ✅ Load categories & provinces từ API
-   */
+  
+   //  Load categories & provinces từ API (sử dụng proxy services)
   loadInitialData() {
     this.isLoadingData = true;
 
     forkJoin({
-      categories: this.categoryApi.getCategoryTree(),
-      provinces: this.locationApi.getAllProvinces(),
+      categories: this.categoryService.getCategoryTree(),
+      provinces: this.geoService.getProvinces(),
     }).subscribe({
       next: data => {
         this.categories = data.categories;
         this.provinces = data.provinces;
         this.isLoadingData = false;
-        console.log('✅ Loaded initial data:', {
+        console.log('Loaded initial data:', {
           categoriesCount: this.categories.length,
           provincesCount: this.provinces.length,
         });
       },
       error: error => {
-        console.error('❌ Error loading initial data:', error);
+        console.error(' Error loading initial data:', error);
         this.isLoadingData = false;
       },
     });
@@ -164,84 +149,34 @@ export class JobComponent implements OnInit {
     return this.translationService.translate(key);
   }
 
-  // ============================================
-  // ✅ JOB SEARCH API LOGIC
-  // ============================================
 
-  /**
-   * Perform job search với filters hiện tại
-   */
   performJobSearch() {
-    console.log('\n\n');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🔍 PERFORMING JOB SEARCH - START');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('⏰ Timestamp:', new Date().toISOString());
-    console.log('🎯 Function called from:', new Error().stack);
-
-    console.log('\n📋 CURRENT FILTERS:');
-    console.log('   🔤 Keyword:', this.searchKeyword || '(none)');
-    console.log('   📂 Category IDs:', this.selectedCategoryIds);
-    console.log('   📍 Province IDs:', this.selectedProvinceIds);
-    console.log('   🏘️  District IDs:', this.selectedDistrictIds);
-    console.log('   💼 Employment Types:', this.selectedEmploymentTypes);
-    console.log('   📊 Experience Level:', this.selectedExperienceLevel);
-    console.log('   💰 Salary Filter:', this.selectedSalaryFilter);
-    console.log('   🎯 Position Types:', this.selectedPositionTypes);
-    console.log('   📄 Page:', this.currentPage, '| Page Size:', this.pageSize);
+   
 
     const searchInput: JobSearchInputDto = {
       keyword: this.searchKeyword || null,
       categoryIds: this.selectedCategoryIds.length > 0 ? this.selectedCategoryIds : null,
-      provinceIds: this.selectedProvinceIds.length > 0 ? this.selectedProvinceIds : null,
-      districtIds: this.selectedDistrictIds.length > 0 ? this.selectedDistrictIds : null,
-      // ✅ FIX: Use nullish coalescing (??) instead of logical OR (||)
+  
+      provinceIds: this.selectedProvinceCodes.length > 0 ? this.selectedProvinceCodes : null,
+      districtIds: this.selectedWardCodes.length > 0 ? this.selectedWardCodes : null, 
       experienceFilter: this.selectedExperienceLevel ?? null,
       salaryFilter: this.selectedSalaryFilter ?? null,
       employmentTypes:
         this.selectedEmploymentTypes.length > 0 ? this.selectedEmploymentTypes : null,
       positionTypes: this.selectedPositionTypes.length > 0 ? this.selectedPositionTypes : null,
-      isUrgent: false, // ✅ false = lấy tất cả (không filter theo urgent)
+      isUrgent: false, 
       sortBy: 'relevance',
       skipCount: (this.currentPage - 1) * this.pageSize,
       maxResultCount: this.pageSize,
     };
 
-    console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📤 REQUEST PAYLOAD - DETAIL');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📦 FULL DTO (JobSearchInputDto):');
-    console.log('   ┌─ keyword:', searchInput.keyword);
-    console.log('   ├─ categoryIds:', searchInput.categoryIds);
-    console.log('   ├─ provinceIds:', searchInput.provinceIds);
-    console.log('   ├─ districtIds:', searchInput.districtIds);
-    console.log('   ├─ experienceFilter:', searchInput.experienceFilter);
-    console.log('   ├─ salaryFilter:', searchInput.salaryFilter);
-    console.log('   ├─ employmentTypes:', searchInput.employmentTypes);
-    console.log('   ├─ positionTypes:', searchInput.positionTypes);
-    console.log('   ├─ isUrgent:', searchInput.isUrgent);
-    console.log('   ├─ sortBy:', searchInput.sortBy);
-    console.log('   ├─ skipCount:', searchInput.skipCount);
-    console.log('   └─ maxResultCount:', searchInput.maxResultCount);
-
-    console.log('\n📋 JSON STRINGIFY:');
-    console.log(JSON.stringify(searchInput, null, 2));
-
-    console.log('\n🌐 API ENDPOINT: POST /api/jobs/search');
-    console.log('🔗 Full URL:', `${this.getApiUrl()}/api/jobs/search`);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    
 
     this.isSearching = true;
 
     try {
       this.jobApi.searchJobs(searchInput).subscribe({
         next: (result: PagedResultDto<JobViewDto>) => {
-          console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-          console.log('✅ SEARCH SUCCESS - RESPONSE RECEIVED');
-          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-          console.log('\n📥 RESPONSE DATA:');
-          console.log('   📊 Total Count:', result.totalCount);
-          console.log('   📦 Items Returned:', result.items?.length || 0);
 
           if (result.items && result.items.length > 0) {
             console.log('\n📄 JOB ITEMS:');
@@ -294,23 +229,7 @@ export class JobComponent implements OnInit {
       this.isSearching = false;
     }
   }
-
-  /**
-   * Helper: Get API base URL (for logging)
-   */
-  private getApiUrl(): string {
-    // JobApiService tự động dùng environment.apis.default.url
-    // Đây chỉ để log thôi
-    return 'https://localhost:44385'; // From environment
-  }
-
-  // ============================================
-  // ✅ EVENT HANDLERS: FilterBar (Category/Location)
-  // ============================================
-
-  /**
-   * Event: User chọn categories từ FilterBar
-   */
+ 
   onCategorySelected(categoryIds: string[]) {
     console.log('✅ Categories selected:', categoryIds);
     this.selectedCategoryIds = categoryIds;
@@ -318,28 +237,19 @@ export class JobComponent implements OnInit {
     this.performJobSearch();
   }
 
-  /**
-   * Event: User chọn locations từ FilterBar
-   */
   onLocationSelected(location: { provinceIds: number[]; districtIds: number[] }) {
     console.log('✅ Locations selected:', location);
-    this.selectedProvinceIds = location.provinceIds;
-    this.selectedDistrictIds = location.districtIds;
+    this.selectedProvinceCodes = location.provinceIds;
+    this.selectedWardCodes = location.districtIds;
     this.currentPage = 1; // Reset to page 1
     this.performJobSearch();
   }
 
-  /**
-   * Event: User nhập keyword từ search input
-   */
+   // Event: User nhập keyword từ search input
   onSearchKeywordChange(keyword: string) {
     this.searchKeyword = keyword;
-    // Không tự động search, đợi user click nút "Tìm kiếm"
   }
-
-  /**
-   * Event: User click nút "Tìm kiếm"
-   */
+// nhấn tìm kiếm
   onMainSearch(data: any) {
     console.log('🔍 Main search triggered:', data);
     if (data && data.keyword !== undefined) {
@@ -349,31 +259,10 @@ export class JobComponent implements OnInit {
     this.performJobSearch();
   }
 
-  // ============================================
-  // ✅ EVENT HANDLERS: Left-side Filters
-  // ============================================
-
-  /**
-   * Event: Filter change từ JobFilterComponent (bên trái)
-   */
+  
+  // Event: Filter change từ JobFilterComponent (bên trái)
+   
   onFilterChange(filters: any) {
-    console.log('\n┌─────────────────────────────────────────┐');
-    console.log('│ 🔧 LEFT-SIDE FILTER CHANGED           │');
-    console.log('└─────────────────────────────────────────┘');
-    console.log('📦 Received filters:', filters);
-    console.log('   💼 Employment Types:', filters.employmentTypes);
-    console.log(
-      '   📊 Experience Level:',
-      filters.experienceLevel,
-      this.getExperienceLevelLabel(filters.experienceLevel)
-    );
-    console.log(
-      '   💰 Salary Filter:',
-      filters.salaryFilter,
-      this.getSalaryFilterLabel(filters.salaryFilter)
-    );
-    console.log('   🎯 Position Types:', filters.positionTypes);
-
     // Update filters
     this.selectedEmploymentTypes = filters.employmentTypes || [];
     // ✅ FIX: Use nullish coalescing (??) instead of logical OR (||)
@@ -435,8 +324,8 @@ export class JobComponent implements OnInit {
     // Clear all filters
     this.searchKeyword = '';
     this.selectedCategoryIds = [];
-    this.selectedProvinceIds = [];
-    this.selectedDistrictIds = [];
+    this.selectedProvinceCodes = [];
+    this.selectedWardCodes = [];
     this.selectedEmploymentTypes = [];
     this.selectedExperienceLevel = null;
     this.selectedSalaryFilter = null;

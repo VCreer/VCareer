@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 // Import shared components
 import { HeroSectionComponent } from '../../../../shared/components/hero-section/hero-section';
 import { FilterBarComponent } from '../../../../shared/components/filter-bar/filter-bar';
@@ -11,16 +13,22 @@ import { CategorySectionComponent } from '../../../../shared/components/category
 import { AboutUsComponent } from '../../../../shared/components/about-us/about-us';
 import { StatisticsComponent } from '../../../../shared/components/statistics/statistics';
 import { FutureHeroComponent } from '../../../../shared/components/future-hero/future-hero';
-// api thatj
-import {JobSearchInputDto,JobViewDto} from '../../../../proxy/dto/job-dto';
-import { JobPostService } from 'src/app/proxy/services/job'; 
+
+// API imports
+import { JobSearchInputDto, JobViewDto } from '../../../../proxy/dto/job-dto';
+import { JobSearchService } from 'src/app/proxy/services/job';
 import { GeoService } from 'src/app/core/services/Geo.service';
-import { ProvinceDto } from 'src/app/proxy/dto/geo-dto'
+import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 import { CategoryTreeDto } from 'src/app/proxy/dto/category';
-import { JobCategoryService } from 'src/app/proxy/job';
+import { JobCategoryService } from 'src/app/proxy/services/job';
 
-
-
+// Interface cho category với image để hiển thị
+interface CategoryWithImage {
+  id: string;
+  name: string;
+  jobCount: number;
+  image: string;
+}
 
 @Component({
   selector: 'app-candidate-homepage',
@@ -40,20 +48,6 @@ import { JobCategoryService } from 'src/app/proxy/job';
   styleUrls: ['./candidate-homepage.scss']
 })
 export class CandidateHomepageComponent implements OnInit {
-  // Dữ liệu form tìm kiếm
-  searchForm = {
-    jobTitle: '',
-    location: '',
-    category: '',
-  };
-
-  // Dữ liệu thống kê
-  stats = {
-    jobs: '25,850',
-    candidates: '10,250',
-    companies: '18,400',
-  };
-
   // Statistics data for component
   statisticsData = [
     {
@@ -77,248 +71,362 @@ export class CandidateHomepageComponent implements OnInit {
   categories: CategoryTreeDto[] = [];
   provinces: ProvinceDto[] = [];
   isLoadingData = false;
+  isLoadingJobs = false;
+
+  // Statistics từ API (nếu HTML có binding)
+  totalJobCount = 0;
+  totalCategoryCount = 0;
+  totalProvinceCount = 0;
 
   // Selected filters (from FilterBar)
   selectedCategoryIds: string[] = [];
   selectedProvinceCode: number[] = [];
   selectedWardCode: number[] = [];
-  searchKeyword: string = ''; 
+  searchKeyword: string = '';
 
-  // Pagination
+  // Pagination for jobs
   currentPage = 1;
   totalPages = 1;
   itemsPerPage = 12;
+  skipCount = 0;
 
-  // Category Navigation
+  // Category Navigation (for CategorySection with images)
   currentCategoryPage = 1;
   totalCategoryPages = 1;
   categoriesPerPage = 8;
 
-  // Dữ liệu danh sách việc làm hiển thị
+  // Job listings from API
   jobListings: JobViewDto[] = [];
 
-  // Mock data cho CategorySection (khác với categories từ API)
-  mockCategoriesForSection = [
-    // Trang 1: Categories chính
-    {
-      id: 1,
-      name: 'Kinh doanh - Bán hàng',
-      jobCount: 10016,
-      image: 'assets/images/home/Browse-by-category/kinh-doanh-ban-hang.png',
-    },
-    {
-      id: 2,
-      name: 'Marketing - PR - Quảng cáo',
-      jobCount: 7157,
-      image: 'assets/images/home/Browse-by-category/marketing-truyen-thong-quang-cao.png',
-    },
-    {
-      id: 3,
-      name: 'Chăm sóc khách hàng',
-      jobCount: 2450,
-      image: 'assets/images/home/Browse-by-category/dich-vu-khach-hang.png',
-    },
-    {
-      id: 4,
-      name: 'Nhân sự - Hành chính',
-      jobCount: 2908,
-      image: 'assets/images/home/Browse-by-category/hanh-chinh-van-phong.png',
-    },
-    {
-      id: 5,
-      name: 'Công nghệ Thông tin',
-      jobCount: 2171,
-      image: 'assets/images/home/Browse-by-category/cong-nghe-thong-tin.png',
-    },
-    {
-      id: 6,
-      name: 'Tài chính - Ngân hàng',
-      jobCount: 1583,
-      image: 'assets/images/home/Browse-by-category/ngan-hang-tai-chinh.png',
-    },
-    {
-      id: 7,
-      name: 'Bất động sản',
-      jobCount: 359,
-      image: 'assets/images/home/Browse-by-category/bat-dong-san.png',
-    },
-    {
-      id: 8,
-      name: 'Kế toán - Kiểm toán',
-      jobCount: 5288,
-      image: 'assets/images/home/Browse-by-category/ke-toan-kiem-toan.png',
-    },
-    // Trang 2: Categories bổ sung
-    {
-      id: 9,
-      name: 'Sản xuất',
-      jobCount: 3533,
-      image: 'assets/images/home/Browse-by-category/san-xuat.png',
-    },
-    {
-      id: 10,
-      name: 'Giáo dục - Đào tạo',
-      jobCount: 1973,
-      image: 'assets/images/home/Browse-by-category/giao-duc-dao-tao.png',
-    },
-    {
-      id: 11,
-      name: 'Bán lẻ - Dịch vụ đời sống',
-      jobCount: 796,
-      image: 'assets/images/home/Browse-by-category/ban-le-ban-si.png',
-    },
-    {
-      id: 12,
-      name: 'Phim và truyền hình - Báo chí',
-      jobCount: 273,
-      image: 'assets/images/home/Browse-by-category/thiet-ke-do-hoa.png',
-    },
-    {
-      id: 13,
-      name: 'Điện - Điện tử - Viễn thông',
-      jobCount: 1687,
-      image: 'assets/images/home/Browse-by-category/dien-tu-vien-thong.png',
-    },
-    {
-      id: 14,
-      name: 'Logistics - Thu mua - Kho vận',
-      jobCount: 2378,
-      image: 'assets/images/home/Browse-by-category/logistics.png',
-    },
-    {
-      id: 15,
-      name: 'Tư vấn chuyên môn',
-      jobCount: 124,
-      image: 'assets/images/home/Browse-by-category/tu-van.png',
-    },
-    {
-      id: 16,
-      name: 'Dược - Y tế - Sức khỏe',
-      jobCount: 848,
-      image: 'assets/images/home/Browse-by-category/y-te-duoc.png',
-    },
-    // Trang 3: Categories khác
-    {
-      id: 17,
-      name: 'Thiết kế',
-      jobCount: 943,
-      image: 'assets/images/home/Browse-by-category/thiet-ke-do-hoa.png',
-    },
-    {
-      id: 18,
-      name: 'Nhà hàng - Khách sạn',
-      jobCount: 1125,
-      image: 'assets/images/home/Browse-by-category/khach-san-nha-hang.png',
-    },
-    {
-      id: 19,
-      name: 'Năng lượng - Môi trường',
-      jobCount: 359,
-      image: 'assets/images/home/Browse-by-category/nong-lam-ngu-nghiep.png',
-    },
-    {
-      id: 20,
-      name: 'Nhóm nghề khác',
-      jobCount: 502,
-      image: 'assets/images/home/Browse-by-category/nganh-nghe-khac.png',
-    },
-  ];
+  // Categories với images để hiển thị trong CategorySection
+  categoriesWithImages: CategoryWithImage[] = [];
 
-  // Dữ liệu danh sách việc làm gốc
-  originalJobListings = [
-    {
-      id: 1,
-      timePosted: '10 phút trước',
-      title: 'Forward Security Director',
-      company: 'Bauch, Schuppe and Schulist Co',
-      industry: 'Khách sạn & Du lịch',
-      type: 'Toàn thời gian',
-      salary: '40.000-42.000 đô la',
-      location: 'New York, Hoa Kỳ',
-      isBookmarked: false,
-    },
-    {
-      id: 2,
-      timePosted: '2 giờ trước',
-      title: 'Senior Software Engineer',
-      company: 'Tech Solutions Inc',
-      industry: 'Công nghệ thông tin',
-      type: 'Toàn thời gian',
-      salary: '50.000-60.000 đô la',
-      location: 'San Francisco, Hoa Kỳ',
-      isBookmarked: false,
-    },
-    {
-      id: 3,
-      timePosted: '5 giờ trước',
-      title: 'Marketing Manager',
-      company: 'Digital Marketing Co',
-      industry: 'Marketing & Quảng cáo',
-      type: 'Toàn thời gian',
-      salary: '35.000-45.000 đô la',
-      location: 'Los Angeles, Hoa Kỳ',
-      isBookmarked: false,
-    },
-  ];
+  // Mapping category name -> image path
+  private categoryImageMap: { [key: string]: string } = {
+    'kinh doanh': 'assets/images/home/Browse-by-category/kinh-doanh-ban-hang.png',
+    'bán hàng': 'assets/images/home/Browse-by-category/kinh-doanh-ban-hang.png',
+    'marketing': 'assets/images/home/Browse-by-category/marketing-truyen-thong-quang-cao.png',
+    'quảng cáo': 'assets/images/home/Browse-by-category/marketing-truyen-thong-quang-cao.png',
+    'chăm sóc khách hàng': 'assets/images/home/Browse-by-category/dich-vu-khach-hang.png',
+    'dịch vụ khách hàng': 'assets/images/home/Browse-by-category/dich-vu-khach-hang.png',
+    'nhân sự': 'assets/images/home/Browse-by-category/hanh-chinh-van-phong.png',
+    'hành chính': 'assets/images/home/Browse-by-category/hanh-chinh-van-phong.png',
+    'công nghệ thông tin': 'assets/images/home/Browse-by-category/cong-nghe-thong-tin.png',
+    'it': 'assets/images/home/Browse-by-category/cong-nghe-thong-tin.png',
+    'tài chính': 'assets/images/home/Browse-by-category/ngan-hang-tai-chinh.png',
+    'ngân hàng': 'assets/images/home/Browse-by-category/ngan-hang-tai-chinh.png',
+    'bất động sản': 'assets/images/home/Browse-by-category/bat-dong-san.png',
+    'kế toán': 'assets/images/home/Browse-by-category/ke-toan-kiem-toan.png',
+    'kiểm toán': 'assets/images/home/Browse-by-category/ke-toan-kiem-toan.png',
+    'sản xuất': 'assets/images/home/Browse-by-category/san-xuat.png',
+    'giáo dục': 'assets/images/home/Browse-by-category/giao-duc-dao-tao.png',
+    'đào tạo': 'assets/images/home/Browse-by-category/giao-duc-dao-tao.png',
+    'bán lẻ': 'assets/images/home/Browse-by-category/ban-le-ban-si.png',
+    'dịch vụ': 'assets/images/home/Browse-by-category/ban-le-ban-si.png',
+    'truyền hình': 'assets/images/home/Browse-by-category/thiet-ke-do-hoa.png',
+    'báo chí': 'assets/images/home/Browse-by-category/thiet-ke-do-hoa.png',
+    'điện': 'assets/images/home/Browse-by-category/dien-tu-vien-thong.png',
+    'điện tử': 'assets/images/home/Browse-by-category/dien-tu-vien-thong.png',
+    'viễn thông': 'assets/images/home/Browse-by-category/dien-tu-vien-thong.png',
+    'logistics': 'assets/images/home/Browse-by-category/logistics.png',
+    'kho vận': 'assets/images/home/Browse-by-category/logistics.png',
+    'tư vấn': 'assets/images/home/Browse-by-category/tu-van.png',
+    'dược': 'assets/images/home/Browse-by-category/y-te-duoc.png',
+    'y tế': 'assets/images/home/Browse-by-category/y-te-duoc.png',
+    'thiết kế': 'assets/images/home/Browse-by-category/thiet-ke-do-hoa.png',
+    'nhà hàng': 'assets/images/home/Browse-by-category/khach-san-nha-hang.png',
+    'khách sạn': 'assets/images/home/Browse-by-category/khach-san-nha-hang.png',
+    'năng lượng': 'assets/images/home/Browse-by-category/nong-lam-ngu-nghiep.png',
+    'môi trường': 'assets/images/home/Browse-by-category/nong-lam-ngu-nghiep.png',
+  };
+
+  // Default image for categories without mapping
+  private defaultCategoryImage = 'assets/images/home/Browse-by-category/nganh-nghe-khac.png';
 
   constructor(
     private router: Router,
-    private categoryApi: JobCategoryService,
+    private categoryService: JobCategoryService,
     private geoService: GeoService,
-    private jobPostService:JobPostService  
-  ) {}
+    private jobSearchService: JobSearchService
+  ) {
+    console.log('🏗️ CandidateHomepageComponent constructor called');
+  }
 
   ngOnInit() {
+    console.log('🚀 CandidateHomepageComponent ngOnInit called');
     this.loadInitialData();
-    this.loadAllJobs(); // Khởi tạo danh sách việc làm
-    this.updateCategoryPagination();
   }
 
   /**
-   * Load Categories và Provinces từ API khi init
+   * ✅ Load Categories, Provinces và Jobs từ API khi init
    */
   loadInitialData() {
+    console.log('📥 Starting to load initial data...');
     this.isLoadingData = true;
 
     forkJoin({
-      categories: this.categories,
-      provinces: this.geoService.getProvinces(),
+      categories: this.categoryService.getCategoryTree().pipe(
+        catchError(error => {
+          console.error('❌ Error loading categories:', error);
+          return of([] as CategoryTreeDto[]);
+        })
+      ),
+      provinces: this.geoService.getProvinces().pipe(
+        catchError(error => {
+          console.error('❌ Error loading provinces:', error);
+          return of([] as ProvinceDto[]);
+        })
+      ),
     }).subscribe({
       next: data => {
-      //  this.categories = data.categories;
-        this.provinces = data.provinces;
+        this.categories = data.categories || [];
+        this.provinces = data.provinces || [];
         this.isLoadingData = false;
-        console.log('✅ CandidateHomepage - Loaded categories:', this.categories.length);
-        console.log('✅ CandidateHomepage - Loaded provinces:', this.provinces.length);
-        console.log('Categories data:', this.categories);
-        console.log('Provinces data:', this.provinces);
+        
+        console.log('✅ Loaded categories:', this.categories.length, this.categories);
+        console.log('✅ Loaded provinces:', this.provinces.length, this.provinces);
+
+        // Calculate statistics nếu cần
+        this.calculateStatistics();
+
+        // Map categories với images
+        this.mapCategoriesToDisplayFormat();
+
+        // Load jobs sau khi có categories và provinces
+        this.loadJobs();
       },
       error: error => {
-        console.error('❌ Error loading initial data:', error);
-        console.error('Error details:', error.message);
+        console.error('❌ Critical error loading initial data:', error);
         this.isLoadingData = false;
-        alert('Không thể tải dữ liệu. Vui lòng kiểm tra backend API có chạy không!');
+        
+        // Vẫn load jobs dù có lỗi
+        this.loadJobs();
       },
     });
   }
 
-  toggleBookmark(jobId: number) {
-    // const job = this.jobListings.find(j => j.id === jobId);
-    // if (job) {
-    //   job.isBookmarked = !job.isBookmarked;
-    // }
+  /**
+   * ✅ Calculate statistics từ API data (optional)
+   */
+  calculateStatistics() {
+    if (this.categories && this.categories.length > 0) {
+      this.totalJobCount = this.categories.reduce((sum, cat) => sum + (cat.jobCount || 0), 0);
+      this.totalCategoryCount = this.categories.length;
+    }
+    
+    if (this.provinces && this.provinces.length > 0) {
+      this.totalProvinceCount = this.provinces.length;
+    }
+
+    console.log('📊 Statistics:', {
+      totalJobCount: this.totalJobCount,
+      totalCategoryCount: this.totalCategoryCount,
+      totalProvinceCount: this.totalProvinceCount
+    });
   }
 
-  viewJobDetails(jobId: number) {
-    // Điều hướng đến trang chi tiết việc làm
+  /**
+   * ✅ Map CategoryTreeDto từ API sang format có image để hiển thị
+   */
+  mapCategoriesToDisplayFormat() {
+    this.categoriesWithImages = [];
+
+    // Lấy categories ở level root (parent categories)
+    const rootCategories = this.categories.filter(cat => !cat.fullPath?.includes('/'));
+
+    rootCategories.forEach(category => {
+      const categoryWithImage: CategoryWithImage = {
+        id: category.categoryId || '',
+        name: category.categoryName || 'Chưa có tên',
+        jobCount: category.jobCount || 0,
+        image: this.getCategoryImage(category.categoryName || '')
+      };
+
+      this.categoriesWithImages.push(categoryWithImage);
+    });
+
+    // Sort by jobCount descending
+    this.categoriesWithImages.sort((a, b) => b.jobCount - a.jobCount);
+
+    // Update pagination
+    this.updateCategoryPagination();
+
+    console.log('✅ Mapped categories with images:', this.categoriesWithImages.length, this.categoriesWithImages);
   }
 
-  viewCategoryJobs(categoryId: number) {
-    // Điều hướng đến trang danh sách việc làm theo danh mục
-    console.log('Viewing jobs for category:', categoryId);
+  /**
+   * Get image path for category based on name matching
+   */
+  getCategoryImage(categoryName: string): string {
+    const lowerName = categoryName.toLowerCase();
+    
+    // Try to find a matching keyword in the category name
+    for (const [keyword, imagePath] of Object.entries(this.categoryImageMap)) {
+      if (lowerName.includes(keyword)) {
+        return imagePath;
+      }
+    }
+    
+    return this.defaultCategoryImage;
   }
 
-  //#region Category
+  /**
+   * ✅ Load jobs từ API với filters hiện tại
+   */
+  loadJobs() {
+    console.log('📥 Starting to load jobs...');
+    this.isLoadingJobs = true;
+
+    const searchInput: JobSearchInputDto = {
+      keyword: this.searchKeyword || undefined,
+      categoryIds: this.selectedCategoryIds || [],
+      provinceCodes: this.selectedProvinceCode || [],
+      wardCodes: this.selectedWardCode || [],
+      skipCount: this.skipCount,
+      maxResultCount: this.itemsPerPage,
+    };
+
+    console.log('🔍 Loading jobs with filters:', searchInput);
+
+    this.jobSearchService.searchJobs(searchInput).pipe(
+      catchError(error => {
+        console.error('❌ Error loading jobs:', error);
+        return of([] as JobViewDto[]);
+      })
+    ).subscribe({
+      next: (jobs) => {
+        this.jobListings = jobs || [];
+        this.isLoadingJobs = false;
+        
+        // Update pagination
+        if (this.jobListings.length > 0) {
+          this.totalPages = this.jobListings.length < this.itemsPerPage 
+            ? this.currentPage 
+            : this.currentPage + 1;
+        } else {
+          this.totalPages = 1;
+        }
+        
+        console.log('✅ Loaded jobs:', this.jobListings.length, this.jobListings);
+        console.log('📄 Current page:', this.currentPage, '/ Total pages:', this.totalPages);
+      },
+      error: (error) => {
+        console.error('❌ Critical error loading jobs:', error);
+        this.isLoadingJobs = false;
+        this.jobListings = [];
+        this.totalPages = 1;
+      },
+    });
+  }
+
+  /**
+   * Event handler: Khi user nhấn nút Search từ HeroSection
+   */
+  onSearch(searchData: any) {
+    console.log('🔍 Search triggered with data:', searchData);
+
+    if (searchData && searchData.keyword) {
+      this.searchKeyword = searchData.keyword;
+    }
+
+    this.performJobSearch();
+  }
+
+  /**
+   * ✅ Navigate đến trang Job Search với filters
+   */
+  performJobSearch() {
+    console.log('\n🚀 ===== NAVIGATING TO JOB SEARCH PAGE =====');
+    console.log('   - Keyword:', this.searchKeyword);
+    console.log('   - Category IDs:', this.selectedCategoryIds);
+    console.log('   - Province Codes:', this.selectedProvinceCode);
+    console.log('   - Ward Codes:', this.selectedWardCode);
+
+    const queryParams: any = {};
+
+    if (this.searchKeyword) {
+      queryParams.keyword = this.searchKeyword;
+    }
+
+    if (this.selectedCategoryIds.length > 0) {
+      queryParams.categoryIds = this.selectedCategoryIds.join(',');
+    }
+
+    if (this.selectedProvinceCode.length > 0) {
+      queryParams.provinceIds = this.selectedProvinceCode.join(',');
+    }
+
+    if (this.selectedWardCode.length > 0) {
+      queryParams.districtIds = this.selectedWardCode.join(',');
+    }
+
+    console.log('📤 Query Params:', queryParams);
+
+    this.router.navigate(['/candidate/job'], { queryParams });
+  }
+
+  /**
+   * Event handler: Khi user chọn categories từ HeroSection hoặc JobListings
+   */
+  onCategorySelected(categoryIds: string[]) {
+    this.selectedCategoryIds = categoryIds || [];
+    console.log('✅ Categories selected:', categoryIds);
+
+    if (categoryIds && categoryIds.length > 0) {
+      this.performJobSearch();
+    }
+  }
+
+  /**
+   * Event handler: Khi user chọn locations từ HeroSection hoặc JobListings
+   */
+  onLocationSelected(location: { provinceCodes: number[]; wardCodes: number[] }) {
+    this.selectedProvinceCode = location?.provinceCodes || [];
+    this.selectedWardCode = location?.wardCodes || [];
+    
+    console.log('✅ Locations selected:');
+    console.log('   - Province Codes:', this.selectedProvinceCode);
+    console.log('   - Ward Codes:', this.selectedWardCode);
+
+    const totalLocationCount = this.selectedProvinceCode.length + this.selectedWardCode.length;
+    if (totalLocationCount > 0) {
+      this.performJobSearch();
+    }
+  }
+
+  /**
+   * Pagination handlers
+   */
+  onPageChange(page: number) {
+    console.log('📄 Page changed to:', page);
+    this.currentPage = page;
+    this.skipCount = (page - 1) * this.itemsPerPage;
+    this.loadJobs();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.onPageChange(this.currentPage - 1);
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.onPageChange(this.currentPage + 1);
+    }
+  }
+
+  /**
+   * ✅ Job click handler - FIXED: jobId phải là string
+   */
+  onJobClick(jobId: string) {
+    console.log('💼 Job clicked:', jobId);
+    // ✅ Navigate to job detail với string ID
+     this.router.navigate(['/candidate/job-detail', jobId]);
+  }
+
+  //#region Category Section với images
   previousCategoryPage() {
     if (this.currentCategoryPage > 1) {
       this.currentCategoryPage--;
@@ -333,169 +441,50 @@ export class CandidateHomepageComponent implements OnInit {
 
   updateCategoryPagination() {
     this.totalCategoryPages = Math.ceil(
-      this.mockCategoriesForSection.length / this.categoriesPerPage
+      this.categoriesWithImages.length / this.categoriesPerPage
     );
   }
 
-  getCurrentPageCategories() {
+  /**
+   * ✅ Get current page categories từ API data (đã map với images)
+   */
+  getCurrentPageCategories(): CategoryWithImage[] {
     const startIndex = (this.currentCategoryPage - 1) * this.categoriesPerPage;
     const endIndex = startIndex + this.categoriesPerPage;
-    return this.mockCategoriesForSection.slice(startIndex, endIndex);
-  }
-
-  //#endregion
-  viewAllJobs() {
-    // Điều hướng đến trang tất cả việc làm
-  }
-
-  searchJobs() {
-    // Kéo lên trên trang
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  learnMore() {
-    // Điều hướng đến trang về chúng tôi
-    this.router.navigate(['/about']);
-  }
-
- 
-  /**
-   * Event handler: Khi user nhấn nút Search
-   */
-  onSearch(searchData: any) {
-    console.log('🔍 Search triggered with data:', searchData);
-
-    // Lưu keyword
-    if (searchData && searchData.keyword) {
-      this.searchKeyword = searchData.keyword;
-    }
-
-    // Thực hiện search
-    this.performJobSearch();
-  }
-
-  /**
-   * ✅ CORE: Navigate đến trang Job Search với filters
-   */
-  performJobSearch() {
-    console.log('\n🚀 ===== NAVIGATING TO JOB SEARCH PAGE =====');
-    console.log('   - Keyword:', this.searchKeyword);
-    console.log('   - Category IDs:', this.selectedCategoryIds);
-    console.log('   - Province IDs:', this.selectedProvinceCode);
-    console.log('   - Ward Codes:', this.selectedWardCode);
-
-    // Build query params
-    const queryParams: any = {};
-
-    if (this.searchKeyword) {
-      queryParams.keyword = this.searchKeyword;
-    }
-
-    if (this.selectedCategoryIds.length > 0) {
-      queryParams.categoryIds = this.selectedCategoryIds.join(','); // Convert array to comma-separated string
-    }
-
-    if (this.selectedProvinceCode.length > 0) {
-      queryParams.provinceIds = this.selectedProvinceCode.join(',');
-    }
-
-    if (this.selectedWardCode.length > 0) {
-      queryParams.districtIds = this.selectedWardCode.join(',');
-    }
-
-    console.log('📤 Query Params:', queryParams);
-
-    // Navigate to /candidate/job with query params
-    this.router.navigate(['/candidate/job'], { queryParams });
-  }
-
-  /**
-   * Event handler: Khi user chọn categories từ FilterBar
-   * ✅ AUTO NAVIGATE: Chuyển sang trang job ngay khi chọn category
-   */
-  onCategorySelected(categoryIds: string[]) {
-    this.selectedCategoryIds = categoryIds;
-    console.log('✅ Categories selected:', categoryIds);
-
-    // ✅ AUTO NAVIGATE: Chuyển sang trang job ngay lập tức
-    if (categoryIds.length > 0) {
-      this.performJobSearch();
-    }
-  }
-
-  /**
-   * Event handler: Khi user chọn locations từ FilterBar
-   * ✅ AUTO NAVIGATE: Chuyển sang trang job ngay khi chọn location
-   */
-  onLocationSelected(location: { provinceCodes: number[]; wardCodes: number[] }) {
-    this.selectedProvinceCode= location.provinceCodes;
-    this.selectedWardCode= location.wardCodes;
-    console.log('✅ Locations selected:');
-    console.log('   - Province IDs:', location.provinceCodes);
-    console.log('   - District IDs:', location.wardCodes);
-
-    // ✅ AUTO NAVIGATE: Chuyển sang trang job ngay lập tức
-    const totalLocationCount = location.provinceCodes.length + location.wardCodes.length;
-    if (totalLocationCount > 0) {
-      this.performJobSearch();
-    }
-  }
-
-  onPageChange(page: number) {
-    this.currentPage = page;
-    this.updatePagination();
-  }
-
-  onJobClick(jobId: number) {
-    console.log('Job clicked:', jobId);
-    // Navigate to job details
+    return this.categoriesWithImages.slice(startIndex, endIndex);
   }
 
   onCategoryPageChange(page: number) {
     this.currentCategoryPage = page;
   }
 
-  onCategoryClick(categoryId: number) {
-    console.log('Category clicked:', categoryId);
-    // Navigate to category jobs
+  /**
+   * ✅ Handle category click - navigate với categoryId từ API
+   */
+  onCategoryClick(categoryId: string) {
+    console.log('📁 Category clicked:', categoryId);
+    // Navigate to category jobs với filter
+    this.router.navigate(['/candidate/job'], {
+      queryParams: { categoryIds: categoryId }
+    });
   }
+  //#endregion
 
   /**
-   * Filter jobs based on selected filters
-   * (Tạm thời giữ logic cũ, sau này sẽ call API search)
+   * Action buttons
    */
-  filterJobs() {
-    // TODO: Call Job Search API với filters
-    // const searchInput = {
-    //   categoryIds: this.selectedCategoryIds,
-    //   provinceIds: this.selectedProvinceIds,
-    //   districtIds: this.selectedDistrictIds
-    // };
-    // this.jobApi.searchJobs(searchInput).subscribe(...)
-
-    this.loadAllJobs(); // Tạm thời load tất cả
+  searchJobs() {
+    console.log('🔍 Search jobs button clicked');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  loadAllJobs() {
-    // Load lại tất cả việc làm từ dữ liệu gốc
-    //this.jobListings = [...this.originalJobListings];
-    this.updatePagination();
+  learnMore() {
+    console.log('📖 Learn more button clicked');
+    this.router.navigate(['/about']);
   }
 
-  updatePagination() {
-    this.totalPages = Math.ceil(this.jobListings.length / this.itemsPerPage);
-    this.currentPage = 1;
-  }
-
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
+  viewAllJobs() {
+    console.log('👀 View all jobs button clicked');
+    this.router.navigate(['/candidate/job']);
   }
 }

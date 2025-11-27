@@ -1,5 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
 import type { AddChildServicesDto, ChildServiceViewDto, SubcriptionPriceViewDto, SubcriptionsCreateDto, SubcriptionsUpdateDto, SubcriptionsViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
@@ -32,6 +33,15 @@ export class SubcriptionService_Service {
     this.restService.request<any, void>({
       method: 'DELETE',
       url: `/api/app/subcription-service_/subcription/${subcriptionId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getActiveSubscriptionServices = (target?: enum, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SubcriptionsViewDto[]>({
+      method: 'GET',
+      url: '/api/app/subcription-service_/active-subscription-services',
+      params: { target },
     },
     { apiName: this.apiName,...config });
   

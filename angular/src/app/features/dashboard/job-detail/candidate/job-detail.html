@@ -29,70 +29,92 @@
   <!-- Breadcrumb -->
   <div class="breadcrumb-wrapper">
     <div class="breadcrumb-container">
-      <a routerLink="/candidate/job" class="breadcrumb-item">{{ translate('breadcrumb.home') }}</a>
+      <a routerLink="/candidate" class="breadcrumb-item">{{ translate('breadcrumb.home') }}</a>
       <span class="breadcrumb-separator">></span>
       <a routerLink="/candidate/job" class="breadcrumb-item">{{ translate('breadcrumb.jobs') }}</a>
       <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">{{ jobDetail?.title || translate('job_detail.title') }}</span>
     </div>
   </div>
 
-  <div class="job-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoadingJob" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>{{ translate('common.loading') }}...</p>
+  </div>
+
+  <!-- Job Detail Content -->
+  <div *ngIf="!isLoadingJob && jobDetail" class="job-detail-container">
     <!-- Left Column -->
     <div class="job-detail__box--left">
       <!-- Job Info Section -->
       <div class="job-detail__info">
         <!-- Job Title -->
         <div class="job-detail__info--title">
-          <h1>Senior Front-End Developer (ReactJS, TypeScript) Min 6 Years Experience - Tại Đà Nẵng</h1>
+          <h1>{{ jobDetail.title }}</h1>
+          <div class="job-meta" *ngIf="jobDetail.postedAt">
+            <span class="posted-time">
+              <i class="fa fa-clock"></i>
+              {{ getTimeAgo() }}
+            </span>
+            <span class="view-count" *ngIf="jobDetail.viewCount">
+              <i class="fa fa-eye"></i>
+              {{ jobDetail.viewCount }} {{ translate('job_detail.views') }}
+            </span>
+            <span class="apply-count" *ngIf="jobDetail.applyCount">
+              <i class="fa fa-paper-plane"></i>
+              {{ jobDetail.applyCount }} {{ translate('job_detail.applications') }}
+            </span>
+          </div>
         </div>
 
-                  <!-- Job Details Section -->
-          <div class="job-detail__info--sections">
-            <div class="job-detail__info-item">
-              <div class="job-detail__info-item-icon">
-                <i class="fa fa-dollar-sign"></i>
-              </div>
-              <div class="job-detail__info-item-content">
-                <div class="job-detail__info-item-title">{{ translate('job_detail.salary') }}</div>
-                <div class="job-detail__info-item-value">40 - 55 triệu</div>
-              </div>
+        <!-- Job Details Section -->
+        <div class="job-detail__info--sections">
+          <div class="job-detail__info-item">
+            <div class="job-detail__info-item-icon">
+              <i class="fa fa-dollar-sign"></i>
             </div>
-            <div class="job-detail__info-item">
-              <div class="job-detail__info-item-icon">
-                <i class="fa fa-map-marker-alt"></i>
-              </div>
-              <div class="job-detail__info-item-content">
-                <div class="job-detail__info-item-title">{{ translate('job_detail.location') }}</div>
-                <div class="job-detail__info-item-value">Đà Nẵng</div>
-              </div>
-            </div>
-            <div class="job-detail__info-item">
-              <div class="job-detail__info-item-icon">
-                <i class="fa fa-infinity"></i>
-              </div>
-              <div class="job-detail__info-item-content">
-                <div class="job-detail__info-item-title">{{ translate('job_detail.experience') }}</div>
-                <div class="job-detail__info-item-value">Trên 5 năm</div>
-              </div>
+            <div class="job-detail__info-item-content">
+              <div class="job-detail__info-item-title">{{ translate('job_detail.salary') }}</div>
+              <div class="job-detail__info-item-value">{{ getSalaryDisplay() }}</div>
             </div>
           </div>
+          <div class="job-detail__info-item">
+            <div class="job-detail__info-item-icon">
+              <i class="fa fa-map-marker-alt"></i>
+            </div>
+            <div class="job-detail__info-item-content">
+              <div class="job-detail__info-item-title">{{ translate('job_detail.location') }}</div>
+              <div class="job-detail__info-item-value">{{ getLocationDisplay() }}</div>
+            </div>
+          </div>
+          <div class="job-detail__info-item">
+            <div class="job-detail__info-item-icon">
+              <i class="fa fa-briefcase"></i>
+            </div>
+            <div class="job-detail__info-item-content">
+              <div class="job-detail__info-item-title">{{ translate('job_detail.experience') }}</div>
+              <div class="job-detail__info-item-value">{{ getExperienceText() }}</div>
+            </div>
+          </div>
+        </div>
 
         <!-- Deadline -->
         <div class="job-deadline">
           <i class="fa fa-clock"></i>
-          <span>{{ translate('job_detail.deadline') }}: 14/11/2025</span>
+          <span>{{ translate('job_detail.deadline') }}: {{ getDeadlineText() }}</span>
         </div>
 
-                  <!-- Action Buttons -->
-          <div class="job-detail__info--actions">
-            <button class="box-apply-current" (click)="openApplyModal()">
-              <i class="fa fa-paper-plane"></i>
-              {{ translate('job_detail.apply_now') }}
-            </button>
-            <button class="box-apply-save" [class.active]="isHeartActive" (click)="toggleHeart()">
-              <i class="fa fa-heart"></i>
-            </button>
-          </div>
+        <!-- Action Buttons -->
+        <div class="job-detail__info--actions">
+          <button class="box-apply-current" (click)="openApplyModal()">
+            <i class="fa fa-paper-plane"></i>
+            {{ translate('job_detail.apply_now') }}
+          </button>
+          <button class="box-apply-save" [class.active]="isHeartActive" (click)="toggleHeart()">
+            <i class="fa fa-heart"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Toast Notification -->
@@ -112,87 +134,40 @@
         </div>
 
         <!-- Job Description -->
-        <div class="job-detail__info--section">
+        <div class="job-detail__info--section" *ngIf="jobDetail.description">
           <h3 class="section-title">{{ translate('job_detail.job_description') }}</h3>
-          <p>We're looking for a Senior Front-End Developer with strong background in modern JavaScript/TypeScript and React expertise. You'll lead UI solutions, shape our platform architecture, modernize legacy code, and craft beautiful ReactJS applications. From blazing-fast build processes to elegant user experiences, you'll engage with diverse projects including B2B portals, KANBAN boards, analytics dashboards, content management systems, and more. We value flexibility, high performance, and creativity in a fast-paced environment.</p>
-          
-          <h4>Key Responsibilities:</h4>
-          <ul>
-            <li>Architect and develop modern ReactJS 18+ applications using TypeScript for administrative and B2B interfaces</li>
-            <li>Lead implementation of components library and establish scalable UX architecture patterns</li>
-            <li>Optimize build processes using Vite and Webpack for optimal development and production performance</li>
-            <li>Lead frontend architecture decisions spanning React, Vue.js, and PHP ecosystems</li>
-            <li>Establish code quality standards and mentor development teams on modern frontend practices</li>
-          </ul>
+          <div [innerHTML]="jobDetail.description"></div>
         </div>
 
         <!-- Candidate Requirements -->
-        <div class="job-detail__info--section">
+        <div class="job-detail__info--section" *ngIf="jobDetail.requirements">
           <h3 class="section-title">{{ translate('job_detail.candidate_requirements') }}</h3>
-          <ul>
-            <li>Minimum 6 years of professional front-end development experience</li>
-            <li>Expert-level proficiency in ReactJS (3+ years) with modern hooks and context APIs</li>
-            <li>Advanced JavaScript/TypeScript skills and ES6+ proficiency</li>
-            <li>Familiarity with PHP/Symfony framework</li>
-            <li>Extensive knowledge of modern build tools (Webpack, Vite, Rollup)</li>
-            <li>Expert-level CSS/SCSS skills with responsive design and cross-browser compatibility</li>
-            <li>Excellent problem-solving and debugging capabilities</li>
-            <li>Ability to work independently and lead technical initiatives</li>
-            <li>Experience mentoring junior developers and conducting code reviews</li>
-            <li>Advanced proficiency with state management libraries (Redux, Vuex, Zustand)</li>
-            <li>Knowledge of PHP templating engines (Twig) and Symfony framework</li>
-            <li>Familiarity with e-commerce platforms and complex product catalog systems</li>
-            <li>Experience with modern testing frameworks (Jest, Cypress, Testing Library)</li>
-            <li>Experience with Docker containerization and CI/CD pipelines</li>
-            <li>Experience with headless CMS integration and content management</li>
-            <li>Experience with performance monitoring tools and optimization techniques</li>
-            <li>Understanding of RESTful APIs and GraphQL integration</li>
-            <li>Understanding of SEO optimization and technical SEO implementation</li>
-            <li>Must be fluent in English</li>
-          </ul>
+          <div [innerHTML]="jobDetail.requirements"></div>
         </div>
 
         <!-- Benefits Section -->
-        <div class="job-detail__info--section">
+        <div class="job-detail__info--section" *ngIf="jobDetail.benefits">
           <h3 class="section-title">{{ translate('job_detail.benefits') }}</h3>
-          
-          <h4>1. {{ translate('job_detail.financial_benefits') }}</h4>
-          <ul>
-            <li>{{ translate('job_detail.competitive_salary') }}</li>
-          </ul>
-
-          <h4>2. {{ translate('job_detail.holidays_leave_benefits') }}</h4>
-          <ul>
-            <li>{{ translate('job_detail.annual_leave_12_days') }}</li>
-            <li>{{ translate('job_detail.public_holidays') }}</li>
-          </ul>
-
-          <h4>3. {{ translate('job_detail.health_lifestyle_benefits') }}</h4>
-          <ul>
-            <li>{{ translate('job_detail.premium_health_insurance') }}</li>
-            <li>{{ translate('job_detail.team_building_retreats') }}</li>
-            <li>{{ translate('job_detail.hobby_clubs_snacks_coffee') }}</li>
-          </ul>
-
-          <h4>4. {{ translate('job_detail.personal_development') }}</h4>
-          <ul>
-            <li>{{ translate('job_detail.workshops_training_programs') }}</li>
-            <li>{{ translate('job_detail.mentorship_programs') }}</li>
-            <li>{{ translate('job_detail.english_language_courses') }}</li>
-            <li>{{ translate('job_detail.company_provided_laptop') }}</li>
-          </ul>
-
-          <h4>5. {{ translate('job_detail.work_environment_culture') }}</h4>
-          <ul>
-            <li>{{ translate('job_detail.young_dynamic_culture') }}</li>
-            <li>{{ translate('job_detail.no_dress_code') }}</li>
-          </ul>
+          <div [innerHTML]="jobDetail.benefits"></div>
         </div>
 
-        <!-- Work Location Section -->
+        <!-- Work Location & Time Section -->
         <div class="job-detail__info--section">
-          <h3 class="section-title">{{ translate('job_detail.work_location') }}</h3>
-          <p>{{ translate('job_detail.da_nang_address') }}</p>
+          <h3 class="section-title">{{ translate('job_detail.work_info') }}</h3>
+          <div class="work-info-grid">
+            <div class="work-info-item" *ngIf="jobDetail.workLocation">
+              <strong>{{ translate('job_detail.work_location') }}:</strong>
+              <p>{{ jobDetail.workLocation }}</p>
+            </div>
+            <div class="work-info-item" *ngIf="jobDetail.workTime">
+              <strong>{{ translate('job_detail.work_time') }}:</strong>
+              <p>{{ jobDetail.workTime }}</p>
+            </div>
+            <div class="work-info-item" *ngIf="jobDetail.quantity">
+              <strong>{{ translate('job_detail.quantity') }}:</strong>
+              <p>{{ jobDetail.quantity }} {{ translate('job_detail.people') }}</p>
+            </div>
+          </div>
         </div>
 
         <!-- Application Method Section -->
@@ -201,7 +176,14 @@
           <p>{{ translate('job_detail.apply_online_description') }}</p>
           
           <div class="job-deadline" style="margin-top: 1rem;">
-            <span>{{ translate('job_detail.deadline') }}: 14/11/2025</span>
+            <span>{{ translate('job_detail.deadline') }}: {{ getDeadlineText() }}</span>
+          </div>
+
+          <div class="job-detail__info--actions" style="margin-top: 1rem;">
+            <button class="box-apply-current" (click)="openApplyModal()">
+              <i class="fa fa-paper-plane"></i>
+              {{ translate('job_detail.apply_now') }}
+            </button>
           </div>
         </div>
       </div>
@@ -212,27 +194,15 @@
       <!-- Company Info -->
       <div class="job-detail__company">
         <div class="company-logo">
-          <div class="logo-box">SM</div>
-        </div>
-        <h3 class="company-name">CÔNG TY TNHH SPACEMIND</h3>
-        <div class="company-details">
-          <div class="company-detail-item">
-            <i class="fa fa-users"></i>
-            <span class="label">Quy mô:</span>
-            <span>25-99 nhân viên</span>
+          <div class="logo-box" *ngIf="jobDetail.companyImageUrl">
+            <img [src]="jobDetail.companyImageUrl" [alt]="jobDetail.companyName" />
           </div>
-          <div class="company-detail-item">
-            <i class="fa fa-briefcase"></i>
-            <span class="label">Lĩnh vực:</span>
-            <span>IT - Phần mềm</span>
-          </div>
-          <div class="company-detail-item">
-            <i class="fa fa-map-marker-alt"></i>
-            <span class="label">Địa điểm:</span>
-            <span>Phòng 11.03, tầng 11, tòa nhà The Summit Building, 350...</span>
+          <div class="logo-box logo-placeholder" *ngIf="!jobDetail.companyImageUrl">
+            {{ jobDetail.companyName?.substring(0, 2).toUpperCase() }}
           </div>
         </div>
-        <a [routerLink]="['/candidate/company-detail', 'viettel']" class="company-link">
+        <h3 class="company-name">{{ jobDetail.companyName }}</h3>
+        <a (click)="viewCompanyDetail()" class="company-link" style="cursor: pointer;">
           {{ translate('job_detail.view_company_page') }}
           <i class="fa fa-external-link-alt"></i>
         </a>
@@ -241,25 +211,35 @@
       <!-- General Information -->
       <div class="job-detail__body-right--item job-detail__body-right--box-general">
         <h3>{{ translate('job_detail.general_info') }}</h3>
+        
         <div class="info-item">
           <i class="fa fa-user"></i>
           <span class="label">{{ translate('job_detail.job_level') }}:</span>
-          <span>Nhân viên</span>
+          <span>{{ getPositionTypeText() }}</span>
         </div>
-        <div class="info-item">
-          <i class="fa fa-graduation-cap"></i>
-          <span class="label">{{ translate('job_detail.education') }}:</span>
-          <span>Đại Học trở lên</span>
-        </div>
-        <div class="info-item">
-          <i class="fa fa-users"></i>
-          <span class="label">{{ translate('job_detail.quantity') }}:</span>
-          <span>1 người</span>
-        </div>
+        
         <div class="info-item">
           <i class="fa fa-briefcase"></i>
           <span class="label">{{ translate('job_detail.work_type') }}:</span>
-          <span>Toàn thời gian</span>
+          <span>{{ getEmploymentTypeText() }}</span>
+        </div>
+        
+        <div class="info-item">
+          <i class="fa fa-graduation-cap"></i>
+          <span class="label">{{ translate('job_detail.experience') }}:</span>
+          <span>{{ getExperienceText() }}</span>
+        </div>
+        
+        <div class="info-item" *ngIf="jobDetail.quantity">
+          <i class="fa fa-users"></i>
+          <span class="label">{{ translate('job_detail.quantity') }}:</span>
+          <span>{{ jobDetail.quantity }} {{ translate('job_detail.people') }}</span>
+        </div>
+
+        <div class="info-item" *ngIf="jobDetail.postedAt">
+          <i class="fa fa-calendar"></i>
+          <span class="label">{{ translate('job_detail.posted_date') }}:</span>
+          <span>{{ getPostedDate() }}</span>
         </div>
       </div>
 
@@ -267,26 +247,34 @@
       <div class="job-detail__body-right--item job-detail__body-right--box-category">
         <h3>{{ translate('job_detail.related_categories') }}</h3>
         <div class="category-tags">
-          <span class="tag">Công nghệ Thông tin</span>
-          <span class="tag">Software Engineering</span>
-          <span class="tag">Frontend Developer</span>
-          <span class="tag">Việc làm IT</span>
+          <span class="tag" *ngIf="categoryName">{{ categoryName }}</span>
+          <span class="tag" *ngIf="!categoryName">{{ translate('job_detail.not_specified') }}</span>
         </div>
 
         <h3 style="margin-top: 1.5rem;">{{ translate('job_detail.area') }}</h3>
         <div class="category-tags">
-          <span class="tag">Đà Nẵng</span>
-          <span class="tag">Hồ Chí Minh</span>
-          <span class="tag">Hà Nội</span>
+          <span class="tag" *ngIf="wardName">{{ wardName }}</span>
+          <span class="tag" *ngIf="provinceName">{{ provinceName }}</span>
+          <span class="tag" *ngIf="!provinceName && !wardName">{{ translate('job_detail.not_specified') }}</span>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Error State -->
+  <div *ngIf="!isLoadingJob && !jobDetail" class="error-container">
+    <i class="fa fa-exclamation-circle"></i>
+    <h2>{{ translate('job_detail.not_found') }}</h2>
+    <p>{{ translate('job_detail.not_found_message') }}</p>
+    <button class="btn-primary" routerLink="/candidate/job">
+      {{ translate('job_detail.back_to_jobs') }}
+    </button>
+  </div>
+
   <!-- Apply Modal -->
   <app-apply-job-modal
     [show]="showApplyModal"
-    [title]="translate('job_detail.apply_now') + ' ' + translate('job_detail.title')"
+    [title]="translate('job_detail.apply_now') + ' - ' + (jobDetail?.title || '')"
     (close)="closeApplyModal()"
     (submit)="onModalSubmit($event)">
   </app-apply-job-modal>

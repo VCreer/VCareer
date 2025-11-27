@@ -45,95 +45,31 @@ namespace VCareer.Services.LuceneService.JobSearch
         {
             _jobPostingRepository = jobPostingRepository;
             _jobCategoryRepository = jobCategoryRepository;
-
             // Setup index path
             _indexPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneIndex");
             if (!System.IO.Directory.Exists(_indexPath))
                 System.IO.Directory.CreateDirectory(_indexPath);
-
-            // Initialize analyzer và directory
-            //  Dùng StandardAnalyzer KHÔNG có stop words (để index "it", "a", "an"...)
-            // Lucene.NET 4.8: Dùng CharArraySet.Empty (property) thay vì EMPTY_SET (constant)
             var emptyStopWords = new CharArraySet(AppLuceneVersion, 0, ignoreCase: false);
             _analyzer = new StandardAnalyzer(AppLuceneVersion, emptyStopWords);
             _directory = FSDirectory.Open(_indexPath);
         }
 
-
-        #region Private Helper Methods
-
-        /// Tạo IndexWriter để ghi dữ liệu vào Lucene index
-        private IndexWriter GetWriter()
-        {
-            var config = new IndexWriterConfig(AppLuceneVersion, _analyzer)
-            {
-                OpenMode = OpenMode.CREATE_OR_APPEND  // Tạo mới nếu chưa có, append nếu đã có
-            };
-            return new IndexWriter(_directory, config);
-        }
-
-        /// Tạo IndexSearcher để search trong Lucene index
-        private IndexSearcher GetSearcher()
-        {
-            var reader = DirectoryReader.Open(_directory);
-            return new IndexSearcher(reader);
-        }
-
-        /// Remove HTML tags từ string
-        /// Dùng để index plain text thay vì HTML
-        private string StripHtmlTags(string html)
-        {
-            if (string.IsNullOrWhiteSpace(html))
-                return string.Empty;
-
-            // Remove HTML tags
-            var text = Regex.Replace(html, "<.*?>", " ");
-            // Remove multiple spaces
-            text = Regex.Replace(text, @"\s+", " ");
-            return text.Trim();
-        }
-
-        /// Escape special characters trong Lucene query
-        /// Tránh ParseException khi user nhập ký tự đặc biệt
-        private string EscapeSpecialCharacters(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return text;
-
-            var specialChars = new[] { '+', '-', '&', '|', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/' };
-            foreach (var c in specialChars)
-                text = text.Replace(c.ToString(), "\\" + c);
-
-            return text;
-        }
-
-        #endregion
-
-        #region Index Management (Tạo, Cập nhật, Xóa Index)
-
         /// Index 1 job vào Lucene
         /// Gọi khi: Create job, Update job, Admin approve job
         public async Task UpsertJobAsync(Job_Post job)
         {
-            // Chỉ index job đang active (Open + chưa hết hạn)
-            if (job == null || !job.IsActive())
+            if (job == null)
                 return;
 
-            await Task.Run(async () =>
+            await Task.Run(() =>
             {
                 using var writer = GetWriter();
-
-                // Convert job entity → Lucene document
-                var doc = await CreateLuceneDocumentAsync(job);
-
-                // UpdateDocument: Thêm mới hoặc update nếu đã tồn tại (dựa vào Id)
+                var doc = CreateLuceneDocumentAsync(job).GetAwaiter().GetResult();
                 writer.UpdateDocument(new Term("Id", job.Id.ToString()), doc);
-
-                // Commit changes
                 writer.Commit();
             });
-        }
 
+        }
         /// Index nhiều jobs vào Lucene (batch operation)
         /// Gọi khi: Re-index toàn bộ database, Import data
         public async Task IndexMultipleJobsAsync(List<Job_Post> jobs)
@@ -156,7 +92,6 @@ namespace VCareer.Services.LuceneService.JobSearch
                 writer.Commit();
             });
         }
-
         /// Xóa 1 job khỏi Lucene index
         /// Gọi khi: Delete job, Job hết hạn, Admin reject job
         public async Task DeleteJobFromIndexAsync(Guid jobId)
@@ -168,7 +103,6 @@ namespace VCareer.Services.LuceneService.JobSearch
                 writer.Commit();
             });
         }
-
         /// Xóa toàn bộ Lucene index
         /// Gọi khi: Re-index từ đầu
         public async Task ClearIndexAsync()
@@ -185,85 +119,51 @@ namespace VCareer.Services.LuceneService.JobSearch
                 writer.Commit();
             });
         }
-
-        #endregion
-
-        #region Create Lucene Document
-
-        /// Convert Job_Posting entity → Lucene Document
-        /// Document chứa các fields được index để search
-        private async Task<Document> CreateLuceneDocumentAsync(Job_Post job)
+        public Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto input)
         {
-            var doc = new Document();
+            using var reader = DirectoryReader.Open(_directory);
+            var totalDocs = reader.NumDocs;
+            var searcher = new IndexSearcher(reader);
 
-            // ID Field (Store để retrieve sau khi search)
-            doc.Add(new StringField("Id", job.Id.ToString(), Field.Store.YES));
-            doc.Add(new TextField("Title", job.Title ?? "", Field.Store.NO) { Boost = 3.0f });
-            doc.Add(new TextField("Description", StripHtmlTags(job.Description ?? ""), Field.Store.NO) { Boost = 1.5f });
-            doc.Add(new TextField("Requirements", StripHtmlTags(job.Requirements ?? ""), Field.Store.NO) { Boost = 1.2f });
-            doc.Add(new Int32Field("Experience", (int)job.Experience, Field.Store.NO));
-            doc.Add(new StringField("CategoryId", job.JobCategoryId.ToString(), Field.Store.NO));
-            doc.Add(new Int32Field("ProvinceCode", job.ProvinceCode, Field.Store.NO));
-            if (job.WardCode.HasValue)  doc.Add(new Int32Field("WardCode", (int)job.WardCode, Field.Store.NO));
-            doc.Add(new StringField("SalaryDeal", job.SalaryDeal.ToString(), Field.Store.NO));
-            doc.Add(new StringField("Experience", ((int)job.Experience).ToString(), Field.Store.NO));
-            doc.Add(new StringField("EmploymentType", ((int)job.EmploymentType).ToString(), Field.Store.NO));
-            doc.Add(new StringField("PositionType", ((int)job.PositionType).ToString(), Field.Store.NO));
-            doc.Add(new StringField("Status", ((int)job.Status).ToString(), Field.Store.NO));
-            
-            // Dates (store as ticks để sort)
-            doc.Add(new Int64Field("PostedAt", job.PostedAt.Ticks, Field.Store.NO));
-            doc.Add(new Int64Field("LastModifiedAt", (job.LastModificationTime ?? job.CreationTime).Ticks, Field.Store.NO));
-            if (job.ExpiresAt.HasValue) doc.Add(new Int64Field("ExpiresAt", job.ExpiresAt.Value.Ticks, Field.Store.NO));
+            var query = BuildSearchQuery(input);
+            var sortQuery = BuildSortQuery();
 
-            return doc;
+            int maxResults = (input.SkipCount + input.MaxResultCount) * 3;
+            if (maxResults < 100) maxResults = 100;
+
+            //     var topDocs = searcher.Search(new MatchAllDocsQuery(), 100);
+            var topDocs = searcher.Search(query, maxResults, sortQuery);
+
+            var jobIds = new List<Guid>();
+
+            foreach (var scoreDoc in topDocs.ScoreDocs)
+            {
+                var doc = searcher.Doc(scoreDoc.Doc);
+                if (Guid.TryParse(doc.Get("Id"), out var jobId))
+                    jobIds.Add(jobId);
+            }
+
+
+            var pagingJobIds = jobIds
+                .Skip(input.SkipCount)
+                .Take((input.MaxResultCount <= 0) ? 30 : input.MaxResultCount)
+                .ToList();
+
+            return Task.FromResult(pagingJobIds);
         }
 
-        #endregion
-
-        #region Search
-
-        /// Search jobs và trả về list GUIDs (đã sorted)
-        /// Repository sẽ dùng list GUIDs này để lấy jobs từ database (giữ nguyên thứ tự)
-        public async Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto input)
+        private Sort BuildSortQuery()
         {
-            return await Task.Run(() =>
-            {
-                using var reader = DirectoryReader.Open(_directory);
-                var searcher = new IndexSearcher(reader);
-
-                // Build query từ input
-                var query = BuildSearchQuery(input);
-
-                // Build sort order
-                var sort = BuildSortOrder(input.SortBy);
-
-                // Calculate max results (buffer để support pagination)
-                int maxResults = (input.SkipCount + input.MaxResultCount) * 3;
-                if (maxResults < 100) maxResults = 100;
-
-                // Execute search
-                var topDocs = searcher.Search(query, maxResults, sort);
-
-                // Extract job IDs
-                var jobIds = new List<Guid>();
-                foreach (var scoreDoc in topDocs.ScoreDocs)
-                {
-                    var doc = searcher.Doc(scoreDoc.Doc);
-                    if (Guid.TryParse(doc.Get("Id"), out var jobId))
-                        jobIds.Add(jobId);
-                }
-
-                return jobIds;
-            });
+            return new Sort(
+                new SortField("PriorityLevel", SortFieldType.INT32, true),   // true = descending
+                new SortField("SortScore", SortFieldType.DOUBLE, true)       // true = descending
+            );
         }
         private Query BuildSearchQuery(JobSearchInputDto input)
         {
             var boolQuery = new BooleanQuery();
 
-            // MUST: Job đang OPEN và chưa hết hạn
-            boolQuery.Add(new TermQuery(new Term("Status", ((int)JobStatus.Open).ToString())), Occur.MUST);
-            boolQuery.Add(NumericRangeQuery.NewInt64Range("ExpiresAt", DateTime.UtcNow.Ticks, null, true, true), Occur.MUST);
+           boolQuery.Add(NumericRangeQuery.NewInt64Range("ExpiresAt", DateTime.UtcNow.Ticks, null, true, true), Occur.MUST);
 
             // KEYWORD Search (Full-text)
             if (!string.IsNullOrWhiteSpace(input.Keyword))
@@ -272,89 +172,20 @@ namespace VCareer.Services.LuceneService.JobSearch
                 if (keywordQuery != null)
                     boolQuery.Add(keywordQuery, Occur.MUST);
             }
-
-            // FILTER: Category IDs (FE gửi list leaf nodes)
-            if (input.CategoryIds != null && input.CategoryIds.Any())
-            {
-                var categoryQuery = new BooleanQuery();
-                foreach (var catId in input.CategoryIds)
-                {
-                    categoryQuery.Add(new TermQuery(new Term("CategoryId", catId.ToString())), Occur.SHOULD);
-                }
-                boolQuery.Add(categoryQuery, Occur.MUST);
-            }
-
-            // FILTER: Province IDs
-            //if (input.ProvinceIds != null && input.ProvinceIds.Any())
-            //{
-            //    var provinceQuery = new BooleanQuery();
-            //    foreach (var id in input.ProvinceIds)
-            //    {
-            //        provinceQuery.Add(new TermQuery(new Term("ProvinceId", id.ToString())), Occur.SHOULD);
-            //        // provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
-            //    }
-            //    boolQuery.Add(provinceQuery, Occur.MUST);
-            //}
-
-            // FILTER: District IDs
-            //if (input.DistrictIds != null && input.DistrictIds.Any())
-            //{
-            //    var districtQuery = new BooleanQuery();
-            //    foreach (var id in input.DistrictIds)
-            //    {
-            //        districtQuery.Add(new TermQuery(new Term("DistrictId", id.ToString())), Occur.SHOULD);
-            //        // districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
-            //    }
-            //    boolQuery.Add(districtQuery, Occur.MUST);
-            //}
-
-            // Index
-            //doc.Add(new Int32Field("ProvinceId", job.ProvinceId, Field.Store.NO));
-            //doc.Add(new Int32Field("DistrictId", job.DistrictId, Field.Store.NO));
-
-            // Search  
-            //provinceQuery.Add(Int32Field.NewExactQuery("ProvinceId", id), Occur.SHOULD);
-            //districtQuery.Add(Int32Field.NewExactQuery("DistrictId", id), Occur.SHOULD);
-
-            // FILTER: Salary (theo radio buttons UI)
-            AddSalaryFilter(boolQuery, input.SalaryFilter);
-
-            // FILTER: Experience (theo radio buttons UI)
+            //filter
+            AddCategoryFilter(boolQuery, input.CategoryIds);
+            AddProvinceFilter(boolQuery, input.ProvinceCodes);
+            AddWardFilter(boolQuery, input.WardCodes);
+            AddPositionFilter(boolQuery, input.PositionTypes);
+            AddEmployeeTypeFilter(boolQuery, input.EmploymentTypes);
             AddExperienceFilter(boolQuery, input.ExperienceFilter);
-
-            // FILTER: Position Types (List)
-            if (input.PositionTypes != null && input.PositionTypes.Any())
-            {
-                var positionQuery = new BooleanQuery();
-                foreach (var position in input.PositionTypes)
-                {
-                    positionQuery.Add(new TermQuery(new Term("PositionType", ((int)position).ToString())), Occur.SHOULD);
-                }
-                boolQuery.Add(positionQuery, Occur.MUST);
-            }
-
-            // FILTER: Employment Types (List)
-            if (input.EmploymentTypes != null && input.EmploymentTypes.Any())
-            {
-                var employmentQuery = new BooleanQuery();
-                foreach (var employment in input.EmploymentTypes)
-                {
-                    employmentQuery.Add(new TermQuery(new Term("EmploymentType", ((int)employment).ToString())), Occur.SHOULD);
-                }
-                boolQuery.Add(employmentQuery, Occur.MUST);
-            }
-
-            // FILTER: Is Urgent
-            //if (input.IsUrgent.HasValue)
-            //{
-            //    boolQuery.Add(new TermQuery(new Term("IsUrgent", input.IsUrgent.Value.ToString())), Occur.MUST);
-            //}
+            AddSalaryDealFilter(boolQuery, input.SalaryDeal);
+            AddSalaryRangeFilter(boolQuery, input.MinSalary, input.MaxSalary);
 
             // Return query (nếu không có clause nào, return match all)
             return boolQuery.Clauses.Count == 0 ? new MatchAllDocsQuery() : boolQuery;
         }
-
-        /// Build keyword query - Search trên nhiều fields với boost
+        #region logic build search query
         private Query BuildKeywordQuery(string keyword)
         {
             try
@@ -362,13 +193,14 @@ namespace VCareer.Services.LuceneService.JobSearch
                 var parser = new MultiFieldQueryParser(
                     AppLuceneVersion,
                     new[] {
-                        "Title",            // Boost 3.0 (quan trọng nhất)
-                        "Description",      // Boost 1.5
-                        "Requirements",     // Boost 1.0
-                        "Benefits",         // Boost 1.0
-                        "WorkLocation",     // Boost 1.0
-                       
-                        "ExperienceText",  // ví dụ gõ không yêu cầu kinh nghiệm, nó sẽ search đến đây 
+                        "Title",
+                        "Description",
+                        "Requirements",
+                        "Benefits",
+                        "WorkLocation",
+                        "CompanyName",
+                        "Tag",
+
                     },
                     _analyzer
                 );
@@ -381,146 +213,186 @@ namespace VCareer.Services.LuceneService.JobSearch
                 return new WildcardQuery(new Term("Title", $"*{keyword.ToLower()}*"));
             }
         }
-
-        /// - Filter "Thỏa thuận" → CHỈ match jobs SalaryDeal = true
-        /// - Filter ranges → CHỈ match jobs có SalaryMin/Max cụ thể (SalaryDeal = false)
-        private void AddSalaryFilter(BooleanQuery boolQuery, SalaryFilterType? salaryFilter)
-        {
-            if (!salaryFilter.HasValue || salaryFilter == SalaryFilterType.All)
-                return;
-
-            var salaryQuery = new BooleanQuery();
-
-            switch (salaryFilter.Value)
-            {
-                case SalaryFilterType.Deal:
-                    // CHỈ lấy jobs "Thỏa thuận" (SalaryDeal = true, SalaryMin/Max = null)
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "True")), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Under10:
-                    // CHỈ lấy jobs có lương CỤ THỂ < 10 (SalaryDeal = false AND SalaryMin < 10)
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", null, 10.0, true, false), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Range10To15:
-                    // CHỈ lấy jobs có lương CỤ THỂ overlap [10, 15]
-                    // SalaryDeal = false AND (SalaryMax >= 10 AND SalaryMin <= 15)
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMax", 10.0, null, true, true), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", null, 15.0, true, true), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Range15To20:
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMax", 15.0, null, true, true), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", null, 20.0, true, true), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Range20To30:
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMax", 20.0, null, true, true), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", null, 30.0, true, true), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Range30To50:
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMax", 30.0, null, true, true), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", null, 50.0, true, true), Occur.MUST);
-                    break;
-
-                case SalaryFilterType.Over50:
-                    // CHỈ lấy jobs có lương CỤ THỂ >= 50
-                    salaryQuery.Add(new TermQuery(new Term("SalaryDeal", "False")), Occur.MUST);
-                    salaryQuery.Add(NumericRangeQuery.NewDoubleRange("SalaryMin", 50.0, null, true, true), Occur.MUST);
-                    break;
-            }
-
-            if (salaryQuery.Clauses.Count > 0)
-                boolQuery.Add(salaryQuery, Occur.MUST);
-        }
-
-        /// ✨ FILTER KINH NGHIỆM - Đơn giản hóa (exact match với enum)
         private void AddExperienceFilter(BooleanQuery boolQuery, ExperienceLevel? experienceFilter)
         {
             if (!experienceFilter.HasValue)
                 return;
-
-            // Match exact với enum value
             boolQuery.Add(new TermQuery(new Term("Experience", ((int)experienceFilter.Value).ToString())), Occur.MUST);
         }
-
-        /// Build sort order từ sortBy parameter
-        private Sort BuildSortOrder(SortByField sortBy)
+        private void AddProvinceFilter(BooleanQuery boolQuery, List<int> provinceCodes)
         {
-            SortField sf1;
-            SortField sf2;
-
-            switch (sortBy)
+            if (provinceCodes != null && provinceCodes.Any())
             {
-                case SortByField.Salary:
-                    sf1 = new SortField("SalaryMax", SortFieldType.DOUBLE, true);
-                    sf1.SetMissingValue(double.Min);
-                    sf2 = CreatePostedAtSort();
-                    return new Sort(sf1, sf2);
-
-                case SortByField.Experience:
-                    sf1 = new SortField("Experience", SortFieldType.INT32, true);
-                    sf1.SetMissingValue(int.MinValue);
-                    sf2 = CreatePostedAtSort();
-                    return new Sort(sf1, sf2);
-
-                case SortByField.ExpiredAt:
-                    sf1 = new SortField("ExpiresAt", SortFieldType.INT64, true);
-                    sf1.SetMissingValue(long.MinValue);
-                    sf2 = CreatePostedAtSort();
-                    return new Sort(sf1, sf2);
-
-                default:
-                    return Sort.RELEVANCE;
-            }
-        }
-        private SortField CreatePostedAtSort()
-        {
-            var sf = new SortField("PostedAt", SortFieldType.INT64, true);
-            sf.SetMissingValue(long.MinValue);
-            return sf;
-        }
-
-
-
-        #endregion
-
-        #region Debug Methods
-
-        /// DEBUG: Test xem analyzer phân tách từ như thế nào
-        /// Dùng để verify "it" có bị bỏ qua không
-        public List<string> TestTokenize(string text)
-        {
-            var tokens = new List<string>();
-
-            try
-            {
-                var stream = _analyzer.GetTokenStream("test", new StringReader(text));
-                var termAttr = stream.GetAttribute<Lucene.Net.Analysis.TokenAttributes.ICharTermAttribute>();
-
-                stream.Reset();
-                while (stream.IncrementToken())
+                var provinceQuery = new BooleanQuery();
+                foreach (var id in provinceCodes)
                 {
-                    tokens.Add(termAttr.ToString());
+                    provinceQuery.Add(
+             NumericRangeQuery.NewInt32Range("ProvinceCode", id, id, true, true), Occur.SHOULD);
                 }
-                stream.End();
-                stream.Dispose();
+                boolQuery.Add(provinceQuery, Occur.MUST);
             }
-            catch (Exception ex)
+        }
+        private void AddWardFilter(BooleanQuery boolQuery, List<int> wardCodes)
+        {
+            if (wardCodes != null && wardCodes.Any())
             {
-                tokens.Add($"ERROR: {ex.Message}");
+                var wardQuery = new BooleanQuery();
+                foreach (var id in wardCodes)
+                {
+                    wardQuery.Add(NumericRangeQuery.NewInt32Range("WardCode", id, id, true, true), Occur.SHOULD);
+                }
+                boolQuery.Add(wardQuery, Occur.MUST);
             }
+        }
+        private void AddCategoryFilter(BooleanQuery boolQuery, List<Guid> categoryIds)
+        {
+            if (categoryIds != null && categoryIds.Any())
+            {
+                var categoryQuery = new BooleanQuery();
+                foreach (var catId in categoryIds)
+                {
+                    categoryQuery.Add(new TermQuery(new Term("CategoryId", catId.ToString())), Occur.SHOULD);
+                }
+                boolQuery.Add(categoryQuery, Occur.MUST);
+            }
+        }
+        private void AddPositionFilter(BooleanQuery boolQuery, List<PositionType> positionTypes)
+        {
+            if (positionTypes != null && positionTypes.Any())
+            {
+                var positionQuery = new BooleanQuery();
+                foreach (var position in positionTypes)
+                {
+                    positionQuery.Add(new TermQuery(new Term("PositionType", ((int)position).ToString())), Occur.SHOULD);
+                }
+                boolQuery.Add(positionQuery, Occur.MUST);
+            }
+        }
+        private void AddEmployeeTypeFilter(BooleanQuery boolQuery, List<EmploymentType> employmentTypes)
+        {
+            if (employmentTypes != null && employmentTypes.Any())
+            {
+                var employmentQuery = new BooleanQuery();
+                foreach (var employment in employmentTypes)
+                {
+                    employmentQuery.Add(new TermQuery(new Term("EmploymentType", ((int)employment).ToString())), Occur.SHOULD);
+                }
+                boolQuery.Add(employmentQuery, Occur.MUST);
+            }
+        }
+        private void AddSalaryDealFilter(BooleanQuery boolQuery, bool? salaryDeal)
+        {
+            if (!salaryDeal.HasValue)
+                return;
 
-            return tokens;
+            boolQuery.Add(
+                new TermQuery(new Term("SalaryDeal", salaryDeal.Value ? "1" : "0")),
+                Occur.MUST
+            );
+        }
+        private void AddSalaryRangeFilter(BooleanQuery boolQuery, double? salaryFrom, double? salaryTo)
+        {
+            if (salaryTo.HasValue)
+            {
+                var minSalaryQuery = NumericRangeQuery.NewDoubleRange("MinSalary", null, salaryTo.Value, true, true);
+                boolQuery.Add(minSalaryQuery, Occur.MUST);
+            }
+            if (salaryFrom.HasValue)
+            {
+                var maxSalaryQuery = NumericRangeQuery.NewDoubleRange("MaxSalary", salaryFrom.Value, null, true, true);
+                boolQuery.Add(maxSalaryQuery, Occur.MUST);
+            }
         }
 
         #endregion
+
+        #region Private Helper Methods
+        /// Convert Job_Posting entity → Lucene Document
+        /// Document chứa các fields được index để search
+        private async Task<Document> CreateLuceneDocumentAsync(Job_Post job)
+        {
+            var doc = new Document();
+            doc.Add(new StringField("Id", job.Id.ToString(), Field.Store.YES));
+
+            //search full texxt
+            doc.Add(new TextField("Title", job.Title ?? "", Field.Store.NO) { Boost = 3.0f });
+            doc.Add(new TextField("Description", StripHtmlTags(job.Description ?? ""), Field.Store.NO) { Boost = 1.5f });
+            doc.Add(new TextField("Requirements", StripHtmlTags(job.Requirements ?? ""), Field.Store.NO) { Boost = 1.2f });
+            doc.Add(new TextField("Benefits", StripHtmlTags(job.Benefits ?? ""), Field.Store.NO));
+            doc.Add(new TextField("CompanyName", job.CompanyName ?? "", Field.Store.NO));
+            doc.Add(new TextField("WorkLocation", job.WorkLocation ?? "", Field.Store.NO));
+            if (job.JobTags != null)
+            {
+                foreach (var jt in job.JobTags)
+                {
+                    if (jt.Tag != null && !string.IsNullOrWhiteSpace(jt.Tag.Name))
+                        doc.Add(new TextField("Tag", jt.Tag.Name, Field.Store.NO) { Boost = 2.0f });
+                }
+            }
+
+            // filter /sort/multisearch nhung ko can tao token
+            doc.Add(new Int32Field("Experience", (int)job.Experience, Field.Store.NO));
+            doc.Add(new StringField("CategoryId", job.JobCategoryId.ToString(), Field.Store.NO));
+            doc.Add(new Int32Field("ProvinceCode", job.ProvinceCode, Field.Store.NO));
+            if (job.WardCode.HasValue) doc.Add(new Int32Field("WardCode", (int)job.WardCode, Field.Store.NO));
+            doc.Add(new StringField("EmploymentType", ((int)job.EmploymentType).ToString(), Field.Store.NO));
+            doc.Add(new StringField("PositionType", ((int)job.PositionType).ToString(), Field.Store.NO));
+            doc.Add(new Int32Field("SalaryDeal", job.SalaryDeal ? 1 : 0, Field.Store.NO));
+            doc.Add(new DoubleField("MaxSalary", (double)(job.SalaryMax ?? 0), Field.Store.NO));
+            doc.Add(new DoubleField("MinSalary", (double)(job.SalaryMin ?? 0), Field.Store.NO));
+            if (job.ExpiresAt.HasValue) doc.Add(new Int64Field("ExpiresAt", job.ExpiresAt.Value.Ticks, Field.Store.NO));
+            if (job.Job_Priority != null)
+            {
+                doc.Add(new Int32Field("PriorityLevel", (int)job.Job_Priority.PriorityLevel, Field.Store.NO));
+                doc.Add(new DoubleField("SortScore", job.Job_Priority.SortScore, Field.Store.NO));
+            }
+
+            return doc;
+        }
+        /// Tạo IndexWriter để ghi dữ liệu vào Lucene index
+        private IndexWriter GetWriter()
+        {
+            var config = new IndexWriterConfig(AppLuceneVersion, _analyzer)
+            {
+                OpenMode = OpenMode.CREATE_OR_APPEND  // Tạo mới nếu chưa có, append nếu đã có
+            };
+            return new IndexWriter(_directory, config);
+        }
+        /// Tạo IndexSearcher để search trong Lucene index
+        private IndexSearcher GetSearcher()
+        {
+            var reader = DirectoryReader.Open(_directory);
+            return new IndexSearcher(reader);
+        }
+        /// Remove HTML tags từ string
+        /// Dùng để index plain text thay vì HTML
+        private string StripHtmlTags(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            // Remove HTML tags
+            var text = Regex.Replace(html, "<.*?>", " ");
+            // Remove multiple spaces
+            text = Regex.Replace(text, @"\s+", " ");
+            return text.Trim();
+        }
+        /// Escape special characters trong Lucene query
+        /// Tránh ParseException khi user nhập ký tự đặc biệt
+        private string EscapeSpecialCharacters(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            var specialChars = new[] { '+', '-', '&', '|', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/' };
+            foreach (var c in specialChars)
+                text = text.Replace(c.ToString(), "\\" + c);
+
+            return text;
+        }
+
+        #endregion
+
+
     }
 }

@@ -1,11 +1,11 @@
 import * as Application from './application';
 import * as Books from './books';
 import * as Constants from './constants';
+import * as Controllers from './controllers';
 import * as Cv from './cv';
 import * as Dto from './dto';
 import * as HttpApi from './http-api';
 import * as Iservices from './iservices';
-import * as Job from './job';
 import * as Microsoft from './microsoft';
 import * as Models from './models';
 import * as Profile from './profile';
@@ -13,4 +13,5 @@ import * as Services from './services';
 import * as System from './system';
 import * as Volo from './volo';
 export * from './api-config.service';
+export { Application, Books, Constants, Controllers, Cv, Dto, HttpApi, Iservices, Microsoft, Models, Profile, Services, Volo };
 export { Application, Books, Constants, Cv, Dto, HttpApi, Iservices, Job, Microsoft, Models, Profile, Services, System, Volo };

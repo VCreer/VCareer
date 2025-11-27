@@ -1143,9 +1143,6 @@ namespace VCareer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DisplayArea")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("JobId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1157,15 +1154,19 @@ namespace VCareer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("JobId");
+                    b.HasIndex("JobId")
+                        .IsUnique();
 
-                    b.ToTable("JobPriory", (string)null);
+                    b.ToTable("JobPriority", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.RecruitmentCampaign", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -1198,6 +1199,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1213,13 +1217,11 @@ namespace VCareer.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1317,6 +1319,9 @@ namespace VCareer.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1595,6 +1600,9 @@ namespace VCareer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Priority")
+                        .HasColumnType("int");
+
                     b.Property<int>("Target")
                         .HasColumnType("int");
 
@@ -1691,6 +1699,9 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<int?>("PriorityLevel")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -1699,6 +1710,9 @@ namespace VCareer.Migrations
 
                     b.Property<int>("Target")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("User_ChildServiceId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("Value")
                         .HasColumnType("int");
@@ -1710,6 +1724,8 @@ namespace VCareer.Migrations
                     b.HasIndex("JobPostId");
 
                     b.HasIndex("Job_PostId");
+
+                    b.HasIndex("User_ChildServiceId");
 
                     b.ToTable("EffectingJobServices");
                 });
@@ -4319,8 +4335,8 @@ namespace VCareer.Migrations
             modelBuilder.Entity("VCareer.Models.Job.Job_Priority", b =>
                 {
                     b.HasOne("VCareer.Models.Job.Job_Post", "Job")
-                        .WithMany("Job_Priorities")
-                        .HasForeignKey("JobId")
+                        .WithOne("Job_Priority")
+                        .HasForeignKey("VCareer.Models.Job.Job_Priority", "JobId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4443,7 +4459,7 @@ namespace VCareer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("VCareer.Models.Job.Job_Post", "JobPost")
+                    b.HasOne("VCareer.Models.Job.Job_Post", "Job_Post")
                         .WithMany()
                         .HasForeignKey("JobPostId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -4453,9 +4469,17 @@ namespace VCareer.Migrations
                         .WithMany("EffectingJobServices")
                         .HasForeignKey("Job_PostId");
 
+                    b.HasOne("VCareer.Models.Subcription.User_ChildService", "User_ChildService")
+                        .WithMany("EffectingJobServices")
+                        .HasForeignKey("User_ChildServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("ChildService");
 
-                    b.Navigation("JobPost");
+                    b.Navigation("Job_Post");
+
+                    b.Navigation("User_ChildService");
                 });
 
             modelBuilder.Entity("VCareer.Models.Subcription.User_ChildService", b =>
@@ -4722,7 +4746,8 @@ namespace VCareer.Migrations
 
                     b.Navigation("JobTags");
 
-                    b.Navigation("Job_Priorities");
+                    b.Navigation("Job_Priority")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("VCareer.Models.Job.RecruitmentCampaign", b =>
@@ -4765,6 +4790,11 @@ namespace VCareer.Migrations
                     b.Navigation("subcriptionPrices");
 
                     b.Navigation("user_SubcriptionServices");
+                });
+
+            modelBuilder.Entity("VCareer.Models.Subcription.User_ChildService", b =>
+                {
+                    b.Navigation("EffectingJobServices");
                 });
 
             modelBuilder.Entity("VCareer.Models.Users.CandidateProfile", b =>

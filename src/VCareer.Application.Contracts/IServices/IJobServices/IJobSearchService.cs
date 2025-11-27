@@ -11,10 +11,10 @@ namespace VCareer.Job.JobPosting.ISerices
 {
     public interface IJobSearchService : IApplicationService
     {
-        Task<PagedResultDto<JobViewWithPriorityDto>> SearchJobsAsync(JobSearchInputDto input);
+        public Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input);
         Task<JobViewDetail> GetJobBySlugAsync(string slug);
         Task<JobViewDetail> GetJobByIdAsync(Guid jobId);
-        Task<List<JobViewWithPriorityDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10);
+        public Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10);
         Task ReindexAllJobsAsync();
         Task IndexJobAsync(Guid jobId);
         Task RemoveJobFromIndexAsync(Guid jobId);

@@ -143,7 +143,6 @@
             />
           </div>
 
-          <!-- DI CHUYỂN LỖI RA ĐÂY -->
           <div class="error-message" *ngIf="getFieldError('salary')">
             {{ getFieldError('salary') }}
           </div>
@@ -175,6 +174,7 @@
         >
         </app-input-field>
       </div>
+
       <!-- General Information Section -->
       <div class="form-section">
         <h3 class="section-title">Thông tin chung</h3>
@@ -223,7 +223,6 @@
       <div class="form-section">
         <h3 class="section-title">Mô tả công việc</h3>
 
-        <!-- Job Description (Rich Text Editor) -->
         <app-rich-text-editor
           label="Mô tả công việc"
           placeholder="Nhập mô tả chi tiết về công việc..."
@@ -242,7 +241,6 @@
       <div class="form-section">
         <h3 class="section-title">Yêu cầu ứng viên</h3>
 
-        <!-- Requirements (Rich Text Editor) -->
         <app-rich-text-editor
           label="Yêu cầu ứng viên"
           placeholder="Nhập các yêu cầu đối với ứng viên..."
@@ -261,7 +259,6 @@
       <div class="form-section">
         <h3 class="section-title">Quyền lợi</h3>
 
-        <!-- Benefits (Rich Text Editor) -->
         <app-rich-text-editor
           label="Quyền lợi"
           placeholder="Nhập các quyền lợi mà ứng viên sẽ nhận được..."
@@ -275,12 +272,111 @@
           {{ getFieldError('benefits') }}
         </div>
       </div>
+      
+      <!-- === NGÀNH NGHỀ (2 DROPDOWN) === -->
+      <div class="form-section">
+        <h3 class="section-title">
+          Ngành nghề
+          <span class="required-mark">*</span>
+        </h3>
+        
+        <div class="category-dropdowns">
+          <!-- Parent Category Dropdown -->
+          <app-select-field
+            label="Ngành nghề chính"
+            placeholder="Chọn ngành nghề chính"
+            [required]="true"
+            [options]="parentCategoryOptions"
+            [error]="getFieldError('parentCategory')"
+            [(ngModel)]="selectedParentId"
+            (ngModelChange)="onParentCategoryChange($event)"
+            name="parentCategory"
+          ></app-select-field>
+
+          <!-- Child Category Dropdown -->
+          <app-select-field
+            label="Lĩnh vực cụ thể"
+            placeholder="Chọn lĩnh vực cụ thể"
+            [required]="true"
+            [disabled]="!selectedParentId"
+            [options]="childCategoryOptions"
+            [error]="getFieldError('jobCategoryId')"
+            [(ngModel)]="selectedCategoryId"
+            (ngModelChange)="onChildCategoryChange($event)"
+            name="jobCategoryId"
+          ></app-select-field>
+        </div>
+      </div>
+
+      <!-- === TỪ KHÓA (TAGS) - CHỈ HIỂN THỊ KHI ĐÃ CHỌN CHILD CATEGORY === -->
+      <div class="form-section" *ngIf="selectedCategoryId && availableTags.length > 0">
+        <h3 class="section-title">
+          Từ khóa tuyển dụng
+          <span class="optional-mark">(Tùy chọn)</span>
+        </h3>
+        
+        <div class="tags-selector">
+          <!-- Tags đã chọn -->
+          <div class="selected-tags-area" *ngIf="selectedTags.length > 0">
+            <div class="selected-tags-header">
+              <span class="tags-count">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.3 4.7l-6.6 6.6-3.4-3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Đã chọn {{ selectedTags.length }} từ khóa
+              </span>
+              <button type="button" class="clear-all-btn" (click)="clearAllTags()">
+                Xóa tất cả
+              </button>
+            </div>
+            <div class="selected-tags-chips">
+              <div *ngFor="let tag of selectedTags" class="tag-chip selected">
+                <span>{{ tag.name }}</span>
+                <button type="button" (click)="toggleTag(tag)">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M9 3L3 9M3 3l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags có sẵn để chọn -->
+          <div class="available-tags-area">
+            <p class="area-label">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Click để chọn từ khóa:
+            </p>
+            <div class="tags-chips-grid">
+              <button
+                type="button"
+                *ngFor="let tag of availableTags"
+                class="tag-chip"
+                [class.selected]="isTagSelected(tag)"
+                (click)="toggleTag(tag)"
+              >
+                {{ tag.name }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Helper text -->
+          <div class="tags-helper">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 7v4M8 5h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Chọn các từ khóa phù hợp để tăng khả năng tiếp cận ứng viên</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Work Location Section -->
       <div class="form-section">
         <h3 class="section-title">Địa điểm làm việc</h3>
 
-        <!-- Work Location -->
         <app-input-field
           label="Địa điểm làm việc"
           type="text"
@@ -293,9 +389,6 @@
         >
         </app-input-field>
 
-      </div>
-
-       <!-- Work Time -->
         <app-input-field
           label="Thời gian làm việc"
           type="text"
@@ -321,4 +414,4 @@
       </app-generic-modal>
     </div>
   </div>
-
+</div>

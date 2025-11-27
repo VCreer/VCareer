@@ -17,10 +17,10 @@ namespace VCareer.Constants.JobConstant
         //dịch vụ con
         public enum ServiceTarget
         {
-            Job,
+            JobPost,
             Company,
-            Recruiter,
-            Candidate
+            Cv
+
         }
 
         public enum ServiceAction
