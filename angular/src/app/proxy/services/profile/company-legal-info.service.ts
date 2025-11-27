@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from '../../dto/profile/models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, CompanyVerificationViewDto, CompanyVerificationFilterDto, RejectCompanyDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from '../../dto/profile/models';
 
 @Injectable({
   providedIn: 'root',
@@ -82,6 +82,37 @@ export class CompanyLegalInfoService {
       method: 'PUT',
       url: `/api/app/company-legal-info/${id}/file-urls`,
       params: { businessLicenseFile, taxCertificateFile, representativeIdCardFile, otherSupportFile },
+    },
+    { apiName: this.apiName,...config });
+
+  getPendingCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/pending-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  approveCompany = (id: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/approve`,
+    },
+    { apiName: this.apiName,...config });
+
+  rejectCompany = (id: number, input: RejectCompanyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/reject`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  getVerifiedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/verified-companies',
+      body: input,
     },
     { apiName: this.apiName,...config });
 

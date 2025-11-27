@@ -382,6 +382,13 @@ export const APP_ROUTES: Routes = [
             './features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail'
           ).then(c => c.EmployeeJobManagementDetailComponent),
       },
+      {
+        path: 'company-verify',
+        loadComponent: () =>
+          import(
+            './features/dashboard/company-verify/employee/company-verify'
+          ).then(c => c.CompanyVerifyComponent),
+      },
     ],
   },
   //#endregion

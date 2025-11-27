@@ -94,6 +94,45 @@ export interface SubmitCompanyLegalInfoDto {
   otherSupportFile?: string;
 }
 
+export interface CompanyVerificationViewDto extends EntityDto<number> {
+  companyName?: string;
+  companyCode?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  headquartersAddress?: string;
+  description?: string;
+  companySize?: number;
+  foundedYear?: number;
+  websiteUrl?: string;
+  taxCode?: string;
+  businessLicenseNumber?: string;
+  businessLicenseIssueDate?: string;
+  businessLicenseIssuePlace?: string;
+  legalRepresentative?: string;
+  businessLicenseFile?: string;
+  taxCertificateFile?: string;
+  representativeIdCardFile?: string;
+  otherSupportFile?: string;
+  verificationStatus?: boolean;
+  legalVerificationStatus?: string;
+  legalReviewedBy?: number;
+  legalReviewedAt?: string;
+  rejectionNotes?: string;
+  creationTime?: string;
+  recruiterName?: string;
+  recruiterEmail?: string;
+}
+
+export interface RejectCompanyDto {
+  rejectionNotes: string;
+}
+
+export interface CompanyVerificationFilterDto extends PagedAndSortedResultRequestDto {
+  keyword?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}
+
 export interface UpdateCompanyLegalInfoDto {
   companyName: string;
   companyCode?: string;
