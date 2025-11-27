@@ -152,7 +152,7 @@ namespace VCareer.Profile
         [HttpPost("{id}/upload-legal-document")]
         [Consumes("multipart/form-data")]
         [IgnoreAntiforgeryToken]
-        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, [FromForm] IFormFile file)
+        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, IFormFile file)
         {
             return await _companyLegalInfoAppService.UploadLegalDocumentAsync(id, file);
         }
@@ -309,6 +309,45 @@ namespace VCareer.Profile
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty đã xác minh", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã bị từ chối</returns>
+        [HttpPost("rejected-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetRejectedCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetRejectedCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty đã bị từ chối", error = ex.Message });
             }
         }
     }

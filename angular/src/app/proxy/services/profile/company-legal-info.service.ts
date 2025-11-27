@@ -116,5 +116,13 @@ export class CompanyLegalInfoService {
     },
     { apiName: this.apiName,...config });
 
+  getRejectedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/rejected-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
   constructor(private restService: RestService) {}
 }

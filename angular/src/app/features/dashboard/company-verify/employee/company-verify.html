@@ -34,6 +34,15 @@
         <i class="fa fa-check-circle"></i>
         <span>Đã xác minh</span>
       </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'rejected'"
+        (click)="onTabChange('rejected')"
+      >
+        <i class="fa fa-times-circle"></i>
+        <span>Đã từ chối</span>
+      </button>
     </div>
 
     <!-- Search Bar -->
@@ -44,7 +53,7 @@
           type="text"
           class="search-input"
           [(ngModel)]="searchKeyword"
-          [placeholder]="activeTab === 'pending' ? 'Tìm kiếm theo tên công ty, mã số thuế, email...' : 'Tìm kiếm công ty đã xác minh...'"
+          [placeholder]="activeTab === 'pending' ? 'Tìm kiếm theo tên công ty, mã số thuế, email...' : activeTab === 'verified' ? 'Tìm kiếm công ty đã xác minh...' : 'Tìm kiếm công ty đã từ chối...'"
           (keyup.enter)="onSearch()"
         />
         <button type="button" class="search-btn" (click)="onSearch()">
@@ -113,9 +122,9 @@
                     <i class="fa fa-user"></i>
                     <span>{{ company.recruiterName }}</span>
                   </div>
-                  <div class="status-badge" [ngClass]="activeTab === 'pending' ? 'pending' : 'verified'">
-                    <i [class]="activeTab === 'pending' ? 'fa fa-clock' : 'fa fa-check-circle'"></i>
-                    <span>{{ activeTab === 'pending' ? 'Chờ xác thực' : 'Đã xác minh' }}</span>
+                  <div class="status-badge" [ngClass]="activeTab === 'pending' ? 'pending' : activeTab === 'verified' ? 'verified' : 'rejected'">
+                    <i [class]="activeTab === 'pending' ? 'fa fa-clock' : activeTab === 'verified' ? 'fa fa-check-circle' : 'fa fa-times-circle'"></i>
+                    <span>{{ activeTab === 'pending' ? 'Chờ xác thực' : activeTab === 'verified' ? 'Đã xác minh' : 'Đã từ chối' }}</span>
                   </div>
                 </div>
               </div>
@@ -125,7 +134,7 @@
           <ng-template #emptyState>
             <div class="empty-list" *ngIf="!isLoading">
               <i class="fa fa-building"></i>
-              <p>{{ activeTab === 'pending' ? 'Không có công ty nào chờ xác thực.' : 'Không có công ty nào đã được xác minh.' }}</p>
+              <p>{{ activeTab === 'pending' ? 'Không có công ty nào chờ xác thực.' : activeTab === 'verified' ? 'Không có công ty nào đã được xác minh.' : 'Không có công ty nào đã bị từ chối.' }}</p>
             </div>
           </ng-template>
 
@@ -180,48 +189,173 @@
               </ul>
             </div>
 
-            <!-- Legal Information -->
+            <!-- Legal Information - Display as Images -->
             <div class="detail-section">
               <h3 class="section-title">Thông tin pháp lý</h3>
-              <ul class="section-list">
-                <li *ngIf="selectedCompany.taxCode">
-                  <strong>Mã số thuế:</strong> {{ selectedCompany.taxCode }}
-                </li>
-                <li *ngIf="selectedCompany.businessLicenseNumber">
-                  <strong>Số giấy phép kinh doanh:</strong> {{ selectedCompany.businessLicenseNumber }}
-                </li>
-                <li *ngIf="selectedCompany.businessLicenseIssueDate">
-                  <strong>Ngày cấp:</strong> {{ formatDate(selectedCompany.businessLicenseIssueDate) }}
-                </li>
-                <li *ngIf="selectedCompany.businessLicenseIssuePlace">
-                  <strong>Nơi cấp:</strong> {{ selectedCompany.businessLicenseIssuePlace }}
-                </li>
-                <li *ngIf="selectedCompany.legalRepresentative">
-                  <strong>Người đại diện pháp luật:</strong> {{ selectedCompany.legalRepresentative }}
-                </li>
-              </ul>
-            </div>
+              
+              <!-- Business License File -->
+              <div class="legal-document-item" *ngIf="selectedCompany.businessLicenseFile">
+                <div class="document-label">
+                  <strong>Giấy phép kinh doanh</strong>
+                </div>
+                <div class="document-preview">
+                  <img 
+                    *ngIf="isImageFile(selectedCompany.businessLicenseFile)"
+                    [src]="resolveFileUrl(selectedCompany.businessLicenseFile)" 
+                    [alt]="'Giấy phép kinh doanh'"
+                    class="document-image"
+                    (click)="openImageModal(selectedCompany.businessLicenseFile, 'Giấy phép kinh doanh')"
+                    (error)="$event.target.style.display='none'"
+                  />
+                  <div *ngIf="isPdfFile(selectedCompany.businessLicenseFile)" class="document-pdf-placeholder">
+                    <i class="fa fa-file-pdf"></i>
+                    <span>PDF File</span>
+                    <a [href]="resolveFileUrl(selectedCompany.businessLicenseFile)" target="_blank" class="view-pdf-link">
+                      Xem PDF
+                    </a>
+                  </div>
+                  <a 
+                    *ngIf="!isImageFile(selectedCompany.businessLicenseFile) && !isPdfFile(selectedCompany.businessLicenseFile)"
+                    [href]="resolveFileUrl(selectedCompany.businessLicenseFile)" 
+                    target="_blank" 
+                    class="document-download-link">
+                    <i class="fa fa-download"></i>
+                    Tải xuống
+                  </a>
+                </div>
+              </div>
 
-            <!-- Documents -->
-            <div class="detail-section" *ngIf="selectedCompany.businessLicenseFile || selectedCompany.taxCertificateFile || selectedCompany.representativeIdCardFile || selectedCompany.otherSupportFile">
-              <h3 class="section-title">Tài liệu đính kèm</h3>
-              <div class="document-links">
-                <a *ngIf="selectedCompany.businessLicenseFile" [href]="selectedCompany.businessLicenseFile" target="_blank" class="document-link">
-                  <i class="fa fa-file-pdf"></i>
-                  Giấy phép kinh doanh
-                </a>
-                <a *ngIf="selectedCompany.taxCertificateFile" [href]="selectedCompany.taxCertificateFile" target="_blank" class="document-link">
-                  <i class="fa fa-file-pdf"></i>
-                  Giấy chứng nhận mã số thuế
-                </a>
-                <a *ngIf="selectedCompany.representativeIdCardFile" [href]="selectedCompany.representativeIdCardFile" target="_blank" class="document-link">
-                  <i class="fa fa-file-pdf"></i>
-                  CCCD người đại diện
-                </a>
-                <a *ngIf="selectedCompany.otherSupportFile" [href]="selectedCompany.otherSupportFile" target="_blank" class="document-link">
-                  <i class="fa fa-file-pdf"></i>
-                  Tài liệu hỗ trợ khác
-                </a>
+              <!-- Tax Certificate File -->
+              <div class="legal-document-item" *ngIf="selectedCompany.taxCertificateFile">
+                <div class="document-label">
+                  <strong>Giấy chứng nhận mã số thuế</strong>
+                </div>
+                <div class="document-preview">
+                  <img 
+                    *ngIf="isImageFile(selectedCompany.taxCertificateFile)"
+                    [src]="resolveFileUrl(selectedCompany.taxCertificateFile)" 
+                    [alt]="'Giấy chứng nhận mã số thuế'"
+                    class="document-image"
+                    (click)="openImageModal(selectedCompany.taxCertificateFile, 'Giấy chứng nhận mã số thuế')"
+                    (error)="$event.target.style.display='none'"
+                  />
+                  <div *ngIf="isPdfFile(selectedCompany.taxCertificateFile)" class="document-pdf-placeholder">
+                    <i class="fa fa-file-pdf"></i>
+                    <span>PDF File</span>
+                    <a [href]="resolveFileUrl(selectedCompany.taxCertificateFile)" target="_blank" class="view-pdf-link">
+                      Xem PDF
+                    </a>
+                  </div>
+                  <a 
+                    *ngIf="!isImageFile(selectedCompany.taxCertificateFile) && !isPdfFile(selectedCompany.taxCertificateFile)"
+                    [href]="resolveFileUrl(selectedCompany.taxCertificateFile)" 
+                    target="_blank" 
+                    class="document-download-link">
+                    <i class="fa fa-download"></i>
+                    Tải xuống
+                  </a>
+                </div>
+              </div>
+
+              <!-- Representative ID Card File -->
+              <div class="legal-document-item" *ngIf="selectedCompany.representativeIdCardFile">
+                <div class="document-label">
+                  <strong>CCCD người đại diện pháp luật</strong>
+                </div>
+                <div class="document-preview">
+                  <img 
+                    *ngIf="isImageFile(selectedCompany.representativeIdCardFile)"
+                    [src]="resolveFileUrl(selectedCompany.representativeIdCardFile)" 
+                    [alt]="'CCCD người đại diện pháp luật'"
+                    class="document-image"
+                    (click)="openImageModal(selectedCompany.representativeIdCardFile, 'CCCD người đại diện pháp luật')"
+                    (error)="$event.target.style.display='none'"
+                  />
+                  <div *ngIf="isPdfFile(selectedCompany.representativeIdCardFile)" class="document-pdf-placeholder">
+                    <i class="fa fa-file-pdf"></i>
+                    <span>PDF File</span>
+                    <a [href]="resolveFileUrl(selectedCompany.representativeIdCardFile)" target="_blank" class="view-pdf-link">
+                      Xem PDF
+                    </a>
+                  </div>
+                  <a 
+                    *ngIf="!isImageFile(selectedCompany.representativeIdCardFile) && !isPdfFile(selectedCompany.representativeIdCardFile)"
+                    [href]="resolveFileUrl(selectedCompany.representativeIdCardFile)" 
+                    target="_blank" 
+                    class="document-download-link">
+                    <i class="fa fa-download"></i>
+                    Tải xuống
+                  </a>
+                </div>
+              </div>
+
+              <!-- Other Support File -->
+              <div class="legal-document-item" *ngIf="selectedCompany.otherSupportFile">
+                <div class="document-label">
+                  <strong>Tài liệu hỗ trợ khác</strong>
+                </div>
+                <div class="document-preview">
+                  <img 
+                    *ngIf="isImageFile(selectedCompany.otherSupportFile)"
+                    [src]="resolveFileUrl(selectedCompany.otherSupportFile)" 
+                    [alt]="'Tài liệu hỗ trợ khác'"
+                    class="document-image"
+                    (click)="openImageModal(selectedCompany.otherSupportFile, 'Tài liệu hỗ trợ khác')"
+                    (error)="$event.target.style.display='none'"
+                  />
+                  <div *ngIf="isPdfFile(selectedCompany.otherSupportFile)" class="document-pdf-placeholder">
+                    <i class="fa fa-file-pdf"></i>
+                    <span>PDF File</span>
+                    <a [href]="resolveFileUrl(selectedCompany.otherSupportFile)" target="_blank" class="view-pdf-link">
+                      Xem PDF
+                    </a>
+                  </div>
+                  <a 
+                    *ngIf="!isImageFile(selectedCompany.otherSupportFile) && !isPdfFile(selectedCompany.otherSupportFile)"
+                    [href]="resolveFileUrl(selectedCompany.otherSupportFile)" 
+                    target="_blank" 
+                    class="document-download-link">
+                    <i class="fa fa-download"></i>
+                    Tải xuống
+                  </a>
+                </div>
+              </div>
+
+              <!-- Legal Document (uploaded from business-cert tab) -->
+              <div class="legal-document-item" *ngIf="selectedCompany.legalDocumentUrl">
+                <div class="document-label">
+                  <strong>Giấy đăng ký doanh nghiệp</strong>
+                </div>
+                <div class="document-preview">
+                  <img 
+                    *ngIf="isImageFile(selectedCompany.legalDocumentUrl)"
+                    [src]="resolveFileUrl(selectedCompany.legalDocumentUrl)" 
+                    [alt]="'Giấy đăng ký doanh nghiệp'"
+                    class="document-image"
+                    (click)="openImageModal(selectedCompany.legalDocumentUrl, 'Giấy đăng ký doanh nghiệp')"
+                    (error)="$event.target.style.display='none'"
+                  />
+                  <div *ngIf="isPdfFile(selectedCompany.legalDocumentUrl)" class="document-pdf-placeholder">
+                    <i class="fa fa-file-pdf"></i>
+                    <span>PDF File</span>
+                    <a [href]="resolveFileUrl(selectedCompany.legalDocumentUrl)" target="_blank" class="view-pdf-link">
+                      Xem PDF
+                    </a>
+                  </div>
+                  <a 
+                    *ngIf="!isImageFile(selectedCompany.legalDocumentUrl) && !isPdfFile(selectedCompany.legalDocumentUrl)"
+                    [href]="resolveFileUrl(selectedCompany.legalDocumentUrl)" 
+                    target="_blank" 
+                    class="document-download-link">
+                    <i class="fa fa-download"></i>
+                    Tải xuống
+                  </a>
+                </div>
+              </div>
+
+              <!-- Show message if no documents -->
+              <div class="no-documents" *ngIf="!selectedCompany.businessLicenseFile && !selectedCompany.taxCertificateFile && !selectedCompany.representativeIdCardFile && !selectedCompany.otherSupportFile && !selectedCompany.legalDocumentUrl">
+                <p>Chưa có tài liệu pháp lý được upload.</p>
               </div>
             </div>
 
@@ -251,7 +385,21 @@
               </ul>
             </div>
 
-            <!-- Action Buttons (only show for pending companies) -->
+            <!-- Rejection Info (for rejected companies) -->
+            <div class="detail-section" *ngIf="activeTab === 'rejected' && selectedCompany.legalReviewedAt">
+              <h3 class="section-title">Thông tin từ chối</h3>
+              <ul class="section-list">
+                <li *ngIf="selectedCompany.legalReviewedAt">
+                  <strong>Ngày từ chối:</strong> {{ formatDate(selectedCompany.legalReviewedAt) }}
+                </li>
+                <li *ngIf="selectedCompany.rejectionNotes">
+                  <strong>Lý do từ chối:</strong>
+                  <div class="rejection-notes">{{ selectedCompany.rejectionNotes }}</div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Action Buttons -->
             <div class="detail-actions" *ngIf="activeTab === 'pending'">
               <button type="button" class="action-btn approve-btn" (click)="onApprove()" [disabled]="isLoading">
                 <i class="fa fa-check"></i>
@@ -260,6 +408,14 @@
               <button type="button" class="action-btn reject-btn" (click)="onReject()" [disabled]="isLoading">
                 <i class="fa fa-times"></i>
                 Từ chối
+              </button>
+            </div>
+
+            <!-- Approve Button for Rejected Companies -->
+            <div class="detail-actions" *ngIf="activeTab === 'rejected'">
+              <button type="button" class="action-btn approve-btn" (click)="onApprove()" [disabled]="isLoading">
+                <i class="fa fa-check"></i>
+                Duyệt lại
               </button>
             </div>
           </div>
@@ -318,4 +474,19 @@
   [type]="toastType"
   (close)="onToastClose()"
 ></app-toast-notification>
+
+<!-- Image Viewer Modal -->
+<div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()" [style.padding-left]="getModalPaddingLeft()">
+  <div class="image-modal-content" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
+    <div class="image-modal-header">
+      <h3 class="image-modal-title">{{ selectedImageTitle }}</h3>
+      <button type="button" class="close-image-modal-btn" (click)="closeImageModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="image-modal-body">
+      <img [src]="selectedImageUrl" [alt]="selectedImageTitle" class="full-size-image" />
+    </div>
+  </div>
+</div>
 

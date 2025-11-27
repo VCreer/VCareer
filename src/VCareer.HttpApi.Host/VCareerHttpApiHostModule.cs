@@ -308,7 +308,10 @@ public class VCareerHttpApiHostModule : AbpModule
                     Format = "binary"
                 });
 
-                // Add OperationFilter để handle IFormFile trong DTOs
+                // Ignore IFormFile parameters - sẽ được xử lý bởi OperationFilter
+                options.ParameterFilter<FileUploadParameterFilter>();
+
+                // Add OperationFilter để handle IFormFile trong DTOs và parameters trực tiếp
                 options.OperationFilter<FileUploadOperationFilter>();
 
                 // Thêm JWT Bearer Authentication vào Swagger

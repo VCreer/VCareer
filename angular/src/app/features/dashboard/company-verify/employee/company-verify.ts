@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PaginationComponent, ToastNotificationComponent } from '../../../../shared/components';
 import { CompanyVerificationViewDto, CompanyVerificationFilterDto, RejectCompanyDto } from 'src/app/proxy/dto/profile/models';
 import { CompanyLegalInfoService } from 'src/app/proxy/services/profile/company-legal-info.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-company-verify',
@@ -28,12 +29,17 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
   rejectNotes = '';
   isLoading = false;
   searchKeyword = '';
-  activeTab: 'pending' | 'verified' = 'pending'; // Tab hiện tại: 'pending' hoặc 'verified'
+  activeTab: 'pending' | 'verified' | 'rejected' = 'pending'; // Tab hiện tại: 'pending', 'verified', hoặc 'rejected'
 
   // Toast notification properties
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
+
+  // Image viewer
+  showImageModal = false;
+  selectedImageUrl: string | null = null;
+  selectedImageTitle: string = '';
 
   constructor(
     private companyLegalInfoService: CompanyLegalInfoService
@@ -105,8 +111,10 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
   loadCompanies(): void {
     if (this.activeTab === 'pending') {
       this.loadPendingCompanies();
-    } else {
+    } else if (this.activeTab === 'verified') {
       this.loadVerifiedCompanies();
+    } else if (this.activeTab === 'rejected') {
+      this.loadRejectedCompanies();
     }
   }
 
@@ -160,12 +168,37 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadRejectedCompanies(): void {
+    this.isLoading = true;
+    const filter: CompanyVerificationFilterDto = {
+      keyword: this.searchKeyword || undefined,
+      skipCount: (this.currentPage - 1) * this.itemsPerPage,
+      maxResultCount: this.itemsPerPage,
+      sorting: 'LegalReviewedAt DESC'
+    };
+
+    this.companyLegalInfoService.getRejectedCompanies(filter).subscribe({
+      next: (result) => {
+        this.companies = result.items || [];
+        this.totalItems = result.totalCount || 0;
+        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+        this.filteredCompanies = [...this.companies];
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading rejected companies:', error);
+        this.showErrorToast('Không thể tải danh sách công ty đã bị từ chối');
+        this.isLoading = false;
+      }
+    });
+  }
+
   onSearch(): void {
     this.currentPage = 1;
     this.loadCompanies();
   }
 
-  onTabChange(tab: 'pending' | 'verified'): void {
+  onTabChange(tab: 'pending' | 'verified' | 'rejected'): void {
     this.activeTab = tab;
     this.currentPage = 1;
     this.selectedCompany = null;
@@ -282,6 +315,79 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
+  }
+
+  /**
+   * Resolve file URL - convert storage path to full URL
+   */
+  resolveFileUrl(path?: string | null): string | null {
+    if (!path) {
+      return null;
+    }
+
+    // Nếu backend đã trả về full URL thì dùng luôn
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+
+    // Mặc định: gọi qua API download để stream file từ storage
+    const apiBase = environment.apis.default.url;
+    const encodedPath = encodeURIComponent(path);
+    return `${apiBase}/api/profile/company-legal-info/legal-document?storagePath=${encodedPath}`;
+  }
+
+  /**
+   * Check if file is an image based on extension
+   */
+  isImageFile(fileUrl?: string | null): boolean {
+    if (!fileUrl) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    const lowerUrl = fileUrl.toLowerCase();
+    return imageExtensions.some(ext => lowerUrl.includes(ext));
+  }
+
+  /**
+   * Check if file is a PDF
+   */
+  isPdfFile(fileUrl?: string | null): boolean {
+    if (!fileUrl) return false;
+    return fileUrl.toLowerCase().includes('.pdf');
+  }
+
+  /**
+   * Get file name from URL
+   */
+  getFileName(fileUrl?: string | null): string {
+    if (!fileUrl) return '';
+    try {
+      const url = new URL(fileUrl);
+      const pathname = url.pathname;
+      const fileName = pathname.split('/').pop() || '';
+      return fileName || 'Tài liệu';
+    } catch {
+      // If not a valid URL, try to extract from path
+      const parts = fileUrl.split('/');
+      return parts[parts.length - 1] || 'Tài liệu';
+    }
+  }
+
+  /**
+   * Open image in modal for full size view
+   */
+  openImageModal(imageUrl: string | null, title: string): void {
+    if (!imageUrl) return;
+    this.selectedImageUrl = this.resolveFileUrl(imageUrl);
+    this.selectedImageTitle = title;
+    this.showImageModal = true;
+  }
+
+  /**
+   * Close image modal
+   */
+  closeImageModal(): void {
+    this.showImageModal = false;
+    this.selectedImageUrl = null;
+    this.selectedImageTitle = '';
   }
 
   //#endregion
