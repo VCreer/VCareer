@@ -159,5 +159,124 @@ namespace VCareer.Profile
         {
             return await _companyLegalInfoAppService.GetCompanyByJobIdAsync(jobId);
         }
+
+        /// <summary>
+        /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty chờ xác thực</returns>
+        [HttpPost("pending-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetPendingCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetPendingCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty chờ xác thực", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Duyệt công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <returns>No content</returns>
+        [HttpPost("{id}/approve")]
+        [Authorize]
+        public async Task<IActionResult> ApproveCompanyAsync(int id)
+        {
+            try
+            {
+                await _companyLegalInfoAppService.ApproveCompanyAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi duyệt công ty", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Từ chối công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="input">Lý do từ chối</param>
+        /// <returns>No content</returns>
+        [HttpPost("{id}/reject")]
+        [Authorize]
+        public async Task<IActionResult> RejectCompanyAsync(int id, [FromBody] RejectCompanyDto input)
+        {
+            try
+            {
+                await _companyLegalInfoAppService.RejectCompanyAsync(id, input);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi từ chối công ty", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã được xác minh (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã được xác minh</returns>
+        [HttpPost("verified-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetVerifiedCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetVerifiedCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty đã xác minh", error = ex.Message });
+            }
+        }
     }
 }

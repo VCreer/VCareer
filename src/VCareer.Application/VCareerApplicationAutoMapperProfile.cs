@@ -32,6 +32,7 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
             
         // Company Legal Info mappings (using Company entity)
         CreateMap<Company, CompanyLegalInfoDto>();
+        CreateMap<Company, CompanyVerificationViewDto>();
         CreateMap<SubmitCompanyLegalInfoDto, Company>();
         CreateMap<UpdateCompanyLegalInfoDto, Company>();
 
