@@ -152,9 +152,9 @@ namespace VCareer.Profile
         [HttpPost("{id}/upload-legal-document")]
         [Consumes("multipart/form-data")]
         [IgnoreAntiforgeryToken]
-        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, [FromForm] IFormFile file)
+        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, [FromForm] UploadLegalDocumentInputDto input)
         {
-            return await _companyLegalInfoAppService.UploadLegalDocumentAsync(id, file);
+            return await _companyLegalInfoAppService.UploadLegalDocumentAsync(id, input.File);
         }
 
         /// <summary>

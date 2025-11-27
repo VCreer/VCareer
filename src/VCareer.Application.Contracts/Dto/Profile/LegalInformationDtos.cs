@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Volo.Abp.Application.Dtos;
 
 namespace VCareer.Dto.Profile
@@ -201,5 +202,11 @@ namespace VCareer.Dto.Profile
     {
         [Required]
         public int CompanyId { get; set; }
+    }
+
+    public class UploadLegalDocumentInputDto
+    {
+        [Required]
+        public IFormFile File { get; set; }
     }
 }
