@@ -45,5 +45,21 @@ namespace VCareer.Dto.Profile
         // MaritalStatus: Optional field - không có trong UI, không cần thiết phải nhập
         [StringLength(50)]
         public string? MaritalStatus { get; set; }
+
+        // Thông tin nghề nghiệp (chỉ áp dụng cho Candidate)
+        [StringLength(200)]
+        public string? JobTitle { get; set; } // Vị trí chuyên môn
+
+        [StringLength(2000)]
+        public string? Skills { get; set; } // Kỹ năng
+
+        [Range(0, 100, ErrorMessage = "Kinh nghiệm phải từ 0 đến 100 năm")]
+        public int? Experience { get; set; } // Kinh nghiệm (số năm)
+
+        [Range(0, 9999999999999999.99, ErrorMessage = "Mức lương không hợp lệ")]
+        public decimal? Salary { get; set; } // Mức lương mong muốn (decimal 18,2)
+
+        [StringLength(500)]
+        public string? WorkLocation { get; set; } // Địa điểm làm việc
     }
 }

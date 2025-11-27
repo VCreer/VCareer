@@ -4970,6 +4970,54 @@
             }
           }
         },
+        "VCareer.Profile.CandidateSearchController": {
+          "controllerName": "CandidateSearch",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Profile.CandidateSearchController",
+          "interfaces": [],
+          "actions": {
+            "SearchCandidatesAsyncByInput": {
+              "uniqueName": "SearchCandidatesAsyncByInput",
+              "name": "SearchCandidatesAsync",
+              "httpMethod": "POST",
+              "url": "api/candidate-search/search",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SearchCandidateInputDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.CandidateSearchController"
+            }
+          }
+        },
         "VCareer.Profile.CompanyLegalInfoController": {
           "controllerName": "CompanyLegalInfo",
           "controllerGroupName": null,
@@ -5013,7 +5061,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
@@ -5070,7 +5118,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "SearchCompaniesAsyncByInput": {
@@ -5291,7 +5339,161 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "UploadLegalDocumentAsyncByIdAndFile": {
+              "uniqueName": "UploadLegalDocumentAsyncByIdAndFile",
+              "name": "UploadLegalDocumentAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/company-legal-info/{id}/upload-legal-document",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "file",
+                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "ContentType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "ContentDisposition",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "Headers",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+                  "typeSimple": "{string:Microsoft.Extensions.Primitives.StringValues}",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "Length",
+                  "jsonName": null,
+                  "type": "System.Int64",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "Name",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "FileName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Form",
+                  "descriptorName": "file"
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "GetLegalDocumentAsyncByStoragePath": {
+              "uniqueName": "GetLegalDocumentAsyncByStoragePath",
+              "name": "GetLegalDocumentAsync",
+              "httpMethod": "GET",
+              "url": "api/profile/company-legal-info/legal-document",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storagePath",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storagePath",
+                  "name": "storagePath",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "DeleteCompanyLegalInfoAsyncById": {
@@ -5454,6 +5656,154 @@
                   "jsonName": null,
                   "type": "VCareer.Dto.Profile.ChangePasswordDto",
                   "typeSimple": "VCareer.Dto.Profile.ChangePasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "VerifyPhoneNumberAsyncByInput": {
+              "uniqueName": "VerifyPhoneNumberAsyncByInput",
+              "name": "VerifyPhoneNumberAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/verify-phone",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.VerifyPhoneNumberDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "SendEmailOtpAsyncByInput": {
+              "uniqueName": "SendEmailOtpAsyncByInput",
+              "name": "SendEmailOtpAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/send-email-otp",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SendEmailOtpDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "typeSimple": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "typeSimple": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "VerifyEmailNumberAsyncByInput": {
+              "uniqueName": "VerifyEmailNumberAsyncByInput",
+              "name": "VerifyEmailNumberAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/verify-email",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.VerifyEmailNumberDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "SelectCompanyAsyncByInput": {
+              "uniqueName": "SelectCompanyAsyncByInput",
+              "name": "SelectCompanyAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/select-company",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SelectCompanyDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -11243,6 +11593,78 @@
             }
           }
         },
+        "VCareer.Services.Profile.CandidateSearchAppService": {
+          "controllerName": "CandidateSearch",
+          "controllerGroupName": "CandidateSearch",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Profile.CandidateSearchAppService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.IProfileServices.ICandidateSearchAppService",
+              "name": "ICandidateSearchAppService",
+              "methods": [
+                {
+                  "name": "SearchCandidatesAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Profile.SearchCandidateInputDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                      "typeSimple": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>",
+                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "SearchCandidatesAsyncByInput": {
+              "uniqueName": "SearchCandidatesAsyncByInput",
+              "name": "SearchCandidatesAsync",
+              "httpMethod": "POST",
+              "url": "api/app/candidate-search/search-candidates",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SearchCandidateInputDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.SearchCandidateInputDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>",
+                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
+            }
+          }
+        },
         "VCareer.Services.Profile.CompanyLegalInfoAppService": {
           "controllerName": "CompanyLegalInfo",
           "controllerGroupName": "CompanyLegalInfo",
@@ -11429,6 +11851,48 @@
                     "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>",
                     "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>"
                   }
+                },
+                {
+                  "name": "UploadLegalDocumentAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "file",
+                      "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                      "type": "Microsoft.AspNetCore.Http.IFormFile",
+                      "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "GetLegalDocumentFileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "storagePath",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.FileDto.FileStreamResultDto",
+                    "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
+                  }
                 }
               ]
             }
@@ -11525,7 +11989,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyLegalInfoAsyncById": {
@@ -11746,7 +12210,101 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
+            },
+            "UploadLegalDocumentAsyncByIdAndFile": {
+              "uniqueName": "UploadLegalDocumentAsyncByIdAndFile",
+              "name": "UploadLegalDocumentAsync",
+              "httpMethod": "POST",
+              "url": "api/app/company-legal-info/{id}/upload-legal-document",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "file",
+                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "file",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "FormFile",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
+            },
+            "GetLegalDocumentFileAsyncByStoragePath": {
+              "uniqueName": "GetLegalDocumentFileAsyncByStoragePath",
+              "name": "GetLegalDocumentFileAsync",
+              "httpMethod": "GET",
+              "url": "api/app/company-legal-info/legal-document-file",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storagePath",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storagePath",
+                  "name": "storagePath",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.FileDto.FileStreamResultDto",
+                "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
+              },
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyByJobIdAsyncByJobId": {
@@ -11886,6 +12444,74 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "VerifyPhoneNumberAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Profile.VerifyPhoneNumberDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                      "typeSimple": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "SendEmailOtpAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Profile.SendEmailOtpDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.SendEmailOtpDto",
+                      "typeSimple": "VCareer.Dto.Profile.SendEmailOtpDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "VerifyEmailNumberAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Profile.VerifyEmailNumberDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                      "typeSimple": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "SelectCompanyAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Profile.SelectCompanyDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Profile.SelectCompanyDto",
+                      "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -11965,6 +12591,117 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
+            "VerifyPhoneNumberAsyncByInput": {
+              "uniqueName": "VerifyPhoneNumberAsyncByInput",
+              "name": "VerifyPhoneNumberAsync",
+              "httpMethod": "POST",
+              "url": "api/app/profile/verify-phone-number",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.VerifyPhoneNumberDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyPhoneNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "SendEmailOtpAsyncByInput": {
+              "uniqueName": "SendEmailOtpAsyncByInput",
+              "name": "SendEmailOtpAsync",
+              "httpMethod": "POST",
+              "url": "api/app/profile/send-email-otp",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SendEmailOtpDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "typeSimple": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "typeSimple": "VCareer.Dto.Profile.SendEmailOtpDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "VerifyEmailNumberAsyncByInput": {
+              "uniqueName": "VerifyEmailNumberAsyncByInput",
+              "name": "VerifyEmailNumberAsync",
+              "httpMethod": "POST",
+              "url": "api/app/profile/verify-email-number",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.VerifyEmailNumberDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "typeSimple": "VCareer.Dto.Profile.VerifyEmailNumberDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
             "GetCurrentUserProfileAsync": {
               "uniqueName": "GetCurrentUserProfileAsync",
               "name": "GetCurrentUserProfileAsync",
@@ -11993,6 +12730,43 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "SelectCompanyAsyncByInput": {
+              "uniqueName": "SelectCompanyAsyncByInput",
+              "name": "SelectCompanyAsync",
+              "httpMethod": "POST",
+              "url": "api/app/profile/select-company",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.SelectCompanyDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             }
           }
@@ -19165,6 +19939,30 @@
           "regex": null
         },
         {
+          "name": "CandidateEmail",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CandidatePhone",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "CompanyId",
           "jsonName": null,
           "type": "System.Int32",
@@ -23710,6 +24508,51 @@
         }
       ]
     },
+    "VCareer.Dto.FileDto.FileStreamResultDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Data",
+          "jsonName": null,
+          "type": "System.IO.Stream",
+          "typeSimple": "System.IO.Stream",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MimeType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "FileName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.GeoDto.ProvinceDto": {
       "baseType": null,
       "isEnum": false,
@@ -25625,6 +26468,255 @@
         }
       ]
     },
+    "VCareer.Dto.Profile.CandidateSearchResultDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "AvatarUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Skills",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Salary",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Location",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Gender",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DateOfBirth",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProfileVisibility",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ViewCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ContactOpenCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsSeekingJob",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "LastUpdatedTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExperienceDetails",
+          "jsonName": null,
+          "type": "[VCareer.Dto.Profile.ExperienceDetailDto]",
+          "typeSimple": "[VCareer.Dto.Profile.ExperienceDetailDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Education",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Profile.ChangePasswordDto": {
       "baseType": null,
       "isEnum": false,
@@ -26153,6 +27245,75 @@
         }
       ]
     },
+    "VCareer.Dto.Profile.ExperienceDetailDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Company",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Position",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Duration",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Profile.ProfileDto": {
       "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
       "isEnum": false,
@@ -26360,6 +27521,309 @@
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyId",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Skills",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Salary",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.SearchCandidateInputDto": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedAndSortedResultRequestDto",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Keyword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Skills",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 2000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MinExperience",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "100",
+          "regex": null
+        },
+        {
+          "name": "MaxExperience",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "100",
+          "regex": null
+        },
+        {
+          "name": "MinSalary",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "10000000000000000",
+          "regex": null
+        },
+        {
+          "name": "MaxSalary",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "10000000000000000",
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SearchInJobTitle",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SearchInActivity",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SearchInEducation",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SearchInExperience",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SearchInSkills",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CvClassification",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DisplayPriority",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.SelectCompanyDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "CompanyId",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.SendEmailOtpDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 256,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -26603,7 +28067,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 255,
           "minimum": null,
@@ -26629,7 +28093,7 @@
           "typeSimple": "string",
           "isRequired": false,
           "minLength": 0,
-          "maxLength": 1000,
+          "maxLength": 4000,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -26639,7 +28103,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 255,
           "minimum": null,
@@ -26651,7 +28115,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 100,
           "minimum": null,
@@ -26663,7 +28127,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 20,
           "minimum": null,
@@ -26711,7 +28175,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 50,
           "minimum": null,
@@ -26723,7 +28187,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 100,
           "minimum": null,
@@ -26733,9 +28197,9 @@
         {
           "name": "BusinessLicenseIssueDate",
           "jsonName": null,
-          "type": "System.DateTime",
-          "typeSimple": "string",
-          "isRequired": true,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -26747,7 +28211,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 255,
           "minimum": null,
@@ -26759,7 +28223,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 255,
           "minimum": null,
@@ -26951,6 +28415,132 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Skills",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 2000,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "100",
+          "regex": null
+        },
+        {
+          "name": "Salary",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": "0",
+          "maximum": "10000000000000000",
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.VerifyEmailNumberDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 256,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OtpCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 10,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.VerifyPhoneNumberDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PhoneNumber",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 16,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "OtpCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 10,
           "minimum": null,
           "maximum": null,
           "regex": null

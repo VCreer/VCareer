@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using VCareer.Dto.FileDto;
 using VCareer.Dto.Profile;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
+using VCareer.IServices.IFileServices;
 using VCareer.IServices.IProfileServices;
 using VCareer.Models.Companies;
+using VCareer.Models.FileMetadata;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Constants.FilePolicy;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -25,15 +31,21 @@ namespace VCareer.Services.Profile
         private readonly ICompanyRepository _companyRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IJobPostRepository _jobPostRepository;
+        private readonly IFileServices _fileServices;
+        private readonly IRepository<FileDescriptor, Guid> _fileDescriptorRepository;
 
         public CompanyLegalInfoAppService(
             ICompanyRepository companyRepository,
             ICurrentUser currentUser,
-            IJobPostRepository jobPostRepository)
+            IJobPostRepository jobPostRepository,
+            IFileServices fileServices,
+            IRepository<FileDescriptor, Guid> fileDescriptorRepository)
         {
             _companyRepository = companyRepository;
             _currentUser = currentUser;
             _jobPostRepository = jobPostRepository;
+            _fileServices = fileServices;
+            _fileDescriptorRepository = fileDescriptorRepository;
         }
 
 
@@ -93,7 +105,7 @@ namespace VCareer.Services.Profile
 
 
 
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -223,7 +235,7 @@ namespace VCareer.Services.Profile
 
 
 
-        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
             string taxCertificateFile = null, string representativeIdCardFile = null, string otherSupportFile = null)
         {
@@ -252,6 +264,66 @@ namespace VCareer.Services.Profile
             await _companyRepository.UpdateAsync(company);
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
+        }
+
+        public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new UserFriendlyException("File không hợp lệ.");
+            }
+
+            // Giới hạn dung lượng 5MB
+            const long maxSizeBytes = 5 * 1024 * 1024;
+            if (file.Length > maxSizeBytes)
+            {
+                throw new UserFriendlyException("Dung lượng file tối đa là 5MB.");
+            }
+
+            // Chỉ cho phép jpeg, jpg, png, pdf
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
+            var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                throw new UserFriendlyException("Định dạng file không hợp lệ. Chỉ chấp nhận: jpeg, jpg, png, pdf.");
+            }
+
+            var userId = _currentUser.GetId();
+            if (userId == Guid.Empty)
+            {
+                throw new UserFriendlyException("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
+            }
+
+            // Upload file vào container CompanyDocuments của Recruiter
+            var uploadDto = new UploadFileDto
+            {
+                File = file,
+                ContainerType = RecruiterContainerType.CompanyDocuments.ToString(),
+                UserId = userId.ToString()
+            };
+
+            var fileDescriptorId = await _fileServices.UploadAsync(uploadDto);
+            var fileDescriptor = await _fileDescriptorRepository.GetAsync(fileDescriptorId);
+
+            var company = await _companyRepository.GetAsync(id);
+            company.LegalDocumentUrl = fileDescriptor.StoragePath;
+            company.LegalVerificationStatus = "pending";
+
+            await _companyRepository.UpdateAsync(company);
+
+            return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
+        }
+
+        public async Task<FileStreamResultDto> GetLegalDocumentFileAsync(string storagePath)
+        {
+            if (string.IsNullOrWhiteSpace(storagePath))
+            {
+                throw new UserFriendlyException("Đường dẫn file không hợp lệ.");
+            }
+
+            // storagePath lưu cả đường dẫn thư mục, ví dụ: recruiter/documents/filename.jpg
+            var result = await _fileServices.DownloadByStoragePathAsync(storagePath);
+            return result;
         }
 
 
@@ -294,29 +366,38 @@ namespace VCareer.Services.Profile
         /// </summary>
         public async Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input)
         {
-            /*   // PagedAndSortedResultRequestDto có SkipCount và MaxResultCount là int (non-nullable)
-               // Nếu chưa được set, sẽ có giá trị mặc định là 0, cần xử lý
-               var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
-               var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            if (input == null)
+            {
+                throw new AbpValidationException("Input không hợp lệ.");
+            }
 
-               // Gọi repository để thực hiện query (logic query ở Repository layer)
-               var result = await _companyCustomRepository.SearchCompaniesAsync(
-                   keyword: input.Keyword,
-                   status: input.Status,
-                   skipCount: skipCount,
-                   maxResultCount: maxResultCount,
-                   sorting: input.Sorting
-               );
+            var skipCount = input.SkipCount >= 0 ? input.SkipCount : 0;
+            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            var keyword = input.Keyword?.Trim();
 
-               // Map sang DTO (Application Service chỉ làm việc với mapping)
-               var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(result.Companies);
+            var queryable = await _companyRepository.GetQueryableAsync();
 
-               return new PagedResultDto<CompanyLegalInfoDto>
-               {
-                   TotalCount = result.TotalCount,
-                   Items = dtos
-               };*/
-            throw new  NotImplementedException();
+            queryable = queryable
+                .WhereIf(!string.IsNullOrWhiteSpace(keyword),
+                    c => c.CompanyName != null && c.CompanyName.Contains(keyword))
+                .WhereIf(input.Status.HasValue, c => c.Status == input.Status);
+
+            var sorting = !string.IsNullOrWhiteSpace(input.Sorting)
+                ? input.Sorting
+                : nameof(Company.CompanyName);
+
+            queryable = queryable.OrderBy(sorting);
+
+            var totalCount = await AsyncExecuter.CountAsync(queryable);
+
+            var companies = await AsyncExecuter.ToListAsync(
+                queryable
+                    .Skip(skipCount)
+                    .Take(maxResultCount));
+
+            var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
+
+            return new PagedResultDto<CompanyLegalInfoDto>(totalCount, dtos);
         }
     }
 }

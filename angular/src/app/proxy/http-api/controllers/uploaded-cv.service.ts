@@ -11,7 +11,7 @@ export class UploadedCvService {
   
 
   delete = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'DELETE',
       url: `/api/cv/uploaded/${id}`,
     },
@@ -45,7 +45,7 @@ export class UploadedCvService {
   
 
   setDefault = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'POST',
       url: `/api/cv/uploaded/${id}/set-default`,
     },

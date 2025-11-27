@@ -13,6 +13,7 @@ namespace VCareer.IServices.IFileServices
     {
         Task<Guid> UploadAsync(UploadFileDto input);
         Task<FileStreamResultDto> DownloadAsync(string fileOriginName, string containerName, DateTime uploadTime);
+        Task<FileStreamResultDto> DownloadByStoragePathAsync(string storagePath);
         public Task HardDeleteAsync(string fileId);
         public Task SoftDeleteAsync(string fileId);
         public Task<List<FileDescriptorDto>> GetListFileByContainer(string containerName);// ví dụ như  Candidate, Employee

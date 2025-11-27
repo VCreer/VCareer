@@ -345,6 +345,20 @@ export const APP_ROUTES: Routes = [
             c => c.HRStaffManagementComponent
           ),
       },
+      {
+        path: 'find-cv',
+        loadComponent: () =>
+          import('./features/dashboard/find-candidate/recruiter/find-candidate').then(
+            c => c.FindCandidateComponent
+          ),
+      },
+      {
+        path: 'find-cv/detail/:candidateId',
+        loadComponent: () =>
+          import('./features/dashboard/find-candidate/recruiter/find-candidate-detail').then(
+            c => c.FindCandidateDetailComponent
+          ),
+      },
       // {
       //   path: 'performance-dashboard',
       //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
