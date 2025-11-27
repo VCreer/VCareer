@@ -10,6 +10,7 @@ import * as Microsoft from './microsoft';
 import * as Models from './models';
 import * as Profile from './profile';
 import * as Services from './services';
+import * as System from './system';
 import * as Volo from './volo';
 export * from './api-config.service';
-export { Application, Books, Constants, Cv, Dto, HttpApi, Iservices, Job, Microsoft, Models, Profile, Services, Volo };
+export { Application, Books, Constants, Cv, Dto, HttpApi, Iservices, Job, Microsoft, Models, Profile, Services, System, Volo };

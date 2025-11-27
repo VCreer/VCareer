@@ -1,7 +1,9 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
+import type { FileStreamResultDto } from '../../dto/file-dto/models';
 import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from '../../dto/profile/models';
+import type { IFormFile } from '../../microsoft/asp-net-core/http/models';
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +52,15 @@ export class CompanyLegalInfoService {
     { apiName: this.apiName,...config });
   
 
+  getLegalDocumentFile = (storagePath: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, FileStreamResultDto>({
+      method: 'GET',
+      url: '/api/app/company-legal-info/legal-document-file',
+      params: { storagePath },
+    },
+    { apiName: this.apiName,...config });
+  
+
   searchCompanies = (input: CompanySearchInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<CompanyLegalInfoDto>>({
       method: 'POST',
@@ -82,6 +93,15 @@ export class CompanyLegalInfoService {
       method: 'PUT',
       url: `/api/app/company-legal-info/${id}/file-urls`,
       params: { businessLicenseFile, taxCertificateFile, representativeIdCardFile, otherSupportFile },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  uploadLegalDocument = (id: number, file: IFormFile, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyLegalInfoDto>({
+      method: 'POST',
+      url: `/api/app/company-legal-info/${id}/upload-legal-document`,
+      body: file,
     },
     { apiName: this.apiName,...config });
 

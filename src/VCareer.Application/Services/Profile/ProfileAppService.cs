@@ -314,7 +314,7 @@ namespace VCareer.Services.Profile
             }
 
             // Get profile info từ Candidate/Employee/Recruiter table
-            var (userType, bio, dateOfBirth, gender, location) = await GetUserProfileInfoAsync(user.Id);
+            var (userType, bio, dateOfBirth, gender, location, jobTitle, skills, experience, salary, workLocation) = await GetUserProfileInfoAsync(user.Id);
 
             // Get CompanyId from RecruiterProfile if user is Recruiter
             int? companyId = null;
@@ -347,7 +347,12 @@ namespace VCareer.Services.Profile
                 CreationTime = user.CreationTime,
                 LastModificationTime = user.LastModificationTime,
                 UserType = userType,
-                CompanyId = companyId
+                CompanyId = companyId,
+                JobTitle = jobTitle ?? "",
+                Skills = skills ?? "",
+                Experience = experience,
+                Salary = salary,
+                WorkLocation = workLocation ?? ""
             };
         }
 
@@ -402,6 +407,11 @@ namespace VCareer.Services.Profile
                 candidate.DateOfbirth = input.DateOfBirth ?? candidate.DateOfbirth;
                 candidate.Gender = input.Gender ?? candidate.Gender;
                 candidate.Location = input.Location ?? candidate.Location;
+                candidate.JobTitle = input.JobTitle ?? candidate.JobTitle;
+                candidate.Skills = input.Skills ?? candidate.Skills;
+                candidate.Experience = input.Experience ?? candidate.Experience;
+                candidate.Salary = input.Salary ?? candidate.Salary;
+                candidate.WorkLocation = input.WorkLocation ?? candidate.WorkLocation;
                 await _candidateProfileRepository.UpdateAsync(candidate);
                 return;
             }
@@ -433,32 +443,34 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
-        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location)>
+        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location, string JobTitle, string Skills, int? Experience, decimal? Salary, string WorkLocation)>
             GetUserProfileInfoAsync(Guid userId)
         {
             // Check CandidateProfile
             var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
             if (candidate != null)
             {
-                return ("Candidate", "", candidate.DateOfbirth, candidate.Gender, candidate.Location);
+                return ("Candidate", "", candidate.DateOfbirth, candidate.Gender, candidate.Location ?? "", 
+                    candidate.JobTitle ?? "", candidate.Skills ?? "", candidate.Experience, 
+                    candidate.Salary, candidate.WorkLocation ?? "");
             }
 
             // Check EmployeeProfile
             var employee = await _employeeProfileRepository.FirstOrDefaultAsync(e => e.UserId == userId);
             if (employee != null)
             {
-                return ("Employee", employee.Description, null, null, "");
+                return ("Employee", employee.Description ?? "", null, null, "", "", "", null, null, "");
             }
 
             // Check RecruiterProfile
             var recruiter = await _recruiterProfileRepository.FirstOrDefaultAsync(r => r.UserId == userId);
             if (recruiter != null)
             {
-                return ("Recruiter", "", null, null, "");
+                return ("Recruiter", "", null, null, "", "", "", null, null, "");
             }
 
             // Không tìm thấy profile nào
-            return ("Unknown", "", null, null, "");
+            return ("Unknown", "", null, null, "", "", "", null, null, "");
         }
 
         /// <summary>
