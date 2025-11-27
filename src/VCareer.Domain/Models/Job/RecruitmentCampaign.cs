@@ -11,10 +11,11 @@ namespace VCareer.Models.Job
 {
     public class RecruitmentCampaign : FullAuditedAggregateRoot<Guid>
     {
-        public string? Name { get; set; }
-        public RecruitmentCampaignStatus Status { get; set; } = RecruitmentCampaignStatus.Active;
+        public string Name { get; set; }
+        public bool IsActive { get; set; }
         public string? Description { get; set; }
         public Guid RecruiterId { get; set; }
+        public int CompanyId { get; set; }
 
         public virtual ICollection<Job_Post> Job_Posts { get; set; } = new HashSet<Job_Post>();
         public virtual RecruiterProfile Recruiter { get; set; }

@@ -11,12 +11,7 @@ namespace VCareer.Dto.Subcriptions
     {
         public Guid UserId { get; set; }
         public Guid ChildServiceId { get; set; }
-        public ChildServiceStatus Status { get; set; }
-        public int? UsedTime { get; set; } //đã dùng bao nhiêu
-        public int? TotalUsageLimit { get; set; }  //tổng lượt được phép dùng
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-    }
+       }
     public class User_ChildServiceViewDto
     {
         public Guid UserId { get; set; }

@@ -166,7 +166,7 @@
                 <div class="job-tags-wrapper">
                   <div class="job-tags">
                     <span class="tag tag-location">{{ getLocationText(posting) }}</span>
-                    <span class="tag tag-experience">{{ getExperienceText(posting) }}</span>
+                    <!-- <span class="tag tag-experience">{{ getExperienceText(posting) }}</span> -->
                     <span
                       class="reject-reason-tag"
                       *ngIf="posting.status === 5 && posting.rejectedReason && hoveredJobId === posting.id"
@@ -211,7 +211,6 @@
             <h2 class="job-detail-title">{{ selectedJob.title }}</h2>
             <div class="job-tags-header">
               <span class="job-tag">{{ selectedJob.categoryName }}</span>
-              <span class="job-tag">{{ getExperienceText(selectedJob) }}</span>
               <span class="job-tag">{{ getSalaryRangeText(selectedJob) }}</span>
             </div>
             <button type="button" class="close-detail-btn" (click)="onCloseDetail()">

@@ -11,20 +11,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CategoryTreeDto, CategoryApiService } from '../../../apiTest/api/category.service';
-import {
-  ProvinceDto,
-  DistrictDto,
-  LocationApiService,
-} from '../../../apiTest/api/location.service';
+import { CategoryTreeDto } from '../../../proxy/dto/category/models';
+import { ProvinceDto, WardDto } from '../../../proxy/dto/geo-dto/models';
+import { JobCategoryService } from '../../../proxy/services/job/job-category.service';
+import { GeoService } from '../../../core/services/Geo.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-/**
- * FilterBar Component - Refactored cho trang HOME
- * Hiển thị dropdown Category (3 cấp) và Location (Province + District) với checkbox
- */
 @Component({
   selector: 'app-filter-bar',
   standalone: true,
@@ -34,13 +28,13 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   // Input data từ parent (CandidateHomepage)
-  @Input() categories: CategoryTreeDto[] = []; // Category tree từ API
-  @Input() provinces: ProvinceDto[] = []; // Province tree từ API
+  @Input() categories: CategoryTreeDto[] = []; 
+  @Input() provinces: ProvinceDto[] = []; 
 
-  // ✅ Input: Pre-selected filters (from query params)
+  //  Pre-selected filters (from query params)
   @Input() selectedCategoryIds: string[] = [];
-  @Input() selectedProvinceIds: number[] = [];
-  @Input() selectedDistrictIds: number[] = [];
+  @Input() selectedProvinceCodes: number[] = []; 
+  @Input() selectedWardCodes: number[] = []; 
 
   // Output events
   @Output() categorySelected = new EventEmitter<string[]>(); // List of category GUIDs
@@ -62,8 +56,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
   // ✅ Internal selected items (Set for faster lookup) - renamed to avoid conflict with @Input()
   internalSelectedCategoryIds: Set<string> = new Set();
-  internalSelectedProvinceIds: Set<number> = new Set();
-  internalSelectedDistrictIds: Set<number> = new Set();
+  internalSelectedProvinceCodes: Set<number> = new Set(); // ✅ Sử dụng code thay vì id
+  internalSelectedWardCodes: Set<number> = new Set(); // ✅ Sử dụng ward code thay vì district id
 
   // Hover state cho category multi-level
   hoveredLevel1Category: CategoryTreeDto | null = null;
@@ -78,8 +72,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private translationService: TranslationService,
-    private categoryApi: CategoryApiService,
-    private locationApi: LocationApiService,
+    private category: JobCategoryService,
+    private location: GeoService,
     private elementRef: ElementRef
   ) {
     // ✅ Setup debounce cho category search (300ms)
@@ -103,8 +97,17 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     // ✅ Load FULL category tree và provinces ngay khi component init
-    this.filteredCategories = [...this.categories];
-    this.filteredProvinces = [...this.provinces];
+    if (this.categories && this.categories.length > 0) {
+      this.filteredCategories = [...this.categories];
+    } else {
+      this.filteredCategories = [];
+    }
+    
+    if (this.provinces && this.provinces.length > 0) {
+      this.filteredProvinces = [...this.provinces];
+    } else {
+      this.filteredProvinces = [];
+    }
 
     // ✅ Clear search keywords
     this.categorySearchKeyword = '';
@@ -148,14 +151,14 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
 
-    if (changes['selectedProvinceIds'] && this.selectedProvinceIds) {
-      console.log('✅ Restoring selected provinces:', this.selectedProvinceIds);
-      this.internalSelectedProvinceIds = new Set(this.selectedProvinceIds);
+    if (changes['selectedProvinceCodes'] && this.selectedProvinceCodes) {
+      console.log('✅ Restoring selected provinces:', this.selectedProvinceCodes);
+      this.internalSelectedProvinceCodes = new Set(this.selectedProvinceCodes);
     }
 
-    if (changes['selectedDistrictIds'] && this.selectedDistrictIds) {
-      console.log('✅ Restoring selected districts:', this.selectedDistrictIds);
-      this.internalSelectedDistrictIds = new Set(this.selectedDistrictIds);
+    if (changes['selectedWardCodes'] && this.selectedWardCodes) {
+      console.log('✅ Restoring selected wards:', this.selectedWardCodes);
+      this.internalSelectedWardCodes = new Set(this.selectedWardCodes);
     }
   }
 
@@ -165,15 +168,24 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleCategoryDropdown() {
     this.showCategoryDropdown = !this.showCategoryDropdown;
+     
     if (this.showCategoryDropdown) {
       this.showLocationDropdown = false; // Close location dropdown
-      // ✅ FORCE reload data khi mở dropdown
-      if (this.categories.length > 0) {
+      
+      // ✅ ALWAYS reload data khi mở dropdown để đảm bảo có data mới nhất
+      // Ngay cả khi categories rỗng, vẫn cần clear search để show empty state
+      if (this.categories && this.categories.length > 0) {
         this.filteredCategories = [...this.categories];
-        // ✅ Clear search to show tree
-        this.categorySearchKeyword = '';
-        this.searchResults = [];
+        console.log('   ✅ Reloaded categories:', this.filteredCategories.length);
+      } else {
+        this.filteredCategories = [];
+        console.warn('   ⚠️ No categories available! Categories array:', this.categories);
       }
+      
+      // ✅ Clear search to show tree (luôn clear để hiển thị tree view)
+      this.categorySearchKeyword = '';
+      this.searchResults = [];
+      this.hoveredLevel1Category = null; // Reset hover state
     }
   }
 
@@ -211,13 +223,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * ✅ NEW: Perform category search - Call API
    */
   private performCategorySearch(keyword: string) {
-    console.log('🔍 Calling Category Search API with keyword:', keyword);
-
-    this.categoryApi.searchCategories(keyword).subscribe({
+    this.category.searchCategories(keyword).subscribe({
       next: results => {
         this.searchResults = results;
         this.hasSearchResults = results.length > 0;
-        console.log('✅ Category search results:', results.length);
       },
       error: error => {
         console.error('❌ Category search error:', error);
@@ -423,7 +432,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
       if (this.provinces.length > 0) {
         this.filteredProvinces = [...this.provinces];
         this.locationSearchKeyword = '';
-        console.log('✅ Location dropdown opened, provinces:', this.filteredProvinces.length);
       }
     }
   }
@@ -454,105 +462,128 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * ✅ NEW: Perform location search - Call API
+   * ✅ NEW: Perform location search - Filter trong danh sách provinces có sẵn
+   * Vì ProvinceDto từ geo-dto có cấu trúc khác, ta sẽ filter trong danh sách đã có
    */
   private performLocationSearch(keyword: string) {
-    console.log('🔍 Calling Location Search API with keyword:', keyword);
+    console.log('🔍 Filtering provinces with keyword:', keyword);
 
-    this.locationApi.searchProvinces(keyword).subscribe({
-      next: results => {
-        this.filteredProvinces = results;
-        this.hasLocationResults = results.length > 0;
-        console.log('✅ Location search results:', results.length);
-      },
-      error: error => {
-        console.error('❌ Location search error:', error);
-        this.filteredProvinces = [];
-        this.hasLocationResults = false;
-      },
-    });
+    if (!this.provinces || this.provinces.length === 0) {
+      this.filteredProvinces = [];
+      this.hasLocationResults = false;
+      return;
+    }
+
+    const lowerKeyword = keyword.toLowerCase();
+    const filtered = this.provinces.filter(province => {
+      // Tìm trong tên province
+      if (province.name?.toLowerCase().includes(lowerKeyword)) {
+        return true;
       }
-
-  /**
-   * Toggle province selection (với cascade logic)
-   */
-  toggleProvinceSelection(provinceId: number, event: Event) {
-    event.stopPropagation();
-
-    const province = this.provinces.find(p => p.id === provinceId);
-    if (!province) return;
-
-    if (this.internalSelectedProvinceIds.has(provinceId)) {
-      // Uncheck province → Uncheck all districts
-      this.internalSelectedProvinceIds.delete(provinceId);
-      province.districts.forEach(dist => {
-        this.internalSelectedDistrictIds.delete(dist.id);
-      });
-    } else {
-      // Check province → Check all districts
-      this.internalSelectedProvinceIds.add(provinceId);
-      province.districts.forEach(dist => {
-        this.internalSelectedDistrictIds.add(dist.id);
+      // Tìm trong tên wards
+      if (province.wards) {
+        return province.wards.some(ward => 
+          ward.name?.toLowerCase().includes(lowerKeyword)
+        );
+      }
+      return false;
     });
-  }
+
+    this.filteredProvinces = filtered;
+    this.hasLocationResults = filtered.length > 0;
+    console.log('✅ Location search results:', filtered.length);
   }
 
   /**
-   * Toggle district selection (với cascade logic)
+   * Toggle province selection (với cascade logic) - ✅ Sử dụng code thay vì id
    */
-  toggleDistrictSelection(provinceId: number, districtId: number, event: Event) {
+  toggleProvinceSelection(provinceCode: number, event: Event) {
     event.stopPropagation();
 
-    const province = this.provinces.find(p => p.id === provinceId);
+    const province = this.provinces.find(p => p.code === provinceCode);
     if (!province) return;
 
-    if (this.internalSelectedDistrictIds.has(districtId)) {
-      // Uncheck district
-      this.internalSelectedDistrictIds.delete(districtId);
-
-      // Nếu không còn district nào được chọn → Uncheck province
-      const hasOtherDistricts = province.districts.some(
-        d => d.id !== districtId && this.internalSelectedDistrictIds.has(d.id)
-      );
-      if (!hasOtherDistricts) {
-        this.internalSelectedProvinceIds.delete(provinceId);
+    if (this.internalSelectedProvinceCodes.has(provinceCode)) {
+      // Uncheck province → Uncheck all wards
+      this.internalSelectedProvinceCodes.delete(provinceCode);
+      if (province.wards) {
+        province.wards.forEach(ward => {
+          if (ward.code) {
+            this.internalSelectedWardCodes.delete(ward.code);
+          }
+        });
       }
     } else {
-      // Check district → Auto check province
-      this.internalSelectedDistrictIds.add(districtId);
-      this.internalSelectedProvinceIds.add(provinceId);
+      // Check province → Check all wards
+      this.internalSelectedProvinceCodes.add(provinceCode);
+      if (province.wards) {
+        province.wards.forEach(ward => {
+          if (ward.code) {
+            this.internalSelectedWardCodes.add(ward.code);
+          }
+        });
+      }
     }
   }
 
   /**
-   * Check if province is selected
+   * Toggle ward selection (với cascade logic) - ✅ Sử dụng code thay vì id
    */
-  isProvinceSelected(provinceId: number): boolean {
-    return this.internalSelectedProvinceIds.has(provinceId);
+  toggleDistrictSelection(provinceCode: number, wardCode: number, event: Event) {
+    event.stopPropagation();
+
+    const province = this.provinces.find(p => p.code === provinceCode);
+    if (!province) return;
+
+    if (this.internalSelectedWardCodes.has(wardCode)) {
+      // Uncheck ward
+      this.internalSelectedWardCodes.delete(wardCode);
+
+      // Nếu không còn ward nào được chọn → Uncheck province
+      const hasOtherWards = province.wards?.some(
+        w => w.code !== wardCode && w.code && this.internalSelectedWardCodes.has(w.code)
+      );
+      if (!hasOtherWards) {
+        this.internalSelectedProvinceCodes.delete(provinceCode);
+      }
+    } else {
+      // Check ward → Auto check province
+      this.internalSelectedWardCodes.add(wardCode);
+      this.internalSelectedProvinceCodes.add(provinceCode);
+    }
   }
 
   /**
-   * Check if district is selected
+   * Check if province is selected - ✅ Sử dụng code
    */
-  isDistrictSelected(districtId: number): boolean {
-    return this.internalSelectedDistrictIds.has(districtId);
+  isProvinceSelected(provinceCode: number | undefined): boolean {
+    if (!provinceCode) return false;
+    return this.internalSelectedProvinceCodes.has(provinceCode);
+  }
+
+  /**
+   * Check if ward is selected - ✅ Sử dụng code
+   */
+  isDistrictSelected(wardCode: number | undefined): boolean {
+    if (!wardCode) return false;
+    return this.internalSelectedWardCodes.has(wardCode);
   }
 
   /**
    * Clear all location selections
    */
   clearAllLocations() {
-    this.internalSelectedProvinceIds.clear();
-    this.internalSelectedDistrictIds.clear();
+    this.internalSelectedProvinceCodes.clear();
+    this.internalSelectedWardCodes.clear();
   }
 
   /**
-   * Apply location filter
+   * Apply location filter - ✅ Emit codes thay vì ids
    */
   applyLocationFilter() {
     this.locationSelected.emit({
-      provinceIds: Array.from(this.internalSelectedProvinceIds),
-      districtIds: Array.from(this.internalSelectedDistrictIds),
+      provinceIds: Array.from(this.internalSelectedProvinceCodes), // ✅ Vẫn dùng provinceIds cho backward compatibility
+      districtIds: Array.from(this.internalSelectedWardCodes), // ✅ Vẫn dùng districtIds cho backward compatibility
     });
     this.showLocationDropdown = false;
   }
@@ -590,9 +621,9 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * Get location count text for display
    */
   getLocationCountText(): string {
-    const provinceCount = this.internalSelectedProvinceIds.size;
-    const districtCount = this.internalSelectedDistrictIds.size;
-    const totalCount = provinceCount + districtCount;
+    const provinceCount = this.internalSelectedProvinceCodes.size;
+    const wardCount = this.internalSelectedWardCodes.size;
+    const totalCount = provinceCount + wardCount;
     return totalCount > 0 ? ` (${totalCount})` : '';
     }
 

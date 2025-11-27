@@ -20,6 +20,11 @@ using VCareer.Dto.Profile;
 using VCareer.Dto.Order;
 using VCareer.Models.Order;
 using VCareer.Models.Subcription;
+using VCareer.Models.Job;
+using VCareer.Dto.JobDto;
+using VCareer.Dto.Job;
+using VCareer.Models.JobCategory;
+using VCareer.Dto.Category;
 
 namespace VCareer;
 
@@ -67,6 +72,12 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         // Order mappings
         CreateMap<Order, OrderDto>();
         CreateMap<OrderDetail, OrderDetailDto>();
+
+        CreateMap<Job_Post, JobViewDto>();
+        CreateMap<Job_Post, JobViewDetail>();
+        CreateMap<RecruitmentCampaign, RecruimentCampainViewDto>();
+        CreateMap<Tag, TagViewDto>();
+
 
         // Subscription Service mappings
         CreateMap<Models.Subcription.SubcriptionService, Dto.Subcriptions.SubcriptionsViewDto>();

@@ -202,14 +202,14 @@ public class VCareerDbContext :
 
         builder.Entity<Job_Priority>(b =>
         {
-            b.ToTable("JobPriory");
+            b.ToTable("JobPriority");
             b.ConfigureByConvention();
             b.HasKey(j => j.Id);
-            b.HasOne(j => j.Job)
-            .WithMany(j => j.Job_Priorities)
-            .HasForeignKey(j => j.JobId)
-            .OnDelete(DeleteBehavior.Cascade);
 
+            b.HasOne(j => j.Job)
+            .WithOne(j => j.Job_Priority)
+            .HasForeignKey<Job_Priority>(j => j.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Job_Post>(b =>
@@ -247,10 +247,10 @@ public class VCareerDbContext :
                    .HasForeignKey(j => j.RecruitmentCampaignId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-
             r.HasOne(rc => rc.Recruiter)
-     .WithMany(rp => rp.RecruitmentCampaigns)
-     .HasForeignKey(rc => rc.RecruiterId);
+                .WithMany(rp => rp.RecruitmentCampaigns)
+                .HasForeignKey(rc => rc.RecruiterId)  
+                .HasPrincipalKey(rp => rp.UserId);
 
         });
 
@@ -790,7 +790,7 @@ public class VCareerDbContext :
             b.ConfigureByConvention();
             b.HasKey(j => j.Id);
 
-            b.HasOne(x => x.JobPost)
+            b.HasOne(x => x.Job_Post)
                 .WithMany()
                 .HasForeignKey(x => x.JobPostId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -799,6 +799,11 @@ public class VCareerDbContext :
                 .WithMany()
                 .HasForeignKey(x => x.ChildServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(e => e.User_ChildService)
+            .WithMany(j => j.EffectingJobServices)
+            .HasForeignKey(e => e.User_ChildServiceId);
+
         });
 
         // ========== Order Configuration ==========

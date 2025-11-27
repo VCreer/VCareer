@@ -19,6 +19,7 @@ namespace VCareer.Models.Subcription
         public bool IsLifeTime { get; set; } = false;
         public bool IsAutoActive { get; set; } = false;
         public bool IsLimitUsedTime { get; set; }  //giới hạn số lần dùng
+        public JobPriorityLevel? Priority { get; set; }
         public int? TimeUsedLimit { get; set; }
         public int? DayDuration { get; set; }
         public int? Value { get; set; }

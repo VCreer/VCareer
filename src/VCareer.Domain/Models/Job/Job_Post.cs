@@ -20,7 +20,7 @@ namespace VCareer.Models.Job
 
         //public Job_Post(Guid id) : base(id) { }
         #region Basic Job Description
-        public Guid? RecruitmentCampaignId { get; set; } 
+        public Guid RecruitmentCampaignId { get; set; }
         public string? CompanyImageUrl { get; set; }
         public int CompanyId { get; set; }
         public string? CompanyName { get; set; }
@@ -39,7 +39,7 @@ namespace VCareer.Models.Job
         public EmploymentType EmploymentType { get; set; }// (Full-time, Part-time, Intern, etc.)
         public PositionType PositionType { get; set; }    /// Cấp bậc vị trí
         public ExperienceLevel Experience { get; set; } = ExperienceLevel.None;
-         public string? WorkTime { get; set; }
+        public string? WorkTime { get; set; }
         public int ProvinceCode { get; set; } // code thanh pho
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
@@ -69,8 +69,8 @@ namespace VCareer.Models.Job
         public virtual RecruitmentCampaign RecruitmentCampaign { get; set; }
         public virtual Job_Category JobCategory { get; set; }
         public virtual ICollection<JobTag> JobTags { get; set; } = new List<JobTag>();
-        public virtual ICollection<Job_Priority> Job_Priorities { get; set; } = new List<Job_Priority>(); // List priority of job>
-        public virtual ICollection<EffectingJobService> EffectingJobServices { get; set; } = new List<EffectingJobService>(); // List priority of job>
+        public virtual Job_Priority Job_Priority { get; set; }  // List priority of job>
+        public virtual ICollection<EffectingJobService> EffectingJobServices { get; set; } 
         #endregion
 
         #region Helper Methods
@@ -85,7 +85,7 @@ namespace VCareer.Models.Job
             return Status == JobStatus.Open && !IsExpired();
         }
 
-          
+
         #endregion
 
 

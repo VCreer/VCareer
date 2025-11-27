@@ -118,6 +118,11 @@
                   [class.show]="showActionsMenu === job.id"
                   [attr.data-job-id]="job.id"
                   (click)="$event.stopPropagation()">
+                  <div class="menu-item" (click)="onPostJob(job)">
+                    <i class="fa fa-paper-plane menu-icon"></i>
+                    <span>Đăng bài</span>
+                  </div>
+                  <div class="menu-separator"></div>
                   <div class="menu-item" (click)="onEditJob(job)">
                     <i class="fa fa-edit menu-icon"></i>
                     <span>Sửa</span>
@@ -307,4 +312,3 @@
     (close)="onToastClose()">
   </app-toast-notification>
 </div>
-
