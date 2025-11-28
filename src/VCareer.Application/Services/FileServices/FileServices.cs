@@ -124,6 +124,41 @@ namespace VCareer.Services.FileServices
             };
 
         }
+
+        public async Task<FileStreamResultDto> DownloadByStoragePathAsync(string storagePath)
+        {
+            if (string.IsNullOrWhiteSpace(storagePath))
+            {
+                throw new ArgumentNullException(nameof(storagePath));
+            }
+
+            var file = await _fileDescriptorRepository.FirstOrDefaultAsync(f => f.StoragePath == storagePath);
+            if (file == null)
+            {
+                throw new BusinessException("File not found");
+            }
+
+            var mimeType = _fileSecurityServices.GetMimeType(file.Extension);
+
+            var container = _blobFactory.Create(file.ContainerName);
+            if (!await container.ExistsAsync(file.StorageName))
+            {
+                throw new UserFriendlyException("File not found at local storage");
+            }
+
+            var stream = await container.GetAsync(file.StorageName);
+            if (stream == null)
+            {
+                throw new BusinessException("Fail at read file");
+            }
+
+            return new FileStreamResultDto
+            {
+                Data = stream,
+                MimeType = mimeType,
+                FileName = file.OriginalName
+            };
+        }
         public async Task<Guid> UploadAsync(UploadFileDto input)
         {
             using var stream = input.File.OpenReadStream();

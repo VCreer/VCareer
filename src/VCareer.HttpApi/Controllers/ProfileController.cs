@@ -100,6 +100,43 @@ namespace VCareer.Profile
             return NoContent();
         }
 
+        [HttpPost("verify-phone")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> VerifyPhoneNumberAsync([FromBody] VerifyPhoneNumberDto input)
+        {
+            await _profileAppService.VerifyPhoneNumberAsync(input);
+            return NoContent();
+        }
+
+        [HttpPost("send-email-otp")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> SendEmailOtpAsync([FromBody] SendEmailOtpDto input)
+        {
+            await _profileAppService.SendEmailOtpAsync(input);
+            return NoContent();
+        }
+
+        [HttpPost("verify-email")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> VerifyEmailNumberAsync([FromBody] VerifyEmailNumberDto input)
+        {
+            await _profileAppService.VerifyEmailNumberAsync(input);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Selects a company for the current recruiter user
+        /// </summary>
+        /// <param name="input">Company selection information</param>
+        /// <returns>No content</returns>
+        [HttpPost("select-company")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> SelectCompanyAsync([FromBody] SelectCompanyDto input)
+        {
+            await _profileAppService.SelectCompanyAsync(input);
+            return NoContent();
+        }
+
         /// <summary>
         /// Soft deletes the current user's account
         /// </summary>

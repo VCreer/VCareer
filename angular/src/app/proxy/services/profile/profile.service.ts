@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ChangePasswordDto, ProfileDto, UpdatePersonalInfoDto } from '../../dto/profile/models';
+import type { ChangePasswordDto, ProfileDto, SelectCompanyDto, SendEmailOtpDto, UpdatePersonalInfoDto, VerifyEmailNumberDto, VerifyPhoneNumberDto } from '../../dto/profile/models';
 
 @Injectable({
   providedIn: 'root',
@@ -34,10 +34,46 @@ export class ProfileService {
     { apiName: this.apiName,...config });
   
 
+  selectCompany = (input: SelectCompanyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/profile/select-company',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  sendEmailOtp = (input: SendEmailOtpDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/profile/send-email-otp',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   updatePersonalInfo = (input: UpdatePersonalInfoDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
       url: '/api/app/profile/personal-info',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  verifyEmailNumber = (input: VerifyEmailNumberDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/profile/verify-email-number',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  verifyPhoneNumber = (input: VerifyPhoneNumberDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/profile/verify-phone-number',
       body: input,
     },
     { apiName: this.apiName,...config });
