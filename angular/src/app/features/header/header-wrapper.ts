@@ -17,40 +17,54 @@ import { EmployeeHeaderComponent } from './employee-header/employee-header';
     CandidateHeaderComponent,
     RecruiterHeaderComponent,
     RecruiterHeaderManagementComponent,
-    EmployeeHeaderComponent
+    EmployeeHeaderComponent,
   ],
   template: `
     <div class="header-container">
-      <app-candidate-header *ngIf="currentHeaderType === 'candidate'" class="header-component"></app-candidate-header>
-      <app-recruiter-header *ngIf="currentHeaderType === 'recruiter' && !isManagementHeader" class="header-component"></app-recruiter-header>
-      <app-recruiter-header-management *ngIf="currentHeaderType === 'recruiter' && isManagementHeader" class="header-component"></app-recruiter-header-management>
-      <app-employee-header *ngIf="currentHeaderType === 'employee'" class="header-component"></app-employee-header>
+      <app-candidate-header
+        *ngIf="currentHeaderType === 'candidate'"
+        class="header-component"
+      ></app-candidate-header>
+      <app-recruiter-header
+        *ngIf="currentHeaderType === 'recruiter' && !isManagementHeader"
+        class="header-component"
+      ></app-recruiter-header>
+      <app-recruiter-header-management
+        *ngIf="currentHeaderType === 'recruiter' && isManagementHeader"
+        class="header-component"
+      ></app-recruiter-header-management>
+      <app-employee-header
+        *ngIf="currentHeaderType === 'employee'"
+        class="header-component"
+      ></app-employee-header>
     </div>
   `,
-  styles: [`
-    .header-container {
-      position: relative;
-      width: 100%;
-    }
-    
-    .header-component {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      width: 100%;
-      transition: opacity 0.2s ease;
-    }
-    
-    .header-component.ng-enter {
-      opacity: 0;
-    }
-    
-    .header-component.ng-enter-active {
-      opacity: 1;
-    }
-  `]
+  styles: [
+    `
+      .header-container {
+        position: relative;
+        width: 100%;
+      }
+
+      .header-component {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        width: 100%;
+        transition: opacity 0.2s ease;
+      }
+
+      .header-component.ng-enter {
+        opacity: 0;
+      }
+
+      .header-component.ng-enter-active {
+        opacity: 1;
+      }
+    `,
+  ],
 })
 export class HeaderWrapperComponent implements OnInit {
   currentHeaderType: HeaderType | null = 'candidate';
@@ -68,7 +82,7 @@ export class HeaderWrapperComponent implements OnInit {
     // Set header type based on current URL and login state
     const currentUrl = this.router.url;
     this.updateHeaderType(currentUrl);
-    
+
     // Subscribe to route changes - ignore query param changes for same route
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -82,28 +96,26 @@ export class HeaderWrapperComponent implements OnInit {
           this.updateHeaderType(event.url);
         }
       });
-    
+
     // Subscribe to login state changes with debounce
-    this.navigationService.isLoggedIn$.pipe(
-      debounceTime(100),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.updateHeaderType(this.router.url);
-    });
-    
+    this.navigationService.isLoggedIn$
+      .pipe(debounceTime(100), distinctUntilChanged())
+      .subscribe(() => {
+        this.updateHeaderType(this.router.url);
+      });
+
     // Subscribe to role changes with debounce
-    this.navigationService.userRole$.pipe(
-      debounceTime(100),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.updateHeaderType(this.router.url);
-    });
-    
+    this.navigationService.userRole$
+      .pipe(debounceTime(100), distinctUntilChanged())
+      .subscribe(() => {
+        this.updateHeaderType(this.router.url);
+      });
+
     this.headerTypeService.headerType$.subscribe(headerType => {
       // Đảm bảo chỉ có một header hiển thị tại một thời điểm
       this.isTransitioning = true;
       this.currentHeaderType = null; // Ẩn tất cả header trước
-      
+
       setTimeout(() => {
         this.currentHeaderType = headerType;
         this.isTransitioning = false;
@@ -114,10 +126,10 @@ export class HeaderWrapperComponent implements OnInit {
   private updateHeaderType(currentUrl: string) {
     const isLoggedIn = this.navigationService.isLoggedIn();
     const userRole = this.navigationService.getCurrentRole();
-    
+
     // Extract pathname without query params
     const urlPath = currentUrl.split('?')[0];
-    
+
     // Check if employee route
     if (urlPath.startsWith('/employee')) {
       this.isManagementHeader = false;
@@ -142,13 +154,14 @@ export class HeaderWrapperComponent implements OnInit {
       '/recruiter/my-services',
       '/recruiter/job-posting',
       '/recruiter/recruitment-report',
-      '/recruiter/hr-staff-management'
+      '/recruiter/hr-staff-management',
+      '/recruiter/find-cv',
     ];
-    
-    const isManagementRoute = managementRoutes.some(route => 
-      urlPath === route || urlPath.startsWith(route + '/')
+
+    const isManagementRoute = managementRoutes.some(
+      route => urlPath === route || urlPath.startsWith(route + '/')
     );
-    
+
     // Only show management header if: logged in + recruiter role + management route
     // Also show management header for management routes even if not logged in (for development/testing)
     if (isManagementRoute) {
