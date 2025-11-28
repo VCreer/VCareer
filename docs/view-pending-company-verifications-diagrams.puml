@@ -1,0 +1,582 @@
+@startuml ViewPendingCompanyVerifications_SequenceDiagram
+
+autonumber
+
+actor "Employee/Admin" as employee
+participant CompanyVerifyComponent as frontend
+participant CompanyLegalInfoService as apiService
+participant CompanyLegalInfoAppService as appService
+participant ICurrentUser as currentUser
+participant ICompanyRepository as companyRepo
+participant IRecruiterRepository as recruiterRepo
+database "Database" as db
+
+employee -> frontend: Navigate to Company Verification page
+activate frontend
+
+frontend -> frontend: Activate "Pending" tab by default
+
+frontend -> apiService: getPendingCompanies(filter)
+activate apiService
+
+apiService -> appService: POST /api/profile/company-legal-info/pending-companies
+activate appService
+
+appService -> currentUser: Verify user is authenticated
+activate currentUser
+currentUser --> appService: User authenticated
+deactivate currentUser
+
+appService -> appService: Verify user has Employee/Admin role
+
+appService -> companyRepo: GetQueryableAsync()
+activate companyRepo
+companyRepo -> db: Query Companies
+db --> companyRepo: Queryable
+companyRepo --> appService: Queryable
+deactivate companyRepo
+
+appService -> appService: Filter by LegalVerificationStatus = "pending"
+
+appService -> appService: Apply keyword filter\nApply date range filter\nApply sorting (CreationTime DESC)
+
+appService -> companyRepo: CountAsync() and ToListAsync()
+activate companyRepo
+companyRepo -> db: SELECT COUNT(*) FROM Companies\nWHERE LegalVerificationStatus = 'pending'\nSELECT * FROM Companies\nWHERE LegalVerificationStatus = 'pending'\nORDER BY CreationTime DESC\nLIMIT maxResultCount OFFSET skipCount
+db --> companyRepo: Companies list
+companyRepo --> appService: List<Company>
+deactivate companyRepo
+
+appService -> recruiterRepo: Get recruiters for companies
+activate recruiterRepo
+recruiterRepo -> db: SELECT RecruiterProfiles\nWHERE CompanyId IN (companyIds)\nAND IsLead = true\nJOIN Users
+db --> recruiterRepo: Recruiters list
+recruiterRepo --> appService: List<RecruiterProfile>
+deactivate recruiterRepo
+
+appService -> appService: Map companies to DTOs\nInclude recruiter information
+
+appService --> apiService: PagedResultDto
+deactivate appService
+
+apiService --> frontend: PagedResultDto
+deactivate apiService
+
+frontend -> frontend: Display company cards\nwith pagination controls
+
+frontend --> employee: Pending companies list displayed
+deactivate frontend
+
+@enduml
+
+@startuml ViewPendingCompanyVerifications_ClassDiagram
+
+' Frontend
+class CompanyVerifyComponent {
+    + loadPendingCompanies(): void
+    + displayCompanies(companies: CompanyVerificationViewDto[]): void
+}
+
+class CompanyLegalInfoService {
+    + getPendingCompanies(input: CompanyVerificationFilterDto): Observable<PagedResultDto>
+}
+
+' DTOs
+class CompanyVerificationFilterDto {
+    + keyword: string
+    + skipCount: number
+    + maxResultCount: number
+    + sorting: string
+    + createdFrom: DateTime?
+    + createdTo: DateTime?
+}
+
+class CompanyVerificationViewDto {
+    + id: int
+    + companyName: string
+    + companyCode: string
+    + contactEmail: string
+    + contactPhone: string
+    + taxCode: string
+    + legalVerificationStatus: string
+    + creationTime: DateTime
+    + recruiterName: string
+    + recruiterEmail: string
+}
+
+class PagedResultDto {
+    + totalCount: number
+    + items: CompanyVerificationViewDto[]
+}
+
+' Backend
+interface ICompanyLegalInfoAppService {
+    + GetPendingCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+}
+
+class CompanyLegalInfoAppService {
+    - _companyRepository: ICompanyRepository
+    - _recruiterRepository: IRecruiterRepository
+    - _currentUser: ICurrentUser
+    + GetPendingCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+}
+
+' Domain Models
+class Company {
+    - Id: int
+    - CompanyName: string
+    - CompanyCode: string
+    - ContactEmail: string
+    - ContactPhone: string
+    - TaxCode: string
+    - LegalVerificationStatus: string
+    - CreationTime: DateTime
+}
+
+class RecruiterProfile {
+    - Id: Guid
+    - CompanyId: int
+    - UserId: Guid
+    - IsLead: boolean
+    - Email: string
+}
+
+interface ICompanyRepository {
+    + GetQueryableAsync(): Task<IQueryable>
+    + CountAsync(queryable: IQueryable): Task<int>
+    + ToListAsync(queryable: IQueryable): Task<List>
+}
+
+interface IRecruiterRepository {
+    + WithDetailsAsync(...): Task<IQueryable>
+}
+
+interface ICurrentUser {
+    + Id: Guid?
+    + IsAuthenticated: bool
+}
+
+' Relationships
+CompanyVerifyComponent --> CompanyLegalInfoService
+CompanyLegalInfoService --> CompanyVerificationFilterDto
+CompanyLegalInfoService --> PagedResultDto
+PagedResultDto --> CompanyVerificationViewDto
+
+CompanyLegalInfoAppService ..|> ICompanyLegalInfoAppService
+CompanyLegalInfoAppService --> CompanyVerificationFilterDto
+CompanyLegalInfoAppService --> PagedResultDto
+CompanyLegalInfoAppService --> ICompanyRepository
+CompanyLegalInfoAppService --> IRecruiterRepository
+CompanyLegalInfoAppService --> ICurrentUser
+
+ICompanyRepository ..> Company : manages
+IRecruiterRepository ..> RecruiterProfile : manages
+RecruiterProfile --> Company : references
+
+@enduml
+
+@startuml ApproveCompanyProfile_SequenceDiagram
+
+autonumber
+
+actor "Employee/Admin" as employee
+participant CompanyVerifyComponent as frontend
+participant CompanyLegalInfoService as apiService
+participant CompanyLegalInfoAppService as appService
+participant ICurrentUser as currentUser
+participant ICompanyRepository as companyRepo
+database "Database" as db
+
+employee -> frontend: Click approve button
+activate frontend
+
+frontend -> apiService: approveCompany(companyId)
+activate apiService
+
+apiService -> appService: POST /api/profile/company-legal-info/{id}/approve
+activate appService
+
+appService -> currentUser: Verify user is authenticated
+activate currentUser
+currentUser --> appService: User authenticated
+deactivate currentUser
+
+appService -> appService: Verify user has Employee/Admin role
+
+appService -> companyRepo: Get company by Id
+activate companyRepo
+companyRepo -> db: SELECT Company WHERE Id = companyId
+db --> companyRepo: Company
+companyRepo --> appService: Company
+deactivate companyRepo
+
+appService -> appService: Verify status is "pending" or "rejected"
+
+appService -> appService: Update company\nLegalVerificationStatus = "approved"\nVerificationStatus = true\nLegalReviewedAt = DateTime.UtcNow\nRejectionNotes = null
+
+appService -> companyRepo: UpdateAsync(company)
+activate companyRepo
+companyRepo -> db: UPDATE Companies\nSET LegalVerificationStatus = 'approved'\nVerificationStatus = true\nLegalReviewedAt = NOW()\nRejectionNotes = NULL
+db --> companyRepo: Success
+companyRepo --> appService: Updated
+deactivate companyRepo
+
+appService --> apiService: Success
+deactivate appService
+
+apiService --> frontend: Success response
+deactivate apiService
+
+frontend -> frontend: Show success message\nReload company list
+
+frontend --> employee: Company approved
+deactivate frontend
+
+@enduml
+
+@startuml RejectCompanyProfile_SequenceDiagram
+
+autonumber
+
+actor "Employee/Admin" as employee
+participant CompanyVerifyComponent as frontend
+participant CompanyLegalInfoService as apiService
+participant CompanyLegalInfoAppService as appService
+participant ICurrentUser as currentUser
+participant ICompanyRepository as companyRepo
+database "Database" as db
+
+employee -> frontend: Click reject button
+activate frontend
+
+frontend -> frontend: Show reject modal\nEnter rejection notes
+
+employee -> frontend: Enter rejection notes\nClick confirm
+activate frontend
+
+frontend -> frontend: Validate rejection notes not empty
+
+frontend -> apiService: rejectCompany(companyId, rejectDto)
+activate apiService
+
+apiService -> appService: POST /api/profile/company-legal-info/{id}/reject
+activate appService
+
+appService -> currentUser: Verify user is authenticated
+activate currentUser
+currentUser --> appService: User authenticated
+deactivate currentUser
+
+appService -> appService: Verify user has Employee/Admin role
+
+appService -> companyRepo: Get company by Id
+activate companyRepo
+companyRepo -> db: SELECT Company WHERE Id = companyId
+db --> companyRepo: Company
+companyRepo --> appService: Company
+deactivate companyRepo
+
+appService -> appService: Verify status is "pending"
+
+appService -> appService: Validate rejection notes not empty
+
+appService -> appService: Update company\nLegalVerificationStatus = "rejected"\nVerificationStatus = false\nLegalReviewedAt = DateTime.UtcNow\nRejectionNotes = input.RejectionNotes
+
+appService -> companyRepo: UpdateAsync(company)
+activate companyRepo
+companyRepo -> db: UPDATE Companies\nSET LegalVerificationStatus = 'rejected'\nVerificationStatus = false\nLegalReviewedAt = NOW()\nRejectionNotes = notes
+db --> companyRepo: Success
+companyRepo --> appService: Updated
+deactivate companyRepo
+
+appService --> apiService: Success
+deactivate appService
+
+apiService --> frontend: Success response
+deactivate apiService
+
+frontend -> frontend: Show success message\nClose modal\nReload company list
+
+frontend --> employee: Company rejected
+deactivate frontend
+
+@enduml
+
+@startuml ApproveAgain_SequenceDiagram
+
+autonumber
+
+actor "Employee/Admin" as employee
+participant CompanyVerifyComponent as frontend
+participant CompanyLegalInfoService as apiService
+participant CompanyLegalInfoAppService as appService
+participant ICurrentUser as currentUser
+participant ICompanyRepository as companyRepo
+database "Database" as db
+
+employee -> frontend: View rejected company\nClick "Approve again" button
+activate frontend
+
+frontend -> apiService: approveCompany(companyId)
+activate apiService
+
+apiService -> appService: POST /api/profile/company-legal-info/{id}/approve
+activate appService
+
+appService -> currentUser: Verify user is authenticated
+activate currentUser
+currentUser --> appService: User authenticated
+deactivate currentUser
+
+appService -> appService: Verify user has Employee/Admin role
+
+appService -> companyRepo: Get company by Id
+activate companyRepo
+companyRepo -> db: SELECT Company WHERE Id = companyId
+db --> companyRepo: Company
+companyRepo --> appService: Company
+deactivate companyRepo
+
+appService -> appService: Verify status is "rejected"
+
+appService -> appService: Update company\nLegalVerificationStatus = "approved"\nVerificationStatus = true\nLegalReviewedAt = DateTime.UtcNow\nRejectionNotes = null
+
+appService -> companyRepo: UpdateAsync(company)
+activate companyRepo
+companyRepo -> db: UPDATE Companies\nSET LegalVerificationStatus = 'approved'\nVerificationStatus = true\nLegalReviewedAt = NOW()\nRejectionNotes = NULL
+db --> companyRepo: Success
+companyRepo --> appService: Updated
+deactivate companyRepo
+
+appService --> apiService: Success
+deactivate appService
+
+apiService --> frontend: Success response
+deactivate apiService
+
+frontend -> frontend: Show success message\nReload company list
+
+frontend --> employee: Company approved again
+deactivate frontend
+
+@enduml
+
+@startuml VerifiedCompanyStatistic_SequenceDiagram
+
+autonumber
+
+actor "Employee/Admin" as employee
+participant CompanyVerifyComponent as frontend
+participant CompanyLegalInfoService as apiService
+participant CompanyLegalInfoAppService as appService
+participant ICurrentUser as currentUser
+participant ICompanyRepository as companyRepo
+database "Database" as db
+
+employee -> frontend: Navigate to Company Verification page
+activate frontend
+
+frontend -> frontend: Load statistics on page load
+
+frontend -> apiService: getVerifiedCompanies(filter)
+activate apiService
+
+apiService -> appService: POST /api/profile/company-legal-info/verified-companies
+activate appService
+
+appService -> currentUser: Verify user is authenticated
+activate currentUser
+currentUser --> appService: User authenticated
+deactivate currentUser
+
+appService -> appService: Verify user has Employee/Admin role
+
+appService -> companyRepo: GetQueryableAsync()
+activate companyRepo
+companyRepo -> db: Query Companies
+db --> companyRepo: Queryable
+companyRepo --> appService: Queryable
+deactivate companyRepo
+
+appService -> appService: Filter by VerificationStatus = true\nAND LegalVerificationStatus = "approved"
+
+appService -> companyRepo: CountAsync() and ToListAsync()
+activate companyRepo
+companyRepo -> db: SELECT COUNT(*) FROM Companies\nWHERE VerificationStatus = true\nAND LegalVerificationStatus = 'approved'
+db --> companyRepo: Total count
+companyRepo --> appService: Total count
+deactivate companyRepo
+
+appService -> companyRepo: Count verified this month
+activate companyRepo
+companyRepo -> db: SELECT COUNT(*) FROM Companies\nWHERE VerificationStatus = true\nAND LegalVerificationStatus = 'approved'\nAND LegalReviewedAt >= startOfMonth
+db --> companyRepo: Count this month
+companyRepo --> appService: Count this month
+deactivate companyRepo
+
+appService -> companyRepo: Count pending and rejected
+activate companyRepo
+companyRepo -> db: SELECT COUNT(*) FROM Companies\nWHERE LegalVerificationStatus = 'pending'\nSELECT COUNT(*) FROM Companies\nWHERE LegalVerificationStatus = 'rejected'
+db --> companyRepo: Pending and rejected counts
+companyRepo --> appService: Pending and rejected counts
+deactivate companyRepo
+
+appService -> appService: Calculate verification rate\n(totalVerified / totalSubmitted * 100)
+
+appService --> apiService: Statistics data
+deactivate appService
+
+apiService --> frontend: Statistics data
+deactivate apiService
+
+frontend -> frontend: Display statistics\n(Total Verified, Verified This Month, Verification Rate, etc.)
+
+frontend --> employee: Statistics displayed
+deactivate frontend
+
+@enduml
+
+@startuml ApproveRejectCompany_ClassDiagram
+
+' Frontend
+class CompanyVerifyComponent {
+    + onApprove(): void
+    + onReject(): void
+    + onSubmitReject(): void
+    + loadCompanies(): void
+}
+
+class CompanyLegalInfoService {
+    + approveCompany(id: number): Observable<void>
+    + rejectCompany(id: number, input: RejectCompanyDto): Observable<void>
+    + getVerifiedCompanies(input: CompanyVerificationFilterDto): Observable<PagedResultDto>
+}
+
+' DTOs
+class RejectCompanyDto {
+    + rejectionNotes: string
+}
+
+class CompanyVerificationViewDto {
+    + id: int
+    + companyName: string
+    + legalVerificationStatus: string
+    + verificationStatus: boolean
+    + rejectionNotes: string
+}
+
+' Backend
+interface ICompanyLegalInfoAppService {
+    + ApproveCompanyAsync(id: int): Task
+    + RejectCompanyAsync(id: int, input: RejectCompanyDto): Task
+    + GetVerifiedCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+}
+
+class CompanyLegalInfoAppService {
+    - _companyRepository: ICompanyRepository
+    - _currentUser: ICurrentUser
+    + ApproveCompanyAsync(id: int): Task
+    + RejectCompanyAsync(id: int, input: RejectCompanyDto): Task
+    + GetVerifiedCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+}
+
+' Domain Model
+class Company {
+    - Id: int
+    - CompanyName: string
+    - LegalVerificationStatus: string
+    - VerificationStatus: boolean
+    - LegalReviewedAt: DateTime?
+    - RejectionNotes: string?
+}
+
+interface ICompanyRepository {
+    + GetAsync(id: int): Task<Company>
+    + UpdateAsync(entity: Company): Task
+    + CountAsync(queryable: IQueryable): Task<int>
+}
+
+interface ICurrentUser {
+    + Id: Guid?
+    + IsAuthenticated: bool
+}
+
+' Relationships
+CompanyVerifyComponent --> CompanyLegalInfoService
+CompanyLegalInfoService --> RejectCompanyDto
+CompanyLegalInfoService --> CompanyVerificationViewDto
+
+CompanyLegalInfoAppService ..|> ICompanyLegalInfoAppService
+CompanyLegalInfoAppService --> RejectCompanyDto
+CompanyLegalInfoAppService --> ICompanyRepository
+CompanyLegalInfoAppService --> ICurrentUser
+
+ICompanyRepository ..> Company : manages
+
+@enduml
+
+@startuml VerifiedCompanyStatistic_ClassDiagram
+
+' Frontend
+class CompanyVerifyComponent {
+    + loadStatistics(): void
+    + displayStatistics(statistics: CompanyStatisticsDto): void
+}
+
+class CompanyLegalInfoService {
+    + getVerifiedCompanies(input: CompanyVerificationFilterDto): Observable<PagedResultDto>
+}
+
+' DTOs
+class CompanyStatisticsDto {
+    + totalVerified: number
+    + verifiedThisMonth: number
+    + totalPending: number
+    + totalRejected: number
+    + verificationRate: number
+}
+
+' Backend
+interface ICompanyLegalInfoAppService {
+    + GetVerifiedCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+}
+
+class CompanyLegalInfoAppService {
+    - _companyRepository: ICompanyRepository
+    - _currentUser: ICurrentUser
+    + GetVerifiedCompaniesAsync(input: CompanyVerificationFilterDto): Task<PagedResultDto>
+    + CalculateStatistics(): Task<CompanyStatisticsDto>
+}
+
+' Domain Model
+class Company {
+    - Id: int
+    - LegalVerificationStatus: string
+    - VerificationStatus: boolean
+    - LegalReviewedAt: DateTime?
+}
+
+interface ICompanyRepository {
+    + GetQueryableAsync(): Task<IQueryable>
+    + CountAsync(queryable: IQueryable): Task<int>
+}
+
+interface ICurrentUser {
+    + Id: Guid?
+    + IsAuthenticated: bool
+}
+
+' Relationships
+CompanyVerifyComponent --> CompanyLegalInfoService
+CompanyLegalInfoService --> CompanyStatisticsDto
+CompanyLegalInfoService --> PagedResultDto
+
+CompanyLegalInfoAppService ..|> ICompanyLegalInfoAppService
+CompanyLegalInfoAppService --> CompanyStatisticsDto
+CompanyLegalInfoAppService --> ICompanyRepository
+CompanyLegalInfoAppService --> ICurrentUser
+
+ICompanyRepository ..> Company : manages
+
+@enduml
+

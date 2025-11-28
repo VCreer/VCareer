@@ -338,14 +338,17 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.activityLogs = [];
 
     // Lấy activity logs cho tất cả HR Staff
+    const SEARCH_PLACEHOLDER = '__ALL__';
     const activityPromises = this.staffList.map(staff => {
       if (!staff.id) return Promise.resolve(null);
 
+      const keyword = this.activitySearchKeyword?.trim();
       const filter: ActivityLogFilterDto = {
         skipCount: 0,
         maxResultCount: 100, // Lấy tối đa 100 logs mỗi staff
         sorting: 'creationTime DESC',
-        searchKeyword: '' // Truyền empty string để tránh validation error (backend sẽ check IsNullOrWhiteSpace)
+        // Backend currently validates SearchKeyword, so send placeholder when empty
+        searchKeyword: keyword && keyword.length > 0 ? keyword : SEARCH_PLACEHOLDER
       };
 
       return this.activityLogService.getStaffActivityLogs(staff.id, filter).toPromise()

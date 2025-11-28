@@ -27,6 +27,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
   selectedCompany: CompanyVerificationViewDto | null = null;
   showRejectModal = false;
   rejectNotes = '';
+  private rejectNotesDraft: Record<string, string> = {};
   isLoading = false;
   searchKeyword = '';
   activeTab: 'pending' | 'verified' | 'rejected' = 'pending'; // Tab hiện tại: 'pending', 'verified', hoặc 'rejected'
@@ -202,6 +203,8 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.currentPage = 1;
     this.selectedCompany = null;
+    this.showRejectModal = false;
+    this.rejectNotes = '';
     this.loadCompanies();
   }
 
@@ -211,10 +214,14 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
 
   onCompanyClick(company: CompanyVerificationViewDto): void {
     this.selectedCompany = company;
+    this.showRejectModal = false;
+    this.rejectNotes = '';
   }
 
   onCloseDetail(): void {
     this.selectedCompany = null;
+    this.showRejectModal = false;
+    this.rejectNotes = '';
   }
 
   //#endregion
@@ -228,6 +235,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
     this.companyLegalInfoService.approveCompany(this.selectedCompany.id).subscribe({
       next: () => {
         this.showSuccessToast('Đã duyệt công ty thành công');
+        delete this.rejectNotesDraft[this.selectedCompany!.id];
         this.selectedCompany = null;
         this.loadCompanies(); // Reload current tab
       },
@@ -240,13 +248,21 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
   }
 
   onReject(): void {
+    if (!this.selectedCompany) return;
     this.showRejectModal = true;
-    this.rejectNotes = this.selectedCompany?.rejectionNotes || '';
+    const draft = this.rejectNotesDraft[this.selectedCompany.id];
+    this.rejectNotes = draft ?? this.selectedCompany.rejectionNotes ?? '';
   }
 
   onCloseRejectModal(): void {
     this.showRejectModal = false;
-    this.rejectNotes = '';
+  }
+
+  onRejectNotesChange(value: string): void {
+    this.rejectNotes = value;
+    if (this.selectedCompany) {
+      this.rejectNotesDraft[this.selectedCompany.id] = value;
+    }
   }
 
   onSubmitReject(): void {
@@ -264,6 +280,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
       next: () => {
         this.showSuccessToast('Đã từ chối công ty thành công');
         this.onCloseRejectModal();
+        delete this.rejectNotesDraft[this.selectedCompany!.id];
         this.selectedCompany = null;
         this.loadCompanies(); // Reload current tab
       },

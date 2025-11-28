@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -360,18 +361,28 @@ namespace VCareer.Services.Auth
 
         private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
         {
+            if (tokenResonse == null)
+            {
+                throw new BusinessException("Token response is empty");
+            }
+
+            if (string.IsNullOrWhiteSpace(tokenResonse.AccessToken) ||
+                string.IsNullOrWhiteSpace(tokenResonse.RefreshToken))
+            {
+                throw new BusinessException("Token response is missing access or refresh token");
+            }
+
             var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
-           // dù append ghi đè cookie nhưng có trường hợp ko xóa được thì lỗi
-           // ví dụ như cùng name nhưung khác path là ko apppend được rồi 
-            //response.Cookies.Delete("access_token", new CookieOptions { Path = "/" });
-            //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
+
+            var accessTokenMinutes = ParseDurationOrDefault(tokenResonse.ExpireMinuteAcesstoken, 30d, "minutes");
+            var refreshTokenHours = ParseDurationOrDefault(tokenResonse.ExpireHourRefreshToken, 24d, "hours");
 
             response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(tokenResonse.ExpireMinuteAcesstoken)),
+                Expires = DateTime.UtcNow.AddMinutes(accessTokenMinutes),
                 Path = "/"
             });
 
@@ -380,9 +391,25 @@ namespace VCareer.Services.Auth
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(double.Parse(tokenResonse.ExpireHourRefreshToken)),
+                Expires = DateTime.UtcNow.AddHours(refreshTokenHours),
                 Path = "/"
             });
+        }
+
+        private static double ParseDurationOrDefault(string? rawValue, double fallback, string unit)
+        {
+            if (string.IsNullOrWhiteSpace(rawValue))
+            {
+                return fallback;
+            }
+
+            if (double.TryParse(rawValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+
+            // Invalid format; log-friendly fallback by throwing domain exception?
+            return fallback;
         }
         //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
         //còn mục đích của token là để phục vụ auth backend , tạo current user
