@@ -29,6 +29,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
     isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
+     showUserManagementDropdown: boolean = false;
 
 
   constructor(
@@ -164,18 +165,18 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     return this.currentRoute === path || this.currentRoute.startsWith(path + '/');
   }
 
-  // toggleUserManagementDropdown(event: Event): void {
-  //   event.stopPropagation();
-  //   this.showUserManagementDropdown = !this.showUserManagementDropdown;
-  // }
+  toggleUserManagementDropdown(event: Event): void {
+    event.stopPropagation();
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
+  }
 
-  // navigateToUserManagement(path: string, event?: Event): void {
-  //   if (event) {
-  //     event.stopPropagation();
-  //   }
-  //   this.showUserManagementDropdown = false;
-  //   this.navigateTo(path);
-  // }
+  navigateToUserManagement(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showUserManagementDropdown = false;
+    this.navigateTo(path);
+  }
 
   isUserManagementActive(): boolean {
     return this.currentRoute.startsWith('/employee/user-management');
