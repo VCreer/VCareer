@@ -179,6 +179,11 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
+  navigateToCareerInvitations() {
+    this.router.navigate(['/candidate/career-opportunity-invitation']);
+    this.showProfileMenu = false;
+  }
+
   navigateToChangePassword() {
     this.router.navigate(['/candidate/change-password']);
     this.showProfileMenu = false;
@@ -191,6 +196,11 @@ export class CandidateHeaderComponent implements OnInit {
 
   navigateToAppliedJobs() {
     this.router.navigate(['/candidate/applied-jobs']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToJobSuggestionSettings() {
+    this.router.navigate(['/candidate/job-suggestion-settings']);
     this.showProfileMenu = false;
   }
 

@@ -4,21 +4,29 @@
     <span class="required" *ngIf="required">*</span>
   </label>
   
-  <div class="select-input-wrapper">
-    <select 
-      class="select-input"
+  <div class="select-dropdown-wrapper" (click)="$event.stopPropagation()">
+    <button 
+      type="button"
+      class="select-dropdown"
       [class.error]="error"
       [class.disabled]="disabled"
-      [class.has-value]="value && value !== ''"
+      [class.focused]="showDropdown"
       [disabled]="disabled"
-      [required]="required"
-      [value]="value"
-      (change)="onSelect($event)">
-      <option value="">{{ placeholder }}</option>
-      <option *ngFor="let option of options" [value]="option.value">
-        {{ option.label }}
-      </option>
-    </select>
+      (click)="toggleDropdown()">
+      <span>{{ getSelectedLabel() }}</span>
+      <i class="fa fa-chevron-down" [class.rotated]="showDropdown"></i>
+    </button>
+    <div class="select-dropdown-menu" *ngIf="showDropdown">
+      <button
+        type="button"
+        class="select-dropdown-item"
+        *ngFor="let option of options"
+        [class.active]="value === option.value"
+        (click)="onSelectOption(option.value)">
+        <span>{{ option.label }}</span>
+        <i class="fa fa-check" *ngIf="value === option.value"></i>
+      </button>
+    </div>
     <button 
       type="button"
       class="clear-btn"

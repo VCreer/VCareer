@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -32,17 +32,33 @@ export class SelectFieldComponent implements ControlValueAccessor {
   @Output() valueChange = new EventEmitter<string>();
 
   value: string = '';
+  showDropdown = false;
   private onChange = (value: string) => {};
   private onTouched = () => {};
 
-  onSelect(event: Event): void {
+  constructor(private elementRef: ElementRef) {}
+
+  toggleDropdown(): void {
+    if (this.disabled) return;
+    this.showDropdown = !this.showDropdown;
+  }
+
+  onSelectOption(optionValue: string): void {
     if (this.disabled) return;
     
-    const target = event.target as HTMLSelectElement;
-    this.value = target.value;
+    this.value = optionValue;
     this.onChange(this.value);
     this.onTouched();
     this.valueChange.emit(this.value);
+    this.showDropdown = false;
+  }
+
+  getSelectedLabel(): string {
+    if (!this.value || this.value === '') {
+      return this.placeholder;
+    }
+    const option = this.options.find(opt => opt.value === this.value);
+    return option ? option.label : this.placeholder;
   }
 
   clearSelection(event: Event): void {
@@ -54,6 +70,13 @@ export class SelectFieldComponent implements ControlValueAccessor {
     this.onChange(this.value);
     this.onTouched();
     this.valueChange.emit(this.value);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.showDropdown = false;
+    }
   }
 
   // ControlValueAccessor implementation
