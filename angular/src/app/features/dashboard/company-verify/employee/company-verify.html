@@ -62,6 +62,17 @@
       </div>
     </div>
 
+    <div class="verified-summary-card" *ngIf="activeTab === 'verified'">
+      <div class="verified-summary-icon">
+        <i class="fa fa-check-circle"></i>
+      </div>
+      <div class="verified-summary-content">
+        <div class="label">Tổng số công ty đã xác minh</div>
+        <div class="value">{{ totalItems | number }}</div>
+        <div class="hint" *ngIf="totalItems === 0">Chưa có công ty nào được xác minh.</div>
+      </div>
+    </div>
+
     <!-- Company List Card -->
     <div class="company-list-card">
       <div class="wrapper-content" [class.show-detail-company]="selectedCompany">
@@ -438,7 +449,10 @@
     [style.max-width]="getModalMaxWidth()"
   >
     <div class="reject-modal-header">
-      <h3 class="reject-modal-title">Từ chối công ty</h3>
+      <div>
+        <h3 class="reject-modal-title">Từ chối công ty</h3>
+        <p class="reject-modal-subtitle">Nhập rõ lý do, hệ thống sẽ gửi cho Recruiter.</p>
+      </div>
       <button type="button" class="close-modal-btn" (click)="onCloseRejectModal()">
         <i class="fa fa-times"></i>
       </button>
@@ -448,7 +462,8 @@
         <label class="form-label">Lý do từ chối <span class="required">*</span></label>
         <textarea
           class="form-textarea"
-          [(ngModel)]="rejectNotes"
+          [ngModel]="rejectNotes"
+          (ngModelChange)="onRejectNotesChange($event)"
           placeholder="Nhập lý do từ chối công ty này. Lý do này sẽ được gửi cho Recruiter..."
           rows="5"
         ></textarea>

@@ -2,7 +2,7 @@ import { provideAbpCore, withOptions } from '@abp/ng.core';
 import { provideAbpOAuth } from '@abp/ng.oauth';
 import { provideSettingManagementConfig } from '@abp/ng.setting-management/config';
 import { provideFeatureManagementConfig } from '@abp/ng.feature-management';
-import { provideAbpThemeShared } from '@abp/ng.theme.shared';
+import { provideAbpThemeShared, withHttpErrorConfig } from '@abp/ng.theme.shared';
 import { provideIdentityConfig } from '@abp/ng.identity/config';
 // import { provideAccountConfig } from '@abp/ng.account/config';
 import { provideTenantManagementConfig } from '@abp/ng.tenant-management/config';
@@ -82,7 +82,12 @@ export const appConfig: ApplicationConfig = {
     provideLogo(withEnvironmentOptions(environment)),
     // provideAccountConfig(), // Comment ABP Account module
     provideTenantManagementConfig(),
-    provideAbpThemeShared(),
+    provideAbpThemeShared(
+      withHttpErrorConfig({
+        // Skip showing default ABP error modal for 404s to avoid intrusive popups on landing page
+        skipHandledErrorCodes: [404],
+      })
+    ),
     // Mock API Services (chỉ khi useMockApi = true)
     // ...(environment.useMockApi ? [
     //   AuthMockService,

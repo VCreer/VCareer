@@ -20,6 +20,7 @@ namespace VCareer.Services.Auth.ActivityLog
     [Authorize]
     public class ActivityLogAppService : ApplicationService, IActivityLogAppService
     {
+        private const string SearchPlaceholder = "__ALL__";
         private readonly IRepository<Models.ActivityLogs.ActivityLog, Guid> _activityLogRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterRepository;
         private readonly IdentityUserManager _userManager;
@@ -39,6 +40,13 @@ namespace VCareer.Services.Auth.ActivityLog
 
         public async Task<ActivityLogListDto> GetStaffActivityLogsAsync(Guid staffId, ActivityLogFilterDto input)
         {
+            // Override validation: SearchKeyword is optional, set to null if empty
+            if (string.IsNullOrWhiteSpace(input.SearchKeyword) || 
+                string.Equals(input.SearchKeyword, SearchPlaceholder, StringComparison.Ordinal))
+            {
+                input.SearchKeyword = null;
+            }
+
             // Step 1: Get current user profile
             var currentUserId = CurrentUser.Id.Value;
             var recruiterQueryable = await _recruiterRepository.GetQueryableAsync();
