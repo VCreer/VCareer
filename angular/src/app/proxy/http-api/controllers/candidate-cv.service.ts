@@ -44,7 +44,7 @@ export class CandidateCvService {
   
 
   getList = (input: GetCandidateCvListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'GET',
       url: '/api/cv/candidates',
       params: { templateId: input.templateId, isPublished: input.isPublished, isDefault: input.isDefault, isPublic: input.isPublic, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },

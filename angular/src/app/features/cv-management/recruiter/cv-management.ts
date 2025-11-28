@@ -13,7 +13,7 @@ import {
   GenericModalComponent
 } from '../../../shared/components';
 import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
-import type { ApplicationDto, GetApplicationListDto, UpdateApplicationStatusDto } from '../../../proxy/application/contracts/applications/models';
+import type { ApplicationDto,GetApplicationListDto, UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
 import { environment } from '../../../../environments/environment';
 
 export interface CandidateCv {

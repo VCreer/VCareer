@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
-using VCareer.Application.Contracts.Applications;
 using VCareer.Controllers;
+using VCareer.Dto.Applications;
+using VCareer.IServices.Application;
 
 namespace VCareer.HttpApi.Controllers
 {
@@ -16,9 +17,9 @@ namespace VCareer.HttpApi.Controllers
     [Authorize]
     public class ApplicationController : VCareerController
     {
-        private readonly IApplicationAppService _applicationAppService;
+        private readonly IJobApply _applicationAppService;
 
-        public ApplicationController(IApplicationAppService applicationAppService)
+        public ApplicationController(IJobApply applicationAppService)
         {
             _applicationAppService = applicationAppService;
         }

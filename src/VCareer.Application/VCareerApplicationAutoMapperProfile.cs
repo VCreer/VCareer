@@ -14,7 +14,6 @@ using VCareer.Dto.FileDto;
 using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
-using VCareer.Application.Contracts.Applications;
 using VCareer.CV;
 using VCareer.Dto.Profile;
 using VCareer.Dto.Order;
@@ -25,6 +24,7 @@ using VCareer.Dto.JobDto;
 using VCareer.Dto.Job;
 using VCareer.Models.JobCategory;
 using VCareer.Dto.Category;
+using VCareer.Dto.Applications;
 
 namespace VCareer;
 

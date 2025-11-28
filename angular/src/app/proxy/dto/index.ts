@@ -1,4 +1,5 @@
 import * as ActivityLogDto from './activity-log-dto';
+import * as Applications from './applications';
 import * as AuthDto from './auth-dto';
 import * as Cart from './cart';
 import * as Category from './category';
@@ -12,4 +13,4 @@ import * as Profile from './profile';
 import * as Subcriptions from './subcriptions';
 import * as TeamManagementDto from './team-management-dto';
 export * from './models';
-export { ActivityLogDto, AuthDto, Cart, Category, DashboardDto, FileDto, GeoDto, Job, JobDto, Order, Profile, Subcriptions, TeamManagementDto };
+export { ActivityLogDto, Applications, AuthDto, Cart, Category, DashboardDto, FileDto, GeoDto, Job, JobDto, Order, Profile, Subcriptions, TeamManagementDto };

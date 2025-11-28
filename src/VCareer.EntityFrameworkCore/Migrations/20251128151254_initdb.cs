@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabaseVcareer : Migration
+    public partial class initdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -518,6 +518,7 @@ namespace VCareer.Migrations
                     IsLifeTime = table.Column<bool>(type: "bit", nullable: false),
                     IsAutoActive = table.Column<bool>(type: "bit", nullable: false),
                     IsLimitUsedTime = table.Column<bool>(type: "bit", nullable: false),
+                    Priority = table.Column<int>(type: "int", nullable: true),
                     TimeUsedLimit = table.Column<int>(type: "int", nullable: true),
                     DayDuration = table.Column<int>(type: "int", nullable: true),
                     Value = table.Column<int>(type: "int", nullable: true),
@@ -797,7 +798,8 @@ namespace VCareer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1072,6 +1074,11 @@ namespace VCareer.Migrations
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     QuotaUsedBytes = table.Column<long>(type: "bigint", nullable: true),
                     MaxQuotaBytes = table.Column<long>(type: "bigint", nullable: true),
+                    JobTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Skills = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Experience = table.Column<int>(type: "int", nullable: true),
+                    Salary = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    WorkLocation = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
@@ -1124,6 +1131,47 @@ namespace VCareer.Migrations
                         principalTable: "AbpUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    VATAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false),
+                    VnpayTransactionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    VnpayResponseCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    VnpayPaymentId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1257,6 +1305,35 @@ namespace VCareer.Migrations
                         column: x => x.ApplicationId,
                         principalTable: "OpenIddictApplications",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Carts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubscriptionServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Carts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Carts_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Carts_SubcriptionServices_SubscriptionServiceId",
+                        column: x => x.SubscriptionServiceId,
+                        principalTable: "SubcriptionServices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1521,14 +1598,53 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrderDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubcriptionServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderDetails_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderDetails_SubcriptionServices_SubcriptionServiceId",
+                        column: x => x.SubcriptionServiceId,
+                        principalTable: "SubcriptionServices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RecruitmentCampaigns",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RecruiterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -1653,7 +1769,7 @@ namespace VCareer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RecruitmentCampaignId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RecruitmentCampaignId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CompanyImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -1722,12 +1838,14 @@ namespace VCareer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    User_ChildServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JobPostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChildServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Action = table.Column<int>(type: "int", nullable: false),
                     Target = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Value = table.Column<int>(type: "int", nullable: true),
+                    PriorityLevel = table.Column<int>(type: "int", nullable: true),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Job_PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -1761,24 +1879,29 @@ namespace VCareer.Migrations
                         column: x => x.Job_PostId,
                         principalTable: "JobPost",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_EffectingJobServices_User_ChildServices_User_ChildServiceId",
+                        column: x => x.User_ChildServiceId,
+                        principalTable: "User_ChildServices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "JobPriory",
+                name: "JobPriority",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DisplayArea = table.Column<int>(type: "int", nullable: false),
                     PriorityLevel = table.Column<int>(type: "int", nullable: false),
                     SortScore = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobPriory", x => x.Id);
+                    table.PrimaryKey("PK_JobPriority", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobPriory_JobPost_JobId",
+                        name: "FK_JobPriority_JobPost_JobId",
                         column: x => x.JobId,
                         principalTable: "JobPost",
                         principalColumn: "Id",
@@ -2106,6 +2229,22 @@ namespace VCareer.Migrations
                 column: "TemplateId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Carts_SubscriptionServiceId",
+                table: "Carts",
+                column: "SubscriptionServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_UserId",
+                table: "Carts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_UserId_SubscriptionServiceId",
+                table: "Carts",
+                columns: new[] { "UserId", "SubscriptionServiceId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CategoryTags_CategoryId",
                 table: "CategoryTags",
                 column: "CategoryId");
@@ -2170,6 +2309,11 @@ namespace VCareer.Migrations
                 name: "IX_EffectingJobServices_JobPostId",
                 table: "EffectingJobServices",
                 column: "JobPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EffectingJobServices_User_ChildServiceId",
+                table: "EffectingJobServices",
+                column: "User_ChildServiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmployeeIpAddresses_EmployeeId",
@@ -2252,9 +2396,10 @@ namespace VCareer.Migrations
                 column: "RecruitmentCampaignId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobPriory_JobId",
-                table: "JobPriory",
-                column: "JobId");
+                name: "IX_JobPriority_JobId",
+                table: "JobPriority",
+                column: "JobId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobTag_JobId",
@@ -2295,6 +2440,47 @@ namespace VCareer.Migrations
                 name: "IX_OpenIddictTokens_ReferenceId",
                 table: "OpenIddictTokens",
                 column: "ReferenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderDetails_OrderId",
+                table: "OrderDetails",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderDetails_SubcriptionServiceId",
+                table: "OrderDetails",
+                column: "SubcriptionServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_CreationTime",
+                table: "Orders",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_OrderCode",
+                table: "Orders",
+                column: "OrderCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_PaymentStatus",
+                table: "Orders",
+                column: "PaymentStatus");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_Status",
+                table: "Orders",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_UserId",
+                table: "Orders",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_VnpayPaymentId",
+                table: "Orders",
+                column: "VnpayPaymentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecruiterProfile_CompanyId",
@@ -2454,6 +2640,9 @@ namespace VCareer.Migrations
                 name: "AppRefreshTokens");
 
             migrationBuilder.DropTable(
+                name: "Carts");
+
+            migrationBuilder.DropTable(
                 name: "CategoryTags");
 
             migrationBuilder.DropTable(
@@ -2472,7 +2661,7 @@ namespace VCareer.Migrations
                 name: "JobApplications");
 
             migrationBuilder.DropTable(
-                name: "JobPriory");
+                name: "JobPriority");
 
             migrationBuilder.DropTable(
                 name: "JobTag");
@@ -2484,10 +2673,10 @@ namespace VCareer.Migrations
                 name: "OpenIddictTokens");
 
             migrationBuilder.DropTable(
-                name: "SubcriptionPrices");
+                name: "OrderDetails");
 
             migrationBuilder.DropTable(
-                name: "User_ChildServices");
+                name: "SubcriptionPrices");
 
             migrationBuilder.DropTable(
                 name: "User_SubcriptionServices");
@@ -2511,6 +2700,9 @@ namespace VCareer.Migrations
                 name: "Industries");
 
             migrationBuilder.DropTable(
+                name: "User_ChildServices");
+
+            migrationBuilder.DropTable(
                 name: "EmployeeProfiles");
 
             migrationBuilder.DropTable(
@@ -2532,13 +2724,16 @@ namespace VCareer.Migrations
                 name: "OpenIddictAuthorizations");
 
             migrationBuilder.DropTable(
-                name: "ChildServices");
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "SubcriptionServices");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "ChildServices");
 
             migrationBuilder.DropTable(
                 name: "CvTemplates");

@@ -11,6 +11,14 @@ export class CandidateSearchService {
   apiName = 'Default';
   
 
+  getCandidateDetail = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<CandidateSearchResultDto>>({
+      method: 'GET',
+      url: `/api/candidate-search/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   searchCandidates = (input: SearchCandidateInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<PagedResultDto<CandidateSearchResultDto>>>({
       method: 'POST',
@@ -18,13 +26,7 @@ export class CandidateSearchService {
       body: input,
     },
     { apiName: this.apiName,...config });
-
-  getCandidateDetail = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<CandidateSearchResultDto>>({
-      method: 'GET',
-      url: `/api/candidate-search/${id}`,
-    },
-    { apiName: this.apiName,...config });
+  
 
   sendConnectionRequest = (id: string, input: SendConnectionRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, IActionResult>({

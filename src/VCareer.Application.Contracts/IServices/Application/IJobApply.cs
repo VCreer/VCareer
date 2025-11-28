@@ -1,14 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using VCareer.Dto.Applications;
 using Volo.Abp.Application.Dtos;
-using VCareer.Application.Contracts.Applications;
+using Volo.Abp.Application.Services;
 
-namespace VCareer.Application.Contracts.Applications
+namespace VCareer.IServices.Application
 {
     /// <summary>
     /// Interface cho Application Management Service
     /// </summary>
-    public interface IApplicationAppService
+    public interface IJobApply:IApplicationService
     {
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)

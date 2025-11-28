@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, BulkDownloadCVsDto, GetApplicationListDto, RateApplicationDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../contracts/applications/models';
+import type { ApplicationDto, ApplicationStatisticsDto, ApplicationStatusDto, ApplyWithOnlineCVDto, ApplyWithUploadedCVDto, BulkDownloadCVsDto, GetApplicationListDto, RateApplicationDto, UpdateApplicationStatusDto, WithdrawApplicationDto } from '../../dto/applications/models';
 
 @Injectable({
   providedIn: 'root',

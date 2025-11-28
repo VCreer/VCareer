@@ -34,6 +34,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.Uow;
+using VCareer.Models.Applications;
 
 namespace VCareer.EntityFrameworkCore;
 
@@ -83,7 +84,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<User_ChildService, User_ChildServiceRepository>();
             options.AddRepository<SubcriptionPrice, SubcriptionPriceRepository>();
             options.AddRepository<EffectingJobService, EffectingJobServiceRepository>();
-
+                
             options.AddRepository<CartEntity, CartRepository>();
 
         });

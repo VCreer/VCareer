@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251126085755_dichvu2")]
-    partial class dichvu2
+    [Migration("20251128151254_initdb")]
+    partial class initdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1085,7 +1085,7 @@ namespace VCareer.Migrations
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("RecruitmentCampaignId")
+                    b.Property<Guid>("RecruitmentCampaignId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RejectedReason")
@@ -2107,6 +2107,9 @@ namespace VCareer.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("Experience")
+                        .HasColumnType("int");
+
                     b.Property<string>("ExtraProperties")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -2123,6 +2126,9 @@ namespace VCareer.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -2144,8 +2150,17 @@ namespace VCareer.Migrations
                     b.Property<long?>("QuotaUsedBytes")
                         .HasColumnType("bigint");
 
+                    b.Property<decimal?>("Salary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Skills")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
+
+                    b.Property<string>("WorkLocation")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
 
@@ -4311,7 +4326,8 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Job.RecruitmentCampaign", "RecruitmentCampaign")
                         .WithMany("Job_Posts")
                         .HasForeignKey("RecruitmentCampaignId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("JobCategory");
 
