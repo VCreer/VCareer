@@ -22,5 +22,13 @@ namespace VCareer.Dto.Profile
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public string UserType { get; set; } // Candidate, Employee, Recruiter
+        public int? CompanyId { get; set; } // Company ID for Recruiter
+
+        // Thông tin nghề nghiệp (chỉ áp dụng cho Candidate)
+        public string JobTitle { get; set; } // Vị trí chuyên môn
+        public string Skills { get; set; } // Kỹ năng
+        public int? Experience { get; set; } // Kinh nghiệm (số năm)
+        public decimal? Salary { get; set; } // Mức lương mong muốn (decimal 18,2)
+        public string WorkLocation { get; set; } // Địa điểm làm việc
     }
 }

@@ -73,7 +73,7 @@ export const appConfig: ApplicationConfig = {
         registerLocaleFn: registerLocale(),
       })
     ),
-    provideAbpOAuth(),
+    provideAbpOAuth(), // Giữ lại để tránh lỗi InjectionToken, lỗi 404 openid-configuration không ảnh hưởng
     provideIdentityConfig(),
     provideSettingManagementConfig(),
     provideFeatureManagementConfig(),

@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TeamManagementService } from '../../../proxy/services/team-management';
+import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
+import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,9 +21,9 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() showChange = new EventEmitter<boolean>();
   
-  // Mock user data - can be replaced with actual user service later
-  userName: string = 'Uông Hoàng Duy';
-  userRole: string = 'Employer';
+  // User data - loaded from API
+  userName: string = 'Người dùng';
+  userRole: string = 'Leader Recruiter';
   verificationLevel: string = 'Cấp 1/3';
   currentRoute: string = '';
   isVerified: boolean = false;
@@ -30,13 +32,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   private verificationSubscription?: Subscription;
     isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
      showUserManagementDropdown: boolean = false;
+  private userSubscription?: Subscription;
 
 
   constructor(
     private translationService: TranslationService,
     private router: Router,
     private navigationService: NavigationService,
-    private teamManagementService: TeamManagementService
+    private teamManagementService: TeamManagementService,
+    private authStateService: AuthStateService,
+    private authFacadeService: AuthFacadeService
   ) {
     // Subscribe to verification status
     this.isVerified = this.navigationService.isVerified();
@@ -57,23 +62,100 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   ngOnInit() {
     this.currentRoute = this.router.url;
     this.updateRouteType(this.currentRoute);
+    
+    // Subscribe to user changes to update name
+    this.userSubscription = this.authStateService.user$.subscribe(user => {
+      if (user && user.fullName) {
+        this.userName = user.fullName;
+      } else if (user && user.email) {
+        this.userName = user.email.split('@')[0];
+      }
+    });
+    
+    // Load user info if not already loaded
+    if (!this.authStateService.user) {
+      this.loadUserInfo();
+    } else {
+      // Use existing user info
+      const user = this.authStateService.user;
+      this.userName = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+    }
+    
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
         this.updateRouteType(this.currentRoute);
+        // Reload user info when route changes (in case user switched accounts)
+        this.loadUserInfo();
       });
   }
 
   private updateRouteType(url: string): void {
     this.isEmployeeRoute = url.startsWith('/employee');
-    // Update user role and name based on route
+    // Update user role based on route
     if (this.isEmployeeRoute) {
       this.userRole = 'Employee';
-      this.userName = 'Employee User';
     } else {
-      this.userRole = 'Employer';
-      this.userName = 'Uông Hoàng Duy';
+      // For recruiter, role will be set based on isLead from API
+      // Default to 'Leader Recruiter' until we load user info
+      this.userRole = 'Leader Recruiter';
+    }
+    // User name will be loaded from API, don't override it here
+  }
+
+  private loadUserInfo(): void {
+    // First try to get from AuthStateService (already loaded)
+    const currentUser = this.authStateService.user;
+    if (currentUser && currentUser.fullName) {
+      this.userName = currentUser.fullName;
+      return;
+    }
+
+    // If not available, load from API
+    if (this.isEmployeeRoute) {
+      // For employee, use basic user info
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          this.userName = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+        },
+        error: (error) => {
+          console.error('Error loading user info:', error);
+          this.userName = 'Người dùng';
+        }
+      });
+    } else {
+      // For recruiter, try to get from TeamManagementService first (has more info)
+      this.teamManagementService.getCurrentUserInfo().subscribe({
+        next: (userInfo) => {
+          if (userInfo.fullName) {
+            this.userName = userInfo.fullName;
+          } else {
+            // Fallback to AuthStateService
+            const user = this.authStateService.user;
+            this.userName = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+          }
+          // Update role based on isLead
+          if (userInfo.isLead) {
+            this.userRole = 'Leader Recruiter';
+          } else {
+            this.userRole = 'HR Staff';
+          }
+        },
+        error: (error) => {
+          console.error('Error loading user info from TeamManagementService:', error);
+          // Fallback to AuthStateService
+          this.authFacadeService.loadCurrentUser().subscribe({
+            next: (user) => {
+              this.userName = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+            },
+            error: (loadError) => {
+              console.error('Error loading user info from AuthFacadeService:', loadError);
+              this.userName = 'Người dùng';
+            }
+          });
+        }
+      });
     }
   }
 
@@ -88,6 +170,9 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     }
     if (this.verificationSubscription) {
       this.verificationSubscription.unsubscribe();
+    }
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
@@ -188,11 +273,18 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       next: (userInfo) => {
         // HR Staff là user có IsLead = false
         this.isHRStaff = !userInfo.isLead;
+        // Update role based on isLead
+        if (userInfo.isLead) {
+          this.userRole = 'Leader Recruiter';
+        } else {
+          this.userRole = 'HR Staff';
+        }
       },
       error: (error) => {
         // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
         console.error('Error loading user info in sidebar:', error);
         this.isHRStaff = false;
+        // Keep default role as 'Leader Recruiter'
       }
     });
   }

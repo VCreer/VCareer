@@ -3,6 +3,14 @@
 
   .section-header {
     margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+
+    .section-header-left {
+      flex: 1;
+    }
 
     .section-title {
       font-size: 18px;
@@ -21,6 +29,63 @@
         color: #0F83BA;
         text-decoration: none;
         font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .section-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid transparent;
+
+        &.status-pending {
+          background-color: #fef3c7;
+          color: #92400e;
+          border-color: #fbbf24;
+        }
+
+        &.status-approved {
+          background-color: #dcfce7;
+          color: #166534;
+          border-color: #22c55e;
+        }
+
+        &.status-rejected {
+          background-color: #fee2e2;
+          color: #b91c1c;
+          border-color: #f87171;
+        }
+      }
+
+      .document-link {
+        font-size: 13px;
+        color: #0F83BA;
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .edit-button {
+        border: none;
+        background: transparent;
+        color: #0F83BA;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 4px 8px;
 
         &:hover {
           text-decoration: underline;
@@ -247,6 +312,29 @@
             }
           }
         }
+
+        .uploaded-file-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 4px;
+
+          .file-icon {
+            font-size: 18px;
+            color: #0F83BA;
+          }
+
+          .file-link {
+            font-size: 14px;
+            color: #0F83BA;
+            text-decoration: none;
+            font-weight: 500;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
       }
 
       .illustration-section {
@@ -313,10 +401,15 @@
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
     margin-top: 32px;
     padding-top: 24px;
     border-top: 1px solid #e5e7eb;
+
+    .actions-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
     @media (max-width: 768px) {
       justify-content: stretch;
@@ -354,6 +447,20 @@
             cursor: not-allowed !important;
           }
         }
+      }
+    }
+
+    .cancel-btn {
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: #374151;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover {
+        background: #e5e7eb;
       }
     }
   }

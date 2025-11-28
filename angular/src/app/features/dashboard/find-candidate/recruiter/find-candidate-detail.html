@@ -1,0 +1,153 @@
+<div class="find-candidate-detail-container" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="breadcrumb-box">
+    <div class="breadcrumb-container">
+      <a routerLink="/recruiter/find-cv" class="breadcrumb-item">Tìm kiếm ứng viên</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-item active">{{ candidate?.name || 'Chi tiết ứng viên' }}</span>
+    </div>
+  </div>
+
+  <div class="detail-content">
+    <div class="cv-viewer-card">
+      <div class="cv-viewer-header">
+        <h2>Hồ sơ ứng viên</h2>
+        <span class="last-updated">Cập nhật lần cuối: {{ formatUpdatedTime(candidate?.lastUpdatedTime) }}</span>
+      </div>
+
+      <div class="cv-viewer-body">
+        <div *ngIf="cvLoading" class="cv-loading">
+          <div class="spinner"></div>
+          <p>Đang tải CV...</p>
+        </div>
+
+        <div *ngIf="!cvLoading && cvHtml" class="cv-iframe" [innerHTML]="cvHtml"></div>
+
+        <div *ngIf="!cvLoading && !cvHtml" class="cv-empty">
+          <p>Ứng viên chưa có CV công khai hoặc CV đang bị khóa.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-sidebar">
+      <div class="candidate-summary-card">
+        <div class="candidate-avatar">
+          <span>{{ getInitials(candidate?.name) }}</span>
+        </div>
+        <div class="candidate-meta">
+          <h2>{{ candidate?.name || 'Ứng viên' }}</h2>
+          <p>{{ candidate?.jobTitle || 'Chưa cập nhật vị trí' }}</p>
+          <p class="location">
+            <i class="fa fa-map-marker"></i>
+            {{ candidate?.workLocation || candidate?.location || 'Chưa cập nhật địa điểm' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="contact-card">
+        <h3>Thông tin liên hệ</h3>
+        <div class="contact-item">
+          <span class="label">Email</span>
+          <span class="value">{{ getMaskedValue(candidate?.email) }}</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Số điện thoại</span>
+          <span class="value">{{ getMaskedValue(candidate?.phoneNumber) }}</span>
+        </div>
+        <div class="contact-actions">
+          <app-button
+            [type]="'primary'"
+            (click)="onUnlockContact()"
+          >
+            Yêu cầu kết nối
+          </app-button>
+        </div>
+      </div>
+
+      <div class="candidate-meta-card">
+        <div class="meta-row">
+          <span class="label">Mức lương mong muốn</span>
+          <span class="value">
+            {{
+              candidate?.salary
+                ? (candidate?.salary | number : '1.0-0') + ' VNĐ'
+                : 'Chưa cập nhật'
+            }}
+          </span>
+        </div>
+        <div class="meta-row">
+          <span class="label">Kinh nghiệm</span>
+          <span class="value">
+            {{
+              candidate?.experience
+                ? (candidate?.experience + ' năm')
+                : 'Chưa cập nhật'
+            }}
+          </span>
+        </div>
+        <div class="meta-row">
+          <span class="label">Mã ứng viên</span>
+          <span class="value code">{{ getCandidateCode() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="connectionModalOpen"></div>
+<div class="connection-modal" *ngIf="connectionModalOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Yêu cầu kết nối ứng viên</h3>
+      <button class="close-btn" (click)="closeConnectionModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Tên công ty</label>
+        <input type="text" [(ngModel)]="connectionForm.companyName" placeholder="Nhập tên công ty" />
+      </div>
+      <div class="form-field">
+        <label>Vị trí tuyển dụng</label>
+        <input type="text" [(ngModel)]="connectionForm.jobTitle" placeholder="Nhập vị trí tuyển dụng" />
+      </div>
+      <div class="form-field">
+        <label>Nội dung</label>
+        <textarea rows="4" [(ngModel)]="connectionForm.message"></textarea>
+      </div>
+      <div class="form-field">
+        <label>Email nhận kết quả phản hồi (tối đa 5 email)</label>
+        <div class="email-input-wrapper">
+          <input
+            type="email"
+            [(ngModel)]="connectionForm.emailInput"
+            placeholder="Nhập email và nhấn Enter"
+            (keyup.enter)="addEmailFromInput()"
+          />
+          <button type="button" (click)="addEmailFromInput()">Thêm</button>
+        </div>
+        <div class="email-tags">
+          <div class="email-tag" *ngFor="let email of connectionForm.emails; let i = index">
+            {{ email }}
+            <span (click)="removeEmail(i)">×</span>
+          </div>
+        </div>
+      </div>
+      <div class="note">
+        Ứng viên sẽ có 7 ngày để phản hồi yêu cầu kết nối. Sau khi ứng viên đồng ý kết nối, bạn có thể dùng credit để mở thông tin liên hệ.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" (click)="closeConnectionModal()">Đóng</button>
+      <button class="primary" [disabled]="sendingRequest" (click)="submitConnectionRequest()">
+        {{ sendingRequest ? 'Đang gửi...' : 'Gửi yêu cầu' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-toast-notification
+  [show]="showToast"
+  [message]="toastMessage"
+  [type]="toastType"
+  (close)="onToastClose()"
+></app-toast-notification>
+
