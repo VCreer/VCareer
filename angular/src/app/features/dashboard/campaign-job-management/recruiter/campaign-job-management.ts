@@ -48,44 +48,41 @@ export interface CampaignJob {
 })
 export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   private readonly componentId = 'campaign-job-management';
-  
+
   campaignId: string | null = null;
   campaignName: string = '';
-  
+
   // Job list
   jobs: CampaignJob[] = [];
   filteredJobs: CampaignJob[] = [];
   paginatedJobs: CampaignJob[] = [];
   searchQuery: string = '';
   selectedStatus: string = 'all';
-  
+
   // Loading state
   isLoading: boolean = false;
-  
+
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
-  
+
   // UI state
   showActionsMenu: string | null = null;
-  private scrollListener?: () => void;
-  private currentMenuJobId: string | null = null;
-  private currentMenuButton: HTMLElement | null = null;
   showDeleteModal = false;
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
   jobToAssignPackage: CampaignJob | null = null;
   jobToChangeStatus: CampaignJob | null = null;
   selectedStatusValue: string = '';
-  
+
   // Khóa để ngăn double request
   private isPostingJob = false;
   private isDeletingJob = false;
   private isTogglingPublic = false;
   private isChangingStatus = false;
   private isAssigningPackage = false;
-  
+
   // Status options
   statusOptions: StatusOption[] = [
     { value: 'all', label: 'Tất cả trạng thái' },
@@ -94,21 +91,21 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     { value: 'draft', label: 'Bản nháp' },
     { value: 'closed', label: 'Đã đóng' }
   ];
-  
+
   // Toast notification
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-  
+
   // Package options with details and sub-options
   packageOptions: ServicePackage[] = [
-    { 
-      value: '', 
+    {
+      value: '',
       label: 'Chưa gắn gói',
       features: []
     },
-    { 
-      value: 'label', 
+    {
+      value: 'label',
       label: 'Gắn nhãn',
       features: [
         'Tùy chỉnh nhãn cho tin tuyển dụng',
@@ -122,8 +119,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         { id: 'featured', name: 'Nhãn Featured', description: 'Tin nổi bật', price: '60,000 VNĐ' }
       ]
     },
-    { 
-      value: 'boost', 
+    {
+      value: 'boost',
       label: 'Gói Boost',
       features: [
         'Tăng lượt xem',
@@ -137,7 +134,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       ]
     }
   ];
-  
+
   selectedPackages: string[] = [];
   selectedPackageOptions: { [packageType: string]: string[] } = {};
   activePackage: string | null = null;
@@ -149,7 +146,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     private sidebarSync: SidebarSyncService,
     private recruitmentCampaignService: RecruitmentCompainService,
     private jobPostService: JobPostService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Setup sidebar sync
@@ -163,7 +160,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       this.campaignId = params['campaignId'] || null;
       this.campaignName = params['campaignName'] || 'Chiến dịch tuyển dụng';
-      
+
       // Load jobs when we have campaignId
       if (this.campaignId) {
         this.loadJobs();
@@ -173,7 +170,6 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
-    this.removeScrollListener();
   }
 
   loadJobs(): void {
@@ -183,7 +179,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    
+
     this.recruitmentCampaignService.getJobsByCompainIdByCompainId(this.campaignId).subscribe({
       next: (jobDetails: JobViewDetail[]) => {
         // Map JobViewDetail to CampaignJob format
@@ -221,10 +217,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   // Xác định trạng thái job dựa trên expiresAt
   private determineJobStatus(job: JobViewDetail): 'active' | 'inactive' | 'draft' | 'closed' {
     if (!job.expiresAt) return 'draft';
-    
+
     const expiresDate = new Date(job.expiresAt);
     const now = new Date();
-    
+
     if (expiresDate < now) return 'closed';
     return 'active';
   }
@@ -232,7 +228,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   // Lấy label của position type
   private getPositionLabel(positionType?: PositionType): string {
     if (!positionType) return 'N/A';
-    
+
     const positionLabels: { [key in PositionType]: string } = {
       [PositionType.Employee]: 'Nhân viên',
       [PositionType.TeamLead]: 'Trưởng nhóm',
@@ -247,7 +243,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       [PositionType.Expert]: 'Chuyên gia',
       [PositionType.Consultant]: 'Tư vấn'
     };
-    
+
     return positionLabels[positionType] || 'N/A';
   }
 
@@ -271,16 +267,16 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   filterJobs(): void {
     this.filteredJobs = this.jobs.filter(job => {
-      const matchesSearch = !this.searchQuery || 
+      const matchesSearch = !this.searchQuery ||
         job.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.position.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.location.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
+
       const matchesStatus = this.selectedStatus === 'all' || job.status === this.selectedStatus;
-      
+
       return matchesSearch && matchesStatus;
     });
-    
+
     this.updatePagination();
   }
 
@@ -289,7 +285,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (this.currentPage > this.totalPages && this.totalPages > 0) {
       this.currentPage = this.totalPages;
     }
-    
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.paginatedJobs = this.filteredJobs.slice(startIndex, endIndex);
@@ -304,132 +300,29 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
-    
+
     if (this.showActionsMenu === jobId) {
-      this.closeActionsMenu();
+      this.showActionsMenu = null;
     } else {
-      this.closeActionsMenu();
       this.showActionsMenu = jobId;
-      this.currentMenuJobId = jobId;
-      if (event) {
-        const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
-        this.currentMenuButton = button || null;
-      }
-      setTimeout(() => {
-        this.positionActionsMenu(jobId, event);
-        this.setupScrollListener(jobId);
-      }, 0);
     }
-  }
-
-  private closeActionsMenu(): void {
-    this.closeActionsMenu();
-    this.currentMenuJobId = null;
-    this.currentMenuButton = null;
-    this.removeScrollListener();
-  }
-
-  private setupScrollListener(jobId: string): void {
-    this.removeScrollListener();
-    
-    this.scrollListener = () => {
-      if (this.showActionsMenu === jobId && this.currentMenuJobId === jobId) {
-        this.updateMenuPosition(jobId);
-      }
-    };
-    
-    window.addEventListener('scroll', this.scrollListener, true);
-    window.addEventListener('resize', this.scrollListener);
-  }
-
-  private removeScrollListener(): void {
-    if (this.scrollListener) {
-      window.removeEventListener('scroll', this.scrollListener, true);
-      window.removeEventListener('resize', this.scrollListener);
-      this.scrollListener = undefined;
-    }
-  }
-
-  private getSidebarWidth(): number {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) return 0;
-    
-    const pageElement = document.querySelector('.campaign-job-management-page');
-    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
-      return 280;
-    }
-    return 72;
-  }
-
-  private updateMenuPosition(jobId: string): void {
-    const container = document.querySelector(`.actions-menu-container[data-job-id="${jobId}"]`);
-    if (!container) {
-      setTimeout(() => this.updateMenuPosition(jobId), 10);
-      return;
-    }
-    const menu = container.querySelector('.actions-menu') as HTMLElement;
-    const button = this.currentMenuButton;
-    
-    if (!menu || !button) {
-      // Retry after a short delay if menu not found
-      if (!menu) {
-        setTimeout(() => this.updateMenuPosition(jobId), 10);
-      }
-      return;
-    }
-    
-    const rect = button.getBoundingClientRect();
-    const menuWidth = menu.offsetWidth || 180;
-    const sidebarWidth = this.getSidebarWidth();
-    const viewportWidth = window.innerWidth;
-    const padding = 8;
-    
-    // Position menu below button, aligned to right
-    let left = rect.right - menuWidth;
-    
-    // Ensure menu doesn't go off left edge (consider sidebar)
-    const minLeft = sidebarWidth + padding;
-    if (left < minLeft) {
-      left = Math.max(minLeft, rect.left);
-    }
-    
-    // Ensure menu doesn't go off right edge
-    const maxLeft = viewportWidth - menuWidth - padding;
-    if (left > maxLeft) {
-      left = maxLeft;
-    }
-    
-    menu.style.top = `${rect.bottom + 4}px`;
-    menu.style.left = `${left}px`;
-  }
-
-  private positionActionsMenu(jobId: string, event?: Event): void {
-    // Use stored button reference if available, otherwise try to find from event
-    if (!this.currentMenuButton && event) {
-      const button = (event.target as HTMLElement).closest('.actions-btn') as HTMLElement;
-      this.currentMenuButton = button || null;
-    }
-    
-    if (!this.currentMenuButton) return;
-    
-    this.updateMenuPosition(jobId);
   }
 
   onEditJob(job: CampaignJob): void {
     this.router.navigate(['/recruiter/job-posting'], {
-      queryParams: { 
-        jobId: job.id, 
+      queryParams: {
+        jobId: job.id,
         campaignId: this.campaignId,
-        campaignName: this.campaignName 
+        campaignName: this.campaignName
       }
     });
-    this.closeActionsMenu();
+    this.showActionsMenu = null;
   }
 
   onViewCVs(job: CampaignJob): void {
     this.router.navigate(['/recruiter/campaign-job-management-view-cv'], {
-      queryParams: { 
-        jobId: job.id, 
+      queryParams: {
+        jobId: job.id,
         campaignId: this.campaignId,
         campaignName: this.campaignName,
         jobTitle: job.title
@@ -576,7 +469,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       event.stopPropagation();
     }
     const isSelected = this.isPackageSelected(packageValue);
-    
+
     if (isSelected) {
       if (!this.selectedPackageOptions[packageValue]) {
         this.selectedPackageOptions[packageValue] = [];
@@ -632,13 +525,13 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.jobToAssignPackage!.packageTypes = [...this.selectedPackages];
       this.jobToAssignPackage!.packageOptions = { ...this.selectedPackageOptions };
-      
+
       const packagesCount = this.selectedPackages.length;
       const totalOptions = Object.values(this.selectedPackageOptions).reduce((sum, opts) => sum + opts.length, 0);
-      const message = packagesCount > 0 
+      const message = packagesCount > 0
         ? `Đã gắn ${packagesCount} gói${totalOptions > 0 ? ` với ${totalOptions} tùy chọn` : ''} thành công`
         : 'Đã cập nhật gói tuyển dụng thành công';
-      
+
       this.showSuccessToast(message);
       this.isAssigningPackage = false;
       this.closePackageModal();
