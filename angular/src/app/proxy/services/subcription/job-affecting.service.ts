@@ -37,10 +37,19 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
-  getEffectingJobServicesByJobIdAndStatusAndPagingDto = (JobId: string, status: SubcriptionContance_ChildServiceStatus, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+  getEffectingJobServicesByJobIdAndStatus = (JobId: string, status: enum, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto[]>({
       method: 'GET',
       url: `/api/app/job-affecting/effecting-job-services/${JobId}`,
+      params: { status },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto = (JobId: string, status: enum, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, EffectingJobServiceViewDto[]>({
+      method: 'GET',
+      url: `/api/app/job-affecting/effecting-job-services-with-paging/${JobId}`,
       params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
     },
     { apiName: this.apiName,...config });

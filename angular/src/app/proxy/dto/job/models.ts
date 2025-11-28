@@ -1,30 +1,34 @@
 import type { EmploymentType } from '../../constants/job-constant/employment-type.enum';
 import type { PositionType } from '../../constants/job-constant/position-type.enum';
+import type { ExperienceLevel } from '../../constants/job-constant/experience-level.enum';
 import type { JobViewDto } from '../job-dto/models';
 
 export interface JobViewDetail {
   id?: string;
-  slug?: string;
+  companyImageUrl?: string;
+  companyId: number;
+  companyName?: string;
   title?: string;
+  slug?: string;
   description?: string;
   requirements?: string;
   benefits?: string;
-  companyLogo?: string;
-  companyId: number;
-  companyName?: string;
-  salaryText?: string;
-  experienceText?: string;
-  quantity: number;
-  categoryName?: string;
-  provinceName?: string;
-  districtName?: string;
-  workLocation?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryDeal: boolean;
   employmentType?: EmploymentType;
   positionType?: PositionType;
-  isUrgent: boolean;
+  experience?: ExperienceLevel;
+  workTime?: string;
+  provinceCode: number;
+  wardCode?: number;
+  workLocation?: string;
+  quantity: number;
+  viewCount: number;
   postedAt?: string;
   expiresAt?: string;
   applyCount: number;
+  jobCategoryId?: string;
 }
 
 export interface SavedJobDto {

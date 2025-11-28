@@ -4,6 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, PaginationComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
+import { JobViewDetail } from 'src/app/proxy/dto/job';
+import { RecruitmentCompainService } from 'src/app/proxy/services/job';
+import { EmploymentType, ExperienceLevel, PositionType } from 'src/app/proxy/constants/job-constant';
+import { JobPostService } from 'src/app/proxy/services/job';
+import { PostJobDto } from 'src/app/proxy/dto/job-dto';
 
 export interface PackageOption {
   id: string;
@@ -16,7 +21,7 @@ export interface ServicePackage {
   value: string;
   label: string;
   features: string[];
-  options?: PackageOption[]; // Các options/tùy chọn trong gói
+  options?: PackageOption[];
 }
 
 export interface CampaignJob {
@@ -26,8 +31,8 @@ export interface CampaignJob {
   location: string;
   status: 'active' | 'inactive' | 'draft' | 'closed';
   isPublic: boolean;
-  packageTypes: string[]; // Có thể chọn nhiều gói
-  packageOptions?: { [packageType: string]: string[] }; // Các options đã chọn trong từng gói
+  packageTypes: string[];
+  packageOptions?: { [packageType: string]: string[] };
   createdAt: string;
   updatedAt: string;
   appliedCount: number;
@@ -43,22 +48,25 @@ export interface CampaignJob {
 })
 export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   private readonly componentId = 'campaign-job-management';
-  
+
   campaignId: string | null = null;
   campaignName: string = '';
-  
+
   // Job list
   jobs: CampaignJob[] = [];
   filteredJobs: CampaignJob[] = [];
   paginatedJobs: CampaignJob[] = [];
   searchQuery: string = '';
   selectedStatus: string = 'all';
-  
+
+  // Loading state
+  isLoading: boolean = false;
+
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
-  
+
   // UI state
   showActionsMenu: string | null = null;
   showDeleteModal = false;
@@ -67,7 +75,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   jobToAssignPackage: CampaignJob | null = null;
   jobToChangeStatus: CampaignJob | null = null;
   selectedStatusValue: string = '';
-  
+
+  // Khóa để ngăn double request
+  private isPostingJob = false;
+  private isDeletingJob = false;
+  private isTogglingPublic = false;
+  private isChangingStatus = false;
+  private isAssigningPackage = false;
+
   // Status options
   statusOptions: StatusOption[] = [
     { value: 'all', label: 'Tất cả trạng thái' },
@@ -76,21 +91,21 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     { value: 'draft', label: 'Bản nháp' },
     { value: 'closed', label: 'Đã đóng' }
   ];
-  
+
   // Toast notification
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-  
+
   // Package options with details and sub-options
   packageOptions: ServicePackage[] = [
-    { 
-      value: '', 
+    {
+      value: '',
       label: 'Chưa gắn gói',
       features: []
     },
-    { 
-      value: 'label', 
+    {
+      value: 'label',
       label: 'Gắn nhãn',
       features: [
         'Tùy chỉnh nhãn cho tin tuyển dụng',
@@ -104,8 +119,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         { id: 'featured', name: 'Nhãn Featured', description: 'Tin nổi bật', price: '60,000 VNĐ' }
       ]
     },
-    { 
-      value: 'boost', 
+    {
+      value: 'boost',
       label: 'Gói Boost',
       features: [
         'Tăng lượt xem',
@@ -119,17 +134,19 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       ]
     }
   ];
-  
-  selectedPackages: string[] = []; // Có thể chọn nhiều gói
-  selectedPackageOptions: { [packageType: string]: string[] } = {}; // Các options đã chọn trong từng gói
-  activePackage: string | null = null; // Package đang được chọn để hiển thị options
+
+  selectedPackages: string[] = [];
+  selectedPackageOptions: { [packageType: string]: string[] } = {};
+  activePackage: string | null = null;
   showStatusDropdownModal = false;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private sidebarSync: SidebarSyncService
-  ) {}
+    private sidebarSync: SidebarSyncService,
+    private recruitmentCampaignService: RecruitmentCompainService,
+    private jobPostService: JobPostService
+  ) { }
 
   ngOnInit(): void {
     // Setup sidebar sync
@@ -143,10 +160,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       this.campaignId = params['campaignId'] || null;
       this.campaignName = params['campaignName'] || 'Chiến dịch tuyển dụng';
-    });
 
-    // Load mock data
-    this.loadJobs();
+      // Load jobs when we have campaignId
+      if (this.campaignId) {
+        this.loadJobs();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -154,101 +173,110 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   loadJobs(): void {
-    // Mock data - replace with actual API call
-    this.jobs = [
-      {
-        id: 'JOB-001',
-        title: 'FullStack Developer (NodeJS, ReactJS, Vue JS)',
-        position: 'Fullstack Developer',
-        location: 'Hà Nội',
-        status: 'active',
-        isPublic: true,
-        packageTypes: ['label', 'boost'],
-        packageOptions: {
-          'label': ['hot', 'urgent'],
-          'boost': ['boost-7days']
-        },
-        createdAt: '2025-01-15',
-        updatedAt: '2025-01-20',
-        appliedCount: 45,
-        viewCount: 0
+    if (!this.campaignId) {
+      this.showErrorToast('Không tìm thấy ID chiến dịch');
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.recruitmentCampaignService.getJobsByCompainIdByCompainId(this.campaignId).subscribe({
+      next: (jobDetails: JobViewDetail[]) => {
+        // Map JobViewDetail to CampaignJob format
+        this.jobs = jobDetails.map(job => this.mapJobViewDetailToCampaignJob(job));
+        this.filteredJobs = [...this.jobs];
+        this.updatePagination();
+        this.isLoading = false;
       },
-      {
-        id: 'JOB-002',
-        title: 'Senior Frontend Developer',
-        position: 'Frontend Developer',
-        location: 'TP.HCM',
-        status: 'active',
-        isPublic: false,
-        packageTypes: ['label'],
-        packageOptions: {
-          'label': ['hot', 'urgent', 'featured']
-        },
-        createdAt: '2025-01-18',
-        updatedAt: '2025-01-22',
-        appliedCount: 78,
-        viewCount: 0
-      },
-      {
-        id: 'JOB-003',
-        title: 'Backend Developer (Python, Django)',
-        position: 'Backend Developer',
-        location: 'Hà Nội',
-        status: 'inactive',
-        isPublic: true,
-        packageTypes: [],
-        packageOptions: {},
-        createdAt: '2025-01-10',
-        updatedAt: '2025-01-15',
-        appliedCount: 32,
-        viewCount: 0
-      },
-      {
-        id: 'JOB-004',
-        title: 'UI/UX Designer',
-        position: 'Designer',
-        location: 'Đà Nẵng',
-        status: 'draft',
-        isPublic: false,
-        packageTypes: ['boost'],
-        packageOptions: {
-          'boost': ['boost-7days']
-        },
-        createdAt: '2025-01-25',
-        updatedAt: '2025-01-25',
-        appliedCount: 0,
-        viewCount: 0
+      error: (err) => {
+        console.error('Lỗi khi tải danh sách công việc:', err);
+        this.showErrorToast('Không thể tải danh sách công việc');
+        this.isLoading = false;
       }
-    ];
-    
-    this.filteredJobs = [...this.jobs];
-    this.updatePagination();
+    });
+  }
+
+  // Map JobViewDetail từ API sang CampaignJob format cho UI
+  private mapJobViewDetailToCampaignJob(job: JobViewDetail): CampaignJob {
+    return {
+      id: job.id || '',
+      title: job.title || '',
+      position: this.getPositionLabel(job.positionType),
+      location: this.getLocationText(job.provinceCode, job.wardCode),
+      status: this.determineJobStatus(job),
+      isPublic: true, // Default value, có thể cập nhật nếu API có trường này
+      packageTypes: [], // Default empty, có thể cập nhật nếu API có trường này
+      packageOptions: {},
+      createdAt: job.postedAt || new Date().toISOString(),
+      updatedAt: job.postedAt || new Date().toISOString(),
+      appliedCount: job.applyCount || 0,
+      viewCount: job.viewCount || 0
+    };
+  }
+
+  // Xác định trạng thái job dựa trên expiresAt
+  private determineJobStatus(job: JobViewDetail): 'active' | 'inactive' | 'draft' | 'closed' {
+    if (!job.expiresAt) return 'draft';
+
+    const expiresDate = new Date(job.expiresAt);
+    const now = new Date();
+
+    if (expiresDate < now) return 'closed';
+    return 'active';
+  }
+
+  // Lấy label của position type
+  private getPositionLabel(positionType?: PositionType): string {
+    if (!positionType) return 'N/A';
+
+    const positionLabels: { [key in PositionType]: string } = {
+      [PositionType.Employee]: 'Nhân viên',
+      [PositionType.TeamLead]: 'Trưởng nhóm',
+      [PositionType.Manager]: 'Quản lý',
+      [PositionType.Supervisor]: 'Giám sát',
+      [PositionType.BranchManager]: 'Trưởng chi nhánh',
+      [PositionType.DeputyDirector]: 'Phó giám đốc',
+      [PositionType.Director]: 'Giám đốc',
+      [PositionType.Intern]: 'Thực tập sinh',
+      [PositionType.Specialist]: 'Chuyên viên',
+      [PositionType.SeniorSpecialist]: 'Chuyên viên cao cấp',
+      [PositionType.Expert]: 'Chuyên gia',
+      [PositionType.Consultant]: 'Tư vấn'
+    };
+
+    return positionLabels[positionType] || 'N/A';
+  }
+
+  // Lấy text location (có thể cải thiện bằng cách gọi GeoService)
+  private getLocationText(provinceCode?: number, wardCode?: number): string {
+    // TODO: Có thể gọi GeoService để lấy tên thực tế
+    return provinceCode ? `Mã tỉnh: ${provinceCode}` : 'N/A';
   }
 
   onSearchChange(query: string): void {
     this.searchQuery = query;
-    this.currentPage = 1; // Reset to first page when searching
+    this.currentPage = 1;
     this.filterJobs();
   }
 
   onStatusChange(status: string): void {
     this.selectedStatus = status;
-    this.currentPage = 1; // Reset to first page when filtering
+    this.currentPage = 1;
     this.filterJobs();
   }
 
   filterJobs(): void {
     this.filteredJobs = this.jobs.filter(job => {
-      const matchesSearch = !this.searchQuery || 
+      const matchesSearch = !this.searchQuery ||
         job.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.position.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.location.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
+
       const matchesStatus = this.selectedStatus === 'all' || job.status === this.selectedStatus;
-      
+
       return matchesSearch && matchesStatus;
     });
-    
+
     this.updatePagination();
   }
 
@@ -257,7 +285,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (this.currentPage > this.totalPages && this.totalPages > 0) {
       this.currentPage = this.totalPages;
     }
-    
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.paginatedJobs = this.filteredJobs.slice(startIndex, endIndex);
@@ -272,7 +300,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
-    
+
     if (this.showActionsMenu === jobId) {
       this.showActionsMenu = null;
     } else {
@@ -281,24 +309,55 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   onEditJob(job: CampaignJob): void {
-    // Navigate to edit job page
     this.router.navigate(['/recruiter/job-posting'], {
-      queryParams: { jobId: job.id, campaignId: this.campaignId }
+      queryParams: {
+        jobId: job.id,
+        campaignId: this.campaignId,
+        campaignName: this.campaignName
+      }
     });
     this.showActionsMenu = null;
   }
 
   onViewCVs(job: CampaignJob): void {
-    // Navigate to view CVs page
     this.router.navigate(['/recruiter/campaign-job-management-view-cv'], {
-      queryParams: { 
-        jobId: job.id, 
+      queryParams: {
+        jobId: job.id,
         campaignId: this.campaignId,
         campaignName: this.campaignName,
         jobTitle: job.title
       }
     });
     this.showActionsMenu = null;
+  }
+
+  // Đăng bài job
+  onPostJob(job: CampaignJob): void {
+    // Ngăn double request
+    if (this.isPostingJob) return;
+
+    this.isPostingJob = true;
+    this.showActionsMenu = null;
+
+    const dto: PostJobDto = {
+      jobId: job.id,
+      childServiceIds: [] // Tạm thời để rỗng theo yêu cầu
+    };
+
+    this.jobPostService.postJob(dto).subscribe({
+      next: () => {
+        this.showSuccessToast('Đăng bài thành công!');
+        // Reload lại danh sách jobs
+        this.loadJobs();
+      },
+      error: (err) => {
+        console.error('Lỗi khi đăng bài:', err);
+        this.showErrorToast('Đăng bài thất bại');
+      },
+      complete: () => {
+        this.isPostingJob = false;
+      }
+    });
   }
 
   onDeleteJob(job: CampaignJob): void {
@@ -308,15 +367,29 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(): void {
-    if (this.jobToDelete) {
-      const index = this.jobs.findIndex(j => j.id === this.jobToDelete!.id);
-      if (index > -1) {
-        this.jobs.splice(index, 1);
-        this.filterJobs();
+    // Ngăn double request
+    if (this.isDeletingJob || !this.jobToDelete) return;
+
+    this.isDeletingJob = true;
+
+    this.jobPostService.deleteJobPostById(this.jobToDelete.id).subscribe({
+      next: () => {
+        const index = this.jobs.findIndex(j => j.id === this.jobToDelete!.id);
+        if (index > -1) {
+          this.jobs.splice(index, 1);
+          this.filterJobs();
+        }
         this.showSuccessToast('Đã xóa công việc thành công');
+      },
+      error: (err) => {
+        console.error('Lỗi khi xóa công việc:', err);
+        this.showErrorToast('Xóa công việc thất bại');
+      },
+      complete: () => {
+        this.isDeletingJob = false;
+        this.closeDeleteModal();
       }
-    }
-    this.closeDeleteModal();
+    });
   }
 
   closeDeleteModal(): void {
@@ -325,10 +398,19 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   onTogglePublicAction(job: CampaignJob): void {
-    job.isPublic = !job.isPublic;
-    // TODO: Call API to update job
-    this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
-    this.showActionsMenu = null;
+    // Ngăn double request
+    if (this.isTogglingPublic) return;
+
+    this.isTogglingPublic = true;
+    const newPublicState = !job.isPublic;
+
+    // TODO: Call API to update job public/private status
+    setTimeout(() => {
+      job.isPublic = newPublicState;
+      this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
+      this.showActionsMenu = null;
+      this.isTogglingPublic = false;
+    }, 500);
   }
 
   onChangeStatusAction(job: CampaignJob): void {
@@ -345,12 +427,18 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   confirmChangeStatus(): void {
-    if (this.jobToChangeStatus && this.selectedStatusValue) {
-      this.jobToChangeStatus.status = this.selectedStatusValue as CampaignJob['status'];
-      // TODO: Call API to update job status
+    // Ngăn double request
+    if (this.isChangingStatus || !this.jobToChangeStatus || !this.selectedStatusValue) return;
+
+    this.isChangingStatus = true;
+
+    // TODO: Call API to update job status
+    setTimeout(() => {
+      this.jobToChangeStatus!.status = this.selectedStatusValue as CampaignJob['status'];
       this.showSuccessToast('Đã cập nhật trạng thái công việc');
-    }
-    this.closeStatusModal();
+      this.isChangingStatus = false;
+      this.closeStatusModal();
+    }, 500);
   }
 
   onSelectStatus(status: string): void {
@@ -364,40 +452,30 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     }
     const index = this.selectedPackages.indexOf(packageValue);
     if (index > -1) {
-      // Bỏ chọn gói
       this.selectedPackages.splice(index, 1);
-      // Xóa options của gói đó
       delete this.selectedPackageOptions[packageValue];
-      // Nếu đang active package này thì reset activePackage
       if (this.activePackage === packageValue) {
         this.activePackage = null;
       }
     } else {
-      // Chọn gói mới
       this.selectedPackages.push(packageValue);
-      // Khởi tạo options cho gói mới là mảng rỗng (user phải chọn lại)
       this.selectedPackageOptions[packageValue] = [];
-      // Set active package để hiển thị options khi chọn gói mới
       this.activePackage = packageValue;
     }
   }
 
-  // Method để xử lý click vào package content (chỉ để xem options)
   onPackageContentClick(packageValue: string, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
     const isSelected = this.isPackageSelected(packageValue);
-    
-    // Chỉ xem options nếu package đã được chọn
+
     if (isSelected) {
-      // Đảm bảo selectedPackageOptions cho package này được khởi tạo là mảng rỗng nếu chưa có
       if (!this.selectedPackageOptions[packageValue]) {
         this.selectedPackageOptions[packageValue] = [];
       }
       this.activePackage = packageValue;
     }
-    // Nếu chưa selected, không làm gì cả (chỉ có thể xem options khi đã chọn package)
   }
 
   isPackageSelected(packageValue: string): boolean {
@@ -427,32 +505,37 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   onAssignPackage(job: CampaignJob): void {
     this.jobToAssignPackage = job;
-    // Chỉ khôi phục packages đã chọn, KHÔNG khôi phục options (user phải chọn lại)
     this.selectedPackages = job.packageTypes ? [...job.packageTypes] : [];
-    // Reset options và khởi tạo mảng rỗng cho mỗi package đã chọn
     this.selectedPackageOptions = {};
     this.selectedPackages.forEach(pkgValue => {
       this.selectedPackageOptions[pkgValue] = [];
     });
-    // Set active package là package đầu tiên nếu có
     this.activePackage = this.selectedPackages.length > 0 ? this.selectedPackages[0] : null;
     this.showPackageModal = true;
     this.showActionsMenu = null;
   }
 
   confirmAssignPackage(): void {
-    if (this.jobToAssignPackage) {
-      this.jobToAssignPackage.packageTypes = [...this.selectedPackages];
-      this.jobToAssignPackage.packageOptions = { ...this.selectedPackageOptions };
-      // TODO: Call API to assign package
+    // Ngăn double request
+    if (this.isAssigningPackage || !this.jobToAssignPackage) return;
+
+    this.isAssigningPackage = true;
+
+    // TODO: Call API to assign package
+    setTimeout(() => {
+      this.jobToAssignPackage!.packageTypes = [...this.selectedPackages];
+      this.jobToAssignPackage!.packageOptions = { ...this.selectedPackageOptions };
+
       const packagesCount = this.selectedPackages.length;
       const totalOptions = Object.values(this.selectedPackageOptions).reduce((sum, opts) => sum + opts.length, 0);
-      const message = packagesCount > 0 
+      const message = packagesCount > 0
         ? `Đã gắn ${packagesCount} gói${totalOptions > 0 ? ` với ${totalOptions} tùy chọn` : ''} thành công`
         : 'Đã cập nhật gói tuyển dụng thành công';
+
       this.showSuccessToast(message);
-    }
-    this.closePackageModal();
+      this.isAssigningPackage = false;
+      this.closePackageModal();
+    }, 500);
   }
 
   closePackageModal(): void {
@@ -512,6 +595,15 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   showSuccessToast(message: string): void {
     this.toastMessage = message;
     this.toastType = 'success';
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
+  showErrorToast(message: string): void {
+    this.toastMessage = message;
+    this.toastType = 'error';
     this.showToast = true;
     setTimeout(() => {
       this.showToast = false;

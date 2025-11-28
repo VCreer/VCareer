@@ -13,6 +13,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Server.AspNetCore;
@@ -22,6 +23,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -60,6 +62,7 @@ using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
+using VNPAY;
 
 
 namespace VCareer;
@@ -120,13 +123,156 @@ public class VCareerHttpApiHostModule : AbpModule
         ConfigureJwtOptions(configuration);
         ConfigureBlobStorings(context); //đăng kí cho lưu trữ file blob
         ConfigureGoogleOptions(configuration);
+        ConfigureFilePolicyConfigs(configuration); // Cấu hình FilePolicyConfigs từ appsettings.json
         ConfigureDistributedCache(context, configuration);
 
         //cái này để ghi đè cái trạng thái set cookie strict => chỉ gửi cookie nếu chung domain
         //trong khi api hiện tịa của dự án và angular là 2 port khác nhau
         ConfigureCookiePolicy(context);
+        
+        // 🔧 ĐĂNG KÝ VNPAY CLIENT (from VNPAY.NET package)
+        // Register in HttpApi.Host module where we have access to IConfiguration
+        ConfigureVnpay(context, configuration);
 
       
+    }
+    
+    private void ConfigureVnpay(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        // Register IHttpContextAccessor if not already registered
+        if (!context.Services.Any(s => s.ServiceType == typeof(IHttpContextAccessor)))
+        {
+            context.Services.AddHttpContextAccessor();
+        }
+        
+        // Find VnpayClient and get options type from constructor
+        var vnpayAssembly = typeof(IVnpayClient).Assembly;
+        var vnpayClientType = vnpayAssembly.GetTypes()
+            .FirstOrDefault(t => t.Name == "VnpayClient" && typeof(IVnpayClient).IsAssignableFrom(t));
+        
+        if (vnpayClientType == null)
+        {
+            throw new InvalidOperationException("Cannot find VnpayClient class in VNPAY.NET assembly");
+        }
+        
+        // Get constructor that takes IOptions and IHttpContextAccessor
+        var constructor = vnpayClientType.GetConstructors()
+            .FirstOrDefault(c => c.GetParameters().Length == 2 &&
+                                 c.GetParameters().Any(p => p.ParameterType.Name.Contains("Options")) &&
+                                 c.GetParameters().Any(p => p.ParameterType == typeof(IHttpContextAccessor)));
+        
+        if (constructor == null)
+        {
+            throw new InvalidOperationException("Cannot find suitable constructor for VnpayClient");
+        }
+        
+        // Get the IOptions parameter type
+        var optionsParam = constructor.GetParameters()
+            .FirstOrDefault(p => p.ParameterType.Name.Contains("Options"));
+        
+        if (optionsParam == null)
+        {
+            throw new InvalidOperationException("Cannot find IOptions parameter in VnpayClient constructor");
+        }
+        
+        // Get the generic type argument from IOptions<T>
+        var optionsGenericType = optionsParam.ParameterType.GetGenericArguments()[0];
+        
+        // Configure options from configuration BEFORE registering the service
+        // Use reflection to call Configure<T>(IServiceCollection, IConfiguration)
+        try
+        {
+            var configureMethod = typeof(OptionsServiceCollectionExtensions)
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Where(m => m.Name == "Configure" && m.IsGenericMethod)
+                .Select(m => new { Method = m, Params = m.GetParameters() })
+                .FirstOrDefault(m => m.Params.Length == 2 &&
+                                     m.Params[0].ParameterType == typeof(IServiceCollection) &&
+                                     m.Params[1].ParameterType == typeof(IConfiguration));
+            
+            if (configureMethod != null)
+            {
+                var genericMethod = configureMethod.Method.MakeGenericMethod(optionsGenericType);
+                genericMethod.Invoke(null, new object[] { context.Services, configuration.GetSection("VNPay") });
+            }
+            else
+            {
+                // Fallback: Create options instance and bind manually
+                var optionsInstance = Activator.CreateInstance(optionsGenericType);
+                var configSection = configuration.GetSection("VNPay");
+                configSection.Bind(optionsInstance);
+                
+                // Map ReturnUrl to CallbackUrl if needed (VnpayConfiguration requires CallbackUrl)
+                var returnUrl = configuration["VNPay:ReturnUrl"];
+                var callbackUrl = configuration["VNPay:CallbackUrl"] ?? returnUrl;
+                
+                // Set CallbackUrl property (required by VnpayConfiguration)
+                var callbackUrlProp = optionsGenericType.GetProperty("CallbackUrl");
+                if (callbackUrlProp != null && callbackUrlProp.CanWrite && !string.IsNullOrEmpty(callbackUrl))
+                {
+                    callbackUrlProp.SetValue(optionsInstance, callbackUrl);
+                }
+                
+                // Also try to set ReturnUrl property if it exists
+                var returnUrlProp = optionsGenericType.GetProperty("ReturnUrl");
+                if (returnUrlProp != null && returnUrlProp.CanWrite && !string.IsNullOrEmpty(returnUrl))
+                {
+                    returnUrlProp.SetValue(optionsInstance, returnUrl);
+                }
+                
+                // Ensure TmnCode is set (might be required)
+                var tmnCode = configuration["VNPay:TmnCode"];
+                var tmnCodeProp = optionsGenericType.GetProperty("TmnCode");
+                if (tmnCodeProp != null && tmnCodeProp.CanWrite && !string.IsNullOrEmpty(tmnCode))
+                {
+                    tmnCodeProp.SetValue(optionsInstance, tmnCode);
+                }
+                
+                // Ensure HashSecret is set (might be required)
+                var hashSecret = configuration["VNPay:HashSecret"];
+                var hashSecretProp = optionsGenericType.GetProperty("HashSecret");
+                if (hashSecretProp != null && hashSecretProp.CanWrite && !string.IsNullOrEmpty(hashSecret))
+                {
+                    hashSecretProp.SetValue(optionsInstance, hashSecret);
+                }
+                
+                // Register as IOptions<T> using OptionsWrapper
+                var optionsWrapperType = typeof(Microsoft.Extensions.Options.OptionsWrapper<>).MakeGenericType(optionsGenericType);
+                var optionsWrapper = Activator.CreateInstance(optionsWrapperType, optionsInstance);
+                var optionsInterfaceType = typeof(IOptions<>).MakeGenericType(optionsGenericType);
+                context.Services.AddSingleton(optionsInterfaceType, optionsWrapper);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Error configuring VNPay options: {ex.Message}. " +
+                $"Options type: {optionsGenericType.Name}", ex);
+        }
+        
+        // Register IVnpayClient with factory
+        context.Services.AddScoped<IVnpayClient>(sp =>
+        {
+            try
+            {
+                // Get IOptions<T> instance
+                var optionsGenericServiceType = typeof(IOptions<>).MakeGenericType(optionsGenericType);
+                var options = sp.GetRequiredService(optionsGenericServiceType);
+                var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                
+                // Create VnpayClient instance
+                var instance = Activator.CreateInstance(vnpayClientType, options, httpContextAccessor);
+                return (IVnpayClient)instance;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Error creating IVnpayClient instance: {ex.Message}. " +
+                    $"Options type: {optionsGenericType?.Name}, " +
+                    $"VnpayClient type: {vnpayClientType?.Name}",
+                    ex);
+            }
+        });
     }
 
     //ánh xạ appsetting.json vào JwtOptions trong contract để cho genẻate token trong application  sử dụng

@@ -14,7 +14,7 @@ namespace VCareer.Dto.JobDto
         public string? Description { get; set; }
         public string? Requirements { get; set; }
         public string? Benefits { get; set; }
-
+        public Guid RecruitmentCampaignId { get; set; }
         public decimal? SalaryMin { get; set; }
         public decimal? SalaryMax { get; set; }
         public bool SalaryDeal { get; set; } = false; // Lương thỏa thuận
@@ -26,8 +26,17 @@ namespace VCareer.Dto.JobDto
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
         public int Quantity { get; set; }
+        public List<int>? TagIds { get; set; }
 
-        public DateTime? ExpiresAt { get; set; }
+
+        public DateTime ExpiresAt { get; set; }
         public Guid JobCategoryId { get; set; }
+    }
+
+    public class PostJobDto
+    {
+        public Guid JobId { get; set; }
+        public List<Guid>? ChildServiceIds { get; set; } 
+
     }
 }

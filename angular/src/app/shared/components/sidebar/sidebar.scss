@@ -312,6 +312,68 @@
           }
         }
       }
+
+      &.sidebar-nav-item-dropdown {
+        position: relative;
+
+        .sidebar-submenu {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          max-height: 0;
+          overflow: hidden;
+          opacity: 0;
+          transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+          padding-left: 0;
+
+          &.show {
+            max-height: 200px;
+            opacity: 1;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+          }
+
+          .sidebar-submenu-item {
+            margin: 0;
+
+            .sidebar-submenu-link {
+              display: flex;
+              align-items: center;
+              padding: 0.625rem 1.5rem 0.625rem 3.5rem;
+              color: #6B7280;
+              text-decoration: none;
+              font-size: 0.875rem;
+              font-weight: 500;
+              transition: all 0.2s ease;
+              cursor: pointer;
+              border-radius: 6px;
+              margin: 0.125rem 0.5rem;
+
+              &:hover {
+                background-color: #f3f4f6;
+                color: #374151;
+              }
+
+              &.active {
+                background-color: #f0f9ff;
+                color: #0F83BA;
+              }
+
+              .sidebar-submenu-text {
+                white-space: nowrap;
+              }
+            }
+          }
+        }
+
+        .sidebar-chevron {
+          transition: transform 0.3s ease;
+
+          &.rotated {
+            transform: rotate(180deg);
+          }
+        }
+      }
     }
   }
 
@@ -355,12 +417,31 @@
             width: auto;
           }
         }
+
+        &.sidebar-nav-item-dropdown {
+          .sidebar-submenu {
+            display: block;
+          }
+        }
       }
     }
 
     .sidebar-nav-item.sidebar-nav-divider {
       margin: 0.5rem 0;
       opacity: 1;
+    }
+  }
+
+  /* Collapsed state - hide submenu */
+  &:not(:hover):not(.show) {
+    .sidebar-nav {
+      .sidebar-nav-item {
+        &.sidebar-nav-item-dropdown {
+          .sidebar-submenu {
+            display: none;
+          }
+        }
+      }
     }
   }
 }

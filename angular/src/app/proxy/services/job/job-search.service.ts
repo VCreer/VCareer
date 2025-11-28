@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobSearchInputDto, JobViewWithPriorityDto, PagedResultDto } from '../../dto/job-dto/models';
+import type { JobSearchInputDto, JobViewDto, PagedResultDto } from '../../dto/job-dto/models';
 import type { JobViewDetail, SavedJobDto, SavedJobStatusDto } from '../../dto/job/models';
 
 @Injectable({
@@ -28,7 +28,7 @@ export class JobSearchService {
   
 
   getRelatedJobs = (jobId: string, maxCount: number = 10, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, JobViewWithPriorityDto[]>({
+    this.restService.request<any, JobViewDto[]>({
       method: 'GET',
       url: `/api/app/job-search/related-jobs/${jobId}`,
       params: { maxCount },
@@ -86,7 +86,7 @@ export class JobSearchService {
   
 
   searchJobs = (input: JobSearchInputDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, PagedResultDto<JobViewWithPriorityDto>>({
+    this.restService.request<any, JobViewDto[]>({
       method: 'POST',
       url: '/api/app/job-search/search-jobs',
       body: input,

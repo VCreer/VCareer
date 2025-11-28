@@ -20,6 +20,7 @@ namespace VCareer.Constants.JobConstant
             JobPost,
             Company,
             Cv
+
         }
 
 

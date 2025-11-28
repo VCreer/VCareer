@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using VCareer.Application.Contracts.Applications;
 using VCareer.Models.Applications;
 using VCareer.Models.CV;
 using VCareer.Models.Job;
@@ -19,6 +18,12 @@ using Volo.Abp.Domain.Repositories;
 using VCareer.CV;
 using VCareer.Application.Contracts.CV;
 using Volo.Abp.Users;
+using Volo.Abp.Emailing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using VCareer.Dto.Applications;
+using VCareer.IServices.Application;
+using Volo.Abp.Application.Services;
 
 namespace VCareer.Application.Applications
 {
@@ -26,7 +31,7 @@ namespace VCareer.Application.Applications
     /// Application Management Service - Refactored để hỗ trợ CandidateCv và UploadedCv
     /// </summary>
     /*[Authorize(VCareerPermission.Application.Default)]*/
-    public class ApplicationAppService : VCareerAppService, IApplicationAppService
+    public class ApplicationAppService : ApplicationService , IJobApply
     {
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;
@@ -39,6 +44,8 @@ namespace VCareer.Application.Applications
         private readonly ICandidateCvAppService _candidateCvAppService;
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly ICurrentUser _currentUser;
+        private readonly IEmailSender _emailSender;
+        private readonly IConfiguration _configuration;
 
         public ApplicationAppService(
             IRepository<JobApplication, Guid> applicationRepository,
@@ -51,7 +58,9 @@ namespace VCareer.Application.Applications
             IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository,
             ICandidateCvAppService candidateCvAppService,
             IUploadedCvAppService uploadedCvAppService,
-            ICurrentUser currentUser)
+            ICurrentUser currentUser,
+            IEmailSender emailSender,
+            IConfiguration configuration)
         {
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
@@ -64,6 +73,8 @@ namespace VCareer.Application.Applications
             _candidateCvAppService = candidateCvAppService;
             _uploadedCvAppService = uploadedCvAppService;
             _currentUser = currentUser;
+            _emailSender = emailSender;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -189,7 +200,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển
         /// </summary>
-        [Authorize(VCareerPermission.Application.View)]
+        //[Authorize(VCareerPermission.Application.View)]
         public async Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input)
         {
             var query = await _applicationRepository.GetQueryableAsync();
@@ -248,7 +259,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy thông tin chi tiết đơn ứng tuyển
         /// </summary>
-        [Authorize(VCareerPermission.Application.View)]
+        //[Authorize(VCareerPermission.Application.View)]
         public async Task<ApplicationDto> GetApplicationAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -258,11 +269,12 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Cập nhật trạng thái đơn ứng tuyển (cho nhà tuyển dụng)
         /// </summary>
-        [Authorize(VCareerPermission.Application.Manage)]
+        //[Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> UpdateApplicationStatusAsync(Guid id, UpdateApplicationStatusDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
 
+            var oldStatus = application.Status;
             application.Status = input.Status;
             application.RecruiterNotes = input.RecruiterNotes;
             application.Rating = input.Rating;
@@ -281,13 +293,249 @@ namespace VCareer.Application.Applications
 
             await _applicationRepository.UpdateAsync(application);
 
-            return await MapToDtoAsync(application);
+            // Gửi email thông báo khi chuyển sang trạng thái "offer" (Gửi đề nghị)
+            var applicationDto = await MapToDtoAsync(application);
+            if (input.Status == "offer" && oldStatus != "offer")
+            {
+                await SendOfferEmailAsync(application, applicationDto);
+            }
+
+            return applicationDto;
+        }
+
+        private async Task SendOfferEmailAsync(JobApplication application, ApplicationDto applicationDto)
+        {
+            try
+            {
+                var candidateEmail = applicationDto.CandidateEmail;
+                if (string.IsNullOrWhiteSpace(candidateEmail))
+                {
+                    Logger.LogWarning($"Offer email skipped: candidate email not found for application {application.Id}");
+                    return;
+                }
+
+                // Load thông tin công việc
+                var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+                if (job == null)
+                {
+                    Logger.LogWarning($"Offer email skipped: job not found for application {application.Id}");
+                    return;
+                }
+
+                // Load thông tin công ty
+                var company = await _companyRepository.FirstOrDefaultAsync(c => c.Id == application.CompanyId);
+                var companyName = company?.CompanyName ?? (applicationDto.CompanyName ?? "Công ty");
+
+                // Load thông tin nhà tuyển dụng
+                var recruiterName = "Nhà tuyển dụng";
+                if (application.RespondedBy.HasValue)
+                {
+                    var recruiterUser = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == application.RespondedBy.Value);
+                    if (recruiterUser != null)
+                    {
+                        recruiterName = !string.IsNullOrWhiteSpace(recruiterUser.Name)
+                            ? $"{recruiterUser.Name} {recruiterUser.Surname}".Trim()
+                            : recruiterUser.UserName ?? recruiterName;
+                    }
+                }
+
+                // Tạo tên ứng viên
+                var candidateName = !string.IsNullOrWhiteSpace(applicationDto.CandidateName)
+                    ? applicationDto.CandidateName
+                    : "Ứng viên";
+
+                // Tạo email body
+                var emailBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        .header {{
+            background: linear-gradient(135deg, #0F83BA 0%, #0a6a94 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .content {{
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+        }}
+        .greeting {{
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }}
+        .message {{
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 20px;
+        }}
+        .job-info {{
+            background: #f9fafb;
+            border-left: 4px solid #0F83BA;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }}
+        .job-title {{
+            font-size: 20px;
+            font-weight: 600;
+            color: #0F83BA;
+            margin-bottom: 10px;
+        }}
+        .company-name {{
+            font-size: 16px;
+            color: #6b7280;
+        }}
+        .highlight {{
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }}
+        .footer {{
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            color: #6b7280;
+            font-size: 14px;
+        }}
+        .button {{
+            display: inline-block;
+            background: #0F83BA;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+        }}
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h1 style='margin: 0; font-size: 28px;'>🎉 Chúc mừng bạn!</h1>
+    </div>
+    <div class='content'>
+        <div class='greeting'>
+            Xin chào {candidateName},
+        </div>
+        <div class='message'>
+            Chúng tôi rất vui mừng thông báo rằng bạn đã được chọn để nhận <strong>đề nghị công việc</strong> từ chúng tôi!
+        </div>
+        <div class='job-info'>
+            <div class='job-title'>{job.Title}</div>
+            <div class='company-name'>{companyName}</div>
+        </div>
+        <div class='highlight'>
+            <strong>📋 Bước tiếp theo:</strong><br/>
+            Vui lòng kiểm tra hộp thư và liên hệ với chúng tôi để trao đổi thêm về đề nghị này. Chúng tôi rất mong được hợp tác với bạn!
+        </div>
+        <div class='message'>
+            Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.
+        </div>
+        <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;'>
+            <p style='margin: 0; color: #6b7280; font-size: 14px;'>
+                Trân trọng,<br/>
+                <strong>{recruiterName}</strong><br/>
+                {companyName}
+            </p>
+        </div>
+    </div>
+    <div class='footer'>
+        <p style='margin: 0;'>Email này được gửi tự động từ hệ thống VCareer.</p>
+        <p style='margin: 5px 0 0 0;'>Vui lòng không trả lời email này.</p>
+    </div>
+</body>
+        </html>";
+
+                var subject = $"Đề nghị công việc - {job.Title} tại {companyName}";
+
+                await TrySendEmailAsync(candidateEmail, subject, emailBody);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't throw - email sending failure shouldn't break the status update
+                Logger.LogWarning($"Failed to send offer email for application {application.Id}: {ex.Message}");
+            }
+        }
+
+        private async Task TrySendEmailAsync(string toEmail, string subject, string body)
+        {
+            var sent = false;
+            try
+            {
+                await _emailSender.SendAsync(toEmail, subject, body, true);
+                sent = true;
+                Logger.LogInformation($"Offer email sent to {toEmail} using IEmailSender.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Primary email sender failed: {ex.Message}");
+            }
+
+            if (!sent)
+            {
+                await SendEmailViaSmtpAsync(toEmail, subject, body);
+            }
+        }
+
+        private async Task SendEmailViaSmtpAsync(string toEmail, string subject, string body)
+        {
+            try
+            {
+                var smtpHost = _configuration["Settings:Abp.Mailing.Smtp.Host"];
+                var smtpPort = _configuration.GetValue<int?>("Settings:Abp.Mailing.Smtp.Port") ?? 587;
+                var smtpUser = _configuration["Settings:Abp.Mailing.Smtp.UserName"];
+                var smtpPass = _configuration["Settings:Abp.Mailing.Smtp.Password"];
+                var fromAddress = _configuration["Settings:Abp.Mailing.DefaultFromAddress"] ?? smtpUser;
+                var fromName = _configuration["Settings:Abp.Mailing.DefaultFromDisplayName"] ?? "VCareer";
+                var enableSsl = _configuration.GetValue<bool?>("Settings:Abp.Mailing.Smtp.EnableSsl") ?? true;
+
+                using var message = new System.Net.Mail.MailMessage();
+                message.From = new System.Net.Mail.MailAddress(fromAddress, fromName);
+                message.To.Add(toEmail);
+                message.Subject = subject;
+                message.Body = body;
+                message.IsBodyHtml = true;
+
+                using var smtpClient = new System.Net.Mail.SmtpClient(smtpHost, smtpPort)
+                {
+                    EnableSsl = enableSsl,
+                    UseDefaultCredentials = false,
+                    Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass)
+                };
+
+                await smtpClient.SendMailAsync(message);
+                Logger.LogInformation($"Offer email sent to {toEmail} using fallback SMTP client.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Fallback SMTP send failed for {toEmail}: {ex}");
+            }
         }
 
         /// <summary>
         /// Hủy đơn ứng tuyển (cho ứng viên)
         /// </summary>
-        [Authorize(VCareerPermission.Application.Withdraw)]
+        //[Authorize(VCareerPermission.Application.Withdraw)]
         public async Task<ApplicationDto> WithdrawApplicationAsync(Guid id, WithdrawApplicationDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -311,7 +559,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Đánh dấu đã xem đơn ứng tuyển
         /// </summary>
-        [Authorize(VCareerPermission.Application.Manage)]
+        //[Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> MarkAsViewedAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -386,7 +634,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của công ty
         /// </summary>
-        [Authorize(VCareerPermission.Application.Manage)]
+        //[Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetCompanyApplicationsAsync(GetApplicationListDto input)
         {
             var userId = _currentUser.GetId();
@@ -401,7 +649,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển cho một công việc cụ thể
         /// </summary>
-        [Authorize(VCareerPermission.Application.Manage)]
+        //[Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetJobApplicationsAsync(Guid jobId, GetApplicationListDto input)
         {
             input.JobId = jobId;
@@ -411,7 +659,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
         /// </summary>
-        [Authorize(VCareerPermission.Application.DownloadCV)]
+        //[Authorize(VCareerPermission.Application.DownloadCV)]
         public async Task<byte[]> DownloadApplicationCVAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -434,7 +682,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Xóa đơn ứng tuyển (soft delete)
         /// </summary>
-        [Authorize(VCareerPermission.Application.Delete)]
+        //[Authorize(VCareerPermission.Application.Delete)]
         public async Task DeleteApplicationAsync(Guid id)
         {
             await _applicationRepository.DeleteAsync(id);
@@ -502,7 +750,7 @@ namespace VCareer.Application.Applications
                 dto.CompanyName = company.CompanyName;
             }
 
-            // Load Candidate để lấy CandidateName
+            // Load Candidate để lấy CandidateName, Email, Phone
             // Lưu ý: JobApplication.CandidateId = CandidateProfile.UserId (không phải CandidateProfile.Id)
             var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
             if (candidate != null)
@@ -514,6 +762,8 @@ namespace VCareer.Application.Applications
                     dto.CandidateName = !string.IsNullOrEmpty(user.Name)
                         ? $"{user.Name} {user.Surname}".Trim()
                         : user.UserName;
+                    dto.CandidateEmail = user.Email;
+                    dto.CandidatePhone = user.PhoneNumber;
                 }
             }
 

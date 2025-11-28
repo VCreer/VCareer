@@ -35,7 +35,6 @@
       width: 100%;
     }
   }
-
   // Breadcrumb Box
   .breadcrumb-box {
     background-color: white;
@@ -47,7 +46,6 @@
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-bottom: 1px solid #e5e7eb;
     min-height: 56px;
-
     left: 72px;
     width: calc(100% - 72px);
 
@@ -141,7 +139,6 @@
       }
     }
   }
-
   // Main Content
   .main-content {
     max-width: 1400px;
@@ -157,7 +154,6 @@
       margin-top: 120px;
     }
   }
-
   // Filter Bar
   .filter-bar {
     display: flex;
@@ -207,9 +203,7 @@
         }
       }
     }
-
   }
-
   // Jobs Table Container
   .jobs-table-container {
     background: white;
@@ -315,7 +309,6 @@
         }
       }
     }
-
     // Job Title Cell
     .job-title-cell {
       .job-title-content {
@@ -325,12 +318,10 @@
         }
       }
     }
-
     // Position Cell
     .position-cell {
       color: #374151;
     }
-
     // Location Cell
     .location-cell {
       display: flex;
@@ -343,14 +334,12 @@
         font-size: 0.875rem;
       }
     }
-
     // CV Count Cell
     .cv-count-cell {
       text-align: center;
       font-weight: 600;
       color: #1f2937;
     }
-
     // Status Cell
     .status-cell {
       .status-badge {
@@ -386,7 +375,6 @@
         }
       }
     }
-
     // Public Cell
     .public-cell {
       .public-badge {
@@ -410,7 +398,6 @@
         }
       }
     }
-
     // Package Cell
     .package-cell {
       .package-badges-container {
@@ -452,7 +439,6 @@
         }
       }
     }
-
     // Actions Cell
     .actions-cell {
       text-align: center;
@@ -546,7 +532,6 @@
         }
       }
     }
-
     // Empty State
     .empty-state {
       padding: 60px 20px;
@@ -581,7 +566,6 @@
       }
     }
   }
-
   // Modal Styles
   .modal-overlay {
     position: fixed;
@@ -678,7 +662,6 @@
               border-color: #0F83BA;
             }
           }
-
           // Status Dropdown List
           .status-dropdown-list {
             display: flex;
@@ -736,10 +719,8 @@
               }
             }
           }
-
         }
       }
-
       // Package Modal Specific Styles
       &.package-modal {
         max-width: 1200px;
@@ -771,7 +752,6 @@
               flex: 1;
               min-width: 0;
             }
-
             // Packages List (cho phép chọn nhiều)
             .packages-selection-group {
               .packages-list {
@@ -798,66 +778,66 @@
                     background: #f9fafb;
                   }
 
-                &.selected {
-                  border-color: #0F83BA;
-                  background: #0F83BA10;
+                  &.selected {
+                    border-color: #0F83BA;
+                    background: #0F83BA10;
 
-                  .package-content {
-                    .package-name {
-                      color: #0F83BA;
-                      font-weight: 600;
+                    .package-content {
+                      .package-name {
+                        color: #0F83BA;
+                        font-weight: 600;
+                      }
                     }
                   }
-                }
 
-                &.active {
-                  border-color: #0F83BA;
-                  box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
-                }
+                  &.active {
+                    border-color: #0F83BA;
+                    box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+                  }
 
-                .package-check-icon {
-                  width: 24px;
-                  height: 24px;
-                  min-width: 24px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  transition: all 0.2s ease;
-                  flex-shrink: 0;
-                  margin-left: auto;
-                  cursor: pointer;
-                  z-index: 11;
-                  position: relative;
-
-                  .checkbox-icon {
-                    width: 20px;
-                    height: 20px;
-                    min-width: 20px;
-                    border: 2px solid #d1d5db;
-                    border-radius: 4px;
+                  .package-check-icon {
+                    width: 24px;
+                    height: 24px;
+                    min-width: 24px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     transition: all 0.2s ease;
-                    background: white;
+                    flex-shrink: 0;
+                    margin-left: auto;
+                    cursor: pointer;
+                    z-index: 11;
+                    position: relative;
 
-                    &.checked {
-                      background: #0F83BA;
-                      border-color: #0F83BA;
+                    .checkbox-icon {
+                      width: 20px;
+                      height: 20px;
+                      min-width: 20px;
+                      border: 2px solid #d1d5db;
+                      border-radius: 4px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      transition: all 0.2s ease;
+                      background: white;
+
+                      &.checked {
+                        background: #0F83BA;
+                        border-color: #0F83BA;
+
+                        i {
+                          font-size: 0.75rem;
+                          color: white;
+                          font-weight: 600;
+                        }
+                      }
 
                       i {
                         font-size: 0.75rem;
-                        color: white;
-                        font-weight: 600;
+                        color: transparent;
                       }
                     }
-
-                    i {
-                      font-size: 0.75rem;
-                      color: transparent;
-                    }
                   }
-                }
 
                   .package-content {
                     flex: 1;
@@ -879,7 +859,7 @@
 
                     .package-features {
                       pointer-events: none;
-                      
+
                       .features-list {
                         display: flex;
                         flex-direction: column;
@@ -1066,7 +1046,6 @@
       }
     }
   }
-
   // Pagination Container
   .pagination-container {
     margin-top: 24px;
@@ -1075,4 +1054,3 @@
     padding: 16px 0;
   }
 }
-

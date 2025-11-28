@@ -35,6 +35,26 @@ namespace VCareer.IServices.IProfileServices
         /// <returns>Task representing the asynchronous operation</returns>
         Task DeleteAccountAsync();
 
+        /// <summary>
+        /// Verifies the current user's phone number
+        /// </summary>
+        Task VerifyPhoneNumberAsync(VerifyPhoneNumberDto input);
+
+        /// <summary>
+        /// Sends OTP code to email for verification
+        /// </summary>
+        Task SendEmailOtpAsync(SendEmailOtpDto input);
+
+        /// <summary>
+        /// Verifies the current user's email with OTP code
+        /// </summary>
+        Task VerifyEmailNumberAsync(VerifyEmailNumberDto input);
+
+        /// <summary>
+        /// Selects a company for the current recruiter user
+        /// </summary>
+        Task SelectCompanyAsync(SelectCompanyDto input);
+
         // lấy thông tin của 1 recruiter.  tu  userid của recruiter
 
 

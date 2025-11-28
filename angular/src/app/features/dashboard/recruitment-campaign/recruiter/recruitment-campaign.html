@@ -1,442 +1,235 @@
 <div class="recruitment-campaign-container" [class.sidebar-expanded]="sidebarExpanded">
-  <!-- Toast Notification -->
+  <!-- Toast -->
   <app-toast-notification
     [show]="showToast"
     [message]="toastMessage"
     [type]="toastType"
-    (close)="onCloseToast()">
+    (close)="showToast = false"
+  >
   </app-toast-notification>
-  <!-- Breadcrumb Box -->
+
+  <!-- Breadcrumb -->
   <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
       <span class="breadcrumb-item active">
-        {{ viewMode === 'manage' ? 'Quản lý chiến dịch tuyển dụng' : 'Chiến dịch tuyển dụng' }}
+        {{ viewMode === 'manage' ? 'Quản lý chiến dịch tuyển dụng' : 'Tạo chiến dịch tuyển dụng' }}
       </span>
       <app-button
         *ngIf="viewMode === 'manage'"
         type="primary"
         size="medium"
-        (click)="onCreateNewCampaign()">
-        <i class="fa fa-plus"></i>
-        Thêm chiến dịch mới
+        (click)="onCreateNewCampaign()"
+      >
+        <i class="fa fa-plus"></i> Thêm chiến dịch mới
       </app-button>
     </div>
   </div>
 
-  <!-- Create Campaign View -->
+  <!-- CREATE VIEW -->
   <div class="main-content" *ngIf="viewMode === 'create'">
     <div class="campaign-form-section">
-      <!-- Form Title -->
-      <h1 class="form-title">Tạo chiến dịch tuyển dụng đầu tiên của bạn</h1>
+      <h1 class="form-title">Tạo chiến dịch tuyển dụng</h1>
 
-      <!-- Campaign Form -->
       <form class="campaign-form" (ngSubmit)="onNext()">
-        <!-- First Row: Campaign Name and Position -->
+        <!-- Tên chiến dịch -->
         <div class="form-row">
           <div class="form-group">
             <app-input-field
               label="Tên chiến dịch tuyển dụng"
               type="text"
-              placeholder="VD: Tuyển dụng nhân viên Marketing tháng 10, tuyển dụng designer,..."
+              placeholder="VD: Tuyển dụng Marketing Q4/2025, Designer Full-time..."
               [required]="true"
               [error]="getFieldError('campaignName')"
               [(ngModel)]="campaignForm.campaignName"
-              (ngModelChange)="onFieldChange('campaignName')"
-              name="campaignName">
+              name="campaignName"
+              autofocus
+            >
             </app-input-field>
           </div>
-
-          <div class="form-group">
-            <app-select-field
-              label="Vị trí tuyển dụng"
-              placeholder="- Chọn vị trí tuyển dụng -"
-              [required]="true"
-              [options]="positionOptions"
-              [error]="getFieldError('position')"
-              [(ngModel)]="campaignForm.position"
-              (ngModelChange)="onFieldChange('position')"
-              name="position">
-            </app-select-field>
-          </div>
         </div>
 
-        <!-- Second Row: Work Location (Multi-select) -->
-        <div class="form-row">
-          <div class="form-group form-group-full">
-            <app-multi-select-location
-              label="Khu vực làm việc"
-              [required]="true"
-              [options]="locationOptions"
-              [selectedValues]="campaignForm.workLocations"
-              [error]="getFieldError('workLocations')"
-              (selectedValuesChange)="onLocationChange($event)"
-              (errorChange)="onLocationErrorChange($event)">
-            </app-multi-select-location>
-          </div>
-        </div>
-
-        <!-- Submit Button -->
+        <!-- 2 NÚT ĐẸP LUNG LINH, KHÔNG DÙNG app-button ĐỂ TRÁNH LỖI -->
         <div class="form-actions">
-          <app-button
-            type="primary"
-            size="medium"
-            (click)="onNext()">
-            Tiếp theo
-          </app-button>
+          <button type="button" class="btn btn-secondary" (click)="viewMode = 'manage'">
+            <i class="fa fa-arrow-left"></i> Quay lại
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isCreating || !campaignForm.campaignName?.trim()"
+          >
+            <span *ngIf="!isCreating"> <i class="fa fa-check"></i> Tiếp theo </span>
+            <span *ngIf="isCreating"> <i class="fa fa-spinner fa-spin"></i> Đang tạo... </span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Manage Campaigns View -->
+  <!-- MANAGE VIEW -->
   <div class="main-content" *ngIf="viewMode === 'manage'">
-    <!-- White Card Container -->
     <div class="campaign-management-card">
-      <!-- Filter and Search Section -->
+      <!-- Filter + Search -->
       <div class="filter-search-section">
-        <div class="filter-dropdown-wrapper">
-          <select class="filter-dropdown" [(ngModel)]="filterType" (change)="onFilterChange()">
-            <option value="all">Tất cả chiến dịch</option>
-            <option value="active">Chiến dịch đang hoạt động</option>
-            <option value="inactive">Chiến dịch đã tắt</option>
-          </select>
-        </div>
-        
-        <!-- Date Range Filter -->
-        <div class="filter-dropdown-wrapper" (click)="$event.stopPropagation()">
-          <button
-            class="filter-dropdown-btn"
-            [class.active]="showDateRangeDropdown"
-            (click)="toggleDateRangeDropdown()"
-          >
-            <span class="filter-text">{{ getSelectedDateRangeName() }}</span>
-            <button
-              *ngIf="selectedTimeRange || dateRange.startDate || dateRange.endDate"
-              class="clear-filter-btn"
-              (click)="clearDateRangeFilter(); $event.stopPropagation()"
-            >
-              <i class="fa fa-times"></i>
-            </button>
-            <i class="fa fa-chevron-down" [class.rotated]="showDateRangeDropdown"></i>
-          </button>
-          <div 
-            class="filter-dropdown-menu dropdown-menu ltr show-calendar show-ranges opensleft linked" 
-            *ngIf="showDateRangeDropdown"
-          >
-            <div class="drp-container">
-              <!-- Preset Ranges (Left) -->
-              <div class="ranges">
-                <div
-                  *ngFor="let timeRange of timeRanges"
-                  class="range-item"
-                  [class.selected]="isTimeRangeSelected(timeRange.id)"
-                  (click)="selectTimeRange(timeRange.id)"
-                >
-                  {{ timeRange.name }}
-                </div>
-              </div>
-              
-              <!-- Calendars Container (Right) -->
-              <div class="calendars-container">
-                <!-- Left Calendar -->
-                <div class="drp-calendar col left">
-                  <div class="calendar-table">
-                    <div class="calendar-header">
-                      <button class="prev-month" (click)="previousMonth()">
-                        <i class="fa fa-chevron-left"></i>
-                      </button>
-                      <span class="month-year">{{ getCurrentMonthYear() }}</span>
-                      <button class="next-month" (click)="nextMonth()">
-                        <i class="fa fa-chevron-right"></i>
-                      </button>
-                    </div>
-                    <div class="calendar-grid">
-                      <div class="calendar-weekdays">
-                        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
-                      </div>
-                      <div class="calendar-days">
-                        <div
-                          *ngFor="let day of calendarDays"
-                          class="calendar-day"
-                          [class.selected]="isDateSelected(day)"
-                          [class.in-range]="isDateInRange(day)"
-                          [class.start-date]="isStartDate(day)"
-                          [class.end-date]="isEndDate(day)"
-                          [class.disabled]="day.disabled"
-                          (click)="selectDate(day)"
-                        >
-                          {{ day.date }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Right Calendar -->
-                <div class="drp-calendar col right">
-                  <div class="calendar-table">
-                    <div class="calendar-header">
-                      <button class="prev-month" (click)="nextMonth()">
-                        <i class="fa fa-chevron-left"></i>
-                      </button>
-                      <span class="month-year">{{ getNextMonthYear() }}</span>
-                      <button class="next-month" (click)="nextNextMonth()">
-                        <i class="fa fa-chevron-right"></i>
-                      </button>
-                    </div>
-                    <div class="calendar-grid">
-                      <div class="calendar-weekdays">
-                        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
-                      </div>
-                      <div class="calendar-days">
-                        <div
-                          *ngFor="let day of nextCalendarDays"
-                          class="calendar-day"
-                          [class.selected]="isDateSelected(day)"
-                          [class.in-range]="isDateInRange(day)"
-                          [class.start-date]="isStartDate(day)"
-                          [class.end-date]="isEndDate(day)"
-                          [class.disabled]="day.disabled"
-                          (click)="selectDate(day)"
-                        >
-                          {{ day.date }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="calendar-footer">
-              <button class="btn-cancel" (click)="cancelDateRange()">Hủy</button>
-              <button class="btn-apply" (click)="applyDateRange()">Áp dụng</button>
-            </div>
-          </div>
-        </div>
-        
+        <select class="filter-dropdown" [(ngModel)]="filterType" (change)="onFilterChange()">
+          <option value="all">Tất cả chiến dịch</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Đã tắt</option>
+        </select>
+
         <div class="search-input-wrapper">
           <input
             type="text"
             class="search-input"
-            placeholder="Tìm chiến dịch (Nhấn enter để tìm kiếm)"
+            placeholder="Tìm chiến dịch..."
             [(ngModel)]="searchQuery"
             (keyup.enter)="onSearchCampaigns()"
-            (input)="onSearchCampaigns()">
+            (input)="onSearchCampaigns()"
+          />
           <i class="fa fa-search search-icon"></i>
         </div>
       </div>
 
-      <!-- Results Count -->
-      <div class="results-count">
-        Tìm thấy {{ filteredCampaigns.length }} chiến dịch tuyển dụng
+      <div class="results-count">Tìm thấy {{ filteredCampaigns.length }} chiến dịch</div>
+
+      <!-- Loading -->
+      <div class="loading-skeleton" *ngIf="loading">
+        <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]"></div>
       </div>
 
-      <!-- Campaigns Table -->
-      <div class="campaigns-table-wrapper">
-      <table class="campaigns-table" *ngIf="filteredCampaigns.length > 0">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Chiến dịch tuyển dụng</th>
-            <th>CV ứng tuyển</th>
-            <th>Ngày bắt đầu</th>
-            <th>Ngày kết thúc</th>
-            <th>Trạng thái</th>
-            <th>Hoạt động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let campaign of paginatedCampaigns">
-            <!-- ID -->
-            <td class="campaign-id-cell">
-              <div class="campaign-id">{{ campaign.id }}</div>
-            </td>
+      <!-- Table -->
+      <div class="campaigns-table-wrapper" *ngIf="!loading">
+        <table class="campaigns-table" *ngIf="filteredCampaigns.length > 0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Chiến dịch</th>
+              <th>CV ứng tuyển</th>
+              <th>Ngày tạo</th>
+              <th>Trạng thái</th>
+              <th>Hoạt động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let campaign of paginatedCampaigns">
+              <td class="campaign-id-cell">#{{ campaign.id.slice(-8) }}</td>
+              <td class="campaign-info-cell">
+                <div class="campaign-name">{{ campaign.name }}</div>
+              </td>
+              <td class="applied-cvs-cell">
+                <span class="applied-cvs-empty">Chưa có CV</span>
+              </td>
+              <td>{{ formatDate(campaign.creationTime) }}</td>
+              <td class="status-cell">
+                <span class="status-badge" [class.active]="campaign.isActive">
+                  {{ campaign.isActive ? 'Đang hoạt động' : 'Đã tắt' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <div class="actions-container">
+                  <app-toggle-switch
+                    [checked]="campaign.isActive"
+                    (checkedChange)="onToggleCampaign(campaign, $event)"
+                  >
+                  </app-toggle-switch>
 
-            <!-- Campaign Info -->
-            <td class="campaign-info-cell">
-              <div class="campaign-name">{{ campaign.name }}</div>
-            </td>
+                  <div class="actions-menu-container" [attr.data-campaign-id]="campaign.id">
+                    <button class="actions-btn" (click)="toggleActionsMenu(campaign.id, $event)">
+                      <i class="fa fa-ellipsis-h"></i>
+                    </button>
 
-            <!-- Applied CVs -->
-            <td class="applied-cvs-cell">
-              <a 
-                *ngIf="campaign.appliedCvs > 0"
-                href="#" 
-                class="applied-cvs-link"
-                (click)="onViewAppliedCvs(campaign); $event.preventDefault()">
-                {{ campaign.appliedCvs }} CV
-              </a>
-              <span *ngIf="campaign.appliedCvs === 0" class="applied-cvs-empty">
-                Chưa có CV nào
-              </span>
-            </td>
-
-            <!-- Start Date -->
-            <td class="start-date-cell">
-              <span class="date-value">{{ formatDate(campaign.startDate) }}</span>
-            </td>
-
-            <!-- End Date -->
-            <td class="end-date-cell">
-              <span class="date-value">{{ formatDate(campaign.endDate) }}</span>
-            </td>
-
-            <!-- Status -->
-            <td class="status-cell">
-              <span class="status-badge" [class.active]="campaign.isActive" [class.inactive]="!campaign.isActive">
-                {{ campaign.isActive ? 'Đang hoạt động' : 'Đã tắt' }}
-              </span>
-            </td>
-
-            <!-- Actions -->
-            <td class="actions-cell">
-              <div class="actions-container">
-                <!-- Toggle Switch -->
-                <app-toggle-switch
-                  [checked]="campaign.isActive"
-                  (checkedChange)="onToggleCampaign(campaign, $event)">
-                </app-toggle-switch>
-
-                <!-- Actions Menu -->
-                <div class="actions-menu-container" [attr.data-campaign-id]="campaign.id">
-                  <button 
-                    class="actions-btn"
-                    (click)="toggleActionsMenu(campaign.id, $event)">
-                    <i class="fa fa-ellipsis-h"></i>
-                  </button>
-                  
-                  <div 
-                    class="actions-menu"
-                    [class.show]="showActionsMenu === campaign.id"
-                    [attr.data-campaign-id]="campaign.id"
-                    (click)="$event.stopPropagation()">
-                    <div class="menu-item" (click)="onViewCampaign(campaign)">
-                      <i class="fa fa-eye menu-icon"></i>
-                      <span>Xem chi tiết</span>
-                    </div>
-                    <div class="menu-item" (click)="onViewJobs(campaign)">
-                      <i class="fa fa-briefcase menu-icon"></i>
-                      <span>Xem các công việc</span>
-                    </div>
-                    <div class="menu-item" (click)="onEditCampaign(campaign)">
-                      <i class="fa fa-edit menu-icon"></i>
-                      <span>Sửa</span>
-                    </div>
-                    <div class="menu-separator"></div>
-                    <div class="menu-item delete-item" (click)="onDeleteCampaign(campaign)">
-                      <i class="fa fa-trash menu-icon"></i>
-                      <span>Xóa</span>
+                    <div
+                      class="actions-menu"
+                      [class.show]="showActionsMenu === campaign.id"
+                      (click)="$event.stopPropagation()"
+                    >
+                      <div class="menu-item" (click)="onViewCampaign(campaign)">
+                        <i class="fa fa-eye"></i> Xem chi tiết
+                      </div>
+                      <div class="menu-item" (click)="onViewJobs(campaign)">
+                        <i class="fa fa-briefcase"></i> Xem công việc
+                      </div>
+                      <div class="menu-item" (click)="onEditCampaign(campaign)">
+                        <i class="fa fa-edit"></i> Sửa tên
+                      </div>
+                      <div class="menu-separator"></div>
+                      <!-- NÚT MỚI: ĐĂNG TIN TUYỂN DỤNG -->
+                      <div class="menu-item post-job-item" (click)="onPostJob(campaign)">
+                        <i class="fa fa-plus-circle"></i> Đăng tin tuyển dụng
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="filteredCampaigns.length === 0">
-        <div class="empty-state-content">
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="filteredCampaigns.length === 0">
           <i class="fa fa-folder-open empty-icon"></i>
           <p class="empty-message">
-            {{ searchQuery || filterType !== 'all' ? 'Không tìm thấy chiến dịch nào' : 'Chưa có chiến dịch tuyển dụng nào' }}
+            {{ searchQuery || filterType !== 'all' ? 'Không tìm thấy chiến dịch nào' : 'Chưa có
+            chiến dịch nào' }}
           </p>
           <p class="empty-submessage" *ngIf="!searchQuery && filterType === 'all'">
-            Hãy tạo chiến dịch tuyển dụng đầu tiên của bạn
+            Hãy tạo chiến dịch đầu tiên của bạn
           </p>
         </div>
-      </div>
-      
-      <!-- Pagination -->
-      <div class="pagination-container" *ngIf="filteredCampaigns.length > 0">
-        <app-pagination
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          [totalItems]="filteredCampaigns.length"
-          [itemsPerPage]="itemsPerPage"
-          (pageChange)="onPageChange($event)">
-        </app-pagination>
-      </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="filteredCampaigns.length > itemsPerPage">
+          <app-pagination
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            [totalItems]="filteredCampaigns.length"
+            [itemsPerPage]="itemsPerPage"
+            (pageChange)="onPageChange($event)"
+          >
+          </app-pagination>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Activity Selection Modal -->
+  <!-- Activity Modal -->
   <app-generic-modal
     [show]="showActivityModal"
-    [title]="'Khởi động chiến dịch: ' + campaignForm.campaignName"
-    [maxWidth]="'1200px'"
-    [closeOnOverlayClick]="true"
-    (close)="onCloseModal()">
-    <div class="activity-modal-content">
-      <!-- Introduction Text -->
-      <p class="modal-intro">
-        Vui lòng lựa chọn hoạt động đầu tiên để khởi động chiến dịch tuyển dụng của bạn. 
-        Dựa vào Insights chiến dịch tuyển dụng bạn chia sẻ, chúng tôi gợi ý những hoạt động phù hợp phía dưới. 
-        Hãy lựa chọn loại hoạt động bạn thấy phù hợp nhất vào lúc này.
-      </p>
-
-      <!-- Activity Details -->
-      <div class="activity-modal-body" *ngIf="selectedActivity">
-        <div class="activity-detail-content">
-          <div class="activity-icon-circle">
-            <i class="fa" [class]="selectedActivity.icon"></i>
-          </div>
-          <h3 class="activity-detail-title">{{ selectedActivity.title }} tại TopCV</h3>
-          <p class="activity-detail-description">{{ selectedActivity.description }}</p>
-          <app-button
-            type="primary"
-            size="medium"
-            (click)="onActivityAction()">
-            {{ selectedActivity.title }}
-          </app-button>
-        </div>
+    [title]="'Khởi động: ' + campaignForm.campaignName"
+    [maxWidth]="'800px'"
+    (close)="showActivityModal = false"
+  >
+    <div class="activity-modal-content text-center py-4">
+      <h3>Chiến dịch "{{ campaignForm.campaignName }}" đã được tạo!</h3>
+      <p class="text-muted">Bây giờ bạn có thể bắt đầu đăng tin hoặc tìm kiếm ứng viên.</p>
+      <div class="mt-4">
+        <app-button type="primary" size="large" (click)="onActivityAction()">
+          Đăng tin tuyển dụng ngay
+        </app-button>
       </div>
     </div>
   </app-generic-modal>
 
-  <!-- Edit Campaign Modal -->
+  <!-- Edit Modal -->
   <app-generic-modal
     [show]="showEditModal"
-    [title]="'Sửa chiến dịch: ' + (editingCampaign?.name || '')"
+    title="Sửa tên chiến dịch"
     [maxWidth]="'600px'"
-    [closeOnOverlayClick]="true"
-    [bodyBackground]="'white'"
-    (close)="onCloseEditModal()">
-    <div class="edit-campaign-modal-content">
-      <!-- Campaign Name Input -->
-      <div class="edit-form-group">
-        <label class="edit-form-label">Tên chiến dịch tuyển dụng</label>
-        <app-input-field
-          type="text"
-          placeholder="VD: Tuyển dụng nhân viên Marketing tháng 10, tuyển dụng designer,..."
-          [required]="true"
-          [error]="getFieldError('editCampaignName')"
-          [(ngModel)]="editCampaignName"
-          (ngModelChange)="clearFieldError('editCampaignName')"
-          name="editCampaignName">
-        </app-input-field>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="edit-modal-footer">
-        <app-button
-          type="secondary"
-          size="medium"
-          (click)="onCloseEditModal()">
-          Hủy
-        </app-button>
-        <app-button
-          type="primary"
-          size="medium"
-          (click)="onSaveEditCampaign()">
-          Lưu
-        </app-button>
+    (close)="showEditModal = false"
+  >
+    <div class="p-4">
+      <app-input-field
+        label="Tên chiến dịch"
+        [(ngModel)]="editCampaignName"
+        [error]="editCampaignName.trim() ? '' : 'Tên không được để trống'"
+        placeholder="Nhập tên mới"
+      >
+      </app-input-field>
+      <div class="mt-4 text-right">
+        <app-button type="secondary" (click)="showEditModal = false">Hủy</app-button>
+        <app-button type="primary" class="ml-2" (click)="onSaveEditCampaign()">Lưu</app-button>
       </div>
     </div>
   </app-generic-modal>
 </div>
-

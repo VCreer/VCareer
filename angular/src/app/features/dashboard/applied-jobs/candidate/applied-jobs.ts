@@ -359,6 +359,10 @@ export class AppliedJobsComponent implements OnInit {
     this.showToast = true;
   }
 
+  navigateToJobSuggestionSettings(): void {
+    this.router.navigate(['/candidate/job-suggestion-settings']);
+  }
+
   onToastClose(): void {
     this.showToast = false;
   }

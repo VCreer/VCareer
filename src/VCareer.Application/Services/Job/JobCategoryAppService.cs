@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Category;
+using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.JobCategory;
@@ -20,7 +21,7 @@ namespace VCareer.Services.Job
             _categoryRepository = categoryRepository;
         }
 
-        public async Task CreaateCategoryAsync(CategoryUpdateCreateDto dto)
+        public async Task CreateCategoryAsync(CategoryUpdateCreateDto dto)
         {
             var category = new Job_Category
             {
@@ -29,6 +30,7 @@ namespace VCareer.Services.Job
                 Description = dto.Description,
                 IsActive = dto.IsActive,
                 SortOrder = dto.SortOrder,
+                ParentId = dto.ParentId
             };
             await _categoryRepository.InsertAsync(category,true);
         }
@@ -72,12 +74,6 @@ namespace VCareer.Services.Job
                 throw;
             }
         }
-
-        public Task GetTagsByCategoryIdAsync(int categoryId)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<CategoryTreeDto>> SearchCategoriesAsync(string keyword)
         {
             try

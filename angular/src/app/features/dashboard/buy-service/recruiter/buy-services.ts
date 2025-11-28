@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { CartService } from '../../../../core/services/cart.service';
+import { SubscriptionService, SubscriptionServiceDto } from '../../../../core/services/subscription.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 
@@ -12,6 +13,7 @@ interface ServicePackage {
   id: string;
   title: string;
   price: string;
+  originalPrice: number;
   description: string;
   isVip?: boolean;
   isTrial?: boolean;
@@ -30,68 +32,18 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
+  isLoading = false;
   private routerSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
-  trialPackages: ServicePackage[] = [
-    {
-      id: 'top-max-trial',
-      title: 'TOP MAX TRIAL',
-      price: '2,887,500',
-      description: 'Trải nghiệm đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất kết hợp cùng các dịch vụ cao cấp, giá dùng thử hấp dẫn.',
-      isTrial: true
-    },
-    {
-      id: 'top-pro-trial',
-      title: 'TOP PRO TRIAL',
-      price: '2,448,000',
-      description: 'Trải nghiệm đăng tin tuyển dụng tối ưu với vị trí ưu tiên trong Việc làm hấp dẫn kết hợp cùng các dịch vụ cao cấp, giá dùng thử hấp dẫn.',
-      isTrial: true
-    },
-    {
-      id: 'top-eco-plus-trial',
-      title: 'TOP ECO PLUS TRIAL',
-      price: '2,112,000',
-      description: 'Trải nghiệm đăng tin tuyển dụng tiết kiệm với vị trí hiển thị trong Đề xuất việc làm liên quan kết hợp cùng các dịch vụ khác, giá dùng thử hấp dẫn.',
-      isTrial: true
-    }
-  ];
-
-  regularPackages: ServicePackage[] = [
-    {
-      id: 'top-max-plus',
-      title: 'TOP MAX PLUS',
-      price: '9,650,000',
-      description: 'Đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất, x2 lượt đấy Top, được sử dụng tỉnh năng CV để xuất kết hợp các dịch vụ cao cấp và được bảo hành với nhiều quyền lợi ưu tiên.',
-      isVip: true
-    },
-    {
-      id: 'top-max',
-      title: 'TOP MAX',
-      price: '7,500,000',
-      description: 'Đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất, được sử dụng tính năng CV để xuất kết hợp các dịch vụ cao cấp và được bảo hành với nhiều quyền lợi ưu tiên.',
-      isVip: true
-    },
-    {
-      id: 'top-pro',
-      title: 'TOP PRO',
-      price: '5,440,000',
-      description: 'Đăng tin tuyển dụng tối ưu với vị trí ưu tiên trong Việc làm hấp dẫn, được sử dụng tính năng CV đề xuất kết hợp các dịch vụ cao cấp và được bảo hành.',
-      isVip: false
-    },
-    {
-      id: 'top-eco-plus',
-      title: 'TOP ECO PLUS',
-      price: '4,400,000',
-      description: 'Đăng tin tuyển dụng tiết kiệm với vị trí hiển thị trong Đề xuất việc làm liên quan, được sử dụng tính năng CV để xuất kết hợp các dịch vụ khác và được bảo hành.',
-      isVip: false
-    }
-  ];
+  trialPackages: ServicePackage[] = [];
+  regularPackages: ServicePackage[] = [];
 
   constructor(
     private translationService: TranslationService,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private subscriptionService: SubscriptionService
   ) {}
 
   ngOnInit() {
@@ -111,6 +63,52 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.checkSidebarState();
       });
+
+    // Load subscription services
+    this.loadSubscriptionServices();
+  }
+
+  loadSubscriptionServices(): void {
+    this.isLoading = true;
+    this.subscriptionService.getActiveSubscriptionServices(1) // 1 = Recruiter
+      .subscribe({
+        next: (services) => {
+          this.processSubscriptionServices(services);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading subscription services:', error);
+          this.showToastMessage('error', 'Không thể tải danh sách dịch vụ. Vui lòng thử lại sau.');
+          this.isLoading = false;
+        }
+      });
+  }
+
+  processSubscriptionServices(services: SubscriptionServiceDto[]): void {
+    this.trialPackages = [];
+    this.regularPackages = [];
+
+    services.forEach(service => {
+      const packageItem: ServicePackage = {
+        id: service.id,
+        title: service.title,
+        price: this.formatPrice(service.originalPrice),
+        originalPrice: service.originalPrice,
+        description: service.description,
+        isTrial: service.title.toLowerCase().includes('trial'),
+        isVip: service.title.toLowerCase().includes('max') || service.title.toLowerCase().includes('plus')
+      };
+
+      if (packageItem.isTrial) {
+        this.trialPackages.push(packageItem);
+      } else {
+        this.regularPackages.push(packageItem);
+      }
+    });
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('vi-VN').format(price);
   }
 
   ngOnDestroy() {
@@ -149,15 +147,19 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
     
     if (selectedPackage) {
-      const added = this.cartService.addToCart({
+      this.cartService.addToCart({
         id: selectedPackage.id,
-        title: selectedPackage.title,
-        price: selectedPackage.price
+        subscriptionServiceId: selectedPackage.id
+      }).subscribe({
+        next: () => {
+          this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
+        },
+        error: (error) => {
+          console.error('Error adding to cart:', error);
+          const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+          this.showToastMessage('error', errorMessage);
+        }
       });
-
-      if (added) {
-        this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
-      }
     }
   }
 
@@ -176,14 +178,28 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     const selectedPackage = allPackages.find(pkg => pkg.id === packageId);
     
     if (selectedPackage) {
-      const added = this.cartService.addToCart({
-        id: selectedPackage.id,
-        title: selectedPackage.title,
-        price: selectedPackage.price
-      });
-
-      if (added) {
+      // Check if item already exists in cart
+      const cartItems = this.cartService.getCartItems();
+      const existingItem = cartItems.find(item => item.subscriptionServiceId === packageId);
+      
+      if (existingItem) {
+        // Item already exists, just navigate to cart without adding
         this.router.navigate(['/recruiter/cart']);
+      } else {
+        // Item doesn't exist, add to cart first
+        this.cartService.addToCart({
+          id: selectedPackage.id,
+          subscriptionServiceId: selectedPackage.id
+        }).subscribe({
+          next: () => {
+            this.router.navigate(['/recruiter/cart']);
+          },
+          error: (error) => {
+            console.error('Error adding to cart:', error);
+            const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+            this.showToastMessage('error', errorMessage);
+          }
+        });
       }
     }
   }

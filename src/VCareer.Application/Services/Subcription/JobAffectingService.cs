@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +10,11 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
+using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
 {
@@ -19,11 +22,15 @@ namespace VCareer.Services.Subcription
     {
         private readonly IJobPostRepository _jobPostRepository;
         private readonly IChildServiceRepository _childServiceRepository;
+        private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
+        private readonly IJobPriorityRepository _jobPriorityRepository;
 
-        public JobAffectingService(IJobPostRepository jobPostRepository, IChildServiceRepository childServiceRepository)
+        public JobAffectingService(IJobPostRepository jobPostRepository, IChildServiceRepository childServiceRepository, IEffectingJobServiceRepository effectingJobServiceRepository, IJobPriorityRepository jobPriorityRepository)
         {
             _jobPostRepository = jobPostRepository;
             _childServiceRepository = childServiceRepository;
+            _effectingJobServiceRepository = effectingJobServiceRepository;
+            _jobPriorityRepository = jobPriorityRepository;
         }
         public async Task ApplyServiceToJob(EffectingJobServiceCreateDto jobAffectingDto)
         {
@@ -40,37 +47,91 @@ namespace VCareer.Services.Subcription
             //check childserrvice
             var childService = await _childServiceRepository.FindAsync(x => x.Id == jobAffectingDto.ChildServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");
-            if (childService.Target !=SubcriptionContance.ServiceTarget.JobPost) throw new BusinessException("ChildService is not avaiable to Apply service subcription");
+            if (childService.Target != SubcriptionContance.ServiceTarget.JobPost) throw new BusinessException("ChildService is not avaiable to Apply service subcription");
+            DateTime? endDate = null;
+            if (!childService.IsLifeTime) endDate = DateTime.Now.AddDays((double)childService.DayDuration);
 
-                var effectService = new EffectingJobService
-                {
-                    JobPostId = jobAffectingDto.JobPostId,
-                    ChildServiceId = jobAffectingDto.ChildServiceId,
-                    StartDate = DateTime.UtcNow,
-                };
+            //tao 1 effectingJobService
+            var effectService = new EffectingJobService
+            {
+                User_ChildServiceId = jobAffectingDto.User_ChildServiceId,
+                JobPostId = jobAffectingDto.JobPostId,
+                ChildServiceId = jobAffectingDto.ChildServiceId,
+                StartDate = DateTime.UtcNow,
+                Action = childService.Action,
+                Status = SubcriptionContance.ChildServiceStatus.Active,
+                Target = childService.Target,
+                Value = childService.Value,
+                PriorityLevel = childService.Priority,
+                EndDate = endDate,
+            };
+            await _effectingJobServiceRepository.InsertAsync(effectService);
 
-            throw new NotImplementedException();
+            if (childService.Target == ServiceTarget.JobPost && childService.Action == ServiceAction.BoostScoreJob)
+                await AddJobBoostLogic(job, effectService);
+            //co the them logic xu ly cac job voi target =job voi action khac
         }
 
-        //có thể dùng để tắt dịch vụ khi job hết hạn ..vv
-        public Task CancleEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
+        private async Task AddJobBoostLogic(Job_Post job, EffectingJobService effectService)
         {
-            throw new NotImplementedException();
+            var priority = job.Job_Priority;
+            if (priority == null) throw new BusinessException("Job_Priority not found");
+            if (effectService.PriorityLevel != null)
+            {
+                if (effectService.PriorityLevel > priority.PriorityLevel) priority.PriorityLevel = effectService.PriorityLevel ?? priority.PriorityLevel;
+            }
+            if (effectService.Value != null) priority.SortScore += (float)effectService.Value;
+            await _jobPriorityRepository.UpdateAsync(priority);
         }
 
-        public Task<EffectingJobServiceViewDto> GetEffectingJobService(Guid effectingJobServiceId)
+        public async Task CancleEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
         {
-            throw new NotImplementedException();
+            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == jobAffectingDto.EffectingJobServiceId);
+            if (effectService == null) throw new BusinessException("EffectingJobService not found");
+            if (effectService.Status != SubcriptionContance.ChildServiceStatus.Active) throw new BusinessException("EffectingJobService already inactive");
+
+            effectService.Status = SubcriptionContance.ChildServiceStatus.Inactive;
+            await _effectingJobServiceRepository.UpdateAsync(effectService);
         }
 
-        public Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, SubcriptionContance.ChildServiceStatus status, PagingDto pagingDto)
+        public async Task<EffectingJobServiceViewDto> GetEffectingJobService(Guid effectingJobServiceId)
         {
-            throw new NotImplementedException();
+            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == effectingJobServiceId);
+            if (effectService == null) throw new BusinessException("EffectingJobService not found");
+
+            return ObjectMapper.Map<EffectingJobService, EffectingJobServiceViewDto>(effectService);
         }
 
-        public Task UpdateEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServicesWithPaging(Guid JobId, ChildServiceStatus? status, PagingDto pagingDto)
         {
-            throw new NotImplementedException();
+            var query = await _effectingJobServiceRepository.GetQueryableAsync();
+            query = query.Where(x => x.JobPostId == JobId);
+            if (status != null) query = query.Where(x => x.Status == status);
+            var result = await query
+                .Skip(pagingDto.PageIndex * pagingDto.PageSize)
+                .Take(pagingDto.PageSize)
+                .ToListAsync();
+            return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
+        }
+
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, ChildServiceStatus? status)
+        {
+            var query = await _effectingJobServiceRepository.GetQueryableAsync();
+            query = query.Where(x => x.JobPostId == JobId);
+            if (status != null) query = query.Where(x => x.Status == status);
+            var result = await query.ToListAsync();
+            return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
+        }
+
+        public async Task UpdateEffectingJobService(EffectingJobServiceUpdateDto jobAffectingDto)
+        {
+            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == jobAffectingDto.EffectingJobServiceId);
+            if (effectService == null) throw new BusinessException("EffectingJobService not found");
+
+            effectService.EndDate = jobAffectingDto.EndDate;
+            effectService.Status = jobAffectingDto.Status;
+            await _effectingJobServiceRepository.UpdateAsync(effectService);
+
         }
     }
 }

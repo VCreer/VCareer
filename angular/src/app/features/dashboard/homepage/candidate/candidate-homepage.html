@@ -1,5 +1,5 @@
 <div class="candidate-homepage">
-  <!-- Hero Section - ✅ Pass categories và provinces -->
+  <!-- Hero Section - ✅ Pass categories, provinces và statistics -->
   <app-hero-section
     [backgroundImage]="'assets/images/home/candidate-home/hero-background.png'"
     [title]="'homepage.title'"
@@ -7,6 +7,9 @@
     [showSearchForm]="true"
     [categories]="categories"
     [provinces]="provinces"
+    [totalJobCount]="totalJobCount"
+    [totalCategoryCount]="totalCategoryCount"
+    [totalProvinceCount]="totalProvinceCount"
     (searchJobs)="onSearch($event)"
     (categorySelected)="onCategorySelected($event)"
     (locationSelected)="onLocationSelected($event)"

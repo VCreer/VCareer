@@ -37,10 +37,10 @@ export const APP_ROUTES: Routes = [
             c => c.CandidateProfileComponent
           ),
       },
-      // {
-      //   path: 'candidate/cv-management',
-      //   loadComponent: () => import('./features/dashboard/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
-      // },
+      {
+        path: 'candidate/cv-management',
+        loadComponent: () => import('./features/cv-management/candidate/cv-management').then(c => c.CvManagementComponent),
+      },
       {
         path: 'candidate/cv-management/view/:cvId',
         loadComponent: () =>
@@ -129,6 +129,14 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'candidate/job-suggestion-settings',
+        loadComponent: () => import('./features/dashboard/job-suggestion-settings/candidate/job-suggestion-settings').then(c => c.JobSuggestionSettingsComponent),
+      },
+      {
+        path: 'candidate/career-opportunity-invitation',
+        loadComponent: () => import('./features/dashboard/career-opportunity-invitation/candidate/career-opportunity-invitation').then(c => c.CareerOpportunityInvitationComponent),
+      },
+      {
         path: 'candidate/service',
         loadComponent: () =>
           import('./features/dashboard/service/candidate/service').then(
@@ -145,7 +153,7 @@ export const APP_ROUTES: Routes = [
     ],
   },
 
-  //#region  auth route
+  //#region  Auth route
   {
     path: 'candidate/login',
     loadComponent: () =>
@@ -184,7 +192,7 @@ export const APP_ROUTES: Routes = [
       import('./features/Auth/recruiter/recruiter-login/recruiter-login').then(
         c => c.RecruiterLoginComponent
       ),
-  },
+  }, 
   {
     path: 'recruiter/register',
     loadComponent: () =>
@@ -216,9 +224,8 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/Auth/admin/login/employee-login').then(m => m.EmployeeLoginComponent),
   },
-  //#endregion
 
-  //#region  Recruiter main route
+  // Recruiter main route
   {
     path: 'recruiter',
     loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
@@ -254,6 +261,7 @@ export const APP_ROUTES: Routes = [
           import('./features/Auth/recruiter/recruiter-verify-otp/recruiter-verify-otp').then(
             c => c.RecruiterVerifyOtpComponent
           ),
+       
       },
       {
         path: 'hr-staff-management',
@@ -325,6 +333,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
       {
+        path: 'payment/callback',
+        loadComponent: () => import('./features/payment/payment-callback/payment-callback').then(c => c.PaymentCallbackComponent),
+      },
+      {
         path: 'my-services',
         loadComponent: () => import('./features/dashboard/service/recruiter/my-services').then(c => c.MyServicesComponent),
       },
@@ -342,15 +354,28 @@ export const APP_ROUTES: Routes = [
             c => c.HRStaffManagementComponent
           ),
       },
+      {
+        path: 'find-cv',
+        loadComponent: () =>
+          import('./features/dashboard/find-candidate/recruiter/find-candidate').then(
+            c => c.FindCandidateComponent
+          ),
+      },
+      {
+        path: 'find-cv/detail/:candidateId',
+        loadComponent: () =>
+          import('./features/dashboard/find-candidate/recruiter/find-candidate-detail').then(
+            c => c.FindCandidateDetailComponent
+          ),
+      },
       // {
       //   path: 'performance-dashboard',
       //   loadComponent: () => import('./features/dashboard/recruitment-performance/recruitment-performance-dashboard.component').then(c => c.RecruitmentPerformanceDashboardComponent),
       // }
     ],
   },
-  //#endregion
 
-  //#region  Employee main route with layout (must be after login route)
+  // Employee main route with layout (must be after login route)
   {
     path: 'employee',
     loadComponent: () =>
@@ -377,12 +402,53 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'manage-recruitment-information-detail',
-        loadComponent: () =>
-          import(
-            './features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail'
-          ).then(c => c.EmployeeJobManagementDetailComponent),
+        loadComponent: () => import('./features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail').then(c => c.EmployeeJobManagementDetailComponent),
       },
-    ],
+      {
+        path: 'user-management',
+        children: [
+          {
+            path: 'recruiter',
+            loadComponent: () => import('./features/user-management-employee/recruiting-user-management/recruiting-user-management').then(c => c.RecruitingUserManagementComponent),
+          },
+          {
+            path: 'candidate',
+            loadComponent: () => import('./features/user-management-employee/candidate-user-management/candidate-user-management').then(c => c.CandidateUserManagementComponent),
+          },
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'recruiter'
+          }
+        ]
+      },
+      {
+        path: 'manage-service-packages',
+        loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
+      }
+    ]
+  },
+
+  // Legacy redirects
+  {
+    path: 'login',
+    redirectTo: '/candidate/login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'register',
+    redirectTo: '/candidate/register',
+    pathMatch: 'full',
+  },
+  {
+    path: 'forgot-password',
+    redirectTo: '/candidate/forget-password',
+    pathMatch: 'full',
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
   },
   //#endregion
 
@@ -399,9 +465,8 @@ export const APP_ROUTES: Routes = [
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
   },
-  //#endregion
 
-  //#region  404 - Wildcard route (phải đặt cuối cùng)
+  // 404 - Wildcard route (phải đặt cuối cùng)
   {
     path: '404',
     loadComponent: () => import('./features/not-found/not-found').then(c => c.NotFoundComponent),

@@ -1,0 +1,95 @@
+using System;
+using System.Threading.Tasks;
+using VCareer.Dto.Applications;
+using Volo.Abp.Application.Dtos;
+using Volo.Abp.Application.Services;
+
+namespace VCareer.IServices.Application
+{
+    /// <summary>
+    /// Interface cho Application Management Service
+    /// </summary>
+    public interface IJobApply:IApplicationService
+    {
+        /// <summary>
+        /// Nộp đơn ứng tuyển với CV online (CandidateCv)
+        /// </summary>
+        Task<ApplicationDto> ApplyWithOnlineCVAsync(ApplyWithOnlineCVDto input);
+
+        /// <summary>
+        /// Nộp đơn ứng tuyển với CV đã tải lên (UploadedCv)
+        /// </summary>
+        Task<ApplicationDto> ApplyWithUploadedCVAsync(ApplyWithUploadedCVDto input);
+
+        /// <summary>
+        /// Lấy danh sách đơn ứng tuyển
+        /// </summary>
+        Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input);
+
+        /// <summary>
+        /// Lấy thông tin chi tiết đơn ứng tuyển
+        /// </summary>
+        Task<ApplicationDto> GetApplicationAsync(Guid id);
+
+        /// <summary>
+        /// Cập nhật trạng thái đơn ứng tuyển (cho nhà tuyển dụng)
+        /// </summary>
+        Task<ApplicationDto> UpdateApplicationStatusAsync(Guid id, UpdateApplicationStatusDto input);
+
+        /// <summary>
+        /// Hủy đơn ứng tuyển (cho ứng viên)
+        /// </summary>
+        Task<ApplicationDto> WithdrawApplicationAsync(Guid id, WithdrawApplicationDto input);
+
+        /// <summary>
+        /// Đánh dấu đã xem đơn ứng tuyển
+        /// </summary>
+        Task<ApplicationDto> MarkAsViewedAsync(Guid id);
+
+        /// <summary>
+        /// Lấy thống kê đơn ứng tuyển
+        /// </summary>
+        Task<ApplicationStatisticsDto> GetApplicationStatisticsAsync(Guid? jobId = null, int? companyId = null);
+
+        /// <summary>
+        /// Lấy danh sách đơn ứng tuyển của ứng viên
+        /// </summary>
+        Task<PagedResultDto<ApplicationDto>> GetMyApplicationsAsync(GetApplicationListDto input);
+
+        /// <summary>
+        /// Lấy danh sách đơn ứng tuyển của công ty
+        /// </summary>
+        Task<PagedResultDto<ApplicationDto>> GetCompanyApplicationsAsync(GetApplicationListDto input);
+
+        /// <summary>
+        /// Lấy danh sách đơn ứng tuyển cho một công việc cụ thể
+        /// </summary>
+        Task<PagedResultDto<ApplicationDto>> GetJobApplicationsAsync(Guid jobId, GetApplicationListDto input);
+
+        /// <summary>
+        /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
+        /// </summary>
+        Task<byte[]> DownloadApplicationCVAsync(Guid id);
+
+        /// <summary>
+        /// Xóa đơn ứng tuyển (soft delete)
+        /// </summary>
+        Task DeleteApplicationAsync(Guid id);
+
+        /// <summary>
+        /// Tải xuống hàng loạt CV của các ứng viên đã ứng tuyển vào công ty
+        /// Dành cho Leader Recruiter (IsLead = 1) và HR Staff (IsLead = 0)
+        /// </summary>
+        Task<byte[]> BulkDownloadCompanyCVsAsync(BulkDownloadCVsDto input);
+
+        /// <summary>
+        /// Đánh giá ứng viên (Rating từ 1-10)
+        /// </summary>
+        Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input);
+
+        /// <summary>
+        /// Kiểm tra xem user đã ứng tuyển job chưa
+        /// </summary>
+        Task<ApplicationStatusDto> CheckApplicationStatusAsync(Guid jobId);
+    }
+}

@@ -7,6 +7,7 @@ using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
 using VCareer.Services.LuceneService.JobSearch;
+using VCareer.Services.Payment;
 using VCareer.Token;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
@@ -18,6 +19,8 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
+using VNPAY;
+using System.Linq;
 
 namespace VCareer;
 
@@ -50,6 +53,11 @@ public class VCareerApplicationModule : AbpModule
         // ABP tự động đăng ký, nhưng ta có thể đăng ký thủ công để rõ ràng:
         context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
 
+        // 🔧 ĐĂNG KÝ VNPAY CLIENT được thực hiện trong VCareerHttpApiHostModule
+        // để có access đến IConfiguration
+
+        // 🔧 ĐĂNG KÝ VNPAY SERVICE
+        context.Services.AddScoped<IVnpayService, VnpayService>();
                       }
 
    

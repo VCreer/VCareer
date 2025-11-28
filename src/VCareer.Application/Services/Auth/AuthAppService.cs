@@ -361,17 +361,23 @@ namespace VCareer.Services.Auth
         private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
         {
             var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
-           // dù append ghi đè cookie nhưng có trường hợp ko xóa được thì lỗi
-           // ví dụ như cùng name nhưung khác path là ko apppend được rồi 
+            // dù append ghi đè cookie nhưng có trường hợp ko xóa được thì lỗi
+            // ví dụ như cùng name nhưung khác path là ko apppend được rồi 
             //response.Cookies.Delete("access_token", new CookieOptions { Path = "/" });
             //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
+
+            double expiredMinuteAcesstoken = 5;
+            if (tokenResonse.ExpireMinuteAcesstoken!=null) expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireHourRefreshToken);
+
+            double expiredHourReFrecesstoken = 48;
+            if (tokenResonse.ExpireHourRefreshToken!=null) expiredHourReFrecesstoken= double.Parse(tokenResonse.ExpireHourRefreshToken);
 
             response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(tokenResonse.ExpireMinuteAcesstoken)),
+                Expires = DateTime.UtcNow.AddMinutes(expiredMinuteAcesstoken),
                 Path = "/"
             });
 
@@ -380,7 +386,7 @@ namespace VCareer.Services.Auth
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(double.Parse(tokenResonse.ExpireHourRefreshToken)),
+                Expires = DateTime.UtcNow.AddHours(expiredHourReFrecesstoken),
                 Path = "/"
             });
         }
@@ -394,9 +400,9 @@ namespace VCareer.Services.Auth
             var roles = _currentUser.Roles;
             var userId = _currentUser.Id;
 
-        /*    if (string.IsNullOrEmpty(email) ||
-               !roles.Any() ||
-               userId == null) throw new BusinessException("Cant get current user infomation");*/
+            /*    if (string.IsNullOrEmpty(email) ||
+                   !roles.Any() ||
+                   userId == null) throw new BusinessException("Cant get current user infomation");*/
 
             return await Task.FromResult(new CurrentUserInfoDto
             {

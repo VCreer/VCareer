@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  ButtonComponent, 
+import {
+  ButtonComponent,
   ToastNotificationComponent,
   InputFieldComponent,
   SelectFieldComponent,
@@ -12,12 +12,21 @@ import {
   StaffTableComponent,
   ActivityLogTableComponent,
   HRStaff,
-  ActivityLog
+  ActivityLog,
 } from '../../../../shared/components';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
-import type { StaffListItemDto, ActivateStaffDto, DeactivateStaffDto, InviteStaffDto } from '../../../../proxy/dto/team-management-dto/models';
+import type {
+  StaffListItemDto,
+  ActivateStaffDto,
+  DeactivateStaffDto,
+  InviteStaffDto,
+} from '../../../../proxy/dto/team-management-dto/models';
 import { ActivityLogService } from '../../../../proxy/services/auth/activity-log';
-import type { ActivityLogDto, ActivityLogFilterDto, ActivityLogListDto } from '../../../../proxy/dto/activity-log-dto/models';
+import type {
+  ActivityLogDto,
+  ActivityLogFilterDto,
+  ActivityLogListDto,
+} from '../../../../proxy/dto/activity-log-dto/models';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -33,15 +42,15 @@ import * as XLSX from 'xlsx';
     StatCardComponent,
     PaginationComponent,
     StaffTableComponent,
-    ActivityLogTableComponent
+    ActivityLogTableComponent,
   ],
   templateUrl: './hr-staff-management.html',
-  styleUrls: ['./hr-staff-management.scss']
+  styleUrls: ['./hr-staff-management.scss'],
 })
 export class HRStaffManagementComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
-  
+
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
@@ -61,7 +70,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     phone: '',
     role: '',
     department: '',
-    status: 'active'
+    status: 'active',
   };
 
   // Filter
@@ -76,7 +85,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     { value: 'hr_manager', label: 'HR Manager' },
     { value: 'recruiter', label: 'Recruiter' },
     { value: 'hr_specialist', label: 'HR Specialist' },
-    { value: 'hr_assistant', label: 'HR Assistant' }
+    { value: 'hr_assistant', label: 'HR Assistant' },
   ];
 
   departmentOptions = [
@@ -84,14 +93,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     { value: 'recruitment', label: 'Tuyển dụng' },
     { value: 'training', label: 'Đào tạo' },
     { value: 'compensation', label: 'Lương thưởng' },
-    { value: 'employee_relations', label: 'Quan hệ nhân viên' }
+    { value: 'employee_relations', label: 'Quan hệ nhân viên' },
   ];
 
   statusOptions = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang hoạt động' },
     { value: 'pending', label: 'Chờ duyệt' },
-    { value: 'inactive', label: 'Ngừng hoạt động' }
+    { value: 'inactive', label: 'Ngừng hoạt động' },
   ];
 
   // Activity Log
@@ -156,11 +165,11 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 100);
-    
+
     // Load current user info for debugging
     this.loadCurrentUserInfo();
     this.loadStaffList();
-    
+
     // Close dropdown when clicking outside
     setTimeout(() => {
       document.addEventListener('click', this.handleClickOutside);
@@ -170,7 +179,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   loadCurrentUserInfo(): void {
     this.loadingLeaderInfo = true;
     this.teamManagementService.getCurrentUserInfo().subscribe({
-      next: (userInfo) => {
+      next: userInfo => {
         this.currentLeaderInfo = userInfo;
         this.loadingLeaderInfo = false;
         console.log('Current user info:', userInfo);
@@ -178,10 +187,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         console.log('CompanyId:', userInfo.companyId);
         console.log('CompanyName:', userInfo.companyName);
       },
-      error: (error) => {
+      error: error => {
         console.error('Error loading current user info:', error);
         this.loadingLeaderInfo = false;
-      }
+      },
     });
   }
 
@@ -197,7 +206,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     if (!target.closest('.filter-dropdown')) {
       this.showFilterDropdown = false;
     }
-  }
+  };
 
   checkSidebarState(): void {
     const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
@@ -210,18 +219,19 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     this.filteredStaffList = this.staffList.filter(staff => {
-      const matchSearch = !this.searchKeyword || 
+      const matchSearch =
+        !this.searchKeyword ||
         staff.name.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
         staff.email.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
         staff.phone.includes(this.searchKeyword);
-      
+
       const matchRole = !this.filterRole || staff.role === this.filterRole;
       const matchDepartment = !this.filterDepartment || staff.department === this.filterDepartment;
       const matchStatus = !this.filterStatus || staff.status === this.filterStatus;
 
       return matchSearch && matchRole && matchDepartment && matchStatus;
     });
-    
+
     this.currentPage = 1;
     this.updatePaginatedList();
   }
@@ -235,7 +245,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.updatePaginatedList();
-    
+
     // Scroll to top of table
     const tableElement = document.querySelector('.staff-table-wrapper');
     if (tableElement) {
@@ -246,14 +256,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   onExportExcel(): void {
     try {
       this.showToastMessage('Đang xuất file Excel...', 'info');
-      
+
       // Chuẩn bị dữ liệu để export
       const exportData = this.filteredStaffList.map(staff => ({
         'Mã nhân viên': staff.id,
         'Họ và tên': staff.name,
-        'Email': staff.email,
+        Email: staff.email,
         'Điện thoại': staff.phone || 'N/A',
-        'Trạng thái': this.getStatusLabel(staff.status)
+        'Trạng thái': this.getStatusLabel(staff.status),
       }));
 
       // Tạo workbook và worksheet
@@ -267,7 +277,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         { wch: 30 }, // Họ và tên
         { wch: 35 }, // Email
         { wch: 15 }, // Điện thoại
-        { wch: 20 }  // Trạng thái
+        { wch: 20 }, // Trạng thái
       ];
       worksheet['!cols'] = columnWidths;
 
@@ -276,7 +286,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
       // Xuất file
       XLSX.writeFile(workbook, fileName);
-      
+
       this.showToastMessage('Xuất file Excel thành công!', 'success');
     } catch (error) {
       console.error('Error exporting Excel:', error);
@@ -345,10 +355,12 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         skipCount: 0,
         maxResultCount: 100, // Lấy tối đa 100 logs mỗi staff
         sorting: 'creationTime DESC',
-        searchKeyword: '' // Truyền empty string để tránh validation error (backend sẽ check IsNullOrWhiteSpace)
+        searchKeyword: '', // Truyền empty string để tránh validation error (backend sẽ check IsNullOrWhiteSpace)
       };
 
-      return this.activityLogService.getStaffActivityLogs(staff.id, filter).toPromise()
+      return this.activityLogService
+        .getStaffActivityLogs(staff.id, filter)
+        .toPromise()
         .then((response: ActivityLogListDto | undefined) => {
           if (response && response.activities) {
             return response.activities.map((activity: ActivityLogDto) => ({
@@ -358,7 +370,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
               staffRole: staff.role,
               activityType: this.mapActivityType(String(activity.activityType || '')),
               detail: this.formatActivityDetail(activity),
-              timestamp: activity.creationTime ? new Date(activity.creationTime) : new Date()
+              timestamp: activity.creationTime ? new Date(activity.creationTime) : new Date(),
             }));
           }
           return [];
@@ -396,19 +408,19 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   mapActivityType(activityType: string): string {
     // Map ActivityType enum sang string dễ hiểu
     const typeMap: { [key: string]: string } = {
-      'Login': 'login',
-      'Logout': 'logout',
-      'JobPosted': 'create_campaign',
-      'JobUpdated': 'update_campaign',
-      'JobDeleted': 'delete_campaign',
-      'ApplicationSubmitted': 'submit_application',
-      'ApplicationApproved': 'approve',
-      'ApplicationRejected': 'reject',
-      'CandidateEvaluated': 'review_cv',
-      'ProfileUpdated': 'update_profile',
-      'EmailSent': 'send_email',
-      'InterviewScheduled': 'schedule_interview',
-      'InterviewCompleted': 'complete_interview'
+      Login: 'login',
+      Logout: 'logout',
+      JobPosted: 'create_campaign',
+      JobUpdated: 'update_campaign',
+      JobDeleted: 'delete_campaign',
+      ApplicationSubmitted: 'submit_application',
+      ApplicationApproved: 'approve',
+      ApplicationRejected: 'reject',
+      CandidateEvaluated: 'review_cv',
+      ProfileUpdated: 'update_profile',
+      EmailSent: 'send_email',
+      InterviewScheduled: 'schedule_interview',
+      InterviewCompleted: 'complete_interview',
     };
 
     return typeMap[activityType] || activityType.toLowerCase();
@@ -430,10 +442,11 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
       this.filteredActivityLogs = [...this.activityLogs];
     } else {
       const keyword = this.activitySearchKeyword.toLowerCase();
-      this.filteredActivityLogs = this.activityLogs.filter(log => 
-        log.staffName.toLowerCase().includes(keyword) ||
-        log.detail.toLowerCase().includes(keyword) ||
-        log.activityType.toLowerCase().includes(keyword)
+      this.filteredActivityLogs = this.activityLogs.filter(
+        log =>
+          log.staffName.toLowerCase().includes(keyword) ||
+          log.detail.toLowerCase().includes(keyword) ||
+          log.activityType.toLowerCase().includes(keyword)
       );
     }
     this.activityCurrentPage = 1;
@@ -449,7 +462,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   onActivityPageChange(page: number): void {
     this.activityCurrentPage = page;
     this.updatePaginatedActivityLogs();
-    
+
     // Scroll to top of table
     const tableElement = document.querySelector('.staff-table-container');
     if (tableElement) {
@@ -459,7 +472,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   openAddModal(): void {
     this.staffForm = {
-      email: ''
+      email: '',
     };
     this.showAddModal = true;
   }
@@ -505,7 +518,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
     // Prepare data for API
     const inviteStaffDto: InviteStaffDto = {
-      email: this.staffForm.email.trim()
+      email: this.staffForm.email.trim(),
     };
 
     this.loading = true;
@@ -513,19 +526,20 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
     // Call API to invite HR Staff
     this.teamManagementService.inviteStaff(inviteStaffDto).subscribe({
-      next: (response) => {
+      next: response => {
         this.showToastMessage(
-          'Thêm HR Staff thành công! Thông tin đăng nhập đã được gửi đến email: ' + this.staffForm.email,
+          'Thêm HR Staff thành công! Thông tin đăng nhập đã được gửi đến email: ' +
+            this.staffForm.email,
           'success'
         );
         this.loadStaffList(); // Reload list to show new staff
         this.closeAddModal();
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         console.error('Error inviting staff:', error);
         let errorMessage = 'Không thể thêm HR Staff. Vui lòng thử lại.';
-        
+
         if (error.error?.error?.message) {
           errorMessage = error.error.error.message;
         } else if (error.error?.error?.details) {
@@ -533,10 +547,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
+
         this.showToastMessage(errorMessage, 'error');
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -586,23 +600,23 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
           status: staff.status ? 'active' : 'inactive',
           joinDate: '', // API không trả về joinDate
           campaigns: 0, // Có thể tính sau
-          candidates: 0 // Có thể tính sau
+          candidates: 0, // Có thể tính sau
         }));
         console.log('Mapped staff list:', this.staffList);
         this.applyFilters();
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         console.error('Error loading staff list:', error);
         console.error('Error details:', {
           status: error.status,
           statusText: error.statusText,
           error: error.error,
-          message: error.message
+          message: error.message,
         });
-        
+
         let errorMessage = 'Không thể tải danh sách HR Staff. Vui lòng thử lại.';
-        
+
         if (error.error?.error?.message) {
           errorMessage = error.error.error.message;
         } else if (error.error?.error?.details) {
@@ -610,10 +624,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
+
         this.showToastMessage(errorMessage, 'error');
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -626,27 +640,24 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     const input: ActivateStaffDto = {
       staffId: staff.id,
       reason: 'Kích hoạt lại HR Staff',
-      sendNotification: true
+      sendNotification: true,
     };
 
     this.loading = true;
     this.teamManagementService.activateStaff(input).subscribe({
-      next: (response) => {
-        this.showToastMessage(
-          response.message || 'Kích hoạt HR Staff thành công!',
-          'success'
-        );
+      next: response => {
+        this.showToastMessage(response.message || 'Kích hoạt HR Staff thành công!', 'success');
         this.loadStaffList(); // Reload list
         this.closeEditModal();
       },
-      error: (error) => {
+      error: error => {
         console.error('Error activating staff:', error);
         this.showToastMessage(
           error.error?.error?.message || 'Không thể kích hoạt HR Staff. Vui lòng thử lại.',
           'error'
         );
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -659,27 +670,24 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     const input: DeactivateStaffDto = {
       staffId: staff.id,
       reason: 'Vô hiệu hóa HR Staff',
-      sendNotification: true
+      sendNotification: true,
     };
 
     this.loading = true;
     this.teamManagementService.deactivateStaff(input).subscribe({
-      next: (response) => {
-        this.showToastMessage(
-          response.message || 'Vô hiệu hóa HR Staff thành công!',
-          'success'
-        );
+      next: response => {
+        this.showToastMessage(response.message || 'Vô hiệu hóa HR Staff thành công!', 'success');
         this.loadStaffList(); // Reload list
         this.closeEditModal();
       },
-      error: (error) => {
+      error: error => {
         console.error('Error deactivating staff:', error);
         this.showToastMessage(
           error.error?.error?.message || 'Không thể vô hiệu hóa HR Staff. Vui lòng thử lại.',
           'error'
         );
         this.loading = false;
-      }
+      },
     });
   }
 

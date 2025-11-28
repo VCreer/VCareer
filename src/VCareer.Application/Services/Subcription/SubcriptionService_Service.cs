@@ -17,6 +17,7 @@ using VCareer.Models.Subcription_Payment;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
 {
@@ -207,6 +208,20 @@ namespace VCareer.Services.Subcription
             subcriptionService.DayDuration = dto.DayDuration;
 
             await _subcriptionServiceRepository.UpdateAsync(subcriptionService);
+        }
+
+        public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(SubcriptorTarget? target = null)
+        {
+            var query = await _subcriptionServiceRepository.GetQueryableAsync();
+            query = query.Where(x => x.IsActive == true && x.Status == SubcriptionContance.SubcriptionStatus.Active);
+
+            if (target.HasValue)
+            {
+                query = query.Where(x => x.Target == target.Value);
+            }
+
+            var services = await AsyncExecuter.ToListAsync(query);
+            return ObjectMapper.Map<List<SubcriptionService>, List<SubcriptionsViewDto>>(services);
         }
 
     }

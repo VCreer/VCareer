@@ -14,9 +14,17 @@ using VCareer.Dto.FileDto;
 using VCareer.Dto.ActivityLogDto;
 using VCareer.IServices.Books;
 using VCareer.Models;
-using VCareer.Application.Contracts.Applications;
 using VCareer.CV;
 using VCareer.Dto.Profile;
+using VCareer.Dto.Order;
+using VCareer.Models.Order;
+using VCareer.Models.Subcription;
+using VCareer.Models.Job;
+using VCareer.Dto.JobDto;
+using VCareer.Dto.Job;
+using VCareer.Models.JobCategory;
+using VCareer.Dto.Category;
+using VCareer.Dto.Applications;
 
 namespace VCareer;
 
@@ -60,6 +68,19 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
 
         // Application mappings
         CreateMap<JobApplication, ApplicationDto>();
+
+        // Order mappings
+        CreateMap<Order, OrderDto>();
+        CreateMap<OrderDetail, OrderDetailDto>();
+
+        CreateMap<Job_Post, JobViewDto>();
+        CreateMap<Job_Post, JobViewDetail>();
+        CreateMap<RecruitmentCampaign, RecruimentCampainViewDto>();
+        CreateMap<Tag, TagViewDto>();
+
+
+        // Subscription Service mappings
+        CreateMap<Models.Subcription.SubcriptionService, Dto.Subcriptions.SubcriptionsViewDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

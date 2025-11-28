@@ -12,6 +12,9 @@ import {
   PaginationComponent,
   GenericModalComponent
 } from '../../../shared/components';
+import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
+import type { ApplicationDto,GetApplicationListDto, UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
+import { environment } from '../../../../environments/environment';
 
 export interface CandidateCv {
   id: string;
@@ -31,6 +34,7 @@ export interface CandidateCv {
   candidateCode?: string; // Mã ứng viên
   notes?: string; // Ghi chú
   labels?: string[];
+  rating?: number; // Đánh giá từ 1-10
 }
 
 @Component({
@@ -65,14 +69,12 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   ];
 
   statuses: { id: string; name: string }[] = [
+    { id: 'received', name: 'CV tiếp nhận' },  // Trạng thái mặc định
     { id: 'suitable', name: 'Phù hợp' },
-    { id: 'send-offer', name: 'Gửi đề nghị' },
-    { id: 'new', name: 'Mới' },
-    { id: 'reviewing', name: 'Đang xem xét' },
-    { id: 'interviewing', name: 'Đang phỏng vấn' },
-    { id: 'offered', name: 'Đã đề xuất' },
-    { id: 'hired', name: 'Đã tuyển' },
-    { id: 'rejected', name: 'Đã từ chối' }
+    { id: 'interview', name: 'Hẹn phỏng vấn' },
+    { id: 'offer', name: 'Gửi đề nghị' },
+    { id: 'hired', name: 'Nhận việc' },
+    { id: 'not-suitable', name: 'Chưa phù hợp' }
   ];
 
   sources: { id: string; name: string }[] = [
@@ -115,7 +117,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private translationService: TranslationService,
-    private router: Router
+    private router: Router,
+    private applicationService: ApplicationService
   ) {}
 
   ngOnInit(): void {
@@ -150,6 +153,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    this.removeScrollListener();
   }
 
   private checkSidebarState(): void {
@@ -164,13 +168,77 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   loadCvs(): void {
     this.loading = true;
-    // TODO: Call API to load CVs
-    // For now, use mock data
-    setTimeout(() => {
-      this.candidateCvs = this.generateMockCvs();
-      this.loading = false;
-      this.applyFilters();
-    }, 500);
+    
+    const input: GetApplicationListDto = {
+      skipCount: 0,
+      maxResultCount: 1000, // Load all for client-side filtering
+      sorting: 'creationTime DESC',
+      // companyId sẽ được backend tự lấy từ current user
+    };
+    
+    this.applicationService.getCompanyApplications(input).subscribe({
+      next: (response) => {
+        console.log('Applications loaded from API:', response);
+        this.candidateCvs = this.mapApplicationsToCvs(response.items || []);
+        this.totalCount = response.totalCount || 0;
+        this.loading = false;
+        this.applyFilters();
+        this.showToastMessage(`Đã tải ${response.items?.length || 0} ứng viên từ hệ thống.`, 'success');
+      },
+      error: (error) => {
+        console.error('Error loading applications:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        
+        let errorMessage = 'Không thể tải danh sách ứng viên từ server.';
+        
+        if (error.status === 401) {
+          errorMessage = 'Vui lòng đăng nhập để xem danh sách ứng viên.';
+        } else if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền truy cập danh sách ứng viên.';
+        } else if (error.status === 404) {
+          errorMessage = 'Không tìm thấy dữ liệu ứng viên.';
+        } else if (error.status === 0 || error.status >= 500) {
+          errorMessage = 'Lỗi kết nối server. Vui lòng thử lại sau.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.loading = false;
+        this.candidateCvs = [];
+        this.filteredCvs = [];
+        this.paginatedCvs = [];
+        this.totalCount = 0;
+        this.applyFilters();
+      }
+    });
+  }
+  
+  private mapApplicationsToCvs(applications: ApplicationDto[]): CandidateCv[] {
+    return applications.map(app => {
+      return {
+        id: app.id || '',
+        name: app.candidateName || 'N/A',
+        email: app.candidateEmail || 'N/A',
+        phone: app.candidatePhone || 'N/A',
+        position: app.jobTitle || 'N/A',
+        status: app.status || 'received', // Default: CV tiếp nhận
+        source: this.getCvSource(app.cvType),
+        appliedDate: app.creationTime ? new Date(app.creationTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        addedDate: app.creationTime ? new Date(app.creationTime).toISOString() : new Date().toISOString(),
+        campaignId: '', // Null theo yêu cầu
+        campaignName: '', // Null theo yêu cầu
+        isViewed: !!app.viewedAt,
+        candidateCode: app.candidateId || '',
+        notes: app.recruiterNotes || '',
+        rating: app.rating || undefined
+      };
+    });
+  }
+  
+  private getCvSource(cvType?: string): string {
+    if (cvType === 'uploaded') return 'topcv-support';
+    if (cvType === 'online') return 'find-cv';
+    return 'find-cv';
   }
 
   private generateMockCvs(): CandidateCv[] {
@@ -181,7 +249,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         email: 'cv_3474319@gmail.com',
         phone: '0003474319',
         position: 'Chuyên viên Nhân sự tổng hợp',
-        status: 'suitable',
+        status: 'suitable', // Phù hợp
         source: 'find-cv',
         appliedDate: '2022-09-16',
         addedDate: '2022-09-16T14:14:00',
@@ -197,7 +265,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         email: 'tuyen.pham@example.com',
         phone: '0123456789',
         position: 'Nhân viên Marketing',
-        status: 'send-offer',
+        status: 'offer', // Gửi đề nghị
         source: 'topcv-support',
         appliedDate: '2022-09-15',
         addedDate: '2022-09-15T10:30:00',
@@ -212,7 +280,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         email: 'phuoc.tran@example.com',
         phone: '0987654321',
         position: 'Developer',
-        status: 'suitable',
+        status: 'suitable', // Phù hợp
         source: 'find-cv',
         appliedDate: '2022-09-14',
         addedDate: '2022-09-14T16:45:00',
@@ -229,7 +297,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         email: 'man.tran@example.com',
         phone: '0912345678',
         position: 'Designer',
-        status: 'suitable',
+        status: 'suitable', // Phù hợp
         source: 'topcv-support',
         appliedDate: '2022-09-13',
         addedDate: '2022-09-13T09:20:00',
@@ -244,7 +312,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     for (let i = 5; i <= 747; i++) {
       const names = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Thị D', 'Hoàng Văn E'];
       const positions = ['Developer', 'Designer', 'Marketing', 'HR', 'Tester'];
-      const statuses = ['suitable', 'send-offer', 'new'];
+      const statuses = ['received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable']; // Các trạng thái mới
       const sources = ['find-cv', 'topcv-support'];
       const campaigns = [
         { id: '#407764', name: 'Tuyển Nhân viên Tester' },
@@ -420,13 +488,130 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   getStatusBadgeClass(statusId: string): string {
     switch (statusId) {
+      case 'received':
+        return 'status-received'; // Gray - CV tiếp nhận (mặc định)
       case 'suitable':
-        return 'status-suitable'; // Orange
-      case 'send-offer':
-        return 'status-send-offer'; // Blue
+        return 'status-suitable'; // Orange - Phù hợp
+      case 'interview':
+        return 'status-interview'; // Purple - Hẹn phỏng vấn
+      case 'offer':
+        return 'status-offer'; // Blue - Gửi đề nghị
+      case 'hired':
+        return 'status-hired'; // Green - Nhận việc
+      case 'not-suitable':
+        return 'status-not-suitable'; // Red - Chưa phù hợp
       default:
         return 'status-default';
     }
+  }
+  
+  // Inline status change
+  changingStatusFor: string | null = null;
+  
+  // Rating change
+  changingRatingFor: string | null = null;
+  
+  onChangeStatus(cv: CandidateCv, event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const newStatus = target.value;
+    const oldStatus = cv.status;
+    
+    console.log(`Changing status for ${cv.name} from ${oldStatus} to ${newStatus}`);
+    
+    // Optimistic update - update UI immediately
+    cv.status = newStatus;
+    
+    const updateDto: UpdateApplicationStatusDto = {
+      status: newStatus,
+      recruiterNotes: cv.notes,
+      rating: cv.rating
+    };
+    
+    this.changingStatusFor = cv.id;
+    
+    this.applicationService.updateApplicationStatus(cv.id, updateDto).subscribe({
+      next: () => {
+        this.showToastMessage(`Đã cập nhật trạng thái thành "${this.getStatusName(newStatus)}"`, 'success');
+        this.changingStatusFor = null;
+      },
+      error: (error) => {
+        console.error('Error updating status:', error);
+        console.error('Error status:', error.status);
+        
+        let errorMessage = 'Không thể cập nhật trạng thái. Vui lòng thử lại.';
+        
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền cập nhật trạng thái ứng viên này.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.changingStatusFor = null;
+        
+        // Revert to previous status on error
+        cv.status = oldStatus;
+        target.value = oldStatus;
+      }
+    });
+  }
+
+  // Rating methods
+  getStarState(rating: number | undefined, starIndex: number): 'full' | 'half' | 'empty' {
+    if (!rating) return 'empty';
+    
+    // Convert 1-10 scale to 1-5 scale (each star = 2 points)
+    const starValue = starIndex * 2;
+    const previousStarValue = (starIndex - 1) * 2;
+    
+    if (rating >= starValue) {
+      return 'full';
+    } else if (rating > previousStarValue && rating < starValue) {
+      return 'half';
+    }
+    return 'empty';
+  }
+
+  onRateCandidate(cv: CandidateCv, rating: number): void {
+    if (this.changingRatingFor === cv.id) return; // Prevent double click
+    
+    const oldRating = cv.rating;
+    
+    console.log(`Rating candidate ${cv.name} with ${rating}/10`);
+    
+    // Optimistic update
+    cv.rating = rating;
+    this.changingRatingFor = cv.id;
+    
+    const updateDto: UpdateApplicationStatusDto = {
+      status: cv.status,
+      recruiterNotes: cv.notes,
+      rating: rating
+    };
+    
+    this.applicationService.updateApplicationStatus(cv.id, updateDto).subscribe({
+      next: () => {
+        this.showToastMessage(`Đã đánh giá ứng viên ${rating}/10`, 'success');
+        this.changingRatingFor = null;
+      },
+      error: (error) => {
+        console.error('Error updating rating:', error);
+        
+        let errorMessage = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+        
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền đánh giá ứng viên này.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.changingRatingFor = null;
+        
+        // Revert to previous rating on error
+        cv.rating = oldRating;
+      }
+    });
   }
 
   getInitials(name: string): string {
@@ -449,6 +634,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   showActionsMenu: string | null = null;
+  private scrollListener?: () => void;
+  private currentMenuCvId: string | null = null;
+  private currentMenuButton: HTMLElement | null = null;
 
   // Note modal
   showNoteModal = false;
@@ -461,38 +649,108 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     }
     
     if (this.showActionsMenu === cvId) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     } else {
+      this.closeActionsMenu();
       this.showActionsMenu = cvId;
-      // Position menu using fixed positioning
+      this.currentMenuCvId = cvId;
+      if (event) {
+        const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+        this.currentMenuButton = button || null;
+      }
       setTimeout(() => {
         this.positionActionsMenu(cvId, event);
+        this.setupScrollListener(cvId);
       }, 0);
     }
   }
 
-  private positionActionsMenu(cvId: string, event?: Event): void {
-    if (!event) return;
+  private closeActionsMenu(): void {
+    this.showActionsMenu = null;
+    this.currentMenuCvId = null;
+    this.currentMenuButton = null;
+    this.removeScrollListener();
+  }
 
-    const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
-    if (!button) return;
+  private setupScrollListener(cvId: string): void {
+    this.removeScrollListener();
+    
+    this.scrollListener = () => {
+      if (this.showActionsMenu === cvId && this.currentMenuCvId === cvId) {
+        this.updateMenuPosition(cvId);
+      }
+    };
+    
+    window.addEventListener('scroll', this.scrollListener, true);
+    window.addEventListener('resize', this.scrollListener);
+  }
 
+  private removeScrollListener(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener);
+      this.scrollListener = undefined;
+    }
+  }
+
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const pageElement = document.querySelector('.cv-management-page');
+    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
+      return 280;
+    }
+    return 72;
+  }
+
+  private updateMenuPosition(cvId: string): void {
     const menu = document.querySelector(`.actions-menu[data-cv-id="${cvId}"]`) as HTMLElement;
-    if (!menu) return;
-
+    const button = this.currentMenuButton;
+    
+    if (!menu || !button) {
+      // Retry after a short delay if menu not found
+      if (!menu) {
+        setTimeout(() => this.updateMenuPosition(cvId), 10);
+      }
+      return;
+    }
+    
     const rect = button.getBoundingClientRect();
-    const menuWidth = 180; // min-width from CSS
+    const menuWidth = menu.offsetWidth || 180;
+    const sidebarWidth = this.getSidebarWidth();
+    const viewportWidth = window.innerWidth;
+    const padding = 8;
     
     // Position menu below button, aligned to right
     let left = rect.right - menuWidth;
     
-    // Ensure menu doesn't go off left edge
-    if (left < 8) {
-      left = rect.left;
+    // Ensure menu doesn't go off left edge (consider sidebar)
+    const minLeft = sidebarWidth + padding;
+    if (left < minLeft) {
+      left = Math.max(minLeft, rect.left);
+    }
+    
+    // Ensure menu doesn't go off right edge
+    const maxLeft = viewportWidth - menuWidth - padding;
+    if (left > maxLeft) {
+      left = maxLeft;
     }
     
     menu.style.top = `${rect.bottom + 4}px`;
     menu.style.left = `${left}px`;
+  }
+
+  private positionActionsMenu(cvId: string, event?: Event): void {
+    // Use stored button reference if available, otherwise try to find from event
+    if (!this.currentMenuButton && event) {
+      const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+      this.currentMenuButton = button || null;
+    }
+    
+    if (!this.currentMenuButton) return;
+    
+    this.updateMenuPosition(cvId);
   }
 
   @HostListener('document:click', ['$event'])
@@ -500,10 +758,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     if (this.showActionsMenu) {
       const target = event.target as HTMLElement;
       if (!target.closest('.actions-menu-wrapper')) {
-        this.showActionsMenu = null;
+        this.closeActionsMenu();
       }
     }
   }
+
 
   getSourceName(sourceId: string): string {
     const source = this.sources.find(s => s.id === sourceId);
@@ -544,14 +803,43 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   onConfirmNote(): void {
-    if (this.selectedCvForNote) {
-      this.selectedCvForNote.notes = this.noteText;
-      // TODO: Save to backend
-      this.showToastMessage('Đã cập nhật ghi chú!', 'success');
-      this.showNoteModal = false;
-      this.selectedCvForNote = null;
-      this.noteText = '';
-    }
+    if (!this.selectedCvForNote) return;
+    
+    const oldNotes = this.selectedCvForNote.notes;
+    
+    // Optimistic update - update UI immediately
+    this.selectedCvForNote.notes = this.noteText;
+    
+    const updateDto: UpdateApplicationStatusDto = {
+      status: this.selectedCvForNote.status,
+      recruiterNotes: this.noteText,
+      rating: this.selectedCvForNote.rating
+    };
+    
+    this.applicationService.updateApplicationStatus(this.selectedCvForNote.id, updateDto).subscribe({
+      next: () => {
+        this.showToastMessage('Đã cập nhật ghi chú!', 'success');
+        this.showNoteModal = false;
+        this.selectedCvForNote = null;
+        this.noteText = '';
+      },
+      error: (error) => {
+        console.error('Error updating notes:', error);
+        
+        // Revert to previous notes on error
+        this.selectedCvForNote.notes = oldNotes;
+        
+        let errorMessage = 'Không thể cập nhật ghi chú. Vui lòng thử lại.';
+        
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền cập nhật ghi chú.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
   }
 
   onDownloadCv(cv: CandidateCv): void {

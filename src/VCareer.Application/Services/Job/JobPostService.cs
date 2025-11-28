@@ -7,14 +7,18 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using VCareer.Constants.JobConstant;
 using VCareer.Dto.JobDto;
+using VCareer.Dto.Subcriptions;
 using VCareer.IRepositories.Category;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IJobServices;
+using VCareer.IServices.Subcriptions;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Job;
+using VCareer.Models.Subcription;
 using VCareer.Models.Users;
 using VCareer.Services.Geo;
 using Volo.Abp;
@@ -23,6 +27,7 @@ using Volo.Abp.Authorization;
 using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Job
 {
@@ -37,9 +42,14 @@ namespace VCareer.Services.Job
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IGeoService _geoService;
         private readonly IJobCategoryRepository _jobCategoryRepository;
+        private readonly IJobAffectingService _effectingJobService;
+        private readonly IChildServiceRepository _childServiceRepository;
+        private readonly ITagService _tagService;
+        private readonly IJobTagService _jobTagService;
 
 
-        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository)
+        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
+            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -50,6 +60,10 @@ namespace VCareer.Services.Job
             _recruiterRepository = recruiterRepository;
             _geoService = geoService;
             _jobCategoryRepository = jobCategoryRepository;
+            _effectingJobService = jobAffectingService;
+            _childServiceRepository = childServiceRepository;
+            _tagService = tagService;
+            _jobTagService = jobTagService;
         }
 
         public async Task ApproveJobPostAsync(string id)
@@ -63,6 +77,7 @@ namespace VCareer.Services.Job
             jobPost.ApproveAt = DateTime.Now;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
+            await _jobSearchService.IndexJobAsync(jobPost.Id);
             //
             //send email cho recruiter báo đăng bài thành công
             //
@@ -132,7 +147,7 @@ namespace VCareer.Services.Job
                     RejectedReason = job.RejectedReason,
                     CategoryName = categoryName.Name,
                     RecruiterLevel = job.RecruiterProfile.RecruiterLevel,
-                    PriorityLevel = job.Job_Priorities.Max(p => p.PriorityLevel),
+                    PriorityLevel = job.Job_Priority.PriorityLevel,
                     Status = job.Status
                     // sau thêm cả tag và category
                 });
@@ -228,7 +243,34 @@ namespace VCareer.Services.Job
         }
 
         #endregion
+        public async Task PostJobAsync(PostJobDto dto)
+        {
+            //chir cho phep job o status Draft duoc post
+            var job = await _jobPostRepository.GetAsync(dto.JobId);
+            if (job == null || job.Status == JobStatus.Deleted) throw new Volo.Abp.BusinessException($"This job doesn't exist or deleted.");
+            if (job.Status == JobStatus.Closed || job.Status == JobStatus.Rejected || job.Status == JobStatus.Expired) throw new Volo.Abp.UserFriendlyException($"This job is expired or rejected , you have to update to post!");
+            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open) throw new Volo.Abp.BusinessException($"This job is already open or waiting for approval.");
 
+
+            //chay cac child service duoc gan vao job
+            if (dto.ChildServiceIds != null && dto.ChildServiceIds.Count > 0)
+            {
+                foreach (var childServiceId in dto.ChildServiceIds)
+                {
+                    var childService = await _childServiceRepository.GetAsync(childServiceId);
+                    if (childService == null || childService.IsDeleted == true || childService.IsActive == false) throw new Volo.Abp.BusinessException($"This child service doesn't exist or deleted.");
+                    await _effectingJobService.ApplyServiceToJob(new EffectingJobServiceCreateDto()
+                    {
+                        ChildServiceId = childServiceId,
+                        JobPostId = dto.JobId
+                    });
+                }
+            }
+
+            job.Status = JobStatus.Pending;
+            await _jobPostRepository.UpdateAsync(job, true);
+
+        }
         public async Task CloseJobPost(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -282,10 +324,12 @@ namespace VCareer.Services.Job
                 SalaryDeal = dto.SalaryDeal,
                 PostedAt = DateTime.Now,
                 JobCategoryId = dto.JobCategoryId,
+                RecruitmentCampaignId = dto.RecruitmentCampaignId
 
             };
-
-            await _jobPostRepository.InsertAsync(job);
+            await _jobPostRepository.InsertAsync(job,true);
+            if (dto.TagIds != null && dto.TagIds.Count > 0) await _jobTagService
+                    .AddTagsToJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = job.Id, TagIds = dto.TagIds });
             await AddDefaultJobPriority(job);
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)
@@ -308,10 +352,6 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
-        public Task<List<JobViewWithPriorityDto>> GetJobByRecruiterId(Guid id, int maxCount = 10)
-        {
-            throw new NotImplementedException();
-        }
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
             throw new NotImplementedException();
@@ -326,6 +366,7 @@ namespace VCareer.Services.Job
         }
         public Task UpdateJobPost(JobPostUpdateDto dto)
         {
+            //khi update phai doi status thanh draf
             throw new NotImplementedException();
         }
         public Task UpDateViewCount(string id)
@@ -338,7 +379,7 @@ namespace VCareer.Services.Job
         {
 
             if (dto.PriorityLevel != null)
-                jobs = jobs.Where(x => x.Job_Priorities.Any(p => p.PriorityLevel == dto.PriorityLevel));
+                jobs = jobs.Where(p => p.Job_Priority.PriorityLevel == dto.PriorityLevel);
 
             if (dto.RecruiterLevel != null)
                 jobs = jobs.Where(x => x.RecruiterProfile.RecruiterLevel == dto.RecruiterLevel);
@@ -354,15 +395,12 @@ namespace VCareer.Services.Job
             IQueryable<Job_Post> jobs = (await _jobPostRepository
                 .GetQueryableAsync())
                 .Include(job => job.RecruiterProfile)
-                .Include(job => job.Job_Priorities);
+                .Include(job => job.Job_Priority);
 
             return jobs
                 .OrderByDescending(j => j.RecruiterProfile.RecruiterLevel)
                 .ThenByDescending(j => j.ExpiresAt)
-                .ThenByDescending(j =>
-                    j.Job_Priorities.Any()
-                        ? j.Job_Priorities.Max(p => p.PriorityLevel)
-                        : 0)
+                .ThenByDescending(j => j.Job_Priority.PriorityLevel)
                 .ThenByDescending(j => j.RiskJobLevel)
                 .ThenByDescending(j => j.PostedAt);
         }
@@ -373,28 +411,6 @@ namespace VCareer.Services.Job
             {
                 await _jobPriorityRepository.InsertAsync(new Job_Priority
                 {
-                    DisplayArea = JobDisplayArea.JobCategorPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.JobLocationPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.JobSimilarPage,
-                    JobId = job.Id,
-                    PriorityLevel = JobPriorityLevel.Low,
-                    SortScore = 0
-                });
-                await _jobPriorityRepository.InsertAsync(new Job_Priority
-                {
-                    DisplayArea = JobDisplayArea.MainMenuPage,
                     JobId = job.Id,
                     PriorityLevel = JobPriorityLevel.Low,
                     SortScore = 0
@@ -407,6 +423,13 @@ namespace VCareer.Services.Job
 
 
         }
+
+        public Task<List<JobViewDto>> GetJobByRecruiterId(Guid id, int maxCount = 10)
+        {
+            throw new NotImplementedException();
+        }
+
+
         #endregion
     }
 }

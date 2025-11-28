@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GeoService } from '../../../../core/services/Geo.service';
+import { TagService } from 'src/app/proxy/services/job';
+import { JobCategoryService } from 'src/app/proxy/services/job';
+import { TagViewDto, CategoryTreeDto } from 'src/app/proxy/dto/category';
 import {
   EmploymentType,
   ExperienceLevel,
@@ -59,7 +62,10 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private geoService = inject(GeoService);
   private companyProfile = inject(CompanyLegalInfoService);
+  private tagService = inject(TagService);
+  private jobCategoryService = inject(JobCategoryService);
   campaignName = '';
+  campaignId = ''; // Thêm biến để lưu campaignId
   validationErrors: ValidationErrors = {};
   showToast = false;
   toastMessage = '';
@@ -76,6 +82,17 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
   provinceOptions: { label: string; value: number }[] = [];
   wardOptions: { label: string; value: number }[] = [];
+
+  // Category - 2 Dropdowns
+  categoryTree: CategoryTreeDto[] = [];
+  parentCategoryOptions: { label: string; value: string }[] = [];
+  childCategoryOptions: { label: string; value: string }[] = [];
+  selectedParentId: string = '';
+  selectedCategoryId: string = '';
+  
+  // Tags - Chỉ chọn từ danh sách có sẵn
+  availableTags: TagViewDto[] = [];
+  selectedTags: TagViewDto[] = [];
 
   selectedProvince?: number;
   selectedWard?: number;
@@ -108,11 +125,13 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.checkSidebarState();
     this.sidebarCheckInterval = setInterval(() => this.checkSidebarState(), 100);
+    this.loadCategoryTree();
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       if (params['campaignName']) this.campaignName = params['campaignName'];
+      if (params['campaignId']) this.campaignId = params['campaignId']; // Lấy campaignId từ query params
     });
-    //load api thành phố
+
     this.geoService.getProvinces().subscribe({
       next: res => {
         this.provinceOptions = res.map(p => ({
@@ -122,7 +141,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       },
       error: err => console.error('Lỗi tải danh sách tỉnh:', err),
     });
-    //thông tin công ty người đnag dăng nhập
+
     this.companyProfile.getCurrentUserCompanyLegalInfo().subscribe({
       next: res => {
         this.currentCompanyInfo = res;
@@ -139,12 +158,84 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     this.queryParamsSubscription?.unsubscribe();
   }
 
-  //#region địa điểm
+  //#region Category - 2 Dropdowns
+  loadCategoryTree() {
+    this.jobCategoryService.getCategoryTree().subscribe({
+      next: (tree: CategoryTreeDto[]) => {
+        this.categoryTree = tree;
+        // Tạo options cho parent dropdown
+        this.parentCategoryOptions = tree.map(parent => ({
+          label: parent.categoryName || '',
+          value: parent.categoryId || ''
+        }));
+      },
+      error: err => console.error('Lỗi load danh mục:', err),
+    });
+  }
+
+  onParentCategoryChange(parentId: string) {
+    this.selectedParentId = parentId;
+    this.selectedCategoryId = '';
+    this.childCategoryOptions = [];
+    this.availableTags = [];
+    this.selectedTags = [];
+    this.clearFieldError('parentCategory');
+
+    // Tìm parent category và load children
+    const parent = this.categoryTree.find(p => p.categoryId === parentId);
+    if (parent && parent.children) {
+      this.childCategoryOptions = parent.children.map(child => ({
+        label: child.categoryName || '',
+        value: child.categoryId || ''
+      }));
+    }
+  }
+
+  onChildCategoryChange(childId: string) {
+    this.selectedCategoryId = childId;
+    this.selectedTags = [];
+    this.clearFieldError('jobCategoryId');
+
+    // Load tags cho child category này
+    if (childId) {
+      this.loadTagsForCategory(childId);
+    }
+  }
+
+  loadTagsForCategory(categoryId: string) {
+    this.tagService.getTagsByCategoryId(categoryId).subscribe({
+      next: tags => {
+        this.availableTags = tags;
+      },
+      error: err => console.error('Lỗi load tag:', err),
+    });
+  }
+  //#endregion
+
+  //#region Tags - Chỉ chọn từ danh sách
+  toggleTag(tag: TagViewDto) {
+    const index = this.selectedTags.findIndex(t => t.id === tag.id);
+    if (index > -1) {
+      this.selectedTags.splice(index, 1);
+    } else {
+      this.selectedTags.push(tag);
+    }
+  }
+
+  isTagSelected(tag: TagViewDto): boolean {
+    return this.selectedTags.some(t => t.id === tag.id);
+  }
+
+  clearAllTags() {
+    this.selectedTags = [];
+  }
+  //#endregion
+
+  //#region Địa điểm
   onProvinceChange(provinceCode: number) {
     this.selectedProvince = provinceCode;
     this.selectedWard = undefined;
 
-    // Lấy lại danh sách huyện từ tỉnh đã chọn
     this.geoService.getProvinces().subscribe({
       next: res => {
         const selected = res.find(p => p.code === Number(provinceCode));
@@ -158,24 +249,21 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
   //#endregion
 
-  //#region  job
+  //#region Job
   onSaveJob() {
     console.log('Lưu việc làm nháp:', this.jobForm);
     this.showToastMessage('Đã lưu việc làm nháp', 'info');
   }
 
   async onPostJob() {
-    if (this.isSubmitting) {
-      return;
-    }
+    if (this.isSubmitting) return;
 
     if (!this.validateForm()) {
       this.showToastMessage('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
       return;
     }
+    
     this.isSubmitting = true;
-    const provinceCode = this.selectedProvince ?? 0;
-    const wardCode = this.selectedWard ?? 0;
 
     const dto: JobPostCreateDto = {
       title: this.jobForm.jobTitle,
@@ -193,11 +281,13 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       salaryMin: this.salaryDeal ? 0 : this.salaryMin,
       salaryMax: this.salaryDeal ? 0 : this.salaryMax,
       salaryDeal: this.salaryDeal,
-      provinceCode,
-      wardCode,
+      provinceCode: this.selectedProvince ?? 0,
+      wardCode: this.selectedWard ?? 0,
       slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
-      jobCategoryId: 'adc622bf-2ecf-0596-8140-3a1dbbb13188',
       workTime: this.jobForm.workTime,
+      jobCategoryId: this.selectedCategoryId,
+      tagIds: this.selectedTags.map(t => t.id!),
+      recruitmentCampaignId: this.campaignId || undefined, // Thêm campaignId vào DTO
     };
 
     try {
@@ -219,30 +309,31 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       this.isSubmitting = false;
     }
   }
-
   //#endregion
 
-  //#region toast
+  //#region Toast
   showToastMessage(msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
     this.toastMessage = msg;
     this.toastType = type;
     this.showToast = true;
   }
+  
   onToastClose() {
     this.showToast = false;
   }
   //#endregion
 
-  //#region preview
+  //#region Preview
   openPreviewModal() {
     this.showPreviewModal = true;
   }
+  
   closePreviewModal() {
     this.showPreviewModal = false;
   }
   //#endregion
 
-  //#region salary
+  //#region Salary
   onSalaryChange() {
     if (this.salaryDeal) return;
 
@@ -257,7 +348,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   onToggleSalaryDeal(event: any) {
-    const value = event.target.checked; // giá trị thực của checkbox
+    const value = event.target.checked;
     this.salaryDeal = value;
 
     if (value) {
@@ -270,6 +361,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       this.onSalaryChange();
     }
   }
+  
   formatSalary(value: number): string {
     if (value >= 1_000_000_000) {
       return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + ' tỷ';
@@ -281,7 +373,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
   //#endregion
 
-  //#region helper
+  //#region Helper
   getFieldError(field: string) {
     return this.validationErrors[field] || '';
   }
@@ -296,6 +388,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
   validateForm(): boolean {
     this.validationErrors = {};
+    
     if (!this.jobForm.jobTitle?.trim()) {
       this.validationErrors['jobTitle'] = 'Vui lòng nhập tên công việc';
     }
@@ -309,12 +402,18 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       this.validationErrors['workLocation'] = 'Vui lòng nhập địa điểm làm việc';
     }
     if (!this.jobForm.workTime?.trim()) {
-      this.validationErrors['workTine'] = 'Vui lòng nhập thời gian làm việc ';
+      this.validationErrors['workTime'] = 'Vui lòng nhập thời gian làm việc';
     }
+    if (!this.selectedParentId) {
+      this.validationErrors['parentCategory'] = 'Vui lòng chọn ngành nghề chính';
+    }
+    if (!this.selectedCategoryId) {
+      this.validationErrors['jobCategoryId'] = 'Vui lòng chọn lĩnh vực cụ thể';
+    }
+
     return Object.keys(this.validationErrors).length === 0;
   }
 
-  //cái này là để hỗ trợ cho việc tạo select từ enum ở dưới backend
   enumToOptions(enumType: any) {
     return Object.keys(enumType)
       .filter(key => isNaN(Number(key)))

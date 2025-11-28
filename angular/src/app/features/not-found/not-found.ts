@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './not-found.html',
-  styleUrls: ['./not-found.scss']
+  styleUrls: ['./not-found.scss'],
 })
 export class NotFoundComponent {
   constructor(private router: Router) {}
@@ -20,6 +20,12 @@ export class NotFoundComponent {
     window.history.back();
   }
 }
+
+
+
+
+
+
 
 
 

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CartService, CartItem } from '../../../core/services/cart.service';
+import { OrderService, CreateOrderDto } from '../../../core/services/order.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { VnpayPaymentModalComponent, PaymentInfo } from '../../../shared/components/vnpay-payment-modal/vnpay-payment-modal';
 
@@ -26,6 +27,7 @@ export class CartComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
   showVnpayModal = false;
   paymentInfo?: PaymentInfo;
+  isProcessing = false;
   private cartSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
@@ -35,7 +37,8 @@ export class CartComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private cartService: CartService
+    private cartService: CartService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit() {
@@ -43,12 +46,14 @@ export class CartComponent implements OnInit, OnDestroy {
       this.selectedLanguage = lang;
     });
 
-    // Load cart items
+    // Load cart items from API
     this.loadCartItems();
 
     // Subscribe to cart changes
-    this.cartSubscription = this.cartService.cartItems$.subscribe(() => {
-      this.loadCartItems();
+    this.cartSubscription = this.cartService.cartItems$.subscribe((items) => {
+      this.cartItems = items;
+      // Auto-select all items
+      this.selectedItems = new Set(this.cartItems.map(item => item.id));
     });
 
     // Check sidebar state
@@ -68,6 +73,10 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   loadCartItems() {
+    // Load from API - this will update cartItems$ observable
+    this.cartService.loadCartFromApi();
+    
+    // Get current items (may be empty initially, will update via subscription)
     this.cartItems = this.cartService.getCartItems();
     // Auto-select all items
     this.selectedItems = new Set(this.cartItems.map(item => item.id));
@@ -115,10 +124,104 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   // Remove item
-  removeItem(itemId: string): void {
-    this.cartService.removeFromCart(itemId);
-    this.selectedItems.delete(itemId);
-    this.showToastMessage('success', 'Đã xóa sản phẩm khỏi giỏ hàng');
+  removeItem(cartId: string): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+    this.cartService.removeFromCart(cartId).subscribe({
+      next: () => {
+        this.selectedItems.delete(cartId);
+        this.isProcessing = false;
+        this.showToastMessage('success', 'Đã xóa sản phẩm khỏi giỏ hàng');
+      },
+      error: (error) => {
+        console.error('Error removing item from cart:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể xóa sản phẩm. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Increase quantity
+  increaseQuantity(cartId: string, currentQuantity: number): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+    const newQuantity = currentQuantity + 1;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Decrease quantity
+  decreaseQuantity(cartId: string, currentQuantity: number): void {
+    if (this.isProcessing || currentQuantity <= 1) {
+      return;
+    }
+
+    this.isProcessing = true;
+    const newQuantity = currentQuantity - 1;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  // Handle manual quantity input change
+  onQuantityChange(cartId: string, event: Event): void {
+    if (this.isProcessing) {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    const newQuantity = parseInt(input.value, 10);
+
+    if (isNaN(newQuantity) || newQuantity < 1) {
+      // Reset to current quantity if invalid
+      const currentItem = this.cartItems.find(item => item.id === cartId);
+      if (currentItem) {
+        input.value = currentItem.quantity.toString();
+      }
+      return;
+    }
+
+    this.isProcessing = true;
+    this.cartService.updateQuantity(cartId, newQuantity).subscribe({
+      next: () => {
+        this.isProcessing = false;
+      },
+      error: (error) => {
+        console.error('Error updating quantity:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể cập nhật số lượng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+        // Reset to current quantity on error
+        const currentItem = this.cartItems.find(item => item.id === cartId);
+        if (currentItem) {
+          input.value = currentItem.quantity.toString();
+        }
+      }
+    });
   }
 
   // Calculations
@@ -128,8 +231,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   getSubtotal(): number {
     return this.getSelectedItems().reduce((total, item) => {
-      const price = parseFloat(item.price.replace(/,/g, ''));
-      return total + (price * item.quantity);
+      return total + (item.subscriptionServicePrice * item.quantity);
     }, 0);
   }
 
@@ -146,8 +248,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getItemAmount(item: CartItem): number {
-    const price = parseFloat(item.price.replace(/,/g, ''));
-    return price * item.quantity;
+    return item.subscriptionServicePrice * item.quantity;
   }
 
   // Actions
@@ -167,22 +268,46 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Prepare payment info
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
     const selectedItems = this.getSelectedItems();
-    const orderId = `ORD-${Date.now()}`;
-    
-    this.paymentInfo = {
-      orderId: orderId,
-      totalAmount: this.getTotal(),
-      services: selectedItems.map(item => ({
-        name: item.title,
+
+    // Create order DTO
+    const createOrderDto: CreateOrderDto = {
+      orderDetails: selectedItems.map(item => ({
+        subcriptionServiceId: item.subscriptionServiceId,
         quantity: item.quantity,
-        price: parseFloat(item.price.replace(/,/g, ''))
+        unitPrice: item.subscriptionServicePrice
       }))
     };
 
-    // Show VNPAY payment modal
-    this.showVnpayModal = true;
+    // Create order
+    this.orderService.createOrder(createOrderDto).subscribe({
+      next: (order) => {
+        // Create VNPay payment URL
+        this.orderService.createVnpayPaymentUrl({ orderId: order.id }).subscribe({
+          next: (paymentResponse) => {
+            this.isProcessing = false;
+            // Redirect to VNPay payment page
+            window.location.href = paymentResponse.paymentUrl;
+          },
+          error: (error) => {
+            console.error('Error creating payment URL:', error);
+            this.isProcessing = false;
+            this.showToastMessage('error', 'Không thể tạo liên kết thanh toán. Vui lòng thử lại.');
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error creating order:', error);
+        this.isProcessing = false;
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể tạo đơn hàng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
   }
 
   onCloseVnpayModal(): void {

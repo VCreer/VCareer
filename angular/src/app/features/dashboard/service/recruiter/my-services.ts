@@ -84,6 +84,9 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   
   // Actions menu
   showActionsMenu: string | null = null;
+  private scrollListener?: () => void;
+  private currentMenuServiceId: string | null = null;
+  private currentMenuButton: HTMLElement | null = null;
 
   constructor(
     private router: Router,
@@ -123,6 +126,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    this.removeScrollListener();
   }
 
   checkSidebarState(): void {
@@ -508,7 +512,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     
     // Close menu
-    this.showActionsMenu = null;
+    this.closeActionsMenu();
     
     // Show cancel activation modal
     this.selectedServiceForCancellation = service;
@@ -560,51 +564,135 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     }
     
     if (this.showActionsMenu === serviceId) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     } else {
+      this.closeActionsMenu(); // Close any existing menu first
       this.showActionsMenu = serviceId;
+      this.currentMenuServiceId = serviceId;
+      // Store button reference
+      if (event) {
+        const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+        this.currentMenuButton = button || null;
+      }
       // Position menu using fixed positioning
       setTimeout(() => {
         this.positionActionsMenu(serviceId, event);
+        this.setupScrollListener(serviceId);
       }, 0);
     }
   }
 
-  private positionActionsMenu(serviceId: string, event?: Event): void {
-    if (!event) return;
+  private closeActionsMenu(): void {
+    this.showActionsMenu = null;
+    this.currentMenuServiceId = null;
+    this.currentMenuButton = null;
+    this.removeScrollListener();
+  }
+
+  private setupScrollListener(serviceId: string): void {
+    this.removeScrollListener();
     
+    this.scrollListener = () => {
+      if (this.showActionsMenu === serviceId && this.currentMenuServiceId === serviceId) {
+        this.updateMenuPosition(serviceId);
+      }
+    };
+    
+    window.addEventListener('scroll', this.scrollListener, true);
+    window.addEventListener('resize', this.scrollListener);
+  }
+
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const pageElement = document.querySelector('.my-services-page');
+    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
+      return 280;
+    }
+    return 72;
+  }
+
+  private updateMenuPosition(serviceId: string): void {
     const menu = document.querySelector(`.actions-menu[data-service-id="${serviceId}"]`) as HTMLElement;
-    if (!menu) return;
+    const button = this.currentMenuButton;
     
-    const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
-    if (!button) return;
+    if (!menu || !button) {
+      // Retry after a short delay if menu not found
+      if (!menu) {
+        setTimeout(() => this.updateMenuPosition(serviceId), 10);
+      }
+      return;
+    }
     
     const rect = button.getBoundingClientRect();
     const menuWidth = menu.offsetWidth || 280;
     const menuHeight = menu.offsetHeight || 100;
+    const sidebarWidth = this.getSidebarWidth();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const padding = 8;
     
+    // Calculate available width (viewport - sidebar - padding)
+    const availableWidth = viewportWidth - sidebarWidth - (padding * 2);
+    
+    // Center menu below button
     let left = rect.left + rect.width / 2 - menuWidth / 2;
     let top = rect.bottom + 8;
     
-    // Adjust if menu goes off screen
-    if (left < 8) left = 8;
-    if (left + menuWidth > window.innerWidth - 8) {
-      left = window.innerWidth - menuWidth - 8;
+    // Ensure menu doesn't go off left edge (consider sidebar)
+    const minLeft = sidebarWidth + padding;
+    if (left < minLeft) {
+      left = minLeft;
     }
-    if (top + menuHeight > window.innerHeight - 8) {
+    
+    // Ensure menu doesn't go off right edge
+    const maxLeft = viewportWidth - menuWidth - padding;
+    if (left > maxLeft) {
+      left = maxLeft;
+    }
+    
+    // Ensure menu doesn't go off bottom
+    if (top + menuHeight > viewportHeight - padding) {
       top = rect.top - menuHeight - 8;
+    }
+    
+    // Ensure menu doesn't go off top
+    if (top < padding) {
+      top = padding;
     }
     
     menu.style.left = `${left}px`;
     menu.style.top = `${top}px`;
   }
 
+  private removeScrollListener(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener);
+      this.scrollListener = undefined;
+    }
+  }
+
+  private positionActionsMenu(serviceId: string, event?: Event): void {
+    // Use stored button reference if available, otherwise try to find from event
+    if (!this.currentMenuButton && event) {
+      const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+      this.currentMenuButton = button || null;
+    }
+    
+    if (!this.currentMenuButton) return;
+    
+    this.updateMenuPosition(serviceId);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container') && !target.closest('.actions-menu')) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     }
   }
+
 }
 

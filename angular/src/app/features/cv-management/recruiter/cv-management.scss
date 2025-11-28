@@ -288,8 +288,22 @@
               }
 
               .candidate-viewed {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
                 font-size: 12px;
-                color: #6b7280;
+                font-weight: 500;
+                margin-top: 2px;
+
+                &.viewed {
+                  background-color: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.not-viewed {
+                  background-color: #fee2e2;
+                  color: #991b1b;
+                }
               }
             }
           }
@@ -400,6 +414,125 @@
               color: #6B7280;
             }
           }
+          
+          // Dropdown status styles
+          .status-dropdown {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 28px;
+            
+            // Arrow icon
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+            
+            &:hover {
+              opacity: 0.8;
+              border-color: currentColor;
+            }
+            
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+
+            &.status-received {
+              background-color: #F3F4F6;
+              color: #6B7280;
+            }
+
+            &.status-suitable {
+              background-color: #FED7AA;
+              color: #C2410C;
+            }
+
+            &.status-interview {
+              background-color: #E9D5FF;
+              color: #7C3AED;
+            }
+
+            &.status-offer {
+              background-color: #DBEAFE;
+              color: #1E40AF;
+            }
+
+            &.status-hired {
+              background-color: #D1FAE5;
+              color: #047857;
+            }
+
+            &.status-not-suitable {
+              background-color: #FEE2E2;
+              color: #DC2626;
+            }
+          }
+        }
+
+        // Rating Cell
+        .rating-cell {
+          .rating-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-start;
+
+            .rating-stars {
+              display: flex;
+              gap: 2px;
+              align-items: center;
+
+              i {
+                font-size: 16px;
+                color: #d1d5db;
+                cursor: pointer;
+                transition: color 0.2s ease, transform 0.1s ease;
+
+                &.fa-star {
+                  color: #fbbf24; // Yellow for full star
+                }
+
+                &.fa-star-half-o {
+                  color: #fbbf24; // Yellow for half star
+                }
+
+                &.fa-star-o {
+                  color: #d1d5db; // Gray for empty star
+                }
+
+                &.clickable {
+                  &:hover {
+                    color: #fbbf24;
+                    transform: scale(1.1);
+                  }
+                }
+
+                &.rated {
+                  cursor: pointer;
+                }
+              }
+            }
+
+            .rating-value {
+              font-size: 12px;
+              color: #6b7280;
+              font-weight: 500;
+            }
+
+            .rating-empty {
+              font-size: 12px;
+              color: #9ca3af;
+              font-style: italic;
+            }
+          }
         }
 
         // Notes Cell
@@ -449,16 +582,18 @@
             }
 
             .actions-menu {
-              position: fixed;
+              position: fixed !important;
               background: white;
               border: 1px solid #d1d5db;
               border-radius: 8px;
               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
               min-width: 180px;
-              z-index: 10000;
+              z-index: 99999;
               opacity: 0;
               visibility: hidden;
               transition: opacity 0.2s ease, visibility 0.2s ease;
+              transform: none !important;
+              will-change: auto;
 
               &.show {
                 opacity: 1;

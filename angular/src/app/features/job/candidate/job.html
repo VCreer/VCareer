@@ -11,8 +11,8 @@
         [categories]="categories"
         [provinces]="provinces"
         [selectedCategoryIds]="selectedCategoryIds"
-        [selectedProvinceIds]="selectedProvinceIds"
-        [selectedDistrictIds]="selectedDistrictIds"
+        [selectedProvinceCodes]="selectedProvinceCodes"
+        [selectedWardCodes]="selectedWardCodes"
         (categorySelected)="onCategorySelected($event)"
         (locationSelected)="onLocationSelected($event)"
       >
@@ -54,12 +54,12 @@
 
     <!-- Middle Column - Job List -->
     <div class="job-list-column">
-      <!-- ✅ Loading State -->
+      <!--  Loading State -->
       <div *ngIf="isSearching" class="loading-state">
         <p>Đang tìm kiếm việc làm...</p>
       </div>
 
-      <!-- ✅ Job List -->
+      <!--  Job List -->
       <div *ngIf="!isSearching">
         <!-- Result Count -->
         <div class="result-header" *ngIf="totalCount > 0">

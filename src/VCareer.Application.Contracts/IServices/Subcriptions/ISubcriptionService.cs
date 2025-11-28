@@ -22,7 +22,8 @@ namespace VCareer.IServices.Subcriptions
         public Task RemoveChildServiceAsync(AddChildServicesDto dto);
         //price
         public Task<List<SubcriptionPriceViewDto>> GetSubcriptionsPrice(Guid subcriptionId, bool? isExpired, PagingDto pagingDto);
-
+        // Get active subscription services for purchase
+        public Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(SubcriptorTarget? target = null);
 
     }
 }

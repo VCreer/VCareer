@@ -21,6 +21,11 @@
       border-color: #d1d5db;
     }
 
+    &.focused {
+      border-color: #0F83BA;
+      box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+    }
+
     i {
       font-size: 0.75rem;
       transition: transform 0.2s ease;

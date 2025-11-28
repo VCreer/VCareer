@@ -132,7 +132,7 @@ namespace VCareer.Repositories.Job
         // llaasy full 1 job để indeex
         public async Task<Job_Post> GetForIndexingAsync(Guid jobId)
         {
-            var db = await GetDbContextAsync();
+            var _dbContext = await GetDbContextAsync();
 
             var query = _dbContext.JobPostings
                 .Where(j => j.Id == jobId)
@@ -143,56 +143,13 @@ namespace VCareer.Repositories.Job
                 .Include(j => j.RecruiterProfile)
                     .ThenInclude(r => r.Company)
                 .Include(j => j.JobTags)
-                    .ThenInclude(jpt => jpt.Tag);
+                    .ThenInclude(jpt => jpt.Tag)
+                .Include(j=>j.Job_Priority);
 
             return await query.FirstOrDefaultAsync();                            // Lấy tất cả job (kể cả inactive) để index
         }
         // job liên quan
-        public async Task<List<Job_Post>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
-        {
-            throw new NotImplementedException();
-            /*   var dbContext = await GetDbContextAsync();
-
-               // Lấy thông tin job hiện tại
-               var currentJob = await dbContext.JobPostings
-                   .Where(j => j.Id == jobId)
-                   .Select(j => new { j.JobCategoryId, j.ProvinceId, j.DistrictId })              // category và province và district
-                   .FirstOrDefaultAsync();
-
-               if (currentJob == null)
-                   return new List<Job_Post>();
-
-               // Build query job liên quan
-               var query = dbContext.JobPostings
-                   .Where(j => j.Id != jobId)                                       // Loại trừ job hiện tại
-                   .Where(j => j.JobCategoryId == currentJob.JobCategoryId          // Cùng category
-                            || j.ProvinceId == currentJob.ProvinceId
-                            || j.DistrictId == currentJob.DistrictId);    // HOẶC cùng province
-
-               query = BuildActiveJobQuery(query);                                  // Chỉ active jobs
-               query = ApplyIncludes(query, true);                                  // Load chi tiết
-
-               // ========================================
-               // SẮP XẾP ƯU TIÊN theo điểm relevance:
-               // ========================================
-               // Điểm tối đa = 4 (cùng category + province + district)
-               // - Cùng category: +2 điểm
-               // - Cùng province: +1 điểm  
-               // - Cùng district (khi cùng province): +1 điểm
-               var relatedJobs = await query
-                   .OrderByDescending(j =>
-                       (j.JobCategoryId == currentJob.JobCategoryId ? 2 : 0) +      // +2: Cùng category
-                       (j.ProvinceId == currentJob.ProvinceId ? 1 : 0) +            // +1: Cùng province
-                       (j.DistrictId == currentJob.DistrictId &&
-                        j.ProvinceId == currentJob.ProvinceId ? 1 : 0))            // +1: Cùng district (chỉ khi cùng province)
-                   .ThenByDescending(j => j.IsUrgent)                               // Ưu tiên job tuyển gấp
-                   .ThenByDescending(j => j.CreationTime)                           // Sort theo ngày mới nhất
-                   .Take(maxCount)                                                  // Giới hạn số lượng
-                   .ToListAsync();
-
-               return relatedJobs;*/
-        }
-        // đếm sô lượng job thoe category
+             // đếm sô lượng job thoe category
         public async Task<int> CountActiveJobsByCategoryAsync(Guid categoryId)
         {
             var dbContext = await GetDbContextAsync();

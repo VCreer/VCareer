@@ -6,6 +6,7 @@ import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
+import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 
 @Component({
   selector: 'app-candidate-header',
@@ -22,6 +23,7 @@ export class CandidateHeaderComponent implements OnInit {
   isLoggedIn = false;
   showProfileMenu = false;
   showNotificationMenu = false;
+  currentUser: any = null;
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
@@ -34,7 +36,8 @@ export class CandidateHeaderComponent implements OnInit {
     private router: Router,
     private headerTypeService: HeaderTypeService,
     private navigationService: NavigationService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private authStateService: AuthStateService
   ) {}
 
   ngOnInit() {
@@ -53,6 +56,14 @@ export class CandidateHeaderComponent implements OnInit {
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isLoggedIn = isLoggedIn;
     });
+
+    // Subscribe to current user changes
+    this.authStateService.user$.subscribe(user => {
+      this.currentUser = user;
+    });
+
+    // Load current user on init
+    this.currentUser = this.authStateService.user;
   }
 
   navigateToHome() {
@@ -179,6 +190,11 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
+  navigateToCareerInvitations() {
+    this.router.navigate(['/candidate/career-opportunity-invitation']);
+    this.showProfileMenu = false;
+  }
+
   navigateToChangePassword() {
     this.router.navigate(['/candidate/change-password']);
     this.showProfileMenu = false;
@@ -191,6 +207,11 @@ export class CandidateHeaderComponent implements OnInit {
 
   navigateToAppliedJobs() {
     this.router.navigate(['/candidate/applied-jobs']);
+    this.showProfileMenu = false;
+  }
+
+  navigateToJobSuggestionSettings() {
+    this.router.navigate(['/candidate/job-suggestion-settings']);
     this.showProfileMenu = false;
   }
 

@@ -133,12 +133,23 @@
     min-height: calc(100vh - 200px); // Adjust for padding and header
     overflow: hidden;
 
+    // When showing HTML CV, keep normal styling
+    &.html-cv-mode {
+      // Keep normal card styling
+    }
+
     .cv-detail-content {
       display: flex;
       gap: 0;
       padding: 24px;
       max-width: 1400px;
       margin: 0 auto;
+      position: relative;
+
+      // When showing HTML CV, keep normal padding and max-width
+      &.html-cv-content {
+        // Keep normal content styling
+      }
 
       @media (max-width: 1024px) {
         flex-direction: column;
@@ -148,6 +159,86 @@
 
   // Left Column: CV Content
   .cv-content-column {
+    flex: 1;
+    padding: 32px 24px 32px 0;
+    border-right: 1px solid #e5e7eb;
+    margin-right: 24px;
+
+    // CV Viewer Container (for both PDF and HTML) - Simple white container with thin border
+    .cv-viewer-container {
+      width: 100%;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      overflow: hidden;
+      min-height: 600px;
+      max-height: calc(100vh - 200px);
+      display: flex;
+      flex-direction: column;
+
+      // PDF iframe
+      .cv-iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 600px;
+        border: none;
+        display: block;
+      }
+
+      // HTML content
+      .cv-html-content {
+        width: 100%;
+        background: white;
+        padding: 32px;
+        overflow-y: auto;
+        // CV HTML content styles - let the rendered HTML control its own styling
+        ::ng-deep {
+          * {
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+          // Ensure images don't overflow
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+
+          // Ensure tables are responsive
+          table {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            display: block;
+          }
+        }
+      }
+    }
+
+    // No CV Message
+    .no-cv-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #6b7280;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      min-height: 400px;
+
+      i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #d1d5db;
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+      }
+    }
     flex: 1;
     padding: 32px 24px 32px 0;
     border-right: 1px solid #e5e7eb;
@@ -407,6 +498,26 @@
             line-height: 1.4;
           }
 
+          .view-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            line-height: 1.2;
+
+            &.viewed {
+              background-color: #d1fae5 !important;
+              color: #065f46 !important;
+            }
+
+            &.not-viewed {
+              background-color: #fee2e2 !important;
+              color: #991b1b !important;
+            }
+          }
+
           .contact-opened-summary {
             font-size: 12px;
             color: #6b7280;
@@ -594,6 +705,13 @@
             &.rotated {
               transform: rotate(180deg);
             }
+          }
+
+          .status-loading-icon {
+            color: #0F83BA;
+            font-size: 14px;
+            margin-left: 8px;
+            flex-shrink: 0;
           }
         }
 
