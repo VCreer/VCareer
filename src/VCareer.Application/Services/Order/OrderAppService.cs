@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,6 +47,8 @@ namespace VCareer.Services.Order
             _logger = logger;
         }
 
+
+        // đoạn code tạo order
         public async Task<OrderDto> CreateOrderAsync(CreateOrderDto input)
         {
             try
@@ -215,8 +217,8 @@ namespace VCareer.Services.Order
                 throw new UserFriendlyException("Order is not in pending payment status");
             }
 
-            var angularUrl = _configuration["App:AngularUrl"] ?? "http://localhost:4200";
-            var returnUrl = $"{angularUrl}/recruiter/payment/callback";
+            var selfUrl = _configuration["App:SelfUrl"] ?? _configuration["App:ServerRootAddress"] ?? "https://localhost:44385";
+            var returnUrl = $"{selfUrl.TrimEnd('/')}/api/orders/vnpay/callback";
             var (paymentUrl, paymentId) = _vnpayService.CreatePaymentUrlWithId(
                 order.Id,
                 order.OrderCode,
@@ -239,6 +241,8 @@ namespace VCareer.Services.Order
             };
         }
 
+
+        //xử li handle
         public async Task<OrderDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
         {
             if (input == null || string.IsNullOrEmpty(input.vnp_TxnRef))
@@ -310,7 +314,7 @@ namespace VCareer.Services.Order
                 throw new UserFriendlyException($"Order not found. TxnRef: {input.vnp_TxnRef}");
             }
 
-            // Update order status
+            // nếu vnp_respone == 00
             if (input.vnp_ResponseCode == "00") // Success
             {
                 order.PaymentStatus = PaymentStatus.Paid;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using VCareer.Constants.PaymentVNPay;
 using Volo.Abp.Application.Dtos;
@@ -67,6 +67,8 @@ namespace VCareer.Dto.Order
     public class VnpayCallbackDto
     {
         public string vnp_TxnRef { get; set; } // OrderCode
+
+        // tham số trả về từ vnpay 
         public string vnp_ResponseCode { get; set; }
         public string vnp_TransactionNo { get; set; }
         public string vnp_Amount { get; set; }

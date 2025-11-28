@@ -30,7 +30,7 @@ export class PaymentCallbackComponent implements OnInit {
     private translationService: TranslationService
   ) {}
 
-    ngOnInit() {
+  ngOnInit() {
     this.translationService.currentLanguage$.subscribe(lang => {
       this.selectedLanguage = lang;
     });
@@ -75,11 +75,13 @@ export class PaymentCallbackComponent implements OnInit {
         }
         
         this.isLoading = false;
+        this.replaceWithCleanParams();
       },
       error: (error) => {
         console.error('Error processing VNPay callback:', error);
         this.paymentStatus = 'error';
         this.isLoading = false;
+        this.replaceWithCleanParams({ error: 'Có lỗi khi xử lý thanh toán.' });
       }
     });
   }
@@ -107,11 +109,13 @@ export class PaymentCallbackComponent implements OnInit {
         }
         
         this.isLoading = false;
+      this.replaceWithCleanParams();
       },
       error: (error) => {
         console.error('Error loading order details:', error);
         this.paymentStatus = 'error';
         this.isLoading = false;
+      this.replaceWithCleanParams({ error: 'Không thể tải thông tin đơn hàng.' });
       }
     });
   }
@@ -169,6 +173,24 @@ export class PaymentCallbackComponent implements OnInit {
       default:
         return 'fa-exclamation-circle';
     }
+  }
+
+  private replaceWithCleanParams(extraParams: Record<string, string> = {}) {
+    const queryParams: Record<string, string> = { ...extraParams };
+
+    if (this.orderId) {
+      queryParams['orderId'] = this.orderId;
+    }
+
+    if (!queryParams['error'] && this.paymentStatus) {
+      queryParams['status'] = this.paymentStatus;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      replaceUrl: true
+    });
   }
 }
 

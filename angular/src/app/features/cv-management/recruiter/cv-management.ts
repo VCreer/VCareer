@@ -34,6 +34,7 @@ export interface CandidateCv {
   candidateCode?: string; // Mã ứng viên
   notes?: string; // Ghi chú
   labels?: string[];
+  rating?: number; // Đánh giá từ 1-10
 }
 
 @Component({
@@ -228,7 +229,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         campaignName: '', // Null theo yêu cầu
         isViewed: !!app.viewedAt,
         candidateCode: app.candidateId || '',
-        notes: app.recruiterNotes || ''
+        notes: app.recruiterNotes || '',
+        rating: app.rating || undefined
       };
     });
   }
@@ -506,6 +508,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   // Inline status change
   changingStatusFor: string | null = null;
   
+  // Rating change
+  changingRatingFor: string | null = null;
+  
   onChangeStatus(cv: CandidateCv, event: Event): void {
     const target = event.target as HTMLSelectElement;
     const newStatus = target.value;
@@ -518,7 +523,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     
     const updateDto: UpdateApplicationStatusDto = {
       status: newStatus,
-      recruiterNotes: cv.notes
+      recruiterNotes: cv.notes,
+      rating: cv.rating
     };
     
     this.changingStatusFor = cv.id;
@@ -546,6 +552,64 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         // Revert to previous status on error
         cv.status = oldStatus;
         target.value = oldStatus;
+      }
+    });
+  }
+
+  // Rating methods
+  getStarState(rating: number | undefined, starIndex: number): 'full' | 'half' | 'empty' {
+    if (!rating) return 'empty';
+    
+    // Convert 1-10 scale to 1-5 scale (each star = 2 points)
+    const starValue = starIndex * 2;
+    const previousStarValue = (starIndex - 1) * 2;
+    
+    if (rating >= starValue) {
+      return 'full';
+    } else if (rating > previousStarValue && rating < starValue) {
+      return 'half';
+    }
+    return 'empty';
+  }
+
+  onRateCandidate(cv: CandidateCv, rating: number): void {
+    if (this.changingRatingFor === cv.id) return; // Prevent double click
+    
+    const oldRating = cv.rating;
+    
+    console.log(`Rating candidate ${cv.name} with ${rating}/10`);
+    
+    // Optimistic update
+    cv.rating = rating;
+    this.changingRatingFor = cv.id;
+    
+    const updateDto: UpdateApplicationStatusDto = {
+      status: cv.status,
+      recruiterNotes: cv.notes,
+      rating: rating
+    };
+    
+    this.applicationService.updateApplicationStatus(cv.id, updateDto).subscribe({
+      next: () => {
+        this.showToastMessage(`Đã đánh giá ứng viên ${rating}/10`, 'success');
+        this.changingRatingFor = null;
+      },
+      error: (error) => {
+        console.error('Error updating rating:', error);
+        
+        let errorMessage = 'Không thể cập nhật đánh giá. Vui lòng thử lại.';
+        
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền đánh giá ứng viên này.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        this.changingRatingFor = null;
+        
+        // Revert to previous rating on error
+        cv.rating = oldRating;
       }
     });
   }
@@ -739,14 +803,43 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   onConfirmNote(): void {
-    if (this.selectedCvForNote) {
-      this.selectedCvForNote.notes = this.noteText;
-      // TODO: Save to backend
-      this.showToastMessage('Đã cập nhật ghi chú!', 'success');
-      this.showNoteModal = false;
-      this.selectedCvForNote = null;
-      this.noteText = '';
-    }
+    if (!this.selectedCvForNote) return;
+    
+    const oldNotes = this.selectedCvForNote.notes;
+    
+    // Optimistic update - update UI immediately
+    this.selectedCvForNote.notes = this.noteText;
+    
+    const updateDto: UpdateApplicationStatusDto = {
+      status: this.selectedCvForNote.status,
+      recruiterNotes: this.noteText,
+      rating: this.selectedCvForNote.rating
+    };
+    
+    this.applicationService.updateApplicationStatus(this.selectedCvForNote.id, updateDto).subscribe({
+      next: () => {
+        this.showToastMessage('Đã cập nhật ghi chú!', 'success');
+        this.showNoteModal = false;
+        this.selectedCvForNote = null;
+        this.noteText = '';
+      },
+      error: (error) => {
+        console.error('Error updating notes:', error);
+        
+        // Revert to previous notes on error
+        this.selectedCvForNote.notes = oldNotes;
+        
+        let errorMessage = 'Không thể cập nhật ghi chú. Vui lòng thử lại.';
+        
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền cập nhật ghi chú.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
   }
 
   onDownloadCv(cv: CandidateCv): void {
