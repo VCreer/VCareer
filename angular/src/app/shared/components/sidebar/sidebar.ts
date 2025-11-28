@@ -25,8 +25,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   verificationLevel: string = 'Cấp 1/3';
   currentRoute: string = '';
   isVerified: boolean = false;
-  isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
-  isEmployeeRoute: boolean = false; // Flag để kiểm tra xem có phải employee route không
+  isEmployeeRoute: boolean = false;
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
 
@@ -161,6 +160,23 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
   isActive(path: string): boolean {
     return this.currentRoute === path || this.currentRoute.startsWith(path + '/');
+  }
+
+  toggleUserManagementDropdown(event: Event): void {
+    event.stopPropagation();
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
+  }
+
+  navigateToUserManagement(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showUserManagementDropdown = false;
+    this.navigateTo(path);
+  }
+
+  isUserManagementActive(): boolean {
+    return this.currentRoute.startsWith('/employee/user-management');
   }
 
   checkUserRole(): void {

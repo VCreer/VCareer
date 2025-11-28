@@ -150,6 +150,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    this.removeScrollListener();
   }
 
   private checkSidebarState(): void {
@@ -449,6 +450,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   showActionsMenu: string | null = null;
+  private scrollListener?: () => void;
+  private currentMenuCvId: string | null = null;
+  private currentMenuButton: HTMLElement | null = null;
 
   // Note modal
   showNoteModal = false;
@@ -461,38 +465,108 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     }
     
     if (this.showActionsMenu === cvId) {
-      this.showActionsMenu = null;
+      this.closeActionsMenu();
     } else {
+      this.closeActionsMenu();
       this.showActionsMenu = cvId;
-      // Position menu using fixed positioning
+      this.currentMenuCvId = cvId;
+      if (event) {
+        const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+        this.currentMenuButton = button || null;
+      }
       setTimeout(() => {
         this.positionActionsMenu(cvId, event);
+        this.setupScrollListener(cvId);
       }, 0);
     }
   }
 
-  private positionActionsMenu(cvId: string, event?: Event): void {
-    if (!event) return;
+  private closeActionsMenu(): void {
+    this.showActionsMenu = null;
+    this.currentMenuCvId = null;
+    this.currentMenuButton = null;
+    this.removeScrollListener();
+  }
 
-    const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
-    if (!button) return;
+  private setupScrollListener(cvId: string): void {
+    this.removeScrollListener();
+    
+    this.scrollListener = () => {
+      if (this.showActionsMenu === cvId && this.currentMenuCvId === cvId) {
+        this.updateMenuPosition(cvId);
+      }
+    };
+    
+    window.addEventListener('scroll', this.scrollListener, true);
+    window.addEventListener('resize', this.scrollListener);
+  }
 
+  private removeScrollListener(): void {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener, true);
+      window.removeEventListener('resize', this.scrollListener);
+      this.scrollListener = undefined;
+    }
+  }
+
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const pageElement = document.querySelector('.cv-management-page');
+    if (pageElement && pageElement.classList.contains('sidebar-expanded')) {
+      return 280;
+    }
+    return 72;
+  }
+
+  private updateMenuPosition(cvId: string): void {
     const menu = document.querySelector(`.actions-menu[data-cv-id="${cvId}"]`) as HTMLElement;
-    if (!menu) return;
-
+    const button = this.currentMenuButton;
+    
+    if (!menu || !button) {
+      // Retry after a short delay if menu not found
+      if (!menu) {
+        setTimeout(() => this.updateMenuPosition(cvId), 10);
+      }
+      return;
+    }
+    
     const rect = button.getBoundingClientRect();
-    const menuWidth = 180; // min-width from CSS
+    const menuWidth = menu.offsetWidth || 180;
+    const sidebarWidth = this.getSidebarWidth();
+    const viewportWidth = window.innerWidth;
+    const padding = 8;
     
     // Position menu below button, aligned to right
     let left = rect.right - menuWidth;
     
-    // Ensure menu doesn't go off left edge
-    if (left < 8) {
-      left = rect.left;
+    // Ensure menu doesn't go off left edge (consider sidebar)
+    const minLeft = sidebarWidth + padding;
+    if (left < minLeft) {
+      left = Math.max(minLeft, rect.left);
+    }
+    
+    // Ensure menu doesn't go off right edge
+    const maxLeft = viewportWidth - menuWidth - padding;
+    if (left > maxLeft) {
+      left = maxLeft;
     }
     
     menu.style.top = `${rect.bottom + 4}px`;
     menu.style.left = `${left}px`;
+  }
+
+  private positionActionsMenu(cvId: string, event?: Event): void {
+    // Use stored button reference if available, otherwise try to find from event
+    if (!this.currentMenuButton && event) {
+      const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
+      this.currentMenuButton = button || null;
+    }
+    
+    if (!this.currentMenuButton) return;
+    
+    this.updateMenuPosition(cvId);
   }
 
   @HostListener('document:click', ['$event'])
@@ -500,10 +574,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     if (this.showActionsMenu) {
       const target = event.target as HTMLElement;
       if (!target.closest('.actions-menu-wrapper')) {
-        this.showActionsMenu = null;
+        this.closeActionsMenu();
       }
     }
   }
+
 
   getSourceName(sourceId: string): string {
     const source = this.sources.find(s => s.id === sourceId);

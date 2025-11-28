@@ -1,0 +1,252 @@
+.job-suggestion-settings-page {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding: 20px;
+  padding-top: 100px; // giống candidate-profile
+  color: #1a1a1a;
+
+  .job-suggestion-settings-layout {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .left-panel {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .box-header {
+    margin-bottom: 16px;
+  }
+
+  .settings-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 6px;
+  }
+
+  .settings-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+  }
+
+  .settings-note {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #e74c3c;
+  }
+
+  .profile-form {
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .box-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .box-info,
+  .box-need-work {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .box-need-work {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .box-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      &.span-2 {
+        grid-column: span 2;
+
+        @media (max-width: 768px) {
+          grid-column: span 1;
+        }
+      }
+
+      label {
+        font-weight: 500;
+        color: #2c2c2c;
+
+        &.required::after {
+          content: ' *';
+          color: #e74c3c;
+        }
+      }
+
+      input,
+      select {
+        border-radius: 6px;
+        border: 1px solid #dcdfe6;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #0F83BA;
+          box-shadow: 0 0 0 2px rgba(15, 131, 186, 0.15);
+        }
+
+        &.error {
+          border-color: #ef4444;
+          box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4);
+        }
+      }
+    }
+  }
+
+  .radio-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #333;
+
+    input[type='radio'] {
+      accent-color: #0F83BA;
+    }
+  }
+
+  .checkbox-row {
+    margin-top: 4px;
+  }
+
+  .checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #333;
+
+    input[type='checkbox'] {
+      accent-color: #0F83BA;
+    }
+  }
+
+  .field-error {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #e74c3c;
+  }
+
+  .salary-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    overflow: hidden;
+
+    input {
+      border: none;
+      border-radius: 0;
+      flex: 1;
+      padding: 10px 12px;
+
+      &:focus {
+        outline: none;
+        box-shadow: none;
+      }
+    }
+
+    .currency-label {
+      padding: 10px 12px;
+      background: #f5f5f5;
+      border-left: 1px solid #dcdfe6;
+      font-size: 13px;
+      color: #555;
+      white-space: nowrap;
+    }
+  }
+
+  .feedback-banner {
+    margin-top: -12px;
+    border-radius: 12px;
+    padding: 12px 16px;
+    background: #f1faf2;
+    border: 1px solid #daf0dd;
+    color: #2b8a3e;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    i {
+      color: #28a745;
+    }
+  }
+
+  .form-actions-row {
+    margin-top: 16px;
+  }
+
+  .right-sidebar {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-self: flex-start;
+
+    app-profile-card {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
+    padding-top: 80px;
+
+    .job-suggestion-settings-layout {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .left-panel {
+      padding: 20px;
+    }
+
+    .right-sidebar {
+      width: 100%;
+      align-self: stretch;
+    }
+  }
+}

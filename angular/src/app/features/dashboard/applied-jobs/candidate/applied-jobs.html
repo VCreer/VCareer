@@ -6,7 +6,22 @@
         <div class="applied-jobs-card">
           <!-- Header -->
           <div class="applied-jobs-header">
-            <h1 class="page-title">Việc làm đã ứng tuyển</h1>
+            <div class="header-title-block">
+              <h1 class="page-title">Việc làm đã ứng tuyển</h1>
+              <button 
+                type="button" 
+                class="job-suggestion-link" 
+                (click)="navigateToJobSuggestionSettings()">
+                <div class="link-icon">
+                  <i class="fa fa-sliders"></i>
+                </div>
+                <div class="link-text">
+                  <span class="link-title">Cài đặt gợi ý việc làm</span>
+                  <small>Cập nhật tiêu chí để nhận gợi ý chính xác hơn</small>
+                </div>
+                <i class="fa fa-chevron-right trailing-icon"></i>
+              </button>
+            </div>
             <div class="status-filter" (click)="$event.stopPropagation()">
               <div class="status-dropdown-trigger" (click)="toggleStatusDropdown()">
                 <span class="status-label">

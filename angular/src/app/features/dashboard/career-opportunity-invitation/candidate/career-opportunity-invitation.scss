@@ -1,0 +1,434 @@
+.career-invitation-page {
+  background: linear-gradient(to bottom, #e0f2fe 0%, #ffffff 200px);
+  min-height: 100vh;
+  padding: 20px;
+  padding-top: 100px;
+
+  .career-invitation-layout {
+    display: flex;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    // Left Column
+    .left-column {
+      flex: 1;
+      min-width: 0;
+
+      .invitation-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        .page-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #0F83BA;
+          margin: 0 0 24px;
+        }
+
+        // Empty State
+        .empty-state {
+          padding: 60px 20px;
+          text-align: center;
+
+          .empty-state-content {
+            .empty-illustration {
+              margin-bottom: 24px;
+              position: relative;
+              display: inline-block;
+
+              i {
+                font-size: 120px;
+                color: #d1d5db;
+                opacity: 0.4;
+                position: relative;
+                z-index: 1;
+              }
+
+              // Tạo hiệu ứng cloud/dashed shapes xung quanh
+              &::before,
+              &::after {
+                content: '';
+                position: absolute;
+                border: 2px dashed #e5e7eb;
+                border-radius: 50%;
+                opacity: 0.3;
+              }
+
+              &::before {
+                width: 80px;
+                height: 80px;
+                top: 20px;
+                left: -40px;
+              }
+
+              &::after {
+                width: 60px;
+                height: 60px;
+                bottom: 10px;
+                right: -30px;
+              }
+            }
+
+            .empty-message {
+              font-size: 18px;
+              color: #6b7280;
+              margin: 0 0 16px;
+              font-weight: 500;
+            }
+
+            .empty-description {
+              font-size: 14px;
+              color: #9ca3af;
+              margin: 0;
+              line-height: 1.6;
+
+              .cv-management-link {
+                color: #0F83BA;
+                text-decoration: none;
+                cursor: pointer;
+
+                &:hover {
+                  text-decoration: underline;
+                }
+              }
+            }
+          }
+        }
+
+        // Invitations Content
+        .invitations-content {
+          .greeting-section {
+            margin-bottom: 24px;
+
+            .greeting {
+              font-size: 16px;
+              color: #1f2937;
+              margin: 0 0 8px;
+              font-weight: 500;
+            }
+
+            .intro-text {
+              font-size: 14px;
+              color: #4b5563;
+              margin: 0;
+              line-height: 1.6;
+            }
+          }
+
+          .invitations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+
+            .invitation-card {
+              background: #ffffff;
+              border: 1px solid #e5e7eb;
+              border-radius: 12px;
+              padding: 20px;
+              transition: box-shadow 0.2s;
+
+              &:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              }
+
+              .card-content {
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+
+                .company-logo {
+                  width: 80px;
+                  height: 80px;
+                  flex-shrink: 0;
+                  border-radius: 8px;
+                  overflow: hidden;
+                  background: #f9fafb;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  border: 1px solid #e5e7eb;
+
+                  img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                    padding: 8px;
+                  }
+                }
+
+                .card-info {
+                  flex: 1;
+                  min-width: 0;
+
+                  .company-name {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #1f2937;
+                    margin: 0 0 8px;
+                    line-height: 1.4;
+                  }
+
+                  .job-title {
+                    font-size: 14px;
+                    color: #374151;
+                    margin: 0 0 8px;
+                    font-weight: 500;
+                  }
+
+                  .deadline {
+                    font-size: 13px;
+                    color: #6b7280;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+
+                    i {
+                      font-size: 12px;
+                    }
+                  }
+                }
+
+                .card-actions {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 8px;
+                  flex-shrink: 0;
+                }
+              }
+            }
+          }
+
+          .view-all-section {
+            margin-top: 24px;
+          }
+        }
+      }
+    }
+
+    // Right Column
+    .right-column {
+      width: 400px;
+      flex-shrink: 0;
+
+      .job-suggestions-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 100px;
+
+        .suggestions-title {
+          font-size: 20px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 20px;
+        }
+
+        .job-suggestions-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          .job-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            transition: box-shadow 0.2s;
+
+            &:hover {
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .job-card-content {
+              display: flex;
+              gap: 12px;
+
+              .job-logo {
+                width: 60px;
+                height: 60px;
+                flex-shrink: 0;
+                border-radius: 8px;
+                overflow: hidden;
+                background: #f9fafb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #e5e7eb;
+
+                img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                  padding: 6px;
+                }
+              }
+
+              .job-info {
+                flex: 1;
+                min-width: 0;
+
+                .job-title {
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: #1f2937;
+                  margin: 0 0 4px;
+                  line-height: 1.4;
+                }
+
+                .job-experience {
+                  font-size: 13px;
+                  color: #6b7280;
+                  margin: 0 0 4px;
+                }
+
+                .company-name {
+                  font-size: 13px;
+                  color: #4b5563;
+                  margin: 0 0 8px;
+                }
+
+                .job-tags {
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+
+                  .salary-tag {
+                    background: #dbeafe;
+                    color: #0c4a6e;
+                    padding: 4px 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 500;
+                  }
+
+                  .location-tag {
+                    background: #f3f4f6;
+                    color: #4b5563;
+                    padding: 4px 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                  }
+                }
+              }
+
+              .job-action {
+                flex-shrink: 0;
+
+                .save-job-btn {
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 50%;
+                  border: 1px solid #dbeafe;
+                  background: #ffffff;
+                  color: #0F83BA;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transition: all 0.2s;
+
+                  &:hover {
+                    background: #dbeafe;
+                    border-color: #0F83BA;
+                  }
+
+                  i {
+                    font-size: 16px;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .view-more-jobs-section {
+          margin-top: 20px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+
+          .view-more-link {
+            display: inline-block;
+            color: #0F83BA;
+            text-decoration: underline;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: color 0.2s;
+
+            &:hover {
+              color: #0A6B96;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Responsive
+  @media (max-width: 1024px) {
+    .career-invitation-layout {
+      flex-direction: column;
+
+      .right-column {
+        width: 100%;
+
+        .job-suggestions-section {
+          position: static;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
+    padding-top: 80px;
+
+    .career-invitation-layout {
+      gap: 16px;
+
+      .left-column {
+        .invitation-section {
+          padding: 20px;
+
+          .page-title {
+            font-size: 24px;
+          }
+
+          .invitations-content {
+            .invitations-list {
+              .invitation-card {
+                .card-content {
+                  flex-direction: column;
+
+                  .card-actions {
+                    flex-direction: row;
+                    width: 100%;
+
+                    app-button {
+                      flex: 1;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .right-column {
+        .job-suggestions-section {
+          padding: 16px;
+        }
+      }
+    }
+  }
+}
+

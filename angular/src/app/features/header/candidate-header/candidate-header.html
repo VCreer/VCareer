@@ -135,8 +135,15 @@
                 <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.jobManagement"></i>
               </div>
               <div class="section-content" *ngIf="expandedSections.jobManagement">
-                <div class="menu-item" (click)="navigateToSavedJobs()">{{ translate('profile.saved_jobs') }}</div>
-                <div class="menu-item" (click)="navigateToAppliedJobs()">{{ translate('profile.applied_jobs') }}</div>
+                <div class="menu-item" (click)="navigateToSavedJobs()">
+                  {{ translate('profile.saved_jobs') }}
+                </div>
+                <div class="menu-item" (click)="navigateToAppliedJobs()">
+                  {{ translate('profile.applied_jobs') }}
+                </div>
+                <div class="menu-item" (click)="navigateToJobSuggestionSettings()">
+                  Cài đặt gợi ý việc làm
+                </div>
               </div>
             </div>
 
@@ -152,6 +159,7 @@
               </div>
                           <div class="section-content" *ngIf="expandedSections.cvManagement">
                             <div class="menu-item" (click)="navigateToCvManagement()">{{ translate('profile.my_cv') }}</div>
+                            <div class="menu-item" (click)="navigateToCareerInvitations()">Lời mời cơ hội nghề nghiệp</div>
                           </div>
             </div>
 
