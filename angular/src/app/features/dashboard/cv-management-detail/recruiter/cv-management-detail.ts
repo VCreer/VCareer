@@ -10,7 +10,7 @@ import {
 import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
 import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
 import { UploadedCvService } from '../../../../proxy/http-api/controllers/uploaded-cv.service';
-import type { ApplicationDto, UpdateApplicationStatusDto } from '../../../../proxy/application/contracts/applications/models';
+import type { ApplicationDto,UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
 import { environment } from '../../../../../environments/environment';
 
 export interface CvDetail {

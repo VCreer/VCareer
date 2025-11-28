@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using VCareer.Application.Contracts.Applications;
 using VCareer.Models.Applications;
 using VCareer.Models.CV;
 using VCareer.Models.Job;
@@ -22,6 +21,9 @@ using Volo.Abp.Users;
 using Volo.Abp.Emailing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using VCareer.Dto.Applications;
+using VCareer.IServices.Application;
+using Volo.Abp.Application.Services;
 
 namespace VCareer.Application.Applications
 {
@@ -29,7 +31,7 @@ namespace VCareer.Application.Applications
     /// Application Management Service - Refactored để hỗ trợ CandidateCv và UploadedCv
     /// </summary>
     /*[Authorize(VCareerPermission.Application.Default)]*/
-    public class ApplicationAppService : VCareerAppService, IApplicationAppService
+    public class ApplicationAppService : ApplicationService , IJobApply
     {
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;

@@ -1082,7 +1082,7 @@ namespace VCareer.Migrations
                     b.Property<Guid>("RecruiterId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("RecruitmentCampaignId")
+                    b.Property<Guid>("RecruitmentCampaignId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RejectedReason")
@@ -4323,7 +4323,8 @@ namespace VCareer.Migrations
                     b.HasOne("VCareer.Models.Job.RecruitmentCampaign", "RecruitmentCampaign")
                         .WithMany("Job_Posts")
                         .HasForeignKey("RecruitmentCampaignId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("JobCategory");
 

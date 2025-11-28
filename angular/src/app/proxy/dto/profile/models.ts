@@ -1,4 +1,5 @@
 import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
+import type { IFormFile } from '../../microsoft/asp-net-core/http/models';
 
 export interface CandidateSearchResultDto extends EntityDto<string> {
   name?: string;
@@ -130,16 +131,16 @@ export interface SearchCandidateInputDto extends PagedAndSortedResultRequestDto 
   displayPriority?: string;
 }
 
-export interface SendConnectionRequestDto {
-  candidateProfileId?: string;
-  companyName: string;
-  jobTitle: string;
-  message: string;
-  emails: string[];
-}
-
 export interface SelectCompanyDto {
   companyId: number;
+}
+
+export interface SendConnectionRequestDto {
+  candidateProfileId?: string;
+  companyName?: string;
+  jobTitle?: string;
+  message?: string;
+  emails: string[];
 }
 
 export interface SendEmailOtpDto {
@@ -205,6 +206,10 @@ export interface UpdatePersonalInfoDto {
   experience?: number;
   salary?: number;
   workLocation?: string;
+}
+
+export interface UploadLegalDocumentInputDto {
+  file: IFormFile;
 }
 
 export interface VerifyEmailNumberDto {

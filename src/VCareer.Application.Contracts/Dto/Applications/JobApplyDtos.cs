@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Application.Dtos;
 
-namespace VCareer.Application.Contracts.Applications
+namespace VCareer.Dto.Applications
 {
     /// <summary>
     /// DTO để nộp đơn ứng tuyển với CV online (CandidateCv)

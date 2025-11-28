@@ -1,8 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto } from '../dto/profile/models';
-import type { IFormFile } from '../microsoft/asp-net-core/http/models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, UploadLegalDocumentInputDto } from '../dto/profile/models';
 import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -97,10 +96,11 @@ export class CompanyLegalInfoService {
     { apiName: this.apiName,...config });
   
 
-  uploadLegalDocument = (id: number, file: IFormFile, config?: Partial<Rest.Config>) =>
+  uploadLegalDocument = (id: number, input: UploadLegalDocumentInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CompanyLegalInfoDto>({
       method: 'POST',
       url: `/api/profile/company-legal-info/${id}/upload-legal-document`,
+      body: input.file,
     },
     { apiName: this.apiName,...config });
 
