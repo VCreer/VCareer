@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, UploadLegalDocumentInputDto } from '../dto/profile/models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, CompanyVerificationFilterDto, CompanyVerificationViewDto, RejectCompanyDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, UploadLegalDocumentInputDto } from '../dto/profile/models';
 import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -9,6 +9,14 @@ import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/
 })
 export class CompanyLegalInfoService {
   apiName = 'Default';
+  
+
+  approveCompany = (id: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/approve`,
+    },
+    { apiName: this.apiName,...config });
   
 
   deleteCompanyLegalInfo = (id: number, config?: Partial<Rest.Config>) =>
@@ -56,6 +64,42 @@ export class CompanyLegalInfoService {
       method: 'GET',
       url: '/api/profile/company-legal-info/legal-document',
       params: { storagePath },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPendingCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<PagedResultDto<CompanyVerificationViewDto>>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/pending-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getRejectedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<PagedResultDto<CompanyVerificationViewDto>>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/rejected-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getVerifiedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ActionResult<PagedResultDto<CompanyVerificationViewDto>>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/verified-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  rejectCompany = (id: number, input: RejectCompanyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/reject`,
+      body: input,
     },
     { apiName: this.apiName,...config });
   

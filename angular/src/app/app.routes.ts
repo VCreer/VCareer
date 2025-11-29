@@ -449,10 +449,6 @@ export const APP_ROUTES: Routes = [
     path: 'reset-password',
     loadComponent: () =>
       import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
-        loadComponent: () =>
-          import(
-            './features/dashboard/manage-recruitment-information-detail/employee/employee-job-management-detail'
-          ).then(c => c.EmployeeJobManagementDetailComponent),
       },
       {
         path: 'company-verify',
@@ -461,8 +457,6 @@ export const APP_ROUTES: Routes = [
             './features/dashboard/company-verify/employee/company-verify'
           ).then(c => c.CompanyVerifyComponent),
       },
-    ],
-  },
   //#endregion
 
   //#region  ABP routes

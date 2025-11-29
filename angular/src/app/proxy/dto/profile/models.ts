@@ -79,6 +79,42 @@ export interface CompanySearchInputDto extends PagedAndSortedResultRequestDto {
   status?: boolean;
 }
 
+export interface CompanyVerificationFilterDto extends PagedAndSortedResultRequestDto {
+  keyword?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}
+
+export interface CompanyVerificationViewDto extends EntityDto<number> {
+  companyName?: string;
+  companyCode?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  headquartersAddress?: string;
+  description?: string;
+  companySize?: number;
+  foundedYear?: number;
+  websiteUrl?: string;
+  taxCode?: string;
+  businessLicenseNumber?: string;
+  businessLicenseIssueDate?: string;
+  businessLicenseIssuePlace?: string;
+  legalRepresentative?: string;
+  businessLicenseFile?: string;
+  taxCertificateFile?: string;
+  representativeIdCardFile?: string;
+  otherSupportFile?: string;
+  legalDocumentUrl?: string;
+  verificationStatus?: boolean;
+  legalVerificationStatus?: string;
+  legalReviewedBy?: number;
+  legalReviewedAt?: string;
+  rejectionNotes?: string;
+  creationTime?: string;
+  recruiterName?: string;
+  recruiterEmail?: string;
+}
+
 export interface ExperienceDetailDto {
   company?: string;
   position?: string;
@@ -111,6 +147,10 @@ export interface ProfileDto extends EntityDto<string> {
   experience?: number;
   salary?: number;
   workLocation?: string;
+}
+
+export interface RejectCompanyDto {
+  rejectionNotes: string;
 }
 
 export interface SearchCandidateInputDto extends PagedAndSortedResultRequestDto {
@@ -168,46 +208,6 @@ export interface SubmitCompanyLegalInfoDto {
   otherSupportFile?: string;
 }
 
-export interface CompanyVerificationViewDto extends EntityDto<number> {
-  companyName?: string;
-  companyCode?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  headquartersAddress?: string;
-  description?: string;
-  companySize?: number;
-  foundedYear?: number;
-  websiteUrl?: string;
-  taxCode?: string;
-  businessLicenseNumber?: string;
-  businessLicenseIssueDate?: string;
-  businessLicenseIssuePlace?: string;
-  legalRepresentative?: string;
-  businessLicenseFile?: string;
-  taxCertificateFile?: string;
-  representativeIdCardFile?: string;
-  otherSupportFile?: string;
-  legalDocumentUrl?: string; // File upload từ business-cert tab
-  verificationStatus?: boolean;
-  legalVerificationStatus?: string;
-  legalReviewedBy?: number;
-  legalReviewedAt?: string;
-  rejectionNotes?: string;
-  creationTime?: string;
-  recruiterName?: string;
-  recruiterEmail?: string;
-}
-
-export interface RejectCompanyDto {
-  rejectionNotes: string;
-}
-
-export interface CompanyVerificationFilterDto extends PagedAndSortedResultRequestDto {
-  keyword?: string;
-  createdFrom?: string;
-  createdTo?: string;
-}
-
 export interface UpdateCompanyLegalInfoDto {
   companyName?: string;
   companyCode?: string;
@@ -219,11 +219,11 @@ export interface UpdateCompanyLegalInfoDto {
   industryId?: number;
   foundedYear?: number;
   websiteUrl?: string;
-  taxCode: string;
-  businessLicenseNumber: string;
-  businessLicenseIssueDate: string;
-  businessLicenseIssuePlace: string;
-  legalRepresentative: string;
+  taxCode?: string;
+  businessLicenseNumber?: string;
+  businessLicenseIssueDate?: string;
+  businessLicenseIssuePlace?: string;
+  legalRepresentative?: string;
   businessLicenseFile?: string;
   taxCertificateFile?: string;
   representativeIdCardFile?: string;
@@ -258,6 +258,7 @@ export interface VerifyEmailNumberDto {
   otpCode?: string;
 }
 
-export interface SelectCompanyDto {
-  companyId: number;
+export interface VerifyPhoneNumberDto {
+  phoneNumber: string;
+  otpCode?: string;
 }
