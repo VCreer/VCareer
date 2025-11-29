@@ -79,6 +79,42 @@ namespace VCareer.IServices.IProfileServices
         Task<PagedResultDto<CompanyLegalInfoDto>> SearchCompaniesAsync(CompanySearchInputDto input);
 
         /// <summary>
+        /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty chờ xác thực</returns>
+        Task<PagedResultDto<CompanyVerificationViewDto>> GetPendingCompaniesAsync(CompanyVerificationFilterDto input);
+
+        /// <summary>
+        /// Duyệt công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <returns>Task</returns>
+        Task ApproveCompanyAsync(int id);
+
+        /// <summary>
+        /// Từ chối công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="input">Lý do từ chối</param>
+        /// <returns>Task</returns>
+        Task RejectCompanyAsync(int id, RejectCompanyDto input);
+
+        /// <summary>
+        /// Lấy danh sách công ty đã được xác minh (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã được xác minh</returns>
+        Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input);
+
+        /// <summary>
+        /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã bị từ chối</returns>
+        Task<PagedResultDto<CompanyVerificationViewDto>> GetRejectedCompaniesAsync(CompanyVerificationFilterDto input);
+
+        /// <summary>
         /// Upload Giấy đăng ký doanh nghiệp cho công ty
         /// </summary>
         /// <param name="id">Company ID</param>

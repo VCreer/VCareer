@@ -95,6 +95,46 @@ export class CompanyLegalInfoService {
       params: { businessLicenseFile, taxCertificateFile, representativeIdCardFile, otherSupportFile },
     },
     { apiName: this.apiName,...config });
+
+  getPendingCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/pending-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  approveCompany = (id: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/approve`,
+    },
+    { apiName: this.apiName,...config });
+
+  rejectCompany = (id: number, input: RejectCompanyDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/reject`,
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  getVerifiedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/verified-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+  getRejectedCompanies = (input: CompanyVerificationFilterDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PagedResultDto<CompanyVerificationViewDto>>({
+      method: 'POST',
+      url: '/api/profile/company-legal-info/rejected-companies',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
   
 
   uploadLegalDocument = (id: number, file: IFormFile, config?: Partial<Rest.Config>) =>

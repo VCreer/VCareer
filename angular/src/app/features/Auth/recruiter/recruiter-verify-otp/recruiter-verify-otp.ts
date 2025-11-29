@@ -4,15 +4,15 @@ import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
+import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
 import { combineLatest, firstValueFrom, timeout, of } from 'rxjs';
 import { filter, take, catchError } from 'rxjs/operators';
 
 export interface VerificationStep {
   id: string;
-  title: string;
+  label: string;
   completed: boolean;
-  hasPoints?: boolean;
-  points?: number;
 }
 
 @Component({
@@ -25,16 +25,19 @@ export interface VerificationStep {
 export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   userName: string = 'Uông Hoàng Duy';
   jobPosition: string = 'Nhân viên Marketing';
-  completionPercentage: number = 0;
   sidebarExpanded: boolean = false;
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   
+  // Account verification
+  verificationLevel: string = 'Cấp 1/3';
+  verificationProgress: number = 0;
   verificationSteps: VerificationStep[] = [
-    { id: 'phone', title: 'verify.step_phone', completed: false },
-    { id: 'company', title: 'verify.step_company', completed: false },
-    { id: 'license', title: 'verify.step_license', completed: false }
+    { id: 'email', label: 'Xác thực email', completed: false },
+    { id: 'company', label: 'Cập nhật thông tin công ty', completed: false },
+    { id: 'license', label: 'Xác thực Giấy đăng ký doanh nghiệp', completed: false }
   ];
+  verificationProgressSteps: number = 0;
 
   stats = {
     applications: '80.000+',
@@ -46,7 +49,9 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     private router: Router,
     private navigationService: NavigationService,
     private translationService: TranslationService,
-    private teamManagementService: TeamManagementService
+    private teamManagementService: TeamManagementService,
+    private profileService: ProfileService,
+    private companyLegalInfoService: CompanyLegalInfoService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -89,8 +94,10 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       }
 
       console.log('Auth check passed, loading component...');
-      this.calculateCompletion();
       this.checkSidebarState();
+      
+      // Load verification data
+      this.loadVerificationData();
 
       // Kiểm tra nếu user là HR Staff (IsLead = false) thì redirect về setting
       this.teamManagementService.getCurrentUserInfo().subscribe({
@@ -166,53 +173,119 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     return `${Math.max(0, availableWidth)}px`;
   }
 
-  calculateCompletion(): void {
+  loadVerificationData(): void {
+    // Load profile to check email verification
+    this.profileService.getCurrentUserProfile().subscribe({
+      next: (profile) => {
+        // Update userName from profile
+        const name = profile.name || '';
+        const surname = profile.surname || '';
+        this.userName = `${name} ${surname}`.trim() || 'User';
+        
+        // Check email verification (step 1)
+        const isEmailVerified = !!profile.emailConfirmed;
+        this.updateEmailVerificationStepStatus(isEmailVerified);
+        
+        // Load company info if companyId exists
+        const companyId = profile.companyId;
+        if (companyId) {
+          this.loadCompanyVerificationData(companyId);
+        } else {
+          // No company selected, mark steps 2 and 3 as incomplete
+          this.updateCompanyVerificationStepStatus(false);
+          this.updateLegalVerificationStepStatus(false);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        // On error, assume all steps incomplete
+        this.updateEmailVerificationStepStatus(false);
+        this.updateCompanyVerificationStepStatus(false);
+        this.updateLegalVerificationStepStatus(false);
+      }
+    });
+  }
+
+  loadCompanyVerificationData(companyId: number): void {
+    this.companyLegalInfoService.getCompanyLegalInfo(companyId).subscribe({
+      next: (companyDetail) => {
+        // Check if company info is updated (step 2)
+        // Consider company info updated if companyName and other basic info exists
+        const hasCompanyInfo = !!(companyDetail.companyName && 
+                                 companyDetail.headquartersAddress && 
+                                 companyDetail.contactEmail);
+        this.updateCompanyVerificationStepStatus(hasCompanyInfo);
+        
+        // Check if legal document is verified (step 3)
+        const isLegalVerified = companyDetail.legalVerificationStatus === 'approved';
+        this.updateLegalVerificationStepStatus(isLegalVerified);
+      },
+      error: (error) => {
+        console.error('Error loading company detail:', error);
+        // On error, mark steps 2 and 3 as incomplete
+        this.updateCompanyVerificationStepStatus(false);
+        this.updateLegalVerificationStepStatus(false);
+      }
+    });
+  }
+
+  private updateEmailVerificationStepStatus(isCompleted: boolean): void {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (step.id === 'email') {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  private updateCompanyVerificationStepStatus(isCompleted: boolean): void {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (step.id === 'company') {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  private updateLegalVerificationStepStatus(isCompleted: boolean): void {
+    this.verificationSteps = this.verificationSteps.map(step => {
+      if (step.id === 'license') {
+        return { ...step, completed: isCompleted };
+      }
+      return step;
+    });
+    this.updateVerificationProgress();
+  }
+
+  updateVerificationProgress(): void {
     const completed = this.verificationSteps.filter(step => step.completed).length;
-    this.completionPercentage = (completed / this.verificationSteps.length) * 100;
+    this.verificationProgressSteps = completed;
+    this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
+    const levelStep = completed === 0 ? 1 : completed;
+    this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
   }
 
   onStepClick(step: VerificationStep): void {
     switch(step.id) {
-      case 'phone':
-        this.router.navigate(['/recruiter/verify-phone']);
+      case 'email':
+        // Navigate to email verification or open modal
+        this.router.navigate(['/recruiter/recruiter-setting'], { queryParams: { tab: 'personal-info' } });
         break;
       case 'company':
-        this.router.navigate(['/recruiter/update-company']);
+        this.router.navigate(['/recruiter/recruiter-setting'], { queryParams: { tab: 'company-info' } });
         break;
       case 'license':
-        this.router.navigate(['/recruiter/update-license']);
-        break;
-      case 'first_job':
-        this.router.navigate(['/recruiter/post-job']);
+        this.router.navigate(['/recruiter/recruiter-setting'], { queryParams: { tab: 'business-cert' } });
         break;
     }
   }
 
-  onNextStep(): void {
-    const firstIncomplete = this.verificationSteps.find(step => !step.completed);
-    if (firstIncomplete) {
-      this.onStepClick(firstIncomplete);
-    } else {
-      // All steps completed, mark as verified
-      this.navigationService.setVerified(true);
-      this.router.navigate(['/recruiter/home']);
-    }
+  onLearnMore(): void {
+    // Navigate to help or information page
+    // For now, just navigate to settings
+    this.router.navigate(['/recruiter/recruiter-setting']);
   }
 
-  getNextStepTitle(): string {
-    const firstIncomplete = this.verificationSteps.find(step => !step.completed);
-    if (firstIncomplete) {
-      return this.translate(firstIncomplete.title);
-    }
-    return this.translate('verify.complete');
-  }
-
-  onSkip(): void {
-    this.navigationService.setVerified(true);
-    this.router.navigate(['/recruiter/home']);
-  }
-
-  translate(key: string): string {
-    return this.translationService.translate(key);
-  }
 }

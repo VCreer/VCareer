@@ -43,8 +43,9 @@ namespace VCareer.Models.Companies
 
         // Legal verification status
         public string? LegalVerificationStatus { get; set; } // pending, approved, rejected
-        public long? LegalReviewedBy { get; set; } // Admin duyệt
+        public long? LegalReviewedBy { get; set; } // Admin duyệt (tạm thời dùng long để tương thích với database)
         public DateTime? LegalReviewedAt { get; set; } // Thời gian duyệt
+        public string? RejectionNotes { get; set; } // Ghi chú lý do từ chối
 
         public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }
         public ICollection<RecruiterProfile> RecruiterProfiles { get; private set; } = new List<RecruiterProfile>();

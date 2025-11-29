@@ -268,6 +268,19 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   checkUserRole(): void {
+    // Kiểm tra xem route hiện tại có phải employee route không
+    const currentUrl = this.router.url;
+    const isEmployeeRoute = currentUrl.startsWith('/employee');
+    
+    // Nếu là employee route, không gọi API getCurrentUserInfo (chỉ dành cho Recruiter)
+    if (isEmployeeRoute) {
+      this.isEmployeeRoute = true;
+      this.userRole = 'Employee';
+      this.isHRStaff = false;
+      return;
+    }
+    
+    // Chỉ gọi API cho recruiter routes
     // Kiểm tra xem user có phải HR Staff không (IsLead = false)
     this.teamManagementService.getCurrentUserInfo().subscribe({
       next: (userInfo) => {
