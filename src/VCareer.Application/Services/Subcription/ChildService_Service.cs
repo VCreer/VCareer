@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,11 +121,13 @@ namespace VCareer.Services.Subcription
             await _childServiceRepository.UpdateAsync(childrenService);
         }
 
-        public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(ServiceAction? action, ServiceTarget? target, PagingDto paging)
+        [HttpPost]
+        public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(string? serviceAction, string? target, PagingDto paging)
         {
             var childServices = (await _childServiceRepository.GetQueryableAsync());
-            if (action != null) childServices = childServices.Where(cs => cs.Action == action);
-            if (target != null) childServices = childServices.Where(cs => cs.Target == target);
+            if (!string.IsNullOrEmpty(serviceAction) && Enum.TryParse<ServiceAction>(serviceAction, true, out var parsedServiceAction)) childServices = childServices.Where(cs => cs.Action == parsedServiceAction);
+
+            if (string.IsNullOrEmpty(target)&& Enum.TryParse<ServiceTarget>(target, true, out var parsedTarget)) childServices = childServices.Where(cs => cs.Target == parsedTarget);
             childServices = childServices.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageSize);
 
             var result = await AsyncExecuter.ToListAsync(childServices);

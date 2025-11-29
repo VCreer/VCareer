@@ -9,6 +9,7 @@ import { RecruitmentCompainService } from 'src/app/proxy/services/job';
 import { EmploymentType, ExperienceLevel, PositionType } from 'src/app/proxy/constants/job-constant';
 import { JobPostService } from 'src/app/proxy/services/job';
 import { PostJobDto } from 'src/app/proxy/dto/job-dto';
+import { UserSubcriptionService } from 'src/app/proxy/services/subcription';
 
 export interface PackageOption {
   id: string;
