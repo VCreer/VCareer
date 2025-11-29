@@ -5,10 +5,13 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VCareer.Dto.FileDto;
 using VCareer.Dto.Profile;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Profile;
 using VCareer.IServices.IFileServices;
 using VCareer.IServices.IProfileServices;
 using VCareer.Models.Companies;
@@ -31,6 +34,7 @@ namespace VCareer.Services.Profile
         private readonly ICompanyRepository _companyRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IJobPostRepository _jobPostRepository;
+        private readonly IRecruiterRepository _recruiterRepository;
         private readonly IFileServices _fileServices;
         private readonly IRepository<FileDescriptor, Guid> _fileDescriptorRepository;
 
@@ -38,12 +42,14 @@ namespace VCareer.Services.Profile
             ICompanyRepository companyRepository,
             ICurrentUser currentUser,
             IJobPostRepository jobPostRepository,
+            IRecruiterRepository recruiterRepository,
             IFileServices fileServices,
             IRepository<FileDescriptor, Guid> fileDescriptorRepository)
         {
             _companyRepository = companyRepository;
             _currentUser = currentUser;
             _jobPostRepository = jobPostRepository;
+            _recruiterRepository = recruiterRepository;
             _fileServices = fileServices;
             _fileDescriptorRepository = fileDescriptorRepository;
         }
@@ -110,10 +116,8 @@ namespace VCareer.Services.Profile
         {
             var company = await _companyRepository.GetAsync(id);
 
-            if (company.LegalVerificationStatus == "approved")
-            {
-                throw new UserFriendlyException("Cannot update approved company legal information. Please contact support.");
-            }
+            // Allow update even if approved - status will be reset to pending for re-verification
+            // Removed the check that blocked updates for approved companies
 
             // Check if tax code already exists (excluding current record)
             var existingTaxCode = await _companyRepository.FirstOrDefaultAsync(
@@ -143,6 +147,7 @@ namespace VCareer.Services.Profile
             company.CompanySize = input.CompanySize;
             company.IndustryId = input.IndustryId;
             company.FoundedYear = input.FoundedYear;
+            company.WebsiteUrl = input.WebsiteUrl;
 
             // Update legal information
             company.TaxCode = input.TaxCode;
@@ -154,7 +159,17 @@ namespace VCareer.Services.Profile
             company.TaxCertificateFile = input.TaxCertificateFile;
             company.RepresentativeIdCardFile = input.RepresentativeIdCardFile;
             company.OtherSupportFile = input.OtherSupportFile;
-            company.LegalVerificationStatus = "pending"; // Reset status to pending
+            
+            // Reset verification status to pending for re-verification by employee
+            // If company was previously verified, reset both statuses
+            if (company.VerificationStatus == true || company.LegalVerificationStatus == "approved")
+            {
+                company.VerificationStatus = false; // Reset verification status
+            }
+            company.LegalVerificationStatus = "pending";
+            company.LegalReviewedBy = null; // Clear previous reviewer
+            company.LegalReviewedAt = null; // Clear previous review time
+            company.RejectionNotes = null; // Clear previous rejection notes if any
 
             await _companyRepository.UpdateAsync(company);
 
@@ -241,10 +256,8 @@ namespace VCareer.Services.Profile
         {
             var company = await _companyRepository.GetAsync(id);
 
-            if (company.LegalVerificationStatus == "approved")
-            {
-                throw new UserFriendlyException("Cannot update approved company legal information. Please contact support.");
-            }
+            // Allow update even if approved - status will be reset to pending for re-verification
+            // Removed the check that blocked updates for approved companies
 
             // Update only the provided file URLs
             if (!string.IsNullOrEmpty(businessLicenseFile))
@@ -259,7 +272,16 @@ namespace VCareer.Services.Profile
             if (!string.IsNullOrEmpty(otherSupportFile))
                 company.OtherSupportFile = otherSupportFile;
 
-            company.LegalVerificationStatus = "pending"; // Reset status to pending
+            // Reset verification status to pending for re-verification by employee
+            // If company was previously verified, reset both statuses
+            if (company.VerificationStatus == true || company.LegalVerificationStatus == "approved")
+            {
+                company.VerificationStatus = false; // Reset verification status
+            }
+            company.LegalVerificationStatus = "pending";
+            company.LegalReviewedBy = null; // Clear previous reviewer
+            company.LegalReviewedAt = null; // Clear previous review time
+            company.RejectionNotes = null; // Clear previous rejection notes if any
 
             await _companyRepository.UpdateAsync(company);
 
@@ -307,6 +329,13 @@ namespace VCareer.Services.Profile
 
             var company = await _companyRepository.GetAsync(id);
             company.LegalDocumentUrl = fileDescriptor.StoragePath;
+            
+            // Reset verification status to pending for re-verification by employee
+            // If company was previously verified, reset both statuses
+            if (company.VerificationStatus == true || company.LegalVerificationStatus == "approved")
+            {
+                company.VerificationStatus = false; // Reset verification status
+            }
             company.LegalVerificationStatus = "pending";
 
             await _companyRepository.UpdateAsync(company);
@@ -398,6 +427,431 @@ namespace VCareer.Services.Profile
             var dtos = ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
 
             return new PagedResultDto<CompanyLegalInfoDto>(totalCount, dtos);
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
+        /// </summary>
+        [Authorize]
+        public async Task<PagedResultDto<CompanyVerificationViewDto>> GetPendingCompaniesAsync(CompanyVerificationFilterDto input)
+        {
+            var queryable = await _companyRepository.GetQueryableAsync();
+            
+            // Lọc các công ty có status = "pending"
+            queryable = queryable.Where(c => c.LegalVerificationStatus == "pending");
+
+            // Filter by keyword
+            if (!string.IsNullOrWhiteSpace(input.Keyword))
+            {
+                var keyword = input.Keyword.ToLower();
+                queryable = queryable.Where(c => 
+                    (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
+                    (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
+                    (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
+                    (c.TaxCode != null && c.TaxCode.ToLower().Contains(keyword))
+                );
+            }
+
+            // Filter by date range
+            if (input.CreatedFrom.HasValue)
+            {
+                queryable = queryable.Where(c => c.CreationTime >= input.CreatedFrom.Value);
+            }
+            if (input.CreatedTo.HasValue)
+            {
+                queryable = queryable.Where(c => c.CreationTime <= input.CreatedTo.Value);
+            }
+
+            // Sorting
+            if (!string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                if (input.Sorting.Contains("CreationTime", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (input.Sorting.Contains("desc", StringComparison.OrdinalIgnoreCase))
+                        queryable = queryable.OrderByDescending(c => c.CreationTime);
+                    else
+                        queryable = queryable.OrderBy(c => c.CreationTime);
+                }
+            }
+            else
+            {
+                // Default sort by creation time descending
+                queryable = queryable.OrderByDescending(c => c.CreationTime);
+            }
+
+            var totalCount = await queryable.CountAsync();
+
+            // Pagination
+            var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+            var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+            var companies = await queryable
+                .Skip(skipCount)
+                .Take(maxResultCount)
+                .ToListAsync();
+
+            // Load all recruiters for these companies in one query
+            var companyIds = companies.Select(c => c.Id).ToList();
+            var recruiterQueryable = await _recruiterRepository.WithDetailsAsync(r => r.User);
+            var recruiters = recruiterQueryable
+                .Where(r => companyIds.Contains(r.CompanyId) && r.IsLead)
+                .ToList();
+
+            // Create a dictionary for quick lookup
+            var recruiterDict = recruiters
+                .GroupBy(r => r.CompanyId)
+                .ToDictionary(g => g.Key, g => g.FirstOrDefault());
+
+            // Map to DTOs and get recruiter info
+            var dtos = new List<CompanyVerificationViewDto>();
+            foreach (var company in companies)
+            {
+                var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
+                
+                // Get recruiter from dictionary
+                if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
+                {
+                    dto.RecruiterEmail = recruiter.Email;
+                    if (recruiter.User != null)
+                    {
+                        dto.RecruiterName = $"{recruiter.User.Name} {recruiter.User.Surname}".Trim();
+                    }
+                    else
+                    {
+                        dto.RecruiterName = recruiter.Email?.Split('@')[0] ?? "Recruiter";
+                    }
+                }
+                dtos.Add(dto);
+            }
+
+            return new PagedResultDto<CompanyVerificationViewDto>
+            {
+                TotalCount = totalCount,
+                Items = dtos
+            };
+        }
+
+        /// <summary>
+        /// Duyệt công ty (chỉ Employee/Admin)
+        /// Cho phép duyệt các công ty đang ở trạng thái "pending" hoặc "rejected"
+        /// </summary>
+        [Authorize]
+        public async Task ApproveCompanyAsync(int id)
+        {
+            var company = await _companyRepository.GetAsync(id);
+            
+            // Cho phép duyệt các công ty đang ở trạng thái "pending" hoặc "rejected"
+            if (company.LegalVerificationStatus != "pending" && company.LegalVerificationStatus != "rejected")
+            {
+                throw new UserFriendlyException("Chỉ có thể duyệt các công ty đang ở trạng thái chờ xác thực hoặc đã bị từ chối.");
+            }
+
+            company.LegalVerificationStatus = "approved";
+            // Tạm thời lưu null vì database là bigint nhưng CurrentUser.Id là Guid
+            // TODO: Tạo migration để đổi LegalReviewedBy từ bigint sang uniqueidentifier
+            company.LegalReviewedBy = null; 
+            company.LegalReviewedAt = DateTime.UtcNow;
+            company.RejectionNotes = null; // Clear rejection notes if any
+            company.VerificationStatus = true;
+
+            await _companyRepository.UpdateAsync(company);
+
+            // TODO: Send email to recruiter
+        }
+
+        /// <summary>
+        /// Từ chối công ty (chỉ Employee/Admin)
+        /// </summary>
+        [Authorize]
+        public async Task RejectCompanyAsync(int id, RejectCompanyDto input)
+        {
+            var company = await _companyRepository.GetAsync(id);
+            
+            if (company.LegalVerificationStatus != "pending")
+            {
+                throw new UserFriendlyException("Chỉ có thể từ chối các công ty đang ở trạng thái chờ xác thực.");
+            }
+
+            if (string.IsNullOrWhiteSpace(input.RejectionNotes))
+            {
+                throw new UserFriendlyException("Vui lòng nhập lý do từ chối.");
+            }
+
+            company.LegalVerificationStatus = "rejected";
+            // Tạm thời lưu null vì database là bigint nhưng CurrentUser.Id là Guid
+            // TODO: Tạo migration để đổi LegalReviewedBy từ bigint sang uniqueidentifier
+            company.LegalReviewedBy = null;
+            company.LegalReviewedAt = DateTime.UtcNow;
+            company.RejectionNotes = input.RejectionNotes;
+            company.VerificationStatus = false;
+
+            await _companyRepository.UpdateAsync(company);
+
+            // TODO: Send email to recruiter with rejection notes
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã được xác minh (chỉ Employee/Admin)
+        /// Phải thỏa mãn cả VerificationStatus = true VÀ LegalVerificationStatus = "approved"
+        /// Điều này đảm bảo chỉ hiển thị các công ty đã được duyệt và chưa bị cập nhật lại
+        /// </summary>
+        [Authorize]
+        public async Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                var queryable = await _companyRepository.GetQueryableAsync();
+                
+                // Lọc các công ty đã được xác minh
+                // Phải thỏa mãn cả 2 điều kiện: VerificationStatus = true VÀ LegalVerificationStatus = "approved"
+                // Điều này đảm bảo chỉ hiển thị các công ty đã được duyệt và chưa bị cập nhật lại
+                queryable = queryable.Where(c => c.VerificationStatus == true && c.LegalVerificationStatus == "approved");
+
+                // Filter by keyword
+                if (!string.IsNullOrWhiteSpace(input.Keyword))
+                {
+                    var keyword = input.Keyword.ToLower();
+                    queryable = queryable.Where(c => 
+                        (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
+                        (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
+                        (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
+                        (c.TaxCode != null && c.TaxCode.ToLower().Contains(keyword))
+                    );
+                }
+
+                // Filter by date range
+                if (input.CreatedFrom.HasValue)
+                {
+                    queryable = queryable.Where(c => c.CreationTime >= input.CreatedFrom.Value);
+                }
+                if (input.CreatedTo.HasValue)
+                {
+                    queryable = queryable.Where(c => c.CreationTime <= input.CreatedTo.Value);
+                }
+
+                // Sorting
+                if (!string.IsNullOrWhiteSpace(input.Sorting))
+                {
+                    if (input.Sorting.Contains("LegalReviewedAt", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (input.Sorting.Contains("desc", StringComparison.OrdinalIgnoreCase))
+                            queryable = queryable.OrderByDescending(c => c.LegalReviewedAt);
+                        else
+                            queryable = queryable.OrderBy(c => c.LegalReviewedAt);
+                    }
+                    else if (input.Sorting.Contains("CreationTime", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (input.Sorting.Contains("desc", StringComparison.OrdinalIgnoreCase))
+                            queryable = queryable.OrderByDescending(c => c.CreationTime);
+                        else
+                            queryable = queryable.OrderBy(c => c.CreationTime);
+                    }
+                }
+                else
+                {
+                    // Default sort by verification date descending (newest verified first)
+                    queryable = queryable.OrderByDescending(c => c.LegalReviewedAt ?? c.CreationTime);
+                }
+
+                var totalCount = await queryable.CountAsync();
+
+                // Pagination
+                var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+                var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+                var companies = await queryable
+                    .Skip(skipCount)
+                    .Take(maxResultCount)
+                    .ToListAsync();
+
+                // Load all recruiters for these companies in one query (only if there are companies)
+                var dtos = new List<CompanyVerificationViewDto>();
+                if (companies.Any())
+                {
+                    var companyIds = companies.Select(c => c.Id).ToList();
+                    var recruiterQueryable = await _recruiterRepository.WithDetailsAsync(r => r.User);
+                    var recruiters = recruiterQueryable
+                        .Where(r => companyIds.Contains(r.CompanyId) && r.IsLead)
+                        .ToList();
+
+                    // Create a dictionary for quick lookup
+                    var recruiterDict = recruiters
+                        .GroupBy(r => r.CompanyId)
+                        .ToDictionary(g => g.Key, g => g.FirstOrDefault());
+
+                    // Map to DTOs and get recruiter info
+                    foreach (var company in companies)
+                    {
+                        try
+                        {
+                            var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
+                            
+                            // Get recruiter from dictionary
+                            if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
+                            {
+                                dto.RecruiterEmail = recruiter.Email;
+                                if (recruiter.User != null)
+                                {
+                                    dto.RecruiterName = $"{recruiter.User.Name ?? ""} {recruiter.User.Surname ?? ""}".Trim();
+                                    if (string.IsNullOrWhiteSpace(dto.RecruiterName))
+                                    {
+                                        dto.RecruiterName = recruiter.Email?.Split('@')[0] ?? "Recruiter";
+                                    }
+                                }
+                                else
+                                {
+                                    dto.RecruiterName = recruiter.Email?.Split('@')[0] ?? "Recruiter";
+                                }
+                            }
+                            dtos.Add(dto);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log error for this specific company but continue with others
+                            Logger.LogWarning(ex, "Error mapping company {CompanyId} to DTO", company.Id);
+                            // Add a basic DTO without recruiter info
+                            var basicDto = new CompanyVerificationViewDto
+                            {
+                                Id = company.Id,
+                                CompanyName = company.CompanyName,
+                                CompanyCode = company.CompanyCode,
+                                ContactEmail = company.ContactEmail,
+                                ContactPhone = company.ContactPhone,
+                                VerificationStatus = company.VerificationStatus,
+                                LegalVerificationStatus = company.LegalVerificationStatus,
+                                LegalReviewedAt = company.LegalReviewedAt,
+                                CreationTime = company.CreationTime
+                            };
+                            dtos.Add(basicDto);
+                        }
+                    }
+                }
+
+                return new PagedResultDto<CompanyVerificationViewDto>
+                {
+                    TotalCount = totalCount,
+                    Items = dtos
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in GetVerifiedCompaniesAsync");
+                throw new UserFriendlyException($"Lỗi khi lấy danh sách công ty đã xác minh: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
+        /// </summary>
+        [Authorize]
+        public async Task<PagedResultDto<CompanyVerificationViewDto>> GetRejectedCompaniesAsync(CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                var queryable = await _companyRepository.GetQueryableAsync();
+                
+                // Lọc các công ty có status = "rejected"
+                queryable = queryable.Where(c => c.LegalVerificationStatus == "rejected");
+
+                // Filter by keyword
+                if (!string.IsNullOrWhiteSpace(input.Keyword))
+                {
+                    var keyword = input.Keyword.ToLower();
+                    queryable = queryable.Where(c => 
+                        (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
+                        (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
+                        (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
+                        (c.TaxCode != null && c.TaxCode.ToLower().Contains(keyword))
+                    );
+                }
+
+                // Filter by date range
+                if (input.CreatedFrom.HasValue)
+                {
+                    queryable = queryable.Where(c => c.CreationTime >= input.CreatedFrom.Value);
+                }
+                if (input.CreatedTo.HasValue)
+                {
+                    queryable = queryable.Where(c => c.CreationTime <= input.CreatedTo.Value);
+                }
+
+                // Sorting
+                if (!string.IsNullOrWhiteSpace(input.Sorting))
+                {
+                    if (input.Sorting.Contains("LegalReviewedAt", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (input.Sorting.Contains("desc", StringComparison.OrdinalIgnoreCase))
+                            queryable = queryable.OrderByDescending(c => c.LegalReviewedAt);
+                        else
+                            queryable = queryable.OrderBy(c => c.LegalReviewedAt);
+                    }
+                    else if (input.Sorting.Contains("CreationTime", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (input.Sorting.Contains("desc", StringComparison.OrdinalIgnoreCase))
+                            queryable = queryable.OrderByDescending(c => c.CreationTime);
+                        else
+                            queryable = queryable.OrderBy(c => c.CreationTime);
+                    }
+                }
+                else
+                {
+                    // Default sort by review time descending (most recently rejected first)
+                    queryable = queryable.OrderByDescending(c => c.LegalReviewedAt ?? c.CreationTime);
+                }
+
+                var totalCount = await queryable.CountAsync();
+
+                // Pagination
+                var skipCount = input.SkipCount > 0 ? input.SkipCount : 0;
+                var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+                var companies = await queryable
+                    .Skip(skipCount)
+                    .Take(maxResultCount)
+                    .ToListAsync();
+
+                // Load all recruiters for these companies in one query
+                var companyIds = companies.Select(c => c.Id).ToList();
+                var recruiterQueryable = await _recruiterRepository.WithDetailsAsync(r => r.User);
+                var recruiters = recruiterQueryable
+                    .Where(r => companyIds.Contains(r.CompanyId) && r.IsLead)
+                    .ToList();
+
+                // Create a dictionary for quick lookup
+                var recruiterDict = recruiters
+                    .GroupBy(r => r.CompanyId)
+                    .ToDictionary(g => g.Key, g => g.FirstOrDefault());
+
+                // Map to DTOs and get recruiter info
+                var dtos = new List<CompanyVerificationViewDto>();
+                foreach (var company in companies)
+                {
+                    var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
+                    
+                    // Get recruiter from dictionary
+                    if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
+                    {
+                        dto.RecruiterEmail = recruiter.Email;
+                        if (recruiter.User != null)
+                        {
+                            dto.RecruiterName = $"{recruiter.User.Name} {recruiter.User.Surname}".Trim();
+                        }
+                        else
+                        {
+                            dto.RecruiterName = recruiter.Email?.Split('@')[0] ?? "Recruiter";
+                        }
+                    }
+                    dtos.Add(dto);
+                }
+
+                return new PagedResultDto<CompanyVerificationViewDto>
+                {
+                    TotalCount = totalCount,
+                    Items = dtos
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in GetRejectedCompaniesAsync");
+                throw new UserFriendlyException($"Lỗi khi lấy danh sách công ty đã bị từ chối: {ex.Message}");
+            }
         }
     }
 }

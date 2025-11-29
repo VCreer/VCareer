@@ -38,7 +38,7 @@
   height: calc(100% - 64px); /* Chiều cao = full height - header height */
   background-color: white;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
-  z-index: 100; /* Lower than header but above main content */
+  z-index: 99; /* Lower than header (z-index: 100) but above main content */
   transform: translateX(0); /* Luôn hiển thị */
   transition: width 0.3s ease;
   display: flex;

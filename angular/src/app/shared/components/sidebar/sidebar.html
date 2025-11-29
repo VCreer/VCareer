@@ -61,6 +61,12 @@
             <span class="sidebar-link-text">Quản lí các gói dịch vụ</span>
           </a>
         </li>
+        <li class="sidebar-nav-item">
+          <a (click)="navigateTo('/employee/company-verify')" class="sidebar-link" [class.active]="isActive('/employee/company-verify')">
+            <i class="fa fa-building sidebar-icon"></i>
+            <span class="sidebar-link-text">Xác thực công ty</span>
+          </a>
+        </li>
       </ng-container>
 
       <!-- Recruiter Menu -->

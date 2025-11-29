@@ -112,7 +112,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     sourceId: '',
     displayAll: true,
     labelId: '',
-    timeRange: ''
+    timeRange: '',
+    startDate: null,
+    endDate: null
   };
 
   constructor(
@@ -215,13 +217,27 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   
   private mapApplicationsToCvs(applications: ApplicationDto[]): CandidateCv[] {
     return applications.map(app => {
+      // Generate placeholder email/phone từ candidateId nếu có
+      // TODO: Backend nên thêm email và phone vào ApplicationDto
+      const candidateIdShort = app.candidateId?.substring(0, 8) || 'unknown';
+      const email = app.candidateId ? `candidate_${candidateIdShort}@vcareer.vn` : 'N/A';
+      const phone = app.candidateId ? candidateIdShort.padEnd(10, '0') : 'N/A';
+      
+      // Normalize status from backend
+      const normalizedStatus = this.normalizeStatus(app.status);
+      
+      // Debug log to help identify status mapping issues
+      if (app.status && app.status !== normalizedStatus) {
+        console.log(`Status normalized: "${app.status}" → "${normalizedStatus}" for CV ${app.id}`);
+      }
+      
       return {
         id: app.id || '',
         name: app.candidateName || 'N/A',
         email: app.candidateEmail || 'N/A',
         phone: app.candidatePhone || 'N/A',
         position: app.jobTitle || 'N/A',
-        status: app.status || 'received', // Default: CV tiếp nhận
+        status: normalizedStatus, // Normalize backend status to frontend status
         source: this.getCvSource(app.cvType),
         appliedDate: app.creationTime ? new Date(app.creationTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         addedDate: app.creationTime ? new Date(app.creationTime).toISOString() : new Date().toISOString(),
@@ -233,6 +249,50 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         rating: app.rating || undefined
       };
     });
+  }
+
+  /**
+   * Normalize backend status values to frontend status values
+   * Backend: "Pending", "Reviewed", "Shortlisted", "Interviewed", "Accepted", "Rejected", "Withdrawn"
+   * Frontend: 'received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable'
+   */
+  private normalizeStatus(backendStatus?: string | null): string {
+    // Handle null, undefined, or empty string
+    if (!backendStatus || !backendStatus.trim()) {
+      return 'received'; // Default: CV tiếp nhận
+    }
+
+    const statusLower = backendStatus.toLowerCase().trim();
+    
+    // If already in frontend format, return as is
+    const frontendStatuses = ['received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable'];
+    if (frontendStatuses.includes(statusLower)) {
+      return statusLower;
+    }
+
+    // Map backend status to frontend status
+    const statusMap: { [key: string]: string } = {
+      'pending': 'received',           // CV tiếp nhận
+      'reviewed': 'suitable',          // Phù hợp
+      'shortlisted': 'suitable',       // Phù hợp
+      'interviewed': 'interview',      // Hẹn phỏng vấn
+      'accepted': 'hired',             // Nhận việc
+      'rejected': 'not-suitable',      // Chưa phù hợp
+      'withdrawn': 'not-suitable',     // Chưa phù hợp
+      'offer': 'offer',                // Gửi đề nghị
+      'send-offer': 'offer',           // Gửi đề nghị (alternative)
+      'new': 'received',               // Mới = CV tiếp nhận
+      'viewed': 'received'              // Đã xem nhưng chưa đánh giá = CV tiếp nhận
+    };
+
+    const normalizedStatus = statusMap[statusLower] || 'received';
+    
+    // Log unknown status values for debugging
+    if (!statusMap[statusLower]) {
+      console.warn(`Unknown status value from backend: "${backendStatus}" (normalized to "received")`);
+    }
+    
+    return normalizedStatus;
   }
   
   private getCvSource(cvType?: string): string {
@@ -378,7 +438,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
     // Status filter
     if (this.currentFilters.statusId) {
-      result = result.filter(cv => cv.status === this.currentFilters.statusId);
+      const filterStatus = this.currentFilters.statusId.toLowerCase().trim();
+      result = result.filter(cv => {
+        const cvStatus = (cv.status || '').toLowerCase().trim();
+        return cvStatus === filterStatus;
+      });
     }
 
     // Source filter
@@ -398,26 +462,58 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       result = result.filter(cv => !cv.isViewed);
     }
 
-    // Time range filter
-    if (this.currentFilters.timeRange) {
-      const now = new Date();
+    // Time range filter - handle both preset ranges and custom date range
+    if (this.currentFilters.timeRange || this.currentFilters.startDate || this.currentFilters.endDate) {
       result = result.filter(cv => {
         const appliedDate = new Date(cv.appliedDate);
-        switch (this.currentFilters.timeRange) {
-          case 'today':
-            return appliedDate.toDateString() === now.toDateString();
-          case 'week':
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            return appliedDate >= weekAgo;
-          case 'month':
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            return appliedDate >= monthAgo;
-          case 'year':
-            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-            return appliedDate >= yearAgo;
-          default:
-            return true;
+        
+        // Custom date range (from date picker)
+        if (this.currentFilters.startDate || this.currentFilters.endDate) {
+          if (this.currentFilters.startDate) {
+            const startDate = new Date(this.currentFilters.startDate);
+            startDate.setHours(0, 0, 0, 0); // Start of day
+            if (appliedDate < startDate) {
+              return false;
+            }
+          }
+          
+          if (this.currentFilters.endDate) {
+            const endDate = new Date(this.currentFilters.endDate);
+            endDate.setHours(23, 59, 59, 999); // End of day
+            if (appliedDate > endDate) {
+              return false;
+            }
+          }
+          
+          return true;
         }
+        
+        // Preset time ranges
+        if (this.currentFilters.timeRange) {
+          const now = new Date();
+          switch (this.currentFilters.timeRange) {
+            case 'today':
+              return appliedDate.toDateString() === now.toDateString();
+            case 'week':
+              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              weekAgo.setHours(0, 0, 0, 0);
+              return appliedDate >= weekAgo;
+            case 'month':
+              const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              monthAgo.setHours(0, 0, 0, 0);
+              return appliedDate >= monthAgo;
+            case 'year':
+              const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+              yearAgo.setHours(0, 0, 0, 0);
+              return appliedDate >= yearAgo;
+            case 'all':
+              return true;
+            default:
+              return true;
+          }
+        }
+        
+        return true;
       });
     }
 
@@ -511,10 +607,13 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   // Rating change
   changingRatingFor: string | null = null;
   
-  onChangeStatus(cv: CandidateCv, event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const newStatus = target.value;
+  onChangeStatus(cv: CandidateCv, newStatus: string): void {
     const oldStatus = cv.status;
+    
+    // Don't update if status hasn't changed
+    if (oldStatus === newStatus) {
+      return;
+    }
     
     console.log(`Changing status for ${cv.name} from ${oldStatus} to ${newStatus}`);
     
@@ -533,6 +632,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       next: () => {
         this.showToastMessage(`Đã cập nhật trạng thái thành "${this.getStatusName(newStatus)}"`, 'success');
         this.changingStatusFor = null;
+        // Re-apply filters to ensure the CV appears/disappears based on current filter
+        this.applyFilters();
       },
       error: (error) => {
         console.error('Error updating status:', error);
@@ -551,7 +652,6 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         
         // Revert to previous status on error
         cv.status = oldStatus;
-        target.value = oldStatus;
       }
     });
   }
