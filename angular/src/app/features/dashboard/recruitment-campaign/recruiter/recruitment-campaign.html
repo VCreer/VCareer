@@ -72,11 +72,12 @@
     <div class="campaign-management-card">
       <!-- Filter + Search -->
       <div class="filter-search-section">
-        <select class="filter-dropdown" [(ngModel)]="filterType" (change)="onFilterChange()">
-          <option value="all">Tất cả chiến dịch</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Đã tắt</option>
-        </select>
+        <app-select-field
+          [options]="filterOptions"
+          [(ngModel)]="filterType"
+          (valueChange)="onFilterChange()"
+          placeholder="Tất cả chiến dịch">
+        </app-select-field>
 
         <div class="search-input-wrapper">
           <input
@@ -142,6 +143,9 @@
                     <div
                       class="actions-menu"
                       [class.show]="showActionsMenu === campaign.id"
+                      [style.top.px]="menuPosition?.top"
+                      [style.left.px]="menuPosition?.left"
+                      [style.max-width.px]="menuPosition?.maxWidth"
                       (click)="$event.stopPropagation()"
                     >
                       <div class="menu-item" (click)="onViewCampaign(campaign)">
