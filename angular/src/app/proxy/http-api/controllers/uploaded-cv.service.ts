@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { GetUploadedCvListDto, UpdateUploadedCvDto, UploadCvRequestDto, UploadedCvDto } from '../../application/contracts/cv/models';
-import type { ActionResult, IActionResult } from '../../microsoft/asp-net-core/mvc/models';
+import type { ActionResult } from '../../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
   providedIn: 'root',
