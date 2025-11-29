@@ -97,8 +97,8 @@ export class JobDetailComponent implements OnInit {
       this.isAuthenticated = isLoggedIn;
       console.log('[JobDetail] isLoggedIn =', isLoggedIn);
       if (isLoggedIn && this.jobId) {
-        this.checkApplicationStatus();
-        this.loadSavedStatus();
+      //  this.checkApplicationStatus();
+      //  this.loadSavedStatus();
       } else {
         this.hasApplied = false;
         this.isHeartActive = false;
@@ -165,12 +165,12 @@ export class JobDetailComponent implements OnInit {
 
         // Load saved status if authenticated
         if (this.isAuthenticated) {
-          this.loadSavedStatus();
+        //  this.loadSavedStatus();
         }
 
         // Check application status if authenticated
         if (this.isAuthenticated && this.jobId) {
-          this.checkApplicationStatus();
+        //  this.checkApplicationStatus();
         }
       },
       error: error => {
@@ -604,8 +604,8 @@ export class JobDetailComponent implements OnInit {
     this.isAuthenticated = true;
     setTimeout(() => {
       if (this.jobId) {
-        this.checkApplicationStatus();
-        this.loadSavedStatus();
+      //  this.checkApplicationStatus();
+     //   this.loadSavedStatus();
       }
       const currentUrl = window.location.href;
       console.log('[JobDetail] Reloading page with URL:', currentUrl);
@@ -677,7 +677,7 @@ export class JobDetailComponent implements OnInit {
       this.showToast = true;
       this.loadJobDetail();
       if (this.isAuthenticated && this.jobId) {
-        this.checkApplicationStatus();
+      //  this.checkApplicationStatus();
       }
     } else {
       this.toastType = 'error';
