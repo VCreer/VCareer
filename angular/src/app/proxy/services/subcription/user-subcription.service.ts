@@ -1,6 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_SubcriptionStatus } from '../../constants/job-constant/subcription-contance-subcription-status.enum';
 import type { SubcriptionsViewDto, User_SubcirptionCreateDto, User_SubcirptionUpdateDto, User_SubcirptionViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
@@ -37,7 +36,7 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
-  getAllSubcriptionsByUserByUserIdAndStatusAndPagingDto = (userId: string, status: enum, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+  getAllSubcriptionsByUserByUserIdAndStatusAndPagingDto = (userId: string, status: number, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SubcriptionsViewDto[]>({
       method: 'GET',
       url: `/api/app/user-subcription/subcriptions-by-user/${userId}`,

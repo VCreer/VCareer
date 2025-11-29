@@ -1,24 +1,9 @@
-import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
-import type { SubcriptionContance_SubcriptionStatus } from '../../constants/job-constant/subcription-contance-subcription-status.enum';
 import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
 import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
 import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { SubcriptionContance_CurrencyType } from '../../constants/job-constant/subcription-contance-currency-type.enum';
-
-export interface SubcriptionsViewDto {
-  id?: string;
-  title?: string;
-  description?: string;
-  target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
-  originalPrice: number;
-  isLimited: boolean;
-  isBuyLimited: boolean;
-  totalBuyEachUser: number;
-  isLifeTime: boolean;
-  dayDuration?: number;
-  isActive: boolean;
-}
+import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
+import type { SubcriptionContance_SubcriptionStatus } from '../../constants/job-constant/subcription-contance-subcription-status.enum';
 
 export interface AddChildServicesDto {
   childServiceIds: string[];
@@ -113,6 +98,21 @@ export interface SubcriptionsUpdateDto {
   description?: string;
   isActive: boolean;
   dayDuration?: number;
+}
+
+export interface SubcriptionsViewDto {
+  id?: string;
+  title?: string;
+  description?: string;
+  target?: SubcriptionContance_SubcriptorTarget;
+  status?: SubcriptionContance_SubcriptionStatus;
+  originalPrice: number;
+  isLimited: boolean;
+  isBuyLimited: boolean;
+  totalBuyEachUser: number;
+  isLifeTime: boolean;
+  dayDuration?: number;
+  isActive: boolean;
 }
 
 export interface User_ChildServiceCreateDto {
