@@ -2727,54 +2727,6 @@
             }
           }
         },
-        "VCareer.Controllers.SubscriptionServiceController": {
-          "controllerName": "Subscription",
-          "controllerGroupName": null,
-          "isRemoteService": false,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Controllers.SubscriptionServiceController",
-          "interfaces": [],
-          "actions": {
-            "GetActiveSubscriptionServicesAsyncByTarget": {
-              "uniqueName": "GetActiveSubscriptionServicesAsyncByTarget",
-              "name": "GetActiveSubscriptionServicesAsync",
-              "httpMethod": "GET",
-              "url": "api/subscription-services/active",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "target",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget?",
-                  "typeSimple": "enum?",
-                  "isOptional": true,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "target",
-                  "name": "target",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Query",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>>",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>>"
-              },
-              "allowAnonymous": true,
-              "implementFrom": "VCareer.Controllers.SubscriptionServiceController"
-            }
-          }
-        },
         "VCareer.HttpApi.Controllers.ApplicationController": {
           "controllerName": "Application",
           "controllerGroupName": null,
@@ -15868,23 +15820,23 @@
                   "name": "GetChildServicesAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "action",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
-                      "typeSimple": "enum?",
+                      "name": "serviceAction",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
                       "isOptional": false,
                       "defaultValue": null
                     },
                     {
                       "name": "target",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget?",
-                      "typeSimple": "enum?",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
                       "isOptional": false,
                       "defaultValue": null
                     },
                     {
-                      "name": "paging",
+                      "name": "pagin",
                       "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
                       "type": "VCareer.IServices.Common.PagingDto",
                       "typeSimple": "VCareer.IServices.Common.PagingDto",
@@ -16049,26 +16001,26 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
-            "GetChildServicesAsyncByActionAndTargetAndPaging": {
-              "uniqueName": "GetChildServicesAsyncByActionAndTargetAndPaging",
+            "GetChildServicesAsyncByServiceActionAndTargetAndPaging": {
+              "uniqueName": "GetChildServicesAsyncByServiceActionAndTargetAndPaging",
               "name": "GetChildServicesAsync",
-              "httpMethod": "GET",
-              "url": "api/app/child-service_/child-services",
+              "httpMethod": "POST",
+              "url": "api/app/child-service_/get-child-services",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "action",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
-                  "typeSimple": "enum?",
+                  "name": "serviceAction",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
                 },
                 {
                   "name": "target",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget?",
-                  "typeSimple": "enum?",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -16083,8 +16035,8 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "action",
-                  "name": "action",
+                  "nameOnMethod": "serviceAction",
+                  "name": "serviceAction",
                   "jsonName": null,
                   "type": "System.String",
                   "typeSimple": "string",
@@ -16108,27 +16060,15 @@
                 },
                 {
                   "nameOnMethod": "paging",
-                  "name": "PageSize",
+                  "name": "paging",
                   "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "paging"
-                },
-                {
-                  "nameOnMethod": "paging",
-                  "name": "PageIndex",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "paging"
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
                 }
               ],
               "returnValue": {
@@ -16233,9 +16173,9 @@
                     },
                     {
                       "name": "status",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus?",
-                      "typeSimple": "enum?",
+                      "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Int32?",
+                      "typeSimple": "number?",
                       "isOptional": false,
                       "defaultValue": null
                     },
@@ -16266,9 +16206,9 @@
                     },
                     {
                       "name": "status",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus?",
-                      "typeSimple": "enum?",
+                      "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Int32?",
+                      "typeSimple": "number?",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -16397,11 +16337,11 @@
               "uniqueName": "GetEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto",
               "name": "GetEffectingJobServicesWithPaging",
               "httpMethod": "GET",
-              "url": "api/app/job-affecting/effecting-job-services-with-paging/{JobId}",
+              "url": "api/app/job-affecting/effecting-job-services-with-paging/{jobId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "JobId",
+                  "name": "jobId",
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -16410,9 +16350,9 @@
                 },
                 {
                   "name": "status",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus?",
-                  "typeSimple": "enum?",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -16427,8 +16367,8 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "JobId",
-                  "name": "JobId",
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -16442,8 +16382,8 @@
                   "nameOnMethod": "status",
                   "name": "status",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -16499,9 +16439,9 @@
                 },
                 {
                   "name": "status",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus?",
-                  "typeSimple": "enum?",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -16523,8 +16463,8 @@
                   "nameOnMethod": "status",
                   "name": "status",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -17093,9 +17033,9 @@
                   "parametersOnMethod": [
                     {
                       "name": "target",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget?",
-                      "typeSimple": "enum?",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
                       "isOptional": true,
                       "defaultValue": null
                     }
@@ -17587,9 +17527,9 @@
               "parametersOnMethod": [
                 {
                   "name": "target",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget?",
-                  "typeSimple": "enum?",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": true,
                   "defaultValue": null
                 }
@@ -18029,9 +17969,9 @@
                     },
                     {
                       "name": "status",
-                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus?",
-                      "typeSimple": "enum?",
+                      "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Int32?",
+                      "typeSimple": "number?",
                       "isOptional": false,
                       "defaultValue": null
                     },
@@ -18181,9 +18121,9 @@
                 },
                 {
                   "name": "status",
-                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus?",
-                  "typeSimple": "enum?",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -18213,8 +18153,8 @@
                   "nameOnMethod": "status",
                   "name": "status",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,

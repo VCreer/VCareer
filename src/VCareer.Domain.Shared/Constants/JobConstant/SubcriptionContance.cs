@@ -20,9 +20,7 @@ namespace VCareer.Constants.JobConstant
             JobPost,
             Company,
             Cv
-
         }
-
         public enum ServiceAction
         {
             BoostScoreCv,          // Tăng điểm hiển thị
@@ -32,7 +30,6 @@ namespace VCareer.Constants.JobConstant
             IncreaseQuota,       // Tăng số lượng job được đăng
             ExtendExpiredDate,   // Kéo dài ngày hết hạn job
         }
-
         public enum SubcriptionStatus
         {
             Inactive = 0,
@@ -40,23 +37,16 @@ namespace VCareer.Constants.JobConstant
             Expired = 2,
             Cancelled = 3
         }
-
         public enum ChildServiceStatus
         {
             Inactive = 0,
             Active = 1,
             Expired = 2,
         }
-
-
         public enum CurrencyType
         {
             VND = 1,
             USD = 2
         }
-
-
-
-
     }
 }

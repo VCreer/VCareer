@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -210,14 +211,15 @@ namespace VCareer.Services.Subcription
             await _subcriptionServiceRepository.UpdateAsync(subcriptionService);
         }
 
-        public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(SubcriptorTarget? target = null)
+              public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(string? target = null)
         {
             var query = await _subcriptionServiceRepository.GetQueryableAsync();
             query = query.Where(x => x.IsActive == true && x.Status == SubcriptionContance.SubcriptionStatus.Active);
 
-            if (target.HasValue)
+            if (!string.IsNullOrWhiteSpace(target)
+      && Enum.TryParse<SubcriptorTarget>(target, true, out var parsedTarget))
             {
-                query = query.Where(x => x.Target == target.Value);
+                query = query.Where(x => x.Target == parsedTarget);
             }
 
             var services = await AsyncExecuter.ToListAsync(query);

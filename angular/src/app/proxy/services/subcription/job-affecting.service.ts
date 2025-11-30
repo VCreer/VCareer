@@ -1,6 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { EffectingJobServiceCreateDto, EffectingJobServiceUpdateDto, EffectingJobServiceViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
@@ -37,7 +36,7 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
-  getEffectingJobServicesByJobIdAndStatus = (JobId: string, status: enum, config?: Partial<Rest.Config>) =>
+  getEffectingJobServicesByJobIdAndStatus = (JobId: string, status: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto[]>({
       method: 'GET',
       url: `/api/app/job-affecting/effecting-job-services/${JobId}`,
@@ -46,10 +45,10 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
-  getEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto = (JobId: string, status: enum, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+  getEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto = (jobId: string, status: number, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto[]>({
       method: 'GET',
-      url: `/api/app/job-affecting/effecting-job-services-with-paging/${JobId}`,
+      url: `/api/app/job-affecting/effecting-job-services-with-paging/${jobId}`,
       params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
     },
     { apiName: this.apiName,...config });
