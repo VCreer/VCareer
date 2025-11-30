@@ -142,7 +142,8 @@ export class HeaderWrapperComponent implements OnInit {
       '/recruiter/my-services',
       '/recruiter/job-posting',
       '/recruiter/recruitment-report',
-      '/recruiter/hr-staff-management'
+      '/recruiter/hr-staff-management',
+      '/recruiter/find-cv'
     ];
     
     const isManagementRoute = managementRoutes.some(route => 

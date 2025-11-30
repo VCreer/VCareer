@@ -133,6 +133,8 @@ export class FindCandidateComponent implements OnInit {
       sorting: this.getSortingFromPriority(this.displayPriority)
     };
 
+    // Chỉ set các flag search scope nếu có checkbox được tick
+    // Nếu không tick checkbox nào, không filter theo trường đó
     const hasCustomScope = Object.values(this.searchScope).some(isChecked => isChecked);
     if (hasCustomScope) {
       searchInput.searchInJobTitle = this.searchScope.appliedPosition;
@@ -140,13 +142,9 @@ export class FindCandidateComponent implements OnInit {
       searchInput.searchInEducation = this.searchScope.education;
       searchInput.searchInExperience = this.searchScope.experience;
       searchInput.searchInSkills = this.searchScope.skills;
-    } else {
-      searchInput.searchInJobTitle = true;
-      searchInput.searchInActivity = true;
-      searchInput.searchInEducation = true;
-      searchInput.searchInExperience = true;
-      searchInput.searchInSkills = true;
     }
+    // Nếu không có custom scope, giữ nguyên false (không filter theo scope)
+    // Nhưng nếu có keyword, vẫn tìm kiếm trong tất cả các trường (logic này được xử lý ở backend)
 
     this.candidateSearchService.searchCandidates(searchInput).subscribe({
       next: (response) => {
