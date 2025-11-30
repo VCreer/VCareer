@@ -135,19 +135,82 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     });
   }
 
-  // DÙNG DUY NHẤT 1 API: loadRecruitmentCompainByIsActive
+  // Load campaigns - thử dùng API loadRecruitmentCompainByIsActive trước, nếu không có dữ liệu thì thử API theo recruiterId
   private loadCampaigns() {
     this.loading = true;
 
-    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch(() => []);
-    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch(() => []);
+    // Thử load bằng API loadRecruitmentCompainByIsActive
+    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch((err) => {
+      console.error('Lỗi khi load campaigns active:', err);
+      return [];
+    });
+    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch((err) => {
+      console.error('Lỗi khi load campaigns inactive:', err);
+      return [];
+    });
 
     Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
+      console.log('Active campaigns:', active);
+      console.log('Inactive campaigns:', inactive);
       const all = [...(active || []), ...(inactive || [])];
-      this.campaigns = this.mapToCampaign(all);
-      this.filterCampaigns();
-      this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
-      this.loading = false;
+      console.log('All campaigns từ loadRecruitmentCompainByIsActive:', all);
+
+      // Nếu không có dữ liệu, thử load theo recruiterId
+      if (all.length === 0) {
+        this.loadCampaignsByRecruiterId();
+      } else {
+        this.campaigns = this.mapToCampaign(all);
+        this.filterCampaigns();
+        this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
+        this.loading = false;
+      }
+    });
+  }
+
+  // Load campaigns theo recruiterId
+  private loadCampaignsByRecruiterId() {
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (!user?.userId) {
+          console.error('Không lấy được userId từ current user');
+          this.loading = false;
+          return;
+        }
+
+        const recruiterId = user.userId;
+        console.log('Loading campaigns cho recruiterId:', recruiterId);
+
+        const loadActive = this.campaignService
+          .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, true)
+          .toPromise()
+          .catch((err) => {
+            console.error('Lỗi khi load campaigns active theo recruiterId:', err);
+            return [];
+          });
+        const loadInactive = this.campaignService
+          .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, false)
+          .toPromise()
+          .catch((err) => {
+            console.error('Lỗi khi load campaigns inactive theo recruiterId:', err);
+            return [];
+          });
+
+        Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
+          console.log('Active campaigns theo recruiterId:', active);
+          console.log('Inactive campaigns theo recruiterId:', inactive);
+          const all = [...(active || []), ...(inactive || [])];
+          console.log('All campaigns từ getCompainsByRecruiterId:', all);
+          this.campaigns = this.mapToCampaign(all);
+          this.filterCampaigns();
+          this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
+          this.loading = false;
+        });
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy current user:', err);
+        this.loading = false;
+        this.toaster.error('Không thể tải thông tin người dùng');
+      },
     });
   }
 
