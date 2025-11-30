@@ -293,7 +293,8 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 
     .table-header {
       padding: 20px;
@@ -352,6 +353,7 @@
         .filter-dropdown {
           position: relative;
           min-width: 200px;
+          z-index: 10000;
 
           @media (max-width: 768px) {
             flex: 1;
@@ -405,7 +407,7 @@
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            z-index: 1000;
+            z-index: 10001;
             min-width: 200px;
             display: none;
             opacity: 0;
@@ -736,6 +738,8 @@
     padding: 60px 20px;
     background: white;
     border-radius: 12px;
+    position: relative;
+    z-index: 1;
 
     i {
       font-size: 4rem;

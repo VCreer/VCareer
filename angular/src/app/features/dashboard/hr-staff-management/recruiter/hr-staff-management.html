@@ -28,45 +28,33 @@
   <div class="main-content">
     <!-- Dashboard Statistics -->
     <div class="stats-grid">
-      <div class="stat-card" style="border-left-color: #0F83BA;">
-        <div class="stat-icon" style="background-color: #0F83BA;">
-          <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng nhân viên</div>
-          <div class="stat-value">{{ totalStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Tổng nhân viên"
+        [value]="totalStaff"
+        icon="fa-users"
+        color="#0F83BA">
+      </app-stat-card>
       
-      <div class="stat-card" style="border-left-color: #10b981;">
-        <div class="stat-icon" style="background-color: #10b981;">
-          <i class="fas fa-user-check"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Đang hoạt động</div>
-          <div class="stat-value">{{ activeStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Đang hoạt động"
+        [value]="activeStaff"
+        icon="fa-user-check"
+        color="#10b981">
+      </app-stat-card>
       
-      <div class="stat-card" style="border-left-color: #f59e0b;">
-        <div class="stat-icon" style="background-color: #f59e0b;">
-          <i class="fas fa-user-clock"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Chờ duyệt</div>
-          <div class="stat-value">{{ pendingStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Chờ duyệt"
+        [value]="pendingStaff"
+        icon="fa-user-clock"
+        color="#f59e0b">
+      </app-stat-card>
       
-      <div class="stat-card" style="border-left-color: #ef4444;">
-        <div class="stat-icon" style="background-color: #ef4444;">
-          <i class="fas fa-user-times"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Ngừng hoạt động</div>
-          <div class="stat-value">{{ inactiveStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Ngừng hoạt động"
+        [value]="inactiveStaff"
+        icon="fa-user-times"
+        color="#ef4444">
+      </app-stat-card>
     </div>
 
     <!-- Staff Table with Filter -->

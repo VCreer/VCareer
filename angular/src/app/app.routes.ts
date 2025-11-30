@@ -425,6 +425,13 @@ export const APP_ROUTES: Routes = [
       {
         path: 'manage-service-packages',
         loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
+      },
+      {
+        path: 'company-verify',
+        loadComponent: () =>
+          import(
+            './features/dashboard/company-verify/employee/company-verify'
+          ).then(c => c.CompanyVerifyComponent),
       }
     ]
   },
@@ -449,13 +456,6 @@ export const APP_ROUTES: Routes = [
     path: 'reset-password',
     loadComponent: () =>
       import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
-      },
-      {
-        path: 'company-verify',
-        loadComponent: () =>
-          import(
-            './features/dashboard/company-verify/employee/company-verify'
-          ).then(c => c.CompanyVerifyComponent),
       },
   //#endregion
 
