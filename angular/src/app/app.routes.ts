@@ -416,6 +416,10 @@ export const APP_ROUTES: Routes = [
             loadComponent: () => import('./features/user-management-employee/candidate-user-management/candidate-user-management').then(c => c.CandidateUserManagementComponent),
           },
           {
+            path: 'employee',
+            loadComponent: () => import('./features/user-management-employee/employee-user-managerment/employee-user-management').then(c => c.EmployeeUserManagementComponent),
+          },
+          {
             path: '',
             pathMatch: 'full',
             redirectTo: 'recruiter'
@@ -425,6 +429,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'manage-service-packages',
         loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
+      },
+      {
+        path: 'manage-sub-service-packages',
+        loadComponent: () => import('./features/dashboard/manage-sub-service-packages/employee/manage-sub-service-packages').then(c => c.ManageSubServicePackagesComponent),
       }
     ]
   },

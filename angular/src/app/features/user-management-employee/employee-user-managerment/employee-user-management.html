@@ -1,0 +1,607 @@
+<div class="employee-user-management-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí người dùng</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí nhân viên</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onCreateUser()">
+        <i class="fa fa-plus"></i>
+        Tạo nhân viên
+      </app-button>
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="onImport()">
+        <i class="fa fa-upload"></i>
+        Import
+      </app-button>
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="onExport()">
+        <i class="fa fa-download"></i>
+        Export
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Card Container -->
+    <div class="content-card">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên, email, username..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="onSearchChange()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-status-dropdown
+              [options]="statusOptions"
+              [selectedValue]="filterStatus"
+              (statusChange)="filterStatus = $event; onFilterChange()">
+            </app-status-dropdown>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả công ty"
+              [options]="companyOptions"
+              [(ngModel)]="filterCompany"
+              (ngModelChange)="onFilterChange()">
+            </app-select-field>
+          </div>
+          <div class="filter-group date-picker-wrapper">
+            <button 
+              type="button" 
+              class="date-picker-button"
+              [class.focused]="showDateFromPicker"
+              (click)="toggleDateFromPicker()">
+              <i class="fa fa-calendar"></i>
+              <span>{{ getFormattedDateFrom() || 'Từ ngày' }}</span>
+              <i class="fa fa-chevron-down"></i>
+            </button>
+            <div class="date-picker-popup" *ngIf="showDateFromPicker">
+              <div class="calendar-container">
+                <div class="calendar-header">
+                  <button class="prev-month" (click)="previousDateFromMonth()">
+                    <i class="fa fa-chevron-left"></i>
+                  </button>
+                  <span class="month-year">{{ getDateFromMonthYear() }}</span>
+                  <button class="next-month" (click)="nextDateFromMonth()">
+                    <i class="fa fa-chevron-right"></i>
+                  </button>
+                </div>
+                <div class="calendar-grid">
+                  <div class="calendar-weekdays">
+                    <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                  </div>
+                  <div class="calendar-days">
+                    <div
+                      *ngFor="let day of dateFromCalendarDays"
+                      class="calendar-day"
+                      [class.selected]="isDateFromSelected(day)"
+                      [class.disabled]="day.disabled"
+                      (click)="selectDateFrom(day)">
+                      {{ day.date }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="filter-group date-picker-wrapper">
+            <button 
+              type="button" 
+              class="date-picker-button"
+              [class.focused]="showDateToPicker"
+              (click)="toggleDateToPicker()">
+              <i class="fa fa-calendar"></i>
+              <span>{{ getFormattedDateTo() || 'Đến ngày' }}</span>
+              <i class="fa fa-chevron-down"></i>
+            </button>
+            <div class="date-picker-popup" *ngIf="showDateToPicker">
+              <div class="calendar-container">
+                <div class="calendar-header">
+                  <button class="prev-month" (click)="previousDateToMonth()">
+                    <i class="fa fa-chevron-left"></i>
+                  </button>
+                  <span class="month-year">{{ getDateToMonthYear() }}</span>
+                  <button class="next-month" (click)="nextDateToMonth()">
+                    <i class="fa fa-chevron-right"></i>
+                  </button>
+                </div>
+                <div class="calendar-grid">
+                  <div class="calendar-weekdays">
+                    <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+                  </div>
+                  <div class="calendar-days">
+                    <div
+                      *ngFor="let day of dateToCalendarDays"
+                      class="calendar-day"
+                      [class.selected]="isDateToSelected(day)"
+                      [class.disabled]="day.disabled"
+                      (click)="selectDateTo(day)">
+                      {{ day.date }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="table-container">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th (click)="onSort('username')" class="sortable">
+                Id
+                <i class="fa fa-sort" *ngIf="sortField !== 'username'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'username' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'username' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('fullName')" class="sortable">
+                Họ tên
+                <i class="fa fa-sort" *ngIf="sortField !== 'fullName'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'fullName' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'fullName' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('email')" class="sortable">
+                Email
+                <i class="fa fa-sort" *ngIf="sortField !== 'email'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'email' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'email' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Công ty</th>
+              <th>Trạng thái</th>
+              <th (click)="onSort('lastLoginDate')" class="sortable">
+                Lần đăng nhập cuối
+                <i class="fa fa-sort" *ngIf="sortField !== 'lastLoginDate'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of paginatedUsers">
+              <td class="username-cell">{{ user.username }}</td>
+              <td>{{ user.fullName }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.companyName }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(user)">
+                  {{ getStatusLabel(user) }}
+                </span>
+              </td>
+              <td>{{ formatDate(user.lastLoginDate) }}</td>
+              <td class="actions-cell">
+                <div class="actions-menu-container">
+                  <button class="actions-menu-btn" (click)="toggleActionsMenu(user.id, $event)">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div 
+                    class="actions-menu" 
+                    [class.show]="showActionsMenu === user.id"
+                    [attr.data-user-id]="user.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onEditUser(user)">
+                      <i class="fa fa-edit menu-icon"></i>
+                      <span>Sửa</span>
+                    </div>
+                    <div class="menu-item" (click)="onAssignRole(user)">
+                      <i class="fa fa-user-tag menu-icon"></i>
+                      <span>Chỉnh sửa role</span>
+                    </div>
+                    <div class="menu-item" (click)="onAssignPermission(user)">
+                      <i class="fa fa-key menu-icon"></i>
+                      <span>Chỉnh sửa permission</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item" (click)="onToggleActive(user)">
+                      <i class="fa" [class.fa-toggle-on]="user.isActive" [class.fa-toggle-off]="!user.isActive"></i>
+                      <span>{{ user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
+                    </div>
+                    <div class="menu-item" (click)="onToggleLock(user)">
+                      <i class="fa" [class.fa-lock]="!user.isLocked" [class.fa-unlock]="user.isLocked"></i>
+                      <span>{{ user.isLocked ? 'Mở khóa' : 'Khóa' }}</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item" (click)="onViewActivityLog(user)">
+                      <i class="fa fa-history menu-icon"></i>
+                      <span>Xem log hoạt động</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item delete-item" (click)="onDeleteUser(user)">
+                      <i class="fa fa-trash menu-icon"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="paginatedUsers.length === 0" class="empty-state">
+          <i class="fa fa-users"></i>
+          <p>Không có nhân viên nào</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="filteredUsers.length > 0">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+
+<!-- Create Employee Modal -->
+<app-generic-modal
+  [show]="showCreateModal"
+  title="Tạo nhân viên"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showCreateModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Email"
+        type="email"
+        placeholder="VD: employee@example.com"
+        [(ngModel)]="createForm.email"
+        required>
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role *</label>
+      <div class="checkbox-list">
+        <label class="checkbox-item" *ngFor="let role of roleOptions">
+          <input 
+            type="checkbox" 
+            [checked]="createForm.roles.includes(role.value)"
+            (change)="onToggleRoleInCreate(role.value)">
+          <span>{{ role.label }}</span>
+        </label>
+      </div>
+      <p class="form-hint">Bước 1: Nhập email -> Sinh mật khẩu ngẫu nhiên</p>
+      <p class="form-hint">Bước 2: Gắn role (có thể chọn nhiều)</p>
+      <p class="form-hint">Bước 3: Gắn permission</p>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showCreateModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmCreate()">
+        Tạo nhân viên
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Edit Employee Modal -->
+<app-generic-modal
+  [show]="showEditModal"
+  title="Sửa thông tin nhân viên"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showEditModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Email"
+        type="email"
+        [(ngModel)]="editForm.email"
+        required>
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Họ tên"
+        type="text"
+        [(ngModel)]="editForm.fullName"
+        required>
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Số điện thoại"
+        type="tel"
+        [(ngModel)]="editForm.phone">
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Công ty"
+        type="text"
+        [(ngModel)]="editForm.companyName">
+      </app-input-field>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showEditModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmEdit()">
+        Lưu
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Assign Role Modal -->
+<app-generic-modal
+  [show]="showRoleModal"
+  title="Gắn role cho nhân viên"
+  [maxWidth]="'500px'"
+  [bodyBackground]="'white'"
+  (close)="showRoleModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Gắn role cho nhân viên <strong>{{ selectedUser?.fullName }}</strong>
+    </p>
+    <div class="form-group">
+      <label class="form-label">Role *</label>
+      <div class="checkbox-list">
+        <label class="checkbox-item" *ngFor="let role of roleOptions">
+          <input 
+            type="checkbox" 
+            [checked]="isRoleSelected(role.value)"
+            (change)="onToggleRole(role.value)">
+          <span>{{ role.label }}</span>
+        </label>
+      </div>
+      <p class="form-hint">Có thể chọn nhiều role</p>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showRoleModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmAssignRole()">
+        Lưu
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Assign Permission Modal -->
+<app-generic-modal
+  [show]="showPermissionModal"
+  title="Gắn permission cho nhân viên"
+  [maxWidth]="'700px'"
+  [bodyBackground]="'white'"
+  (close)="showPermissionModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Gắn permission cho nhân viên <strong>{{ selectedUser?.fullName }}</strong>
+    </p>
+    <div class="form-group">
+      <label class="form-label">Nhóm quyền</label>
+      <div class="permission-groups">
+        <div class="permission-group" *ngFor="let group of permissionGroups" [class.expanded]="isPermissionGroupExpanded(group.id)">
+          <div class="permission-group-header" (click)="togglePermissionGroupExpand(group.id, $event)">
+            <div class="group-header-left">
+              <input 
+                type="checkbox" 
+                [checked]="isPermissionGroupFullySelected(group.id)"
+                [indeterminate]="isPermissionGroupPartiallySelected(group.id)"
+                (click)="$event.stopPropagation()"
+                (change)="onTogglePermissionGroup(group.id, $event)">
+              <span class="group-name">{{ group.name }}</span>
+            </div>
+            <i class="fa fa-chevron-down group-chevron" [class.rotated]="isPermissionGroupExpanded(group.id)"></i>
+          </div>
+          <div class="permission-list" *ngIf="isPermissionGroupExpanded(group.id)">
+            <label class="permission-item" *ngFor="let permission of group.permissions">
+              <input 
+                type="checkbox" 
+                [checked]="isPermissionSelected(permission.id)"
+                (change)="onTogglePermission(permission.id)">
+              <div class="permission-info">
+                <span class="permission-name">{{ permission.name }}</span>
+                <span class="permission-description" *ngIf="permission.description">{{ permission.description }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <p class="form-hint">Có thể chọn nhiều permission từ các nhóm quyền</p>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showPermissionModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmAssignPermission()">
+        Lưu
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Activity Log Modal -->
+<app-generic-modal
+  [show]="showActivityLogModal"
+  title="Log hoạt động"
+  [maxWidth]="'800px'"
+  [bodyBackground]="'white'"
+  (close)="showActivityLogModal = false">
+  <div class="modal-content-wrapper">
+    <div class="activity-log-header">
+      <p class="modal-message">
+        Log hoạt động của nhân viên <strong>{{ selectedUser?.fullName }}</strong>
+      </p>
+      <button class="refresh-btn" type="button" (click)="onRefreshActivityLog()" title="Làm mới">
+        <i class="fa fa-refresh"></i>
+      </button>
+    </div>
+    <!-- TODO: Add activity log table -->
+    <div class="activity-log-content">
+      <div class="activity-log-placeholder">
+        <i class="fa fa-history"></i>
+        <p>Danh sách log hoạt động sẽ được hiển thị ở đây</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showActivityLogModal = false">
+        Đóng
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Force Logout Modal -->
+<app-generic-modal
+  [show]="showForceLogoutModal"
+  title="Đăng xuất người dùng"
+  [maxWidth]="'500px'"
+  [bodyBackground]="'white'"
+  (close)="showForceLogoutModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Bạn có chắc chắn muốn đăng xuất người dùng <strong>{{ selectedUser?.username }}</strong>?
+      Hành động này sẽ thu hồi token và yêu cầu người dùng đăng nhập lại.
+    </p>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showForceLogoutModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmForceLogout()">
+        Đăng xuất
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- IP Restrict Modal -->
+<app-generic-modal
+  [show]="showIpRestrictModal"
+  title="Thêm địa chỉ IP"
+  [maxWidth]="'500px'"
+  [bodyBackground]="'white'"
+  (close)="showIpRestrictModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Thêm địa chỉ IP hợp lệ cho tài khoản <strong>{{ selectedUser?.username }}</strong>
+    </p>
+    <div class="form-group">
+      <app-input-field
+        label="Địa chỉ IP"
+        type="text"
+        placeholder="VD: 192.168.1.1"
+        [(ngModel)]="ipAddress">
+      </app-input-field>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showIpRestrictModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmAddIpRestrict()">
+        Thêm IP
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Password Change Modal -->
+<app-generic-modal
+  [show]="showPasswordChangeModal"
+  title="Yêu cầu đổi mật khẩu"
+  [maxWidth]="'500px'"
+  [bodyBackground]="'white'"
+  (close)="showPasswordChangeModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Bạn có chắc chắn muốn yêu cầu người dùng <strong>{{ selectedUser?.username }}</strong> đổi mật khẩu ở lần đăng nhập tiếp theo?
+    </p>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showPasswordChangeModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmPasswordChange()">
+        Xác nhận
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+

@@ -29,7 +29,7 @@ export class ChildService_Service {
     { apiName: this.apiName,...config });
   
 
-  getChildServices = (action: enum, target: enum, paging: PagingDto, config?: Partial<Rest.Config>) =>
+  getChildServices = (action: SubcriptionContance_ServiceAction | null | undefined, target: SubcriptionContance_ServiceTarget | null | undefined, paging: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ChildServiceViewDto[]>({
       method: 'GET',
       url: '/api/app/child-service_/child-services',

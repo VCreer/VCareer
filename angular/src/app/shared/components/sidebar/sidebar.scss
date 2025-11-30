@@ -325,12 +325,14 @@
           opacity: 0;
           transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
           padding-left: 0;
+          display: none; // Hidden by default when collapsed
 
           &.show {
             max-height: 200px;
             opacity: 1;
             padding-top: 0.25rem;
             padding-bottom: 0.25rem;
+            display: block !important; // Force show when has .show class
           }
 
           .sidebar-submenu-item {
@@ -421,6 +423,10 @@
         &.sidebar-nav-item-dropdown {
           .sidebar-submenu {
             display: block;
+            // Ensure submenu with .show class is visible
+            &.show {
+              display: block !important;
+            }
           }
         }
       }
@@ -432,13 +438,16 @@
     }
   }
 
-  /* Collapsed state - hide submenu */
+  /* Collapsed state - hide submenu unless it has .show class */
   &:not(:hover):not(.show) {
     .sidebar-nav {
       .sidebar-nav-item {
         &.sidebar-nav-item-dropdown {
           .sidebar-submenu {
-            display: none;
+            // Only hide if submenu doesn't have .show class
+            &:not(.show) {
+              display: none;
+            }
           }
         }
       }
