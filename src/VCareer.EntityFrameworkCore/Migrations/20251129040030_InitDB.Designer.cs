@@ -13,13 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251129040030_InitDB.Designer.cs
     [Migration("20251129040030_InitDB")]
     partial class InitDB
-========
-    [Migration("20251129085459_InitDatabaseVcareer")]
-    partial class InitDatabaseVcareer
->>>>>>>> origin/duyv2:src/VCareer.EntityFrameworkCore/Migrations/20251129085459_InitDatabaseVcareer.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

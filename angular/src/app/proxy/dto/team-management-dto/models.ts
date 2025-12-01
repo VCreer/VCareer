@@ -24,6 +24,7 @@ export interface StaffListItemDto {
   recruiterProfileId?: string;
   fullName?: string;
   email?: string;
+  phoneNumber?: string;
   isLead: boolean;
   status: boolean;
   companyId: number;
