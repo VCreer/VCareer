@@ -1,0 +1,236 @@
+<div class="tag-management-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item" (click)="onBackToCategory()" style="cursor: pointer;">Quản lí danh mục</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item" (click)="onBackToCategory()" style="cursor: pointer;">{{ categoryName }}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Quản lí các tag</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onCreateTag()">
+        <i class="fa fa-plus"></i>
+        Tạo tag
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Card Container -->
+    <div class="content-card">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên tag..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả trạng thái"
+              [options]="statusOptions"
+              [(ngModel)]="filterStatus"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags Table -->
+      <div class="table-container">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th (click)="onSort('name')" class="sortable">
+                Tên tag
+                <i class="fa fa-sort" *ngIf="sortField !== 'name'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'name' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'name' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tag of paginatedTags">
+              <td class="name-cell">{{ tag.name }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="tag.isActive ? 'status-active' : 'status-inactive'">
+                  {{ tag.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <div class="actions-menu-container">
+                  <button
+                    type="button"
+                    class="actions-menu-btn"
+                    (click)="toggleActionsMenu(tag.id, $event)">
+                    <i class="fa fa-ellipsis-v"></i>
+                  </button>
+                  <div
+                    class="actions-menu"
+                    *ngIf="showActionsMenu === tag.id"
+                    [style.top.px]="menuPosition?.top"
+                    [style.left.px]="menuPosition?.left"
+                    [style.max-width.px]="menuPosition?.maxWidth">
+                    <div class="menu-item" (click)="onEditTag(tag)">
+                      <i class="fa fa-edit menu-icon"></i>
+                      <span>Sửa</span>
+                    </div>
+                    <div class="menu-item" (click)="onToggleActive(tag)">
+                      <i class="fa menu-icon" [ngClass]="tag.isActive ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                      <span>{{ tag.isActive ? 'Tắt' : 'Bật' }}</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item" (click)="onDeleteTag(tag)">
+                      <i class="fa fa-trash menu-icon"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedTags.length === 0">
+              <td colspan="3" class="empty-state">
+                <i class="fa fa-inbox"></i>
+                <p>Không có dữ liệu</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination
+        *ngIf="totalPages > 1"
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+
+<!-- Create Tag Modal -->
+<app-generic-modal
+  [show]="showCreateModal"
+  title="Tạo tag mới"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showCreateModal = false; isCreating = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên tag"
+        placeholder="Nhập tên tag"
+        [required]="true"
+        [(ngModel)]="createForm.name">
+      </app-input-field>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showCreateModal = false; isCreating = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmCreate($event)"
+        [disabled]="isCreating">
+        Tạo
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Edit Tag Modal -->
+<app-generic-modal
+  [show]="showEditModal"
+  title="Sửa tag"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showEditModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên tag"
+        placeholder="Nhập tên tag"
+        [required]="true"
+        [(ngModel)]="editForm.name">
+      </app-input-field>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showEditModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmEdit()">
+        Lưu
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Delete Tag Modal -->
+<app-generic-modal
+  [show]="showDeleteModal"
+  title="Xóa tag"
+  [maxWidth]="'500px'"
+  [bodyBackground]="'white'"
+  (close)="showDeleteModal = false">
+  <div class="modal-content-wrapper">
+    <p class="modal-message">
+      Bạn có chắc chắn muốn xóa tag <strong>{{ selectedTag?.name }}</strong>?
+      Hành động này không thể hoàn tác.
+    </p>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showDeleteModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmDelete()">
+        Xóa
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+

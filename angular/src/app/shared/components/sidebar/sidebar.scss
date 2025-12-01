@@ -350,6 +350,8 @@
               cursor: pointer;
               border-radius: 6px;
               margin: 0.125rem 0.5rem;
+              min-width: 0;
+              word-wrap: break-word;
 
               &:hover {
                 background-color: #f3f4f6;
@@ -362,7 +364,12 @@
               }
 
               .sidebar-submenu-text {
-                white-space: nowrap;
+                white-space: normal;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.4;
+                flex: 1;
+                min-width: 0;
               }
             }
           }

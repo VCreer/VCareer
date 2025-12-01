@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { 
   ButtonComponent, 
   ToastNotificationComponent,
@@ -167,7 +168,10 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   };
   ipAddress = '';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -870,6 +874,15 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     if (!this.selectedUser) return;
     // TODO: Call API to refresh activity log
     this.showToastMessage('Đang làm mới log hoạt động...', 'info');
+  }
+
+  onNavigateToActivityLog(): void {
+    if (!this.selectedUser) return;
+    // Điều hướng đến màn activity log với userId
+    this.router.navigate(['/employee/manage-log/activity'], {
+      queryParams: { userId: this.selectedUser.id }
+    });
+    this.showActivityLogModal = false;
   }
 
   onExport(): void {

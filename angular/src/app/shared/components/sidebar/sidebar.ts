@@ -33,6 +33,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
      showUserManagementDropdown: boolean = false;
   showServicePackagesDropdown: boolean = false;
+  showLogManagementDropdown: boolean = false;
   private userSubscription?: Subscription;
   private sidebarStateInterval?: any;
 
@@ -277,6 +278,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     // Close all dropdown menus - reset state
     this.showUserManagementDropdown = false;
     this.showServicePackagesDropdown = false;
+    this.showLogManagementDropdown = false;
     
     // Also remove classes from DOM directly to ensure UI updates
     // This is important when sidebar is closed from hamburger menu (DOM manipulation)
@@ -403,6 +405,35 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   isServicePackagesActive(): boolean {
     return this.currentRoute.startsWith('/employee/manage-service-packages') || 
            this.currentRoute.startsWith('/employee/manage-sub-service-packages');
+  }
+
+  toggleLogManagementDropdown(event: Event): void {
+    event.stopPropagation();
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar && !sidebar.classList.contains('show')) {
+      sidebar.classList.add('show');
+      this.show = true;
+      this.showChange.emit(true);
+      this.manuallyOpened = true;
+      setTimeout(() => {
+        this.showLogManagementDropdown = !this.showLogManagementDropdown;
+      }, 50);
+      return;
+    }
+    this.showLogManagementDropdown = !this.showLogManagementDropdown;
+  }
+
+  navigateToLogManagement(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showLogManagementDropdown = false;
+    this.closeSidebar();
+    this.router.navigate([path]);
+  }
+
+  isLogManagementActive(): boolean {
+    return this.currentRoute.startsWith('/employee/manage-log');
   }
 
   // checkUserRole(): void {

@@ -433,6 +433,42 @@ export const APP_ROUTES: Routes = [
       {
         path: 'manage-sub-service-packages',
         loadComponent: () => import('./features/dashboard/manage-sub-service-packages/employee/manage-sub-service-packages').then(c => c.ManageSubServicePackagesComponent),
+      },
+      {
+        path: 'manage-log',
+        loadComponent: () => import('./features/dashboard/Manage logs/employee/manage-log').then(c => c.ManageLogComponent),
+        children: [
+          {
+            path: 'transaction',
+            loadComponent: () => import('./features/dashboard/Manage logs/employee/transaction-log/transaction-log').then(c => c.TransactionLogComponent),
+          },
+          {
+            path: 'activity',
+            loadComponent: () => import('./features/dashboard/Manage logs/employee/activity-log/activity-log').then(c => c.ActivityLogComponent),
+          },
+          {
+            path: '',
+            redirectTo: 'transaction',
+            pathMatch: 'full'
+          }
+        ]
+      },
+      {
+        path: 'category-management',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./features/dashboard/category-management/employee/category-management/category-management').then(c => c.CategoryManagementComponent),
+          },
+          {
+            path: 'sub-categories',
+            loadComponent: () => import('./features/dashboard/category-management/employee/sub-category-management/sub-category-management').then(c => c.SubCategoryManagementComponent),
+          }
+        ]
+      },
+      {
+        path: 'tag-management',
+        loadComponent: () => import('./features/dashboard/tag-management/employee/tag-management').then(c => c.TagManagementComponent),
       }
     ]
   },
