@@ -55,31 +55,38 @@ namespace VCareer.Services.Job
 
         public async Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
         {
-            try
+            var jobIds = await _luceneIndexer.SearchJobIdsAsync(input);
+            if (!jobIds.Any())
+                return new List<JobViewDto>();
+
+            // Lấy list Id hết hạn ngay từ DB
+            var now = DateTime.Now;
+
+            var jobsQuery = await _jobPostingRepository.GetQueryableAsync();
+            var jobs = await jobsQuery
+                .Where(j => jobIds.Contains(j.Id) && j.ExpiresAt >= now)
+                .ToListAsync();
+
+            // Nếu bị Lucene trả về job đã hết hạn → xóa khỏi Lucene
+            var validJobIds = jobs.Select(x => x.Id).ToHashSet();
+            var expiredIds = jobIds.Where(id => !validJobIds.Contains(id)).ToList();
+
+            foreach (var expiredId in expiredIds)
             {
-                var jobIds = await _luceneIndexer.SearchJobIdsAsync(input);
-                if (!jobIds.Any())
-                    return new List<JobViewDto>();
-
-                var jobsQuery = await _jobPostingRepository.GetQueryableAsync();
-                var jobs = await jobsQuery
-                    .Where(j => jobIds.Contains(j.Id))
-                    .ToListAsync();
-
-                // Giữ thứ tự Lucene
-                var orderedJobs = jobIds
-                    .Select(id => jobs.FirstOrDefault(j => j.Id == id))
-                    .Where(j => j != null)
-                    .ToList();
-
-                if(orderedJobs.Count == 0) return new List<JobViewDto>();
-                return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
+                await _luceneIndexer.DeleteJobFromIndexAsync(expiredId);
             }
-            catch (Exception ex)
-            {
-                throw new BusinessException("Search job fail: " + ex.Message);
-            }
+
+            // Giữ đúng thứ tự từ Lucene
+            var jobDict = jobs.ToDictionary(j => j.Id, j => j);
+
+            var orderedJobs = jobIds
+                .Where(id => jobDict.ContainsKey(id))
+                .Select(id => jobDict[id])
+                .ToList();
+
+            return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
         }
+
 
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
@@ -98,7 +105,7 @@ namespace VCareer.Services.Job
             };
 
             var jobs = await SearchJobsAsync(jobSearchInput);
-            jobs = jobs.Where(x => x.Id!= jobId).Take(maxCount).ToList();
+            jobs = jobs.Where(x => x.Id != jobId).Take(maxCount).ToList();
             return jobs;
         }
         public async Task ReindexAllJobsAsync()

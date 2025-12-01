@@ -9,7 +9,8 @@ namespace VCareer.Permission
     public class VCareerPermission
     {
         public const string GroupName = "VCareer";
-        public static class Files
+
+          public static class Files
         {
             public const string Default = GroupName + ".Files";
             public const string View = Default + ".View";
