@@ -437,7 +437,9 @@ export const APP_ROUTES: Routes = [
     ]
   },
 
-  // Legacy redirects
+  //#endregion
+  
+  //#region  Legacy redirects
   {
     path: 'login',
     redirectTo: '/candidate/login',

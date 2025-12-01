@@ -489,4 +489,51 @@
       }
     }
   }
+  .input-field-wrapper {
+  margin-bottom: 1.5rem;
+
+  .input-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #344054;
+    margin-bottom: 6px;
+
+    .required-mark {
+      color: #f04438;
+      margin-left: 2px;
+    }
+  }
+
+  .date-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: #7f56d9;
+      box-shadow: 0 0 0 4px rgba(127, 86, 217, 0.1);
+    }
+
+    &.has-error {
+      border-color: #f04438;
+    }
+  }
+
+  .input-hint {
+    font-size: 12px;
+    color: #667085;
+    margin-top: 4px;
+  }
+
+  .error-message {
+    color: #f04438;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
 }

@@ -77,7 +77,9 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<Job_Post, JobViewDto>();
         CreateMap<Job_Post, JobViewDetail>();
         CreateMap<RecruitmentCampaign, RecruimentCampainViewDto>();
+        CreateMap<JobTag, JobTagViewDto>();
         CreateMap<Tag, TagViewDto>();
+
 
 
         // Subscription Service mappings

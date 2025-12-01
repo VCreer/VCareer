@@ -19,8 +19,9 @@
         <app-button type="secondary" size="small" (click)="openPreviewModal()">
           Xem trước
         </app-button>
-        <app-button type="secondary" size="small" (click)="onSaveJob()"> Lưu việc làm </app-button>
-        <app-button type="primary" size="small" (click)="onPostJob()"> Đăng công việc </app-button>
+        <app-button type="primary" size="small" (click)="onSaveOrUpdateJob()">
+          {{ getSubmitButtonText() }}
+        </app-button>
       </div>
     </div>
   </div>
@@ -103,7 +104,6 @@
             </div>
           </div>
 
-          <!-- Khi lương thỏa thuận -->
           <div class="salary-display-box" *ngIf="salaryDeal">
             <span style="font-weight: 600">Lương thỏa thuận</span>
           </div>
@@ -115,9 +115,9 @@
               class="range-highlight"
               *ngIf="!salaryDeal"
               [ngStyle]="{
-        left: (salaryMin / 500000000 * 100) + '%',
-        width: ((salaryMax - salaryMin) / 500000000 * 100) + '%'
-      }"
+                left: (salaryMin / 500000000 * 100) + '%',
+                width: ((salaryMax - salaryMin) / 500000000 * 100) + '%'
+              }"
             ></div>
 
             <input
@@ -161,18 +161,27 @@
         >
         </app-select-field>
 
-        <!-- Application Deadline -->
-        <app-input-field
-          label="Hạn nộp hồ sơ"
-          type="date"
-          placeholder="Chọn hạn nộp hồ sơ"
-          [required]="true"
-          [error]="getFieldError('applicationDeadline')"
-          [(ngModel)]="jobForm.applicationDeadline"
-          (ngModelChange)="onFieldChange('applicationDeadline')"
-          name="applicationDeadline"
-        >
-        </app-input-field>
+        <!-- Application Deadline - Native Input với min và max -->
+        <div class="input-field-wrapper">
+          <label class="input-label">
+            Hạn nộp hồ sơ
+            <span class="required-mark">*</span>
+          </label>
+          <input
+            type="date"
+            class="date-input"
+            [class.has-error]="getFieldError('applicationDeadline')"
+            [min]="getMinApplicationDeadline()"
+            [max]="getMaxApplicationDeadline()"
+            [(ngModel)]="jobForm.applicationDeadline"
+            (ngModelChange)="onFieldChange('applicationDeadline')"
+            name="applicationDeadline"
+          />
+          <div class="input-hint">Từ 7 ngày đến 2 tháng kể từ hôm nay</div>
+          <div class="error-message" *ngIf="getFieldError('applicationDeadline')">
+            {{ getFieldError('applicationDeadline') }}
+          </div>
+        </div>
       </div>
 
       <!-- General Information Section -->
@@ -272,16 +281,15 @@
           {{ getFieldError('benefits') }}
         </div>
       </div>
-      
-      <!-- === NGÀNH NGHỀ (2 DROPDOWN) === -->
+
+      <!-- Category Section -->
       <div class="form-section">
         <h3 class="section-title">
           Ngành nghề
           <span class="required-mark">*</span>
         </h3>
-        
+
         <div class="category-dropdowns">
-          <!-- Parent Category Dropdown -->
           <app-select-field
             label="Ngành nghề chính"
             placeholder="Chọn ngành nghề chính"
@@ -293,7 +301,6 @@
             name="parentCategory"
           ></app-select-field>
 
-          <!-- Child Category Dropdown -->
           <app-select-field
             label="Lĩnh vực cụ thể"
             placeholder="Chọn lĩnh vực cụ thể"
@@ -308,15 +315,14 @@
         </div>
       </div>
 
-      <!-- === TỪ KHÓA (TAGS) - CHỈ HIỂN THỊ KHI ĐÃ CHỌN CHILD CATEGORY === -->
+      <!-- Tags Section -->
       <div class="form-section" *ngIf="selectedCategoryId && availableTags.length > 0">
         <h3 class="section-title">
           Từ khóa tuyển dụng
           <span class="optional-mark">(Tùy chọn)</span>
         </h3>
-        
+
         <div class="tags-selector">
-          <!-- Tags đã chọn -->
           <div class="selected-tags-area" *ngIf="selectedTags.length > 0">
             <div class="selected-tags-header">
               <span class="tags-count">
@@ -341,7 +347,6 @@
             </div>
           </div>
 
-          <!-- Tags có sẵn để chọn -->
           <div class="available-tags-area">
             <p class="area-label">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -362,7 +367,6 @@
             </div>
           </div>
 
-          <!-- Helper text -->
           <div class="tags-helper">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>

@@ -5,13 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VCareer.Dto.UserExtensionDto
+namespace VCareer.Dto.UserDto
 {
-    public class ForgeLogoutDto
-    {
-        string UserId { get; set; }
-    }
-
     public class EmployeeAccountCreateDto
     {
         [Required]
@@ -33,23 +28,4 @@ namespace VCareer.Dto.UserExtensionDto
         public List<string>? RecruiterPermissions { get; set; }
     }
 
-    public class SetAccountActiveStatusDto
-    {
-        [Required]
-        public string UserId { get; set; }
-        [Required]
-        public bool IsActive { get; set; }
-    }
-
-    public class SetAccountLockStatusDto
-    {
-        [Required]
-        public string UserId { get; set; }
-        [Required]
-        public bool IsLock { get; set; }
-    }
-
-    public class IpAddressDto
-    {
-    }
-}
+ }

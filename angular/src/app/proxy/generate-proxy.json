@@ -10669,7 +10669,7 @@
                   "name": "GetJobByCompanyId",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "companyId",
                       "typeAsString": "System.Int32, System.Private.CoreLib",
                       "type": "System.Int32",
                       "typeSimple": "number",
@@ -10677,7 +10677,15 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "maxCount",
+                      "name": "page",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": true,
+                      "defaultValue": 0
+                    },
+                    {
+                      "name": "pageSize",
                       "typeAsString": "System.Int32, System.Private.CoreLib",
                       "type": "System.Int32",
                       "typeSimple": "number",
@@ -11087,9 +11095,9 @@
               "parametersOnMethod": [
                 {
                   "name": "status",
-                  "typeAsString": "VCareer.Constants.JobConstant.JobStatus, VCareer.Domain.Shared",
-                  "type": "VCareer.Constants.JobConstant.JobStatus",
-                  "typeSimple": "enum",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -11107,8 +11115,8 @@
                   "nameOnMethod": "status",
                   "name": "status",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -11135,8 +11143,8 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.Services.Job.JobPostService"
             },
-            "GetJobByCompanyIdByCompanyIdAndMaxCount": {
-              "uniqueName": "GetJobByCompanyIdByCompanyIdAndMaxCount",
+            "GetJobByCompanyIdByCompanyIdAndPageAndPageSize": {
+              "uniqueName": "GetJobByCompanyIdByCompanyIdAndPageAndPageSize",
               "name": "GetJobByCompanyId",
               "httpMethod": "GET",
               "url": "api/app/job-post/job-by-company-id/{companyId}",
@@ -11151,7 +11159,15 @@
                   "defaultValue": null
                 },
                 {
-                  "name": "maxCount",
+                  "name": "page",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": true,
+                  "defaultValue": 0
+                },
+                {
+                  "name": "pageSize",
                   "typeAsString": "System.Int32, System.Private.CoreLib",
                   "type": "System.Int32",
                   "typeSimple": "number",
@@ -11173,8 +11189,20 @@
                   "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "maxCount",
-                  "name": "maxCount",
+                  "nameOnMethod": "page",
+                  "name": "page",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pageSize",
+                  "name": "pageSize",
                   "jsonName": null,
                   "type": "System.Int32",
                   "typeSimple": "number",
@@ -18495,23 +18523,23 @@
             }
           }
         },
-        "VCareer.Services.User.UserServices": {
-          "controllerName": "UserServices",
-          "controllerGroupName": "UserServices",
+        "VCareer.Services.User.UserService": {
+          "controllerName": "User",
+          "controllerGroupName": "User",
           "isRemoteService": true,
           "isIntegrationService": false,
           "apiVersion": null,
-          "type": "VCareer.Services.User.UserServices",
+          "type": "VCareer.Services.User.UserService",
           "interfaces": [
             {
-              "type": "Volo.Abp.Identity.IIdentityUserAppService",
-              "name": "IIdentityUserAppService",
+              "type": "VCareer.IServices.User.IUserIdentifyService",
+              "name": "IUserIdentifyService",
               "methods": [
                 {
-                  "name": "GetRolesAsync",
+                  "name": "GetRolesByUserIdAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "userId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
@@ -18520,23 +18548,15 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
+                    "type": "System.Collections.Generic.List<System.String>",
+                    "typeSimple": "[string]"
                   }
                 },
                 {
-                  "name": "GetAssignableRolesAsync",
-                  "parametersOnMethod": [],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
-                  }
-                },
-                {
-                  "name": "UpdateRolesAsync",
+                  "name": "UpdateUserRolesAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "userId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
@@ -18544,10 +18564,10 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateRolesDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
+                      "name": "roleNames",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.String>",
+                      "typeSimple": "[string]",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -18558,95 +18578,27 @@
                   }
                 },
                 {
-                  "name": "FindByUsernameAsync",
+                  "name": "GetUsersIdByRoleAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "userName",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
+                      "name": "roleType",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
                   }
                 },
                 {
-                  "name": "FindByEmailAsync",
+                  "name": "SetUserActiveStatusAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "email",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "GetAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "GetListAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.GetIdentityUsersInput, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.GetIdentityUsersInput",
-                      "typeSimple": "Volo.Abp.Identity.GetIdentityUsersInput",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>",
-                    "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>"
-                  }
-                },
-                {
-                  "name": "CreateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserCreateDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-                  }
-                },
-                {
-                  "name": "UpdateAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
+                      "name": "userId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
@@ -18654,27 +18606,118 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "input",
-                      "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateDto, Volo.Abp.Identity.Application.Contracts",
-                      "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                      "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
+                      "name": "isActive",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "Volo.Abp.Identity.IdentityUserDto",
-                    "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 },
                 {
-                  "name": "DeleteAsync",
+                  "name": "GetAllRolesAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityRoleDto>",
+                    "typeSimple": "[Volo.Abp.Identity.IdentityRoleDto]"
+                  }
+                },
+                {
+                  "name": "GetAllEmployeeRolesAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityRoleDto>",
+                    "typeSimple": "[Volo.Abp.Identity.IdentityRoleDto]"
+                  }
+                },
+                {
+                  "name": "GetAllPermissionGroupsAsync",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                    "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+                  }
+                },
+                {
+                  "name": "GetPermissionGroupsByRoleAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "roleId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                    "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+                  }
+                },
+                {
+                  "name": "GetPermissionGroupsByUserAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                    "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+                  }
+                },
+                {
+                  "name": "UpdateRolePermissionsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "roleName",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "permissions",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.String>",
+                      "typeSimple": "[string]",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateUserPermissionsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "desiredPermissions",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.String>",
+                      "typeSimple": "[string]",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -18688,15 +18731,15 @@
             }
           ],
           "actions": {
-            "GetAsyncById": {
-              "uniqueName": "GetAsyncById",
-              "name": "GetAsync",
+            "GetRolesByUserIdAsyncByUserId": {
+              "uniqueName": "GetRolesByUserIdAsyncByUserId",
+              "name": "GetRolesByUserIdAsync",
               "httpMethod": "GET",
-              "url": "api/app/user-services/{id}",
+              "url": "api/app/user/roles-by-user-id/{userId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "id",
+                  "name": "userId",
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -18706,8 +18749,8 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "id",
-                  "name": "id",
+                  "nameOnMethod": "userId",
+                  "name": "userId",
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -18719,117 +18762,40 @@
                 }
               ],
               "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
+                "type": "System.Collections.Generic.List<System.String>",
+                "typeSimple": "[string]"
               },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.GetIdentityUsersInput>"
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "GetListAsyncByInput": {
-              "uniqueName": "GetListAsyncByInput",
-              "name": "GetListAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services",
+            "UpdateUserRolesAsyncByUserIdAndRoleNames": {
+              "uniqueName": "UpdateUserRolesAsyncByUserIdAndRoleNames",
+              "name": "UpdateUserRolesAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/user/user-roles/{userId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.GetIdentityUsersInput, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.GetIdentityUsersInput",
-                  "typeSimple": "Volo.Abp.Identity.GetIdentityUsersInput",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "Filter",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "ExtraProperties",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Data.ExtraPropertyDictionary",
-                  "typeSimple": "{string:object}",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<Volo.Abp.Identity.IdentityUserDto>"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IReadOnlyAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.GetIdentityUsersInput>"
-            },
-            "GetRolesAsyncById": {
-              "uniqueName": "GetRolesAsyncById",
-              "name": "GetRolesAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user-services/{id}/roles",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
+                  "name": "userId",
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
+                },
+                {
+                  "name": "roleNames",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "id",
-                  "name": "id",
+                  "nameOnMethod": "userId",
+                  "name": "userId",
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -18838,204 +18804,283 @@
                   "constraintTypes": [],
                   "bindingSourceId": "Path",
                   "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "roleNames",
+                  "name": "roleNames",
+                  "jsonName": null,
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
                 }
               ],
               "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "GetAssignableRolesAsync": {
-              "uniqueName": "GetAssignableRolesAsync",
-              "name": "GetAssignableRolesAsync",
+            "GetUsersIdByRoleAsyncByRoleType": {
+              "uniqueName": "GetUsersIdByRoleAsyncByRoleType",
+              "name": "GetUsersIdByRoleAsync",
               "httpMethod": "GET",
-              "url": "api/app/user-services/assignable-roles",
+              "url": "api/app/user/users-id-by-role",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "roleType",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "roleType",
+                  "name": "roleType",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<System.Guid>",
+                "typeSimple": "[string]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "SetUserActiveStatusAsyncByUserIdAndIsActive": {
+              "uniqueName": "SetUserActiveStatusAsyncByUserIdAndIsActive",
+              "name": "SetUserActiveStatusAsync",
+              "httpMethod": "POST",
+              "url": "api/app/user/set-user-active-status/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "GetAllRolesAsync": {
+              "uniqueName": "GetAllRolesAsync",
+              "name": "GetAllRolesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/roles",
               "supportedVersions": [],
               "parametersOnMethod": [],
               "parameters": [],
               "returnValue": {
-                "type": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>",
-                "typeSimple": "Volo.Abp.Application.Dtos.ListResultDto<Volo.Abp.Identity.IdentityRoleDto>"
+                "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityRoleDto>",
+                "typeSimple": "[Volo.Abp.Identity.IdentityRoleDto]"
               },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "CreateAsyncByInput": {
-              "uniqueName": "CreateAsyncByInput",
-              "name": "CreateAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services",
+            "GetAllEmployeeRolesAsync": {
+              "uniqueName": "GetAllEmployeeRolesAsync",
+              "name": "GetAllEmployeeRolesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/employee-roles",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityRoleDto>",
+                "typeSimple": "[Volo.Abp.Identity.IdentityRoleDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "GetAllPermissionGroupsAsync": {
+              "uniqueName": "GetAllPermissionGroupsAsync",
+              "name": "GetAllPermissionGroupsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/permission-groups",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "GetPermissionGroupsByRoleAsyncByRoleId": {
+              "uniqueName": "GetPermissionGroupsByRoleAsyncByRoleId",
+              "name": "GetPermissionGroupsByRoleAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/permission-groups-by-role/{roleId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserCreateDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
+                  "name": "roleId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "input",
-                  "name": "input",
+                  "nameOnMethod": "roleId",
+                  "name": "roleId",
                   "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserCreateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserCreateDto",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "GetPermissionGroupsByUserAsyncByUserId": {
+              "uniqueName": "GetPermissionGroupsByUserAsyncByUserId",
+              "name": "GetPermissionGroupsByUserAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/permission-groups-by-user/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGroupDto>",
+                "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGroupDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
+            },
+            "UpdateRolePermissionsAsyncByRoleNameAndPermissions": {
+              "uniqueName": "UpdateRolePermissionsAsyncByRoleNameAndPermissions",
+              "name": "UpdateRolePermissionsAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/user/role-permissions",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "roleName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "permissions",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "roleName",
+                  "name": "roleName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.ICreateAppService<Volo.Abp.Identity.IdentityUserDto,Volo.Abp.Identity.IdentityUserCreateDto>"
-            },
-            "UpdateAsyncByIdAndInput": {
-              "uniqueName": "UpdateAsyncByIdAndInput",
-              "name": "UpdateAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/user-services/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "input",
-                  "name": "input",
+                  "nameOnMethod": "permissions",
+                  "name": "permissions",
                   "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IUpdateAppService<Volo.Abp.Identity.IdentityUserDto,System.Guid,Volo.Abp.Identity.IdentityUserUpdateDto>"
-            },
-            "DeleteAsyncById": {
-              "uniqueName": "DeleteAsyncById",
-              "name": "DeleteAsync",
-              "httpMethod": "DELETE",
-              "url": "api/app/user-services/{id}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Application.Services.IDeleteAppService<System.Guid>"
-            },
-            "UpdateRolesAsyncByIdAndInput": {
-              "uniqueName": "UpdateRolesAsyncByIdAndInput",
-              "name": "UpdateRolesAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/user-services/{id}/roles",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "Volo.Abp.Identity.IdentityUserUpdateRolesDto, Volo.Abp.Identity.Application.Contracts",
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "input",
-                  "jsonName": null,
-                  "type": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
-                  "typeSimple": "Volo.Abp.Identity.IdentityUserUpdateRolesDto",
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -19047,82 +19092,65 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "FindByUsernameAsyncByUserName": {
-              "uniqueName": "FindByUsernameAsyncByUserName",
-              "name": "FindByUsernameAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services/find-by-username",
+            "UpdateUserPermissionsAsyncByUserIdAndDesiredPermissions": {
+              "uniqueName": "UpdateUserPermissionsAsyncByUserIdAndDesiredPermissions",
+              "name": "UpdateUserPermissionsAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/user/user-permissions/{userId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "userName",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
                   "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "desiredPermissions",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "userName",
-                  "name": "userName",
+                  "nameOnMethod": "userId",
+                  "name": "userId",
                   "jsonName": null,
-                  "type": "System.String",
+                  "type": "System.Guid",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "desiredPermissions",
+                  "name": "desiredPermissions",
+                  "jsonName": null,
+                  "type": "System.Collections.Generic.List<System.String>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
+                  "bindingSourceId": "Body",
                   "descriptorName": ""
                 }
               ],
               "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
-            },
-            "FindByEmailAsyncByEmail": {
-              "uniqueName": "FindByEmailAsyncByEmail",
-              "name": "FindByEmailAsync",
-              "httpMethod": "POST",
-              "url": "api/app/user-services/find-by-email",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "email",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "email",
-                  "name": "email",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Volo.Abp.Identity.IdentityUserDto",
-                "typeSimple": "Volo.Abp.Identity.IdentityUserDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "Volo.Abp.Identity.IIdentityUserAppService"
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             }
           }
         }
@@ -28552,6 +28580,42 @@
       "genericArguments": null,
       "properties": [
         {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Slug",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "Description",
           "jsonName": null,
           "type": "System.String",
@@ -28624,10 +28688,58 @@
           "regex": null
         },
         {
+          "name": "EmploymentType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.EmploymentType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PositionType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.PositionType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.ExperienceLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "WorkTime",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProvinceCode",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -28672,10 +28784,10 @@
           "regex": null
         },
         {
-          "name": "ExpiresAt",
+          "name": "TagIds",
           "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
+          "type": "[System.Int32]",
+          "typeSimple": "[number]",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -28684,10 +28796,22 @@
           "regex": null
         },
         {
-          "name": "IsSetActive",
+          "name": "ExpiresAt",
           "jsonName": null,
-          "type": "System.Boolean",
-          "typeSimple": "boolean",
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobCategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
