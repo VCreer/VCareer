@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Constants;
+using VCareer.Dto.UserDto;
 using VCareer.IRepositories.Profile;
 using VCareer.IServices.User;
 using Volo.Abp;
@@ -15,6 +16,7 @@ using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.PermissionManagement;
+using Volo.Abp.Users;
 
 
 namespace VCareer.Services.User
@@ -72,30 +74,47 @@ namespace VCareer.Services.User
                 }
             );
         }
-        public async Task<List<Guid>> GetUsersIdByRoleAsync(int roleType)
+        public async Task<List<IdentityUserDto>> GetUsersInfoByRoleAsync(int roleType)
         {
-            if (!Enum.TryParse(roleType.ToString(), out RoleType role)) return new List<Guid> { Guid.Empty };
-            switch (role)
+            if (!Enum.IsDefined(typeof(RoleType), roleType))
+                return new List<IdentityUserDto>();
+
+            var role = (RoleType)roleType;
+
+            List<Guid> listUserId = role switch
             {
-                case RoleType.Employee:
-                    var employees = await _employeeRepository.GetListAsync();
-                    return employees.Select(x => x.UserId).ToList();
-                case RoleType.Recruiter:
-                    var recruiter = await _recruiterRepository.GetListAsync();
-                    return recruiter.Select(x => x.UserId).ToList();
-                case RoleType.Candidate:
-                    var candidate = await _candidateProfileRepository.GetListAsync();
-                    return candidate.Select(x => x.UserId).ToList();
-                default:
-                    return new List<Guid> { Guid.Empty };
+                RoleType.Employee =>
+                    (await _employeeRepository.GetListAsync()).Select(x => x.UserId).ToList(),
+
+                RoleType.Recruiter =>
+                    (await _recruiterRepository.GetListAsync()).Select(x => x.UserId).ToList(),
+
+                RoleType.Candidate =>
+                    (await _candidateProfileRepository.GetListAsync()).Select(x => x.UserId).ToList(),
+
+                _ => new List<Guid>()
+            };
+
+            if (!listUserId.Any())
+                return new List<IdentityUserDto>();
+
+            var users = new List<IdentityUserDto>();
+
+            foreach (var id in listUserId)
+            {
+                var user = await _userAppService.GetAsync(id);
+                users.Add(user);
             }
 
+            return users;
         }
+
+
         public async Task SetUserActiveStatusAsync(Guid userId, bool isActive)
         {
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
-          
+
             await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
             {
                 IsActive = isActive
@@ -114,7 +133,7 @@ namespace VCareer.Services.User
         public async Task<List<PermissionGroupDto>> GetAllPermissionGroupsAsync()
         {
             var groups = await _permissionDefinitionManager.GetGroupsAsync();
-            if(groups==null) return new List<PermissionGroupDto>();
+            if (groups == null) return new List<PermissionGroupDto>();
 
             return groups.Select(group => new PermissionGroupDto
             {
@@ -151,7 +170,7 @@ namespace VCareer.Services.User
         }
         public async Task UpdateRolePermissionsAsync(string roleName, List<string> permissions)
         {
-            if(permissions==null || permissions.Count==0) return;
+            if (permissions == null || permissions.Count == 0) return;
             var input = new UpdatePermissionsDto
             {
                 Permissions = permissions.Select(p => new UpdatePermissionDto
