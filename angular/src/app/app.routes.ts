@@ -430,15 +430,7 @@ export const APP_ROUTES: Routes = [
         path: 'manage-service-packages',
         loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
       },
-       
-      {
-        path: 'company-verify',
-        loadComponent: () =>
-          import(
-            './features/dashboard/company-verify/employee/company-verify'
-          ).then(c => c.CompanyVerifyComponent),
-      },
-      },
+
       {
         path: 'manage-sub-service-packages',
         loadComponent: () => import('./features/dashboard/manage-sub-service-packages/employee/manage-sub-service-packages').then(c => c.ManageSubServicePackagesComponent),
@@ -478,7 +470,17 @@ export const APP_ROUTES: Routes = [
       {
         path: 'tag-management',
         loadComponent: () => import('./features/dashboard/tag-management/employee/tag-management').then(c => c.TagManagementComponent),
-      }
+      },
+
+       
+      {
+        path: 'company-verify',
+        loadComponent: () =>
+          import(
+            './features/dashboard/company-verify/employee/company-verify'
+          ).then(c => c.CompanyVerifyComponent),
+      },
+
     ]
   },
 

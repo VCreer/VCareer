@@ -225,9 +225,12 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       pageIndex: 0
     };
 
+    const serviceActionParam = this.getServiceActionParam();
+    const targetParam = this.getServiceTargetParam();
+
     this.childServiceService.getChildServices(
-      this.filterAction ? (Number(this.filterAction) as SubcriptionContance_ServiceAction) : undefined,
-      this.filterTarget ? (Number(this.filterTarget) as SubcriptionContance_ServiceTarget) : undefined,
+      serviceActionParam,
+      targetParam,
       paging
     ).subscribe({
       next: (childServices: ChildServiceViewDto[]) => {
@@ -290,6 +293,32 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       dayDuration: dto.dayDuration,
       value: dto.value
     };
+  }
+
+  private getServiceActionParam(): string | undefined {
+    if (!this.filterAction && this.filterAction !== '0') {
+      return undefined;
+    }
+
+    const actionIndex = Number(this.filterAction);
+    if (Number.isNaN(actionIndex)) {
+      return undefined;
+    }
+
+    return SubcriptionContance_ServiceAction[actionIndex];
+  }
+
+  private getServiceTargetParam(): string | undefined {
+    if (!this.filterTarget && this.filterTarget !== '0') {
+      return undefined;
+    }
+
+    const targetIndex = Number(this.filterTarget);
+    if (Number.isNaN(targetIndex)) {
+      return undefined;
+    }
+
+    return SubcriptionContance_ServiceTarget[targetIndex];
   }
 
   applyFilters(): void {
