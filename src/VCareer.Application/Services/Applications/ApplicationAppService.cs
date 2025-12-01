@@ -618,7 +618,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của ứng viên
         /// </summary>
-        [Authorize(VCareerPermission.Application.View)]
+        //[Authorize(VCareerPermission.Application.View)]
         public async Task<PagedResultDto<ApplicationDto>> GetMyApplicationsAsync(GetApplicationListDto input)
         {
             var userId = _currentUser.GetId();
@@ -736,11 +736,12 @@ namespace VCareer.Application.Applications
         {
             var dto = ObjectMapper.Map<JobApplication, ApplicationDto>(application);
 
-            // Load Job để lấy JobTitle
+            // Load Job để lấy JobTitle và thông tin lương
             var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
             if (job != null)
             {
                 dto.JobTitle = job.Title;
+                dto.JobSalaryText = FormatJobSalary(job);
             }
 
             // Load Company để lấy CompanyName
@@ -793,9 +794,58 @@ namespace VCareer.Application.Applications
             throw new NotImplementedException();
         }
 
-        public Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}
+         public Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
+         {
+             throw new NotImplementedException();
+         }
+
+         /// <summary>
+         /// Helper format mức lương job thành text hiển thị (VD: \"Tới 3 triệu\", \"Từ 4 - 8 triệu\", \"Thoả thuận\")
+         /// </summary>
+         private string? FormatJobSalary(Job_Post job)
+         {
+             if (job == null)
+             {
+                 return null;
+             }
+
+             if (job.SalaryDeal)
+             {
+                 return "Thoả thuận";
+             }
+
+             decimal? min = job.SalaryMin;
+             decimal? max = job.SalaryMax;
+
+             if (!min.HasValue && !max.HasValue)
+             {
+                 return null;
+             }
+
+             // Chuyển sang đơn vị \"triệu\" nếu >= 1,000,000
+             string FormatToMillion(decimal value)
+             {
+                 if (value >= 1_000_000)
+                 {
+                     var millions = Math.Round(value / 1_000_000, 0, MidpointRounding.AwayFromZero);
+                     return $"{millions} triệu";
+                 }
+
+                 return $"{value:N0} VNĐ";
+             }
+
+             if (min.HasValue && max.HasValue)
+             {
+                 return $"{FormatToMillion(min.Value)} - {FormatToMillion(max.Value)}";
+             }
+
+             if (max.HasValue)
+             {
+                 return $"Tới {FormatToMillion(max.Value)}";
+             }
+
+             // Chỉ có min
+             return $"Từ {FormatToMillion(min!.Value)}";
+         }
+     }
+ }

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
+import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
+import type { ApplicationDto, GetApplicationListDto } from '../../../../proxy/dto/applications/models';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
@@ -64,7 +66,8 @@ export class AppliedJobsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private applicationService: ApplicationService
   ) {}
 
   ngOnInit(): void {
@@ -77,181 +80,76 @@ export class AppliedJobsComponent implements OnInit {
 
   loadAppliedJobs(): void {
     this.loading = true;
-    setTimeout(() => {
-      this.appliedJobs = [
-        {
-          id: '1',
-          companyLogoImage: 'assets/images/companies/atx-logo.png',
-          companyName: 'ATX',
-          jobTitle: 'Thực Tập Sinh Content Creator',
-          appliedDate: '04-10-2025',
-          appliedTime: '10:00',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Tới 3 triệu',
-          status: 'viewed'
-        },
-        {
-          id: '2',
-          companyLogoImage: 'assets/images/companies/seta-logo.png',
-          companyName: 'Công ty TNHH SETA international Việt Nam',
-          jobTitle: 'Front-End Developer Intern',
-          appliedDate: '02-10-2025',
-          appliedTime: '21:49',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Thoả thuận',
-          status: 'suitable'
-        },
-        {
-          id: '3',
-          companyLogoImage: 'assets/images/companies/jvb-logo.png',
-          companyName: 'Công ty Cổ phần JVB Việt Nam',
-          jobTitle: 'Thực Tập Sinh (Python/ AI/ ReactJS/ PHP)',
-          appliedDate: '01-10-2025',
-          appliedTime: '22:46',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Thoả thuận',
-          status: 'viewed'
-        },
-        {
-          id: '4',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty ABC',
-          jobTitle: 'Thực Tập Sinh Lập Trình Viên Front-End',
-          appliedDate: '30-09-2025',
-          appliedTime: '15:30',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 4 triệu',
-          status: 'pending'
-        },
-        {
-          id: '5',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty XYZ',
-          jobTitle: 'Backend Developer',
-          appliedDate: '29-09-2025',
-          appliedTime: '14:20',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 5 triệu',
-          status: 'viewed'
-        },
-        {
-          id: '6',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty DEF',
-          jobTitle: 'Full Stack Developer',
-          appliedDate: '28-09-2025',
-          appliedTime: '13:15',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 6 triệu',
-          status: 'suitable'
-        },
-        {
-          id: '7',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty GHI',
-          jobTitle: 'Mobile Developer',
-          appliedDate: '27-09-2025',
-          appliedTime: '12:00',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 7 triệu',
-          status: 'pending'
-        },
-        {
-          id: '8',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty JKL',
-          jobTitle: 'DevOps Engineer',
-          appliedDate: '26-09-2025',
-          appliedTime: '11:30',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 8 triệu',
-          status: 'viewed'
-        },
-        {
-          id: '9',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty MNO',
-          jobTitle: 'QA Engineer',
-          appliedDate: '25-09-2025',
-          appliedTime: '10:45',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 5 triệu',
-          status: 'suitable'
-        },
-        {
-          id: '10',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty PQR',
-          jobTitle: 'UI/UX Designer',
-          appliedDate: '24-09-2025',
-          appliedTime: '09:20',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 6 triệu',
-          status: 'pending'
-        },
-        {
-          id: '11',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty STU',
-          jobTitle: 'Data Analyst',
-          appliedDate: '23-09-2025',
-          appliedTime: '08:15',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 7 triệu',
-          status: 'viewed'
-        },
-        {
-          id: '12',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty VWX',
-          jobTitle: 'Product Manager',
-          appliedDate: '22-09-2025',
-          appliedTime: '07:30',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 10 triệu',
-          status: 'suitable'
-        },
-        {
-          id: '13',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty YZ',
-          jobTitle: 'Business Analyst',
-          appliedDate: '21-09-2025',
-          appliedTime: '06:00',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 8 triệu',
-          status: 'pending'
-        },
-        {
-          id: '14',
-          companyLogoImage: 'assets/images/companies/company-logo.png',
-          companyName: 'Công ty Tech',
-          jobTitle: 'Software Engineer',
-          appliedDate: '20-09-2025',
-          appliedTime: '05:45',
-          cvType: 'uploaded',
-          cvName: 'CV tải lên',
-          salary: 'Từ 9 triệu',
-          status: 'viewed'
-        }
-      ];
-      this.filteredJobs = this.appliedJobs;
-      this.updateDisplayedJobs();
-      this.loading = false;
-    }, 500);
+
+    const input: GetApplicationListDto = {
+      skipCount: 0,
+      maxResultCount: 50,
+      sorting: 'CreationTime DESC'
+    };
+
+    this.applicationService.getMyApplications(input).subscribe({
+      next: (result) => {
+        const items = result?.items ?? [];
+        this.appliedJobs = items.map(app => this.mapApplicationToAppliedJob(app));
+        this.filteredJobs = this.appliedJobs;
+        this.currentPage = 1;
+        this.updateDisplayedJobs();
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.appliedJobs = [];
+        this.filteredJobs = [];
+        this.updateDisplayedJobs();
+      }
+    });
+  }
+
+  private mapApplicationToAppliedJob(app: ApplicationDto): AppliedJob {
+    const created = app.creationTime ? new Date(app.creationTime) : null;
+
+    const appliedDate = created
+      ? `${created.getDate().toString().padStart(2, '0')}-${(created.getMonth() + 1)
+          .toString()
+          .padStart(2, '0')}-${created.getFullYear()}`
+      : '';
+
+    const appliedTime = created
+      ? `${created.getHours().toString().padStart(2, '0')}:${created
+          .getMinutes()
+          .toString()
+          .padStart(2, '0')}`
+      : '';
+
+    const cvName =
+      app.cvType === 'Online'
+        ? app.candidateCvName || 'CV online'
+        : app.uploadedCvName || 'CV tải lên';
+
+    const salary = app.jobSalaryText || '';
+
+    let status: AppliedJob['status'] = 'pending';
+    if (app.viewedAt) {
+      status = 'viewed';
+    } else if (
+      app.status &&
+      ['Shortlisted', 'Interviewed', 'Accepted'].includes(app.status)
+    ) {
+      status = 'suitable';
+    }
+
+    return {
+      id: app.id ?? '',
+      companyLogoImage: undefined,
+      companyName: app.companyName || '',
+      jobTitle: app.jobTitle || '',
+      appliedDate,
+      appliedTime,
+      cvType: app.cvType || '',
+      cvName,
+      salary,
+      status
+    };
   }
 
   toggleStatusDropdown(): void {
