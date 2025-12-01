@@ -1,6 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobStatus } from '../../constants/job-constant/job-status.enum';
 import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, PostJobDto } from '../../dto/job-dto/models';
 
 @Injectable({
@@ -60,11 +59,11 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  getJobByCompanyIdByCompanyIdAndMaxCount = (companyId: number, maxCount: number = 10, config?: Partial<Rest.Config>) =>
+  getJobByCompanyIdByCompanyIdAndPageAndPageSize = (companyId: number, page?: number, pageSize: number = 10, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobViewDto[]>({
       method: 'GET',
       url: `/api/app/job-post/job-by-company-id/${companyId}`,
-      params: { maxCount },
+      params: { page, pageSize },
     },
     { apiName: this.apiName,...config });
   
@@ -78,7 +77,7 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  getJobPostBySatusByStatusAndMaxCount = (status: JobStatus, maxCount: number = 10, config?: Partial<Rest.Config>) =>
+  getJobPostBySatusByStatusAndMaxCount = (status: number, maxCount: number = 10, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobViewDto[]>({
       method: 'GET',
       url: '/api/app/job-post/job-post-by-satus',

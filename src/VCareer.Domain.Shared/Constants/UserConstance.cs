@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VCareer.IServices.IPermisionServices
+namespace VCareer.Constants
 {
-    public class IPermissionServices
+    public enum RoleType
     {
-
+        Employee = 1,
+        Recruiter = 2,
+        Candidate = 3
     }
 }

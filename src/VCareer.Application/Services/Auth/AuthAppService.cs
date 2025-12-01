@@ -305,8 +305,7 @@ namespace VCareer.Services.Auth
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            //check ma so thue
-
+          
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));

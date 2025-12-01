@@ -72,6 +72,7 @@ namespace VCareer.Services.Job
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
             if (jobPost == null)
                 throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            if(jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
 
             jobPost.Status = JobStatus.Open;
             jobPost.ApprovedBy = CurrentUser.Id;
@@ -328,7 +329,7 @@ namespace VCareer.Services.Job
                 RecruitmentCampaignId = dto.RecruitmentCampaignId
 
             };
-            await _jobPostRepository.InsertAsync(job,true);
+            await _jobPostRepository.InsertAsync(job, true);
             if (dto.TagIds != null && dto.TagIds.Count > 0) await _jobTagService
                     .AddTagsToJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = job.Id, TagIds = dto.TagIds });
             await AddDefaultJobPriority(job);
@@ -344,15 +345,27 @@ namespace VCareer.Services.Job
             job.Status = JobStatus.Deleted;
             if (job.Status == JobStatus.Open) throw new BusinessException($"Job trong trang thai Open khong the xóa.");
             await _jobPostRepository.UpdateAsync(job, true);
+            await _jobSearchService.RemoveJobFromIndexAsync(job.Id);
         }
-        public async Task<List<JobViewDto>> GetJobPostBySatus(JobStatus status, int maxCount = 10) // check been job search cos chuaw
+        public async Task<List<JobViewDto>> GetJobPostBySatus(int? status, int maxCount = 10) // check been job search cos chuaw
         {
             throw new NotImplementedException();
         }
-        public Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int maxCount = 10)
+        public async Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10)
         {
-            throw new NotImplementedException();
+            var query = await _jobPostRepository.GetQueryableAsync();
+
+            var jobs = await query
+                .Where(x => x.CompanyId == companyId )
+                .OrderByDescending(x => x.PostedAt)
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
         }
+
+
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
             throw new NotImplementedException();
@@ -365,10 +378,36 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
-        public Task UpdateJobPost(JobPostUpdateDto dto)
+        public async Task UpdateJobPost(JobPostUpdateDto dto)
         {
-            //khi update phai doi status thanh draf
-            throw new NotImplementedException();
+            var job = await _jobPostRepository.GetAsync(dto.Id);
+            if (job == null) throw new Volo.Abp.BusinessException($"job not found");
+            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open || job.Status == JobStatus.Deleted) throw new Volo.Abp.UserFriendlyException($"This job is running or pending or deleted , you can't update now !");
+
+            job.PositionType = dto.PositionType;
+            job.ProvinceCode = dto.ProvinceCode;
+            job.Quantity = dto.Quantity;
+            job.Requirements = dto.Requirements;
+            job.Title = dto.Title;
+            job.Slug = dto.Slug;
+            job.Description = dto.Description;
+            job.Benefits = dto.Benefits;
+            job.SalaryMax = dto.SalaryMax;
+            job.SalaryMin = dto.SalaryMin;
+            job.SalaryDeal = dto.SalaryDeal;
+            job.EmploymentType = dto.EmploymentType;
+            job.Experience = dto.Experience;
+            job.WorkTime = dto.WorkTime;
+            job.WorkLocation = dto.WorkLocation;
+            job.WardCode = dto.WardCode;
+            job.ExpiresAt = dto.ExpiresAt;
+            job.JobCategoryId = dto.JobCategoryId;
+            job.Status = JobStatus.Draft;//khi update phai doi status thanh draf
+            await _jobPostRepository.UpdateAsync(job, true);
+            await _jobTagService.UpdateTagOfJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = dto.Id, TagIds = dto.TagIds });
+
+            await _jobSearchService.IndexJobAsync(dto.Id);
+
         }
         public Task UpDateViewCount(string id)
         {
