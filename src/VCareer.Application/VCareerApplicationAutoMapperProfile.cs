@@ -25,6 +25,7 @@ using VCareer.Dto.Job;
 using VCareer.Models.JobCategory;
 using VCareer.Dto.Category;
 using VCareer.Dto.Applications;
+using VCareer.Dto.UserDto;
 
 namespace VCareer;
 
@@ -79,6 +80,7 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<RecruitmentCampaign, RecruimentCampainViewDto>();
         CreateMap<JobTag, JobTagViewDto>();
         CreateMap<Tag, TagViewDto>();
+        CreateMap<IdentityUser, UserViewDto>();
 
 
 
