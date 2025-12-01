@@ -24,10 +24,17 @@ interface PermissionItem {
   description?: string;
 }
 
-interface PermissionGroupViewModel {
+interface PermissionSubGroupViewModel {
   id: string;
   name: string;
   permissions: PermissionItem[];
+}
+
+interface PermissionGroupViewModel {
+  id: string;
+  name: string;
+  subGroups: PermissionSubGroupViewModel[];
+  permissions: PermissionItem[]; // Permissions không có parentName (direct permissions)
 }
 
 @Component({
@@ -59,6 +66,7 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
 
   permissionGroups: PermissionGroupViewModel[] = [];
   expandedPermissionGroups: Set<string> = new Set();
+  expandedSubGroups: Set<string> = new Set();
   selectedPermissions: Set<string> = new Set();
 
   isLoadingRoles = false;
@@ -184,17 +192,49 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
 
     this.userService.getPermissionGroupsByRole(role.id).subscribe({
       next: (groups: PermissionGroupDto[]) => {
-        this.permissionGroups = (groups ?? []).map(group => ({
-          id: group.name ?? '',
-          name: group.displayName ?? group.name ?? '',
-          permissions: (group.permissions ?? [])
-            .filter(p => !!p.name)
-            .map(p => ({
+        this.permissionGroups = (groups ?? []).map(group => {
+          const groupId = group.name ?? '';
+          const groupName = group.displayName ?? group.name ?? '';
+          
+          // Phân loại permissions: có parentName (sub-group) và không có parentName (direct)
+          const permissionsWithParent = (group.permissions ?? []).filter(p => !!p.name && !!p.parentName);
+          const permissionsWithoutParent = (group.permissions ?? []).filter(p => !!p.name && !p.parentName);
+          
+          // Nhóm permissions theo parentName để tạo sub-groups
+          const subGroupMap = new Map<string, PermissionItem[]>();
+          permissionsWithParent.forEach(p => {
+            const parentName = p.parentName as string;
+            if (!subGroupMap.has(parentName)) {
+              subGroupMap.set(parentName, []);
+            }
+            subGroupMap.get(parentName)!.push({
               id: p.name as string,
               name: p.displayName ?? (p.name as string),
-              description: p.parentName ?? ''
-            }))
-        })).filter(g => g.id);
+              description: ''
+            });
+          });
+          
+          // Tạo sub-groups từ map
+          const subGroups: PermissionSubGroupViewModel[] = Array.from(subGroupMap.entries()).map(([parentName, perms]) => ({
+            id: `${groupId}_${parentName}`,
+            name: parentName,
+            permissions: perms
+          }));
+          
+          // Direct permissions (không có parentName)
+          const directPermissions: PermissionItem[] = permissionsWithoutParent.map(p => ({
+            id: p.name as string,
+            name: p.displayName ?? (p.name as string),
+            description: ''
+          }));
+          
+          return {
+            id: groupId,
+            name: groupName,
+            subGroups: subGroups,
+            permissions: directPermissions
+          };
+        }).filter(g => g.id);
 
         // Khởi tạo selectedPermissions theo isGranted
         (groups ?? []).forEach(group => {
@@ -229,22 +269,72 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
   }
 
   onTogglePermissionGroup(group: PermissionGroupViewModel): void {
-    const allSelected = group.permissions.every(p => this.selectedPermissions.has(p.id));
+    // Lấy tất cả permissions từ sub-groups và direct permissions
+    const allPermissions: PermissionItem[] = [];
+    for (const subGroup of group.subGroups) {
+      allPermissions.push(...subGroup.permissions);
+    }
+    allPermissions.push(...group.permissions);
+    
+    const allSelected = allPermissions.length > 0 && allPermissions.every(p => this.selectedPermissions.has(p.id));
     if (allSelected) {
-      group.permissions.forEach(p => this.selectedPermissions.delete(p.id));
+      allPermissions.forEach(p => this.selectedPermissions.delete(p.id));
     } else {
-      group.permissions.forEach(p => this.selectedPermissions.add(p.id));
+      allPermissions.forEach(p => this.selectedPermissions.add(p.id));
     }
   }
 
   isPermissionGroupFullySelected(group: PermissionGroupViewModel): boolean {
-    return group.permissions.length > 0 &&
-      group.permissions.every(p => this.selectedPermissions.has(p.id));
+    const allPermissions: PermissionItem[] = [];
+    for (const subGroup of group.subGroups) {
+      allPermissions.push(...subGroup.permissions);
+    }
+    allPermissions.push(...group.permissions);
+    
+    return allPermissions.length > 0 &&
+      allPermissions.every(p => this.selectedPermissions.has(p.id));
   }
 
   isPermissionGroupPartiallySelected(group: PermissionGroupViewModel): boolean {
-    const selectedCount = group.permissions.filter(p => this.selectedPermissions.has(p.id)).length;
-    return selectedCount > 0 && selectedCount < group.permissions.length;
+    const allPermissions: PermissionItem[] = [];
+    for (const subGroup of group.subGroups) {
+      allPermissions.push(...subGroup.permissions);
+    }
+    allPermissions.push(...group.permissions);
+    
+    const selectedCount = allPermissions.filter(p => this.selectedPermissions.has(p.id)).length;
+    return selectedCount > 0 && selectedCount < allPermissions.length;
+  }
+
+  onToggleSubGroup(subGroup: PermissionSubGroupViewModel): void {
+    const allSelected = subGroup.permissions.every(p => this.selectedPermissions.has(p.id));
+    if (allSelected) {
+      subGroup.permissions.forEach(p => this.selectedPermissions.delete(p.id));
+    } else {
+      subGroup.permissions.forEach(p => this.selectedPermissions.add(p.id));
+    }
+  }
+
+  isSubGroupFullySelected(subGroup: PermissionSubGroupViewModel): boolean {
+    return subGroup.permissions.length > 0 &&
+      subGroup.permissions.every(p => this.selectedPermissions.has(p.id));
+  }
+
+  isSubGroupPartiallySelected(subGroup: PermissionSubGroupViewModel): boolean {
+    const selectedCount = subGroup.permissions.filter(p => this.selectedPermissions.has(p.id)).length;
+    return selectedCount > 0 && selectedCount < subGroup.permissions.length;
+  }
+
+  toggleSubGroupExpand(subGroupId: string): void {
+    if (this.expandedSubGroups.has(subGroupId)) {
+      this.expandedSubGroups.delete(subGroupId);
+    } else {
+      this.expandedSubGroups.add(subGroupId);
+    }
+  }
+
+  isSubGroupExpanded(subGroupId: string): boolean {
+    return this.expandedSubGroups.has(subGroupId);
   }
 
   togglePermissionGroupExpand(groupId: string): void {

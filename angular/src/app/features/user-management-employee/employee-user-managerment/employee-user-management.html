@@ -453,8 +453,13 @@
     <div class="form-group">
       <label class="form-label">Nhóm quyền</label>
       <div class="permission-groups">
-        <div class="permission-group" *ngFor="let group of permissionGroups" [class.expanded]="isPermissionGroupExpanded(group.id)">
-          <div class="permission-group-header" (click)="togglePermissionGroupExpand(group.id, $event)">
+        <div
+          class="permission-group"
+          *ngFor="let group of permissionGroups"
+          [class.expanded]="isPermissionGroupExpanded(group.id)">
+          <div
+            class="permission-group-header"
+            (click)="togglePermissionGroupExpand(group.id, $event)">
             <div class="group-header-left">
               <input 
                 type="checkbox" 
@@ -464,19 +469,63 @@
                 (change)="onTogglePermissionGroup(group.id, $event)">
               <span class="group-name">{{ group.name }}</span>
             </div>
-            <i class="fa fa-chevron-down group-chevron" [class.rotated]="isPermissionGroupExpanded(group.id)"></i>
+            <i
+              class="fa fa-chevron-down group-chevron"
+              [class.rotated]="isPermissionGroupExpanded(group.id)"></i>
           </div>
-          <div class="permission-list" *ngIf="isPermissionGroupExpanded(group.id)">
-            <label class="permission-item" *ngFor="let permission of group.permissions">
-              <input 
-                type="checkbox" 
-                [checked]="isPermissionSelected(permission.id)"
-                (change)="onTogglePermission(permission.id)">
-              <div class="permission-info">
-                <span class="permission-name">{{ permission.name }}</span>
-                <span class="permission-description" *ngIf="permission.description">{{ permission.description }}</span>
+
+          <div class="permission-group-content" *ngIf="isPermissionGroupExpanded(group.id)">
+            <!-- Sub-groups -->
+            <div
+              class="permission-sub-group"
+              *ngFor="let subGroup of group.subGroups"
+              [class.expanded]="isSubGroupExpanded(subGroup.id)">
+              <div
+                class="permission-sub-group-header"
+                (click)="toggleSubGroupExpand(subGroup.id, $event)">
+                <div class="sub-group-header-left">
+                  <input
+                    type="checkbox"
+                    [checked]="isSubGroupFullySelected(subGroup)"
+                    [indeterminate]="isSubGroupPartiallySelected(subGroup)"
+                    (click)="$event.stopPropagation()"
+                    (change)="onToggleSubGroup(subGroup, $event)">
+                  <span class="sub-group-name">{{ subGroup.name }}</span>
+                </div>
+                <i
+                  class="fa fa-chevron-down sub-group-chevron"
+                  [class.rotated]="isSubGroupExpanded(subGroup.id)"></i>
               </div>
-            </label>
+
+              <div class="permission-list" *ngIf="isSubGroupExpanded(subGroup.id)">
+                <label
+                  class="permission-item"
+                  *ngFor="let permission of subGroup.permissions">
+                  <input 
+                    type="checkbox" 
+                    [checked]="isPermissionSelected(permission.id)"
+                    (change)="onTogglePermission(permission.id)">
+                  <div class="permission-info">
+                    <span class="permission-name">{{ permission.name }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Direct permissions (không có sub-group) -->
+            <div class="permission-list" *ngIf="group.permissions.length > 0">
+              <label
+                class="permission-item"
+                *ngFor="let permission of group.permissions">
+                <input 
+                  type="checkbox" 
+                  [checked]="isPermissionSelected(permission.id)"
+                  (change)="onTogglePermission(permission.id)">
+                <div class="permission-info">
+                  <span class="permission-name">{{ permission.name }}</span>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>

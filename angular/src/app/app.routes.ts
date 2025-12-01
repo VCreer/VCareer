@@ -473,7 +473,10 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'manage-role',
-        loadComponent: () => import('./features/dashboard/manage-role/employee/manage-role').then(c => c.ManageRoleComponent),
+        loadComponent: () =>
+          import('./features/dashboard/manage-role/employee/manage-role').then(
+            (m) => m.ManageRoleComponent
+          ),
       },
 
        

@@ -401,6 +401,67 @@
               }
             }
 
+            .permission-group-content {
+              padding: 0.5rem 0.75rem 0.75rem;
+            }
+
+            .permission-sub-group {
+              margin-bottom: 4px;
+              border-left: 2px solid #e2e8f0;
+              padding-left: 0.75rem;
+              margin-left: 0.5rem;
+
+              .permission-sub-group-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.5rem 0.5rem;
+                background: #f8fafc;
+                border-radius: 6px;
+                cursor: pointer;
+                margin-bottom: 4px;
+
+                &:hover {
+                  background: #f1f5f9;
+                }
+
+                .sub-group-header-left {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                }
+
+                input[type='checkbox'] {
+                  width: 16px;
+                  height: 16px;
+                  cursor: pointer;
+                  accent-color: #0f83ba;
+                }
+
+                .sub-group-name {
+                  font-size: 0.8125rem;
+                  font-weight: 600;
+                  color: #374151;
+                }
+
+                .sub-group-chevron {
+                  font-size: 0.6875rem;
+                  color: #64748b;
+                  transition: transform 0.2s ease;
+
+                  &.rotated {
+                    transform: rotate(180deg);
+                  }
+                }
+              }
+
+              .permission-list {
+                padding: 0.25rem 0 0.25rem 0.5rem;
+                margin-left: 0.5rem;
+                border-left: 2px solid #e2e8f0;
+              }
+            }
+
             .permission-list {
               padding: 0.5rem 0.75rem 0.75rem;
 
