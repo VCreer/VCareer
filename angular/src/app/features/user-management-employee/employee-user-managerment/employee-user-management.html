@@ -79,6 +79,14 @@
               (ngModelChange)="onFilterChange()">
             </app-select-field>
           </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả vai trò"
+              [options]="roleFilterOptions"
+              [(ngModel)]="filterRole"
+              (ngModelChange)="onFilterChange()">
+            </app-select-field>
+          </div>
           <div class="filter-group date-picker-wrapper">
             <button 
               type="button" 
@@ -184,6 +192,7 @@
                 <i class="fa fa-sort-down" *ngIf="sortField === 'email' && sortDirection === 'desc'"></i>
               </th>
               <th>Công ty</th>
+              <th>Vai trò</th>
               <th>Trạng thái</th>
               <th (click)="onSort('lastLoginDate')" class="sortable">
                 Lần đăng nhập cuối
@@ -200,6 +209,19 @@
               <td>{{ user.fullName }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.companyName }}</td>
+              <td class="role-cell">
+                <ng-container *ngIf="getUserRoleTags(user).length > 0; else noRoles">
+                  <div class="role-tags">
+                    <span
+                      class="role-tag"
+                      [ngClass]="roleTag.tagClass"
+                      *ngFor="let roleTag of getUserRoleTags(user)">
+                      {{ roleTag.label }}
+                    </span>
+                  </div>
+                </ng-container>
+                <ng-template #noRoles>-</ng-template>
+              </td>
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(user)">
                   {{ getStatusLabel(user) }}
@@ -232,10 +254,6 @@
                     <div class="menu-item" (click)="onToggleActive(user)">
                       <i class="fa" [class.fa-toggle-on]="user.isActive" [class.fa-toggle-off]="!user.isActive"></i>
                       <span>{{ user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
-                    </div>
-                    <div class="menu-item" (click)="onToggleLock(user)">
-                      <i class="fa" [class.fa-lock]="!user.isLocked" [class.fa-unlock]="user.isLocked"></i>
-                      <span>{{ user.isLocked ? 'Mở khóa' : 'Khóa' }}</span>
                     </div>
                     <div class="menu-separator"></div>
                     <div class="menu-item" (click)="onViewActivityLog(user)">

@@ -33,6 +33,11 @@ export interface EmployeeUser {
   permissions?: string[];
 }
 
+interface UserRoleTag {
+  label: string;
+  tagClass: string;
+}
+
 export interface PermissionGroup {
   id: string;
   name: string;
@@ -82,6 +87,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   searchKeyword = '';
   filterStatus = '';
   filterCompany = '';
+  filterRole = '';
   filterDateFrom = '';
   filterDateTo = '';
   sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
@@ -113,6 +119,9 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     { value: 'Công ty XYZ', label: 'Công ty XYZ' },
     { value: 'Công ty DEF', label: 'Công ty DEF' }
   ];
+
+  // Role filter options
+  roleFilterOptions: SelectOption[] = [];
 
   // Pagination
   currentPage = 1;
@@ -160,6 +169,13 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     { value: 'employee', label: 'Employee' },
     { value: 'viewer', label: 'Viewer' }
   ];
+
+  private roleTagColorMap: Record<string, string> = {
+    admin: 'role-admin',
+    manager: 'role-manager',
+    employee: 'role-employee',
+    viewer: 'role-viewer'
+  };
   editForm = {
     email: '',
     fullName: '',
@@ -174,6 +190,11 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.roleFilterOptions = [
+      { value: '', label: 'Tất cả vai trò' },
+      ...this.roleOptions
+    ];
+
     this.checkSidebarState();
     
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
@@ -357,6 +378,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         fullName: 'Nguyễn Văn A',
         phone: '0901234567',
         companyName: 'Công ty ABC',
+        roles: ['manager', 'employee'],
         isActive: true,
         isLocked: false,
         lockoutEnabled: true,
@@ -373,6 +395,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         fullName: 'Trần Thị B',
         phone: '0907654321',
         companyName: 'Công ty XYZ',
+        roles: ['employee'],
         isActive: true,
         isLocked: true,
         lockoutEnabled: true,
@@ -389,6 +412,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         fullName: 'Lê Văn C',
         phone: '0912345678',
         companyName: 'Công ty DEF',
+        roles: ['viewer'],
         isActive: false,
         isLocked: false,
         lockoutEnabled: true,
@@ -430,6 +454,11 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     // Filter by company
     if (this.filterCompany) {
       result = result.filter(u => u.companyName === this.filterCompany);
+    }
+
+    // Filter by role
+    if (this.filterRole) {
+      result = result.filter(u => Array.isArray(u.roles) && u.roles.includes(this.filterRole));
     }
 
     // Filter by date range
@@ -909,6 +938,18 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getUserRoleTags(user: EmployeeUser): UserRoleTag[] {
+    if (!Array.isArray(user.roles) || user.roles.length === 0) {
+      return [];
+    }
+
+    return user.roles.map(roleValue => {
+      const label = this.roleOptions.find(opt => opt.value === roleValue)?.label || roleValue;
+      const tagClass = this.roleTagColorMap[roleValue] || 'role-neutral';
+      return { label, tagClass };
+    });
   }
 
   formatDate(dateString?: string): string {
