@@ -430,6 +430,15 @@ export const APP_ROUTES: Routes = [
         path: 'manage-service-packages',
         loadComponent: () => import('./features/dashboard/manage-service-packages/employee/manage-service-packages').then(c => c.ManageServicePackagesComponent),
       },
+       
+      {
+        path: 'company-verify',
+        loadComponent: () =>
+          import(
+            './features/dashboard/company-verify/employee/company-verify'
+          ).then(c => c.CompanyVerifyComponent),
+      },
+      },
       {
         path: 'manage-sub-service-packages',
         loadComponent: () => import('./features/dashboard/manage-sub-service-packages/employee/manage-sub-service-packages').then(c => c.ManageSubServicePackagesComponent),
@@ -494,13 +503,7 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
       },
-      {
-        path: 'company-verify',
-        loadComponent: () =>
-          import(
-            './features/dashboard/company-verify/employee/company-verify'
-          ).then(c => c.CompanyVerifyComponent),
-      },
+     
   //#endregion
 
   //#region  ABP routes

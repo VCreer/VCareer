@@ -83,13 +83,18 @@ namespace VCareer.Services.Subcription
             userSubcriptionService.status = SubcriptionContance.SubcriptionStatus.Cancelled;
             await _user_SubcriptionServicerRepository.UpdateAsync(userSubcriptionService);
         }
-        public async Task<List<SubcriptionsViewDto>> GetAllSubcriptionsByUser(Guid userId, SubcriptionContance.SubcriptionStatus? status, PagingDto pagingDto)
+        public async Task<List<SubcriptionsViewDto>> GetAllSubcriptionsByUser(Guid userId, int? status, PagingDto pagingDto)
         {
             var query = await _user_SubcriptionServicerRepository.GetQueryableAsync();
             query = query
               .Where(x => x.UserId == userId)
               .Include(x => x.SubcriptionService);
-            if (status != null) query = query.Where(x => x.status == status);
+
+            if (status != null && Enum.IsDefined(typeof(SubcriptionStatus), status))
+            {
+                var parsedStatus = (SubcriptionStatus)status;
+                query = query.Where(x => x.status == parsedStatus);
+            }
             var result = await query
                 .Skip(pagingDto.PageIndex * pagingDto.PageSize)
                 .Take(pagingDto.PageSize)

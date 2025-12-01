@@ -1,7 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
-import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
 import type { ChildServiceCreateDto, ChildServiceUpdateDto, ChildServiceViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
@@ -29,11 +27,12 @@ export class ChildService_Service {
     { apiName: this.apiName,...config });
   
 
-  getChildServices = (action: SubcriptionContance_ServiceAction | null | undefined, target: SubcriptionContance_ServiceTarget | null | undefined, paging: PagingDto, config?: Partial<Rest.Config>) =>
+  getChildServices = (serviceAction: string, target: string, paging: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ChildServiceViewDto[]>({
-      method: 'GET',
-      url: '/api/app/child-service_/child-services',
-      params: { action, target, pageSize: paging.pageSize, pageIndex: paging.pageIndex },
+      method: 'POST',
+      url: '/api/app/child-service_/get-child-services',
+      params: { serviceAction, target },
+      body: paging,
     },
     { apiName: this.apiName,...config });
   

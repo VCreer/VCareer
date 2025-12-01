@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,23 +103,38 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<EffectingJobService, EffectingJobServiceViewDto>(effectService);
         }
 
-        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServicesWithPaging(Guid JobId, ChildServiceStatus? status, PagingDto pagingDto)
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServicesWithPaging(Guid jobId, int? status, PagingDto pagingDto)
         {
             var query = await _effectingJobServiceRepository.GetQueryableAsync();
-            query = query.Where(x => x.JobPostId == JobId);
-            if (status != null) query = query.Where(x => x.Status == status);
+            query = query.Where(x => x.JobPostId == jobId);
+
+            if (status.HasValue)
+            {
+                if (Enum.IsDefined(typeof(ChildServiceStatus), status.Value))
+                {
+                    var parsedStatus = (ChildServiceStatus)status.Value;
+                    query = query.Where(x => x.Status == parsedStatus);
+                }
+            }
+
             var result = await query
                 .Skip(pagingDto.PageIndex * pagingDto.PageSize)
                 .Take(pagingDto.PageSize)
                 .ToListAsync();
+
             return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
         }
-
-        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, ChildServiceStatus? status)
+        public async Task<List<EffectingJobServiceViewDto>> GetEffectingJobServices(Guid JobId, int? status)
         {
             var query = await _effectingJobServiceRepository.GetQueryableAsync();
             query = query.Where(x => x.JobPostId == JobId);
-            if (status != null) query = query.Where(x => x.Status == status);
+
+            if (status.HasValue)
+            {
+                if (Enum.IsDefined(typeof(ChildServiceStatus), status.Value)) ;
+                var parsedStatus = (ChildServiceStatus)status.Value;
+                query = query.Where(x => x.Status == parsedStatus);
+            }
             var result = await query.ToListAsync();
             return ObjectMapper.Map<List<EffectingJobService>, List<EffectingJobServiceViewDto>>(result);
         }
