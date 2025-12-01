@@ -307,6 +307,7 @@
         [(ngModel)]="createForm.email"
         required>
       </app-input-field>
+      <p class="validation-error" *ngIf="createErrors.email">{{ createErrors.email }}</p>
     </div>
     <div class="form-group">
       <label class="form-label">Role *</label>
@@ -319,6 +320,7 @@
           <span>{{ role.label }}</span>
         </label>
       </div>
+      <p class="validation-error" *ngIf="createErrors.roles">{{ createErrors.roles }}</p>
       <p class="form-hint">Bước 1: Nhập email -> Sinh mật khẩu ngẫu nhiên</p>
       <p class="form-hint">Bước 2: Gắn role (có thể chọn nhiều)</p>
       <p class="form-hint">Bước 3: Gắn permission</p>
@@ -327,13 +329,14 @@
       <app-button
         type="secondary"
         size="medium"
-        (click)="showCreateModal = false">
+        (click)="showCreateModal = false; isCreatingUser = false">
         Hủy
       </app-button>
       <app-button
         type="primary"
         size="medium"
-        (click)="onConfirmCreate()">
+        [disabled]="isCreatingUser"
+        (click)="onConfirmCreate($event)">
         Tạo nhân viên
       </app-button>
     </div>

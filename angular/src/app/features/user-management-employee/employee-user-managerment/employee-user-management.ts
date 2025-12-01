@@ -14,6 +14,8 @@ import {
   SelectOption
 } from '../../../shared/components';
 import { UserService } from '../../../proxy/services/user/user.service';
+import { AuthService } from '../../../proxy/services/auth/auth.service';
+import type { CreateEmployeeDto } from '../../../proxy/dto/auth-dto/models';
 
 export interface EmployeeUser {
   id: string;
@@ -153,6 +155,11 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     roles: [] as string[], // Changed to array for multi-select
     permissions: [] as string[]
   };
+  createErrors = {
+    email: '',
+    roles: ''
+  };
+  isCreatingUser = false;
   
   // Role assignment form
   roleForm = {
@@ -188,7 +195,8 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -531,44 +539,66 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  onConfirmCreate(): void {
-    if (!this.createForm.email.trim()) {
-      this.showToastMessage('Vui lòng nhập email', 'error');
+  onConfirmCreate(event?: Event): void {
+    event?.stopPropagation();
+
+    // reset errors
+    this.createErrors.email = '';
+    this.createErrors.roles = '';
+
+    const email = this.createForm.email.trim();
+    if (!email) {
+      this.createErrors.email = 'Vui lòng nhập email';
+      return;
+    }
+
+    // Simple email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.createErrors.email = 'Email không hợp lệ';
       return;
     }
 
     if (this.createForm.roles.length === 0) {
-      this.showToastMessage('Vui lòng chọn ít nhất một role', 'error');
+      this.createErrors.roles = 'Vui lòng chọn ít nhất một role';
       return;
     }
 
-    // TODO: Call API to create employee
-    // Step 1: Generate random password
-    // Step 2: Assign roles (multiple)
-    // Step 3: Assign permissions
-    
-    const newUser: EmployeeUser = {
-      id: String(this.allUsers.length + 1),
-      username: this.createForm.email.split('@')[0],
-      email: this.createForm.email,
-      fullName: '',
-      phone: '',
-      roles: [...this.createForm.roles],
-      permissions: [...this.createForm.permissions],
-      companyName: '',
-      isActive: true,
-      isLocked: false,
-      lockoutEnabled: true,
-      createdDate: new Date().toISOString(),
-      ipAddresses: [],
-      mustChangePassword: true,
-      securityStamp: 'stamp' + Date.now()
+    // Check duplicate email in current list
+    const emailExists = this.allUsers.some(u => u.email?.toLowerCase() === email.toLowerCase());
+    if (emailExists) {
+      this.createErrors.email = 'Email đã tồn tại trong danh sách nhân viên';
+      return;
+    }
+
+    if (this.isCreatingUser) {
+      return;
+    }
+    this.isCreatingUser = true;
+
+    // Gọi API tạo nhân viên
+    const randomPassword = Math.random().toString(36).slice(-10);
+    const payload: CreateEmployeeDto = {
+      email,
+      password: randomPassword,
+      employeeRoles: [...this.createForm.roles]
     };
 
-    this.allUsers.unshift(newUser);
-    this.applyFilters();
-    this.showToastMessage('Tạo nhân viên thành công', 'success');
-    this.showCreateModal = false;
+    this.authService.createEmployee(payload).subscribe({
+      next: () => {
+        this.showToastMessage('Tạo nhân viên thành công', 'success');
+        this.showCreateModal = false;
+        this.isCreatingUser = false;
+        this.createForm = { email: '', roles: [], permissions: [] };
+        this.createErrors = { email: '', roles: '' };
+        // Reload danh sách để thấy nhân viên mới
+        this.loadUsers();
+      },
+      error: () => {
+        this.isCreatingUser = false;
+        this.showToastMessage('Tạo nhân viên thất bại', 'error');
+      }
+    });
   }
 
   onEditUser(user: EmployeeUser): void {
