@@ -13,6 +13,7 @@ import {
   StatusOption,
   SelectOption
 } from '../../../shared/components';
+import { UserService } from '../../../proxy/services/user/user.service';
 
 export interface EmployeeUser {
   id: string;
@@ -186,7 +187,8 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -211,6 +213,25 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 50);
+
+    // Gọi API lấy danh sách role employee (chỉ gọi, không thay đổi nhiều logic hiện tại)
+    this.userService.getAllEmployeeRoles().subscribe({
+      next: roles => {
+        if (roles && roles.length > 0) {
+          this.roleOptions = roles.map(r => ({
+            value: r.name ?? '',
+            label: r.name ?? ''
+          })).filter(r => r.value);
+          this.roleFilterOptions = [
+            { value: '', label: 'Tất cả vai trò' },
+            ...this.roleOptions
+          ];
+        }
+      },
+      error: () => {
+        // Giữ nguyên roleOptions mặc định nếu lỗi
+      }
+    });
 
     this.loadUsers();
   }
@@ -369,61 +390,18 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    // Mock data - replace with API call
-    this.allUsers = [
-      {
-        id: '1',
-        username: 'employee1',
-        email: 'employee1@example.com',
-        fullName: 'Nguyễn Văn A',
-        phone: '0901234567',
-        companyName: 'Công ty ABC',
-        roles: ['manager', 'employee'],
-        isActive: true,
-        isLocked: false,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-15T10:30:00',
-        createdDate: '2023-01-01T00:00:00',
-        ipAddresses: ['192.168.1.1', '192.168.1.2'],
-        mustChangePassword: false,
-        securityStamp: 'stamp1'
+    // Gọi API lấy danh sách userId theo RoleType Employee = 1
+    this.userService.getUsersIdByRole(1).subscribe({
+      next: () => {
+        // Tạm thời chỉ clear dữ liệu hardcode, sẽ map dữ liệu thật khi BE sẵn sàng
+        this.allUsers = [];
+        this.applyFilters();
       },
-      {
-        id: '2',
-        username: 'employee2',
-        email: 'employee2@example.com',
-        fullName: 'Trần Thị B',
-        phone: '0907654321',
-        companyName: 'Công ty XYZ',
-        roles: ['employee'],
-        isActive: true,
-        isLocked: true,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-14T15:20:00',
-        createdDate: '2023-02-01T00:00:00',
-        ipAddresses: ['192.168.1.3'],
-        mustChangePassword: true,
-        securityStamp: 'stamp2'
-      },
-      {
-        id: '3',
-        username: 'employee3',
-        email: 'employee3@example.com',
-        fullName: 'Lê Văn C',
-        phone: '0912345678',
-        companyName: 'Công ty DEF',
-        roles: ['viewer'],
-        isActive: false,
-        isLocked: false,
-        lockoutEnabled: true,
-        createdDate: '2023-03-01T00:00:00',
-        ipAddresses: [],
-        mustChangePassword: false,
-        securityStamp: 'stamp3'
+      error: () => {
+        this.allUsers = [];
+        this.applyFilters();
       }
-    ];
-
-    this.applyFilters();
+    });
   }
 
   applyFilters(): void {
@@ -636,10 +614,20 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   // Role & Permission Actions
   onAssignRole(user: EmployeeUser): void {
     this.selectedUser = user;
-    // Initialize with current roles or empty array
-    this.roleForm.roles = user.roles ? [...user.roles] : [];
-    this.showRoleModal = true;
-    this.closeActionsMenu();
+    // Lấy role hiện tại từ API
+    this.userService.getRolesByUserId(user.id).subscribe({
+      next: roles => {
+        this.roleForm.roles = Array.isArray(roles) ? [...roles] : [];
+        this.showRoleModal = true;
+        this.closeActionsMenu();
+      },
+      error: () => {
+        // Nếu lỗi thì fallback về data hiện tại trên UI
+        this.roleForm.roles = user.roles ? [...user.roles] : [];
+        this.showRoleModal = true;
+        this.closeActionsMenu();
+      }
+    });
   }
 
   onToggleRole(roleValue: string): void {
@@ -661,23 +649,30 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: Call API to assign roles
-    if (this.selectedUser) {
-      this.selectedUser.roles = [...this.roleForm.roles];
-    }
-    this.showToastMessage('Đã gắn role thành công', 'success');
-    this.showRoleModal = false;
-    this.selectedUser = null;
-    this.roleForm.roles = [];
+    // Gọi API gán role cho user
+    const userId = this.selectedUser.id;
+    const roles = [...this.roleForm.roles];
+
+    this.userService.updateUserRoles(userId, roles).subscribe({
+      next: () => {
+        this.selectedUser!.roles = roles;
+        this.showToastMessage('Đã gắn role thành công', 'success');
+        this.showRoleModal = false;
+        this.selectedUser = null;
+        this.roleForm.roles = [];
+      },
+      error: () => {
+        this.showToastMessage('Gắn role thất bại', 'error');
+      }
+    });
   }
 
   onAssignPermission(user: EmployeeUser): void {
     this.selectedUser = user;
-    // Initialize with current permissions or empty array
-    this.createForm.permissions = user.permissions ? [...user.permissions] : [];
-    // Load permission groups (mock data for now)
-    this.loadPermissionGroups();
-    // Don't expand any groups by default - user can click to expand
+    this.createForm.permissions = [];
+    // Gọi API lấy nhóm quyền và quyền đã gán cho user
+    this.loadPermissionGroups(user.id);
+    // Không expand group mặc định
     this.expandedPermissionGroups = new Set();
     this.showPermissionModal = true;
     this.closeActionsMenu();
@@ -698,40 +693,47 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     return this.expandedPermissionGroups.has(groupId);
   }
 
-  loadPermissionGroups(): void {
-    // TODO: Load from API
-    // Mock data structure
-    this.permissionGroups = [
-      {
-        id: 'user-management',
-        name: 'Quản lí người dùng',
-        permissions: [
-          { id: 'user.create', name: 'Tạo người dùng', description: 'Cho phép tạo người dùng mới' },
-          { id: 'user.edit', name: 'Sửa người dùng', description: 'Cho phép chỉnh sửa thông tin người dùng' },
-          { id: 'user.delete', name: 'Xóa người dùng', description: 'Cho phép xóa người dùng' },
-          { id: 'user.view', name: 'Xem người dùng', description: 'Cho phép xem danh sách người dùng' }
-        ]
+  private loadPermissionGroups(userId: string): void {
+    this.userService.getAllPermissionGroups().subscribe({
+      next: allGroups => {
+        // Map toàn bộ permission group để hiển thị
+        this.permissionGroups = (allGroups ?? []).map(group => ({
+          id: group.name ?? '',
+          name: group.displayName ?? group.name ?? '',
+          permissions: (group.permissions ?? [])
+            .filter(p => !!p.name)
+            .map(p => ({
+              id: p.name as string,
+              name: p.displayName ?? (p.name as string),
+              description: p.parentName ?? ''
+            }))
+        })).filter(g => g.id);
+
+        // Lấy các quyền đã được gán cho user
+        this.userService.getPermissionGroupsByUser(userId).subscribe({
+          next: userGroups => {
+            const granted: string[] = [];
+            (userGroups ?? []).forEach(group => {
+              (group.permissions ?? []).forEach(p => {
+                if (p.isGranted && p.name) {
+                  granted.push(p.name as string);
+                }
+              });
+            });
+            this.createForm.permissions = granted;
+          },
+          error: () => {
+            // Nếu lỗi, để trống -> user tự chọn
+            this.createForm.permissions = [];
+          }
+        });
       },
-      {
-        id: 'service-management',
-        name: 'Quản lí dịch vụ',
-        permissions: [
-          { id: 'service.create', name: 'Tạo dịch vụ', description: 'Cho phép tạo dịch vụ mới' },
-          { id: 'service.edit', name: 'Sửa dịch vụ', description: 'Cho phép chỉnh sửa dịch vụ' },
-          { id: 'service.delete', name: 'Xóa dịch vụ', description: 'Cho phép xóa dịch vụ' },
-          { id: 'service.view', name: 'Xem dịch vụ', description: 'Cho phép xem danh sách dịch vụ' }
-        ]
-      },
-      {
-        id: 'company-management',
-        name: 'Quản lí công ty',
-        permissions: [
-          { id: 'company.verify', name: 'Xác thực công ty', description: 'Cho phép xác thực công ty' },
-          { id: 'company.edit', name: 'Sửa công ty', description: 'Cho phép chỉnh sửa thông tin công ty' },
-          { id: 'company.view', name: 'Xem công ty', description: 'Cho phép xem danh sách công ty' }
-        ]
+      error: () => {
+        // Nếu lỗi, không có group nào
+        this.permissionGroups = [];
+        this.createForm.permissions = [];
       }
-    ];
+    });
   }
 
   onTogglePermission(permissionId: string): void {
@@ -793,14 +795,21 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: Call API to assign permissions
-    if (this.selectedUser) {
-      this.selectedUser.permissions = [...this.createForm.permissions];
-    }
-    this.showToastMessage('Đã gắn permission thành công', 'success');
-    this.showPermissionModal = false;
-    this.selectedUser = null;
-    this.createForm.permissions = [];
+    const userId = this.selectedUser.id;
+    const permissions = [...this.createForm.permissions];
+
+    this.userService.updateUserPermissions(userId, permissions).subscribe({
+      next: () => {
+        this.selectedUser!.permissions = permissions;
+        this.showToastMessage('Đã gắn permission thành công', 'success');
+        this.showPermissionModal = false;
+        this.selectedUser = null;
+        this.createForm.permissions = [];
+      },
+      error: () => {
+        this.showToastMessage('Gắn permission thất bại', 'error');
+      }
+    });
   }
 
   // Other Actions
@@ -820,14 +829,22 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onToggleActive(user: EmployeeUser): void {
-    // TODO: Call API to activate/deactivate
-    user.isActive = !user.isActive;
-    this.showToastMessage(
-      user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
-      'success'
-    );
-    this.applyFilters();
-    this.closeActionsMenu();
+    const newStatus = !user.isActive;
+    this.userService.setUserActiveStatus(user.id, newStatus).subscribe({
+      next: () => {
+        user.isActive = newStatus;
+        this.showToastMessage(
+          user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
+          'success'
+        );
+        this.applyFilters();
+        this.closeActionsMenu();
+      },
+      error: () => {
+        this.showToastMessage('Thay đổi trạng thái hoạt động thất bại', 'error');
+        this.closeActionsMenu();
+      }
+    });
   }
 
   onToggleLock(user: EmployeeUser): void {

@@ -471,6 +471,10 @@ export const APP_ROUTES: Routes = [
         path: 'tag-management',
         loadComponent: () => import('./features/dashboard/tag-management/employee/tag-management').then(c => c.TagManagementComponent),
       },
+      {
+        path: 'manage-role',
+        loadComponent: () => import('./features/dashboard/manage-role/employee/manage-role').then(c => c.ManageRoleComponent),
+      },
 
        
       {

@@ -110,6 +110,12 @@
             <span class="sidebar-link-text">Quản lí danh mục</span>
           </a>
         </li>
+        <li class="sidebar-nav-item">
+          <a (click)="navigateTo('/employee/manage-role')" class="sidebar-link" [class.active]="isActive('/employee/manage-role')">
+            <i class="fa fa-user-shield sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lí vai trò</span>
+          </a>
+        </li>
       </ng-container>
 
       <!-- Recruiter Menu -->
