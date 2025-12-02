@@ -58,17 +58,15 @@ namespace VCareer.Services.Subcription
             if (listPrice == null || listPrice.Count == 0) return subcriptionService.OriginalPrice;
 
             var current = listPrice
-     .Where(x => x.IsActive &&
+             .Where(x => x.IsActive &&
             x.EffectiveFrom <= DateTime.UtcNow &&
             x.EffectiveTo >= DateTime.UtcNow)
-     .FirstOrDefault();
+             .FirstOrDefault();
 
             if (current == null) return subcriptionService.OriginalPrice;
             return current.OriginalPrice * (1 - current.SalePercent / 100m);
 
         }
-
-
         public async Task<List<SubcriptionPriceViewDto>> GetSubcriptionPricesService(Guid subcriptionId, int pageIndex)
         {
             var listPrice = await _subcriptionPriceRepository.GetQueryableAsync();
@@ -81,7 +79,6 @@ namespace VCareer.Services.Subcription
             await UpdateExpiredStatus(result);
             return ObjectMapper.Map<List<SubcriptionPrice>, List<SubcriptionPriceViewDto>>(result);
         }
-
 
         //chi cho edit cac price chua hoat dong 
         // han che viec employee chinh thoi gian trung vao cac price khac va vao thoi gian qua khu
