@@ -285,7 +285,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Candidate = 3
-    this.userService.getUsersIdByRole(3).subscribe({
+    this.userService.getUsersInfoByRole(3).subscribe({
       next: () => {
         // Xóa dữ liệu hardcode, chờ map dữ liệu thật từ BE
         this.allUsers = [];

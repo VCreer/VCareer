@@ -296,7 +296,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Recruiter = 2
-    this.userService.getUsersIdByRole(2).subscribe({
+    this.userService.getUsersInfoByRole(2).subscribe({
       next: () => {
         // Xóa dữ liệu hardcode, chờ map dữ liệu thật từ BE
         this.allUsers = [];

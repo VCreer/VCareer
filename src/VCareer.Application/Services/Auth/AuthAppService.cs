@@ -404,13 +404,13 @@ namespace VCareer.Services.Auth
                    !roles.Any() ||
                    userId == null) throw new BusinessException("Cant get current user infomation");*/
 
-            return await Task.FromResult(new CurrentUserInfoDto
+            return  new CurrentUserInfoDto
             {
                 Email = email,
                 FullName = fullName,
                 Roles = roles,
                 UserId = userId
-            });
+            };
         }
     }
 }

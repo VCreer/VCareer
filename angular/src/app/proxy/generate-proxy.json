@@ -15885,7 +15885,7 @@
               "uniqueName": "CreateChildServiceAsyncByDto",
               "name": "CreateChildServiceAsync",
               "httpMethod": "POST",
-              "url": "api/app/child-service_/child-service",
+              "url": "api/app/childservice-service/create-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15922,7 +15922,7 @@
               "uniqueName": "DeleteChildServiceAsyncByChildServiceId",
               "name": "DeleteChildServiceAsync",
               "httpMethod": "DELETE",
-              "url": "api/app/child-service_/child-service/{childServiceId}",
+              "url": "api/app/childservice-service/delete-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15943,8 +15943,8 @@
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -15958,8 +15958,8 @@
             "StopAgentCHildServiceAsyncByChildServiceId": {
               "uniqueName": "StopAgentCHildServiceAsyncByChildServiceId",
               "name": "StopAgentCHildServiceAsync",
-              "httpMethod": "POST",
-              "url": "api/app/child-service_/stop-agent-cHild-service/{childServiceId}",
+              "httpMethod": "PUT",
+              "url": "api/app/childservice-service/stop-agent-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15980,8 +15980,8 @@
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -15996,7 +15996,7 @@
               "uniqueName": "UpdateChildServiceAsyncByDto",
               "name": "UpdateChildServiceAsync",
               "httpMethod": "PUT",
-              "url": "api/app/child-service_/child-service",
+              "url": "api/app/childservice-service/update-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -16033,7 +16033,7 @@
               "uniqueName": "GetChildServicesAsyncByServiceActionAndTargetAndPaging",
               "name": "GetChildServicesAsync",
               "httpMethod": "POST",
-              "url": "api/app/child-service_/get-child-services",
+              "url": "api/app/childservice-service/GetChildServices",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -18578,7 +18578,7 @@
                   }
                 },
                 {
-                  "name": "GetUsersIdByRoleAsync",
+                  "name": "GetUsersInfoByRoleAsync",
                   "parametersOnMethod": [
                     {
                       "name": "roleType",
@@ -18590,8 +18590,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<System.Guid>",
-                    "typeSimple": "[string]"
+                    "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityUserDto>",
+                    "typeSimple": "[Volo.Abp.Identity.IdentityUserDto]"
                   }
                 },
                 {
@@ -18825,11 +18825,11 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "GetUsersIdByRoleAsyncByRoleType": {
-              "uniqueName": "GetUsersIdByRoleAsyncByRoleType",
-              "name": "GetUsersIdByRoleAsync",
+            "GetUsersInfoByRoleAsyncByRoleType": {
+              "uniqueName": "GetUsersInfoByRoleAsyncByRoleType",
+              "name": "GetUsersInfoByRoleAsync",
               "httpMethod": "GET",
-              "url": "api/app/user/users-id-by-role",
+              "url": "api/app/user/users-info-by-role",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -18856,8 +18856,8 @@
                 }
               ],
               "returnValue": {
-                "type": "System.Collections.Generic.List<System.Guid>",
-                "typeSimple": "[string]"
+                "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityUserDto>",
+                "typeSimple": "[Volo.Abp.Identity.IdentityUserDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"

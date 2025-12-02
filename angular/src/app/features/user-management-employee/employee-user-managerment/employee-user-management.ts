@@ -409,7 +409,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Employee = 1
-    this.userService.getUsersIdByRole(1).subscribe({
+    this.userService.getUsersInfoByRole(1).subscribe({
       next: () => {
         // Tạm thời chỉ clear dữ liệu hardcode, sẽ map dữ liệu thật khi BE sẵn sàng
         this.allUsers = [];

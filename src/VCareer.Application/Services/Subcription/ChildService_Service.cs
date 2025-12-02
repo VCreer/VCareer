@@ -19,6 +19,7 @@ using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
 {
+    [Route("api/app/childservice-service")]
     public class ChildService_Service : ApplicationService, IChildService_Service
     {
         private readonly IChildServiceRepository _childServiceRepository;
@@ -35,8 +36,8 @@ namespace VCareer.Services.Subcription
             _userChildServiceRepository = user_ChildServiceRepository;
             _effectingJobServiceRepository = effectingJobServiceRepository;
         }
-
-        public async Task CreateChildServiceAsync(ChildServiceCreateDto dto)
+        [HttpPost("create-childservice")]
+         public async Task CreateChildServiceAsync(ChildServiceCreateDto dto)
         {
             if (dto.IsLifeTime && dto.TimeUsedLimit > 0) throw new BusinessException("Can't Have timelimit when IsLifeTime");
             if (dto.IsLifeTime == false && dto.TimeUsedLimit <= 0) throw new BusinessException("Need have timeUsedLimit when not IsLifeTime");
@@ -59,7 +60,8 @@ namespace VCareer.Services.Subcription
 
         //sẽ ko hiển thị để người dùng mới dùng nữa
         //đối với người dùng đã mua gói thì vẫn sẽ cho dùng nốt đến hết hạn 
-        public async Task DeleteChildServiceAsync(Guid childServiceId)
+        [HttpDelete("delete-childservice")]
+           public async Task DeleteChildServiceAsync(Guid childServiceId)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");
@@ -70,6 +72,7 @@ namespace VCareer.Services.Subcription
 
         //khẩn cấp dừng dịch vụ trên tất cả user
         [UnitOfWork(true)]
+        [HttpPut("stop-agent-childservice")]
         public async Task StopAgentCHildServiceAsync(Guid childServiceId)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
@@ -109,6 +112,7 @@ namespace VCareer.Services.Subcription
         #endregion
 
         // chi cho phep update 1 so truong noi dung
+        [HttpPut("update-childservice")]
         public async Task UpdateChildServiceAsync(ChildServiceUpdateDto dto)
         {
             var childrenService = await _childServiceRepository.FindAsync(dto.CHildServiceId);
@@ -121,7 +125,7 @@ namespace VCareer.Services.Subcription
             await _childServiceRepository.UpdateAsync(childrenService);
         }
 
-        [HttpPost]
+        [HttpPost("GetChildServices")]
         public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(string? serviceAction, string? target, PagingDto paging)
         {
             var childServices = (await _childServiceRepository.GetQueryableAsync());
