@@ -108,8 +108,6 @@ namespace VCareer.Services.User
 
             return users;
         }
-
-
         public async Task SetUserActiveStatusAsync(Guid userId, bool isActive)
         {
             var user = await _userAppService.GetAsync(userId);

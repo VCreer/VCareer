@@ -11,10 +11,11 @@ namespace VCareer.IServices.Subcriptions
 {
     public interface ISubcriptionPriceService : IApplicationService
     {
-        public Task CreateSubcriptionPrice(SubcriptionsCreateDto createSubCriptionDto);
-        public Task UpdateSubcriptionPriceAsync(SubcriptionsUpdateDto createSubCriptionDto);
-        public Task DeleteSoftSubcriptionPriceAsync(SubcriptionsUpdateDto createSubCriptionDto);
-        public Task<SubcriptionPriceViewDto> GetSubcriptionPriceService(Guid subcriptionPriceId,PagingDto pagingDto);
+        public Task CreateSubcriptionPrice(SubcriptionPriceCreateDto createSubCriptionDto);
+        public Task UpdateSubcriptionPriceAsync(SubcriptionPriceUpdateDto createSubCriptionDto);
+        public Task SetStatusSubcriptionPrice(Guid subcriptionPriceId,bool isActive);
+        public Task<List<SubcriptionPriceViewDto>> GetSubcriptionPriceService(Guid subcriptionPriceId);
+        public Task<SubcriptionPriceViewDto> GetCurrentPriceOfSubcription(Guid subcriptionId);
       
     }
 }
