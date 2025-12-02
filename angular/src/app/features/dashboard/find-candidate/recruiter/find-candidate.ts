@@ -140,12 +140,6 @@ export class FindCandidateComponent implements OnInit {
       searchInput.searchInEducation = this.searchScope.education;
       searchInput.searchInExperience = this.searchScope.experience;
       searchInput.searchInSkills = this.searchScope.skills;
-    } else {
-      searchInput.searchInJobTitle = true;
-      searchInput.searchInActivity = true;
-      searchInput.searchInEducation = true;
-      searchInput.searchInExperience = true;
-      searchInput.searchInSkills = true;
     }
 
     this.candidateSearchService.searchCandidates(searchInput).subscribe({

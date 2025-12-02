@@ -28,7 +28,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Services.Profile
 {
-    //  [Authorize(VCareerPermission.Profile.Default)]
+    [Authorize(VCareerPermission.Profile.Default)]
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly ICompanyRepository _companyRepository;
@@ -111,7 +111,7 @@ namespace VCareer.Services.Profile
 
 
 
-        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -250,7 +250,7 @@ namespace VCareer.Services.Profile
 
 
 
-        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id, string businessLicenseFile = null,
             string taxCertificateFile = null, string representativeIdCardFile = null, string otherSupportFile = null)
         {

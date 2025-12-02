@@ -19,7 +19,7 @@ interface AppliedJob {
   cvType: string;
   cvName: string;
   salary: string;
-  status: 'viewed' | 'suitable' | 'pending';
+  status: 'viewed' | 'suitable' | 'not-suitable' | 'pending';
 }
 
 @Component({
@@ -129,13 +129,17 @@ export class AppliedJobsComponent implements OnInit {
     const salary = app.jobSalaryText || '';
 
     let status: AppliedJob['status'] = 'pending';
+
+    // Ưu tiên trạng thái đã xem hồ sơ
     if (app.viewedAt) {
       status = 'viewed';
-    } else if (
-      app.status &&
-      ['Shortlisted', 'Interviewed', 'Accepted'].includes(app.status)
-    ) {
-      status = 'suitable';
+    } else if (app.status) {
+      // Trạng thái từ phía nhà tuyển dụng (đồng bộ với cv-management-detail)
+      if (['suitable', 'interview', 'offer', 'hired'].includes(app.status)) {
+        status = 'suitable'; // Hồ sơ phù hợp
+      } else if (app.status === 'not-suitable') {
+        status = 'not-suitable'; // Hồ sơ chưa phù hợp
+      }
     }
 
     return {
@@ -171,6 +175,8 @@ export class AppliedJobsComponent implements OnInit {
       this.filteredJobs = this.appliedJobs.filter(job => job.status === 'viewed');
     } else if (this.selectedStatus === 'suitable') {
       this.filteredJobs = this.appliedJobs.filter(job => job.status === 'suitable');
+    } else if (this.selectedStatus === 'not-suitable') {
+      this.filteredJobs = this.appliedJobs.filter(job => job.status === 'not-suitable');
     }
     this.currentPage = 1;
     this.updateDisplayedJobs();
