@@ -21,6 +21,7 @@ import type {
   DeactivateStaffDto,
   InviteStaffDto,
 } from '../../../../proxy/dto/team-management-dto/models';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import { ActivityLogService } from '../../../../proxy/services/auth/activity-log';
 import type {
   ActivityLogDto,
@@ -99,7 +100,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   statusOptions = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang hoạt động' },
-    { value: 'pending', label: 'Chờ duyệt' },
     { value: 'inactive', label: 'Ngừng hoạt động' },
   ];
 
@@ -121,6 +121,8 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   // Current Leader Info
   currentLeaderInfo: StaffListItemDto | null = null;
   loadingLeaderInfo = false;
+  // Chỉ cho phép Leader đã xác thực (Cấp 3/3) thêm HR Staff
+  canAddStaff: boolean = false;
 
   // Staff list
   staffList: HRStaff[] = [];
@@ -146,10 +148,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return this.staffList.filter(s => s.status === 'active').length;
   }
 
-  get pendingStaff(): number {
-    return 0; // API không hỗ trợ pending status
-  }
-
   get inactiveStaff(): number {
     return this.staffList.filter(s => s.status === 'inactive').length;
   }
@@ -157,7 +155,8 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private teamManagementService: TeamManagementService,
-    private activityLogService: ActivityLogService
+    private activityLogService: ActivityLogService,
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit(): void {
@@ -181,6 +180,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.teamManagementService.getCurrentUserInfo().subscribe({
       next: userInfo => {
         this.currentLeaderInfo = userInfo;
+        // Leader được phép thêm HR Staff chỉ khi đã xác thực tài khoản (Cấp 3/3)
+        const isLeader = !!userInfo.isLead;
+        const isVerified = this.navigationService.isVerified();
+        this.canAddStaff = isLeader && isVerified;
         this.loadingLeaderInfo = false;
         console.log('Current user info:', userInfo);
         console.log('IsLead:', userInfo.isLead);
@@ -474,6 +477,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   openAddModal(): void {
+    if (!this.canAddStaff) {
+      this.showToastMessage(
+        'Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.',
+        'error'
+      );
+      return;
+    }
+
     this.staffForm = {
       email: '',
     };
@@ -506,6 +517,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   onAddStaff(): void {
+    if (!this.canAddStaff) {
+      this.showToastMessage(
+        'Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.',
+        'error'
+      );
+      return;
+    }
+
     // Validate email
     if (!this.staffForm.email || !this.staffForm.email.trim()) {
       this.showToastMessage('Vui lòng nhập email.', 'error');
@@ -597,11 +616,11 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
           id: staff.recruiterProfileId || staff.userId || '',
           name: staff.fullName || '',
           email: staff.email || '',
-          phone: '', // API không trả về phone, có thể để trống hoặc lấy từ profile khác
+          phone: staff.phoneNumber || '', // Lấy số điện thoại từ API
           role: 'HR Staff', // HR Staff role
           department: 'Tuyển dụng', // Default department
           status: staff.status ? 'active' : 'inactive',
-          joinDate: '', // API không trả về joinDate
+          joinDate: '', // API hiện chưa trả về joinDate
           campaigns: 0, // Có thể tính sau
           candidates: 0, // Có thể tính sau
         }));

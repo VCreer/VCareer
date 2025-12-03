@@ -29,7 +29,8 @@
         <a 
           class="nav-item" 
           [class.active]="activeTab === 'business-cert'"
-          (click)="setActiveTab('business-cert')">
+          (click)="setActiveTab('business-cert')"
+          *ngIf="!isHRStaff">
           <i class="fa fa-file-text nav-icon"></i>
           <span>Giấy đăng ký doanh nghiệp</span>
         </a>
@@ -42,13 +43,7 @@
           <span>Thông tin công ty</span>
         </a>
         
-        <a 
-          class="nav-item" 
-          [class.active]="activeTab === 'api-connection'"
-          (click)="setActiveTab('api-connection')">
-          <i class="fa fa-plug nav-icon"></i>
-          <span>Kết nối API</span>
-        </a>
+    
         
         <a 
           class="nav-item" 
@@ -62,8 +57,8 @@
 
     <!-- Right Content Panel -->
     <div class="right-content" *ngIf="activeTab === 'personal-info'">
-      <!-- Account Verification Section -->
-      <div class="section-card">
+      <!-- Account Verification Section - ẩn với HR Staff -->
+      <div class="section-card" *ngIf="!isHRStaff">
         <div class="section-header">
           <div class="section-title-group">
             <h2 class="section-title">Tài khoản xác thực: {{ verificationLevel }}</h2>
@@ -150,18 +145,6 @@
                 [(ngModel)]="profileData.fullName"
                 name="fullName"
                 required>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Giới tính</label>
-              <select 
-                class="form-input" 
-                [(ngModel)]="profileData.gender"
-                name="gender">
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
             </div>
           </div>
           
@@ -347,7 +330,8 @@
                 </p>
               </div>
             </div>
-            <div class="detail-actions">
+            <!-- HR Staff chỉ được xem, không được chỉnh sửa thông tin công ty -->
+            <div class="detail-actions" *ngIf="!isHRStaff">
               <app-button
                 type="button"
                 [size]="'small'"
@@ -405,8 +389,8 @@
           </ng-template>
         </div>
 
-        <!-- Edit Company Form -->
-        <div class="company-edit-form" *ngIf="isEditingCompany">
+        <!-- Edit Company Form - chỉ Leader được chỉnh sửa -->
+        <div class="company-edit-form" *ngIf="isEditingCompany && !isHRStaff">
           <div class="editing-banner">
             <div class="editing-text">
               <strong>Đang chỉnh sửa:</strong>
@@ -432,9 +416,9 @@
           </app-create-company-form>
         </div>
 
-        <!-- Create Company Section -->
+        <!-- Create Company Section - chỉ Leader được tạo/chỉnh sửa công ty -->
         <app-create-company-form
-          *ngIf="companyTab === 'create' && !selectedCompanyId"
+          *ngIf="companyTab === 'create' && !selectedCompanyId && !isHRStaff"
           [formData]="companyFormData"
           [logoPreview]="companyLogoPreview"
           [formErrors]="companyFormErrors"

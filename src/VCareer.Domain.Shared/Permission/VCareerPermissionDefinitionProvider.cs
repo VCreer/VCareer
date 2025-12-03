@@ -143,6 +143,41 @@ namespace VCareer.Permission
            
 
 
+            // Team Management Permissions (cho Leader Recruiter quản lý HR Staff)
+            var teamManagementPermission = group.AddPermission(VCareerPermission.TeamManagement.Default, L("Permission:TeamManagement"));
+            teamManagementPermission.AddChild(VCareerPermission.TeamManagement.GetCurrentUserInfo, L("Permission:TeamManagement.GetCurrentUserInfo"));
+            teamManagementPermission.AddChild(VCareerPermission.TeamManagement.GetAllStaff, L("Permission:TeamManagement.GetAllStaff"));
+            teamManagementPermission.AddChild(VCareerPermission.TeamManagement.DeactivateStaff, L("Permission:TeamManagement.DeactivateStaff"));
+            teamManagementPermission.AddChild(VCareerPermission.TeamManagement.ActivateStaff, L("Permission:TeamManagement.ActivateStaff"));
+            teamManagementPermission.AddChild(VCareerPermission.TeamManagement.InviteStaff, L("Permission:TeamManagement.InviteStaff"));
+
+            // Company Verification Management Permissions
+            // (Employee/Admin quản lý xác thực công ty)
+            var companyVerificationPermission = group.AddPermission(
+                VCareerPermission.CompanyVerification.Default,
+                L("Permission:CompanyVerification"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.ViewPendingCompanies,
+                L("Permission:CompanyVerification.ViewPendingCompanies"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.ApproveCompany,
+                L("Permission:CompanyVerification.ApproveCompany"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.RejectCompany,
+                L("Permission:CompanyVerification.RejectCompany"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.ViewVerifiedCompanies,
+                L("Permission:CompanyVerification.ViewVerifiedCompanies"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.ViewRejectedCompanies,
+                L("Permission:CompanyVerification.ViewRejectedCompanies"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.UploadLegalDocument,
+                L("Permission:CompanyVerification.UploadLegalDocument"));
+            companyVerificationPermission.AddChild(
+                VCareerPermission.CompanyVerification.DownloadLegalDocument,
+                L("Permission:CompanyVerification.DownloadLegalDocument"));
+            
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);

@@ -11,10 +11,17 @@
     <div class="profile-info">
       <div class="profile-name">{{ userName }}</div>
       <div class="profile-role">{{ userRole }}</div>
-      <div class="profile-verification" [class.not-verified]="!isVerified" *ngIf="!isEmployeeRoute">
+      <!-- Với HR Staff: ẩn hoàn toàn dòng Tài khoản xác thực -->
+      <div class="profile-verification" [class.not-verified]="verificationLevel !== 'Cấp 3/3'" *ngIf="!isEmployeeRoute && !isHRStaff">
         <span>{{ translate('sidebar.verification') }}: {{ verificationLevel }}</span>
         <i class="fa fa-question-circle verification-info-icon"></i>
-        <span class="verification-badge" *ngIf="!isVerified">{{ translate('sidebar.not_verified') }}</span>
+        <!-- Hiển thị trạng thái theo cấp xác thực -->
+        <span class="verification-badge" *ngIf="verificationLevel === 'Cấp 3/3'">
+          {{ translate('sidebar.verified') }}
+        </span>
+        <span class="verification-badge" *ngIf="verificationLevel !== 'Cấp 3/3'">
+          {{ translate('sidebar.not_verified') }}
+        </span>
       </div>
     </div>
   </div>
@@ -133,7 +140,8 @@
             <span class="sidebar-link-text">{{ translate('sidebar.insights') }}</span>
           </a>
         </li>
-        <li class="sidebar-nav-item">
+        <!-- Chỉ Leader Recruiter mới thấy Quản lí nhân sự -->
+        <li class="sidebar-nav-item" *ngIf="!isHRStaff">
           <a (click)="navigateTo('/recruiter/hr-staff-management')" class="sidebar-link" [class.active]="isActive('/recruiter/hr-staff-management')">
             <i class="fa fa-users-cog sidebar-icon"></i>
             <span class="sidebar-link-text">Quản lí nhân sự</span>
@@ -186,7 +194,8 @@
         <li class="sidebar-nav-item sidebar-nav-divider"></li>
 
         <!-- Third Group -->
-        <li class="sidebar-nav-item">
+        <!-- Chỉ Leader Recruiter mới thấy Mua dịch vụ -->
+        <li class="sidebar-nav-item" *ngIf="!isHRStaff">
           <a (click)="navigateTo('/recruiter/buy-services')" class="sidebar-link" [class.active]="isActive('/recruiter/buy-services')">
             <i class="fa fa-shopping-cart sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.buy_services') }}</span>

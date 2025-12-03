@@ -29,6 +29,8 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
 using VNPAY;
 using System.Linq;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 
 namespace VCareer;
 
@@ -66,10 +68,8 @@ public class VCareerApplicationModule : AbpModule
 
         // 🔧 ĐĂNG KÝ VNPAY SERVICE
         context.Services.AddScoped<IVnpayService, VnpayService>();
-
-        // 🔧 ĐĂNG KÝ APPLICATION SERVICE (IJobApply)
-        context.Services.AddScoped<IJobApply, ApplicationAppService>();
-    }
+        context.Services.AddScoped<IJobApply,ApplicationAppService>();
+         }
 
    
 
