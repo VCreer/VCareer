@@ -67,8 +67,13 @@ namespace VCareer.Services.Order
                     if (detailDto.SubcriptionServiceId == Guid.Empty) throw new UserFriendlyException("Invalid subscription service ID");
                     if (detailDto.Quantity <= 0) throw new UserFriendlyException("Quantity must be greater than 0");
 
-                    var subscriptionService = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
+                    if (detailDto.Quantity <= 0)
+                    {
+                        throw new UserFriendlyException("Quantity must be greater than 0");
+                    }
 
+                    var subscriptionService = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
+                    
                     if (subscriptionService == null) throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
                     if (!subscriptionService.IsActive) throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
 
@@ -209,8 +214,8 @@ namespace VCareer.Services.Order
             // Note: VNPay may use PaymentId as vnp_TxnRef in callback, not the TxnRef we set
             order.VnpayPaymentId = paymentId;
             await _orderRepository.UpdateAsync(order);
-
-            _logger.LogInformation("Payment URL created for Order {OrderId}, OrderCode: {OrderCode}, PaymentId: {PaymentId}",
+            
+            _logger.LogInformation("Payment URL created for Order {OrderId}, OrderCode: {OrderCode}, PaymentId: {PaymentId}", 
                 order.Id, order.OrderCode, paymentId);
 
             return new VnpayPaymentResponseDto
@@ -219,6 +224,7 @@ namespace VCareer.Services.Order
                 OrderCode = order.OrderCode
             };
         }
+
 
         //xử li handle
         public async Task<OrderDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
@@ -251,16 +257,16 @@ namespace VCareer.Services.Order
             // Try multiple methods: PaymentId (most likely), OrderId (Guid), or OrderCode
             Models.Order.Order? order = null;
             var orderQuery = await _orderRepository.GetQueryableAsync();
-
+            
             _logger.LogInformation("Looking for order with TxnRef: {TxnRef}", input.vnp_TxnRef);
-
+            
             // Method 1: Try to find by PaymentId first (VNPay returns PaymentId as TxnRef)
             order = orderQuery.FirstOrDefault(o => o.VnpayPaymentId == input.vnp_TxnRef);
             if (order != null)
             {
                 _logger.LogInformation("Order found by PaymentId: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
             }
-
+            
             // Method 2: Try to parse as Guid (OrderId) if not found by PaymentId
             if (order == null && Guid.TryParse(input.vnp_TxnRef, out Guid orderId))
             {
@@ -270,7 +276,7 @@ namespace VCareer.Services.Order
                     _logger.LogInformation("Order found by OrderId: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
                 }
             }
-
+            
             // Method 3: Try to find by OrderCode (backward compatibility)
             if (order == null)
             {
@@ -280,13 +286,13 @@ namespace VCareer.Services.Order
                     _logger.LogInformation("Order found by OrderCode: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
                 }
             }
-
+            
             if (order == null)
             {
                 // Log all orders with PaymentId for debugging
                 var ordersWithPaymentId = orderQuery.Where(o => !string.IsNullOrEmpty(o.VnpayPaymentId)).ToList();
-                _logger.LogWarning("Order not found for TxnRef: {TxnRef}. Found {Count} orders with PaymentId. PaymentIds: {PaymentIds}",
-                    input.vnp_TxnRef,
+                _logger.LogWarning("Order not found for TxnRef: {TxnRef}. Found {Count} orders with PaymentId. PaymentIds: {PaymentIds}", 
+                    input.vnp_TxnRef, 
                     ordersWithPaymentId.Count,
                     string.Join(", ", ordersWithPaymentId.Select(o => o.VnpayPaymentId)));
                 throw new UserFriendlyException($"Order not found. TxnRef: {input.vnp_TxnRef}");
@@ -329,7 +335,7 @@ namespace VCareer.Services.Order
             foreach (var order in orders.OrderByDescending(o => o.CreationTime))
             {
                 var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
-
+                
                 // Load order details
                 var details = await _orderDetailRepository.GetListAsync(d => d.OrderId == order.Id);
                 orderDto.OrderDetails = details.Select(d =>

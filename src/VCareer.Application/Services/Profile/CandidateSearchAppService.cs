@@ -21,7 +21,7 @@ using Volo.Abp.Emailing;
 
 namespace VCareer.Services.Profile
 {
-    /*[Authorize(VCareerPermission.Profile.Default)]*/
+    [Authorize(VCareerPermission.Profile.Default)]
     public class CandidateSearchAppService : VCareerAppService, ICandidateSearchAppService
     {
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
@@ -56,17 +56,64 @@ namespace VCareer.Services.Profile
             // Chỉ lấy các candidate có Status = true và ProfileVisibility = true
             queryable = queryable.Where(c => c.Status && c.ProfileVisibility);
 
+            // Kiểm tra xem có scope nào được chọn không
+            var hasAnyScopeSelected = input.SearchInJobTitle || input.SearchInActivity ||
+                                      input.SearchInEducation || input.SearchInExperience || input.SearchInSkills;
+
+            // Nếu recruiter chọn phạm vi tìm kiếm, lọc bỏ ứng viên không có dữ liệu ở các trường đó
+            if (hasAnyScopeSelected)
+            {
+                if (input.SearchInJobTitle)
+                {
+                    queryable = queryable.Where(c => c.JobTitle != null && !string.IsNullOrWhiteSpace(c.JobTitle));
+                }
+
+                if (input.SearchInActivity)
+                {
+                    queryable = queryable.Where(c =>
+                        (c.Location != null && !string.IsNullOrWhiteSpace(c.Location)) ||
+                        (c.WorkLocation != null && !string.IsNullOrWhiteSpace(c.WorkLocation))
+                    );
+                }
+
+                if (input.SearchInExperience)
+                {
+                    queryable = queryable.Where(c => c.Experience.HasValue);
+                }
+
+                if (input.SearchInSkills)
+                {
+                    queryable = queryable.Where(c => c.Skills != null && !string.IsNullOrWhiteSpace(c.Skills));
+                }
+            }
+
             // Filter theo Keyword nếu có
             if (!string.IsNullOrWhiteSpace(input.Keyword))
             {
                 var keyword = input.Keyword.Trim().ToLower();
-                queryable = queryable.Where(c =>
-                    (input.SearchInJobTitle && c.JobTitle != null && c.JobTitle.ToLower().Contains(keyword)) ||
-                    (input.SearchInSkills && c.Skills != null && c.Skills.ToLower().Contains(keyword)) ||
-                    (input.SearchInExperience && c.Experience.HasValue && c.Experience.ToString().Contains(keyword)) ||
-                    (c.Location != null && c.Location.ToLower().Contains(keyword)) ||
-                    (c.WorkLocation != null && c.WorkLocation.ToLower().Contains(keyword))
-                );
+
+                if (hasAnyScopeSelected)
+                {
+                    // Nếu có scope được chọn, chỉ tìm trong các trường tương ứng
+                    queryable = queryable.Where(c =>
+                        (input.SearchInJobTitle && c.JobTitle != null && c.JobTitle.ToLower().Contains(keyword)) ||
+                        (input.SearchInSkills && c.Skills != null && c.Skills.ToLower().Contains(keyword)) ||
+                        (input.SearchInExperience && c.Experience.HasValue && c.Experience.ToString().Contains(keyword)) ||
+                        (input.SearchInActivity && c.Location != null && c.Location.ToLower().Contains(keyword)) ||
+                        (input.SearchInActivity && c.WorkLocation != null && c.WorkLocation.ToLower().Contains(keyword))
+                    );
+                }
+                else
+                {
+                    // Nếu không chọn phạm vi nào, tìm trong tất cả các trường hiện có
+                    queryable = queryable.Where(c =>
+                        (c.JobTitle != null && c.JobTitle.ToLower().Contains(keyword)) ||
+                        (c.Skills != null && c.Skills.ToLower().Contains(keyword)) ||
+                        (c.Experience.HasValue && c.Experience.ToString().Contains(keyword)) ||
+                        (c.Location != null && c.Location.ToLower().Contains(keyword)) ||
+                        (c.WorkLocation != null && c.WorkLocation.ToLower().Contains(keyword))
+                    );
+                }
             }
 
             // Filter theo JobTitle

@@ -133,7 +133,7 @@ namespace VCareer.Services.Subcription
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionPriceId);
             if (subcriptionPrice == null) throw new BusinessException("SubcriptionPrice not found");
             if (isActive)
-            {
+        {
                 if (subcriptionPrice.EffectiveTo < DateTime.UtcNow)
                     throw new UserFriendlyException("You can't activate an expired price.");
                 if (await IsConflictTimeWithOtherPrice(subcriptionPrice.SubcriptionServiceId, subcriptionPrice.EffectiveFrom, subcriptionPrice.EffectiveTo, subcriptionPriceId))
@@ -155,7 +155,7 @@ namespace VCareer.Services.Subcription
             if (expiredItems.Count == 0) return;
 
             foreach (var item in expiredItems)
-            {
+        {
                 item.IsExpried = true;
             }
 
@@ -179,7 +179,7 @@ namespace VCareer.Services.Subcription
 
             // Exclude record hiện tại nếu có
             if (excludeId.HasValue)
-            {
+        {
                 query = query.Where(x => x.Id != excludeId.Value).ToList();
             }
 

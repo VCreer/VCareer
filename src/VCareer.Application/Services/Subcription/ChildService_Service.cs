@@ -37,7 +37,7 @@ namespace VCareer.Services.Subcription
             _effectingJobServiceRepository = effectingJobServiceRepository;
         }
         [HttpPost("create-childservice")]
-         public async Task CreateChildServiceAsync(ChildServiceCreateDto dto)
+        public async Task CreateChildServiceAsync(ChildServiceCreateDto dto)
         {
             if (dto.IsLifeTime && dto.TimeUsedLimit > 0) throw new BusinessException("Can't Have timelimit when IsLifeTime");
             if (dto.IsLifeTime == false && dto.TimeUsedLimit <= 0) throw new BusinessException("Need have timeUsedLimit when not IsLifeTime");
@@ -61,7 +61,7 @@ namespace VCareer.Services.Subcription
         //sẽ ko hiển thị để người dùng mới dùng nữa
         //đối với người dùng đã mua gói thì vẫn sẽ cho dùng nốt đến hết hạn 
         [HttpDelete("delete-childservice")]
-           public async Task DeleteChildServiceAsync(Guid childServiceId)
+        public async Task DeleteChildServiceAsync(Guid childServiceId)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");

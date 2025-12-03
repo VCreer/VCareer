@@ -25,6 +25,6 @@ namespace VCareer.IServices.Subcriptions
         //deactive thi thoai mai
         // nhung ko cho active price da het han hoac bi trung thoi diem effect cua price khac
         public Task SetStatusSubcriptionPriceAsync(Guid subcriptionPriceId, bool isActive);
-       
+      
     }
 }

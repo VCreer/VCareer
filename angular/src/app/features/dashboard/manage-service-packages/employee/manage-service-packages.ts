@@ -66,6 +66,20 @@ interface ServiceActionItem {
   selectedOptions: string[];
 }
 
+interface ServiceActionOptionConfig {
+  value: string;
+  label: string;
+}
+
+interface ServiceActionItem {
+  actionKey: string;
+  label: string;
+  description: string;
+  options: ServiceActionOptionConfig[];
+  expanded: boolean;
+  selectedOptions: string[];
+}
+
 export interface ServicePackage {
   id: string;
   title: string;
@@ -103,6 +117,7 @@ export interface ServicePackage {
   styleUrls: ['./manage-service-packages.scss']
 })
 export class ManageServicePackagesComponent implements OnInit, OnDestroy {
+  // Sidebar state
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
@@ -129,21 +144,25 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     { value: SubcriptionContance_SubcriptionStatus.Cancelled.toString(), label: 'Đã hủy' }
   ];
 
+  // Type options (Target)
   typeOptions = [
     { value: '', label: 'Tất cả đối tượng' },
     { value: SubcriptionContance_SubcriptorTarget.Candidate, label: 'Ứng viên' },
     { value: SubcriptionContance_SubcriptorTarget.Recruiter, label: 'Nhà tuyển dụng' }
   ];
 
+  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
 
+  // Actions Menu
   showActionsMenu: string | null = null;
   private scrollListener?: () => void;
   private currentMenuPackageId: string | null = null;
   private currentMenuButton: HTMLElement | null = null;
 
+  // Modals
   showCreatePackageModal = false;
   showEditPackageModal = false;
   showCreateSaleModal = false;
@@ -151,12 +170,15 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   selectedPackage: ServicePackage | null = null;
   selectedSale: PackageSale | null = null;
 
+  // Tabs
   activeTab: 'packages' | 'sales' = 'packages';
 
+  // Sales data
   allSales: PackageSale[] = [];
   filteredSales: PackageSale[] = [];
   paginatedSales: PackageSale[] = [];
 
+  // Sale search & filter
   saleSearchKeyword = '';
   saleFilterStatus = '';
   saleCurrentPage = 1;
@@ -164,6 +186,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   saleTotalPages = 1;
   salePackageOptions: { value: string; label: string }[] = [];
 
+  // Package Form
   packageForm: Partial<ServicePackage> = {
     title: '',
     description: '',
@@ -262,6 +285,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   validationErrors: Record<string, string> = {};
   saleValidationErrors: Record<string, string> = {};
 
+  // Sale Form
   saleForm: Partial<PackageSale> = {
     packageId: '',
     salePercent: 0,
@@ -271,6 +295,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     isActive: false
   };
 
+  // Sale Status options
   saleStatusOptions: StatusOption[] = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang áp dụng' },
@@ -380,6 +405,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   applySaleFilters(): void {
     let result = [...this.allSales];
 
+    // Search
     if (this.saleSearchKeyword.trim()) {
       const keyword = this.saleSearchKeyword.toLowerCase();
       result = result.filter(sale =>
@@ -388,6 +414,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Filter by status
     if (this.saleFilterStatus) {
       result = result.filter(s => s.status === this.saleFilterStatus);
     }
@@ -499,27 +526,27 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          const newSale: PackageSale = {
-            id: `sale_${Date.now()}`,
-            packageId: this.saleForm.packageId!,
-            package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-            salePercent: this.saleForm.salePercent!,
-            startDate: this.saleForm.startDate!,
-            endDate: this.saleForm.endDate!,
-            status: this.saleForm.status!,
-            isActive: this.saleForm.isActive || false,
-            createdDate: new Date().toISOString()
-          };
+    const newSale: PackageSale = {
+      id: `sale_${Date.now()}`,
+      packageId: this.saleForm.packageId!,
+      package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+      salePercent: this.saleForm.salePercent!,
+      startDate: this.saleForm.startDate!,
+      endDate: this.saleForm.endDate!,
+      status: this.saleForm.status!,
+      isActive: this.saleForm.isActive || false,
+      createdDate: new Date().toISOString()
+    };
 
-          this.allSales = [newSale, ...this.allSales];
-          this.showToastMessage('Tạo sale thành công', 'success');
-          this.showCreateSaleModal = false;
-          this.applySaleFilters();
+    this.allSales = [newSale, ...this.allSales];
+    this.showToastMessage('Tạo sale thành công', 'success');
+    this.showCreateSaleModal = false;
+    this.applySaleFilters();
         },
         error: (error) => {
           console.error('Error creating sale:', error);
           this.showToastMessage('Không thể tạo sale', 'error');
-        }
+  }
       });
   }
 
@@ -539,29 +566,29 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.subcriptionPriceService.updateSubcriptionPrice(updateDto)
       .subscribe({
         next: () => {
-          const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
-          if (index !== -1) {
-            this.allSales[index] = {
-              ...this.allSales[index],
-              packageId: this.saleForm.packageId!,
-              package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-              salePercent: this.saleForm.salePercent!,
-              startDate: this.saleForm.startDate!,
-              endDate: this.saleForm.endDate!,
-              status: this.saleForm.status!,
-              isActive: this.saleForm.isActive || false,
-              updatedDate: new Date().toISOString()
-            };
-          }
+    const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
+    if (index !== -1) {
+      this.allSales[index] = {
+        ...this.allSales[index],
+        packageId: this.saleForm.packageId!,
+        package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+        salePercent: this.saleForm.salePercent!,
+        startDate: this.saleForm.startDate!,
+        endDate: this.saleForm.endDate!,
+        status: this.saleForm.status!,
+        isActive: this.saleForm.isActive || false,
+        updatedDate: new Date().toISOString()
+      };
+    }
 
-          this.showToastMessage('Cập nhật sale thành công', 'success');
-          this.showEditSaleModal = false;
-          this.applySaleFilters();
+    this.showToastMessage('Cập nhật sale thành công', 'success');
+    this.showEditSaleModal = false;
+    this.applySaleFilters();
         },
         error: (error) => {
           console.error('Error updating sale:', error);
           this.showToastMessage('Không thể cập nhật sale', 'error');
-        }
+  }
       });
   }
 
@@ -578,19 +605,20 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       this.subcriptionPriceService.deleteSoftSubcriptionPrice(deleteDto)
         .subscribe({
           next: () => {
-            this.allSales = this.allSales.filter(s => s.id !== sale.id);
-            this.showToastMessage('Đã xóa sale', 'success');
-            this.applySaleFilters();
+      this.allSales = this.allSales.filter(s => s.id !== sale.id);
+      this.showToastMessage('Đã xóa sale', 'success');
+      this.applySaleFilters();
           },
           error: (error) => {
             console.error('Error deleting sale:', error);
             this.showToastMessage('Không thể xóa sale', 'error');
-          }
-        });
     }
+        });
+  }
   }
 
   onToggleSaleActive(sale: PackageSale): void {
+    // TODO: Call API to toggle active status
     sale.isActive = !sale.isActive;
     if (sale.isActive) {
       sale.status = 'active';
@@ -647,6 +675,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
       this.currentMenuButton = button || null;
       
+      // Retry logic to ensure menu is in DOM
       let retries = 0;
       const tryPosition = () => {
         const menu = document.querySelector(`.actions-menu[data-package-id="${itemId}"]`) as HTMLElement;
@@ -722,23 +751,28 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     const viewportHeight = window.innerHeight;
     const padding = 8;
     
+    // Position menu below button, aligned to right
     let left = rect.right - menuWidth;
     let top = rect.bottom + 4;
     
+    // Ensure menu doesn't go off left edge (consider sidebar)
     const minLeft = sidebarWidth + padding;
     if (left < minLeft) {
       left = Math.max(minLeft, rect.left);
     }
     
+    // Ensure menu doesn't go off right edge
     const maxLeft = viewportWidth - menuWidth - padding;
     if (left > maxLeft) {
       left = maxLeft;
     }
     
+    // Ensure menu doesn't go off bottom
     if (top + menuHeight > viewportHeight - padding) {
       top = rect.top - menuHeight - 4;
     }
     
+    // Ensure menu doesn't go off top
     if (top < padding) {
       top = padding;
     }
@@ -750,6 +784,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let result = [...this.allPackages];
 
+    // Search
     if (this.searchKeyword.trim()) {
       const keyword = this.searchKeyword.toLowerCase();
       result = result.filter(pkg =>
@@ -768,6 +803,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       result = result.filter(p => p.target === this.filterType);
     }
 
+    // Sort
     result.sort((a, b) => {
       let aValue: any;
       let bValue: any;
@@ -833,6 +869,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.updatePagination();
   }
 
+  // Actions
   onCreatePackage(): void {
     this.resetPackageForm();
     this.initializeServiceActions();
@@ -887,9 +924,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackage = true;
 
@@ -901,14 +938,14 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
-          this.showCreatePackageModal = false;
+      this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
+      this.showCreatePackageModal = false;
           this.loadPackages();
         },
         error: (error) => {
           console.error('Error creating package:', error);
           this.showToastMessage('Không thể tạo gói dịch vụ', 'error');
-        }
+    }
       });
   }
 
@@ -917,9 +954,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackageEdit = true;
 
@@ -931,14 +968,14 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
-          this.showEditPackageModal = false;
+      this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
+      this.showEditPackageModal = false;
           this.loadPackages();
         },
         error: (error) => {
           console.error('Error updating package:', error);
           this.showToastMessage('Không thể cập nhật gói dịch vụ', 'error');
-        }
+    }
       });
   }
 
@@ -982,49 +1019,49 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     return !!this.serviceActions.find(action => action.actionKey === actionKey && action.selectedOptions.includes(optionValue));
   }
 
- private validatePackageForm(): boolean {
-  this.resetValidationErrors();
-  const errors: Record<string, string> = {};
-  let isValid = true;
+  private validatePackageForm(): boolean {
+    this.resetValidationErrors();
+    const errors: Record<string, string> = {};
+    let isValid = true;
 
-  if (!this.packageForm.title || !this.packageForm.title.trim()) {
-    errors['title'] = 'Vui lòng nhập tên gói dịch vụ';
-    isValid = false;
-  }
+    if (!this.packageForm.title || !this.packageForm.title.trim()) {
+      errors['title'] = 'Vui lòng nhập tên gói dịch vụ';
+      isValid = false;
+    }
 
-  if (!this.packageForm.description || !this.packageForm.description.trim()) {
-    errors['description'] = 'Vui lòng nhập mô tả gói dịch vụ';
-    isValid = false;
-  }
+    if (!this.packageForm.description || !this.packageForm.description.trim()) {
+      errors['description'] = 'Vui lòng nhập mô tả gói dịch vụ';
+      isValid = false;
+    }
 
   if (
     this.packageForm.originalPrice === null || 
     this.packageForm.originalPrice === undefined || 
     this.packageForm.originalPrice < 0
   ) {
-    errors['originalPrice'] = 'Giá gốc phải lớn hơn hoặc bằng 0';
-    isValid = false;
-  }
+      errors['originalPrice'] = 'Giá gốc phải lớn hơn hoặc bằng 0';
+      isValid = false;
+    }
 
-  if (!this.packageForm.isLifeTime && (!this.packageForm.dayDuration || this.packageForm.dayDuration <= 0)) {
-    errors['dayDuration'] = 'Vui lòng nhập số ngày hợp lệ';
-    isValid = false;
-  }
+    if (!this.packageForm.isLifeTime && (!this.packageForm.dayDuration || this.packageForm.dayDuration <= 0)) {
+      errors['dayDuration'] = 'Vui lòng nhập số ngày hợp lệ';
+      isValid = false;
+    }
 
-  if (this.packageForm.isBuyLimited && (!this.packageForm.totalBuyEachUser || this.packageForm.totalBuyEachUser <= 0)) {
-    errors['totalBuyEachUser'] = 'Vui lòng nhập số lượng tối đa mua của mỗi cá nhân';
-    isValid = false;
-  }
+    if (this.packageForm.isBuyLimited && (!this.packageForm.totalBuyEachUser || this.packageForm.totalBuyEachUser <= 0)) {
+      errors['totalBuyEachUser'] = 'Vui lòng nhập số lượng tối đa mua của mỗi cá nhân';
+      isValid = false;
+    }
 
-  const hasServiceAction = this.serviceActions.some(action => action.selectedOptions.length > 0);
-  if (!hasServiceAction) {
-    errors['serviceActions'] = 'Vui lòng chọn ít nhất một tính năng dịch vụ';
-    isValid = false;
-  }
+    const hasServiceAction = this.serviceActions.some(action => action.selectedOptions.length > 0);
+    if (!hasServiceAction) {
+      errors['serviceActions'] = 'Vui lòng chọn ít nhất một tính năng dịch vụ';
+      isValid = false;
+    }
 
-  this.validationErrors = errors;
-  return isValid;
-}
+    this.validationErrors = errors;
+    return isValid;
+  }
 
   private resetValidationErrors(): void {
     this.validationErrors = {};
@@ -1113,10 +1150,10 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.subcriptionService.updateSubcription(updateDto)
       .subscribe({
         next: () => {
-          this.showToastMessage(
+    this.showToastMessage(
             newIsActive ? 'Đã kích hoạt gói dịch vụ' : 'Đã vô hiệu hóa gói dịch vụ',
-            'success'
-          );
+      'success'
+    );
           this.loadPackages();
         },
         error: (error) => {
@@ -1131,7 +1168,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       this.subcriptionService.deleteSubcription(pkg.id)
         .subscribe({
           next: () => {
-            this.showToastMessage('Đã xóa gói dịch vụ', 'success');
+      this.showToastMessage('Đã xóa gói dịch vụ', 'success');
             this.loadPackages();
           },
           error: (error) => {
@@ -1155,6 +1192,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.closeActionsMenu();
   }
 
+  // Helper methods
   getStatusLabel(pkg: ServicePackage): string {
     const labels: { [key in SubcriptionContance_SubcriptionStatus]: string } = {
       [SubcriptionContance_SubcriptionStatus.Active]: 'Đang hoạt động',
@@ -1223,6 +1261,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
+  // Dynamic styles for responsive layout
   getPageMarginLeft(): string {
     if (window.innerWidth <= 768) {
       return '0';
@@ -1261,3 +1300,4 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     return `${Math.max(0, availableWidth)}px`;
   }
 }
+

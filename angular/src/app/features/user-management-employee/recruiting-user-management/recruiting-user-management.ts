@@ -436,11 +436,11 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     this.userService.setUserActiveStatus(user.id, newStatus).subscribe({
       next: () => {
         user.isActive = newStatus;
-        this.showToastMessage(
-          user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
-          'success'
-        );
-        this.applyFilters();
+    this.showToastMessage(
+      user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
+      'success'
+    );
+    this.applyFilters();
       },
       error: () => {
         this.showToastMessage('Thay đổi trạng thái hoạt động thất bại', 'error');

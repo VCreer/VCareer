@@ -39,7 +39,7 @@ namespace VCareer.Profile
         [HttpPut("personal-info")]
         [IgnoreAntiforgeryToken] // Disable antiforgery token validation cho API endpoint
         [DisableRequestSizeLimit] // Disable request size limit nếu cần
-        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
+        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
         public async Task<IActionResult> UpdatePersonalInfoAsync([FromBody] UpdatePersonalInfoDto input)
         {
             // Check if input is null
@@ -93,7 +93,7 @@ namespace VCareer.Profile
         /// <returns>No content</returns>
         [HttpPut("change-password")]
         [IgnoreAntiforgeryToken]
-        /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
+        [Authorize(VCareerPermission.Profile.ChangePassword)]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto input)
         {
             await _profileAppService.ChangePasswordAsync(input);

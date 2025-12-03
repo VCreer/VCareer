@@ -31,7 +31,7 @@ using VCareer.Models.Subcription_Payment;
 
 namespace VCareer;
 
-public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
+public class VCareerApplicationAutoMapperProfile : Profile
 {
     public VCareerApplicationAutoMapperProfile()
     {

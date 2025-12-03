@@ -213,7 +213,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     }
     if (this.sidebarStateInterval) {
       clearInterval(this.sidebarStateInterval);
-    }
+  }
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -334,6 +334,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     // Close sidebar before navigation to ensure it closes immediately
     this.closeSidebar();
     this.router.navigate([path]);
+    this.onClose();
   }
 
   isActive(path: string): boolean {
@@ -352,10 +353,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.manuallyOpened = true;
       // Trigger change detection
       setTimeout(() => {
-        this.showUserManagementDropdown = !this.showUserManagementDropdown;
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
       }, 50);
       return;
-    }
+  }
     this.showUserManagementDropdown = !this.showUserManagementDropdown;
   }
 

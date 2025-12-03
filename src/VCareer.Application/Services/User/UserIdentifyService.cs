@@ -112,7 +112,7 @@ namespace VCareer.Services.User
         {
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
-
+          
             await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
             {
                 IsActive = isActive

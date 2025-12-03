@@ -1,4 +1,4 @@
-.applied-jobs-page {
+﻿.applied-jobs-page {
   min-height: calc(100vh - 200px);
   padding: 2rem;
   background: #f8fafc;
@@ -376,10 +376,17 @@
 
 
           .applied-date-status {
-            .applied-date-text {
+            .status-text {
               font-size: 0.875rem;
               font-weight: 400;
-              color: #0F83BA;
+
+              &.suitable {
+                color: #16A34A; // xanh cho hồ sơ phù hợp
+              }
+
+              &.not-suitable {
+                color: #DC2626; // đỏ cho hồ sơ chưa phù hợp
+              }
             }
           }
         }

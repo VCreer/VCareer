@@ -153,10 +153,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
       const all = [...(active || []), ...(inactive || [])];
-      this.campaigns = this.mapToCampaign(all);
-      this.filterCampaigns();
-      this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
-      this.loading = false;
+        this.campaigns = this.mapToCampaign(all);
+        this.filterCampaigns();
+        this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
+        this.loading = false;
     });
   }
 

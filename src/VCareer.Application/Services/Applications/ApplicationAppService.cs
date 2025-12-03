@@ -30,7 +30,7 @@ namespace VCareer.Application.Applications
     /// <summary>
     /// Application Management Service - Refactored để hỗ trợ CandidateCv và UploadedCv
     /// </summary>
-    /*[Authorize(VCareerPermission.Application.Default)]*/
+    [Authorize(VCareerPermission.Application.Default)]
     public class ApplicationAppService : ApplicationService , IJobApply
     {
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
@@ -80,7 +80,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)
         /// </summary>
-        /*[Authorize(VCareerPermission.Application.Apply)]*/
+        [Authorize(VCareerPermission.Application.Apply)]
         public async Task<ApplicationDto> ApplyWithOnlineCVAsync(ApplyWithOnlineCVDto input)
         {
             // Lấy thông tin user hiện tại
@@ -140,7 +140,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Nộp đơn ứng tuyển với CV đã tải lên (UploadedCv)
         /// </summary>
-        /*[Authorize(VCareerPermission.Application.Apply)]*/
+        [Authorize(VCareerPermission.Application.Apply)]
         public async Task<ApplicationDto> ApplyWithUploadedCVAsync(ApplyWithUploadedCVDto input)
         {
             // Lấy thông tin user hiện tại
@@ -200,7 +200,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển
         /// </summary>
-        //[Authorize(VCareerPermission.Application.View)]
+        [Authorize(VCareerPermission.Application.View)]
         public async Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input)
         {
             var query = await _applicationRepository.GetQueryableAsync();
@@ -259,7 +259,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy thông tin chi tiết đơn ứng tuyển
         /// </summary>
-        //[Authorize(VCareerPermission.Application.View)]
+        [Authorize(VCareerPermission.Application.View)]
         public async Task<ApplicationDto> GetApplicationAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -269,7 +269,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Cập nhật trạng thái đơn ứng tuyển (cho nhà tuyển dụng)
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Manage)]
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> UpdateApplicationStatusAsync(Guid id, UpdateApplicationStatusDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -535,7 +535,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Hủy đơn ứng tuyển (cho ứng viên)
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Withdraw)]
+        [Authorize(VCareerPermission.Application.Withdraw)]
         public async Task<ApplicationDto> WithdrawApplicationAsync(Guid id, WithdrawApplicationDto input)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -559,7 +559,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Đánh dấu đã xem đơn ứng tuyển
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Manage)]
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<ApplicationDto> MarkAsViewedAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -634,7 +634,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển của công ty
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Manage)]
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetCompanyApplicationsAsync(GetApplicationListDto input)
         {
             var userId = _currentUser.GetId();
@@ -649,7 +649,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Lấy danh sách đơn ứng tuyển cho một công việc cụ thể
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Manage)]
+        [Authorize(VCareerPermission.Application.Manage)]
         public async Task<PagedResultDto<ApplicationDto>> GetJobApplicationsAsync(Guid jobId, GetApplicationListDto input)
         {
             input.JobId = jobId;
@@ -659,7 +659,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Tải xuống CV của đơn ứng tuyển (PDF hoặc render HTML)
         /// </summary>
-        //[Authorize(VCareerPermission.Application.DownloadCV)]
+        [Authorize(VCareerPermission.Application.DownloadCV)]
         public async Task<byte[]> DownloadApplicationCVAsync(Guid id)
         {
             var application = await _applicationRepository.GetAsync(id);
@@ -682,7 +682,7 @@ namespace VCareer.Application.Applications
         /// <summary>
         /// Xóa đơn ứng tuyển (soft delete)
         /// </summary>
-        //[Authorize(VCareerPermission.Application.Delete)]
+        [Authorize(VCareerPermission.Application.Delete)]
         public async Task DeleteApplicationAsync(Guid id)
         {
             await _applicationRepository.DeleteAsync(id);
@@ -736,11 +736,12 @@ namespace VCareer.Application.Applications
         {
             var dto = ObjectMapper.Map<JobApplication, ApplicationDto>(application);
 
-            // Load Job để lấy JobTitle
+            // Load Job để lấy JobTitle và thông tin lương
             var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
             if (job != null)
             {
                 dto.JobTitle = job.Title;
+                dto.JobSalaryText = FormatJobSalary(job);
             }
 
             // Load Company để lấy CompanyName
@@ -793,9 +794,58 @@ namespace VCareer.Application.Applications
             throw new NotImplementedException();
         }
 
-        public Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}
+         public Task<ApplicationDto> RateApplicationAsync(Guid id, RateApplicationDto input)
+         {
+             throw new NotImplementedException();
+         }
+
+         /// <summary>
+         /// Helper format mức lương job thành text hiển thị (VD: \"Tới 3 triệu\", \"Từ 4 - 8 triệu\", \"Thoả thuận\")
+         /// </summary>
+         private string? FormatJobSalary(Job_Post job)
+         {
+             if (job == null)
+             {
+                 return null;
+             }
+
+             if (job.SalaryDeal)
+             {
+                 return "Thoả thuận";
+             }
+
+             decimal? min = job.SalaryMin;
+             decimal? max = job.SalaryMax;
+
+             if (!min.HasValue && !max.HasValue)
+             {
+                 return null;
+             }
+
+             // Chuyển sang đơn vị \"triệu\" nếu >= 1,000,000
+             string FormatToMillion(decimal value)
+             {
+                 if (value >= 1_000_000)
+                 {
+                     var millions = Math.Round(value / 1_000_000, 0, MidpointRounding.AwayFromZero);
+                     return $"{millions} triệu";
+                 }
+
+                 return $"{value:N0} VNĐ";
+             }
+
+             if (min.HasValue && max.HasValue)
+             {
+                 return $"{FormatToMillion(min.Value)} - {FormatToMillion(max.Value)}";
+             }
+
+             if (max.HasValue)
+             {
+                 return $"Tới {FormatToMillion(max.Value)}";
+             }
+
+             // Chỉ có min
+             return $"Từ {FormatToMillion(min!.Value)}";
+         }
+     }
+ }
