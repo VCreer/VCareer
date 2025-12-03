@@ -265,6 +265,10 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
     const levelStep = completed === 0 ? 1 : completed;
     this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
+
+    // Nếu đã hoàn thành đủ 3/3 bước, cập nhật trạng thái xác thực global
+    const isFullyVerified = completed === this.verificationSteps.length;
+    this.navigationService.setVerified(isFullyVerified);
   }
 
   onStepClick(step: VerificationStep): void {

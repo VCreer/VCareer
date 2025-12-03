@@ -10,6 +10,8 @@ import {
   MultiSelectLocationComponent,
   ToggleSwitchComponent,
   PaginationComponent,
+  SelectFieldComponent,
+  SelectOption,
 } from '../../../../shared/components';
 import { AuthService } from 'src/app/proxy/services/auth';
 import { RecruitmentCompainService } from 'src/app/proxy/services/job';
@@ -42,6 +44,7 @@ interface Campaign extends RecruimentCampainViewDto {
     MultiSelectLocationComponent,
     ToggleSwitchComponent,
     PaginationComponent,
+    SelectFieldComponent,
   ],
   templateUrl: './recruitment-campaign.html',
   styleUrls: ['./recruitment-campaign.scss'],
@@ -67,6 +70,11 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Filters & Pagination
   searchQuery = '';
   filterType: 'all' | 'active' | 'inactive' = 'all';
+  filterOptions: SelectOption[] = [
+    { value: 'all', label: 'Tất cả chiến dịch' },
+    { value: 'active', label: 'Đang hoạt động' },
+    { value: 'inactive', label: 'Đã tắt' },
+  ];
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
@@ -85,6 +93,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Loading state
   loading = true;
   showActionsMenu: string | null = null;
+  menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
 
   // Khóa để ngăn double request
   private isTogglingCampaign = false;
@@ -426,7 +435,84 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
   toggleActionsMenu(campaignId: string, event: Event) {
     event.stopPropagation();
-    this.showActionsMenu = this.showActionsMenu === campaignId ? null : campaignId;
+    const isOpening = this.showActionsMenu !== campaignId;
+    this.showActionsMenu = isOpening ? campaignId : null;
+    
+    if (isOpening) {
+      const button = event.currentTarget as HTMLElement;
+      const rect = button.getBoundingClientRect();
+      this.updateMenuPosition(rect);
+    } else {
+      this.menuPosition = null;
+    }
+  }
+
+  private updateMenuPosition(buttonRect: DOMRect) {
+    // Đơn giản hóa: chỉ đặt menu ở vị trí mặc định bên phải button
+    const menuGap = 8;
+    const menuMinWidth = 180;
+    const menuMaxWidth = 300;
+    
+    // Vị trí mặc định: bên phải button
+    let menuLeft = buttonRect.right + menuGap;
+    let top = buttonRect.bottom + menuGap;
+    
+    // Nếu không đủ chỗ bên phải, đặt menu bên trái button
+    const viewportWidth = window.innerWidth;
+    if (menuLeft + menuMinWidth > viewportWidth) {
+      menuLeft = buttonRect.left - menuMaxWidth - menuGap;
+    }
+    
+    // Đảm bảo menu không vượt quá viewport
+    if (menuLeft < 0) {
+      menuLeft = 8;
+    }
+    if (menuLeft + menuMaxWidth > viewportWidth) {
+      menuLeft = viewportWidth - menuMaxWidth - 8;
+    }
+    
+    // Đảm bảo menu không vượt quá viewport phía dưới
+    const viewportHeight = window.innerHeight;
+    const menuHeight = 200;
+    if (top + menuHeight > viewportHeight) {
+      top = buttonRect.top - menuHeight - menuGap;
+    }
+    if (top < 0) {
+      top = 8;
+    }
+    
+    this.menuPosition = {
+      top: top,
+      left: menuLeft,
+      maxWidth: menuMaxWidth
+    };
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  private updateMenuPositionFromButton() {
+    if (!this.showActionsMenu) return;
+    
+    const container = document.querySelector(`[data-campaign-id="${this.showActionsMenu}"]`) as HTMLElement;
+    if (container) {
+      const button = container.querySelector('.actions-btn') as HTMLElement;
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        this.updateMenuPosition(rect);
+      }
+    }
   }
 
   onDeleteCampaign(campaign: Campaign) {
@@ -450,12 +536,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container')) {
       this.showActionsMenu = null;
+      this.menuPosition = null;
     }
   }
 
   // Post job
   onPostJob(campaign: Campaign) {
     this.showActionsMenu = null;
+    this.menuPosition = null;
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: { 
         campaignName: campaign.name,

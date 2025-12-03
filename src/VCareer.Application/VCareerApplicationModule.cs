@@ -23,6 +23,8 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
 using VNPAY;
 using System.Linq;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 
 namespace VCareer;
 

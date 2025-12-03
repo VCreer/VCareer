@@ -18,6 +18,7 @@ import { CreateCompanyFormComponent } from '../../../../shared/components/create
 import { BusinessRegistrationComponent } from '../../../../shared/components/business-registration/business-registration.component';
 import { PasswordFormActionsComponent } from '../../../../shared/components/password-form-actions/password-form-actions.component';
 import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
 import { environment } from '../../../../../environments/environment';
 
 interface CompanyCard {
@@ -66,7 +67,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     fullName: '',
     email: '',
     phone: '',
-    gender: '',
     avatarUrl: ''
   };
   
@@ -95,6 +95,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   ];
   verificationProgressSteps: number = 0;
   isEmailVerified = false;
+  isHRStaff: boolean = false; // Flag: tài khoản HR Staff (IsLead = false) hay Leader
 
   // Company info
   companyTab: string = 'search'; // 'search' or 'create'
@@ -176,7 +177,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
     private cdr: ChangeDetectorRef,
     private formBuilder: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private teamManagementService: TeamManagementService
   ) {
     // Initialize change password form (for users who already have password)
     this.changePasswordForm = this.formBuilder.group({
@@ -212,6 +214,21 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.setPasswordForm.valueChanges.subscribe(() => {
       if (this.setPasswordForm.get('newPassword')?.value && this.setPasswordForm.get('confirmPassword')?.value) {
         this.setPasswordForm.updateValueAndValidity();
+      }
+    });
+
+    // Xác định HR Staff hay Leader để ẩn/bỏ các phần không được phép
+    this.loadCurrentUserRole();
+  }
+
+  private loadCurrentUserRole(): void {
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        this.isHRStaff = !userInfo.isLead;
+      },
+      error: (error) => {
+        console.error('Error loading user role in recruiter-setting:', error);
+        this.isHRStaff = false;
       }
     });
   }
@@ -304,7 +321,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           fullName: `${name} ${surname}`.trim() || 'User',
           email: profile.email || '',
           phone: profile.phoneNumber || '',
-          gender: profile.gender === true ? 'male' : profile.gender === false ? 'female' : '',
           avatarUrl: ''
         };
 
@@ -337,7 +353,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           fullName: 'Uông Hoàng Duy',
           email: 'duyuhhe171632@fpt.edu.vn',
           phone: '0966211316',
-          gender: 'male',
           avatarUrl: ''
         };
         // Default to non-Google user if error
@@ -400,11 +415,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       updateDto.phoneNumber = this.profileData.phone.trim();
     }
 
-    if (this.profileData.gender === 'male') {
-      updateDto.gender = true;
-    } else if (this.profileData.gender === 'female') {
-      updateDto.gender = false;
-    }
+    // Giới tính đã được bỏ khỏi form, không cần map lên DTO nữa
 
     const targetUrl = '/recruiter/recruiter-setting?tab=personal-info';
     
@@ -455,10 +466,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(this.profileData.phone)) {
       this.showToastMessage('Số điện thoại phải có 10-11 chữ số', 'error');
-      return false;
-    }
-    if (!this.profileData.gender) {
-      this.showToastMessage('Vui lòng chọn giới tính', 'error');
       return false;
     }
     return true;
@@ -984,6 +991,14 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
     const levelStep = completed === 0 ? 1 : completed;
     this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
+
+    // Cập nhật trạng thái xác thực toàn hệ thống (dùng cho sidebar, điều hướng, ...)
+    if (completed === this.verificationSteps.length) {
+      // Hoàn thành 3/3 bước -> tài khoản đã xác thực
+      this.navigationService.setVerified(true);
+    } else {
+      this.navigationService.setVerified(false);
+    }
   }
 
   getTabTitle(tab: string): string {

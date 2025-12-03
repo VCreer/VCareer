@@ -96,6 +96,36 @@ namespace VCareer.Permission
             public const string Withdraw = Default + ".Withdraw";
         }
 
+        /// <summary>
+        /// Quyền cho Team Management (ITeamManagementAppService)
+        /// </summary>
+        public static class TeamManagement
+        {
+            public const string Default = GroupName + ".TeamManagement";
+            public const string GetCurrentUserInfo = Default + ".GetCurrentUserInfo";
+            public const string GetAllStaff = Default + ".GetAllStaff";
+            public const string DeactivateStaff = Default + ".DeactivateStaff";
+            public const string ActivateStaff = Default + ".ActivateStaff";
+            public const string InviteStaff = Default + ".InviteStaff";
+        }
+
+        /// <summary>
+        /// Quyền cho Company Verification Management
+        /// (Employee/Admin duyệt, từ chối, xem danh sách công ty)
+        /// Mapping với ICompanyLegalInfoAppService (phần quản lý xác thực công ty).
+        /// </summary>
+        public static class CompanyVerification
+        {
+            public const string Default = GroupName + ".CompanyVerification";        
+            public const string ViewPendingCompanies = Default + ".ViewPendingCompanies";
+            public const string ApproveCompany = Default + ".ApproveCompany";
+            public const string RejectCompany = Default + ".RejectCompany";
+            public const string ViewVerifiedCompanies = Default + ".ViewVerifiedCompanies";
+            public const string ViewRejectedCompanies = Default + ".ViewRejectedCompanies";
+            public const string UploadLegalDocument = Default + ".UploadLegalDocument";
+            public const string DownloadLegalDocument = Default + ".DownloadLegalDocument";
+        }
+
         
     }
 }

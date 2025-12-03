@@ -28,10 +28,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   currentRoute: string = '';
   isVerified: boolean = false;
   isEmployeeRoute: boolean = false;
+  isHRStaff: boolean = false; // Flag để xác định HR Staff (IsLead = false)
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
-    isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
-     showUserManagementDropdown: boolean = false;
+  showUserManagementDropdown: boolean = false;
   private userSubscription?: Subscription;
 
 
@@ -46,17 +46,24 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     // Subscribe to verification status
     this.isVerified = this.navigationService.isVerified();
     this.verificationSubscription = this.navigationService.isVerified$.subscribe(verified => {
+      // Đối với HR Staff, luôn hiển thị đã xác thực (theo Leader công ty)
+      if (this.isHRStaff) {
+        this.isVerified = true;
+        this.verificationLevel = 'Cấp 3/3';
+        return;
+      }
+
+      // Đối với Leader Recruiter, dùng trạng thái verification global
       this.isVerified = verified;
-      // Update verification level display based on status
       if (!verified) {
         this.verificationLevel = 'Chưa xác thực';
       } else {
-        this.verificationLevel = 'Cấp 1/3';
+        this.verificationLevel = 'Cấp 3/3';
       }
     });
     
-    // Check if user is HR Staff (IsLead = false)
-    // this.checkUserRole();
+    // Kiểm tra role để phân biệt Leader Recruiter vs HR Staff
+    this.checkUserRole();
   }
 
   ngOnInit() {
@@ -105,14 +112,15 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadUserInfo(): void {
-    // First try to get from AuthStateService (already loaded)
+    // First try to get from AuthStateService (already loaded) chỉ để lấy nhanh tên hiển thị
+    // nhưng KHÔNG return sớm, vì với Recruiter/HR Staff chúng ta vẫn cần gọi TeamManagementService
+    // để biết IsLead, isHRStaff và trạng thái xác thực.
     const currentUser = this.authStateService.user;
     if (currentUser && currentUser.fullName) {
       this.userName = currentUser.fullName;
-      return;
     }
 
-    // If not available, load from API
+    // Load thêm thông tin chi tiết từ API
     if (this.isEmployeeRoute) {
       // For employee, use basic user info
       this.authFacadeService.loadCurrentUser().subscribe({
@@ -140,6 +148,13 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
             this.userRole = 'Leader Recruiter';
           } else {
             this.userRole = 'HR Staff';
+          }
+          // Nếu là HR Staff thì giả định công ty đã được Leader xác thực
+          // => sidebar luôn hiển thị tài khoản đã xác thực cho HR Staff
+          this.isHRStaff = !userInfo.isLead;
+          if (this.isHRStaff) {
+            this.isVerified = true;
+            this.verificationLevel = 'Cấp 3/3';
           }
         },
         error: (error) => {

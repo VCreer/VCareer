@@ -106,6 +106,7 @@ namespace VCareer.Services.TeamManagement
                 RecruiterProfileId = s.Id,
                 FullName = $"{s.User?.Name} {s.User?.Surname}".Trim(),
                 Email = s.User?.Email ?? "",
+                PhoneNumber = s.User?.PhoneNumber ?? string.Empty,
                 IsLead = s.IsLead,
                 Status = s.Status,
                 CompanyId = s.CompanyId,
@@ -256,14 +257,19 @@ namespace VCareer.Services.TeamManagement
             }
 
             // Tạo RecruiterProfile với IsLead = false và CompanyId của Leader
+            // Nếu Leader đã được xác thực (IsVerified = true hoặc RecruiterLevel >= Verified)
+            // thì HR Staff mới sẽ được coi là đã xác thực ngay lập tức.
             var recruiterProfile = new RecruiterProfile
             {
                 UserId = newUser.Id,
                 Status = true,
                 Email = input.Email,
-                RecruiterLevel = Constants.JobConstant.RecruiterLevel.Unverified,
                 IsLead = false, // HR Staff không phải Leader
                 CompanyId = currentRecruiter.CompanyId, // Cùng công ty với Leader
+                IsVerified = currentRecruiter.IsVerified,
+                RecruiterLevel = currentRecruiter.IsVerified 
+                    ? currentRecruiter.RecruiterLevel 
+                    : Constants.JobConstant.RecruiterLevel.Unverified,
             };
             await _recruiterProfileRepository.InsertAsync(recruiterProfile);
             await CurrentUnitOfWork.SaveChangesAsync();

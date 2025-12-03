@@ -9,7 +9,8 @@
         <app-button
           type="primary"
           size="small"
-          (click)="openAddModal()">
+          (click)="openAddModal()"
+          [disabled]="!canAddStaff">
           <i class="fas fa-plus"></i>
           Thêm HR Staff
         </app-button>
@@ -40,13 +41,6 @@
         [value]="activeStaff"
         icon="fa-user-check"
         color="#10b981">
-      </app-stat-card>
-      
-      <app-stat-card
-        label="Chờ duyệt"
-        [value]="pendingStaff"
-        icon="fa-user-clock"
-        color="#f59e0b">
       </app-stat-card>
       
       <app-stat-card
@@ -99,6 +93,10 @@
             {{ showActivityLog ? 'Danh sách nhân viên' : 'Nhật kí hoạt động' }}
           </button>
         </div>
+      </div>
+      <!-- Thông báo điều kiện thêm HR Staff -->
+      <div class="info-text" *ngIf="!canAddStaff">
+        Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.
       </div>
 
       <!-- Loading State -->
