@@ -9,6 +9,8 @@ using VCareer.IServices.IJobServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using VCareer.IServices.IJobServices;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
@@ -64,7 +66,10 @@ public class VCareerApplicationModule : AbpModule
 
         // 🔧 ĐĂNG KÝ VNPAY SERVICE
         context.Services.AddScoped<IVnpayService, VnpayService>();
-                      }
+
+        // 🔧 ĐĂNG KÝ APPLICATION SERVICE (IJobApply)
+        context.Services.AddScoped<IJobApply, ApplicationAppService>();
+    }
 
    
 

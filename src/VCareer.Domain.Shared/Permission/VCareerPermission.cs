@@ -60,6 +60,17 @@ namespace VCareer.Permission
             public const string GetDefault = Default + ".GetDefault";
         }
 
+
+        public static class Cart
+        {
+            public const string Default = GroupName + ".Cart";
+            public const string Create = Default + ".AddtoCart";
+            public const string Update = Default + ".UpdateCart";
+            public const string Delete = Default + ".DeleteCart";
+            public const string GetList = Default + ".GetList";
+          
+        }
+
         public static class Dashboard
         {
             public const string Default = GroupName + ".Dashboard";

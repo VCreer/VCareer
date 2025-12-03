@@ -129,6 +129,20 @@ namespace VCareer.Permission
             files.AddChild(VCareerPermission.ChildService.Update, L("Permission:ChildService.Update"));
 
 
+
+
+
+
+            // cart Permissions (cho recruiter)
+            var cartCvPermission = group.AddPermission(VCareerPermission.Cart.Default, L("Permission:Cart"));
+            cartCvPermission.AddChild(VCareerPermission.Cart.Create, L("Permission:Cart.Create"));
+            cartCvPermission.AddChild(VCareerPermission.Cart.Update, L("Permission:Cart.Update"));
+            cartCvPermission.AddChild(VCareerPermission.Cart.Delete, L("Permission:Cart.Delete"));
+
+            cartCvPermission.AddChild(VCareerPermission.Cart.GetList, L("Permission:CandidateCv.GetList"));
+           
+
+
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);

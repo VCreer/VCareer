@@ -514,7 +514,6 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./features/Auth/reset-password/reset-password').then(c => c.ResetPasswordComponent),
       },
-     
   //#endregion
 
   //#region  ABP routes
