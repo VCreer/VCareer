@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,6 +37,7 @@ namespace VCareer.Services.Cart
             _logger = logger;
         }
 
+        //lấy dabnh sách giỏ hàng
         public async Task<CartListDto> GetMyCartAsync()
         {
             try
@@ -77,6 +78,8 @@ namespace VCareer.Services.Cart
             }
         }
 
+
+        // thêm gói vào giỏ hàng
         public async Task<CartDto> AddToCartAsync(AddToCartDto input)
         {
             try
@@ -157,6 +160,9 @@ namespace VCareer.Services.Cart
             }
         }
 
+
+
+        // update giỏ hàng
         public async Task<CartDto> UpdateQuantityAsync(UpdateCartQuantityDto input)
         {
             if (_currentUser.Id == null)

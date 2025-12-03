@@ -174,6 +174,8 @@ namespace VCareer.Services.Order
             }
         }
 
+
+        // lấy danh sách các order
         public async Task<OrderDto> GetOrderAsync(Guid id)
         {
             var order = await _orderRepository.GetAsync(id);
@@ -203,6 +205,7 @@ namespace VCareer.Services.Order
             return orderDto;
         }
 
+        
         public async Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync(VnpayPaymentRequestDto input)
         {
             var order = await _orderRepository.GetAsync(input.OrderId);
@@ -240,6 +243,7 @@ namespace VCareer.Services.Order
                 OrderCode = order.OrderCode
             };
         }
+
 
 
         //xử li handle

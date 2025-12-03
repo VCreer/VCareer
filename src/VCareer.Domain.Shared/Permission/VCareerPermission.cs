@@ -70,15 +70,18 @@ namespace VCareer.Permission
           
         }
 
-        public static class Dashboard
-        {
-            public const string Default = GroupName + ".Dashboard";
-            public const string ViewCompanyDashboard = Default + ".ViewCompanyDashboard";
-            public const string ViewStaffPerformance = Default + ".ViewStaffPerformance";
-            public const string ViewActivityTrend = Default + ".ViewActivityTrend";
-            public const string ViewTopPerformers = Default + ".ViewTopPerformers";
-            public const string CompareStaffPerformance = Default + ".CompareStaffPerformance";
-        }
+
+
+
+        //public static class Dashboard
+        //{
+        //    public const string Default = GroupName + ".Dashboard";
+        //    public const string ViewCompanyDashboard = Default + ".ViewCompanyDashboard";
+        //    public const string ViewStaffPerformance = Default + ".ViewStaffPerformance";
+        //    public const string ViewActivityTrend = Default + ".ViewActivityTrend";
+        //    public const string ViewTopPerformers = Default + ".ViewTopPerformers";
+        //    public const string CompareStaffPerformance = Default + ".CompareStaffPerformance";
+        //}
 
         public static class Application
         {

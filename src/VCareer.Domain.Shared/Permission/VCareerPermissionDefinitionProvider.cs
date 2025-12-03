@@ -57,12 +57,12 @@ namespace VCareer.Permission
             candidateCvPermission.AddChild(VCareerPermission.CandidateCv.IncrementViewCount, L("Permission:CandidateCv.IncrementViewCount"));
             candidateCvPermission.AddChild(VCareerPermission.CandidateCv.GetDefault, L("Permission:CandidateCv.GetDefault"));
 
-            var dashboardPermission = group.AddPermission(VCareerPermission.Dashboard.Default, L("Permission:Dashboard"));
-            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewCompanyDashboard, L("Permission:Dashboard.ViewCompanyDashboard"));
-            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewStaffPerformance, L("Permission:Dashboard.ViewStaffPerformance"));
-            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewActivityTrend, L("Permission:Dashboard.ViewActivityTrend"));
-            dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewTopPerformers, L("Permission:Dashboard.ViewTopPerformers"));
-            dashboardPermission.AddChild(VCareerPermission.Dashboard.CompareStaffPerformance, L("Permission:Dashboard.CompareStaffPerformance"));
+            //var dashboardPermission = group.AddPermission(VCareerPermission.Dashboard.Default, L("Permission:Dashboard"));
+            //dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewCompanyDashboard, L("Permission:Dashboard.ViewCompanyDashboard"));
+            //dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewStaffPerformance, L("Permission:Dashboard.ViewStaffPerformance"));
+            //dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewActivityTrend, L("Permission:Dashboard.ViewActivityTrend"));
+            //dashboardPermission.AddChild(VCareerPermission.Dashboard.ViewTopPerformers, L("Permission:Dashboard.ViewTopPerformers"));
+            //dashboardPermission.AddChild(VCareerPermission.Dashboard.CompareStaffPerformance, L("Permission:Dashboard.CompareStaffPerformance"));
 
             // Application Permissions
             var applicationPermission = group.AddPermission(VCareerPermission.Application.Default, L("Permission:Application"));
