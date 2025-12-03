@@ -66,16 +66,6 @@ export class CandidateHeaderComponent implements OnInit {
     this.currentUser = this.authStateService.user;
   }
 
-  /**
-   * Xác định có đang ở trang home public hay không.
-   * Ở trang này, luôn ưu tiên hiển thị nút Đăng nhập/Đăng ký
-   * thay vì menu Người dùng, kể cả khi backend còn phiên đăng nhập.
-   */
-  isHomeView(): boolean {
-    const route = this.currentRoute || this.router.url;
-    return route === '/' || route.startsWith('/home');
-  }
-
   navigateToHome() {
     this.router.navigate(['/']);
     this.closeMobileMenu();
