@@ -67,6 +67,7 @@ namespace VCareer.Services.Job
             _jobTagService = jobTagService;
         }
 
+        [Authorize("Permission:JobPost.Approve")]
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));

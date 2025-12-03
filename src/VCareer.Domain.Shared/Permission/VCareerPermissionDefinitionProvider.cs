@@ -75,7 +75,59 @@ namespace VCareer.Permission
             applicationPermission.AddChild(VCareerPermission.Application.DownloadCV, L("Permission:Application.DownloadCV"));
             applicationPermission.AddChild(VCareerPermission.Application.Withdraw, L("Permission:Application.Withdraw"));
 
-            
+            var  jobPost= group.AddPermission(VCareerPermission.JobPost.Default, L("Permission:JobPost"));
+            files.AddChild(VCareerPermission.JobPost.Create, L("Permission:JobPost.Create"));
+            files.AddChild(VCareerPermission.JobPost.Update, L("Permission:JobPost.Update"));
+            files.AddChild(VCareerPermission.JobPost.Delete, L("Permission:JobPost.Delete"));
+            files.AddChild(VCareerPermission.JobPost.Approve, L("Permission:JobPost.Approve"));
+            files.AddChild(VCareerPermission.JobPost.Reject, L("Permission:JobPost.Reject"));
+            files.AddChild(VCareerPermission.JobPost.Statistics, L("Permission:JobPost.Statistics"));
+            files.AddChild(VCareerPermission.JobPost.LoadJobNeedApprove, L("Permission:JobPost.LoadJobNeedApprove"));
+            files.AddChild(VCareerPermission.JobPost.LoadJobByRecruiterId, L("Permission:JobPost.LoadJobByRecruiterId"));
+            files.AddChild(VCareerPermission.JobPost.LoadJobByCompanyId, L("Permission:JobPost.LoadJobByCompanyId"));
+
+            var recruitmentCampaign= group.AddPermission(VCareerPermission.RecruimentCampaign.Default, L("Permission:RecruimentCampaign"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.Create, L("Permission:RecruimentCampaign.Create"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.Delete, L("Permission:RecruimentCampaign.Delete"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.SetStatus, L("Permission:RecruimentCampaign.SetStatus"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.Update, L("Permission:RecruimentCampaign.Update"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.LoadJobOfRecruiment, L("Permission:RecruimentCampaign.LoadJobOfRecruiment"));
+            files.AddChild(VCareerPermission.RecruimentCampaign.LoadRecruiment, L("Permission:RecruimentCampaign.LoadRecruiment"));
+
+            var jobCategory= group.AddPermission(VCareerPermission.JobCategory.Default, L("Permission:JobCategory"));
+            files.AddChild(VCareerPermission.JobCategory.Create, L("Permission:JobCategory.Create"));
+            files.AddChild(VCareerPermission.JobCategory.Delete, L("Permission:JobCategory.Delete"));
+            files.AddChild(VCareerPermission.JobCategory.Update, L("Permission:JobCategory.Update"));
+            files.AddChild(VCareerPermission.JobCategory.View, L("Permission:JobCategory.View"));
+
+            var tag= group.AddPermission(VCareerPermission.Tag.Default, L("Permission:JobCategory"));
+            files.AddChild(VCareerPermission.JobCategory.Create, L("Permission:JobCategory.Create"));
+            files.AddChild(VCareerPermission.JobCategory.Delete, L("Permission:JobCategory.Delete"));
+            files.AddChild(VCareerPermission.JobCategory.Update, L("Permission:JobCategory.Update"));
+            files.AddChild(VCareerPermission.JobCategory.View, L("Permission:JobCategory.View"));
+
+            var subscriptionService= group.AddPermission(VCareerPermission.SubcriptionService.Default, L("Permission:SubscriptionService"));
+            files.AddChild(VCareerPermission.SubcriptionService.Create, L("Permission:SubscriptionService.Create"));
+            files.AddChild(VCareerPermission.SubcriptionService.Delete, L("Permission:SubscriptionService.Delete"));
+            files.AddChild(VCareerPermission.SubcriptionService.Update, L("Permission:SubscriptionService.Update"));
+            files.AddChild(VCareerPermission.SubcriptionService.AddChildService, L("Permission:SubscriptionService.AddChildService"));
+            files.AddChild(VCareerPermission.SubcriptionService.Load, L("Permission:SubscriptionService.Load"));
+
+            var subcriptionPrice= group.AddPermission(VCareerPermission.SubcriptionPrice.Default, L("Permission:SubscriptionPrice"));
+            files.AddChild(VCareerPermission.SubcriptionPrice.Create, L("Permission:SubscriptionPrice.Create"));
+            files.AddChild(VCareerPermission.SubcriptionPrice.Update, L("Permission:SubscriptionPrice.Update"));
+            files.AddChild(VCareerPermission.SubcriptionPrice.Delete, L("Permission:SubscriptionPrice.Delete"));
+            files.AddChild(VCareerPermission.SubcriptionPrice.SetStatus, L("Permission:SubscriptionPrice.SetStatus"));
+
+            var  childService= group.AddPermission(VCareerPermission.ChildService.Default, L("Permission:ChildService"));
+            files.AddChild(VCareerPermission.ChildService.Create, L("Permission:ChildService.Create"));
+            files.AddChild(VCareerPermission.ChildService.Delete, L("Permission:ChildService.Delete"));
+            files.AddChild(VCareerPermission.ChildService.Load, L("Permission:ChildService.Load"));
+            files.AddChild(VCareerPermission.ChildService.Remove, L("Permission:ChildService.Remove"));
+            files.AddChild(VCareerPermission.ChildService.StopAgent, L("Permission:ChildService.StopAgent"));
+            files.AddChild(VCareerPermission.ChildService.Update, L("Permission:ChildService.Update"));
+
+         
         }
 
         private ILocalizableString? L(string name) => LocalizableString.Create<VCareerResource>(name);

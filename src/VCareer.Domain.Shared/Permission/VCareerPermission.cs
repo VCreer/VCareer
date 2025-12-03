@@ -10,7 +10,7 @@ namespace VCareer.Permission
     {
         public const string GroupName = "VCareer";
 
-          public static class Files
+        public static class Files
         {
             public const string Default = GroupName + ".Files";
             public const string View = Default + ".View";
@@ -83,6 +83,85 @@ namespace VCareer.Permission
             public const string Withdraw = Default + ".Withdraw";
         }
 
-        
+        public static class JobPost
+        {
+            public const string Default = GroupName + ".JobPost";
+            public const string Delete = Default + ".Delete";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string Approve = Default + ".Approve";
+            public const string Reject = Default + ".Reject";
+            public const string Statistics = Default + ".Statistics";
+            public const string LoadJobByRecruiterId = Default + ".LoadJobByRecruiterId";
+            public const string LoadJobByCompanyId = Default + ".LoadJobByRecruiterId";
+            public const string LoadJobNeedApprove = Default + ".LoadJobNeedApprove";
+
+        }
+        public static class RecruimentCampaign
+        {
+            public const string Default = GroupName + ".RecruimentCampaign";
+            public const string Delete = Default + ".Delete";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string LoadRecruiment = Default + ".LoadRecruiment";
+            public const string LoadJobOfRecruiment = Default + ".LoadJobOfRecruiment";
+            public const string SetStatus = Default + ".SetStatus";
+        }
+
+        public static class JobCategory
+        {
+            public const string Default = GroupName + ".Category";
+            public const string Delete = Default + ".Delete";
+            public const string View= Default + ".View";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+        }
+        public static class Tag
+        {
+            public const string Default = GroupName + ".Tag";
+            public const string Delete = Default + ".Delete";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+        }
+
+        public static class SubcriptionService
+        {
+            public const string Default = GroupName + ".SubcriptionService";
+            public const string Delete = Default + ".Delete";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string AddChildService= Default + ".AddChildService";
+            public const string Load= Default + ".Load";
+        }
+        public static class ChildService { 
+            public const string Default = GroupName + ".ChildService";
+            public const string Delete = Default + ".Delete";
+            public const string Remove= Default + ".Remove";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string StopAgent = Default + ".StopAgent";
+            public const string Load = Default + ".Load";
+
+        }
+        public static class SubcriptionPrice 
+        {
+            public const string Default = GroupName + ".SubcriptionPrice";
+            public const string Delete = Default + ".Delete";
+            public const string Create = Default + ".Create";
+            public const string Update = Default + ".Update";
+            public const string SetStatus= Default + ".SetStatus";
+
+        }
+        public static class User
+        {
+            public const string Default = GroupName + ".User";
+        }
+        public static class Logging
+        {
+            public const string Default = GroupName + ".Logging";
+        }
+
+
+
     }
 }
