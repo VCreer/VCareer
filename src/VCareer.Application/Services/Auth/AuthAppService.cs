@@ -299,7 +299,112 @@ namespace VCareer.Services.Auth
             //SAU CẦN GHI THÊM LOG VÀO ĐÂY
         }
 
-            return  new CurrentUserInfoDto
+        [UnitOfWork]
+        public async Task CreateEmployeeAsync(CreateEmployeeDto input)
+        {
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
+
+
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+            foreach (var roleName in input.EmployeeRoles)
+            {
+                var roleCheck = await _roleManager.FindByNameAsync(roleName);
+                if (roleCheck == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                result = await _identityManager.AddToRoleAsync(newUser, roleCheck.Name);
+                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            }
+
+            var employeeProfile = new EmployeeProfile
+            {
+                Email = input.Email,
+                UserId = newUser.Id,
+            };
+
+            await _employeeRepository.InsertAsync(employeeProfile);
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
+
+        public async Task EmployeeLoginAsync(EmployeeLoginDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // nếu đặt true ở hàm check pass thì nếu đăng nhập sai thì sẽ tạm thời kháo tài khoản 
+            var check = await _signInManager.CheckPasswordSignInAsync(user, input.Password, false);
+            if (!check.Succeeded) throw new UserFriendlyException("Invalid Password");
+
+            var employeeProfile = await _employeeRepository.FirstOrDefaultAsync(x => x.UserId == user.Id);
+            if (employeeProfile == null) throw new UserFriendlyException("Login Failed");
+            if (!employeeProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
+
+            var tokens = await _tokenGenerator.CreateTokenAsync(user);
+            UpdateTokenToCookie(tokens);
+        }
+
+        public async Task RefeshTokenAsync()
+        {
+            var request = _httpContextAcessor.HttpContext!.Request;
+            var response = _httpContextAcessor.HttpContext.Response;
+
+            var refreshToken = request.Cookies["refresh_token"];
+            if (string.IsNullOrEmpty(refreshToken)) throw new BusinessException("cant get refresk token to Refresh");
+
+            var tokens = await _tokenGenerator.RefreshAsync(refreshToken);
+            if (tokens == null) throw new BusinessException("Refresh token create failed");
+            UpdateTokenToCookie(tokens);
+        }
+
+        private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
+        {
+            var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
+            // dù append ghi đè cookie nhưng có trường hợp ko xóa được thì lỗi
+            // ví dụ như cùng name nhưung khác path là ko apppend được rồi 
+            //response.Cookies.Delete("access_token", new CookieOptions { Path = "/" });
+            //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
+
+            double expiredMinuteAcesstoken = 5;
+            if (tokenResonse.ExpireMinuteAcesstoken != null) expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireHourRefreshToken);
+
+            double expiredHourReFrecesstoken = 48;
+            if (tokenResonse.ExpireHourRefreshToken != null) expiredHourReFrecesstoken = double.Parse(tokenResonse.ExpireHourRefreshToken);
+
+            response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddMinutes(expiredMinuteAcesstoken),
+                Path = "/"
+            });
+
+            response.Cookies.Append("refresh_token", tokenResonse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddHours(expiredHourReFrecesstoken),
+                Path = "/"
+            });
+        }
+        //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
+        //còn mục đích của token là để phục vụ auth backend , tạo current user
+        //thực ra có khi vẫn dùng curent user bình thường , cái này ko b có tác dụng j ko 
+        public async Task<CurrentUserInfoDto> GetCurrentUserAsync()
+        {
+            var email = _currentUser.Email;
+            var fullName = _currentUser.Name;
+            var roles = _currentUser.Roles;
+            var userId = _currentUser.Id;
+
+            /*    if (string.IsNullOrEmpty(email) ||
+                   !roles.Any() ||
+                   userId == null) throw new BusinessException("Cant get current user infomation");*/
+
+            return new CurrentUserInfoDto
             {
                 Email = email,
                 FullName = fullName,
