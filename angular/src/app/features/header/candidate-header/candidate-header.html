@@ -54,8 +54,8 @@
         (languageChange)="onLanguageChange($event)">
       </app-language-toggle>
 
-      <!-- Not Logged In State -->
-      <div class="auth-actions" *ngIf="!isLoggedIn">
+      <!-- Not Logged In State (hoặc đang ở trang home public) -->
+      <div class="auth-actions" *ngIf="!isLoggedIn || isHomeView()">
       <button class="login-btn" (click)="navigateToLogin()">
           {{ translate('header.login') }}
       </button>
@@ -67,8 +67,8 @@
         </button>
       </div>
 
-      <!-- Logged In State -->
-      <div class="user-actions" *ngIf="isLoggedIn">
+      <!-- Logged In State (chỉ hiển thị khi KHÔNG ở trang home public) -->
+      <div class="user-actions" *ngIf="isLoggedIn && !isHomeView()">
         <!-- Notifications -->
         <div class="notification-container" #notificationContainer>
           <button class="notification-btn" (click)="toggleNotificationMenu()" title="Thông báo">
