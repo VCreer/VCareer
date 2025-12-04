@@ -553,11 +553,24 @@ export class CvManagementComponent implements OnInit {
 
   onAllowRecruiterSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
-    const message = this.allowRecruiterSearch 
-      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
-      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
-    this.showToastMessage(message, 'success');
+    const newValue = target.checked;
+    
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch 
+          ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+          : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+        this.showToastMessage(message, 'success');
+      },
+      error: (error) => {
+        console.error('Error updating profile visibility:', error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showToastMessage('Không thể cập nhật cài đặt. Vui lòng thử lại.', 'error');
+      }
+    });
   }
 
   private formatDate(dateString?: string): string {
@@ -587,6 +600,11 @@ export class CvManagementComponent implements OnInit {
         } else {
           // Nếu không có name/surname, dùng email hoặc fallback
           this.userName = profile.email?.split('@')[0] || 'Người dùng';
+        }
+        
+        // Load ProfileVisibility từ profile
+        if (profile.profileVisibility !== undefined && profile.profileVisibility !== null) {
+          this.allowRecruiterSearch = profile.profileVisibility;
         }
       },
       error: (err) => {

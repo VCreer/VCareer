@@ -138,6 +138,19 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Updates the profile visibility for the current candidate user
+        /// </summary>
+        /// <param name="isVisible">Whether the profile should be visible to recruiters</param>
+        /// <returns>No content</returns>
+        [HttpPut("profile-visibility")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> UpdateProfileVisibilityAsync([FromBody] bool isVisible)
+        {
+            await _profileAppService.UpdateProfileVisibilityAsync(isVisible);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Soft deletes the current user's account
         /// </summary>
         /// <returns>No content</returns>
