@@ -61,6 +61,7 @@ export class TranslationService {
       // Sidebar
       'sidebar.verification': 'Tài khoản xác thực',
       'sidebar.not_verified': 'Chưa xác thực',
+     
       'sidebar.dashboard': 'Bảng tin',
       'sidebar.insights': 'Đăng tuyển dụng',
       'sidebar.rewards': 'TopCV Rewards',

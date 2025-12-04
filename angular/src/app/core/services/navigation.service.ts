@@ -160,16 +160,10 @@ export class NavigationService {
     this.userRoleSubject.next(userRole);
     this.authStateInitialized = true; // Đã load user thành công
 
-    // ---- Cập nhật trạng thái xác thực recruiter ----
-    // TODO: Khi backend trả về RecruiterLevel hoặc cờ đã xác thực trong user,
-    // hãy thay thế logic tạm thời này bằng dữ liệu thật từ API.
-    // Hiện tại: giữ nguyên trạng thái isVerified hiện tại, không reset về false mỗi lần load user,
-    // để tránh sidebar bị "Chưa xác thực" khi chuyển route.
-    if (userRole !== 'recruiter') {
-      // Chỉ áp dụng verification cho recruiter, các role khác luôn false
+   
       this.isVerifiedSubject.next(false);
     }
-  }
+  
 
   // Update auth state based on route context (call this when route changes)
   updateAuthStateFromRoute() {

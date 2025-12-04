@@ -129,13 +129,13 @@ namespace VCareer.Services.Profile
             }
 
             // Check if business license number already exists (excluding current record)
-            var existingLicense = await _companyRepository.FirstOrDefaultAsync(
-                x => x.BusinessLicenseNumber == input.BusinessLicenseNumber && x.Id != id);
+            //var existingLicense = await _companyRepository.FirstOrDefaultAsync(
+            //    x => x.BusinessLicenseNumber == input.BusinessLicenseNumber && x.Id != id);
 
-            if (existingLicense != null)
-            {
-                throw new UserFriendlyException("Business license number already exists.");
-            }
+            //if (existingLicense != null)
+            //{
+            //    throw new UserFriendlyException("Business license number already exists.");
+            //}
 
             // Update company information
             company.CompanyName = input.CompanyName;
@@ -151,7 +151,7 @@ namespace VCareer.Services.Profile
 
             // Update legal information
             company.TaxCode = input.TaxCode;
-            company.BusinessLicenseNumber = input.BusinessLicenseNumber;
+            //company.BusinessLicenseNumber = input.BusinessLicenseNumber;
             company.BusinessLicenseIssueDate = input.BusinessLicenseIssueDate;
             company.BusinessLicenseIssuePlace = input.BusinessLicenseIssuePlace;
             company.LegalRepresentative = input.LegalRepresentative;

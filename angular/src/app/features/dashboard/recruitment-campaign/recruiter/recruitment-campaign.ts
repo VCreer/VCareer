@@ -21,7 +21,7 @@ import {
   RecruimentCampainUpdateDto,
 } from 'src/app/proxy/dto/job-dto';
 import { ToasterService } from '@abp/ng.theme.shared';
-import { GeoService} from 'src/app/proxy/services/geo';
+import { GeoService } from 'src/app/proxy/services/geo';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 
 interface Campaign extends RecruimentCampainViewDto {
@@ -149,14 +149,20 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     // Thử load bằng API loadRecruitmentCompainByIsActive
-    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch((err) => {
-      console.error('Lỗi khi load campaigns active:', err);
-      return [];
-    });
-    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch((err) => {
-      console.error('Lỗi khi load campaigns inactive:', err);
-      return [];
-    });
+    const loadActive = this.campaignService
+      .loadRecruitmentCompainByIsActive(true)
+      .toPromise()
+      .catch(err => {
+        console.error('Lỗi khi load campaigns active:', err);
+        return [];
+      });
+    const loadInactive = this.campaignService
+      .loadRecruitmentCompainByIsActive(false)
+      .toPromise()
+      .catch(err => {
+        console.error('Lỗi khi load campaigns inactive:', err);
+        return [];
+      });
 
     Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
       console.log('Active campaigns:', active);
@@ -179,7 +185,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Load campaigns theo recruiterId
   private loadCampaignsByRecruiterId() {
     this.authService.getCurrentUser().subscribe({
-      next: (user) => {
+      next: user => {
         if (!user?.userId) {
           console.error('Không lấy được userId từ current user');
           this.loading = false;
@@ -192,14 +198,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         const loadActive = this.campaignService
           .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, true)
           .toPromise()
-          .catch((err) => {
+          .catch(err => {
             console.error('Lỗi khi load campaigns active theo recruiterId:', err);
             return [];
           });
         const loadInactive = this.campaignService
           .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, false)
           .toPromise()
-          .catch((err) => {
+          .catch(err => {
             console.error('Lỗi khi load campaigns inactive theo recruiterId:', err);
             return [];
           });
@@ -215,7 +221,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
           this.loading = false;
         });
       },
-      error: (err) => {
+      error: err => {
         console.error('Lỗi khi lấy current user:', err);
         this.loading = false;
         this.toaster.error('Không thể tải thông tin người dùng');
@@ -230,7 +236,9 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       appliedCvs: 0,
       jobCount: 0,
       startDate: this.formatDate(dto.creationTime),
-      endDate: this.formatDate(dto.lastModificationTime || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)),
+      endDate: this.formatDate(
+        dto.lastModificationTime || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+      ),
     }));
   }
 
@@ -262,13 +270,13 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         this.showActivityModal = true;
         this.resetForm();
       },
-      error: (err) => {
+      error: err => {
         console.error(err);
         this.toaster.error('Tạo chiến dịch thất bại');
       },
       complete: () => {
         this.isCreating = false;
-      }
+      },
     });
   }
 
@@ -287,7 +295,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   onToggleCampaign(campaign: Campaign, checked: boolean) {
     // Ngăn double request
     if (this.isTogglingCampaign) return;
-    
+
     this.isTogglingCampaign = true;
 
     this.campaignService
@@ -303,7 +311,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           this.isTogglingCampaign = false;
-        }
+        },
       });
   }
 
@@ -342,7 +350,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       },
       complete: () => {
         this.isSavingEdit = false;
-      }
+      },
     });
   }
 
@@ -355,9 +363,8 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(c =>
-        c.name?.toLowerCase().includes(q) ||
-        c.id?.toLowerCase().includes(q)
+      filtered = filtered.filter(
+        c => c.name?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q)
       );
     }
 
@@ -420,16 +427,16 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
   onViewJobs(campaign: Campaign) {
     this.router.navigate(['/recruiter/campaign-job-management'], {
-      queryParams: { 
+      queryParams: {
         campaignId: campaign.id,
-        campaignName: campaign.name 
-      }
+        campaignName: campaign.name,
+      },
     });
   }
 
   onCreateNewCampaign() {
     this.viewMode = 'create';
-    this.campaignForm = { campaignName: ''};
+    this.campaignForm = { campaignName: '' };
     this.validationErrors = {};
   }
 
@@ -437,7 +444,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     const isOpening = this.showActionsMenu !== campaignId;
     this.showActionsMenu = isOpening ? campaignId : null;
-    
+
     if (isOpening) {
       const button = event.currentTarget as HTMLElement;
       const rect = button.getBoundingClientRect();
@@ -452,17 +459,17 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     const menuGap = 8;
     const menuMinWidth = 180;
     const menuMaxWidth = 300;
-    
+
     // Vị trí mặc định: bên phải button
     let menuLeft = buttonRect.right + menuGap;
     let top = buttonRect.bottom + menuGap;
-    
+
     // Nếu không đủ chỗ bên phải, đặt menu bên trái button
     const viewportWidth = window.innerWidth;
     if (menuLeft + menuMinWidth > viewportWidth) {
       menuLeft = buttonRect.left - menuMaxWidth - menuGap;
     }
-    
+
     // Đảm bảo menu không vượt quá viewport
     if (menuLeft < 0) {
       menuLeft = 8;
@@ -470,7 +477,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     if (menuLeft + menuMaxWidth > viewportWidth) {
       menuLeft = viewportWidth - menuMaxWidth - 8;
     }
-    
+
     // Đảm bảo menu không vượt quá viewport phía dưới
     const viewportHeight = window.innerHeight;
     const menuHeight = 200;
@@ -480,11 +487,11 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     if (top < 0) {
       top = 8;
     }
-    
+
     this.menuPosition = {
       top: top,
       left: menuLeft,
-      maxWidth: menuMaxWidth
+      maxWidth: menuMaxWidth,
     };
   }
 
@@ -504,8 +511,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
   private updateMenuPositionFromButton() {
     if (!this.showActionsMenu) return;
-    
-    const container = document.querySelector(`[data-campaign-id="${this.showActionsMenu}"]`) as HTMLElement;
+
+    const container = document.querySelector(
+      `[data-campaign-id="${this.showActionsMenu}"]`
+    ) as HTMLElement;
     if (container) {
       const button = container.querySelector('.actions-btn') as HTMLElement;
       if (button) {
@@ -521,7 +530,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     if (confirm(`Xóa chiến dịch "${campaign.name}"?`)) {
       this.isDeletingCampaign = true;
-      
+
       // TODO: Gọi API xóa nếu backend có
       setTimeout(() => {
         this.toaster.success('Chức năng xóa sẽ được cập nhật sau');
@@ -545,10 +554,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     this.showActionsMenu = null;
     this.menuPosition = null;
     this.router.navigate(['/recruiter/job-posting'], {
-      queryParams: { 
+      queryParams: {
         campaignName: campaign.name,
-        campaignId: campaign.id 
-      }
+        campaignId: campaign.id,
+      },
     });
   }
 }
