@@ -30,11 +30,9 @@ export class AuthGuard implements CanActivate {
     return this.state.user$.pipe(
       take(1),
       map(user => {
-        console.log('[AuthGuard] Checking access for:', state.url, 'User:', user);
-        
+       
         // Nếu chưa login → redirect về login
         if (!user) {
-          console.log('[AuthGuard] User chưa login → redirect về login');
           this.redirectToLogin(state.url);
           return false;
         }
@@ -44,7 +42,6 @@ export class AuthGuard implements CanActivate {
         const primaryRole = getPrimaryRoutingRole(backendRoles);
 
         if (!primaryRole) {
-          console.warn('[AuthGuard] User không có role hợp lệ → redirect về candidate login');
           this.router.navigate(['/candidate/login']);
           return false;
         }
@@ -55,9 +52,6 @@ export class AuthGuard implements CanActivate {
         if (requiredRole) {
           // Nếu route yêu cầu role cụ thể
           if (primaryRole !== requiredRole) {
-            console.warn(
-              `[AuthGuard] Role mismatch! User role: ${primaryRole}, Required: ${requiredRole} → redirect`
-            );
             this.redirectToRoleHome(primaryRole);
             return false;
           }
@@ -65,9 +59,6 @@ export class AuthGuard implements CanActivate {
           // Nếu không có yêu cầu role cụ thể → kiểm tra từ URL
           const roleFromUrl = this.getRoleFromUrl(state.url);
           if (roleFromUrl && roleFromUrl !== primaryRole) {
-            console.warn(
-              `[AuthGuard] URL role mismatch! User role: ${primaryRole}, URL suggests: ${roleFromUrl} → redirect`
-            );
             this.redirectToRoleHome(primaryRole);
             return false;
           }
@@ -80,9 +71,10 @@ export class AuthGuard implements CanActivate {
   }
 
   private getRoleFromUrl(url: string): 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE' | null {
-    if (url.startsWith('/employee')) return 'EMPLOYEE';
-    if (url.startsWith('/recruiter')) return 'RECRUITER';
-    if (url === '/' || url.startsWith('/home') || url.startsWith('/candidate/')) {
+    const cleanUrl = url.split('?')[0];
+    if (cleanUrl.startsWith('/employee')) return 'EMPLOYEE';
+    if (cleanUrl.startsWith('/recruiter')) return 'RECRUITER';
+    if (cleanUrl === '/' || url.startsWith('/home') || url.startsWith('/candidate/')) {
       return 'CANDIDATE';
     }
     return null;

@@ -33,19 +33,16 @@ export class AuthRedirectGuard implements CanActivate {
       map(user => {
         // Nếu chưa login → cho phép vào trang login/register
         if (!user) {
-          console.log('[AuthRedirectGuard] User chưa login → cho phép truy cập:', state.url);
           return true;
         }
 
         // Nếu đã login → redirect về home
         const role = getPrimaryRoutingRole(user.roles ?? []);
-        console.log('[AuthRedirectGuard] User đã login với role:', role, '→ redirect về home');
         
         if (role) {
           this.redirectToRoleHome(role);
         } else {
           // Nếu không có role hợp lệ → cho logout
-          console.warn('[AuthRedirectGuard] User không có role hợp lệ');
           this.router.navigate(['/candidate/login']);
         }
         
@@ -57,7 +54,7 @@ export class AuthRedirectGuard implements CanActivate {
   private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
     const map = {
       EMPLOYEE: ['/employee/home'],
-      RECRUITER: ['/recruiter'],
+      RECRUITER: ['recruiter/recruitment-report'],
       CANDIDATE: ['/home'],
     };
     this.router.navigate(map[role]);

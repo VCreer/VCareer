@@ -4,6 +4,16 @@ import { AuthRedirectGuard } from './guards/auth-redirect.guard';
 import { AuthGuard } from './guards/auth.guard';
 
 export const APP_ROUTES: Routes = [
+// path public ko can dang nhap
+   {
+        path: 'candidate/job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+      },
+      {
+        path: 'candidate/job-detail/:id',
+        loadComponent: () =>
+          import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
   //#region Auth Routes (Public - với AuthRedirectGuard để redirect user đã đăng nhập)
   {
     path: 'candidate/login',
@@ -141,15 +151,7 @@ export const APP_ROUTES: Routes = [
             c => c.UploadedCvViewComponent
           ),
       },
-      {
-        path: 'candidate/job',
-        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
-      },
-      {
-        path: 'candidate/job-detail/:id',
-        loadComponent: () =>
-          import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
-      },
+     
       {
         path: 'candidate/company',
         loadComponent: () =>
