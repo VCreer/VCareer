@@ -6,6 +6,9 @@
   position: relative;
   z-index: 1; // Thấp hơn sidebar (z-index: 999)
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 
   // Responsive: remove sidebar padding on mobile
   @media (max-width: 768px) {
@@ -19,9 +22,15 @@
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
-  transition: max-width 0.3s ease;
+  transition: max-width 0.3s ease, padding 0.3s ease;
   padding: 0 24px;
+  // Max-width sẽ được tính động từ TypeScript
+  // Desktop: tự động điều chỉnh theo sidebar
+  @media (min-width: 769px) {
+    // Giữ nguyên logic từ TypeScript
+  }
 
+  // Mobile: full width với padding nhỏ
   @media (max-width: 768px) {
     max-width: 100% !important;
     padding: 0 16px;

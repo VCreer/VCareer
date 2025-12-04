@@ -31,7 +31,7 @@
           class="main-search-btn"
           (click)="onMainSearch({ keyword: searchKeyword })"
         >
-          <i class="search-icon">🔍</i>
+          <i class="fa fa-search search-icon"></i>
           {{ translate('job_page.search_button') }}
         </button>
       </app-filter-bar>
@@ -68,7 +68,16 @@
 
         <!-- No Results -->
         <div class="no-results" *ngIf="totalCount === 0">
-          <p>Không tìm thấy việc làm phù hợp</p>
+          <div class="empty-state">
+            <img
+              src="assets/images/job/no-job.png"
+              alt="Không tìm thấy việc làm phù hợp"
+              class="empty-state-image"
+            />
+            <p class="empty-state-text">
+              {{ translate('job_list.no_jobs_found') }}
+            </p>
+          </div>
         </div>
 
         <!-- ✅ JobListComponent with API data -->

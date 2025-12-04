@@ -9,19 +9,17 @@ import { LogoSectionComponent } from '../../../shared/components/logo-section/lo
 import { ButtonComponent } from '../../../shared/components/button/button';
 import { IconButtonBadgeComponent } from '../../../shared/components/icon-button-badge/icon-button-badge';
 import { IconActionButtonComponent } from '../../../shared/components/icon-action-button/icon-action-button';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
 import { NotificationMenuComponent, NotificationItem } from '../../../shared/components/notification-menu/notification-menu';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-recruiter-header-management',
   standalone: true,
-  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, LanguageToggleComponent, NotificationMenuComponent, SidebarComponent],
+  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, NotificationMenuComponent, SidebarComponent],
   templateUrl: './recruiter-header-management.html',
   styleUrls: ['./recruiter-header-management.scss']
 })
 export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
-  selectedLanguage = 'vi';
   showDropdownMenu = false;
   showNotificationMenu = false;
   showSidebar = false;
@@ -44,11 +42,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private navigationService: NavigationService,
     private cartService: CartService
-  ) {
-    this.translationService.currentLanguage$.subscribe(lang => {
-      this.selectedLanguage = lang;
-    });
-  }
+  ) {}
 
   ngOnInit() {
     // Load initial cart count
@@ -64,10 +58,6 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     if (this.cartSubscription) {
       this.cartSubscription.unsubscribe();
     }
-  }
-
-  onLanguageChange(lang: string) {
-    this.selectedLanguage = lang;
   }
 
   @HostListener('document:click', ['$event'])

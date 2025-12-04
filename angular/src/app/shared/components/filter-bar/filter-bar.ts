@@ -118,7 +118,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     // ✅ Update khi parent truyền data mới
     if (changes['categories'] && this.categories) {
       this.filteredCategories = [...this.categories];
-      console.log('✅ FilterBar received categories:', this.categories.length);
 
       // ✅ When category tree arrives (after navigation from Home),
       // ensure parent checkboxes reflect currently selected leaf nodes.
@@ -136,12 +135,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     }
     if (changes['provinces'] && this.provinces) {
       this.filteredProvinces = [...this.provinces];
-      console.log('✅ FilterBar received provinces:', this.provinces.length);
     }
 
     // ✅ Restore selected filters (from query params)
     if (changes['selectedCategoryIds'] && this.selectedCategoryIds) {
-      console.log('✅ Restoring selected categories:', this.selectedCategoryIds);
       // Restore selected leaf nodes
       this.internalSelectedCategoryIds = new Set(this.selectedCategoryIds);
       // ✅ Ensure parent levels (level 1, level 2) are also marked as selected
@@ -152,12 +149,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (changes['selectedProvinceCodes'] && this.selectedProvinceCodes) {
-      console.log('✅ Restoring selected provinces:', this.selectedProvinceCodes);
       this.internalSelectedProvinceCodes = new Set(this.selectedProvinceCodes);
     }
 
     if (changes['selectedWardCodes'] && this.selectedWardCodes) {
-      console.log('✅ Restoring selected wards:', this.selectedWardCodes);
       this.internalSelectedWardCodes = new Set(this.selectedWardCodes);
     }
   }
@@ -176,10 +171,8 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
       // Ngay cả khi categories rỗng, vẫn cần clear search để show empty state
       if (this.categories && this.categories.length > 0) {
         this.filteredCategories = [...this.categories];
-        console.log('   ✅ Reloaded categories:', this.filteredCategories.length);
       } else {
         this.filteredCategories = [];
-        console.warn('   ⚠️ No categories available! Categories array:', this.categories);
       }
       
       // ✅ Clear search to show tree (luôn clear để hiển thị tree view)
@@ -397,20 +390,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * ✅ Chỉ emit leaf node IDs
    */
   applyCategoryFilter() {
-    console.log(
-      '🔵 Apply Category Filter - selectedCategoryIds:',
-      Array.from(this.internalSelectedCategoryIds)
-    );
-
     const leafIds = Array.from(this.internalSelectedCategoryIds).filter(id => {
       const category = this.findCategoryById(id);
-      console.log(
-        `   - Checking ${id}: isLeaf=${category?.isLeaf}, name=${category?.categoryName}`
-      );
       return category?.isLeaf === true;
     });
-
-    console.log('✅ Emitting leaf IDs:', leafIds);
     this.categorySelected.emit(leafIds);
     this.showCategoryDropdown = false;
   }
@@ -466,8 +449,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * Vì ProvinceDto từ geo-dto có cấu trúc khác, ta sẽ filter trong danh sách đã có
    */
   private performLocationSearch(keyword: string) {
-    console.log('🔍 Filtering provinces with keyword:', keyword);
-
     if (!this.provinces || this.provinces.length === 0) {
       this.filteredProvinces = [];
       this.hasLocationResults = false;
@@ -491,7 +472,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
     this.filteredProvinces = filtered;
     this.hasLocationResults = filtered.length > 0;
-    console.log('✅ Location search results:', filtered.length);
   }
 
   /**

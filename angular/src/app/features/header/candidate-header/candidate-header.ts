@@ -5,13 +5,12 @@ import { filter } from 'rxjs/operators';
 import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 
 @Component({
   selector: 'app-candidate-header',
   standalone: true,
-  imports: [CommonModule, LanguageToggleComponent],
+  imports: [CommonModule],
   templateUrl: './candidate-header.html',
   styleUrls: ['./candidate-header.scss']
 })
@@ -19,7 +18,6 @@ export class CandidateHeaderComponent implements OnInit {
   @ViewChild('notificationContainer', { static: false }) notificationContainer?: ElementRef<HTMLElement>;
   currentRoute = '';
   isMenuOpen = false;
-  selectedLanguage = 'vi';
   isLoggedIn = false;
   showProfileMenu = false;
   showNotificationMenu = false;
@@ -46,11 +44,6 @@ export class CandidateHeaderComponent implements OnInit {
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
       });
-
-    // Subscribe to language changes
-    this.translationService.currentLanguage$.subscribe(lang => {
-      this.selectedLanguage = lang;
-    });
 
     // Subscribe to authentication state changes
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
@@ -131,11 +124,6 @@ export class CandidateHeaderComponent implements OnInit {
       return this.currentRoute === '/' || this.currentRoute === '/home';
     }
     return this.currentRoute === route || this.currentRoute.startsWith(route);
-  }
-
-  onLanguageChange(lang: string) {
-    this.selectedLanguage = lang;
-    this.translationService.setLanguage(lang);
   }
 
   translate(key: string): string {

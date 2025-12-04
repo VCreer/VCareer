@@ -345,24 +345,25 @@ export class TranslationService {
       'homepage.job_categories': 'Danh mục việc làm',
       'homepage.stats.jobs': 'Việc làm',
       'homepage.stats.companies': 'Công ty',
+      'homepage.stats.categories': 'Danh mục nghề',
+      'homepage.stats.provinces': 'Tỉnh/Thành phố',
       'homepage.stats.candidates': 'Ứng viên',
       'homepage.stats.success': 'Thành công'
       ,
       // Stats
       'stats.customers_title': 'Khách hàng trên toàn thế giới',
-      'stats.customers_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.',
+      'stats.customers_desc': 'Chúng tôi tự hào phục vụ hàng chục nghìn khách hàng trên toàn cầu, mang đến trải nghiệm tuyển dụng hiệu quả và đáng tin cậy.',
       'stats.resumes_title': 'Sơ yếu lý lịch đang hoạt động',
-      'stats.resumes_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.',
+      'stats.resumes_desc': 'Hệ thống luôn cập nhật hàng chục nghìn hồ sơ chất lượng, giúp việc kết nối giữa ứng viên và doanh nghiệp trở nên nhanh chóng và chính xác.',
       'stats.companies_title': 'Các công ty',
-      'stats.companies_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.'
-      ,
+      'stats.companies_desc': 'Nhiều doanh nghiệp uy tín tin tưởng sử dụng nền tảng của chúng tôi để tìm kiếm nhân tài và mở rộng đội ngũ.',
       // About / CTA / Future
       'about.title': 'Cuộc sống tốt đẹp bắt đầu từ một công ty tốt',
-      'about.description': 'Ultricies purus dolor viverra mi laoreet at cursus justo. Ultrices purus diam egestas amet faucibus tempor blandit. Elit velit mauris aliquam est diam. Leo sagittis consectetur diam morbi erat aenean. Vulputate praesent congue faucibus in euismod feugiat euismod volutpat.',
+      'about.description': 'Một công ty tốt không chỉ mang đến công việc ổn định mà còn tạo ra môi trường giúp bạn phát triển mỗi ngày. Khi được làm việc đúng nơi, bạn sẽ cảm thấy tự tin, có động lực và tận hưởng cuộc sống trọn vẹn hơn. Hãy bắt đầu hành trình tìm kiếm cơ hội phù hợp để xây dựng tương lai tốt đẹp cho chính mình.',
       'cta.find_jobs': 'Tìm Kiếm Việc Làm',
       'cta.learn_more': 'Tìm hiểu thêm',
       'future.title': 'Tạo dựng một tương lai tốt đẹp hơn cho chính bạn',
-      'future.description': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scelerisque rhoncus.'
+      'future.description':'Hãy bắt đầu xây dựng tương lai của bạn bằng những lựa chọn đúng đắn ngay hôm nay. Chúng tôi mang đến cơ hội, công cụ và môi trường giúp bạn phát triển kỹ năng, mở rộng sự nghiệp và đạt được mục tiêu mong muốn.'
       ,
       // Footer / Common
       'footer.tagline': 'Tiếp lợi thế - Nối thành công',
@@ -885,6 +886,8 @@ export class TranslationService {
       'homepage.job_categories': 'Job Categories',
       'homepage.stats.jobs': 'Jobs',
       'homepage.stats.companies': 'Companies',
+      'homepage.stats.categories': 'Job categories',
+      'homepage.stats.provinces': 'Provinces',
       'homepage.stats.candidates': 'Candidates',
       'homepage.stats.success': 'Success'
       ,
