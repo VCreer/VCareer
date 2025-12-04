@@ -500,96 +500,96 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onConfirmCreateSale(): void {
-    if (this.isSavingSale || !this.validateSaleForm()) {
-      return;
-    }
+  //   if (this.isSavingSale || !this.validateSaleForm()) {
+  //     return;
+  //   }
     
-    this.isSavingSale = true;
+  //   this.isSavingSale = true;
     
-    const createDto: SubcriptionsCreateDto = {
-      title: `Sale ${this.saleForm.salePercent}%`,
-      description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
-      target: SubcriptionContance_SubcriptorTarget.Recruiter,
-      status: SubcriptionContance_SubcriptionStatus.Active,
-      originalPrice: 0,
-      isLimited: false,
-      isBuyLimited: false,
-      totalBuyEachUser: 0,
-      isLifeTime: false,
-      dayDuration: undefined,
-      isActive: true
-    };
+  //   const createDto: SubcriptionsCreateDto = {
+  //     title: `Sale ${this.saleForm.salePercent}%`,
+  //     description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
+  //     target: SubcriptionContance_SubcriptorTarget.Recruiter,
+  //     status: SubcriptionContance_SubcriptionStatus.Active,
+  //     originalPrice: 0,
+  //     isLimited: false,
+  //     isBuyLimited: false,
+  //     totalBuyEachUser: 0,
+  //     isLifeTime: false,
+  //     dayDuration: undefined,
+  //     isActive: true
+  //   };
 
-    this.subcriptionPriceService.createSubcriptionPriceByCreateSubCriptionDto(createDto)
-      .pipe(finalize(() => {
-        setTimeout(() => (this.isSavingSale = false), 250);
-      }))
-      .subscribe({
-        next: () => {
-    const newSale: PackageSale = {
-      id: `sale_${Date.now()}`,
-      packageId: this.saleForm.packageId!,
-      package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-      salePercent: this.saleForm.salePercent!,
-      startDate: this.saleForm.startDate!,
-      endDate: this.saleForm.endDate!,
-      status: this.saleForm.status!,
-      isActive: this.saleForm.isActive || false,
-      createdDate: new Date().toISOString()
-    };
+  //   this.subcriptionPriceService.createSubcriptionPriceByDto(createDto)
+  //     .pipe(finalize(() => {
+  //       setTimeout(() => (this.isSavingSale = false), 250);
+  //     }))
+  //     .subscribe({
+  //       next: () => {
+  //   const newSale: PackageSale = {
+  //     id: `sale_${Date.now()}`,
+  //     packageId: this.saleForm.packageId!,
+  //     package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+  //     salePercent: this.saleForm.salePercent!,
+  //     startDate: this.saleForm.startDate!,
+  //     endDate: this.saleForm.endDate!,
+  //     status: this.saleForm.status!,
+  //     isActive: this.saleForm.isActive || false,
+  //     createdDate: new Date().toISOString()
+  //   };
 
-    this.allSales = [newSale, ...this.allSales];
-    this.showToastMessage('Tạo sale thành công', 'success');
-    this.showCreateSaleModal = false;
-    this.applySaleFilters();
-        },
-        error: (error) => {
-          console.error('Error creating sale:', error);
-          this.showToastMessage('Không thể tạo sale', 'error');
-  }
-      });
+  //   this.allSales = [newSale, ...this.allSales];
+  //   this.showToastMessage('Tạo sale thành công', 'success');
+  //   this.showCreateSaleModal = false;
+  //   this.applySaleFilters();
+  //       },
+  //       error: (error) => {
+  //         console.error('Error creating sale:', error);
+  //         this.showToastMessage('Không thể tạo sale', 'error');
+  // }
+  //     });
   }
 
   onConfirmEditSale(): void {
-    if (!this.selectedSale || !this.validateSaleForm()) {
-      return;
-    }
+  //   if (!this.selectedSale || !this.validateSaleForm()) {
+  //     return;
+  //   }
 
-    const updateDto: SubcriptionsUpdateDto = {
-      subcriptionId: this.selectedSale.id,
-      title: `Sale ${this.saleForm.salePercent}%`,
-      description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
-      isActive: this.saleForm.isActive || false,
-      dayDuration: undefined
-    };
+  //   const updateDto: SubcriptionsUpdateDto = {
+  //     subcriptionId: this.selectedSale.id,
+  //     title: `Sale ${this.saleForm.salePercent}%`,
+  //     description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
+  //     isActive: this.saleForm.isActive || false,
+  //     dayDuration: undefined
+  //   };
 
-    this.subcriptionPriceService.updateSubcriptionPrice(updateDto)
-      .subscribe({
-        next: () => {
-    const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
-    if (index !== -1) {
-      this.allSales[index] = {
-        ...this.allSales[index],
-        packageId: this.saleForm.packageId!,
-        package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-        salePercent: this.saleForm.salePercent!,
-        startDate: this.saleForm.startDate!,
-        endDate: this.saleForm.endDate!,
-        status: this.saleForm.status!,
-        isActive: this.saleForm.isActive || false,
-        updatedDate: new Date().toISOString()
-      };
-    }
+  //   this.subcriptionPriceService.updateSubcriptionPrice(updateDto)
+  //     .subscribe({
+  //       next: () => {
+  //   const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
+  //   if (index !== -1) {
+  //     this.allSales[index] = {
+  //       ...this.allSales[index],
+  //       packageId: this.saleForm.packageId!,
+  //       package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+  //       salePercent: this.saleForm.salePercent!,
+  //       startDate: this.saleForm.startDate!,
+  //       endDate: this.saleForm.endDate!,
+  //       status: this.saleForm.status!,
+  //       isActive: this.saleForm.isActive || false,
+  //       updatedDate: new Date().toISOString()
+  //     };
+  //   }
 
-    this.showToastMessage('Cập nhật sale thành công', 'success');
-    this.showEditSaleModal = false;
-    this.applySaleFilters();
-        },
-        error: (error) => {
-          console.error('Error updating sale:', error);
-          this.showToastMessage('Không thể cập nhật sale', 'error');
-  }
-      });
+  //   this.showToastMessage('Cập nhật sale thành công', 'success');
+  //   this.showEditSaleModal = false;
+  //   this.applySaleFilters();
+  //       },
+  //       error: (error) => {
+  //         console.error('Error updating sale:', error);
+  //         this.showToastMessage('Không thể cập nhật sale', 'error');
+  // }
+  //     });
   }
 
   onDeleteSale(sale: PackageSale): void {
@@ -602,18 +602,18 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         dayDuration: undefined
       };
 
-      this.subcriptionPriceService.deleteSoftSubcriptionPrice(deleteDto)
-        .subscribe({
-          next: () => {
-      this.allSales = this.allSales.filter(s => s.id !== sale.id);
-      this.showToastMessage('Đã xóa sale', 'success');
-      this.applySaleFilters();
-          },
-          error: (error) => {
-            console.error('Error deleting sale:', error);
-            this.showToastMessage('Không thể xóa sale', 'error');
-    }
-        });
+    //   this.subcriptionPriceService.deleteSubcriptionPrice(Guid )
+    //     .subscribe({
+    //       next: () => {
+    //   this.allSales = this.allSales.filter(s => s.id !== sale.id);
+    //   this.showToastMessage('Đã xóa sale', 'success');
+    //   this.applySaleFilters();
+    //       },
+    //       error: (error) => {
+    //         console.error('Error deleting sale:', error);
+    //         this.showToastMessage('Không thể xóa sale', 'error');
+    // }
+    //     });
   }
   }
 

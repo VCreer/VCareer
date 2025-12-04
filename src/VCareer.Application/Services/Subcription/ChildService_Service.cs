@@ -1,5 +1,6 @@
 ﻿using AutoMapper.Execution;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
 using VCareer.Models.Subcription;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.ObjectMapping;
@@ -37,6 +39,7 @@ namespace VCareer.Services.Subcription
             _effectingJobServiceRepository = effectingJobServiceRepository;
         }
         [HttpPost("create-childservice")]
+        [Authorize(VCareerPermission.ChildService.Create)]
         public async Task CreateChildServiceAsync(ChildServiceCreateDto dto)
         {
             if (dto.IsLifeTime && dto.TimeUsedLimit > 0) throw new BusinessException("Can't Have timelimit when IsLifeTime");
@@ -61,6 +64,7 @@ namespace VCareer.Services.Subcription
         //sẽ ko hiển thị để người dùng mới dùng nữa
         //đối với người dùng đã mua gói thì vẫn sẽ cho dùng nốt đến hết hạn 
         [HttpDelete("delete-childservice")]
+        [Authorize(VCareerPermission.ChildService.Delete)]
         public async Task DeleteChildServiceAsync(Guid childServiceId)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
@@ -73,6 +77,7 @@ namespace VCareer.Services.Subcription
         //khẩn cấp dừng dịch vụ trên tất cả user
         [UnitOfWork(true)]
         [HttpPut("stop-agent-childservice")]
+        [Authorize(VCareerPermission.ChildService.StopAgent)]
         public async Task StopAgentCHildServiceAsync(Guid childServiceId)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
@@ -113,6 +118,7 @@ namespace VCareer.Services.Subcription
 
         // chi cho phep update 1 so truong noi dung
         [HttpPut("update-childservice")]
+        [Authorize(VCareerPermission.ChildService.Update)]
         public async Task UpdateChildServiceAsync(ChildServiceUpdateDto dto)
         {
             var childrenService = await _childServiceRepository.FindAsync(dto.CHildServiceId);
@@ -126,6 +132,7 @@ namespace VCareer.Services.Subcription
         }
 
         [HttpPost("GetChildServices")]
+        [Authorize(VCareerPermission.ChildService.Load)]
         public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(string? serviceAction, string? target, PagingDto paging)
         {
             var childServices = (await _childServiceRepository.GetQueryableAsync());

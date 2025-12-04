@@ -108,9 +108,6 @@ namespace VCareer.Services.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
-
-
-
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, UpdateCompanyLegalInfoDto input)
         {
@@ -159,7 +156,7 @@ namespace VCareer.Services.Profile
             company.TaxCertificateFile = input.TaxCertificateFile;
             company.RepresentativeIdCardFile = input.RepresentativeIdCardFile;
             company.OtherSupportFile = input.OtherSupportFile;
-            
+
             // Reset verification status to pending for re-verification by employee
             // If company was previously verified, reset both statuses
             if (company.VerificationStatus == true || company.LegalVerificationStatus == "approved")
@@ -176,19 +173,13 @@ namespace VCareer.Services.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
-
-
-
-
+        [Authorize(VCareerPermission.CompanyVerification.View)]
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
-
-
-
-
+        [Authorize(VCareerPermission.CompanyVerification.View)]
         public async Task<CompanyLegalInfoDto> GetCurrentUserCompanyLegalInfoAsync()
         {
             // In real scenario, you would get company from current user's profile
@@ -204,10 +195,6 @@ namespace VCareer.Services.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
-
-
-
-
         public async Task<List<CompanyLegalInfoDto>> GetCurrentUserCompanyLegalInfoListAsync()
         {
             // In real scenario, you would filter by current user
@@ -215,11 +202,6 @@ namespace VCareer.Services.Profile
             var companies = await _companyRepository.GetListAsync();
             return ObjectMapper.Map<List<Company>, List<CompanyLegalInfoDto>>(companies);
         }
-
-
-
-
-
 
         [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
         public async Task DeleteCompanyLegalInfoAsync(int id)
@@ -247,7 +229,6 @@ namespace VCareer.Services.Profile
 
             await _companyRepository.UpdateAsync(company);
         }
-
 
 
         [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
@@ -287,7 +268,7 @@ namespace VCareer.Services.Profile
 
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
-
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UploadLegalDocumentAsync(int id, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -329,7 +310,7 @@ namespace VCareer.Services.Profile
 
             var company = await _companyRepository.GetAsync(id);
             company.LegalDocumentUrl = fileDescriptor.StoragePath;
-            
+
             // Reset verification status to pending for re-verification by employee
             // If company was previously verified, reset both statuses
             if (company.VerificationStatus == true || company.LegalVerificationStatus == "approved")
@@ -365,7 +346,7 @@ namespace VCareer.Services.Profile
         {
             // Sử dụng repository để lấy company với đầy đủ thông tin industries
             var job = await _jobPostRepository.GetAsync(jobId);
-            var company = await _companyRepository.FindAsync(c=>c.Id==job.CompanyId );
+            var company = await _companyRepository.FindAsync(c => c.Id == job.CompanyId);
 
             if (company == null)
             {
@@ -432,11 +413,11 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
         /// </summary>
-        [Authorize]
+        [Authorize(VCareerPermission.CompanyVerification.ViewPendingCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetPendingCompaniesAsync(CompanyVerificationFilterDto input)
         {
             var queryable = await _companyRepository.GetQueryableAsync();
-            
+
             // Lọc các công ty có status = "pending"
             queryable = queryable.Where(c => c.LegalVerificationStatus == "pending");
 
@@ -444,7 +425,7 @@ namespace VCareer.Services.Profile
             if (!string.IsNullOrWhiteSpace(input.Keyword))
             {
                 var keyword = input.Keyword.ToLower();
-                queryable = queryable.Where(c => 
+                queryable = queryable.Where(c =>
                     (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
                     (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
                     (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
@@ -506,7 +487,7 @@ namespace VCareer.Services.Profile
             foreach (var company in companies)
             {
                 var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
-                
+
                 // Get recruiter from dictionary
                 if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
                 {
@@ -534,11 +515,11 @@ namespace VCareer.Services.Profile
         /// Duyệt công ty (chỉ Employee/Admin)
         /// Cho phép duyệt các công ty đang ở trạng thái "pending" hoặc "rejected"
         /// </summary>
-        [Authorize]
+        [Authorize(VCareerPermission.CompanyVerification.ApproveCompany)]
         public async Task ApproveCompanyAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
-            
+
             // Cho phép duyệt các công ty đang ở trạng thái "pending" hoặc "rejected"
             if (company.LegalVerificationStatus != "pending" && company.LegalVerificationStatus != "rejected")
             {
@@ -548,7 +529,7 @@ namespace VCareer.Services.Profile
             company.LegalVerificationStatus = "approved";
             // Tạm thời lưu null vì database là bigint nhưng CurrentUser.Id là Guid
             // TODO: Tạo migration để đổi LegalReviewedBy từ bigint sang uniqueidentifier
-            company.LegalReviewedBy = null; 
+            company.LegalReviewedBy = null;
             company.LegalReviewedAt = DateTime.UtcNow;
             company.RejectionNotes = null; // Clear rejection notes if any
             company.VerificationStatus = true;
@@ -561,11 +542,11 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Từ chối công ty (chỉ Employee/Admin)
         /// </summary>
-        [Authorize]
+        [Authorize(VCareerPermission.CompanyVerification.RejectCompany)]
         public async Task RejectCompanyAsync(int id, RejectCompanyDto input)
         {
             var company = await _companyRepository.GetAsync(id);
-            
+
             if (company.LegalVerificationStatus != "pending")
             {
                 throw new UserFriendlyException("Chỉ có thể từ chối các công ty đang ở trạng thái chờ xác thực.");
@@ -594,13 +575,13 @@ namespace VCareer.Services.Profile
         /// Phải thỏa mãn cả VerificationStatus = true VÀ LegalVerificationStatus = "approved"
         /// Điều này đảm bảo chỉ hiển thị các công ty đã được duyệt và chưa bị cập nhật lại
         /// </summary>
-        [Authorize]
+        [Authorize(VCareerPermission.CompanyVerification.ViewVerifiedCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input)
         {
             try
             {
                 var queryable = await _companyRepository.GetQueryableAsync();
-                
+
                 // Lọc các công ty đã được xác minh
                 // Phải thỏa mãn cả 2 điều kiện: VerificationStatus = true VÀ LegalVerificationStatus = "approved"
                 // Điều này đảm bảo chỉ hiển thị các công ty đã được duyệt và chưa bị cập nhật lại
@@ -610,7 +591,7 @@ namespace VCareer.Services.Profile
                 if (!string.IsNullOrWhiteSpace(input.Keyword))
                 {
                     var keyword = input.Keyword.ToLower();
-                    queryable = queryable.Where(c => 
+                    queryable = queryable.Where(c =>
                         (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
                         (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
                         (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
@@ -683,7 +664,7 @@ namespace VCareer.Services.Profile
                         try
                         {
                             var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
-                            
+
                             // Get recruiter from dictionary
                             if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
                             {
@@ -741,13 +722,13 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
         /// </summary>
-        [Authorize]
+        [Authorize(VCareerPermission.CompanyVerification.ViewRejectedCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetRejectedCompaniesAsync(CompanyVerificationFilterDto input)
         {
             try
             {
                 var queryable = await _companyRepository.GetQueryableAsync();
-                
+
                 // Lọc các công ty có status = "rejected"
                 queryable = queryable.Where(c => c.LegalVerificationStatus == "rejected");
 
@@ -755,7 +736,7 @@ namespace VCareer.Services.Profile
                 if (!string.IsNullOrWhiteSpace(input.Keyword))
                 {
                     var keyword = input.Keyword.ToLower();
-                    queryable = queryable.Where(c => 
+                    queryable = queryable.Where(c =>
                         (c.CompanyName != null && c.CompanyName.ToLower().Contains(keyword)) ||
                         (c.CompanyCode != null && c.CompanyCode.ToLower().Contains(keyword)) ||
                         (c.ContactEmail != null && c.ContactEmail.ToLower().Contains(keyword)) ||
@@ -824,7 +805,7 @@ namespace VCareer.Services.Profile
                 foreach (var company in companies)
                 {
                     var dto = ObjectMapper.Map<Company, CompanyVerificationViewDto>(company);
-                    
+
                     // Get recruiter from dictionary
                     if (recruiterDict.TryGetValue(company.Id, out var recruiter) && recruiter != null)
                     {

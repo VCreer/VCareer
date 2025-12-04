@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.TeamManagementDto;
 using VCareer.IServices.ITeamManagement;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -59,7 +61,7 @@ namespace VCareer.Services.TeamManagement
             try
             {
                 var currentRecruiter = await GetCurrentRecruiterProfileAsync();
-                
+
                 return new StaffListItemDto
                 {
                     UserId = currentRecruiter.UserId,
@@ -82,11 +84,12 @@ namespace VCareer.Services.TeamManagement
         /// Lấy danh sách HR Staff (IsLead = 0) trong company
         /// Chỉ Leader Recruiter (IsLead = 1) mới có quyền xem
         /// </summary>
+        [Authorize(VCareerPermission.TeamManagement.GetAllStaff)]
         public async Task<List<StaffListItemDto>> GetAllStaffAsync()
         {
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
             var currentRecruiter = await GetCurrentRecruiterProfileAsync();
-            
+
             // Verify current user là Leader (IsLead = 1)
             if (!currentRecruiter.IsLead)
             {
@@ -119,6 +122,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Deactivate HR Staff
         /// </summary>
+        [Authorize(VCareerPermission.TeamManagement.DeactivateStaff)]
         public async Task<StaffStatusChangeDto> DeactivateStaffAsync(DeactivateStaffDto input)
         {
             // Validate input
@@ -129,7 +133,7 @@ namespace VCareer.Services.TeamManagement
 
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
             var currentRecruiter = await GetCurrentRecruiterProfileAsync();
-            
+
             // Verify current user là Leader (IsLead = 1)
             if (!currentRecruiter.IsLead)
             {
@@ -215,11 +219,12 @@ namespace VCareer.Services.TeamManagement
         /// Tạo tài khoản và gửi email với thông tin đăng nhập
         /// </summary>
         [UnitOfWork]
+        [Authorize(VCareerPermission.TeamManagement.InviteStaff)]
         public async Task<StaffListItemDto> InviteStaffAsync(InviteStaffDto input)
         {
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
             var currentRecruiter = await GetCurrentRecruiterProfileAsync();
-            
+
             // Verify current user là Leader (IsLead = 1)
             if (!currentRecruiter.IsLead)
             {
@@ -267,8 +272,8 @@ namespace VCareer.Services.TeamManagement
                 IsLead = false, // HR Staff không phải Leader
                 CompanyId = currentRecruiter.CompanyId, // Cùng công ty với Leader
                 IsVerified = currentRecruiter.IsVerified,
-                RecruiterLevel = currentRecruiter.IsVerified 
-                    ? currentRecruiter.RecruiterLevel 
+                RecruiterLevel = currentRecruiter.IsVerified
+                    ? currentRecruiter.RecruiterLevel
                     : Constants.JobConstant.RecruiterLevel.Unverified,
             };
             await _recruiterProfileRepository.InsertAsync(recruiterProfile);
@@ -348,6 +353,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Activate HR Staff
         /// </summary>
+        [Authorize(VCareerPermission.TeamManagement.ActivateStaff)]
         public async Task<StaffStatusChangeDto> ActivateStaffAsync(ActivateStaffDto input)
         {
             // Validate input
@@ -358,7 +364,7 @@ namespace VCareer.Services.TeamManagement
 
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
             var currentRecruiter = await GetCurrentRecruiterProfileAsync();
-            
+
             // Verify current user là Leader (IsLead = 1)
             if (!currentRecruiter.IsLead)
             {

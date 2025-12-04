@@ -28,7 +28,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   currentRoute: string = '';
   isVerified: boolean = false;
   isEmployeeRoute: boolean = false;
-  isHRStaff: boolean = false; // Flag để xác định HR Staff (IsLead = false)
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
     isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
@@ -453,39 +452,39 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     return this.currentRoute.startsWith('/employee/manage-log');
   }
 
-  // checkUserRole(): void {
-  //   // Kiểm tra xem route hiện tại có phải employee route không
-  //   const currentUrl = this.router.url;
-  //   const isEmployeeRoute = currentUrl.startsWith('/employee');
+  checkUserRole(): void {
+    // Kiểm tra xem route hiện tại có phải employee route không
+    const currentUrl = this.router.url;
+    const isEmployeeRoute = currentUrl.startsWith('/employee');
     
-  //   // Nếu là employee route, không gọi API getCurrentUserInfo (chỉ dành cho Recruiter)
-  //   if (isEmployeeRoute) {
-  //     this.isEmployeeRoute = true;
-  //     this.userRole = 'Employee';
-  //     this.isHRStaff = false;
-  //     return;
-  //   }
+    // Nếu là employee route, không gọi API getCurrentUserInfo (chỉ dành cho Recruiter)
+    if (isEmployeeRoute) {
+      this.isEmployeeRoute = true;
+      this.userRole = 'Employee';
+      this.isHRStaff = false;
+      return;
+    }
     
-  //   // Chỉ gọi API cho recruiter routes
-  //   // Kiểm tra xem user có phải HR Staff không (IsLead = false)
-  //   this.teamManagementService.getCurrentUserInfo().subscribe({
-  //     next: (userInfo) => {
-  //       // HR Staff là user có IsLead = false
-  //       this.isHRStaff = !userInfo.isLead;
-  //       // Update role based on isLead
-  //       if (userInfo.isLead) {
-  //         this.userRole = 'Leader Recruiter';
-  //       } else {
-  //         this.userRole = 'HR Staff';
-  //       }
-  //     },
-  //     error: (error) => {
-  //       // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
-  //       console.error('Error loading user info in sidebar:', error);
-  //       this.isHRStaff = false;
-  //       // Keep default role as 'Leader Recruiter'
-  //     }
-  //   });
-  // }
+    // Chỉ gọi API cho recruiter routes
+    // Kiểm tra xem user có phải HR Staff không (IsLead = false)
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        // HR Staff là user có IsLead = false
+        this.isHRStaff = !userInfo.isLead;
+        // Update role based on isLead
+        if (userInfo.isLead) {
+          this.userRole = 'Leader Recruiter';
+        } else {
+          this.userRole = 'HR Staff';
+        }
+      },
+      error: (error) => {
+        // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
+        console.error('Error loading user info in sidebar:', error);
+        this.isHRStaff = false;
+        // Keep default role as 'Leader Recruiter'
+      }
+    });
+  }
 }
 

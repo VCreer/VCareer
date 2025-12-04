@@ -1,4 +1,5 @@
 ﻿using AutoMapper.Internal.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
 using VCareer.Models.Subcription_Payment;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -27,6 +29,7 @@ namespace VCareer.Services.Subcription
             _subcriptionServiceRepository = subcriptionServiceRepository;
         }
         //ko dduoc tao gia moi trung thoi gian effect voi 1 gia  khac 
+        [Authorize(VCareerPermission.SubcriptionPrice.Create)]
         public async Task CreateSubcriptionPrice(SubcriptionPriceCreateDto dto)
         {
             if (dto.SalePercent < 0 || dto.SalePercent > 100) throw new UserFriendlyException("Sale percent must be between 0 and 100");
@@ -67,6 +70,7 @@ namespace VCareer.Services.Subcription
             return current.OriginalPrice * (1 - current.SalePercent / 100m);
 
         }
+        [Authorize(VCareerPermission.SubcriptionPrice.Load)]
         public async Task<List<SubcriptionPriceViewDto>> GetSubcriptionPricesService(Guid subcriptionId, int pageIndex)
         {
             var listPrice = await _subcriptionPriceRepository.GetQueryableAsync();
@@ -82,6 +86,7 @@ namespace VCareer.Services.Subcription
 
         //chi cho edit cac price chua hoat dong 
         // han che viec employee chinh thoi gian trung vao cac price khac va vao thoi gian qua khu
+        [Authorize(VCareerPermission.SubcriptionPrice.Update)]
         public async Task UpdateSubcriptionPriceAsync(SubcriptionPriceUpdateDto dto)
         {
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == dto.SubcriptionPriceId);
@@ -111,6 +116,7 @@ namespace VCareer.Services.Subcription
             await _subcriptionPriceRepository.UpdateAsync(subcriptionPrice);
         }
         //chi cho phep xoa cac price chua effect  va chua het han
+        [Authorize(VCareerPermission.SubcriptionPrice.Delete)]
         public async Task DeleteSubcriptionPriceAsync(Guid subcriptionPriceId)
         {
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionPriceId);
@@ -128,6 +134,7 @@ namespace VCareer.Services.Subcription
         }
         //deactive thi thoai mai
         // nhung ko cho active price da het han hoac bi trung thoi diem effect cua price khac
+        [Authorize(VCareerPermission.SubcriptionPrice.SetStatus)]
         public async Task SetStatusSubcriptionPriceAsync(Guid subcriptionPriceId, bool isActive)
         {
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionPriceId);

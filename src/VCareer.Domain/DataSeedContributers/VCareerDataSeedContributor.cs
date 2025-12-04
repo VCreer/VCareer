@@ -94,36 +94,312 @@ namespace VCareer.DataSeedContributers
         #endregion
 
         private readonly Dictionary<string, string[]> rolePermissionsDict = new Dictionary<string, string[]>()
-        {
-            //candidate
-            { CANDIDATE, FilePermissions },
+{
+    //candidate
+    {
+        CANDIDATE,
+        FilePermissions
+            .Concat(ProfilePermissions)
+            .Concat(Candidate_CvTemplatePermissions)
+            .Concat(CandidateCvPermissions)
+            .Concat(CartPermissions)
+            .Concat(Candidate_ApplicationPermissions)
+            .Concat(Common_JobCategoryPermissions)
+            .Concat(Common_TagPermissions)
+            .Concat(Common_SubcriptionServicePermissions)
+            .ToArray()
+    },
 
-            //recruiter
-            { LEAD_RECRUITER, FilePermissions },
-             { HR_STAFF, FilePermissions },
+    //Lead recruiter
+    {
+        LEAD_RECRUITER,
+        FilePermissions
+            .Concat(ProfilePermissions)
+            .Concat(CartPermissions)
+            .Concat(Recruiter_ApplicationPermissions)
+            .Concat(Recruiter_JobPostPermissions)
+            .Concat(RecruimentCampaignPermissions)
+            .Concat(Common_JobCategoryPermissions)
+            .Concat(Common_TagPermissions)
+            .Concat(Common_SubcriptionServicePermissions)
+            .Concat(TeamManagementPermissions)
+            .Concat(Recruiter_CompanyVerificationPermissions)
+            .ToArray()
+    },
 
-             //employee
-            { SYSTEM_EMPLOYEE, FilePermissions },
-            { FINANCE_EMPLOYEE, FilePermissions },
-            { ACCOUNT_EMPLOYEE, FilePermissions },
+    //hr staff
+    {
+        HR_STAFF,
+        FilePermissions
+            .Concat(Recruiter_ApplicationPermissions)
+            .Concat(Recruiter_JobPostPermissions)
+            .Concat(RecruimentCampaignPermissions)
+            .Concat(Common_JobCategoryPermissions)
+            .Concat(Common_TagPermissions)
+            .ToArray()
+    },
 
+    //system employee
+    {
+        SYSTEM_EMPLOYEE,
+        FilePermissions
+            .Concat(Employee_CvTemplatePermissions)
+            .Concat(Employee_JobPostPermissions)
+            .Concat(Employee_JobCategoryPermissions)
+            .Concat(Employee_TagPermissions)
+            .ToArray()
+    },
+    
+    //finance employee
+    {
+        FINANCE_EMPLOYEE,
+        FilePermissions
+            .Concat(SubcriptionPricePermissions)
+            .Concat(ChildServicePermissions)
+            .Concat(Employee_SubcriptionServicePermissions)
+            .ToArray()
+    },
 
-        };
-
+    //account employee
+    {
+        ACCOUNT_EMPLOYEE,
+        FilePermissions
+            .Concat(UserPermissions)
+            .Concat(Employee_CompanyVerificationPermissions)
+            .ToArray()
+    }
+};
         #region  group Permission
 
         private static string[] FilePermissions = new[]
-      {
-        VCareerPermission.Files.Default,
-        VCareerPermission.Files.View,
-        VCareerPermission.Files.Delete,
-        VCareerPermission.Files.Download,
-        VCareerPermission.Files.Update,
-        VCareerPermission.Files.Upload
-        };
+        {
+    VCareerPermission.Files.Default,
+    VCareerPermission.Files.View,
+    VCareerPermission.Files.Delete,
+    VCareerPermission.Files.Download,
+    VCareerPermission.Files.Update,
+    VCareerPermission.Files.Upload
+};
 
+        private static string[] ProfilePermissions = new[]
+        {
+    VCareerPermission.Profile.Default,
+    VCareerPermission.Profile.UpdatePersonalInfo,
+    VCareerPermission.Profile.ChangePassword,
+    VCareerPermission.Profile.DeleteAccount,
+    VCareerPermission.Profile.SubmitLegalInformation,
+    VCareerPermission.Profile.UpdateLegalInformation,
+    VCareerPermission.Profile.UploadSupportingDocument,
+    VCareerPermission.Profile.UpdateSupportingDocument,
+    VCareerPermission.Profile.DeleteSupportingDocument,
+    VCareerPermission.Profile.DownloadSupportingDocument
+};
 
-        #endregion 
+        private static string[] Candidate_CvTemplatePermissions = new[]
+        {
+      VCareerPermission.CvTemplate.Default,
+      VCareerPermission.CvTemplate.Get,
+      VCareerPermission.CvTemplate.GetActiveTemplates
+};
+        private static string[] Employee_CvTemplatePermissions = new[]
+     {
+   VCareerPermission.CvTemplate.Default,
+    VCareerPermission.CvTemplate.Create,
+    VCareerPermission.CvTemplate.Update,
+    VCareerPermission.CvTemplate.Delete,
+    VCareerPermission.CvTemplate.Get,
+    VCareerPermission.CvTemplate.GetList,
+    VCareerPermission.CvTemplate.GetActiveTemplates
+};
+
+        private static string[] CandidateCvPermissions = new[]
+        {
+    VCareerPermission.CandidateCv.Default,
+    VCareerPermission.CandidateCv.Create,
+    VCareerPermission.CandidateCv.Update,
+    VCareerPermission.CandidateCv.Delete,
+    VCareerPermission.CandidateCv.Get,
+    VCareerPermission.CandidateCv.GetList,
+    VCareerPermission.CandidateCv.Render,
+    VCareerPermission.CandidateCv.SetDefault,
+    VCareerPermission.CandidateCv.Publish,
+    VCareerPermission.CandidateCv.IncrementViewCount,
+    VCareerPermission.CandidateCv.GetDefault
+};
+
+        private static string[] CartPermissions = new[]
+        {
+    VCareerPermission.Cart.Default,
+    VCareerPermission.Cart.AddToCart,
+    VCareerPermission.Cart.Clear,
+    VCareerPermission.Cart.Update,
+    VCareerPermission.Cart.Delete,
+    VCareerPermission.Cart.View
+};
+
+        private static string[] Candidate_ApplicationPermissions = new[]
+        {
+    VCareerPermission.Application.Default,
+    VCareerPermission.Application.Apply,
+     VCareerPermission.Application.DownloadCV,
+ };
+        private static string[] Recruiter_ApplicationPermissions = new[]
+{
+    VCareerPermission.Application.Default,
+     VCareerPermission.Application.View,
+    VCareerPermission.Application.Update,
+    VCareerPermission.Application.Delete,
+    VCareerPermission.Application.Manage,
+    VCareerPermission.Application.Statistics,
+    VCareerPermission.Application.DownloadCV,
+    VCareerPermission.Application.Withdraw
+};
+
+        private static string[] Recruiter_JobPostPermissions = new[]
+        {
+    VCareerPermission.JobPost.Default,
+    VCareerPermission.JobPost.Delete,
+    VCareerPermission.JobPost.Create,
+    VCareerPermission.JobPost.Update,
+    VCareerPermission.JobPost.CLose,
+    VCareerPermission.JobPost.PostJob,
+       VCareerPermission.JobPost.Statistics,
+     VCareerPermission.JobPost.LoadJobByRecruiterId,
+    VCareerPermission.JobPost.LoadJobByCompanyId,
+ };
+        private static string[] Employee_JobPostPermissions = new[]
+   {
+    VCareerPermission.JobPost.Default,
+     VCareerPermission.JobPost.Approve,
+     VCareerPermission.JobPost.Reject,
+    VCareerPermission.JobPost.LoadJobByRecruiterId,
+    VCareerPermission.JobPost.LoadJobByCompanyId,
+    VCareerPermission.JobPost.LoadJobNeedApprove
+};
+
+        private static string[] RecruimentCampaignPermissions = new[]
+        {
+    VCareerPermission.RecruimentCampaign.Default,
+    VCareerPermission.RecruimentCampaign.Delete,
+    VCareerPermission.RecruimentCampaign.Create,
+    VCareerPermission.RecruimentCampaign.Update,
+    VCareerPermission.RecruimentCampaign.LoadRecruiment,
+    VCareerPermission.RecruimentCampaign.LoadJobOfRecruiment,
+    VCareerPermission.RecruimentCampaign.SetStatus
+};
+
+        private static string[] Employee_JobCategoryPermissions = new[]
+        {
+    VCareerPermission.JobCategory.Default,
+    VCareerPermission.JobCategory.Delete,
+    VCareerPermission.JobCategory.View,
+    VCareerPermission.JobCategory.Create,
+    VCareerPermission.JobCategory.Update
+};
+        private static string[] Common_JobCategoryPermissions = new[]
+    {
+    VCareerPermission.JobCategory.Default,
+     VCareerPermission.JobCategory.View,
+};
+
+        private static string[] Employee_TagPermissions = new[]
+        {
+    VCareerPermission.Tag.Default,
+    VCareerPermission.Tag.Delete,
+    VCareerPermission.Tag.Create,
+    VCareerPermission.Tag.Update,
+    VCareerPermission.Tag.View
+};
+        private static string[] Common_TagPermissions = new[]
+   {
+    VCareerPermission.Tag.Default,
+    VCareerPermission.Tag.View
+};
+
+        private static string[] Common_SubcriptionServicePermissions = new[]
+        {
+    VCareerPermission.SubcriptionService.Default,
+    VCareerPermission.SubcriptionService.Buy,
+     VCareerPermission.SubcriptionService.Load,
+};
+
+        private static string[] Employee_SubcriptionServicePermissions = new[]
+        {
+    VCareerPermission.SubcriptionService.Default,
+    VCareerPermission.SubcriptionService.Delete,
+    VCareerPermission.SubcriptionService.Create,
+    VCareerPermission.SubcriptionService.Update,
+    VCareerPermission.SubcriptionService.AddChildService,
+    VCareerPermission.SubcriptionService.RemoveChildService,
+    VCareerPermission.SubcriptionService.Load,
+    VCareerPermission.SubcriptionService.LoadChildService
+};
+
+        private static string[] ChildServicePermissions = new[]
+        {
+    VCareerPermission.ChildService.Default,
+    VCareerPermission.ChildService.Delete,
+    VCareerPermission.ChildService.Remove,
+    VCareerPermission.ChildService.Create,
+    VCareerPermission.ChildService.Update,
+    VCareerPermission.ChildService.StopAgent,
+    VCareerPermission.ChildService.Load
+};
+
+        private static string[] SubcriptionPricePermissions = new[]
+        {
+    VCareerPermission.SubcriptionPrice.Default,
+    VCareerPermission.SubcriptionPrice.Delete,
+    VCareerPermission.SubcriptionPrice.Load,
+    VCareerPermission.SubcriptionPrice.Create,
+    VCareerPermission.SubcriptionPrice.Update,
+    VCareerPermission.SubcriptionPrice.SetStatus
+};
+
+        private static string[] UserPermissions = new[]
+        {
+    VCareerPermission.User.Default,
+    VCareerPermission.User.CreateEmpLoyeeAccount,
+    VCareerPermission.User.ViewByRole,
+    VCareerPermission.User.ViewEmployees,
+    VCareerPermission.User.SetStatus
+};
+
+        private static string[] LoggingPermissions = new[]
+        {
+    VCareerPermission.Logging.Default
+};
+
+        private static string[] TeamManagementPermissions = new[]
+        {
+    VCareerPermission.TeamManagement.Default,
+    VCareerPermission.TeamManagement.GetAllStaff,
+    VCareerPermission.TeamManagement.DeactivateStaff,
+    VCareerPermission.TeamManagement.ActivateStaff,
+    VCareerPermission.TeamManagement.InviteStaff
+};
+
+        private static string[] Recruiter_CompanyVerificationPermissions = new[]
+        {
+    VCareerPermission.CompanyVerification.Default,
+    VCareerPermission.CompanyVerification.View,
+    VCareerPermission.CompanyVerification.UploadLegalDocument,
+    VCareerPermission.CompanyVerification.DownloadLegalDocument
+};
+
+        private static string[] Employee_CompanyVerificationPermissions = new[]
+        {
+    VCareerPermission.CompanyVerification.Default,
+    VCareerPermission.CompanyVerification.ViewPendingCompanies,
+    VCareerPermission.CompanyVerification.View,
+    VCareerPermission.CompanyVerification.ApproveCompany,
+    VCareerPermission.CompanyVerification.RejectCompany,
+    VCareerPermission.CompanyVerification.ViewVerifiedCompanies,
+    VCareerPermission.CompanyVerification.ViewRejectedCompanies,
+    VCareerPermission.CompanyVerification.DownloadLegalDocument
+};
+
+        #endregion
 
     }
 }

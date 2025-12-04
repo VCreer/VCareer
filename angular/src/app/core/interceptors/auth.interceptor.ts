@@ -1,94 +1,59 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError,of } from 'rxjs';
-import { catchError, filter, finalize, switchMap, take } from 'rxjs/operators';
+// src/app/core/interceptors/auth.interceptor.ts
+
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { AuthApiService } from '../services/auth-Cookiebased/auth-api.service';
+import { Observable, throwError } from 'rxjs';
+import { catchError, switchMap, finalize } from 'rxjs/operators';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  // Biến flag để biết hiện tại có đang refresh token hay không
-  private isRefreshing = false;
+let isRefreshing = false;
 
-  // BehaviorSubject dùng để "thông báo" cho các request đang chờ refresh token xong
-  // false = chưa refresh xong
-  // true  = refresh xong rồi → các request đang đợi có thể tiếp tục
-  private refreshSubject = new BehaviorSubject<boolean>(false);
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authApi = inject(AuthApiService);
+  const authReq = req.clone({ withCredentials: true });
 
-  constructor(private authApi: AuthApiService) {}
+  return next(authReq).pipe(
+    catchError(error => {
+      if (error.status !== 401) {
+        return throwError(() => error);
+      }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+      // TRƯỜNG HỢP ĐẶC BIỆT: KHÔNG REFRESH KHI GỌI CURRENT-USER HOẶC REFRESH-TOKEN
+      const url = error.url?.toLowerCase() || '';
+      if (
+        url.includes('/current-user') ||
+        url.includes('/refesh-token') ||
+        url.includes('/log-out')
+      ) {
+        console.log('[Interceptor] 401 ignored (startup/refresh/logout):', url);
+        return throwError(() => error); // Không refresh, để APP_INITIALIZER xử lý
+      }
 
-    // Clone request để bật gửi cookie lên server (Quan trọng cho refresh token dạng cookie)
-    const request = req.clone({ withCredentials: true });
+      // Chỉ refresh 1 lần
+      if (isRefreshing) {
+        return throwError(() => error); // Đang refresh → reject luôn, không queue
+      }
 
-    return next.handle(request).pipe(
-      catchError((err: HttpErrorResponse) => {
-        // Nếu server trả về lỗi 401 → token đã hết hạn
-        if (err && err.status === 401) {
-          return this.handle401(request, next);
-        }
+      isRefreshing = true;
+      console.log('[Interceptor] Starting token refresh...');
 
-        // Nếu lỗi không phải 401 → trả lỗi ra ngoài
-        return throwError(() => err);
-      })
-    );
-  }
-
-  private handle401(request: HttpRequest<any>, next: HttpHandler) {
-
-    // CASE 1: Nếu đang refresh token rồi → request hiện tại phải đứng đợi
-    if (this.isRefreshing) {
-      return this.refreshSubject.pipe(
-        // Chờ đến khi refreshSubject phát ra true
-        filter(v => v === true),
-
-        // Chỉ lấy 1 lần rồi dừng
-        take(1),
-
-        // Sau khi refresh xong → gửi lại request ban đầu
-        switchMap(() => next.handle(request))
+      return authApi.refeshToken().pipe(
+        switchMap(() => {
+          console.log('[Interceptor] Refresh success → retry original request');
+          isRefreshing = false;
+          return next(authReq);
+        }),
+        catchError(refreshError => {
+          console.error('[Interceptor] Refresh failed → logout');
+          isRefreshing = false;
+          return authApi.logOut().pipe(
+            switchMap(() => throwError(() => refreshError))
+          );
+        }),
+        finalize(() => {
+          isRefreshing = false;
+        })
       );
-    }
-
-    // CASE 2: Chưa refresh → bắt đầu refresh token
-    this.isRefreshing = true;
-
-    // Đánh dấu chưa refresh xong
-    this.refreshSubject.next(false);
-
-    // Gọi API refresh token
-    return this.authApi.refreshToken().pipe(
-
-      // Nếu refresh thành công
-      switchMap(() => {
-        // Báo cho những request đang đợi → refresh xong
-        this.refreshSubject.next(true);
-
-        // Gửi lại request ban đầu
-        return next.handle(request);
-      }),
-
-      // Nếu refresh thất bại (vd: refresh token hết hạn) → logout client
-    catchError((err) => {
-  // trả về observable logout rồi mới throwError
-  this.refreshSubject.next(false);
-  return this.authApi.logOut().pipe(
-    catchError(() => of(null)), // nếu logout API cũng lỗi thì bỏ qua
-    switchMap(() => throwError(() => err))
+    })
   );
-}),
-
-
-      // Dù thành công hay thất bại → luôn reset isRefreshing
-      finalize(() => {
-        this.isRefreshing = false;
-      })
-    );
-  }
-}
+};
