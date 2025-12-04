@@ -65,6 +65,7 @@ namespace VCareer.Services.Subcription
             {
                 endDate = startDate.AddDays((double)subcriptionService.DayDuration);
             }
+           if(subcriptionService.Status != SubcriptionStatus.Active) throw new BusinessException("SubcriptionService is not active");
 
             var userSubcription = new User_SubcriptionService()
             {
@@ -72,7 +73,7 @@ namespace VCareer.Services.Subcription
                 SubcriptionServiceId = dto.SubcriptionServiceId,
                 EndDate = endDate,
                 StartDate = startDate,
-                status = dto.status,
+                status = SubcriptionStatus.Active,
             };
 
             await _user_SubcriptionServicerRepository.InsertAsync(userSubcription);
