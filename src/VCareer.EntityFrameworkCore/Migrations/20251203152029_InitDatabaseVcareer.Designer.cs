@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251129085459_InitDatabaseVcareer")]
+    [Migration("20251203152029_InitDatabaseVcareer")]
     partial class InitDatabaseVcareer
     {
         /// <inheritdoc />
