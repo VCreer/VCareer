@@ -86,10 +86,62 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       console.log('Check result:', !isLoggedIn, userRole !== 'recruiter');
       
       // Kiểm tra đăng nhập và role
-      if (!isLoggedIn || userRole !== 'recruiter') {
-        console.log('Not logged in or not recruiter, redirecting to login');
-        console.log('Redirect reason: isLoggedIn =', isLoggedIn, ', userRole =', userRole);
+      if (!isLoggedIn) {
+        console.log('Not logged in, redirecting to login');
         this.router.navigate(['/recruiter/login']);
+        return;
+      }
+      
+      // Nếu role chưa phải recruiter, thử load lại user info để kiểm tra
+      if (userRole !== 'recruiter') {
+        console.log('Role is not recruiter yet:', userRole, '- checking user info...');
+        
+        // Thử load user info từ team management service
+        this.teamManagementService.getCurrentUserInfo().subscribe({
+          next: (userInfo) => {
+            console.log('User info loaded:', userInfo);
+            if (userInfo && (userInfo.isLead !== undefined || userInfo.email)) {
+              // User có recruiter profile, cho phép tiếp tục và cập nhật role
+              console.log('User has recruiter profile, allowing access');
+              this.navigationService.loginAsRecruiter();
+              this.checkSidebarState();
+              this.loadVerificationData();
+            } else {
+              // Không có recruiter profile, đợi thêm một chút rồi thử lại
+              console.log('No recruiter profile found, waiting and retrying...');
+              setTimeout(() => {
+                this.navigationService.updateAuthStateFromRoute();
+                const updatedRole = this.navigationService.getCurrentRole();
+                if (updatedRole === 'recruiter') {
+                  console.log('Role updated to recruiter after wait');
+                  this.checkSidebarState();
+                  this.loadVerificationData();
+                } else {
+                  console.log('Still not recruiter after wait, redirecting to login');
+                  this.router.navigate(['/recruiter/login']);
+                }
+              }, 2000);
+            }
+          },
+          error: (err) => {
+            console.error('Error loading user info:', err);
+            // Đợi một chút rồi thử lại với navigation service
+            setTimeout(() => {
+              this.navigationService.updateAuthStateFromRoute();
+              const updatedRole = this.navigationService.getCurrentRole();
+              if (updatedRole === 'recruiter') {
+                console.log('Role updated to recruiter after error recovery');
+                this.checkSidebarState();
+                this.loadVerificationData();
+              } else {
+                // Cho phép tiếp tục vì có thể là lỗi tạm thời sau khi đăng ký
+                console.log('Allowing access despite role check (may be temporary after registration)');
+                this.checkSidebarState();
+                this.loadVerificationData();
+              }
+            }, 2000);
+          }
+        });
         return;
       }
 

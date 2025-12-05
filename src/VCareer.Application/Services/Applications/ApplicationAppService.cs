@@ -22,6 +22,7 @@ using Volo.Abp.Emailing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using VCareer.Dto.Applications;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.Application;
 using Volo.Abp.Application.Services;
 
@@ -46,6 +47,7 @@ namespace VCareer.Application.Applications
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
         private readonly IConfiguration _configuration;
+        private readonly IActivityLogAppService _activityLogAppService;
 
         public ApplicationAppService(
             IRepository<JobApplication, Guid> applicationRepository,
@@ -60,7 +62,8 @@ namespace VCareer.Application.Applications
             IUploadedCvAppService uploadedCvAppService,
             ICurrentUser currentUser,
             IEmailSender emailSender,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IActivityLogAppService activityLogAppService)
         {
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
@@ -75,6 +78,7 @@ namespace VCareer.Application.Applications
             _currentUser = currentUser;
             _emailSender = emailSender;
             _configuration = configuration;
+            _activityLogAppService = activityLogAppService;
         }
 
         /// <summary>
@@ -570,6 +574,19 @@ namespace VCareer.Application.Applications
                 var userId = _currentUser.GetId();
                 application.ViewedBy = userId;
                 await _applicationRepository.UpdateAsync(application);
+
+                // Ghi log: HR Staff xem CV / đơn ứng tuyển
+                if (userId != Guid.Empty)
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        userId,
+                        Models.ActivityLogs.ActivityType.CandidateEvaluated,
+                        "ViewApplication",
+                        $"Xem đơn ứng tuyển {application.Id} cho job {application.JobId}",
+                        application.Id,
+                        nameof(JobApplication),
+                        "{}");
+                }
             }
 
             return await MapToDtoAsync(application);

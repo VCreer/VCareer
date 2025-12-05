@@ -166,7 +166,7 @@ export class LoginComponent {
 
 
   navigateToSignUp() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/candidate/register']);
   }
 
   forgotPassword() {
@@ -176,24 +176,100 @@ export class LoginComponent {
   async signInWithGoogle() {
     try {
       this.isLoading = true;
+      console.log('Starting Google sign in...');
       
-      // Sign in with Google
-      const user = await this.googleAuthService.signInWithGoogle();
+      // Sign in with Google to get idToken
+      const googleUser = await this.googleAuthService.signInWithGoogle();
+      console.log('Google user received:', { 
+        id: googleUser.id, 
+        email: googleUser.email, 
+        name: googleUser.name,
+        hasIdToken: !!googleUser.idToken 
+      });
       
-      console.log('Google user:', user);
+      if (!googleUser.idToken) {
+        console.error('No idToken received from Google');
+        throw new Error('Không thể lấy token từ Google. Vui lòng thử lại.');
+      }
+
+      console.log('Calling backend API with idToken...');
+      // Call backend API with Google idToken
+      this.authFacade.loginWithGoogle({ idToken: googleUser.idToken })
+        .pipe(finalize(() => {
+          this.isLoading = false;
+          console.log('Google login request completed');
+        }))
+        .subscribe({
+          next: () => {
+            console.log('Google login successful');
+            this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
+            this.navigationService.loginAsCandidate();
+            setTimeout(() => {
+              this.router.navigate(['/']);
+            }, 800);
+          },
+          error: (err) => {
+            console.error('Google login API error:', err);
+            console.error('Error details:', {
+              status: err?.status,
+              statusText: err?.statusText,
+              error: err?.error,
+              message: err?.message,
+              url: err?.url
+            });
+            
+            let msg = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
+            
+            if (err?.error?.message) {
+              msg = err.error.message;
+            } else if (err?.error?.error_description) {
+              msg = err.error.error_description;
+            } else if (err?.error?.error) {
+              msg = err.error.error;
+            } else if (err?.message) {
+              msg = err.message;
+            } else if (err?.status === 0) {
+              msg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else if (err?.status === 401) {
+              msg = 'Xác thực Google thất bại. Vui lòng thử lại.';
+            } else if (err?.status === 500) {
+              msg = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            
+            this.showToastMessage(msg, 'error');
+          }
+        });
       
-      this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
-      this.navigationService.loginAsCandidate();
-      
-      setTimeout(() => {
-        this.router.navigate(['/']);
-      }, 2000);
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google sign in error:', error);
+      console.error('Error details:', {
+        name: error?.name,
+        message: error?.message,
+        stack: error?.stack
+      });
+      
       this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thất bại. Vui lòng thử lại.', 'error');
+      
+      let errorMsg = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
+      
+      if (error?.message) {
+        errorMsg = error.message;
+      } else if (error?.error) {
+        errorMsg = error.error;
+      } else if (typeof error === 'string') {
+        errorMsg = error;
+      }
+      
+      // Xử lý các lỗi phổ biến của Google OAuth
+      if (errorMsg.includes('popup_closed_by_user') || errorMsg.includes('popup closed')) {
+        errorMsg = 'Bạn đã đóng cửa sổ đăng nhập Google. Vui lòng thử lại.';
+      } else if (errorMsg.includes('access_denied')) {
+        errorMsg = 'Bạn đã từ chối quyền truy cập Google. Vui lòng thử lại và cấp quyền.';
+      } else if (errorMsg.includes('idpiframe_initialization_failed')) {
+        errorMsg = 'Không thể khởi tạo Google OAuth. Vui lòng kiểm tra kết nối mạng và thử lại.';
+      }
+      
+      this.showToastMessage(errorMsg, 'error');
     }
   }
 }

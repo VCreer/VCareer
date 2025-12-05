@@ -12,7 +12,12 @@ namespace VCareer.Dto.AuthDto
     {
         [Required]
         public string IdToken { get; set; }
-   /*     [Required]
-        public ScreenRoleType Type{ get; set; }*/
+        
+        /// <summary>
+        /// Role để xác định đăng ký/đăng nhập cho candidate hay recruiter
+        /// Values: "candidate" hoặc "recruiter"
+        /// Nếu null hoặc empty, mặc định là "candidate"
+        /// </summary>
+        public string? Role { get; set; }
     }
 }

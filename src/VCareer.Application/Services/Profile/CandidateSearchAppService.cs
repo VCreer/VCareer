@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
+using VCareer.IServices.IActivityLogService;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
 using VCareer.Permission;
@@ -28,17 +29,20 @@ namespace VCareer.Services.Profile
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
+        private readonly IActivityLogAppService _activityLogAppService;
 
         public CandidateSearchAppService(
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             IRepository<CandidateCv, Guid> candidateCvRepository,
             ICurrentUser currentUser,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IActivityLogAppService activityLogAppService)
         {
             _candidateProfileRepository = candidateProfileRepository;
             _candidateCvRepository = candidateCvRepository;
             _currentUser = currentUser;
             _emailSender = emailSender;
+            _activityLogAppService = activityLogAppService;
         }
 
         public async Task<PagedResultDto<CandidateSearchResultDto>> SearchCandidatesAsync(SearchCandidateInputDto input)
@@ -420,6 +424,20 @@ namespace VCareer.Services.Profile
                 emailBody,
                 true
             );
+
+            // Ghi log: HR Staff gửi email kết nối tới candidate
+            var currentUserId = _currentUser.GetId();
+            if (currentUserId != Guid.Empty)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    currentUserId,
+                    Models.ActivityLogs.ActivityType.EmailSent,
+                    "SendConnectionRequest",
+                    $"Gửi email kết nối tới ứng viên {candidateEmail} cho job '{input.JobTitle}'",
+                    input.CandidateProfileId,
+                    nameof(CandidateProfile),
+                    "{}");
+            }
         }
 
         private string GetDefaultSorting(string? displayPriority)
