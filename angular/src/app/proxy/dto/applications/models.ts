@@ -3,6 +3,7 @@ import type { FullAuditedEntityDto, PagedAndSortedResultRequestDto } from '@abp/
 export interface ApplicationDto extends FullAuditedEntityDto<string> {
   jobId?: string;
   jobTitle?: string;
+  jobSalaryText?: string;
   candidateId?: string;
   candidateName?: string;
   candidateEmail?: string;

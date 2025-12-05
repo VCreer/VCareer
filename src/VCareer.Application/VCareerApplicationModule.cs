@@ -2,7 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
+using VCareer.Application.Applications;
+using VCareer.IServices.Application;
 using VCareer.IServices.IJobServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using VCareer.IServices.IJobServices;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;

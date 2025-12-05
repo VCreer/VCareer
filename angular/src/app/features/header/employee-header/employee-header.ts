@@ -36,9 +36,28 @@ export class EmployeeHeaderComponent implements OnInit {
   toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
+      const wasExpanded = sidebar.classList.contains('show');
       sidebar.classList.toggle('show');
       this.showSidebar = sidebar.classList.contains('show');
+      
+      // If sidebar was just closed, close all dropdowns
+      if (wasExpanded && !this.showSidebar) {
+        this.closeAllDropdowns();
     }
+  }
+  }
+
+  private closeAllDropdowns(): void {
+    // Remove dropdown-open class from all dropdown items
+    const dropdownItems = document.querySelectorAll('.sidebar-nav-item-dropdown.dropdown-open');
+    dropdownItems.forEach(item => {
+      item.classList.remove('dropdown-open');
+    });
+    // Remove show class from all submenus
+    const submenus = document.querySelectorAll('.sidebar-submenu.show');
+    submenus.forEach(submenu => {
+      submenu.classList.remove('show');
+    });
   }
 
   toggleDropdownMenu() {

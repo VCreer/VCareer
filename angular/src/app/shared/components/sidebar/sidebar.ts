@@ -28,11 +28,14 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   currentRoute: string = '';
   isVerified: boolean = false;
   isEmployeeRoute: boolean = false;
-  isHRStaff: boolean = false; // Flag để xác định HR Staff (IsLead = false)
   private routerSubscription?: Subscription;
   private verificationSubscription?: Subscription;
-  showUserManagementDropdown: boolean = false;
+    isHRStaff: boolean = false; // Flag để kiểm tra xem có phải HR Staff (IsLead = false) không
+     showUserManagementDropdown: boolean = false;
+  showServicePackagesDropdown: boolean = false;
+  showLogManagementDropdown: boolean = false;
   private userSubscription?: Subscription;
+  private sidebarStateInterval?: any;
 
 
   constructor(
@@ -96,6 +99,40 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         // Reload user info when route changes (in case user switched accounts)
         this.loadUserInfo();
       });
+
+    // Monitor sidebar state changes to close dropdowns when sidebar closes
+    this.monitorSidebarState();
+  }
+
+  private monitorSidebarState(): void {
+    // Track previous state to detect changes
+    let previousExpanded = this.show;
+    
+    // Check sidebar state periodically to detect when it closes
+    this.sidebarStateInterval = setInterval(() => {
+      const sidebar = document.querySelector('.sidebar') as HTMLElement;
+      if (sidebar) {
+        const isExpanded = sidebar.classList.contains('show');
+        
+        // If sidebar state changed from expanded to collapsed, close all dropdowns
+        if (previousExpanded && !isExpanded) {
+          this.closeAllDropdowns();
+        }
+        
+        // Update show state
+        if (isExpanded !== this.show) {
+          this.show = isExpanded;
+          this.showChange.emit(isExpanded);
+          // If sidebar just closed, close all dropdowns
+          if (!isExpanded) {
+            this.closeAllDropdowns();
+          }
+        }
+        
+        // Update previous state
+        previousExpanded = isExpanded;
+      }
+    }, 100);
   }
 
   private updateRouteType(url: string): void {
@@ -189,6 +226,9 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
     }
+    if (this.sidebarStateInterval) {
+      clearInterval(this.sidebarStateInterval);
+  }
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -224,21 +264,70 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['show']) {
       const newValue = changes['show'].currentValue;
+      const oldValue = changes['show'].previousValue;
       // If show is set to true from parent (manual toggle), mark as manually opened
       if (newValue) {
         // This is a manual toggle from parent (hamburger menu)
         this.manuallyOpened = true;
         this.isHovering = false; // Reset hover state when manually opened
       } else {
-        // If show is set to false from parent, reset manuallyOpened
+        // If show is set to false from parent, reset manuallyOpened and close all dropdowns
         this.manuallyOpened = false;
         this.isHovering = false;
+        // Close all dropdowns when sidebar closes
+        if (oldValue !== undefined && oldValue !== newValue) {
+          this.closeAllDropdowns();
+        }
       }
     }
   }
 
   onClose(): void {
     this.manuallyOpened = false;
+    // Close all dropdowns when sidebar closes
+    this.closeAllDropdowns();
+    this.close.emit();
+  }
+
+  private closeAllDropdowns(): void {
+    // Close all dropdown menus - reset state
+    this.showUserManagementDropdown = false;
+    this.showServicePackagesDropdown = false;
+    this.showLogManagementDropdown = false;
+    
+    // Also remove classes from DOM directly to ensure UI updates
+    // This is important when sidebar is closed from hamburger menu (DOM manipulation)
+    setTimeout(() => {
+      const dropdownItems = document.querySelectorAll('.sidebar-nav-item-dropdown.dropdown-open');
+      dropdownItems.forEach(item => {
+        item.classList.remove('dropdown-open');
+      });
+      
+      // Remove show class from submenus
+      const submenus = document.querySelectorAll('.sidebar-submenu.show');
+      submenus.forEach(submenu => {
+        submenu.classList.remove('show');
+      });
+      
+      // Remove rotated class from chevron icons - THIS IS THE KEY FIX
+      const rotatedChevrons = document.querySelectorAll('.sidebar-chevron.rotated');
+      rotatedChevrons.forEach(chevron => {
+        chevron.classList.remove('rotated');
+      });
+    }, 0);
+  }
+
+  private closeSidebar(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      sidebar.classList.remove('show');
+    }
+    this.show = false;
+    this.showChange.emit(false);
+    this.manuallyOpened = false;
+    // Close all dropdowns when sidebar closes
+    this.closeAllDropdowns();
+    // Also emit close event to notify parent
     this.close.emit();
   }
 
@@ -257,6 +346,8 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   navigateTo(path: string): void {
+    // Close sidebar before navigation to ensure it closes immediately
+    this.closeSidebar();
     this.router.navigate([path]);
     this.onClose();
   }
@@ -267,6 +358,20 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
   toggleUserManagementDropdown(event: Event): void {
     event.stopPropagation();
+    // Auto-expand sidebar if collapsed (needed to show submenu)
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar && !sidebar.classList.contains('show')) {
+      sidebar.classList.add('show');
+      this.show = true;
+      this.showChange.emit(true);
+      // Mark as manually opened so it doesn't auto-close on hover out
+      this.manuallyOpened = true;
+      // Trigger change detection
+      setTimeout(() => {
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
+      }, 50);
+      return;
+  }
     this.showUserManagementDropdown = !this.showUserManagementDropdown;
   }
 
@@ -275,11 +380,76 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       event.stopPropagation();
     }
     this.showUserManagementDropdown = false;
-    this.navigateTo(path);
+    // Close sidebar and navigate
+    this.closeSidebar();
+    this.router.navigate([path]);
   }
 
   isUserManagementActive(): boolean {
     return this.currentRoute.startsWith('/employee/user-management');
+  }
+
+  toggleServicePackagesDropdown(event: Event): void {
+    event.stopPropagation();
+    // Auto-expand sidebar if collapsed (needed to show submenu)
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar && !sidebar.classList.contains('show')) {
+      sidebar.classList.add('show');
+      this.show = true;
+      this.showChange.emit(true);
+      // Mark as manually opened so it doesn't auto-close on hover out
+      this.manuallyOpened = true;
+      // Trigger change detection
+      setTimeout(() => {
+        this.showServicePackagesDropdown = !this.showServicePackagesDropdown;
+      }, 50);
+      return;
+    }
+    this.showServicePackagesDropdown = !this.showServicePackagesDropdown;
+  }
+
+  navigateToServicePackages(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showServicePackagesDropdown = false;
+    // Close sidebar and navigate
+    this.closeSidebar();
+    this.router.navigate([path]);
+  }
+
+  isServicePackagesActive(): boolean {
+    return this.currentRoute.startsWith('/employee/manage-service-packages') || 
+           this.currentRoute.startsWith('/employee/manage-sub-service-packages');
+  }
+
+  toggleLogManagementDropdown(event: Event): void {
+    event.stopPropagation();
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar && !sidebar.classList.contains('show')) {
+      sidebar.classList.add('show');
+      this.show = true;
+      this.showChange.emit(true);
+      this.manuallyOpened = true;
+      setTimeout(() => {
+        this.showLogManagementDropdown = !this.showLogManagementDropdown;
+      }, 50);
+      return;
+    }
+    this.showLogManagementDropdown = !this.showLogManagementDropdown;
+  }
+
+  navigateToLogManagement(path: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showLogManagementDropdown = false;
+    this.closeSidebar();
+    this.router.navigate([path]);
+  }
+
+  isLogManagementActive(): boolean {
+    return this.currentRoute.startsWith('/employee/manage-log');
   }
 
   checkUserRole(): void {

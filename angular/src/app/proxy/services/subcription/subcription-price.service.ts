@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionPriceViewDto, SubcriptionsCreateDto, SubcriptionsUpdateDto } from '../../dto/subcriptions/models';
-import type { PagingDto } from '../../iservices/common/models';
+import type { SubcriptionPriceCreateDto, SubcriptionPriceUpdateDto, SubcriptionPriceViewDto } from '../../dto/subcriptions/models';
 
 @Injectable({
   providedIn: 'root',
@@ -10,38 +9,54 @@ export class SubcriptionPriceService {
   apiName = 'Default';
   
 
-  createSubcriptionPriceByCreateSubCriptionDto = (createSubCriptionDto: SubcriptionsCreateDto, config?: Partial<Rest.Config>) =>
+  createSubcriptionPriceByDto = (dto: SubcriptionPriceCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/subcription-price/subcription-price',
-      body: createSubCriptionDto,
+      body: dto,
     },
     { apiName: this.apiName,...config });
   
 
-  deleteSoftSubcriptionPrice = (createSubCriptionDto: SubcriptionsUpdateDto, config?: Partial<Rest.Config>) =>
+  deleteSubcriptionPrice = (subcriptionPriceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: '/api/app/subcription-price/soft-subcription-price',
-      params: { subcriptionId: createSubCriptionDto.subcriptionId, title: createSubCriptionDto.title, description: createSubCriptionDto.description, isActive: createSubCriptionDto.isActive, dayDuration: createSubCriptionDto.dayDuration },
+      url: `/api/app/subcription-price/subcription-price/${subcriptionPriceId}`,
     },
     { apiName: this.apiName,...config });
   
 
-  getSubcriptionPriceServiceBySubcriptionPriceIdAndPagingDto = (subcriptionPriceId: string, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, SubcriptionPriceViewDto>({
+  getCurrentPriceOfSubcriptionBySubcriptionId = (subcriptionId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
       method: 'GET',
-      url: `/api/app/subcription-price/subcription-price-service/${subcriptionPriceId}`,
-      params: { pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
+      url: `/api/app/subcription-price/current-price-of-subcription/${subcriptionId}`,
     },
     { apiName: this.apiName,...config });
   
 
-  updateSubcriptionPrice = (createSubCriptionDto: SubcriptionsUpdateDto, config?: Partial<Rest.Config>) =>
+  getSubcriptionPricesServiceBySubcriptionIdAndPageIndex = (subcriptionId: string, pageIndex: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SubcriptionPriceViewDto[]>({
+      method: 'GET',
+      url: `/api/app/subcription-price/subcription-prices-service/${subcriptionId}`,
+      params: { pageIndex },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setStatusSubcriptionPrice = (subcriptionPriceId: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/subcription-price/set-status-subcription-price/${subcriptionPriceId}`,
+      params: { isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateSubcriptionPrice = (dto: SubcriptionPriceUpdateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
       url: '/api/app/subcription-price/subcription-price',
-      body: createSubCriptionDto,
+      body: dto,
     },
     { apiName: this.apiName,...config });
 

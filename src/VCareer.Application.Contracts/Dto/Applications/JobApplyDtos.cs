@@ -128,6 +128,11 @@ namespace VCareer.Dto.Applications
         public string? JobTitle { get; set; }
 
         /// <summary>
+        /// Mức lương hiển thị cho job (ví dụ: \"Tới 3 triệu\", \"Thoả thuận\")
+        /// </summary>
+        public string? JobSalaryText { get; set; }
+
+        /// <summary>
         /// ID ứng viên
         /// </summary>
         public Guid CandidateId { get; set; }

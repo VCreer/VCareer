@@ -53,28 +53,19 @@ namespace VCareer.Services.Order
         {
             try
             {
-                if (!_currentUser.Id.HasValue)
-                {
-                    throw new UserFriendlyException("User not authenticated");
-                }
+                if (!_currentUser.Id.HasValue) throw new UserFriendlyException("User not authenticated");
 
-                if (input == null || input.OrderDetails == null || input.OrderDetails.Count == 0)
-                {
-                    throw new UserFriendlyException("Order details cannot be empty");
-                }
+                if (input == null || input.OrderDetails == null || input.OrderDetails.Count == 0) throw new UserFriendlyException("Order details cannot be empty");
 
                 var userId = _currentUser.Id.Value;
 
-                // Validate and calculate order
                 var orderDetails = new List<Models.Order.OrderDetail>();
                 decimal subTotal = 0;
 
                 foreach (var detailDto in input.OrderDetails)
                 {
-                    if (detailDto.SubcriptionServiceId == Guid.Empty)
-                    {
-                        throw new UserFriendlyException("Invalid subscription service ID");
-                    }
+                    if (detailDto.SubcriptionServiceId == Guid.Empty) throw new UserFriendlyException("Invalid subscription service ID");
+                    if (detailDto.Quantity <= 0) throw new UserFriendlyException("Quantity must be greater than 0");
 
                     if (detailDto.Quantity <= 0)
                     {
@@ -83,15 +74,8 @@ namespace VCareer.Services.Order
 
                     var subscriptionService = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
                     
-                    if (subscriptionService == null)
-                    {
-                        throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
-                    }
-
-                    if (!subscriptionService.IsActive)
-                    {
-                        throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
-                    }
+                    if (subscriptionService == null) throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
+                    if (!subscriptionService.IsActive) throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
 
                     var unitPrice = detailDto.UnitPrice ?? subscriptionService.OriginalPrice;
                     var totalPrice = unitPrice * detailDto.Quantity;

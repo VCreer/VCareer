@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.Job;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -41,7 +43,7 @@ namespace VCareer.Services.Job
             _recruiterRepository = recruiterRepository;
             _userManager = uesrManager;
         }
-
+        [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> LoadRecruitmentCompain(bool? isActive)
         {
             var userId = _currentUser.GetId();
@@ -60,6 +62,7 @@ namespace VCareer.Services.Job
             }
             return await GetCompainsByRecruiterId(recruiter.Id, isActive);
         }
+        [Authorize(VCareerPermission.RecruimentCampaign.Create)]
         public async Task CreateRecruitmentCompain(RecruimentCampainCreateDto input)
         {
             var userId = _currentUser.GetId();
@@ -79,6 +82,7 @@ namespace VCareer.Services.Job
             await _recuirementRepository.InsertAsync(compain, true);
         }
         //compain dang co job chay thi ko cho close
+        [Authorize(VCareerPermission.RecruimentCampaign.SetStatus)]
         public async Task SetRecruitmentCompainStatus(Guid compainId, bool? isActive)
         {
             var compain = await _recuirementRepository.GetAsync(compainId);
@@ -94,6 +98,8 @@ namespace VCareer.Services.Job
             }
             await _recuirementRepository.UpdateAsync(compain, true);
         }
+
+        [Authorize(VCareerPermission.RecruimentCampaign.Update)]
         public async Task UpdateRecruitmentCompain(RecruimentCampainUpdateDto input)
         {
             var compain = await _recuirementRepository.GetAsync(input.Id);
@@ -102,6 +108,7 @@ namespace VCareer.Services.Job
             compain.Description= input.Description;
             await _recuirementRepository.UpdateAsync(compain, true);
         }
+        [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> GetCompainByCompanyId(int companyId, bool? isActive)
         {
             var company = await _companyRepository.GetAsync(companyId);
@@ -111,6 +118,7 @@ namespace VCareer.Services.Job
             if (isActive != null) campains = campains.Where(x => x.IsActive == isActive).ToList();
             return ObjectMapper.Map<List<RecruitmentCampaign>, List<RecruimentCampainViewDto>>(campains);
         }
+        [Authorize(VCareerPermission.RecruimentCampaign.LoadJobOfRecruiment)]
         public async Task<List<JobViewDetail>> GetJobsByCompainId(Guid compainId)
         {
             var campain = await _recuirementRepository.GetAsync(x => x.Id == compainId);
@@ -119,6 +127,7 @@ namespace VCareer.Services.Job
             if (jobs == null) return new List<JobViewDetail>();
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDetail>>(jobs);
         }
+        [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> GetCompainsByRecruiterId(Guid recruiterId, bool? isActive)
         {
             var query = await _recuirementRepository.GetQueryableAsync();
@@ -127,6 +136,7 @@ namespace VCareer.Services.Job
             var compains = await query.ToListAsync();
             return ObjectMapper.Map<List<RecruitmentCampaign>, List<RecruimentCampainViewDto>>(compains);
         }
+        [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<RecruimentCampainViewDto?> GetCompainById(Guid recruimentId)
         {
             var campain = await _recuirementRepository.GetAsync(x => x.Id == recruimentId);

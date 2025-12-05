@@ -70,6 +70,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   // UI state
   showActionsMenu: string | null = null;
+  menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
   showDeleteModal = false;
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
@@ -302,10 +303,135 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       event.stopPropagation();
     }
 
-    if (this.showActionsMenu === jobId) {
-      this.showActionsMenu = null;
+    const isOpening = this.showActionsMenu !== jobId;
+    this.showActionsMenu = isOpening ? jobId : null;
+    
+    if (isOpening && event) {
+      const button = event.currentTarget as HTMLElement;
+      const rect = button.getBoundingClientRect();
+      this.updateMenuPosition(rect);
     } else {
-      this.showActionsMenu = jobId;
+      this.menuPosition = null;
+    }
+  }
+
+  private updateMenuPosition(buttonRect: DOMRect) {
+    if (!this.showActionsMenu) return;
+    
+    const menu = document.querySelector(`.actions-menu[data-job-id="${this.showActionsMenu}"]`) as HTMLElement;
+    if (!menu) {
+      setTimeout(() => this.updateMenuPosition(buttonRect), 10);
+      return;
+    }
+    
+    const menuWidth = menu.offsetWidth || 280;
+    const menuHeight = menu.offsetHeight || 100;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const isMobile = viewportWidth <= 768;
+    
+    // Tính sidebar width
+    const sidebarWidth = this.getSidebarWidth();
+    const padding = isMobile ? 16 : 24;
+    const paddingLeft = sidebarWidth + padding;
+    
+    // Tính left position: đặt menu bên phải button
+    const menuGap = 8;
+    let menuLeft = buttonRect.right + menuGap;
+    
+    // Nếu không đủ chỗ bên phải, đặt menu bên trái button
+    const spaceOnRight = viewportWidth - buttonRect.right;
+    if (spaceOnRight < menuWidth) {
+      menuLeft = buttonRect.left - menuWidth - menuGap;
+      
+      // Nếu menu bị che bởi sidebar, đặt menu ở paddingLeft
+      if (menuLeft < paddingLeft) {
+        menuLeft = paddingLeft;
+      }
+    }
+    
+    // Đảm bảo menu không vượt quá viewport bên phải
+    if (menuLeft + menuWidth > viewportWidth - padding) {
+      menuLeft = Math.max(paddingLeft, viewportWidth - menuWidth - padding);
+    }
+    
+    // Đảm bảo menu không bị che bởi sidebar
+    if (menuLeft < paddingLeft) {
+      menuLeft = paddingLeft;
+    }
+    
+    // Tính top position: đo chính xác breadcrumb-box height
+    const breadcrumbBox = document.querySelector('.breadcrumb-box') as HTMLElement;
+    const breadcrumbBottom = breadcrumbBox ? breadcrumbBox.getBoundingClientRect().bottom : 120;
+    
+    const spaceBelow = viewportHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top - breadcrumbBottom;
+    
+    let top = buttonRect.bottom + menuGap;
+    
+    // Đảm bảo menu không đè lên breadcrumb-box
+    if (top < breadcrumbBottom + menuGap) {
+      top = breadcrumbBottom + menuGap;
+    }
+    
+    // Nếu không đủ chỗ bên dưới và có đủ chỗ phía trên, hiển thị menu phía trên button
+    if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+      top = buttonRect.top - menuHeight - menuGap;
+      
+      // Đảm bảo menu không đè lên breadcrumb-box khi hiển thị phía trên
+      if (top < breadcrumbBottom + menuGap) {
+        top = breadcrumbBottom + menuGap;
+      }
+    }
+    
+    // Đảm bảo menu không vượt quá viewport
+    if (top < breadcrumbBottom + menuGap) {
+      top = breadcrumbBottom + menuGap;
+    }
+    if (top + menuHeight > viewportHeight) {
+      top = Math.max(breadcrumbBottom + menuGap, viewportHeight - menuHeight - menuGap);
+    }
+    
+    this.menuPosition = {
+      top: top,
+      left: menuLeft,
+      maxWidth: menuWidth
+    };
+  }
+
+  private getSidebarWidth(): number {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return 0;
+    
+    const container = document.querySelector('.campaign-job-management-page');
+    const isSidebarExpanded = container?.classList.contains('sidebar-expanded');
+    return isSidebarExpanded ? 280 : 72;
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  private updateMenuPositionFromButton() {
+    if (!this.showActionsMenu) return;
+    
+    const container = document.querySelector(`[data-job-id="${this.showActionsMenu}"]`) as HTMLElement;
+    if (container) {
+      const button = container.querySelector('.actions-btn') as HTMLElement;
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        this.updateMenuPosition(rect);
+      }
     }
   }
 
@@ -318,6 +444,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       }
     });
     this.showActionsMenu = null;
+    this.menuPosition = null;
   }
 
   onViewCVs(job: CampaignJob): void {
@@ -330,6 +457,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       }
     });
     this.showActionsMenu = null;
+    this.menuPosition = null;
   }
 
   // Đăng bài job
@@ -365,6 +493,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.jobToDelete = job;
     this.showDeleteModal = true;
     this.showActionsMenu = null;
+    this.menuPosition = null;
   }
 
   confirmDelete(): void {
@@ -410,6 +539,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       job.isPublic = newPublicState;
       this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
       this.showActionsMenu = null;
+      this.menuPosition = null;
       this.isTogglingPublic = false;
     }, 500);
   }
@@ -419,6 +549,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.selectedStatusValue = job.status;
     this.showStatusDropdownModal = true;
     this.showActionsMenu = null;
+    this.menuPosition = null;
   }
 
   closeStatusModal(): void {
@@ -514,6 +645,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.activePackage = this.selectedPackages.length > 0 ? this.selectedPackages[0] : null;
     this.showPackageModal = true;
     this.showActionsMenu = null;
+    this.menuPosition = null;
   }
 
   confirmAssignPackage(): void {
@@ -624,6 +756,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container')) {
       this.showActionsMenu = null;
+      this.menuPosition = null;
     }
   }
 }

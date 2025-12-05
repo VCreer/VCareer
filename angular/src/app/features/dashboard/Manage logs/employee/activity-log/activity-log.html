@@ -1,0 +1,102 @@
+<div class="activity-log-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí log</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí log hoạt động của nhân viên</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="exportLogs()">
+        <i class="fa fa-download"></i>
+        Xuất Excel
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên nhân viên, chi tiết..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả vai trò"
+              [options]="roleOptions"
+              [(ngModel)]="filterRole"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả loại hoạt động"
+              [options]="activityTypeOptions"
+              [(ngModel)]="filterActivityType"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Từ ngày"
+              type="date"
+              [(ngModel)]="filterDateFrom"
+              (ngModelChange)="applyFilters()">
+            </app-input-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Đến ngày"
+              type="date"
+              [(ngModel)]="filterDateTo"
+              (ngModelChange)="applyFilters()">
+            </app-input-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div class="table-section">
+        <app-activity-log-table [activityLogs]="paginatedLogs"></app-activity-log-table>
+
+        <!-- Pagination -->
+        <app-pagination
+          *ngIf="totalPages > 1"
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+    </div>
+  </div>
+</div>
+
