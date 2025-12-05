@@ -1,22 +1,28 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
-using VCareer.Application.Applications;
-using VCareer.IServices.Application;
-using VCareer.IServices.IJobServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using VCareer.IServices.IJobServices;
-using VCareer.IServices.Application;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
+using System.Linq;
 using VCareer.Application.Applications;
+using VCareer.Application.Applications;
+using VCareer.Application.Applications;
+using VCareer.IServices.Application;
+using VCareer.IServices.Application;
+using VCareer.IServices.Application;
+using VCareer.IServices.IJobServices;
+using VCareer.IServices.IJobServices;
+using VCareer.IServices.Subcriptions;
 using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
 using VCareer.Services.LuceneService.JobSearch;
 using VCareer.Services.Payment;
+using VCareer.Services.Subcription;
 using VCareer.Token;
+using VNPAY;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
@@ -27,10 +33,6 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
-using VNPAY;
-using System.Linq;
-using VCareer.IServices.Application;
-using VCareer.Application.Applications;
 
 namespace VCareer;
 
@@ -68,6 +70,9 @@ public class VCareerApplicationModule : AbpModule
 
         // 🔧 ĐĂNG KÝ VNPAY SERVICE
         context.Services.AddScoped<IVnpayService, VnpayService>();
+        context.Services.AddTransient<ISubcriptionService, SubcriptionService_Service>();
+        context.Services.AddTransient<IUser_ChildService, User_ChildService_Service>();
+
         context.Services.AddScoped<IJobApply,ApplicationAppService>();
          }
 

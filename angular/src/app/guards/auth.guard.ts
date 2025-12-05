@@ -93,7 +93,7 @@ export class AuthGuard implements CanActivate {
   private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
     const map = {
       EMPLOYEE: ['/employee/home'],
-      RECRUITER: ['/recruiter'],
+      RECRUITER: ['/recruiter/recruitment-report'],
       CANDIDATE: ['/home'],
     };
     this.router.navigate(map[role]);

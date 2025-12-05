@@ -71,6 +71,7 @@ namespace VCareer.Services.Subcription
                 await _childService_SubcriptionServiceRepository.InsertAsync(m);
             }
         }
+
         private async Task CheckChildServiceAsync(AddChildServicesDto dto)
         {
             var queryable = await _childServiceRepository.GetQueryableAsync();
@@ -92,6 +93,7 @@ namespace VCareer.Services.Subcription
             return existingChildService;
 
         }
+        
         [Authorize(VCareerPermission.SubcriptionService.Create)]
         public async Task CreateSubCriptionAsync(SubcriptionsCreateDto dto)
         {
@@ -115,6 +117,7 @@ namespace VCareer.Services.Subcription
 
             await _subcriptionServiceRepository.InsertAsync(newSubcription, true);
         }
+
         [Authorize(VCareerPermission.SubcriptionService.RemoveChildService)]
         public async Task RemoveChildServiceAsync(AddChildServicesDto dto)
         {
@@ -137,6 +140,7 @@ namespace VCareer.Services.Subcription
         }
         //xóa mềm này mục đích chỉ ảnh hưởng tới hiển thị đối với người chưa mua sẽ ko hiển thị
         //với người dùng mua vẫn sẽ hiển thị bình thường thông qua User subcriptionservice - mong là thế
+
         [Authorize(VCareerPermission.SubcriptionService.Delete)]
         public async Task DeleteSubcriptionAsync(Guid subcriptionId)
         {
@@ -146,6 +150,7 @@ namespace VCareer.Services.Subcription
             subcription.Status = SubcriptionContance.SubcriptionStatus.Inactive;
             await _subcriptionServiceRepository.UpdateAsync(subcription);
         }
+        
         [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]
         public async Task<List<ChildServiceViewDto>> GetChildServicesWithPaging(Guid subcriptionId, bool? isActive, PagingDto pagingDto)
         {
@@ -161,6 +166,7 @@ namespace VCareer.Services.Subcription
                 .ToList();
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
         }
+
         [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]
         public async Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive)
         {
@@ -176,6 +182,7 @@ namespace VCareer.Services.Subcription
                 .ToList();
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
         }
+
         [Authorize(VCareerPermission.SubcriptionService.Load)]
         public async Task<SubcriptionsViewDto> GetSubcriptionService(Guid subcriptionId)
         {
@@ -183,6 +190,7 @@ namespace VCareer.Services.Subcription
             if (subcriptionService == null) throw new UserFriendlyException("Subcription not found");
             return ObjectMapper.Map<SubcriptionService, SubcriptionsViewDto>(subcriptionService);
         }
+
         [Authorize(VCareerPermission.SubcriptionPrice.Load)]
         public async Task<List<SubcriptionPriceViewDto>> GetSubcriptionsPrice(Guid subcriptionId, bool? isExpired, PagingDto pagingDto)
         {
@@ -217,6 +225,7 @@ namespace VCareer.Services.Subcription
 
             await _subcriptionServiceRepository.UpdateAsync(subcriptionService);
         }
+
         [Authorize(VCareerPermission.SubcriptionService.Load)]
         public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(string? target = null)
         {

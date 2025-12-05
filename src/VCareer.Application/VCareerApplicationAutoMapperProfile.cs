@@ -85,6 +85,7 @@ public class VCareerApplicationAutoMapperProfile : Profile
         CreateMap<IdentityUser, UserViewDto>();
         CreateMap<ChildService, ChildServiceViewDto>();
         CreateMap<SubcriptionPrice, SubcriptionPriceViewDto>();
+        CreateMap<User_SubcriptionService , User_SubcirptionViewDto>();
 
 
 
