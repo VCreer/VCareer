@@ -89,7 +89,7 @@
                 </div>
 
                 <!-- Status Indicators -->
-                <div class="status-indicators" *ngIf="job.status === 'viewed' || job.status === 'suitable'">
+                <div class="status-indicators" *ngIf="job.status === 'viewed' || job.status === 'suitable' || job.status === 'not-suitable'">
                   <div class="status-divider"></div>
                   
                   <div class="employer-status" *ngIf="job.status === 'viewed'">
@@ -97,8 +97,14 @@
                   </div>
 
                   <div class="applied-date-status" *ngIf="job.status === 'suitable'">
-                    <span class="applied-date-text">
-                      Đã ứng tuyển ({{ job.appliedDate }} {{ job.appliedTime }})
+                    <span class="status-text suitable">
+                      Hồ sơ phù hợp
+                    </span>
+                  </div>
+
+                  <div class="applied-date-status" *ngIf="job.status === 'not-suitable'">
+                    <span class="status-text not-suitable">
+                      Hồ sơ chưa phù hợp
                     </span>
                   </div>
                 </div>

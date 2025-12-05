@@ -26,10 +26,12 @@ using VCareer.Models.JobCategory;
 using VCareer.Dto.Category;
 using VCareer.Dto.Applications;
 using VCareer.Dto.UserDto;
+using VCareer.Dto.Subcriptions;
+using VCareer.Models.Subcription_Payment;
 
 namespace VCareer;
 
-public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
+public class VCareerApplicationAutoMapperProfile : Profile
 {
     public VCareerApplicationAutoMapperProfile()
     {
@@ -81,6 +83,10 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<JobTag, JobTagViewDto>();
         CreateMap<Tag, TagViewDto>();
         CreateMap<IdentityUser, UserViewDto>();
+        CreateMap<ChildService, ChildServiceViewDto>();
+        CreateMap<SubcriptionPrice, SubcriptionPriceViewDto>();
+
+
 
 
 

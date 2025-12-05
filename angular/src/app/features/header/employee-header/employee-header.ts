@@ -43,8 +43,8 @@ export class EmployeeHeaderComponent implements OnInit {
       // If sidebar was just closed, close all dropdowns
       if (wasExpanded && !this.showSidebar) {
         this.closeAllDropdowns();
-      }
     }
+  }
   }
 
   private closeAllDropdowns(): void {

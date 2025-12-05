@@ -215,7 +215,7 @@
       @media (max-width: 768px) {
         min-width: 100%;
         max-width: 100%;
-      }
+  }
     }
   }
   // Jobs Table Container
@@ -294,23 +294,23 @@
         }
       }
 
-        tbody {
-          tr {
-            border-bottom: 1px solid #e5e7eb;
+      tbody {
+        tr {
+          border-bottom: 1px solid #e5e7eb;
             transition: background 0.2s ease;
 
-            &:last-child {
-              border-bottom: 2px solid #e5e7eb;
-            }
+          &:last-child {
+            border-bottom: 2px solid #e5e7eb;
+          }
 
             &:hover {
               background: #f9fafb;
             }
 
-            td {
+          td {
               padding: 1rem;
               vertical-align: top;
-              border-right: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
 
             &:last-child {
               border-right: none;

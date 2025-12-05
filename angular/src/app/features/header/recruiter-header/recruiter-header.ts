@@ -52,7 +52,7 @@ export class RecruiterHeaderComponent implements OnInit {
   }
 
   navigateToPricing() {
-    this.router.navigate(['/pricing']);
+    this.router.navigate(['/recruiter/service-price-list']);
     this.closeMobileMenu();
   }
 

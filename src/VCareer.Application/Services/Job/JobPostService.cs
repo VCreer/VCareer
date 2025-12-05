@@ -21,6 +21,7 @@ using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using VCareer.Services.Geo;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -67,12 +68,13 @@ namespace VCareer.Services.Job
             _jobTagService = jobTagService;
         }
 
+        [Authorize(VCareerPermission.JobPost.Approve)]
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
             if (jobPost == null)
                 throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
-            if(jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
+            if (jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
 
             jobPost.Status = JobStatus.Open;
             jobPost.ApprovedBy = CurrentUser.Id;
@@ -84,7 +86,7 @@ namespace VCareer.Services.Job
             //send email cho recruiter báo đăng bài thành công
             //
         }
-
+        [Authorize(VCareerPermission.JobPost.Reject)]
         public async Task RejectJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -98,7 +100,7 @@ namespace VCareer.Services.Job
             //send email cho recruiter với nội dung từ Reject reason 
             //
         }
-
+        [Authorize(VCareerPermission.JobPost.LoadJobNeedApprove)]
         public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
         {
             var jobs = await SortJobNeedApproved();
@@ -245,6 +247,7 @@ namespace VCareer.Services.Job
         }
 
         #endregion
+        [Authorize(VCareerPermission.JobPost.PostJob)]
         public async Task PostJobAsync(PostJobDto dto)
         {
             //chir cho phep job o status Draft duoc post
@@ -273,6 +276,7 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(job, true);
 
         }
+        [Authorize(VCareerPermission.JobPost.CLose)]
         public async Task CloseJobPost(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -291,6 +295,7 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
         }
+        [Authorize(VCareerPermission.JobPost.Create)]
         public async Task CreateJobPost(JobPostCreateDto dto)
         {
             if (_currentUser.IsAuthenticated == false) throw new AbpAuthorizationException("User is not authenticated");
@@ -338,6 +343,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.Delete)]
         public async Task DeleteJobPost(string id)
         {
             var job = await _jobPostRepository.FindAsync(Guid.Parse(id));
@@ -351,12 +357,13 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.LoadJobByCompanyId)]
         public async Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10)
         {
             var query = await _jobPostRepository.GetQueryableAsync();
 
             var jobs = await query
-                .Where(x => x.CompanyId == companyId )
+                .Where(x => x.CompanyId == companyId)
                 .OrderByDescending(x => x.PostedAt)
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -364,8 +371,7 @@ namespace VCareer.Services.Job
 
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
         }
-
-
+        [Authorize(VCareerPermission.JobPost.Statistics)]
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
             throw new NotImplementedException();
@@ -378,6 +384,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.Update)]
         public async Task UpdateJobPost(JobPostUpdateDto dto)
         {
             var job = await _jobPostRepository.GetAsync(dto.Id);

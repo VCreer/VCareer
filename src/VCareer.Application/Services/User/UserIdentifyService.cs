@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System;
@@ -10,6 +11,7 @@ using VCareer.Constants;
 using VCareer.Dto.UserDto;
 using VCareer.IRepositories.Profile;
 using VCareer.IServices.User;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization.Permissions;
@@ -74,6 +76,7 @@ namespace VCareer.Services.User
                 }
             );
         }
+        [Authorize(VCareerPermission.User.ViewByRole)]
         public async Task<List<IdentityUserDto>> GetUsersInfoByRoleAsync(int roleType)
         {
             if (!Enum.IsDefined(typeof(RoleType), roleType))
@@ -108,13 +111,12 @@ namespace VCareer.Services.User
 
             return users;
         }
-
-
+        [Authorize(VCareerPermission.User.SetStatus)]
         public async Task SetUserActiveStatusAsync(Guid userId, bool isActive)
         {
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
-
+          
             await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
             {
                 IsActive = isActive
@@ -125,6 +127,7 @@ namespace VCareer.Services.User
             var roles = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
             return roles.Items.ToList();
         }
+        [Authorize(VCareerPermission.User.ViewEmployees)]
         public async Task<List<IdentityRoleDto>> GetAllEmployeeRolesAsync()
         {
             var roles = await _roleAppService.GetListAsync(new GetIdentityRolesInput());

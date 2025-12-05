@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.JobCategory;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 
@@ -25,6 +27,7 @@ namespace VCareer.Services.Job
             _jobTagRepository = jobTagRepository;
             _jobCategoryRepository = jobCategoryRepository;
         }
+        [Authorize(VCareerPermission.Tag.Create)]
         public async Task CreateTagsAsync(TagCreateDto dto)
         {
             if (dto.Names.Count <= 0) throw new UserFriendlyException("Tag names list cannot be empty.");
@@ -35,7 +38,7 @@ namespace VCareer.Services.Job
             }
             await _tagRepository.InsertManyAsync(listTag);
         }
-
+        [Authorize(VCareerPermission.Tag.Delete)]
         public async Task DeleteTagsAsync(List<int> tagIds)
         {
             if (tagIds.Count == 0) throw new UserFriendlyException("Tag ids list cannot be empty.");
@@ -47,7 +50,7 @@ namespace VCareer.Services.Job
             }
             await _tagRepository.DeleteManyAsync(listAllowedToDelete);
         }
-
+        [Authorize(VCareerPermission.Tag.View)]
         public async Task<List<TagViewDto>> GetTagsByCategoryIdAsync(Guid categoryId)
         {
             var category = await _jobCategoryRepository.GetAsync(categoryId);
@@ -57,7 +60,7 @@ namespace VCareer.Services.Job
             if (tags == null) return new List<TagViewDto>();
             return ObjectMapper.Map<List<Tag>, List<TagViewDto>>(tags);
         }
-
+        [Authorize(VCareerPermission.Tag.Update)]
         public async Task UpdateTagAsync(TagUpdateDto tagUpdateDto)
         {
             var tag = await _tagRepository.GetAsync(tagUpdateDto.TagId);

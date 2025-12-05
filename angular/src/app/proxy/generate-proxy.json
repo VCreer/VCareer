@@ -1235,7 +1235,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "ApplyWithUploadedCVAsyncByInput": {
@@ -1272,7 +1272,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationListAsyncByInput": {
@@ -1441,7 +1441,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationAsyncById": {
@@ -1478,7 +1478,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "UpdateApplicationStatusAsyncByIdAndInput": {
@@ -1535,7 +1535,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "WithdrawApplicationAsyncByIdAndInput": {
@@ -1592,7 +1592,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "MarkAsViewedAsyncById": {
@@ -1629,7 +1629,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationStatisticsAsyncByJobIdAndCompanyId": {
@@ -2024,7 +2024,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetJobApplicationsAsyncByJobIdAndInput": {
@@ -2213,7 +2213,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "DownloadApplicationCVAsyncById": {
@@ -2250,7 +2250,7 @@
                 "type": "System.Byte[]",
                 "typeSimple": "[number]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "DeleteApplicationAsyncById": {
@@ -2287,7 +2287,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "CheckApplicationStatusAsyncByJobId": {
@@ -2324,7 +2324,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationStatusDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationStatusDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "BulkDownloadCompanyCVsAsyncByInput": {
@@ -2361,7 +2361,7 @@
                 "type": "System.Byte[]",
                 "typeSimple": "[number]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "RateApplicationAsyncByIdAndInput": {
@@ -2418,7 +2418,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             }
           }
@@ -5254,7 +5254,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             },
             "GetCandidateDetailAsyncById": {
@@ -5291,7 +5291,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Profile.CandidateSearchResultDto>",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Profile.CandidateSearchResultDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             },
             "SendConnectionRequestAsyncByIdAndInput": {
@@ -5348,7 +5348,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.IActionResult",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             }
           }
@@ -5396,7 +5396,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
@@ -5453,7 +5453,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "SearchCompaniesAsyncByInput": {
@@ -5674,7 +5674,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "UploadLegalDocumentAsyncByIdAndInput": {
@@ -10307,7 +10307,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
             },
             "DeleteCategoryAsyncById": {
@@ -10344,7 +10344,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
             },
             "GetCategoryTreeAsync": {
@@ -10359,7 +10359,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
                 "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
             },
             "SearchCategoriesAsyncByKeyword": {
@@ -10453,7 +10453,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
             }
           }
@@ -10787,7 +10787,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "RejectJobPostAsyncById": {
@@ -10824,7 +10824,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "ShowJobPostNeedApproveByDto": {
@@ -10861,7 +10861,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobApproveViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.JobApproveViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "PostJobAsyncByDto": {
@@ -10898,7 +10898,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "CloseJobPostById": {
@@ -10935,7 +10935,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Services.Job.JobPostService"
             },
             "ExecuteExpiredJobPostAutomaticallyById": {
@@ -11009,7 +11009,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "CreateJobPostByOldPostByDto": {
@@ -11083,7 +11083,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "GetJobPostBySatusByStatusAndMaxCount": {
@@ -11217,7 +11217,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.JobViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "GetJobPostStatisticById": {
@@ -11254,7 +11254,7 @@
                 "type": "VCareer.Dto.JobDto.JobPostStatisticDto",
                 "typeSimple": "VCareer.Dto.JobDto.JobPostStatisticDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "UpdateApplyCountById": {
@@ -11365,7 +11365,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "UpDateViewCountById": {
@@ -12545,7 +12545,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "CreateRecruitmentCompainByInput": {
@@ -12582,7 +12582,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "SetRecruitmentCompainStatusByCompainIdAndIsActive": {
@@ -12639,7 +12639,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "UpdateRecruitmentCompainByInput": {
@@ -12676,7 +12676,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "GetCompainByCompanyIdByCompanyIdAndIsActive": {
@@ -12733,7 +12733,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "GetJobsByCompainIdByCompainId": {
@@ -12770,7 +12770,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Job.JobViewDetail>",
                 "typeSimple": "[VCareer.Dto.Job.JobViewDetail]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "GetCompainsByRecruiterIdByRecruiterIdAndIsActive": {
@@ -12827,7 +12827,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.RecruimentCampainViewDto>",
                 "typeSimple": "[VCareer.Dto.JobDto.RecruimentCampainViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             },
             "GetCompainByIdByRecruimentId": {
@@ -12864,7 +12864,7 @@
                 "type": "VCareer.Dto.JobDto.RecruimentCampainViewDto",
                 "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainViewDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             }
           }
@@ -12987,7 +12987,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.ITagService"
             },
             "DeleteTagsAsyncByTagIds": {
@@ -13024,7 +13024,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.ITagService"
             },
             "GetTagsByCategoryIdAsyncByCategoryId": {
@@ -13061,7 +13061,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Category.TagViewDto>",
                 "typeSimple": "[VCareer.Dto.Category.TagViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.ITagService"
             },
             "UpdateTagAsyncByTagUpdateDto": {
@@ -13098,7 +13098,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.ITagService"
             }
           }
@@ -13489,7 +13489,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             },
             "GetCandidateDetailAsyncByCandidateProfileId": {
@@ -13526,7 +13526,7 @@
                 "type": "VCareer.Dto.Profile.CandidateSearchResultDto",
                 "typeSimple": "VCareer.Dto.Profile.CandidateSearchResultDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             },
             "SendConnectionRequestAsyncByInput": {
@@ -13563,7 +13563,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             }
           }
@@ -13985,7 +13985,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyLegalInfoAsyncById": {
@@ -14022,7 +14022,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoAsync": {
@@ -14037,7 +14037,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoListAsync": {
@@ -14052,7 +14052,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Profile.CompanyLegalInfoDto>",
                 "typeSimple": "[VCareer.Dto.Profile.CompanyLegalInfoDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "DeleteCompanyLegalInfoAsyncById": {
@@ -14206,7 +14206,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UploadLegalDocumentAsyncByIdAndFile": {
@@ -14263,7 +14263,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetLegalDocumentFileAsyncByStoragePath": {
@@ -14300,7 +14300,7 @@
                 "type": "VCareer.Dto.FileDto.FileStreamResultDto",
                 "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyByJobIdAsyncByJobId": {
@@ -14337,7 +14337,7 @@
                 "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "SearchCompaniesAsyncByInput": {
@@ -14374,7 +14374,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetPendingCompaniesAsyncByInput": {
@@ -14932,7 +14932,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "ChangePasswordAsyncByInput": {
@@ -14969,7 +14969,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "VerifyPhoneNumberAsyncByInput": {
@@ -15006,7 +15006,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "SendEmailOtpAsyncByInput": {
@@ -15043,7 +15043,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "VerifyEmailNumberAsyncByInput": {
@@ -15080,7 +15080,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "GetCurrentUserProfileAsync": {
@@ -15095,7 +15095,7 @@
                 "type": "VCareer.Dto.Profile.ProfileDto",
                 "typeSimple": "VCareer.Dto.Profile.ProfileDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "DeleteAccountAsync": {
@@ -15147,7 +15147,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             }
           }
@@ -15885,7 +15885,7 @@
               "uniqueName": "CreateChildServiceAsyncByDto",
               "name": "CreateChildServiceAsync",
               "httpMethod": "POST",
-              "url": "api/app/child-service_/child-service",
+              "url": "api/app/childservice-service/create-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15915,14 +15915,14 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
             "DeleteChildServiceAsyncByChildServiceId": {
               "uniqueName": "DeleteChildServiceAsyncByChildServiceId",
               "name": "DeleteChildServiceAsync",
               "httpMethod": "DELETE",
-              "url": "api/app/child-service_/child-service/{childServiceId}",
+              "url": "api/app/childservice-service/delete-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15943,8 +15943,8 @@
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -15952,14 +15952,14 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
             "StopAgentCHildServiceAsyncByChildServiceId": {
               "uniqueName": "StopAgentCHildServiceAsyncByChildServiceId",
               "name": "StopAgentCHildServiceAsync",
-              "httpMethod": "POST",
-              "url": "api/app/child-service_/stop-agent-cHild-service/{childServiceId}",
+              "httpMethod": "PUT",
+              "url": "api/app/childservice-service/stop-agent-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -15980,8 +15980,8 @@
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -15989,14 +15989,14 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
             "UpdateChildServiceAsyncByDto": {
               "uniqueName": "UpdateChildServiceAsyncByDto",
               "name": "UpdateChildServiceAsync",
               "httpMethod": "PUT",
-              "url": "api/app/child-service_/child-service",
+              "url": "api/app/childservice-service/update-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -16026,14 +16026,14 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
             "GetChildServicesAsyncByServiceActionAndTargetAndPaging": {
               "uniqueName": "GetChildServicesAsyncByServiceActionAndTargetAndPaging",
               "name": "GetChildServicesAsync",
               "httpMethod": "POST",
-              "url": "api/app/child-service_/get-child-services",
+              "url": "api/app/childservice-service/GetChildServices",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -16103,7 +16103,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             }
           }
@@ -16562,10 +16562,10 @@
                   "name": "CreateSubcriptionPrice",
                   "parametersOnMethod": [
                     {
-                      "name": "createSubCriptionDto",
-                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
-                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -16573,16 +16573,58 @@
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "GetCurrentPriceOfSubcription",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Decimal",
+                    "typeSimple": "number"
+                  }
+                },
+                {
+                  "name": "GetSubcriptionPricesService",
+                  "parametersOnMethod": [
+                    {
+                      "name": "subcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pageIndex",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionPriceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionPriceViewDto]"
                   }
                 },
                 {
                   "name": "UpdateSubcriptionPriceAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "createSubCriptionDto",
-                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -16593,13 +16635,13 @@
                   }
                 },
                 {
-                  "name": "DeleteSoftSubcriptionPriceAsync",
+                  "name": "DeleteSubcriptionPriceAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "createSubCriptionDto",
-                      "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                      "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                      "name": "subcriptionPriceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -16610,7 +16652,7 @@
                   }
                 },
                 {
-                  "name": "GetSubcriptionPriceService",
+                  "name": "SetStatusSubcriptionPriceAsync",
                   "parametersOnMethod": [
                     {
                       "name": "subcriptionPriceId",
@@ -16621,46 +16663,46 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "pagingDto",
-                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                      "type": "VCareer.IServices.Common.PagingDto",
-                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "name": "isActive",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto",
-                    "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 }
               ]
             }
           ],
           "actions": {
-            "CreateSubcriptionPriceByCreateSubCriptionDto": {
-              "uniqueName": "CreateSubcriptionPriceByCreateSubCriptionDto",
+            "CreateSubcriptionPriceByDto": {
+              "uniqueName": "CreateSubcriptionPriceByDto",
               "name": "CreateSubcriptionPrice",
               "httpMethod": "POST",
               "url": "api/app/subcription-price/subcription-price",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "createSubCriptionDto",
-                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "createSubCriptionDto",
+                  "nameOnMethod": "dto",
+                  "name": "dto",
                   "jsonName": null,
-                  "type": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsCreateDto",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -16672,99 +16714,182 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
             },
-            "DeleteSoftSubcriptionPriceAsyncByCreateSubCriptionDto": {
-              "uniqueName": "DeleteSoftSubcriptionPriceAsyncByCreateSubCriptionDto",
-              "name": "DeleteSoftSubcriptionPriceAsync",
-              "httpMethod": "DELETE",
-              "url": "api/app/subcription-price/soft-subcription-price",
+            "GetCurrentPriceOfSubcriptionBySubcriptionId": {
+              "uniqueName": "GetCurrentPriceOfSubcriptionBySubcriptionId",
+              "name": "GetCurrentPriceOfSubcription",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-price/current-price-of-subcription/{subcriptionId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "createSubCriptionDto",
-                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "SubcriptionId",
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "createSubCriptionDto"
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Decimal",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "GetSubcriptionPricesServiceBySubcriptionIdAndPageIndex": {
+              "uniqueName": "GetSubcriptionPricesServiceBySubcriptionIdAndPageIndex",
+              "name": "GetSubcriptionPricesService",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-price/subcription-prices-service/{subcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
                 },
                 {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "Title",
+                  "name": "pageIndex",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionId",
+                  "name": "subcriptionId",
                   "jsonName": null,
-                  "type": "System.String",
+                  "type": "System.Guid",
                   "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "createSubCriptionDto"
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "Description",
+                  "nameOnMethod": "pageIndex",
+                  "name": "pageIndex",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
-                  "descriptorName": "createSubCriptionDto"
-                },
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionPriceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionPriceViewDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "UpdateSubcriptionPriceAsyncByDto": {
+              "uniqueName": "UpdateSubcriptionPriceAsyncByDto",
+              "name": "UpdateSubcriptionPriceAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/subcription-price/subcription-price",
+              "supportedVersions": [],
+              "parametersOnMethod": [
                 {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "IsActive",
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
                   "jsonName": null,
-                  "type": "System.Boolean",
-                  "typeSimple": "boolean",
+                  "type": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "createSubCriptionDto"
-                },
-                {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "DayDuration",
-                  "jsonName": null,
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "createSubCriptionDto"
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
                 }
               ],
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
             },
-            "GetSubcriptionPriceServiceBySubcriptionPriceIdAndPagingDto": {
-              "uniqueName": "GetSubcriptionPriceServiceBySubcriptionPriceIdAndPagingDto",
-              "name": "GetSubcriptionPriceService",
-              "httpMethod": "GET",
-              "url": "api/app/subcription-price/subcription-price-service/{subcriptionPriceId}",
+            "DeleteSubcriptionPriceAsyncBySubcriptionPriceId": {
+              "uniqueName": "DeleteSubcriptionPriceAsyncBySubcriptionPriceId",
+              "name": "DeleteSubcriptionPriceAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/subcription-price/subcription-price/{subcriptionPriceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "subcriptionPriceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "subcriptionPriceId",
+                  "name": "subcriptionPriceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
+            },
+            "SetStatusSubcriptionPriceAsyncBySubcriptionPriceIdAndIsActive": {
+              "uniqueName": "SetStatusSubcriptionPriceAsyncBySubcriptionPriceIdAndIsActive",
+              "name": "SetStatusSubcriptionPriceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/subcription-price/set-status-subcription-price/{subcriptionPriceId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -16776,10 +16901,10 @@
                   "defaultValue": null
                 },
                 {
-                  "name": "pagingDto",
-                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Common.PagingDto",
-                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "name": "isActive",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -16798,64 +16923,15 @@
                   "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageSize",
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
                   "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                },
-                {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageIndex",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto",
-                "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
-            },
-            "UpdateSubcriptionPriceAsyncByCreateSubCriptionDto": {
-              "uniqueName": "UpdateSubcriptionPriceAsyncByCreateSubCriptionDto",
-              "name": "UpdateSubcriptionPriceAsync",
-              "httpMethod": "PUT",
-              "url": "api/app/subcription-price/subcription-price",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "createSubCriptionDto",
-                  "typeAsString": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "createSubCriptionDto",
-                  "name": "createSubCriptionDto",
-                  "jsonName": null,
-                  "type": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsUpdateDto",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "Body",
                   "descriptorName": ""
                 }
               ],
@@ -16863,7 +16939,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionPriceService"
             }
           }
@@ -17111,7 +17187,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "CreateSubCriptionAsyncByDto": {
@@ -17148,7 +17224,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "RemoveChildServiceAsyncByDto": {
@@ -17197,7 +17273,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "DeleteSubcriptionAsyncBySubcriptionId": {
@@ -17234,7 +17310,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "GetChildServicesWithPagingBySubcriptionIdAndIsActiveAndPagingDto": {
@@ -17323,7 +17399,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "GetChildServicesBySubcriptionIdAndIsActive": {
@@ -17380,7 +17456,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "GetSubcriptionServiceBySubcriptionId": {
@@ -17417,7 +17493,7 @@
                 "type": "VCareer.Dto.Subcriptions.SubcriptionsViewDto",
                 "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsViewDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.Services.Subcription.SubcriptionService_Service"
             },
             "GetSubcriptionsPriceBySubcriptionIdAndIsExpiredAndPagingDto": {
@@ -17506,7 +17582,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionPriceViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionPriceViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "UpdateSubcriptionAsyncByDto": {
@@ -17543,7 +17619,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             },
             "GetActiveSubscriptionServicesAsyncByTarget": {
@@ -17580,7 +17656,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
             }
           }
@@ -18055,7 +18131,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
             },
             "CreateUserSubcriptionByDto": {
@@ -18407,7 +18483,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.TeamManagementDto.StaffListItemDto>",
                 "typeSimple": "[VCareer.Dto.TeamManagementDto.StaffListItemDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "DeactivateStaffAsyncByInput": {
@@ -18444,7 +18520,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "InviteStaffAsyncByInput": {
@@ -18481,7 +18557,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffListItemDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffListItemDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "ActivateStaffAsyncByInput": {
@@ -18518,7 +18594,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             }
           }
@@ -18578,7 +18654,7 @@
                   }
                 },
                 {
-                  "name": "GetUsersIdByRoleAsync",
+                  "name": "GetUsersInfoByRoleAsync",
                   "parametersOnMethod": [
                     {
                       "name": "roleType",
@@ -18590,8 +18666,8 @@
                     }
                   ],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<System.Guid>",
-                    "typeSimple": "[string]"
+                    "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityUserDto>",
+                    "typeSimple": "[Volo.Abp.Identity.IdentityUserDto]"
                   }
                 },
                 {
@@ -18825,11 +18901,11 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
-            "GetUsersIdByRoleAsyncByRoleType": {
-              "uniqueName": "GetUsersIdByRoleAsyncByRoleType",
-              "name": "GetUsersIdByRoleAsync",
+            "GetUsersInfoByRoleAsyncByRoleType": {
+              "uniqueName": "GetUsersInfoByRoleAsyncByRoleType",
+              "name": "GetUsersInfoByRoleAsync",
               "httpMethod": "GET",
-              "url": "api/app/user/users-id-by-role",
+              "url": "api/app/user/users-info-by-role",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -18856,10 +18932,10 @@
                 }
               ],
               "returnValue": {
-                "type": "System.Collections.Generic.List<System.Guid>",
-                "typeSimple": "[string]"
+                "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityUserDto>",
+                "typeSimple": "[Volo.Abp.Identity.IdentityUserDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
             "SetUserActiveStatusAsyncByUserIdAndIsActive": {
@@ -18916,7 +18992,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
             "GetAllRolesAsync": {
@@ -18946,7 +19022,7 @@
                 "type": "System.Collections.Generic.List<Volo.Abp.Identity.IdentityRoleDto>",
                 "typeSimple": "[Volo.Abp.Identity.IdentityRoleDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
             "GetAllPermissionGroupsAsync": {
@@ -24499,6 +24575,18 @@
         },
         {
           "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobSalaryText",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -33214,6 +33302,132 @@
         }
       ]
     },
+    "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SubcriptionServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalePercent",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveFrom",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveTo",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.SubcriptionPriceUpdateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SubcriptionPriceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SubcriptionServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalePercent",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveFrom",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EffectiveTo",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Subcriptions.SubcriptionPriceViewDto": {
       "baseType": null,
       "isEnum": false,
@@ -33222,10 +33436,10 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "SalePercent",
+          "name": "SubcriptionServiceId",
           "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -33246,10 +33460,46 @@
           "regex": null
         },
         {
+          "name": "SalePercent",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "type",
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.SubcriptionContance_CurrencyType",
           "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsExpried",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -34216,6 +34466,18 @@
         },
         {
           "name": "Email",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PhoneNumber",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

@@ -2,7 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
+using VCareer.Application.Applications;
+using VCareer.IServices.Application;
 using VCareer.IServices.IJobServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using VCareer.IServices.IJobServices;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
@@ -21,6 +29,8 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
 using VNPAY;
 using System.Linq;
+using VCareer.IServices.Application;
+using VCareer.Application.Applications;
 
 namespace VCareer;
 
@@ -58,7 +68,8 @@ public class VCareerApplicationModule : AbpModule
 
         // 🔧 ĐĂNG KÝ VNPAY SERVICE
         context.Services.AddScoped<IVnpayService, VnpayService>();
-                      }
+        context.Services.AddScoped<IJobApply,ApplicationAppService>();
+         }
 
    
 

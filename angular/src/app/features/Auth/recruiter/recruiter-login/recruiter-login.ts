@@ -135,13 +135,13 @@ export class RecruiterLoginComponent {
               const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
               const isRecruiter = rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff');
 
-              if (!isRecruiter) {
-                this.isLoading = false;
-                this.showToastMessage('Tài khoản này không có quyền truy cập vào hệ thống recruiter!', 'error');
-                // Logout user
-                this.authFacade.logout().subscribe();
-                return;
-              }
+              // if (!isRecruiter) {
+              //   this.isLoading = false;
+              //   this.showToastMessage('Tài khoản này không có quyền truy cập vào hệ thống recruiter!', 'error');
+              //   // Logout user
+              //   this.authFacade.logout().subscribe();
+              //   return;
+              // }
 
               this.showToastMessage('Đăng nhập thành công!', 'success');
 

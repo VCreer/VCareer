@@ -49,17 +49,24 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     // Subscribe to verification status
     this.isVerified = this.navigationService.isVerified();
     this.verificationSubscription = this.navigationService.isVerified$.subscribe(verified => {
+      // Đối với HR Staff, luôn hiển thị đã xác thực (theo Leader công ty)
+      if (this.isHRStaff) {
+        this.isVerified = true;
+        this.verificationLevel = 'Cấp 3/3';
+        return;
+      }
+
+      // Đối với Leader Recruiter, dùng trạng thái verification global
       this.isVerified = verified;
-      // Update verification level display based on status
       if (!verified) {
         this.verificationLevel = 'Chưa xác thực';
       } else {
-        this.verificationLevel = 'Cấp 1/3';
+        this.verificationLevel = 'Cấp 3/3';
       }
     });
     
-    // Check if user is HR Staff (IsLead = false)
-    // this.checkUserRole();
+    // Kiểm tra role để phân biệt Leader Recruiter vs HR Staff
+    this.checkUserRole();
   }
 
   ngOnInit() {
@@ -142,14 +149,15 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadUserInfo(): void {
-    // First try to get from AuthStateService (already loaded)
+    // First try to get from AuthStateService (already loaded) chỉ để lấy nhanh tên hiển thị
+    // nhưng KHÔNG return sớm, vì với Recruiter/HR Staff chúng ta vẫn cần gọi TeamManagementService
+    // để biết IsLead, isHRStaff và trạng thái xác thực.
     const currentUser = this.authStateService.user;
     if (currentUser && currentUser.fullName) {
       this.userName = currentUser.fullName;
-      return;
     }
 
-    // If not available, load from API
+    // Load thêm thông tin chi tiết từ API
     if (this.isEmployeeRoute) {
       // For employee, use basic user info
       this.authFacadeService.loadCurrentUser().subscribe({
@@ -177,6 +185,13 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
             this.userRole = 'Leader Recruiter';
           } else {
             this.userRole = 'HR Staff';
+          }
+          // Nếu là HR Staff thì giả định công ty đã được Leader xác thực
+          // => sidebar luôn hiển thị tài khoản đã xác thực cho HR Staff
+          this.isHRStaff = !userInfo.isLead;
+          if (this.isHRStaff) {
+            this.isVerified = true;
+            this.verificationLevel = 'Cấp 3/3';
           }
         },
         error: (error) => {
@@ -213,7 +228,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     }
     if (this.sidebarStateInterval) {
       clearInterval(this.sidebarStateInterval);
-    }
+  }
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -334,6 +349,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     // Close sidebar before navigation to ensure it closes immediately
     this.closeSidebar();
     this.router.navigate([path]);
+    this.onClose();
   }
 
   isActive(path: string): boolean {
@@ -352,10 +368,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.manuallyOpened = true;
       // Trigger change detection
       setTimeout(() => {
-        this.showUserManagementDropdown = !this.showUserManagementDropdown;
+    this.showUserManagementDropdown = !this.showUserManagementDropdown;
       }, 50);
       return;
-    }
+  }
     this.showUserManagementDropdown = !this.showUserManagementDropdown;
   }
 
@@ -436,39 +452,39 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     return this.currentRoute.startsWith('/employee/manage-log');
   }
 
-  // checkUserRole(): void {
-  //   // Kiểm tra xem route hiện tại có phải employee route không
-  //   const currentUrl = this.router.url;
-  //   const isEmployeeRoute = currentUrl.startsWith('/employee');
+  checkUserRole(): void {
+    // Kiểm tra xem route hiện tại có phải employee route không
+    const currentUrl = this.router.url;
+    const isEmployeeRoute = currentUrl.startsWith('/employee');
     
-  //   // Nếu là employee route, không gọi API getCurrentUserInfo (chỉ dành cho Recruiter)
-  //   if (isEmployeeRoute) {
-  //     this.isEmployeeRoute = true;
-  //     this.userRole = 'Employee';
-  //     this.isHRStaff = false;
-  //     return;
-  //   }
+    // Nếu là employee route, không gọi API getCurrentUserInfo (chỉ dành cho Recruiter)
+    if (isEmployeeRoute) {
+      this.isEmployeeRoute = true;
+      this.userRole = 'Employee';
+      this.isHRStaff = false;
+      return;
+    }
     
-  //   // Chỉ gọi API cho recruiter routes
-  //   // Kiểm tra xem user có phải HR Staff không (IsLead = false)
-  //   this.teamManagementService.getCurrentUserInfo().subscribe({
-  //     next: (userInfo) => {
-  //       // HR Staff là user có IsLead = false
-  //       this.isHRStaff = !userInfo.isLead;
-  //       // Update role based on isLead
-  //       if (userInfo.isLead) {
-  //         this.userRole = 'Leader Recruiter';
-  //       } else {
-  //         this.userRole = 'HR Staff';
-  //       }
-  //     },
-  //     error: (error) => {
-  //       // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
-  //       console.error('Error loading user info in sidebar:', error);
-  //       this.isHRStaff = false;
-  //       // Keep default role as 'Leader Recruiter'
-  //     }
-  //   });
-  // }
+    // Chỉ gọi API cho recruiter routes
+    // Kiểm tra xem user có phải HR Staff không (IsLead = false)
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        // HR Staff là user có IsLead = false
+        this.isHRStaff = !userInfo.isLead;
+        // Update role based on isLead
+        if (userInfo.isLead) {
+          this.userRole = 'Leader Recruiter';
+        } else {
+          this.userRole = 'HR Staff';
+        }
+      },
+      error: (error) => {
+        // Nếu không lấy được thông tin, mặc định là Leader (không ẩn menu)
+        console.error('Error loading user info in sidebar:', error);
+        this.isHRStaff = false;
+        // Keep default role as 'Leader Recruiter'
+      }
+    });
+  }
 }
 

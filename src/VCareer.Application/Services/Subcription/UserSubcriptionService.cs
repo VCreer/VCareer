@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
 using VCareer.Models.Subcription;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -33,6 +35,7 @@ namespace VCareer.Services.Subcription
             _user_ChildServiceRepository = user_ChildServiceRepository;
             _user_ChildService_Service = user_ChildService_Service;
         }
+        [Authorize(VCareerPermission.SubcriptionService.Buy)]
         public async Task BuySubcription(User_SubcirptionCreateDto dto)
         {
             // chạy luồng payment nếu thành công thì tạo 1 UserSubcription

@@ -453,13 +453,13 @@
           .sidebar-submenu {
             // Only hide if submenu doesn't have .show class
             &:not(.show) {
-              display: none;
-            }
+            display: none;
           }
         }
       }
     }
   }
+}
 }
 
 /* Responsive Styles */
