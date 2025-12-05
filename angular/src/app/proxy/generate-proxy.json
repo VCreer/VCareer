@@ -18092,6 +18092,31 @@
                     "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
                     "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
                   }
+                },
+                {
+                  "name": "SubcriptionBoughtedAndActive",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "SubcriptionServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
+                  }
                 }
               ]
             }
@@ -18367,6 +18392,63 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId": {
+              "uniqueName": "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId",
+              "name": "SubcriptionBoughtedAndActive",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/subcription-boughted-and-active",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "UserId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "SubcriptionServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "UserId",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "SubcriptionServiceId",
+                  "name": "SubcriptionServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<System.Guid>",
+                "typeSimple": "[string]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
