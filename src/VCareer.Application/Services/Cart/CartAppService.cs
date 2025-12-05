@@ -6,8 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Cart;
 using VCareer.IRepositories.Cart;
+using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Cart;
+using VCareer.IServices.Subcriptions;
 using VCareer.Models.Cart;
+using VCareer.Models.Subcription;
 using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -25,16 +28,19 @@ namespace VCareer.Services.Cart
         private readonly IRepository<Models.Subcription.SubcriptionService, Guid> _subscriptionServiceRepository;
         private readonly ICurrentUser _currentUser;
         private readonly ILogger<CartAppService> _logger;
+        private readonly IUserSubcriptionService _userSubcriptionService;
 
         public CartAppService(
             ICartRepository cartRepository,
             IRepository<Models.Subcription.SubcriptionService, Guid> subscriptionServiceRepository,
             ICurrentUser currentUser,
+            IUserSubcriptionService userSubcriptionService,
             ILogger<CartAppService> logger)
         {
             _cartRepository = cartRepository;
             _subscriptionServiceRepository = subscriptionServiceRepository;
             _currentUser = currentUser;
+            _userSubcriptionService = userSubcriptionService;
             _logger = logger;
         }
         [Authorize(VCareerPermission.Cart.View)]
@@ -44,15 +50,11 @@ namespace VCareer.Services.Cart
             {
                 if (_currentUser.Id == null)
                 {
-                    _logger.LogWarning("GetMyCartAsync: User not authenticated");
                     throw new UserFriendlyException("User not authenticated");
                 }
 
                 var userId = _currentUser.Id.Value;
-                _logger.LogInformation("GetMyCartAsync: Loading cart for userId: {UserId}", userId);
-
                 var cartItems = await _cartRepository.GetCartByUserIdAsync(userId);
-                _logger.LogInformation("GetMyCartAsync: Found {Count} items in cart", cartItems.Count);
 
                 var cartDtos = cartItems.Select(cart => new CartDto
                 {
@@ -73,7 +75,6 @@ namespace VCareer.Services.Cart
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in GetMyCartAsync");
                 throw;
             }
         }
@@ -82,78 +83,51 @@ namespace VCareer.Services.Cart
         {
             try
             {
-                if (_currentUser.Id == null)
-                {
-                    _logger.LogWarning("AddToCartAsync: User not authenticated");
-                    throw new UserFriendlyException("User not authenticated");
-                }
+                if (_currentUser.Id == null) throw new UserFriendlyException("User not authenticated");
 
                 var userId = _currentUser.Id.Value;
-                _logger.LogInformation("AddToCartAsync: UserId: {UserId}, SubscriptionServiceId: {ServiceId}, Quantity: {Quantity}",
-                    userId, input.SubscriptionServiceId, input.Quantity);
 
-                // Validate subscription service exists
                 var subscriptionService = await _subscriptionServiceRepository.GetAsync(input.SubscriptionServiceId);
-                _logger.LogInformation("AddToCartAsync: SubscriptionService found: {Title}", subscriptionService.Title);
+                if (subscriptionService == null || subscriptionService.IsActive == false) throw new UserFriendlyException("Subscription service not found");
 
                 // Ensure quantity is at least 1
                 var quantity = input.Quantity > 0 ? input.Quantity : 1;
 
                 // Check if item already exists in cart
                 var existingCartItem = await _cartRepository.GetCartItemAsync(userId, input.SubscriptionServiceId);
+                var existingServiceAndWorking = await _userSubcriptionService.SubcriptionBoughtedAndActive(userId, input.SubscriptionServiceId);
 
-                if (existingCartItem != null)
+                if (existingServiceAndWorking != null && existingServiceAndWorking.Count > 0)
                 {
-                    // Update quantity: +quantity
-                    existingCartItem.Quantity += quantity;
-                    await _cartRepository.UpdateAsync(existingCartItem);
-
-                    _logger.LogInformation("Updated cart item quantity. CartId: {CartId}, New Quantity: {Quantity}",
-                        existingCartItem.Id, existingCartItem.Quantity);
-
-                    return new CartDto
-                    {
-                        Id = existingCartItem.Id,
-                        UserId = existingCartItem.UserId,
-                        SubscriptionServiceId = existingCartItem.SubscriptionServiceId,
-                        SubscriptionServiceTitle = subscriptionService.Title,
-                        SubscriptionServicePrice = subscriptionService.OriginalPrice,
-                        Quantity = existingCartItem.Quantity,
-                        CreationTime = existingCartItem.CreationTime
-                    };
+                    throw new UserFriendlyException("You have already bought this service and it still working");
                 }
-                else
+
+                if (existingCartItem != null) throw new UserFriendlyException("Item already exists in cart");
+
+                var newCartItem = new CartEntity
                 {
-                    // Create new cart item
-                    // Note: Id will be auto-generated by EF Core when inserting
-                    var newCartItem = new CartEntity
-                    {
-                        UserId = userId,
-                        SubscriptionServiceId = input.SubscriptionServiceId,
-                        Quantity = quantity,
-                        CreationTime = DateTime.UtcNow
-                    };
+                    UserId = userId,
+                    SubscriptionServiceId = input.SubscriptionServiceId,
+                    Quantity = 1,
+                    CreationTime = DateTime.UtcNow
+                };
 
-                    await _cartRepository.InsertAsync(newCartItem);
+                await _cartRepository.InsertAsync(newCartItem);
 
-                    _logger.LogInformation("Added new item to cart. CartId: {CartId}, SubscriptionServiceId: {ServiceId}, Quantity: {Quantity}",
-                        newCartItem.Id, input.SubscriptionServiceId, quantity);
-
-                    return new CartDto
-                    {
-                        Id = newCartItem.Id,
-                        UserId = newCartItem.UserId,
-                        SubscriptionServiceId = newCartItem.SubscriptionServiceId,
-                        SubscriptionServiceTitle = subscriptionService.Title,
-                        SubscriptionServicePrice = subscriptionService.OriginalPrice,
-                        Quantity = newCartItem.Quantity,
-                        CreationTime = newCartItem.CreationTime
-                    };
-                }
+                return new CartDto
+                {
+                    Id = newCartItem.Id,
+                    UserId = newCartItem.UserId,
+                    SubscriptionServiceId = newCartItem.SubscriptionServiceId,
+                    SubscriptionServiceTitle = subscriptionService.Title,
+                    SubscriptionServicePrice = subscriptionService.OriginalPrice,
+                    Quantity = newCartItem.Quantity,
+                    CreationTime = newCartItem.CreationTime
+                };
+                //}
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in AddToCartAsync. SubscriptionServiceId: {ServiceId}", input.SubscriptionServiceId);
                 throw;
             }
         }
@@ -174,19 +148,10 @@ namespace VCareer.Services.Cart
                 throw new UserFriendlyException("You don't have permission to update this cart item");
             }
 
-            if (input.Quantity <= 0)
-            {
-                // Remove item if quantity is 0 or negative
-                await _cartRepository.DeleteAsync(cartItem);
-                _logger.LogInformation("Deleted cart item due to zero quantity. CartId: {CartId}", input.CartId);
-                return null;
-            }
+            if (input.Quantity <= 0) await _cartRepository.DeleteAsync(cartItem);
 
             cartItem.Quantity = input.Quantity;
             await _cartRepository.UpdateAsync(cartItem);
-
-            _logger.LogInformation("Updated cart item quantity. CartId: {CartId}, New Quantity: {Quantity}",
-                input.CartId, input.Quantity);
 
             // Load subscription service for DTO
             var subscriptionService = await _subscriptionServiceRepository.GetAsync(cartItem.SubscriptionServiceId);
@@ -222,22 +187,15 @@ namespace VCareer.Services.Cart
             // Delete from database
             await _cartRepository.DeleteAsync(cartItem);
 
-            _logger.LogInformation("Deleted cart item. CartId: {CartId}", input.CartId);
         }
         [Authorize(VCareerPermission.Cart.Clear)]
         public async Task ClearCartAsync()
         {
-            if (_currentUser.Id == null)
-            {
-                throw new UserFriendlyException("User not authenticated");
-            }
+            if (_currentUser.Id == null) throw new UserFriendlyException("User not authenticated");
 
             var userId = _currentUser.Id.Value;
-
-            // Delete all cart items
             await _cartRepository.DeleteAllByUserIdAsync(userId);
 
-            _logger.LogInformation("Deleted all cart items for user. UserId: {UserId}", userId);
         }
     }
 }

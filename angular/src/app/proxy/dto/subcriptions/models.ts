@@ -160,7 +160,6 @@ export interface User_ChildServiceViewDto {
 export interface User_SubcirptionCreateDto {
   userId?: string;
   subcriptionServiceId?: string;
-  status?: SubcriptionContance_SubcriptionStatus;
 }
 
 export interface User_SubcirptionUpdateDto {

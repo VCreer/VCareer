@@ -321,6 +321,7 @@ namespace VCareer.DataSeedContributers
     VCareerPermission.SubcriptionService.Default,
     VCareerPermission.SubcriptionService.Buy,
      VCareerPermission.SubcriptionService.Load,
+       VCareerPermission.SubcriptionService.LoadChildService
 };
 
         private static string[] Employee_SubcriptionServicePermissions = new[]
@@ -345,7 +346,7 @@ namespace VCareer.DataSeedContributers
     VCareerPermission.ChildService.StopAgent,
     VCareerPermission.ChildService.Load
 };
-
+     
         private static string[] SubcriptionPricePermissions = new[]
         {
     VCareerPermission.SubcriptionPrice.Default,
