@@ -65,7 +65,13 @@ namespace VCareer.Services.Subcription
             {
                 endDate = startDate.AddDays((double)subcriptionService.DayDuration);
             }
-           if(subcriptionService.Status != SubcriptionStatus.Active) throw new BusinessException("SubcriptionService is not active");
+            if (subcriptionService.Status != SubcriptionStatus.Active) throw new BusinessException("SubcriptionService is not active");
+            var listSerivceBoughtedAndWorking= await SubcriptionBoughtedAndActive(dto.UserId, dto.SubcriptionServiceId);
+            if (listSerivceBoughtedAndWorking!= null) {
+                foreach (var serviceId in listSerivceBoughtedAndWorking) { 
+               if(dto.SubcriptionServiceId==serviceId) throw new BusinessException("You have already bought this subcription and it still working");
+                }
+            }
 
             var userSubcription = new User_SubcriptionService()
             {
@@ -100,7 +106,7 @@ namespace VCareer.Services.Subcription
                 query = query.Where(x => x.status == parsedStatus);
             }
             var result = await query
-                .Skip(pagingDto.PageIndex * pagingDto.PageSize)
+                .Skip((pagingDto.PageIndex - 1) * pagingDto.PageSize)
                 .Take(pagingDto.PageSize)
                 .Select(x => x.SubcriptionService)
                 .ToListAsync();
@@ -126,7 +132,12 @@ namespace VCareer.Services.Subcription
 
             await _user_SubcriptionServicerRepository.UpdateAsync(userSubcriptionService);
         }
+        public async Task<List<Guid>>? SubcriptionBoughtedAndActive(Guid UserId, Guid SubcriptionServiceId)
+        {
+            var  boughtedServiceAndStillActive =  await _user_SubcriptionServicerRepository.GetListAsync(x => x.SubcriptionServiceId == SubcriptionServiceId && x.status== SubcriptionStatus.Active && x.UserId == UserId);
 
-
+            return boughtedServiceAndStillActive.Select(x => x.Id).ToList();
+        }
     }
+
 }

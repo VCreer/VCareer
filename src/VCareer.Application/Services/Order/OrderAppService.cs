@@ -31,6 +31,7 @@ namespace VCareer.Services.Order
         private readonly ILogger<OrderAppService> _logger;
         private const decimal VAT_RATE = 0.08m; // 8% VAT
         private readonly IUserSubcriptionService _userSubcriptionService;
+        private readonly ISubcriptionPriceService _subcriptionPriceService;
 
         public OrderAppService(
             IRepository<Models.Order.Order, Guid> orderRepository,
@@ -40,6 +41,7 @@ namespace VCareer.Services.Order
             ICurrentUser currentUser,
             IConfiguration configuration,
             IUserSubcriptionService userSubcriptionService,
+            ISubcriptionPriceService subcriptionPriceService,
             ILogger<OrderAppService> logger)
         {
             _orderRepository = orderRepository;
@@ -49,6 +51,7 @@ namespace VCareer.Services.Order
             _currentUser = currentUser;
             _configuration = configuration;
             _userSubcriptionService = userSubcriptionService;
+            _subcriptionPriceService = subcriptionPriceService;
             _logger = logger;
         }
 
@@ -82,7 +85,7 @@ namespace VCareer.Services.Order
                     if (subscriptionService == null) throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
                     if (!subscriptionService.IsActive) throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
 
-                    var unitPrice = detailDto.UnitPrice ?? subscriptionService.OriginalPrice;
+                    var unitPrice = await _subcriptionPriceService.GetCurrentPriceOfSubcription(detailDto.SubcriptionServiceId);
                     var totalPrice = unitPrice * detailDto.Quantity;
 
                     var orderDetail = new Models.Order.OrderDetail

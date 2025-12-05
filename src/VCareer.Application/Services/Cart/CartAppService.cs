@@ -6,7 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using VCareer.Dto.Cart;
 using VCareer.IRepositories.Cart;
+using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Cart;
+using VCareer.IServices.Subcriptions;
 using VCareer.Models.Cart;
 using VCareer.Models.Subcription;
 using VCareer.Permission;
@@ -26,16 +28,19 @@ namespace VCareer.Services.Cart
         private readonly IRepository<Models.Subcription.SubcriptionService, Guid> _subscriptionServiceRepository;
         private readonly ICurrentUser _currentUser;
         private readonly ILogger<CartAppService> _logger;
+        private readonly IUserSubcriptionService _userSubcriptionService;
 
         public CartAppService(
             ICartRepository cartRepository,
             IRepository<Models.Subcription.SubcriptionService, Guid> subscriptionServiceRepository,
             ICurrentUser currentUser,
+            IUserSubcriptionService userSubcriptionService,
             ILogger<CartAppService> logger)
         {
             _cartRepository = cartRepository;
             _subscriptionServiceRepository = subscriptionServiceRepository;
             _currentUser = currentUser;
+            _userSubcriptionService = userSubcriptionService;
             _logger = logger;
         }
         [Authorize(VCareerPermission.Cart.View)]
@@ -90,47 +95,36 @@ namespace VCareer.Services.Cart
 
                 // Check if item already exists in cart
                 var existingCartItem = await _cartRepository.GetCartItemAsync(userId, input.SubscriptionServiceId);
+                var existingServiceAndWorking = await _userSubcriptionService.SubcriptionBoughtedAndActive(userId, input.SubscriptionServiceId);
 
-                if (existingCartItem != null)
+                if (existingServiceAndWorking != null && existingServiceAndWorking.Count > 0)
                 {
-                    // Update quantity: +quantity
-                    existingCartItem.Quantity += quantity;
-                    await _cartRepository.UpdateAsync(existingCartItem);
-
-                    return new CartDto
-                    {
-                        Id = existingCartItem.Id,
-                        UserId = existingCartItem.UserId,
-                        SubscriptionServiceId = existingCartItem.SubscriptionServiceId,
-                        SubscriptionServiceTitle = subscriptionService.Title,
-                        SubscriptionServicePrice = subscriptionService.OriginalPrice,
-                        Quantity = existingCartItem.Quantity,
-                        CreationTime = existingCartItem.CreationTime
-                    };
+                    throw new UserFriendlyException("You have already bought this service and it still working");
                 }
-                else
+
+                if (existingCartItem != null) throw new UserFriendlyException("Item already exists in cart");
+
+                var newCartItem = new CartEntity
                 {
-                    var newCartItem = new CartEntity
-                    {
-                        UserId = userId,
-                        SubscriptionServiceId = input.SubscriptionServiceId,
-                        Quantity = quantity,
-                        CreationTime = DateTime.UtcNow
-                    };
+                    UserId = userId,
+                    SubscriptionServiceId = input.SubscriptionServiceId,
+                    Quantity = 1,
+                    CreationTime = DateTime.UtcNow
+                };
 
-                    await _cartRepository.InsertAsync(newCartItem);
+                await _cartRepository.InsertAsync(newCartItem);
 
-                    return new CartDto
-                    {
-                        Id = newCartItem.Id,
-                        UserId = newCartItem.UserId,
-                        SubscriptionServiceId = newCartItem.SubscriptionServiceId,
-                        SubscriptionServiceTitle = subscriptionService.Title,
-                        SubscriptionServicePrice = subscriptionService.OriginalPrice,
-                        Quantity = newCartItem.Quantity,
-                        CreationTime = newCartItem.CreationTime
-                    };
-                }
+                return new CartDto
+                {
+                    Id = newCartItem.Id,
+                    UserId = newCartItem.UserId,
+                    SubscriptionServiceId = newCartItem.SubscriptionServiceId,
+                    SubscriptionServiceTitle = subscriptionService.Title,
+                    SubscriptionServicePrice = subscriptionService.OriginalPrice,
+                    Quantity = newCartItem.Quantity,
+                    CreationTime = newCartItem.CreationTime
+                };
+                //}
             }
             catch (Exception ex)
             {
