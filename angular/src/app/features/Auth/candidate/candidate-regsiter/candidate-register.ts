@@ -72,7 +72,7 @@ export class RegisterComponent implements OnInit {
       ]],
       password: ['', [
         Validators.required,
-        Validators.minLength(8),
+        Validators.minLength(6),
         Validators.maxLength(100),
         this.passwordStrengthValidator
       ]],

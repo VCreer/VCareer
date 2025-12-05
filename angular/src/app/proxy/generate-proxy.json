@@ -13985,7 +13985,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyLegalInfoAsyncById": {
@@ -14022,7 +14022,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoAsync": {
@@ -14037,7 +14037,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCurrentUserCompanyLegalInfoListAsync": {
@@ -14052,7 +14052,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Profile.CompanyLegalInfoDto>",
                 "typeSimple": "[VCareer.Dto.Profile.CompanyLegalInfoDto]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "DeleteCompanyLegalInfoAsyncById": {
@@ -14089,7 +14089,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile": {
@@ -14206,7 +14206,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UploadLegalDocumentAsyncByIdAndFile": {
@@ -14263,7 +14263,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetLegalDocumentFileAsyncByStoragePath": {
@@ -14300,7 +14300,7 @@
                 "type": "VCareer.Dto.FileDto.FileStreamResultDto",
                 "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetCompanyByJobIdAsyncByJobId": {
@@ -14337,7 +14337,7 @@
                 "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "SearchCompaniesAsyncByInput": {
@@ -14374,7 +14374,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyLegalInfoDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetPendingCompaniesAsyncByInput": {
@@ -14471,7 +14471,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "ApproveCompanyAsyncById": {
@@ -14508,7 +14508,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "RejectCompanyAsyncByIdAndInput": {
@@ -14565,7 +14565,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetVerifiedCompaniesAsyncByInput": {
@@ -14662,7 +14662,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "GetRejectedCompaniesAsyncByInput": {
@@ -14759,7 +14759,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CompanyVerificationViewDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             }
           }
@@ -18092,6 +18092,31 @@
                     "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
                     "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
                   }
+                },
+                {
+                  "name": "SubcriptionBoughtedAndActive",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "SubcriptionServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
+                  }
                 }
               ]
             }
@@ -18370,6 +18395,63 @@
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId": {
+              "uniqueName": "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId",
+              "name": "SubcriptionBoughtedAndActive",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/subcription-boughted-and-active",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "UserId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "SubcriptionServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "UserId",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "SubcriptionServiceId",
+                  "name": "SubcriptionServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<System.Guid>",
+                "typeSimple": "[string]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
             }
           }
         },
@@ -18483,7 +18565,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.TeamManagementDto.StaffListItemDto>",
                 "typeSimple": "[VCareer.Dto.TeamManagementDto.StaffListItemDto]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "DeactivateStaffAsyncByInput": {
@@ -18520,7 +18602,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "InviteStaffAsyncByInput": {
@@ -18557,7 +18639,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffListItemDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffListItemDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             },
             "ActivateStaffAsyncByInput": {
@@ -18594,7 +18676,7 @@
                 "type": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto",
                 "typeSimple": "VCareer.Dto.TeamManagementDto.StaffStatusChangeDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.ITeamManagement.ITeamManagementAppService"
             }
           }
@@ -25662,6 +25744,18 @@
           "type": "System.String",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Role",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,

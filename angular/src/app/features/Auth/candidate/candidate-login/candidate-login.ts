@@ -153,11 +153,35 @@ export class LoginComponent {
           setTimeout(() => this.router.navigate(['/']), 800);
         },
         error: (err) => {
-          const msg =
-            err?.error?.message ||
-            err?.error?.error_description ||
-            err?.error?.error ||
-            'Đăng nhập thất bại. Vui lòng thử lại.';
+          console.error('Candidate login error:', err);
+          console.error('Error details:', {
+            status: err?.status,
+            statusText: err?.statusText,
+            error: err?.error,
+            message: err?.message,
+            url: err?.url
+          });
+          
+          let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
+          
+          if (err?.error?.message) {
+            msg = err.error.message;
+          } else if (err?.error?.error_description) {
+            msg = err.error.error_description;
+          } else if (err?.error?.error) {
+            msg = typeof err.error.error === 'string' ? err.error.error : 'Đăng nhập thất bại. Vui lòng thử lại.';
+          } else if (err?.message) {
+            msg = err.message;
+          } else if (err?.status === 0) {
+            msg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+          } else if (err?.status === 401) {
+            msg = 'Email hoặc mật khẩu không đúng.';
+          } else if (err?.status === 404) {
+            msg = 'Tài khoản không tồn tại.';
+          } else if (err?.status === 500) {
+            msg = 'Lỗi server. Vui lòng thử lại sau.';
+          }
+          
           this.showToastMessage(msg, 'error');
         }
       });
@@ -170,7 +194,7 @@ export class LoginComponent {
   }
 
   forgotPassword() {
-    this.router.navigate(['/forgot-password']);
+    this.router.navigate(['/candidate/forget-password']);
   }
 
   async signInWithGoogle() {

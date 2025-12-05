@@ -53,6 +53,15 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
+  subcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId = (UserId: string, SubcriptionServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string[]>({
+      method: 'POST',
+      url: '/api/app/user-subcription/subcription-boughted-and-active',
+      params: { userId: UserId, subcriptionServiceId: SubcriptionServiceId },
+    },
+    { apiName: this.apiName,...config });
+  
+
   updateUserSubcriptionByDto = (dto: User_SubcirptionUpdateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
