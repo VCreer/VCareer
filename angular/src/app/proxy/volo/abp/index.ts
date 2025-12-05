@@ -1,2 +1,3 @@
 import * as Identity from './identity';
-export { Identity };
+import * as PermissionManagement from './permission-management';
+export { Identity, PermissionManagement };

@@ -11,10 +11,5 @@ if (environment.production) {
   enableProdMode();
 }
 
-bootstrapApplication(AppComponent, {
-  ...appConfig,
-  providers: [
-    ...appConfig.providers ?? [],
-    APP_CURRENT_USER_INITIALIZER
-  ]
-});
+bootstrapApplication(AppComponent, appConfig)
+  .catch(err => console.error(err));

@@ -26,7 +26,7 @@ namespace VCareer.IServices.IJobServices
         [RemoteService(false)]
         public Task UpdateExpiredJobPost(string id);
         Task<List<JobViewDto>> GetJobByRecruiterId(Guid id, int maxCount = 10);
-        Task<List<JobViewDto>> GetJobByCompanyId(int id, int maxCount = 10);
+        Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10);
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id); //view ,aapply count
         public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto);
         public Task ExecuteExpiredJobPostAutomatically(string id);

@@ -129,7 +129,8 @@
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      overflow: hidden;
+      // Cho phép các popup (date-picker, dropdown) hiển thị tràn xuống dưới
+      overflow: visible;
 
       @media (max-width: 768px) {
         padding: 16px 12px;
@@ -145,7 +146,18 @@
       margin-bottom: 0;
       width: 100%;
 
-      @media (max-width: 768px) {
+      // Desktop ≥ 1280px: 1 hàng đủ tất cả filter
+      @media (min-width: 1280px) {
+        flex-wrap: nowrap;
+      }
+
+      // Tablet 768-1279px: 2 hàng (search + 2 filter trên, 2 filter dưới)
+      @media (min-width: 768px) and (max-width: 1279px) {
+        flex-wrap: wrap;
+      }
+
+      // Mobile < 768px: mỗi control 1 hàng full-width
+      @media (max-width: 767px) {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
@@ -161,6 +173,18 @@
         display: flex;
         align-items: center;
         width: 300px;
+
+        // Desktop: search rộng hơn
+        @media (min-width: 1280px) {
+          width: 350px;
+        }
+
+        // Tablet: search vừa phải
+        @media (min-width: 768px) and (max-width: 1279px) {
+          width: 100%;
+          min-width: 300px;
+          flex: 1 1 calc(50% - 6px);
+        }
 
         .search-icon {
           position: absolute;
@@ -193,7 +217,8 @@
         }
       }
 
-      @media (max-width: 768px) {
+      // Mobile < 768px: full width
+      @media (max-width: 767px) {
         width: 100%;
 
         .search-input-wrapper {
@@ -206,31 +231,64 @@
     .filter-bar {
       display: flex;
       gap: 12px;
-      flex-wrap: nowrap;
       align-items: flex-end;
       margin: 0;
       padding: 0;
       flex: 1;
       min-width: 0;
 
-      @media (max-width: 768px) {
+      // Desktop ≥ 1280px: 1 hàng, không wrap
+      @media (min-width: 1280px) {
+        flex-wrap: nowrap;
+      }
+
+      // Tablet 768-1279px: có thể wrap xuống 2 hàng
+      @media (min-width: 768px) and (max-width: 1279px) {
+        flex-wrap: wrap;
+      }
+
+      // Mobile < 768px: full width, mỗi filter 1 hàng
+      @media (max-width: 767px) {
         flex-wrap: wrap;
         width: 100%;
       }
 
       .filter-group {
         flex: 0 0 auto;
-        min-width: 200px;
-        max-width: 300px;
         margin: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
 
-        // Date input có thể nhỏ hơn
-        &:has(input[type="date"]) {
+        // Desktop ≥ 1280px: filter hẹp lại để vừa 1 hàng
+        @media (min-width: 1280px) {
           min-width: 160px;
+          max-width: 200px;
+        }
+
+        // Tablet 768-1279px: filter vừa phải, có thể wrap
+        @media (min-width: 768px) and (max-width: 1279px) {
+          min-width: 160px;
+          max-width: 220px;
+          flex: 1 1 calc(50% - 6px);
+        }
+
+        // Mobile < 768px: full width
+        @media (max-width: 767px) {
+          min-width: 100%;
+          max-width: 100%;
+        }
+
+        // Date input nhỏ hơn trên desktop
+        &:has(input[type="date"]) {
+          @media (min-width: 1280px) {
+            min-width: 150px;
           max-width: 180px;
+        }
+          @media (min-width: 768px) and (max-width: 1279px) {
+            min-width: 150px;
+            max-width: 200px;
+          }
         }
 
         // Ẩn label của input-field
@@ -306,8 +364,11 @@
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            // Đảm bảo luôn nổi trên header & bảng bên dưới
+            z-index: 1100;
             min-width: 300px;
+            max-height: 360px;
+            overflow: hidden;
 
             .calendar-container {
               padding: 16px;

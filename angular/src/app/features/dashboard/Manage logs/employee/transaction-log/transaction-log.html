@@ -1,0 +1,145 @@
+<div class="transaction-log-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí log</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí log giao dịch của tuyển dụng</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="exportLogs()">
+        <i class="fa fa-download"></i>
+        Xuất Excel
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên công ty, dịch vụ..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả loại giao dịch"
+              [options]="transactionTypeOptions"
+              [(ngModel)]="filterType"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả trạng thái"
+              [options]="statusOptions"
+              [(ngModel)]="filterStatus"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Từ ngày"
+              type="date"
+              [(ngModel)]="filterDateFrom"
+              (ngModelChange)="applyFilters()">
+            </app-input-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Đến ngày"
+              type="date"
+              [(ngModel)]="filterDateTo"
+              (ngModelChange)="applyFilters()">
+            </app-input-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div class="table-container">
+          <table class="users-table">
+          <thead>
+            <tr>
+              <th>Tên công ty</th>
+              <th>Loại giao dịch</th>
+              <th>Tên dịch vụ</th>
+              <th (click)="onSort('amount')" class="sortable">
+                Số tiền
+                <i class="fa fa-sort" *ngIf="sortField !== 'amount'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'amount' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'amount' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Trạng thái</th>
+              <th (click)="onSort('timestamp')" class="sortable">
+                Thời gian
+                <i class="fa fa-sort" *ngIf="sortField !== 'timestamp'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'timestamp' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'timestamp' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of paginatedLogs">
+              <td>{{ log.recruiterName }}</td>
+              <td>{{ getTypeLabel(log.transactionType) }}</td>
+              <td>{{ log.serviceName }}</td>
+              <td class="amount-cell">{{ formatCurrency(log.amount) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(log.status)">
+                  {{ getStatusLabel(log.status) }}
+                </span>
+              </td>
+              <td>{{ formatDate(log.timestamp) }}</td>
+              <td class="description-cell">{{ log.description || '-' }}</td>
+            </tr>
+            <tr *ngIf="paginatedLogs.length === 0">
+              <td colspan="7" class="empty-state">
+                <i class="fa fa-inbox"></i>
+                <p>Không có dữ liệu</p>
+              </td>
+            </tr>
+          </tbody>
+          </table>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination
+        *ngIf="totalPages > 1"
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+

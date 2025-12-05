@@ -73,18 +73,26 @@ export interface JobPostStatisticDto {
 }
 
 export interface JobPostUpdateDto {
+  id?: string;
+  title?: string;
+  slug?: string;
   description?: string;
   requirements?: string;
   benefits?: string;
   salaryMin?: number;
   salaryMax?: number;
   salaryDeal: boolean;
+  employmentType?: EmploymentType;
+  positionType?: PositionType;
+  experience?: ExperienceLevel;
   workTime?: string;
+  provinceCode: number;
   wardCode?: number;
   workLocation?: string;
   quantity: number;
+  tagIds: number[];
   expiresAt?: string;
-  isSetActive: boolean;
+  jobCategoryId?: string;
 }
 
 export interface JobSearchInputDto {

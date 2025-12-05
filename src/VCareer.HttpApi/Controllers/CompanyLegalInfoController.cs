@@ -34,7 +34,7 @@ namespace VCareer.Profile
         /// <param name="input">Company legal information to submit</param>
         /// <returns>Created company legal information</returns>
         [HttpPost]
-        /*[Authorize(VCareerPermission.Profile.SubmitLegalInformation)]*/
+        [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync([FromBody] SubmitCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.SubmitCompanyLegalInfoAsync(input);
@@ -47,7 +47,7 @@ namespace VCareer.Profile
         /// <param name="input">Updated company legal information</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}")]
-        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateCompanyLegalInfoAsync(int id, [FromBody] UpdateCompanyLegalInfoDto input)
         {
             return await _companyLegalInfoAppService.UpdateCompanyLegalInfoAsync(id, input);
@@ -132,7 +132,7 @@ namespace VCareer.Profile
         /// <param name="otherSupportFile">Other support file URL</param>
         /// <returns>Updated company legal information</returns>
         [HttpPut("{id}/files")]
-        /*[Authorize(VCareerPermission.Profile.UpdateLegalInformation)]*/
+        [Authorize(VCareerPermission.Profile.UpdateLegalInformation)]
         public async Task<CompanyLegalInfoDto> UpdateFileUrlsAsync(int id,
             [FromQuery] string businessLicenseFile = null,
             [FromQuery] string taxCertificateFile = null,

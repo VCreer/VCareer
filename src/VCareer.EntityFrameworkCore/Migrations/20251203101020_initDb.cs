@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class initDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1371,6 +1371,8 @@ namespace VCareer.Migrations
                     OriginalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     SalePercent = table.Column<int>(type: "int", nullable: false),
                     type = table.Column<int>(type: "int", nullable: false),
+                    IsExpried = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     EffectiveFrom = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EffectiveTo = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),

@@ -116,6 +116,9 @@
                 <div
                   class="actions-menu"
                   [class.show]="showActionsMenu === job.id"
+                  [style.top.px]="menuPosition?.top"
+                  [style.left.px]="menuPosition?.left"
+                  [style.max-width.px]="menuPosition?.maxWidth"
                   [attr.data-job-id]="job.id"
                   (click)="$event.stopPropagation()">
                   <div class="menu-item" (click)="onPostJob(job)">

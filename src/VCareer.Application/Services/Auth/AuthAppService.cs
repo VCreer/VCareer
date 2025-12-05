@@ -27,6 +27,7 @@ using VCareer.Models.Users;
 using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Emailing;
@@ -502,7 +503,6 @@ namespace VCareer.Services.Auth
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            //check ma so thue
 
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
@@ -546,15 +546,20 @@ namespace VCareer.Services.Auth
         public async Task RefeshTokenAsync()
         {
             var request = _httpContextAcessor.HttpContext!.Request;
-            var response = _httpContextAcessor.HttpContext.Response;
-
             var refreshToken = request.Cookies["refresh_token"];
-            if (string.IsNullOrEmpty(refreshToken)) throw new BusinessException("cant get refresk token to Refresh");
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                throw new AbpAuthorizationException("Unauthorized");
+            }
 
             var tokens = await _tokenGenerator.RefreshAsync(refreshToken);
-            if (tokens == null) throw new BusinessException("Refresh token create failed");
+            if (tokens == null)
+                throw new AbpAuthorizationException("Unauthorized");
+
             UpdateTokenToCookie(tokens);
         }
+
 
         private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
         {
@@ -565,10 +570,12 @@ namespace VCareer.Services.Auth
             //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
 
             double expiredMinuteAcesstoken = 5;
-            if (tokenResonse.ExpireMinuteAcesstoken!=null) expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireHourRefreshToken);
+            if (tokenResonse.ExpireMinuteAcesstoken != null)
+                expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireMinuteAcesstoken);
 
-            double expiredHourReFrecesstoken = 48;
-            if (tokenResonse.ExpireHourRefreshToken!=null) expiredHourReFrecesstoken= double.Parse(tokenResonse.ExpireHourRefreshToken);
+            double expiredHourRefreshToken = 48;
+            if (tokenResonse.ExpireHourRefreshToken != null)
+                expiredHourRefreshToken = double.Parse(tokenResonse.ExpireHourRefreshToken);
 
             response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
             {
@@ -584,7 +591,7 @@ namespace VCareer.Services.Auth
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(expiredHourReFrecesstoken),
+                Expires = DateTime.UtcNow.AddHours(expiredHourRefreshToken),
                 Path = "/"
             });
         }
@@ -598,17 +605,17 @@ namespace VCareer.Services.Auth
             var roles = _currentUser.Roles;
             var userId = _currentUser.Id;
 
-            /*    if (string.IsNullOrEmpty(email) ||
-                   !roles.Any() ||
-                   userId == null) throw new BusinessException("Cant get current user infomation");*/
+            if (string.IsNullOrEmpty(email) ||
+               !roles.Any() ||
+               userId == null) throw new BusinessException("Cant get current user infomation");
 
-            return await Task.FromResult(new CurrentUserInfoDto
+            return new CurrentUserInfoDto
             {
                 Email = email,
                 FullName = fullName,
                 Roles = roles,
                 UserId = userId
-            });
+            };
         }
     }
 }

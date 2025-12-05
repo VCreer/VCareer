@@ -70,10 +70,28 @@ export interface EffectingJobServiceViewDto {
   endDate?: string;
 }
 
-export interface SubcriptionPriceViewDto {
+export interface SubcriptionPriceCreateDto {
+  subcriptionServiceId?: string;
   salePercent: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+}
+
+export interface SubcriptionPriceUpdateDto {
+  subcriptionPriceId?: string;
+  subcriptionServiceId?: string;
+  salePercent: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+}
+
+export interface SubcriptionPriceViewDto {
+  subcriptionServiceId?: string;
   originalPrice: number;
+  salePercent: number;
   type?: SubcriptionContance_CurrencyType;
+  isExpried: boolean;
+  isActive: boolean;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
