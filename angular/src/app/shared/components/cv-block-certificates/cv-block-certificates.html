@@ -1,0 +1,85 @@
+<div class="cv-block-certificates" [formGroup]="form">
+  <div formArrayName="items">
+    <div 
+      *ngFor="let item of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+      class="certificate-item"
+      [formGroupName]="i">
+      
+      <div class="item-header">
+        <h4>Chứng chỉ #{{ i + 1 }}</h4>
+        <button 
+          type="button" 
+          class="btn-remove-item"
+          (click)="removeItem(i)"
+          [disabled]="itemsFormArray.length === 1">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên chứng chỉ</label>
+          <input 
+            type="text" 
+            formControlName="certificateName"
+            placeholder="Nhập tên chứng chỉ"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Tổ chức cấp</label>
+          <input 
+            type="text" 
+            formControlName="issuingOrganization"
+            placeholder="Nhập tên tổ chức"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày cấp</label>
+          <input 
+            type="date" 
+            formControlName="issueDate"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Ngày hết hạn</label>
+          <input 
+            type="date" 
+            formControlName="expiryDate"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mã chứng chỉ</label>
+          <input 
+            type="text" 
+            formControlName="credentialId"
+            placeholder="Nhập mã chứng chỉ"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>URL chứng chỉ</label>
+          <input 
+            type="url" 
+            formControlName="credentialUrl"
+            placeholder="https://..."
+            class="form-control">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button 
+    type="button" 
+    class="btn-add-item"
+    (click)="addItem()">
+    <i class="fa fa-plus"></i> Thêm chứng chỉ
+  </button>
+</div>
+
+
+

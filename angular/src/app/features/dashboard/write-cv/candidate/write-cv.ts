@@ -11,13 +11,78 @@ import { ModalUpdatePhotoComponent } from '../../../../shared/components/modal-u
 import { CvTemplateService } from '../../../../proxy/http-api/controllers/cv-template.service';
 import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
 import { CvTemplateDto } from '../../../../proxy/cv/models';
+import { CvBlockEditorComponent } from '../../../../shared/components/cv-block-editor/cv-block-editor';
+import { CvFormPreviewComponent } from '../../../../shared/components/cv-form-preview/cv-form-preview';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+
+// === Block-based CV schema (hybrid model) ===
+export type CvBlockType =
+  | 'personal-info'
+  | 'work-experience'
+  | 'education'
+  | 'skills'
+  | 'projects'
+  | 'certificates'
+  | 'languages'
+  | 'custom-text';
+
+export interface CvBlock {
+  id: string;
+  type: CvBlockType;
+  title?: string;
+  data: any;
+  meta?: {
+    pinned?: boolean;
+    collapsed?: boolean;
+  };
+}
+
+export interface PersonalInfoBlockData {
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  address?: string;
+  gender?: boolean | null;
+  profileImageUrl?: string;
+  linkedIn?: string;
+  gitHub?: string;
+  website?: string;
+}
+
+export interface WorkExperienceItem {
+  companyName?: string;
+  position?: string;
+  startDate?: string;
+  endDate?: string;
+  isCurrentJob?: boolean;
+  description?: string;
+  achievements?: string[];
+}
+
+export interface WorkExperienceBlockData {
+  items: WorkExperienceItem[];
+}
+
+export interface CustomTextBlockData {
+  html: string;
+}
 
 @Component({
   selector: 'app-write-cv',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderCvEditorComponent, ToastNotificationComponent, PdfViewerComponent, ModalUpdateNameCvComponent, ModalUpdatePhotoComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    HeaderCvEditorComponent, 
+    ToastNotificationComponent, 
+    PdfViewerComponent, 
+    ModalUpdateNameCvComponent, 
+    ModalUpdatePhotoComponent,
+    CvBlockEditorComponent,
+    CvFormPreviewComponent
+  ],
   templateUrl: './write-cv.html',
   styleUrls: ['./write-cv.scss']
 })
@@ -55,6 +120,24 @@ export class WriteCv implements OnInit {
     projects: [],
     certificates: [],
     languages: []
+  };
+
+  /**
+   * Danh sách block của CV theo schema mới (hybrid).
+   * Hiện tại UI vẫn đang thao tác trực tiếp trên cvData,
+   * nhưng blocks sẽ dần được đưa vào để hỗ trợ add/xóa/reorder linh hoạt.
+   */
+  blocks: CvBlock[] = [];
+  
+  // Block editor flag
+  useBlockEditor: boolean = true; // Toggle giữa block editor và template form cũ
+  templateSettings = {
+    layout: 'two-column',
+    accentColor: '#0F83BA',
+    headingStyle: 'underline',
+    skillStyle: 'list',
+    timeline: false,
+    cleanView: false
   };
   
   // Validation errors
@@ -213,7 +296,9 @@ export class WriteCv implements OnInit {
     }
     
     // Initialize with empty CV state (sẽ được override nếu là edit mode)
+    // Đồng thời khởi tạo danh sách blocks từ cvData hiện tại (schema hybrid)
     setTimeout(() => {
+      this.blocks = this.buildBlocksFromCvData(this.cvData);
       this.saveToHistory();
     }, 100);
   }
@@ -249,6 +334,11 @@ export class WriteCv implements OnInit {
         this.templateType = template.category || 'standard';
         this.templateHtml = template.layoutDefinition;
         this.templateStyles = template.styles || '';
+        
+        // Map blocks theo template structure nếu đang dùng block editor
+        if (this.useBlockEditor) {
+          this.mapBlocksFromTemplate(template);
+        }
         
         // Nếu là edit mode, load CV data trước khi render form
         if (this.isEditMode && this.cvId) {
@@ -293,28 +383,31 @@ export class WriteCv implements OnInit {
           this.cvName = cv.cvName;
         }
         
-        // Parse DataJson và map vào cvData
-        if (cv.dataJson) {
+        // Ưu tiên load từ BlocksJson nếu có (giữ nguyên structure blocks)
+        if (cv.blocksJson) {
           try {
-            const backendData = JSON.parse(cv.dataJson);
-            console.log('Parsed backend data:', backendData);
+            console.log('Loading from BlocksJson:', cv.blocksJson);
+            this.blocks = JSON.parse(cv.blocksJson);
+            console.log('Loaded blocks:', this.blocks);
             
-            // Convert từ PascalCase (backend) sang camelCase (frontend)
-            this.cvData = this.convertFromBackendFormat(backendData);
-            console.log('Converted to frontend format:', this.cvData);
+            // Build cvData từ blocks để đồng bộ
+            this.cvData = this.buildCvDataFromBlocks(this.blocks);
+            console.log('Built cvData from blocks:', this.cvData);
             
             // Render form với data đã load
             this.renderTemplateForm();
             this.loading = false;
           } catch (error) {
-            console.error('Error parsing DataJson:', error);
-            this.showToast('Không thể tải dữ liệu CV. Vui lòng thử lại.', 'error');
-            this.loading = false;
-            // Render form với empty data
-            this.renderTemplateForm();
+            console.error('Error parsing BlocksJson:', error);
+            // Fallback về DataJson nếu parse BlocksJson thất bại
+            this.loadFromDataJson(cv);
           }
+        } else if (cv.dataJson) {
+          // Fallback: Load từ DataJson và rebuild blocks
+          this.loadFromDataJson(cv);
         } else {
-          // Không có dataJson, render form với empty data
+          // Không có data, render form với empty data
+          this.blocks = this.buildBlocksFromCvData(this.cvData);
           this.renderTemplateForm();
           this.loading = false;
         }
@@ -324,9 +417,37 @@ export class WriteCv implements OnInit {
         this.showToast('Không thể tải dữ liệu CV. Vui lòng thử lại.', 'error');
         this.loading = false;
         // Render form với empty data
+        this.blocks = this.buildBlocksFromCvData(this.cvData);
         this.renderTemplateForm();
       }
     });
+  }
+
+  /**
+   * Load CV data từ DataJson (fallback khi không có BlocksJson)
+   */
+  private loadFromDataJson(cv: any) {
+    try {
+      const backendData = JSON.parse(cv.dataJson);
+      console.log('Parsed backend data:', backendData);
+      
+      // Convert từ PascalCase (backend) sang camelCase (frontend)
+      this.cvData = this.convertFromBackendFormat(backendData);
+      console.log('Converted to frontend format:', this.cvData);
+
+      // Khởi tạo danh sách blocks theo schema hybrid từ cvData hiện tại
+      this.blocks = this.buildBlocksFromCvData(this.cvData);
+      
+      // Render form với data đã load
+      this.renderTemplateForm();
+      this.loading = false;
+    } catch (error) {
+      console.error('Error parsing DataJson:', error);
+      this.showToast('Không thể tải dữ liệu CV. Vui lòng thử lại.', 'error');
+      this.loading = false;
+      // Render form với empty data
+      this.renderTemplateForm();
+    }
   }
 
   /**
@@ -1427,10 +1548,38 @@ export class WriteCv implements OnInit {
   }
   
   async onPreview() {
+    // Nếu đang dùng block editor, preview từ blocks
+    if (this.useBlockEditor) {
+      await this.previewCvFromBlocks();
+      return;
+    }
+    
+    // Preview từ template form cũ
     this.previewData = this.getPreviewData();
     // Generate PDF URL for preview
     await this.generatePdfUrl();
     this.showPreviewDialog = true;
+  }
+
+  async onExportPdf() {
+    // Nếu đang dùng block editor, export từ blocks
+    if (this.useBlockEditor) {
+      await this.exportPdfFromBlocks();
+      return;
+    }
+    
+    // Export từ template form cũ (fallback)
+    try {
+      await this.generatePdfUrl();
+      const link = document.createElement('a');
+      link.href = this.pdfPreviewUrl;
+      link.download = `${this.cvName || 'CV'}.pdf`;
+      link.click();
+      this.showToast('Export PDF thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      this.showToast('Không thể export PDF. Vui lòng thử lại.', 'error');
+    }
   }
 
   async generatePdfUrl() {
@@ -1723,6 +1872,16 @@ export class WriteCv implements OnInit {
       return;
     }
 
+    // Nếu đang dùng block editor, lấy dữ liệu từ blocks
+    // Nếu không, lấy từ cvData (template form cũ)
+    if (this.useBlockEditor) {
+      // Build cvData từ blocks (nguồn dữ liệu chính khi dùng block editor)
+      this.cvData = this.buildCvDataFromBlocks(this.blocks);
+    } else {
+      // Template form cũ: sync blocks từ cvData để giữ đồng bộ
+      this.blocks = this.buildBlocksFromCvData(this.cvData);
+    }
+
     // Convert cvData từ camelCase sang PascalCase để match với backend DTO
     const backendFormat = this.convertToBackendFormat(this.cvData);
     
@@ -1733,12 +1892,16 @@ export class WriteCv implements OnInit {
     // Convert to JSON string
     const dataJson = JSON.stringify(backendFormat);
     
+    // Lưu blocks structure nếu đang dùng block editor
+    const blocksJson = this.useBlockEditor ? JSON.stringify(this.blocks) : undefined;
+    
     if (this.isEditMode && this.cvId) {
       // Update existing CV
       const updateDto = {
         templateId: this.templateId,
         cvName: this.cvName,
         dataJson: dataJson,
+        blocksJson: blocksJson, // Lưu blocks structure
         notes: ''
       };
 
@@ -1772,6 +1935,7 @@ export class WriteCv implements OnInit {
         templateId: this.templateId,
         cvName: this.cvName,
         dataJson: dataJson,
+        blocksJson: blocksJson, // Lưu blocks structure
         isPublished: false,
         isDefault: false,
         isPublic: false,
@@ -1844,6 +2008,185 @@ export class WriteCv implements OnInit {
     setTimeout(() => {
       this.saveToHistory();
     }, 500);
+  }
+
+  /**
+   * Xây dựng danh sách blocks từ cvData hiện tại.
+   * Bước này giúp chúng ta có schema block-based nhưng vẫn giữ nguyên DataJson backend.
+   */
+  private buildBlocksFromCvData(cvData: any): CvBlock[] {
+    const blocks: CvBlock[] = [];
+
+    // Personal Info block (luôn có, pinned)
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'personal-info',
+      title: 'Thông tin cá nhân',
+      data: {
+        ...(cvData.personalInfo || {})
+      } as PersonalInfoBlockData,
+      meta: {
+        pinned: true
+      }
+    });
+
+    // Career Objective → hiện tại map sang 1 custom-text block (sau này có thể tách riêng)
+    if (cvData.careerObjective) {
+      blocks.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+        type: 'custom-text',
+        title: 'Mục tiêu nghề nghiệp',
+        data: {
+          html: cvData.careerObjective
+        } as CustomTextBlockData
+      });
+    }
+
+    // Work experiences
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'work-experience',
+      title: 'Kinh nghiệm làm việc',
+      data: {
+        items: Array.isArray(cvData.workExperiences) ? [...cvData.workExperiences] : []
+      } as WorkExperienceBlockData
+    });
+
+    // Education
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'education',
+      title: 'Học vấn',
+      data: {
+        items: Array.isArray(cvData.educations) ? [...cvData.educations] : []
+      }
+    });
+
+    // Skills
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'skills',
+      title: 'Kỹ năng',
+      data: {
+        items: Array.isArray(cvData.skills) ? [...cvData.skills] : []
+      }
+    });
+
+    // Projects
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'projects',
+      title: 'Dự án',
+      data: {
+        items: Array.isArray(cvData.projects) ? [...cvData.projects] : []
+      }
+    });
+
+    // Certificates
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'certificates',
+      title: 'Chứng chỉ',
+      data: {
+        items: Array.isArray(cvData.certificates) ? [...cvData.certificates] : []
+      }
+    });
+
+    // Languages
+    blocks.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      type: 'languages',
+      title: 'Ngôn ngữ',
+      data: {
+        items: Array.isArray(cvData.languages) ? [...cvData.languages] : []
+      }
+    });
+
+    return blocks;
+  }
+
+  /**
+   * Xây dựng lại cvData từ danh sách blocks.
+   * Hiện tại UI vẫn thao tác trên cvData, nên khi save mình sẽ:
+   *   - build blocks từ cvData
+   *   - sau đó build lại cvData từ blocks
+   * để đảm bảo pipeline schema block hoạt động nhưng không thay đổi hành vi hiện tại.
+   */
+  private buildCvDataFromBlocks(blocks: CvBlock[]): any {
+    const cvData: any = {
+      personalInfo: {
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        dateOfBirth: '',
+        address: '',
+        gender: null,
+        profileImageUrl: '',
+        linkedIn: '',
+        gitHub: '',
+        website: ''
+      },
+      careerObjective: '',
+      workExperiences: [],
+      educations: [],
+      skills: [],
+      projects: [],
+      certificates: [],
+      languages: [],
+      additionalInfo: this.cvData?.additionalInfo || ''
+    };
+
+    for (const block of blocks) {
+      switch (block.type) {
+        case 'personal-info':
+          cvData.personalInfo = {
+            ...cvData.personalInfo,
+            ...(block.data as PersonalInfoBlockData)
+          };
+          break;
+        case 'custom-text':
+          // Nếu có nhiều custom-text blocks, merge chúng lại (thường chỉ có 1 cho careerObjective)
+          const customTextHtml = (block.data as CustomTextBlockData).html || '';
+          if (customTextHtml) {
+            cvData.careerObjective = cvData.careerObjective 
+              ? `${cvData.careerObjective}\n\n${customTextHtml}` 
+              : customTextHtml;
+          }
+          break;
+        case 'work-experience':
+          // Merge items từ tất cả work-experience blocks
+          const workItems = (block.data as WorkExperienceBlockData).items || [];
+          cvData.workExperiences = [...cvData.workExperiences, ...workItems];
+          break;
+        case 'education':
+          // Merge items từ tất cả education blocks
+          const eduItems = (block.data as any).items || [];
+          cvData.educations = [...cvData.educations, ...eduItems];
+          break;
+        case 'skills':
+          // Merge items từ tất cả skills blocks
+          const skillItems = (block.data as any).items || [];
+          cvData.skills = [...cvData.skills, ...skillItems];
+          break;
+        case 'projects':
+          // Merge items từ tất cả projects blocks
+          const projectItems = (block.data as any).items || [];
+          cvData.projects = [...cvData.projects, ...projectItems];
+          break;
+        case 'certificates':
+          // Merge items từ tất cả certificates blocks
+          const certItems = (block.data as any).items || [];
+          cvData.certificates = [...cvData.certificates, ...certItems];
+          break;
+        case 'languages':
+          // Merge items từ tất cả languages blocks
+          const langItems = (block.data as any).items || [];
+          cvData.languages = [...cvData.languages, ...langItems];
+          break;
+      }
+    }
+
+    return cvData;
   }
 
   /**
@@ -1943,5 +2286,416 @@ export class WriteCv implements OnInit {
     result.AdditionalInfo = frontendData.additionalInfo || null;
     
     return result;
+  }
+
+  /**
+   * Handler khi blocks thay đổi từ cv-block-editor
+   */
+  onBlocksChange(newBlocks: CvBlock[]) {
+    this.blocks = newBlocks;
+    // Sync blocks về cvData để giữ tương thích với code cũ
+    this.cvData = this.buildCvDataFromBlocks(this.blocks);
+  }
+
+  /**
+   * Generate HTML từ blocks để preview/export
+   */
+  generateHtmlFromBlocks(blocks: CvBlock[]): string {
+    let html = '<div class="cv-preview-container" style="font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; background: white;">';
+    
+    blocks.forEach(block => {
+      if (block.meta?.collapsed) return; // Skip collapsed blocks
+      
+      switch (block.type) {
+        case 'personal-info':
+          html += this.renderPersonalInfoBlock(block.data);
+          break;
+        case 'work-experience':
+          html += this.renderWorkExperienceBlock(block.data);
+          break;
+        case 'education':
+          html += this.renderEducationBlock(block.data);
+          break;
+        case 'skills':
+          html += this.renderSkillsBlock(block.data);
+          break;
+        case 'projects':
+          html += this.renderProjectsBlock(block.data);
+          break;
+        case 'certificates':
+          html += this.renderCertificatesBlock(block.data);
+          break;
+        case 'languages':
+          html += this.renderLanguagesBlock(block.data);
+          break;
+        case 'custom-text':
+          html += this.renderCustomTextBlock(block.data);
+          break;
+      }
+    });
+    
+    html += '</div>';
+    return html;
+  }
+
+  private renderPersonalInfoBlock(data: PersonalInfoBlockData): string {
+    return `
+      <div class="cv-section personal-info-section" style="margin-bottom: 30px;">
+        <div style="display: flex; gap: 30px; align-items: flex-start;">
+          ${data.profileImageUrl ? `<img src="${this.escapeHtml(data.profileImageUrl)}" style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover;">` : ''}
+          <div style="flex: 1;">
+            <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 8px 0; color: #1f2937;">${this.escapeHtml(data.fullName || '')}</h1>
+            <div style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">
+              ${data.email ? `<div><strong>Email:</strong> ${this.escapeHtml(data.email)}</div>` : ''}
+              ${data.phoneNumber ? `<div><strong>Điện thoại:</strong> ${this.escapeHtml(data.phoneNumber)}</div>` : ''}
+              ${data.address ? `<div><strong>Địa chỉ:</strong> ${this.escapeHtml(data.address)}</div>` : ''}
+              ${data.dateOfBirth ? `<div><strong>Ngày sinh:</strong> ${this.escapeHtml(data.dateOfBirth)}</div>` : ''}
+              ${data.linkedIn ? `<div><strong>LinkedIn:</strong> <a href="${this.escapeHtml(data.linkedIn)}">${this.escapeHtml(data.linkedIn)}</a></div>` : ''}
+              ${data.gitHub ? `<div><strong>GitHub:</strong> <a href="${this.escapeHtml(data.gitHub)}">${this.escapeHtml(data.gitHub)}</a></div>` : ''}
+              ${data.website ? `<div><strong>Website:</strong> <a href="${this.escapeHtml(data.website)}">${this.escapeHtml(data.website)}</a></div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private renderWorkExperienceBlock(data: WorkExperienceBlockData): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section work-experience-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">KINH NGHIỆM LÀM VIỆC</h2>';
+    
+    data.items.forEach((item: WorkExperienceItem) => {
+      if (!item.companyName && !item.position) return;
+      
+      const startDate = item.startDate ? new Date(item.startDate).toLocaleDateString('vi-VN') : '';
+      const endDate = item.isCurrentJob ? 'Hiện tại' : (item.endDate ? new Date(item.endDate).toLocaleDateString('vi-VN') : '');
+      const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : (startDate || endDate);
+      
+      html += `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #1f2937;">${this.escapeHtml(item.position || '')}</h3>
+          <div style="font-size: 14px; color: #0F83BA; margin-bottom: 4px;">${this.escapeHtml(item.companyName || '')}</div>
+          ${dateRange ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${dateRange}</div>` : ''}
+          ${item.description ? `<div style="font-size: 14px; color: #374151; line-height: 1.6; margin-bottom: 8px;">${this.escapeHtml(item.description)}</div>` : ''}
+          ${item.achievements && item.achievements.length > 0 ? `
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              ${item.achievements.map((ach: string) => `<li style="font-size: 14px; color: #374151; margin-bottom: 4px;">${this.escapeHtml(ach)}</li>`).join('')}
+            </ul>
+          ` : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    return html;
+  }
+
+  private renderEducationBlock(data: any): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section education-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">HỌC VẤN</h2>';
+    
+    data.items.forEach((item: any) => {
+      if (!item.institutionName && !item.major) return;
+      
+      const startDate = item.startDate ? new Date(item.startDate).toLocaleDateString('vi-VN') : '';
+      const endDate = item.isCurrent ? 'Hiện tại' : (item.endDate ? new Date(item.endDate).toLocaleDateString('vi-VN') : '');
+      const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : (startDate || endDate);
+      
+      html += `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #1f2937;">${this.escapeHtml(item.institutionName || '')}</h3>
+          ${item.degree || item.major ? `<div style="font-size: 14px; color: #0F83BA; margin-bottom: 4px;">${this.escapeHtml([item.degree, item.major].filter(Boolean).join(' - '))}</div>` : ''}
+          ${dateRange ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${dateRange}</div>` : ''}
+          ${item.gpa ? `<div style="font-size: 14px; color: #374151; margin-bottom: 4px;"><strong>GPA:</strong> ${this.escapeHtml(item.gpa)}</div>` : ''}
+          ${item.description ? `<div style="font-size: 14px; color: #374151; line-height: 1.6;">${this.escapeHtml(item.description)}</div>` : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    return html;
+  }
+
+  private renderSkillsBlock(data: any): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section skills-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">KỸ NĂNG</h2>';
+    html += '<div style="display: flex; flex-wrap: wrap; gap: 12px;">';
+    
+    data.items.forEach((item: any) => {
+      if (!item.skillName) return;
+      const levelText = item.level ? ` (${item.level})` : '';
+      html += `<span style="display: inline-block; padding: 6px 12px; background: #f0f0f0; border-radius: 4px; font-size: 14px; color: #333;">${this.escapeHtml(item.skillName + levelText)}</span>`;
+    });
+    
+    html += '</div></div>';
+    return html;
+  }
+
+  private renderProjectsBlock(data: any): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section projects-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">DỰ ÁN</h2>';
+    
+    data.items.forEach((item: any) => {
+      if (!item.projectName) return;
+      html += `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #1f2937;">
+            ${item.projectUrl ? `<a href="${this.escapeHtml(item.projectUrl)}" style="color: #0F83BA; text-decoration: none;">${this.escapeHtml(item.projectName)}</a>` : this.escapeHtml(item.projectName)}
+          </h3>
+          ${item.technologies ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${this.escapeHtml(item.technologies)}</div>` : ''}
+          ${item.description ? `<div style="font-size: 14px; color: #374151; line-height: 1.6;">${this.escapeHtml(item.description)}</div>` : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    return html;
+  }
+
+  private renderCertificatesBlock(data: any): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section certificates-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">CHỨNG CHỈ</h2>';
+    
+    data.items.forEach((item: any) => {
+      if (!item.certificateName) return;
+      html += `
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #1f2937;">${this.escapeHtml(item.certificateName)}</h3>
+          ${item.issuingOrganization ? `<div style="font-size: 14px; color: #0F83BA; margin-bottom: 4px;">${this.escapeHtml(item.issuingOrganization)}</div>` : ''}
+          ${item.issueDate ? `<div style="font-size: 12px; color: #6b7280;">${new Date(item.issueDate).toLocaleDateString('vi-VN')}</div>` : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    return html;
+  }
+
+  private renderLanguagesBlock(data: any): string {
+    if (!data.items || data.items.length === 0) return '';
+    
+    let html = '<div class="cv-section languages-section" style="margin-bottom: 30px;">';
+    html += '<h2 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #0F83BA; padding-bottom: 8px;">NGOẠI NGỮ</h2>';
+    html += '<div style="display: flex; flex-wrap: wrap; gap: 12px;">';
+    
+    data.items.forEach((item: any) => {
+      if (!item.languageName) return;
+      const levelText = item.proficiencyLevel ? ` - ${item.proficiencyLevel}` : '';
+      html += `<span style="display: inline-block; padding: 6px 12px; background: #f0f0f0; border-radius: 4px; font-size: 14px; color: #333;">${this.escapeHtml(item.languageName + levelText)}</span>`;
+    });
+    
+    html += '</div></div>';
+    return html;
+  }
+
+  private renderCustomTextBlock(data: any): string {
+    if (!data.html) return '';
+    return `
+      <div class="cv-section custom-text-section" style="margin-bottom: 30px;">
+        <div style="font-size: 14px; color: #374151; line-height: 1.6;">
+          ${data.html}
+        </div>
+      </div>
+    `;
+  }
+
+  private escapeHtml(text: string): string {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * Preview CV từ blocks
+   */
+  async previewCvFromBlocks() {
+    if (!this.blocks || this.blocks.length === 0) {
+      this.showToast('Chưa có dữ liệu để preview. Vui lòng thêm thông tin.', 'warning');
+      return;
+    }
+
+    const htmlContent = this.generateHtmlFromBlocks(this.blocks);
+    this.cvHtmlPreview = htmlContent;
+    
+    // Generate PDF URL
+    await this.generatePdfUrlFromHtml(htmlContent);
+    this.showPreviewDialog = true;
+  }
+
+  /**
+   * Generate PDF từ HTML blocks
+   */
+  async generatePdfUrlFromHtml(htmlContent: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Create temporary div
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.width = '900px';
+        tempDiv.style.backgroundColor = '#ffffff';
+        document.body.appendChild(tempDiv);
+
+        await new Promise(r => setTimeout(r, 1500));
+
+        const canvas = await html2canvas(tempDiv, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          allowTaint: false
+        });
+
+        document.body.removeChild(tempDiv);
+
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        const pdfBlob = pdf.output('blob');
+        this.pdfPreviewUrl = URL.createObjectURL(pdfBlob);
+        resolve();
+      } catch (error) {
+        console.error('Error generating PDF from blocks:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Export PDF từ blocks
+   */
+  async exportPdfFromBlocks() {
+    if (!this.blocks || this.blocks.length === 0) {
+      this.showToast('Chưa có dữ liệu để export. Vui lòng thêm thông tin.', 'warning');
+      return;
+    }
+
+    try {
+      const htmlContent = this.generateHtmlFromBlocks(this.blocks);
+      await this.generatePdfUrlFromHtml(htmlContent);
+      
+      // Download PDF
+      const link = document.createElement('a');
+      link.href = this.pdfPreviewUrl;
+      link.download = `${this.cvName || 'CV'}.pdf`;
+      link.click();
+      
+      this.showToast('Export PDF thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      this.showToast('Không thể export PDF. Vui lòng thử lại.', 'error');
+    }
+  }
+
+  /**
+   * Map blocks từ template structure
+   * Khi chọn template mới, sắp xếp lại blocks theo thứ tự trong template
+   */
+  mapBlocksFromTemplate(template: CvTemplateDto) {
+    if (!template || !template.layoutDefinition) return;
+    
+    // Parse template HTML để tìm các section
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(template.layoutDefinition, 'text/html');
+    
+    // Tìm các section trong template (dựa vào placeholder hoặc class)
+    const sections = doc.querySelectorAll('[data-section], .section, [class*="section"]');
+    
+    // Map các block types theo thứ tự trong template
+    const templateBlockOrder: CvBlockType[] = [];
+    
+    sections.forEach(section => {
+      const sectionType = section.getAttribute('data-section') || 
+                         section.className?.toLowerCase() || '';
+      
+      // Map section types to block types
+      if (sectionType.includes('personal') || sectionType.includes('info')) {
+        if (!templateBlockOrder.includes('personal-info')) {
+          templateBlockOrder.push('personal-info');
+        }
+      } else if (sectionType.includes('work') || sectionType.includes('experience')) {
+        if (!templateBlockOrder.includes('work-experience')) {
+          templateBlockOrder.push('work-experience');
+        }
+      } else if (sectionType.includes('education') || sectionType.includes('học')) {
+        if (!templateBlockOrder.includes('education')) {
+          templateBlockOrder.push('education');
+        }
+      } else if (sectionType.includes('skill')) {
+        if (!templateBlockOrder.includes('skills')) {
+          templateBlockOrder.push('skills');
+        }
+      } else if (sectionType.includes('project')) {
+        if (!templateBlockOrder.includes('projects')) {
+          templateBlockOrder.push('projects');
+        }
+      } else if (sectionType.includes('certificate')) {
+        if (!templateBlockOrder.includes('certificates')) {
+          templateBlockOrder.push('certificates');
+        }
+      } else if (sectionType.includes('language')) {
+        if (!templateBlockOrder.includes('languages')) {
+          templateBlockOrder.push('languages');
+        }
+      } else if (sectionType.includes('career') || sectionType.includes('objective') || sectionType.includes('custom')) {
+        if (!templateBlockOrder.includes('custom-text')) {
+          templateBlockOrder.push('custom-text');
+        }
+      }
+    });
+    
+    // Nếu không tìm thấy sections trong template, giữ nguyên thứ tự blocks hiện tại
+    if (templateBlockOrder.length === 0) {
+      return;
+    }
+    
+    // Sắp xếp lại blocks theo thứ tự trong template
+    const reorderedBlocks: CvBlock[] = [];
+    const existingBlocksMap = new Map<string, CvBlock>();
+    
+    // Group existing blocks by type
+    this.blocks.forEach(block => {
+      if (!existingBlocksMap.has(block.type)) {
+        existingBlocksMap.set(block.type, block);
+      }
+    });
+    
+    // Add blocks theo thứ tự template (personal-info luôn đầu tiên)
+    if (existingBlocksMap.has('personal-info')) {
+      reorderedBlocks.push(existingBlocksMap.get('personal-info')!);
+    }
+    
+    // Add các blocks khác theo thứ tự template
+    templateBlockOrder.forEach(blockType => {
+      if (blockType !== 'personal-info' && existingBlocksMap.has(blockType)) {
+        reorderedBlocks.push(existingBlocksMap.get(blockType)!);
+      }
+    });
+    
+    // Add các blocks không có trong template vào cuối
+    this.blocks.forEach(block => {
+      if (!reorderedBlocks.find(b => b.id === block.id)) {
+        reorderedBlocks.push(block);
+      }
+    });
+    
+    this.blocks = reorderedBlocks;
+    this.cvData = this.buildCvDataFromBlocks(this.blocks);
   }
 }

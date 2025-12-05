@@ -1,0 +1,164 @@
+<div class="cv-block-editor">
+  <!-- Add Block Button -->
+  <div class="add-block-container">
+    <button 
+      type="button" 
+      class="btn-add-block" 
+      (click)="showAddBlockMenu = !showAddBlockMenu"
+      [class.active]="showAddBlockMenu">
+      <i class="fa fa-plus"></i>
+      <span>Thêm Section</span>
+    </button>
+
+    <!-- Add Block Menu Dropdown -->
+    <div class="add-block-menu" *ngIf="showAddBlockMenu">
+      <div 
+        class="menu-item" 
+        *ngFor="let blockType of availableBlockTypes"
+        (click)="addBlock(blockType.type)">
+        <i class="fa" [ngClass]="blockType.icon"></i>
+        <span>{{ blockType.label }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blocks List with Drag & Drop -->
+  <div class="blocks-container" cdkDropList (cdkDropListDropped)="onDrop($event)">
+    <div 
+      *ngFor="let block of blocks; let i = index" 
+      class="block-item"
+      [class.pinned]="block.meta?.pinned"
+      [class.collapsed]="block.meta?.collapsed"
+      cdkDrag
+      [cdkDragDisabled]="block.meta?.pinned">
+      
+      <!-- Drag Handle -->
+      <div class="block-drag-handle" *ngIf="!block.meta?.pinned" cdkDragHandle>
+        <i class="fa fa-grip-vertical"></i>
+      </div>
+
+      <!-- Block Header -->
+      <div class="block-header" (click)="toggleBlockCollapse(block.id)">
+        <div class="block-title">
+          <i class="fa" [ngClass]="getBlockIcon(block.type)"></i>
+          <span>{{ block.title || getBlockLabel(block.type) }}</span>
+        </div>
+        <div class="block-actions" (click)="$event.stopPropagation()">
+          <button 
+            type="button" 
+            class="btn-action btn-collapse"
+            (click)="toggleBlockCollapse(block.id)"
+            [title]="block.meta?.collapsed ? 'Mở rộng' : 'Thu gọn'">
+            <i class="fa" [ngClass]="block.meta?.collapsed ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn-action btn-move-up"
+            (click)="moveBlockUp(i)"
+            [disabled]="!canMoveUp(i)"
+            title="Di chuyển lên">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn-action btn-move-down"
+            (click)="moveBlockDown(i)"
+            [disabled]="!canMoveDown(i)"
+            title="Di chuyển xuống">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn-action btn-duplicate"
+            (click)="duplicateBlock(block.id)"
+            [disabled]="block.meta?.pinned"
+            title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn-action btn-delete"
+            (click)="removeBlock(block.id)"
+            [disabled]="block.meta?.pinned"
+            title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Block Content -->
+      <div class="block-content" *ngIf="!block.meta?.collapsed">
+        <ng-container [ngSwitch]="block.type">
+          <!-- Personal Info Block -->
+          <app-cv-block-personal-info
+            *ngSwitchCase="'personal-info'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-personal-info>
+
+          <!-- Work Experience Block -->
+          <app-cv-block-work-experience
+            *ngSwitchCase="'work-experience'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-work-experience>
+
+          <!-- Education Block -->
+          <app-cv-block-education
+            *ngSwitchCase="'education'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-education>
+
+          <!-- Skills Block -->
+          <app-cv-block-skills
+            *ngSwitchCase="'skills'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-skills>
+
+          <!-- Projects Block -->
+          <app-cv-block-projects
+            *ngSwitchCase="'projects'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-projects>
+
+          <!-- Certificates Block -->
+          <app-cv-block-certificates
+            *ngSwitchCase="'certificates'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-certificates>
+
+          <!-- Languages Block -->
+          <app-cv-block-languages
+            *ngSwitchCase="'languages'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-languages>
+
+          <!-- Custom Text Block -->
+          <app-cv-block-custom-text
+            *ngSwitchCase="'custom-text'"
+            [data]="block.data"
+            (dataChange)="onBlockDataChange(block.id, $event)">
+          </app-cv-block-custom-text>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="blocks.length === 0">
+    <i class="fa fa-file-text-o"></i>
+    <p>Chưa có section nào. Hãy thêm section để bắt đầu tạo CV.</p>
+  </div>
+</div>
+
+
+

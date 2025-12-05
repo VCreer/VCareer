@@ -29,7 +29,7 @@ export class ProfileService {
   getCurrentUserProfile = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, ProfileDto>({
       method: 'GET',
-      url: '/api/profile',
+      url: '/api/app/profile/current-user-profile',
     },
     { apiName: this.apiName,...config });
   
@@ -61,6 +61,15 @@ export class ProfileService {
     { apiName: this.apiName,...config });
   
 
+  updateProfileVisibility = (isVisible: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/profile/profile-visibility',
+      params: { isVisible },
+    },
+    { apiName: this.apiName,...config });
+  
+
   verifyEmailNumber = (input: VerifyEmailNumberDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -75,15 +84,6 @@ export class ProfileService {
       method: 'POST',
       url: '/api/app/profile/verify-phone-number',
       body: input,
-    },
-    { apiName: this.apiName,...config });
-
-
-  updateProfileVisibility = (isVisible: boolean, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, void>({
-      method: 'PUT',
-      url: '/api/profile/profile-visibility',
-      body: isVisible,
     },
     { apiName: this.apiName,...config });
 

@@ -20,6 +20,11 @@ namespace VCareer.CV
         [Required]
         public string DataJson { get; set; }
 
+        /// <summary>
+        /// Blocks structure JSON (optional, cho block-based editor)
+        /// </summary>
+        public string? BlocksJson { get; set; }
+
         public bool IsPublished { get; set; }
 
         public bool IsDefault { get; set; }
@@ -41,6 +46,11 @@ namespace VCareer.CV
         public string? CvName { get; set; }
 
         public string? DataJson { get; set; }
+
+        /// <summary>
+        /// Blocks structure JSON (optional, cho block-based editor)
+        /// </summary>
+        public string? BlocksJson { get; set; }
 
         public bool? IsPublished { get; set; }
 
@@ -64,9 +74,20 @@ namespace VCareer.CV
         public string CvName { get; set; }
 
         /// <summary>
-        /// DataJson - chứa tất cả thông tin CV
+        /// DataJson - chứa tất cả thông tin CV (nguồn dữ liệu chính theo schema)
         /// </summary>
         public string DataJson { get; set; }
+
+        /// <summary>
+        /// BlocksJson - cấu trúc blocks với thứ tự, title, meta (cho block-based editor)
+        /// Nếu có, sẽ ưu tiên dùng để rebuild blocks khi load.
+        /// </summary>
+        public string? BlocksJson { get; set; }
+
+        /// <summary>
+        /// HtmlContent - snapshot HTML đã render của CV (phục vụ xem/gửi nhanh)
+        /// </summary>
+        public string? HtmlContent { get; set; }
 
         public bool IsPublished { get; set; }
 
@@ -154,6 +175,7 @@ namespace VCareer.CV
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
+        public bool? Gender { get; set; }
         public string? Address { get; set; }
         public string? ProfileImageUrl { get; set; }
         public string? LinkedIn { get; set; }

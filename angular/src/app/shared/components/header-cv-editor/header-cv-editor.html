@@ -24,6 +24,10 @@
       <i class="fa fa-eye"></i>
       <span>{{ previewText }}</span>
     </button>
+    <button class="export-button" (click)="onExportPdf()">
+      <i class="fa fa-file-pdf-o"></i>
+      <span>{{ exportPdfText }}</span>
+    </button>
     <button class="save-button" (click)="onSave()">
       <i class="fa fa-save"></i>
       <span>{{ saveText }}</span>

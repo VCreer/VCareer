@@ -1686,7 +1686,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationStatisticsDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationStatisticsDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetMyApplicationsAsyncByInput": {
@@ -1855,7 +1855,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetCompanyApplicationsAsyncByInput": {
@@ -5805,7 +5805,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.IActionResult",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "GetCompanyByJobIdAsyncByJobId": {
@@ -6284,6 +6284,43 @@
                   "jsonName": null,
                   "type": "VCareer.Dto.Profile.SelectCompanyDto",
                   "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "UpdateProfileVisibilityAsyncByIsVisible": {
+              "uniqueName": "UpdateProfileVisibilityAsyncByIsVisible",
+              "name": "UpdateProfileVisibilityAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/profile-visibility",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isVisible",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isVisible",
+                  "name": "isVisible",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -13928,7 +13965,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
@@ -14089,7 +14126,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateFileUrlsAsyncByIdAndBusinessLicenseFileAndTaxCertificateFileAndRepresentativeIdCardFileAndOtherSupportFile": {
@@ -14893,6 +14930,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "UpdateProfileVisibilityAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "isVisible",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -15110,7 +15164,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "SelectCompanyAsyncByInput": {
@@ -15140,6 +15194,43 @@
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "UpdateProfileVisibilityAsyncByIsVisible": {
+              "uniqueName": "UpdateProfileVisibilityAsyncByIsVisible",
+              "name": "UpdateProfileVisibilityAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/profile/profile-visibility",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isVisible",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isVisible",
+                  "name": "isVisible",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -23136,6 +23227,30 @@
           "regex": null
         },
         {
+          "name": "BlocksJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HtmlContent",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "IsPublished",
           "jsonName": null,
           "type": "System.Boolean",
@@ -23258,6 +23373,18 @@
           "type": "System.String",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlocksJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -23812,6 +23939,18 @@
         },
         {
           "name": "DataJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlocksJson",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -24499,6 +24638,18 @@
         },
         {
           "name": "JobTitle",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobSalaryText",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -31543,6 +31694,18 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProfileVisibility",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
