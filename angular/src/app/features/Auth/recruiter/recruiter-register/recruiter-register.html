@@ -60,35 +60,14 @@
             <label class="form-label-bold no-asterisk">Thông tin nhà tuyển dụng</label>
           </div>
 
-          <!-- Họ và tên và Giới tính -->
-          <div class="form-row">
-            <div class="form-group-half">
-              <app-input-field
-                label="Họ và tên"
-                placeholder="Họ và tên"
-                [error]="getFieldError('fullName')"
-                [required]="true"
-                formControlName="fullName"
-              ></app-input-field>
-            </div>
-            
-            <div class="form-group-half">
-              <label class="form-label-bold no-asterisk">Giới tính:</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input type="radio" formControlName="gender" value="male" class="radio-input">
-                  <span class="radio-text">Nam</span>
-                </label>
-                <label class="radio-option">
-                  <input type="radio" formControlName="gender" value="female" class="radio-input">
-                  <span class="radio-text">Nữ</span>
-                </label>
-              </div>
-              <div class="error-message" *ngIf="hasFieldError('gender')">
-                {{ getFieldError('gender') }}
-              </div>
-            </div>
-          </div>
+          <!-- Họ và tên -->
+          <app-input-field
+            label="Họ và tên"
+            placeholder="Họ và tên"
+            [error]="getFieldError('fullName')"
+            [required]="true"
+            formControlName="fullName"
+          ></app-input-field>
 
           <!-- Số điện thoại cá nhân -->
           <app-input-field
@@ -101,49 +80,15 @@
             formControlName="phone"
           ></app-input-field>
 
-          <!-- Công ty -->
+          <!-- Mã số thuế -->
           <app-input-field
-            label="Công ty"
-            placeholder="Tên công ty"
+            label="Nhập mã số thuế"
+            placeholder="Mã số thuế"
             icon="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
             [error]="getFieldError('companyName')"
             [required]="true"
             formControlName="companyName"
           ></app-input-field>
-
-          <!-- Địa điểm làm việc -->
-          <div class="form-group">
-            <label class="form-label-bold">Địa điểm làm việc</label>
-            <div class="location-row">
-              <div class="location-field">
-                <div class="input-with-icon">
-                  <select
-                    formControlName="city"
-                    class="form-input"
-                    [class.error]="hasFieldError('city')"
-                  >
-                    <option value="">Chọn tỉnh/thành phố</option>
-                    <option value="hanoi">Hà Nội</option>
-                    <option value="hcm">TP. Hồ Chí Minh</option>
-                    <option value="danang">Đà Nẵng</option>
-                    <option value="haiphong">Hải Phòng</option>
-                    <option value="cantho">Cần Thơ</option>
-                  </select>
-                </div>
-                <div class="error-message" *ngIf="hasFieldError('city')">
-                  Tỉnh/thành phố không được để trống
-                </div>
-              </div>
-              <div class="location-field">
-                <app-input-field
-                  placeholder="Chọn quận/huyện"
-                  [error]="getFieldError('district')"
-                  [required]="true"
-                  formControlName="district"
-                ></app-input-field>
-              </div>
-            </div>
-          </div>
 
           <!-- Đồng ý điều khoản -->
           <div class="form-group">
