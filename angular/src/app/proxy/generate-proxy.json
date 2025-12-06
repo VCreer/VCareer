@@ -15848,26 +15848,10 @@
                   "name": "GetChildServicesAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "serviceAction",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "target",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "pagin",
-                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                      "type": "VCareer.IServices.Common.PagingDto",
-                      "typeSimple": "VCareer.IServices.Common.PagingDto",
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceGetDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
+                      "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -16029,69 +16013,29 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
-            "GetChildServicesAsyncByServiceActionAndTargetAndPaging": {
-              "uniqueName": "GetChildServicesAsyncByServiceActionAndTargetAndPaging",
+            "GetChildServicesAsyncByDto": {
+              "uniqueName": "GetChildServicesAsyncByDto",
               "name": "GetChildServicesAsync",
               "httpMethod": "POST",
               "url": "api/app/childservice-service/GetChildServices",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "serviceAction",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "target",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "paging",
-                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Common.PagingDto",
-                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.Subcriptions.ChildServiceGetDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "serviceAction",
-                  "name": "serviceAction",
+                  "nameOnMethod": "dto",
+                  "name": "dto",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "target",
-                  "name": "target",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "paging",
-                  "name": "paging",
-                  "jsonName": null,
-                  "type": "VCareer.IServices.Common.PagingDto",
-                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "type": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
+                  "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceGetDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -17677,10 +17621,18 @@
                   "name": "ActiveServiceAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "dto",
-                      "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
-                      "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                      "name": "childServiceIds",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.Guid>",
+                      "typeSimple": "[string]",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "jobId",
+                      "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Guid?",
+                      "typeSimple": "string?",
                       "isOptional": false,
                       "defaultValue": null
                     }
@@ -17723,166 +17675,64 @@
                     "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
                     "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto"
                   }
-                },
-                {
-                  "name": "GetAllChildServiceByUserAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "userId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "status",
-                      "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
-                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
-                      "typeSimple": "enum",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "pagingDto",
-                      "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                      "type": "VCareer.IServices.Common.PagingDto",
-                      "typeSimple": "VCareer.IServices.Common.PagingDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
-                    "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
-                  }
                 }
               ]
             }
           ],
           "actions": {
-            "ActiveServiceAsyncByDto": {
-              "uniqueName": "ActiveServiceAsyncByDto",
+            "ActiveServiceAsyncByChildServiceIdsAndJobId": {
+              "uniqueName": "ActiveServiceAsyncByChildServiceIdsAndJobId",
               "name": "ActiveServiceAsync",
               "httpMethod": "POST",
-              "url": "api/app/user_Child-service_/active-service",
+              "url": "api/app/user_Child-service_/active-service/{jobId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "dto",
-                  "typeAsString": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "name": "childServiceIds",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "jobId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
                   "isOptional": false,
                   "defaultValue": null
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "dto",
-                  "name": "dto",
+                  "nameOnMethod": "childServiceIds",
+                  "name": "childServiceIds",
                   "jsonName": null,
-                  "type": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
-                  "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto",
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "Body",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
                   "descriptorName": ""
                 }
               ],
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
-            },
-            "GetAllChildServiceByUserAsyncByUserIdAndStatusAndPagingDto": {
-              "uniqueName": "GetAllChildServiceByUserAsyncByUserIdAndStatusAndPagingDto",
-              "name": "GetAllChildServiceByUserAsync",
-              "httpMethod": "GET",
-              "url": "api/app/user_Child-service_/child-service-by-user/{userId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "userId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "status",
-                  "typeAsString": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus, VCareer.Domain.Shared",
-                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
-                  "typeSimple": "enum",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "pagingDto",
-                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Common.PagingDto",
-                  "typeSimple": "VCareer.IServices.Common.PagingDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "userId",
-                  "name": "userId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "status",
-                  "name": "status",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageSize",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                },
-                {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageIndex",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                }
-              ],
-              "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
-                "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
@@ -18092,6 +17942,31 @@
                     "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
                     "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
                   }
+                },
+                {
+                  "name": "SubcriptionBoughtedAndActive",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "SubcriptionServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
+                  }
                 }
               ]
             }
@@ -18171,15 +18046,15 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
             },
-            "CancleUserSubcriptionByUserSubcriptionId": {
-              "uniqueName": "CancleUserSubcriptionByUserSubcriptionId",
+            "CancleUserSubcriptionBySubcriptionServiceId": {
+              "uniqueName": "CancleUserSubcriptionBySubcriptionServiceId",
               "name": "CancleUserSubcription",
               "httpMethod": "POST",
-              "url": "api/app/user-subcription/cancle-user-subcription/{UserSubcriptionId}",
+              "url": "api/app/user-subcription/cancle-user-subcription/{subcriptionServiceId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "UserSubcriptionId",
+                  "name": "subcriptionServiceId",
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -18189,8 +18064,8 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "UserSubcriptionId",
-                  "name": "UserSubcriptionId",
+                  "nameOnMethod": "subcriptionServiceId",
+                  "name": "subcriptionServiceId",
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
@@ -18370,6 +18245,100 @@
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId": {
+              "uniqueName": "SubcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId",
+              "name": "SubcriptionBoughtedAndActive",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/subcription-boughted-and-active",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "UserId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "SubcriptionServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "UserId",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "SubcriptionServiceId",
+                  "name": "SubcriptionServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<System.Guid>",
+                "typeSimple": "[string]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "GetJobChildServiceAllowForUserAsyncByServiceAction": {
+              "uniqueName": "GetJobChildServiceAllowForUserAsyncByServiceAction",
+              "name": "GetJobChildServiceAllowForUserAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user-subcription/job-child-service-allow-for-user",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "serviceAction",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "serviceAction",
+                  "name": "serviceAction",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.Subcription.UserSubcriptionService"
             }
           }
         },
@@ -32885,6 +32854,63 @@
         }
       ]
     },
+    "VCareer.Dto.Subcriptions.ChildServiceGetDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "ServiceAction",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Target",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceTarget?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PagingDto",
+          "jsonName": null,
+          "type": "VCareer.IServices.Common.PagingDto",
+          "typeSimple": "VCareer.IServices.Common.PagingDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Subcriptions.ChildServiceUpdateDto": {
       "baseType": null,
       "isEnum": false,
@@ -32950,7 +32976,7 @@
       "genericArguments": null,
       "properties": [
         {
-          "name": "CHildServiceId",
+          "name": "Id",
           "jsonName": null,
           "type": "System.Guid",
           "typeSimple": "string",
@@ -33887,39 +33913,6 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        }
-      ]
-    },
-    "VCareer.Dto.Subcriptions.User_ChildServiceCreateDto": {
-      "baseType": null,
-      "isEnum": false,
-      "enumNames": null,
-      "enumValues": null,
-      "genericArguments": null,
-      "properties": [
-        {
-          "name": "UserId",
-          "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "ChildServiceId",
-          "jsonName": null,
-          "type": "System.Guid",
-          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

@@ -2,20 +2,36 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, PaginationComponent } from '../../../../shared/components';
+import {
+  ToastNotificationComponent,
+  StatusDropdownComponent,
+  StatusOption,
+  PaginationComponent,
+} from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { JobViewDetail } from 'src/app/proxy/dto/job';
 import { RecruitmentCompainService } from 'src/app/proxy/services/job';
-import { EmploymentType, ExperienceLevel, PositionType } from 'src/app/proxy/constants/job-constant';
+import {
+  EmploymentType,
+  ExperienceLevel,
+  PositionType,
+} from 'src/app/proxy/constants/job-constant';
 import { JobPostService } from 'src/app/proxy/services/job';
 import { PostJobDto } from 'src/app/proxy/dto/job-dto';
 import { UserSubcriptionService } from 'src/app/proxy/services/subcription';
+import { ChildServiceViewDto } from 'src/app/proxy/dto/subcriptions/models';
+import { SubcriptionContance_ServiceAction } from 'src/app/proxy/constants/job-constant/subcription-contance-service-action.enum';
+import { SubcriptionContance_ServiceTarget } from 'src/app/proxy/constants/job-constant/subcription-contance-service-target.enum';
+import { User_ChildService_Service } from 'src/app/proxy/services/subcription';
 
 export interface PackageOption {
   id: string;
   name: string;
   description?: string;
   price?: string;
+  childServiceId?: string;
+  action?: SubcriptionContance_ServiceAction;
+  target?: SubcriptionContance_ServiceTarget;
 }
 
 export interface ServicePackage {
@@ -23,6 +39,12 @@ export interface ServicePackage {
   label: string;
   features: string[];
   options?: PackageOption[];
+}
+
+export interface ServiceSection {
+  action: SubcriptionContance_ServiceAction;
+  label: string;
+  packages: PackageOption[];
 }
 
 export interface CampaignJob {
@@ -43,9 +65,15 @@ export interface CampaignJob {
 @Component({
   selector: 'app-campaign-job-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastNotificationComponent, StatusDropdownComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ToastNotificationComponent,
+    StatusDropdownComponent,
+    PaginationComponent,
+  ],
   templateUrl: './campaign-job-management.html',
-  styleUrls: ['./campaign-job-management.scss']
+  styleUrls: ['./campaign-job-management.scss'],
 })
 export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   private readonly componentId = 'campaign-job-management';
@@ -91,7 +119,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     { value: 'active', label: 'Đang tuyển' },
     { value: 'inactive', label: 'Tạm dừng' },
     { value: 'draft', label: 'Bản nháp' },
-    { value: 'closed', label: 'Đã đóng' }
+    { value: 'closed', label: 'Đã đóng' },
   ];
 
   // Toast notification
@@ -99,47 +127,11 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
-  // Package options with details and sub-options
-  packageOptions: ServicePackage[] = [
-    {
-      value: '',
-      label: 'Chưa gắn gói',
-      features: []
-    },
-    {
-      value: 'label',
-      label: 'Gắn nhãn',
-      features: [
-        'Tùy chỉnh nhãn cho tin tuyển dụng',
-        'Tăng độ nổi bật',
-        'Thu hút ứng viên'
-      ],
-      options: [
-        { id: 'hot', name: 'Nhãn Hot', description: 'Tin tuyển dụng nổi bật', price: '50,000 VNĐ' },
-        { id: 'urgent', name: 'Nhãn Urgent', description: 'Tuyển dụng gấp', price: '40,000 VNĐ' },
-        { id: 'new', name: 'Nhãn New', description: 'Tin mới đăng', price: '30,000 VNĐ' },
-        { id: 'featured', name: 'Nhãn Featured', description: 'Tin nổi bật', price: '60,000 VNĐ' }
-      ]
-    },
-    {
-      value: 'boost',
-      label: 'Gói Boost',
-      features: [
-        'Tăng lượt xem',
-        'Hiển thị ưu tiên',
-        'Tăng tỷ lệ ứng tuyển'
-      ],
-      options: [
-        { id: 'boost-7days', name: 'Boost 7 ngày', description: 'Tăng hiển thị trong 7 ngày', price: '200,000 VNĐ' },
-        { id: 'boost-14days', name: 'Boost 14 ngày', description: 'Tăng hiển thị trong 14 ngày', price: '350,000 VNĐ' },
-        { id: 'boost-30days', name: 'Boost 30 ngày', description: 'Tăng hiển thị trong 30 ngày', price: '600,000 VNĐ' }
-      ]
-    }
-  ];
+  // Service sections grouped by action
+  serviceSections: ServiceSection[] = [];
+  isLoadingServices: boolean = false;
 
-  selectedPackages: string[] = [];
-  selectedPackageOptions: { [packageType: string]: string[] } = {};
-  activePackage: string | null = null;
+  selectedChildServices: { [action: number]: string } = {};
   showStatusDropdownModal = false;
 
   constructor(
@@ -147,8 +139,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private sidebarSync: SidebarSyncService,
     private recruitmentCampaignService: RecruitmentCompainService,
-    private jobPostService: JobPostService
-  ) { }
+    private jobPostService: JobPostService,
+    private userSubcriptionService: UserSubcriptionService,
+    private userChildServiceService: User_ChildService_Service
+  ) {}
 
   ngOnInit(): void {
     // Setup sidebar sync
@@ -190,11 +184,11 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         this.updatePagination();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: err => {
         console.error('Lỗi khi tải danh sách công việc:', err);
         this.showErrorToast('Không thể tải danh sách công việc');
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -212,7 +206,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       createdAt: job.postedAt || new Date().toISOString(),
       updatedAt: job.postedAt || new Date().toISOString(),
       appliedCount: job.applyCount || 0,
-      viewCount: job.viewCount || 0
+      viewCount: job.viewCount || 0,
     };
   }
 
@@ -243,7 +237,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       [PositionType.Specialist]: 'Chuyên viên',
       [PositionType.SeniorSpecialist]: 'Chuyên viên cao cấp',
       [PositionType.Expert]: 'Chuyên gia',
-      [PositionType.Consultant]: 'Tư vấn'
+      [PositionType.Consultant]: 'Tư vấn',
     };
 
     return positionLabels[positionType] || 'N/A';
@@ -269,7 +263,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   filterJobs(): void {
     this.filteredJobs = this.jobs.filter(job => {
-      const matchesSearch = !this.searchQuery ||
+      const matchesSearch =
+        !this.searchQuery ||
         job.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.position.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.location.toLowerCase().includes(this.searchQuery.toLowerCase());
@@ -305,7 +300,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
     const isOpening = this.showActionsMenu !== jobId;
     this.showActionsMenu = isOpening ? jobId : null;
-    
+
     if (isOpening && event) {
       const button = event.currentTarget as HTMLElement;
       const rect = button.getBoundingClientRect();
@@ -317,73 +312,75 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   private updateMenuPosition(buttonRect: DOMRect) {
     if (!this.showActionsMenu) return;
-    
-    const menu = document.querySelector(`.actions-menu[data-job-id="${this.showActionsMenu}"]`) as HTMLElement;
+
+    const menu = document.querySelector(
+      `.actions-menu[data-job-id="${this.showActionsMenu}"]`
+    ) as HTMLElement;
     if (!menu) {
       setTimeout(() => this.updateMenuPosition(buttonRect), 10);
       return;
     }
-    
+
     const menuWidth = menu.offsetWidth || 280;
     const menuHeight = menu.offsetHeight || 100;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const isMobile = viewportWidth <= 768;
-    
+
     // Tính sidebar width
     const sidebarWidth = this.getSidebarWidth();
     const padding = isMobile ? 16 : 24;
     const paddingLeft = sidebarWidth + padding;
-    
+
     // Tính left position: đặt menu bên phải button
     const menuGap = 8;
     let menuLeft = buttonRect.right + menuGap;
-    
+
     // Nếu không đủ chỗ bên phải, đặt menu bên trái button
     const spaceOnRight = viewportWidth - buttonRect.right;
     if (spaceOnRight < menuWidth) {
       menuLeft = buttonRect.left - menuWidth - menuGap;
-      
+
       // Nếu menu bị che bởi sidebar, đặt menu ở paddingLeft
       if (menuLeft < paddingLeft) {
         menuLeft = paddingLeft;
       }
     }
-    
+
     // Đảm bảo menu không vượt quá viewport bên phải
     if (menuLeft + menuWidth > viewportWidth - padding) {
       menuLeft = Math.max(paddingLeft, viewportWidth - menuWidth - padding);
     }
-    
+
     // Đảm bảo menu không bị che bởi sidebar
     if (menuLeft < paddingLeft) {
       menuLeft = paddingLeft;
     }
-    
+
     // Tính top position: đo chính xác breadcrumb-box height
     const breadcrumbBox = document.querySelector('.breadcrumb-box') as HTMLElement;
     const breadcrumbBottom = breadcrumbBox ? breadcrumbBox.getBoundingClientRect().bottom : 120;
-    
+
     const spaceBelow = viewportHeight - buttonRect.bottom;
     const spaceAbove = buttonRect.top - breadcrumbBottom;
-    
+
     let top = buttonRect.bottom + menuGap;
-    
+
     // Đảm bảo menu không đè lên breadcrumb-box
     if (top < breadcrumbBottom + menuGap) {
       top = breadcrumbBottom + menuGap;
     }
-    
+
     // Nếu không đủ chỗ bên dưới và có đủ chỗ phía trên, hiển thị menu phía trên button
     if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
       top = buttonRect.top - menuHeight - menuGap;
-      
+
       // Đảm bảo menu không đè lên breadcrumb-box khi hiển thị phía trên
       if (top < breadcrumbBottom + menuGap) {
         top = breadcrumbBottom + menuGap;
       }
     }
-    
+
     // Đảm bảo menu không vượt quá viewport
     if (top < breadcrumbBottom + menuGap) {
       top = breadcrumbBottom + menuGap;
@@ -391,18 +388,18 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (top + menuHeight > viewportHeight) {
       top = Math.max(breadcrumbBottom + menuGap, viewportHeight - menuHeight - menuGap);
     }
-    
+
     this.menuPosition = {
       top: top,
       left: menuLeft,
-      maxWidth: menuWidth
+      maxWidth: menuWidth,
     };
   }
 
   private getSidebarWidth(): number {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) return 0;
-    
+
     const container = document.querySelector('.campaign-job-management-page');
     const isSidebarExpanded = container?.classList.contains('sidebar-expanded');
     return isSidebarExpanded ? 280 : 72;
@@ -424,8 +421,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   private updateMenuPositionFromButton() {
     if (!this.showActionsMenu) return;
-    
-    const container = document.querySelector(`[data-job-id="${this.showActionsMenu}"]`) as HTMLElement;
+
+    const container = document.querySelector(
+      `[data-job-id="${this.showActionsMenu}"]`
+    ) as HTMLElement;
     if (container) {
       const button = container.querySelector('.actions-btn') as HTMLElement;
       if (button) {
@@ -434,14 +433,31 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       }
     }
   }
+  selectChildService(action: SubcriptionContance_ServiceAction, childServiceId: string): void {
+    if (this.selectedChildServices[action] === childServiceId) {
+      delete this.selectedChildServices[action];
+    } else {
+      this.selectedChildServices[action] = childServiceId;
+    }
+  }
 
+  isChildServiceSelected(
+    action: SubcriptionContance_ServiceAction,
+    childServiceId: string
+  ): boolean {
+    return this.selectedChildServices[action] === childServiceId;
+  }
+
+  getSelectedChildServiceIds(): string[] {
+    return Object.values(this.selectedChildServices).filter(id => id);
+  }
   onEditJob(job: CampaignJob): void {
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: {
         jobId: job.id,
         campaignId: this.campaignId,
-        campaignName: this.campaignName
-      }
+        campaignName: this.campaignName,
+      },
     });
     this.showActionsMenu = null;
     this.menuPosition = null;
@@ -453,8 +469,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         jobId: job.id,
         campaignId: this.campaignId,
         campaignName: this.campaignName,
-        jobTitle: job.title
-      }
+        jobTitle: job.title,
+      },
     });
     this.showActionsMenu = null;
     this.menuPosition = null;
@@ -470,7 +486,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
     const dto: PostJobDto = {
       jobId: job.id,
-      childServiceIds: [] // Tạm thời để rỗng theo yêu cầu
+      childServiceIds: [], // Tạm thời để rỗng theo yêu cầu
     };
 
     this.jobPostService.postJob(dto).subscribe({
@@ -479,13 +495,13 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         // Reload lại danh sách jobs
         this.loadJobs();
       },
-      error: (err) => {
+      error: err => {
         console.error('Lỗi khi đăng bài:', err);
         this.showErrorToast('Đăng bài thất bại');
       },
       complete: () => {
         this.isPostingJob = false;
-      }
+      },
     });
   }
 
@@ -511,14 +527,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         }
         this.showSuccessToast('Đã xóa công việc thành công');
       },
-      error: (err) => {
+      error: err => {
         console.error('Lỗi khi xóa công việc:', err);
         this.showErrorToast('Xóa công việc thất bại');
       },
       complete: () => {
         this.isDeletingJob = false;
         this.closeDeleteModal();
-      }
+      },
     });
   }
 
@@ -578,105 +594,119 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.confirmChangeStatus();
   }
 
-  togglePackage(packageValue: string, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    const index = this.selectedPackages.indexOf(packageValue);
-    if (index > -1) {
-      this.selectedPackages.splice(index, 1);
-      delete this.selectedPackageOptions[packageValue];
-      if (this.activePackage === packageValue) {
-        this.activePackage = null;
-      }
-    } else {
-      this.selectedPackages.push(packageValue);
-      this.selectedPackageOptions[packageValue] = [];
-      this.activePackage = packageValue;
-    }
-  }
-
-  onPackageContentClick(packageValue: string, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    const isSelected = this.isPackageSelected(packageValue);
-
-    if (isSelected) {
-      if (!this.selectedPackageOptions[packageValue]) {
-        this.selectedPackageOptions[packageValue] = [];
-      }
-      this.activePackage = packageValue;
-    }
-  }
-
-  isPackageSelected(packageValue: string): boolean {
-    return this.selectedPackages.includes(packageValue);
-  }
-
-  getPackageOptions(packageValue: string): PackageOption[] {
-    const selected = this.packageOptions.find(pkg => pkg.value === packageValue);
-    return selected && selected.options ? selected.options : [];
-  }
-
-  togglePackageOption(packageValue: string, optionId: string): void {
-    if (!this.selectedPackageOptions[packageValue]) {
-      this.selectedPackageOptions[packageValue] = [];
-    }
-    const index = this.selectedPackageOptions[packageValue].indexOf(optionId);
-    if (index > -1) {
-      this.selectedPackageOptions[packageValue].splice(index, 1);
-    } else {
-      this.selectedPackageOptions[packageValue].push(optionId);
-    }
-  }
-
-  isPackageOptionSelected(packageValue: string, optionId: string): boolean {
-    return this.selectedPackageOptions[packageValue]?.includes(optionId) || false;
-  }
-
   onAssignPackage(job: CampaignJob): void {
     this.jobToAssignPackage = job;
-    this.selectedPackages = job.packageTypes ? [...job.packageTypes] : [];
-    this.selectedPackageOptions = {};
-    this.selectedPackages.forEach(pkgValue => {
-      this.selectedPackageOptions[pkgValue] = [];
-    });
-    this.activePackage = this.selectedPackages.length > 0 ? this.selectedPackages[0] : null;
+    this.selectedChildServices = {};
     this.showPackageModal = true;
     this.showActionsMenu = null;
     this.menuPosition = null;
+
+    this.loadChildServicesForJob(job.id);
+  }
+
+  loadChildServicesForJob(jobId: string): void {
+    this.isLoadingServices = true;
+    this.serviceSections = [];
+    this.selectedChildServices = {};
+
+    const actions = [
+      SubcriptionContance_ServiceAction.BoostScoreJob, // 0
+      SubcriptionContance_ServiceAction.TopList, // 1
+      SubcriptionContance_ServiceAction.VerifiedBadge, // 2
+    ];
+
+    let completedRequests = 0;
+    const totalRequests = actions.length;
+
+    actions.forEach(action => {
+      this.userSubcriptionService.getJobChildServiceAllowForUser(action).subscribe({
+        next: (childServices: ChildServiceViewDto[]) => {
+          if (childServices && childServices.length > 0) {
+            // LỌC chỉ lấy child services có action trùng với action hiện tại
+            const filteredServices = childServices.filter(service => service.action === action);
+
+            if (filteredServices.length > 0) {
+              const packages: PackageOption[] = filteredServices.map(service => ({
+                id: service.id || '',
+                name: service.name || '',
+                description: service.description,
+                childServiceId: service.id,
+                action: service.action,
+                target: service.target,
+              }));
+
+              this.serviceSections.push({
+                action: action,
+                label: this.getActionLabel(action),
+                packages: packages,
+              });
+            }
+          }
+
+          completedRequests++;
+          if (completedRequests === totalRequests) {
+            this.isLoadingServices = false;
+            this.serviceSections.sort((a, b) => a.action - b.action);
+          }
+        },
+        error: err => {
+          console.error(`Error loading services for action ${action}:`, err);
+          completedRequests++;
+          if (completedRequests === totalRequests) {
+            this.isLoadingServices = false;
+          }
+        },
+      });
+    });
+  }
+
+  getActionLabel(action: SubcriptionContance_ServiceAction): string {
+    const labels: { [key in SubcriptionContance_ServiceAction]: string } = {
+      [SubcriptionContance_ServiceAction.BoostScoreCv]: 'Tăng điểm CV',
+      [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm Job',
+      [SubcriptionContance_ServiceAction.TopList]: 'Top danh sách',
+      [SubcriptionContance_ServiceAction.VerifiedBadge]: 'Gắn badge xác thực',
+      [SubcriptionContance_ServiceAction.IncreaseQuota]: 'Tăng hạn mức đăng tin',
+      [SubcriptionContance_ServiceAction.ExtendExpiredDate]: 'Gia hạn ngày hết hạn',
+    };
+    return labels[action] || 'Dịch vụ';
   }
 
   confirmAssignPackage(): void {
-    // Ngăn double request
     if (this.isAssigningPackage || !this.jobToAssignPackage) return;
 
+    const selectedIds = this.getSelectedChildServiceIds();
+
+    if (selectedIds.length === 0) {
+      this.showErrorToast('Vui lòng chọn ít nhất một dịch vụ');
+      return;
+    }
+
     this.isAssigningPackage = true;
+    const jobId = this.jobToAssignPackage.id;
 
-    // TODO: Call API to assign package
-    setTimeout(() => {
-      this.jobToAssignPackage!.packageTypes = [...this.selectedPackages];
-      this.jobToAssignPackage!.packageOptions = { ...this.selectedPackageOptions };
-
-      const packagesCount = this.selectedPackages.length;
-      const totalOptions = Object.values(this.selectedPackageOptions).reduce((sum, opts) => sum + opts.length, 0);
-      const message = packagesCount > 0
-        ? `Đã gắn ${packagesCount} gói${totalOptions > 0 ? ` với ${totalOptions} tùy chọn` : ''} thành công`
-        : 'Đã cập nhật gói tuyển dụng thành công';
-
-      this.showSuccessToast(message);
-      this.isAssigningPackage = false;
-      this.closePackageModal();
-    }, 500);
+    // Gọi API activeService với list childServiceIds
+    this.userChildServiceService.activeService(selectedIds,jobId).subscribe({
+      next: () => {
+        this.showSuccessToast(`Đã kích hoạt ${selectedIds.length} dịch vụ thành công`);
+        this.isAssigningPackage = false;
+        this.closePackageModal();
+        this.loadJobs(); // Reload để cập nhật UI
+      },
+      error: err => {
+        console.error('Lỗi khi kích hoạt dịch vụ:', err);
+        this.showErrorToast('Kích hoạt dịch vụ thất bại');
+        this.isAssigningPackage = false;
+      },
+    });
   }
 
   closePackageModal(): void {
     this.showPackageModal = false;
     this.jobToAssignPackage = null;
-    this.selectedPackages = [];
-    this.selectedPackageOptions = {};
-    this.activePackage = null;
+    this.selectedChildServices = {};
+    this.serviceSections = [];
+    this.isLoadingServices = false;
   }
 
   getStatusLabel(status: CampaignJob['status']): string {
@@ -710,8 +740,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   getPackageLabel(packageType: string): string {
-    const packageOption = this.packageOptions.find(p => p.value === packageType);
-    return packageOption ? packageOption.label : 'Chưa gắn gói';
+    // Find package by ID in service sections
+    for (const section of this.serviceSections) {
+      const packageOption = section.packages.find(p => p.id === packageType);
+      if (packageOption) {
+        return packageOption.name || 'Chưa gắn gói';
+      }
+    }
+    return 'Chưa gắn gói';
   }
 
   getPackageClass(packageType: string): string {

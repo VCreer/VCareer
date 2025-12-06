@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { ChildServiceCreateDto, ChildServiceUpdateDto, ChildServiceViewDto } from '../../dto/subcriptions/models';
-import type { PagingDto } from '../../iservices/common/models';
+import type { ChildServiceCreateDto, ChildServiceGetDto, ChildServiceUpdateDto, ChildServiceViewDto } from '../../dto/subcriptions/models';
 
 @Injectable({
   providedIn: 'root',
@@ -28,12 +27,11 @@ export class ChildService_Service {
     { apiName: this.apiName,...config });
   
 
-  getChildServices = (serviceAction: string, target: string, paging: PagingDto, config?: Partial<Rest.Config>) =>
+  getChildServices = (dto: ChildServiceGetDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ChildServiceViewDto[]>({
       method: 'POST',
       url: '/api/app/childservice-service/GetChildServices',
-      params: { serviceAction, target },
-      body: paging,
+      body: dto,
     },
     { apiName: this.apiName,...config });
   

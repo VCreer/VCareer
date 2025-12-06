@@ -67,28 +67,8 @@
                 <span class="unit-price">{{ formatCurrency(item.subscriptionServicePrice) }}</span>
               </td>
               <td class="quantity-col">
-                <div class="quantity-control">
-                  <button 
-                    type="button" 
-                    class="quantity-btn minus-btn"
-                    (click)="decreaseQuantity(item.id, item.quantity)"
-                    [disabled]="isProcessing || item.quantity <= 1">
-                    -
-                  </button>
-                  <input 
-                    type="number" 
-                    class="quantity-input"
-                    [value]="item.quantity"
-                    min="1"
-                    (change)="onQuantityChange(item.id, $event)"
-                    [disabled]="isProcessing">
-                  <button 
-                    type="button" 
-                    class="quantity-btn plus-btn"
-                    (click)="increaseQuantity(item.id, item.quantity)"
-                    [disabled]="isProcessing">
-                    +
-                  </button>
+                <div class="quantity-display">
+                  <span class="quantity-text">1</span>
                 </div>
               </td>
               <td class="amount-col">
@@ -195,4 +175,3 @@
     (decline)="onDeclineVnpayModal()">
   </app-vnpay-payment-modal>
 </div>
-

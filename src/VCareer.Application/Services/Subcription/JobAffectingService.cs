@@ -15,6 +15,7 @@ using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
@@ -75,7 +76,7 @@ namespace VCareer.Services.Subcription
 
         private async Task AddJobBoostLogic(Job_Post job, EffectingJobService effectService)
         {
-            var priority = job.Job_Priority;
+            var priority = await _jobPriorityRepository.FirstAsync(x => x.JobId == job.Id);
             if (priority == null) throw new BusinessException("Job_Priority not found");
             if (effectService.PriorityLevel != null)
             {

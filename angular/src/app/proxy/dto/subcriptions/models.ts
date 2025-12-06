@@ -1,5 +1,6 @@
 import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
 import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
+import type { PagingDto } from '../../iservices/common/models';
 import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { SubcriptionContance_CurrencyType } from '../../constants/job-constant/subcription-contance-currency-type.enum';
 import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
@@ -24,6 +25,13 @@ export interface ChildServiceCreateDto {
   value?: number;
 }
 
+export interface ChildServiceGetDto {
+  serviceAction?: SubcriptionContance_ServiceAction;
+  target?: SubcriptionContance_ServiceTarget;
+  pagingDto: PagingDto;
+  isActive?: boolean;
+}
+
 export interface ChildServiceUpdateDto {
   cHildServiceId?: string;
   name?: string;
@@ -32,7 +40,7 @@ export interface ChildServiceUpdateDto {
 }
 
 export interface ChildServiceViewDto {
-  cHildServiceId?: string;
+  id?: string;
   name?: string;
   description?: string;
   action?: SubcriptionContance_ServiceAction;
@@ -131,11 +139,6 @@ export interface SubcriptionsViewDto {
   isLifeTime: boolean;
   dayDuration?: number;
   isActive: boolean;
-}
-
-export interface User_ChildServiceCreateDto {
-  userId?: string;
-  childServiceId?: string;
 }
 
 export interface User_ChildServiceUpdateDto {

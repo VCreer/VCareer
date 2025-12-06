@@ -27,16 +27,19 @@ namespace VCareer.Services.Subcription
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly IUser_ChildServiceRepository _userChildServiceRepository;
         private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
+        private readonly ISubcriptionServiceRepository  _subcriptionServiceRepository;
 
         public ChildService_Service(
             IChildServiceRepository childServiceRepository,
             IUser_ChildServiceRepository user_ChildServiceRepository,
+            ISubcriptionServiceRepository subcriptionServiceRepository,
             IEffectingJobServiceRepository effectingJobServiceRepository
             )
         {
             _childServiceRepository = childServiceRepository;
             _userChildServiceRepository = user_ChildServiceRepository;
             _effectingJobServiceRepository = effectingJobServiceRepository;
+            _subcriptionServiceRepository = subcriptionServiceRepository;
         }
         [HttpPost("create-childservice")]
         [Authorize(VCareerPermission.ChildService.Create)]
@@ -133,13 +136,13 @@ namespace VCareer.Services.Subcription
 
         [HttpPost("GetChildServices")]
         [Authorize(VCareerPermission.ChildService.Load)]
-        public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(string? serviceAction, string? target, PagingDto paging)
+        public async Task<List<ChildServiceViewDto>> GetChildServicesAsync(ChildServiceGetDto dto)
         {
             var childServices = (await _childServiceRepository.GetQueryableAsync());
-            if (!string.IsNullOrEmpty(serviceAction) && Enum.TryParse<ServiceAction>(serviceAction, true, out var parsedServiceAction)) childServices = childServices.Where(cs => cs.Action == parsedServiceAction);
-
-            if (string.IsNullOrEmpty(target)&& Enum.TryParse<ServiceTarget>(target, true, out var parsedTarget)) childServices = childServices.Where(cs => cs.Target == parsedTarget);
-            childServices = childServices.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageSize);
+            if (dto.ServiceAction != null) childServices = childServices.Where(cs => cs.Action == dto.ServiceAction);
+            if (dto.Target != null) childServices = childServices.Where(cs => cs.Target == dto.Target);
+            if (dto.IsActive != null) childServices = childServices.Where(cs => cs.IsActive == dto.IsActive);
+            childServices = childServices.Skip(dto.PagingDto.PageIndex * dto.PagingDto.PageSize).Take(dto.PagingDto.PageSize);
 
             var result = await AsyncExecuter.ToListAsync(childServices);
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(result);

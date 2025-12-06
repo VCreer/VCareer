@@ -9,6 +9,7 @@ using VCareer.Constants.JobConstant;
 using VCareer.Dto.Subcriptions;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
+using VCareer.IServices.IAuth;
 using VCareer.IServices.Subcriptions;
 using VCareer.Models.Subcription;
 using VCareer.Permission;
@@ -16,6 +17,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
+using Volo.Abp.Users;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
@@ -27,13 +29,21 @@ namespace VCareer.Services.Subcription
         private readonly ISubcriptionService _subcriptionService;
         private readonly IUser_ChildServiceRepository _user_ChildServiceRepository;
         private readonly IUser_ChildService _user_ChildService_Service;
-        public UserSubcriptionService(ISubcriptionServiceRepository subcriptionServiceRepository, IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository, ISubcriptionService subcriptionService, IUser_ChildServiceRepository user_ChildServiceRepository, IUser_ChildService user_ChildService_Service)
+        private readonly ICurrentUser _currentUser;
+        public UserSubcriptionService(
+            ISubcriptionServiceRepository subcriptionServiceRepository,
+            IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository,
+            ISubcriptionService subcriptionService,
+            IUser_ChildServiceRepository user_ChildServiceRepository,
+            ICurrentUser currentUser,
+            IUser_ChildService user_ChildService_Service)
         {
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _user_SubcriptionServicerRepository = user_SubcriptionServicerRepository;
             _subcriptionService = subcriptionService;
             _user_ChildServiceRepository = user_ChildServiceRepository;
             _user_ChildService_Service = user_ChildService_Service;
+            _currentUser = currentUser;
         }
         [Authorize(VCareerPermission.SubcriptionService.Buy)]
         public async Task BuySubcription(User_SubcirptionCreateDto dto)
@@ -44,17 +54,16 @@ namespace VCareer.Services.Subcription
 
             //logic chay cac child subcription ma auto active
             var childServices = await _subcriptionService.GetChildServices(userSubcription.SubcriptionServiceId, true);
+            List<Guid> listAutoActiveChildService = new List<Guid>();
             foreach (var childService in childServices)
             {
                 if (childService.IsAutoActive)
                 {
-                    await _user_ChildService_Service.ActiveServiceAsync(new User_ChildServiceCreateDto()
-                    {
-                        UserId = dto.UserId,
-                        ChildServiceId = childService.CHildServiceId,
-                    });
+                    listAutoActiveChildService.Add(childService.Id);
                 }
             }
+            if (listAutoActiveChildService != null || listAutoActiveChildService.Count > 0)
+                await _user_ChildService_Service.ActiveServiceAsync(listAutoActiveChildService,null);
         }
         public async Task<User_SubcirptionViewDto> CreateUserSubcription(User_SubcirptionCreateDto dto)
         {
@@ -66,10 +75,12 @@ namespace VCareer.Services.Subcription
                 endDate = startDate.AddDays((double)subcriptionService.DayDuration);
             }
             if (subcriptionService.Status != SubcriptionStatus.Active) throw new BusinessException("SubcriptionService is not active");
-            var listSerivceBoughtedAndWorking= await SubcriptionBoughtedAndActive(dto.UserId, dto.SubcriptionServiceId);
-            if (listSerivceBoughtedAndWorking!= null) {
-                foreach (var serviceId in listSerivceBoughtedAndWorking) { 
-               if(dto.SubcriptionServiceId==serviceId) throw new BusinessException("You have already bought this subcription and it still working");
+            var listSerivceBoughtedAndWorking = await SubcriptionBoughtedAndActive(dto.UserId, dto.SubcriptionServiceId);
+            if (listSerivceBoughtedAndWorking != null)
+            {
+                foreach (var serviceId in listSerivceBoughtedAndWorking)
+                {
+                    if (dto.SubcriptionServiceId == serviceId) throw new BusinessException("You have already bought this subcription and it still working");
                 }
             }
 
@@ -85,16 +96,26 @@ namespace VCareer.Services.Subcription
             await _user_SubcriptionServicerRepository.InsertAsync(userSubcription);
             return ObjectMapper.Map<User_SubcriptionService, User_SubcirptionViewDto>(userSubcription);
         }
-        public async Task CancleUserSubcription(Guid UserSubcriptionId)
+        public async Task CancleUserSubcription(Guid subcriptionServiceId)
         {
-            var userSubcriptionService = await _user_SubcriptionServicerRepository.FirstOrDefaultAsync(x => x.Id == UserSubcriptionId);
+            var userId = _currentUser.GetId();
+            if (userId == Guid.Empty) throw new UserFriendlyException("User not found");
+
+            var subcriptionService = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionServiceId);
+            if (subcriptionService == null) throw new BusinessException("SubcriptionService not found");
+
+            var userSubcriptionService = await _user_SubcriptionServicerRepository.FirstOrDefaultAsync(x => x.SubcriptionServiceId == subcriptionServiceId && x.UserId == userId && x.status == SubcriptionContance.SubcriptionStatus.Active);
+
             if (userSubcriptionService == null) throw new BusinessException("UserSubcriptionService not found");
+            if (userSubcriptionService.status != SubcriptionStatus.Active) throw new UserFriendlyException("SubcriptionService is aldready cancel or expired");
 
             userSubcriptionService.status = SubcriptionContance.SubcriptionStatus.Cancelled;
             await _user_SubcriptionServicerRepository.UpdateAsync(userSubcriptionService);
         }
         public async Task<List<SubcriptionsViewDto>> GetAllSubcriptionsByUser(Guid userId, int? status, PagingDto pagingDto)
         {
+            await UpdateExpireSatusUserSubcriptionOfUser(userId);
+
             var query = await _user_SubcriptionServicerRepository.GetQueryableAsync();
             query = query
               .Where(x => x.UserId == userId)
@@ -106,7 +127,7 @@ namespace VCareer.Services.Subcription
                 query = query.Where(x => x.status == parsedStatus);
             }
             var result = await query
-                .Skip((pagingDto.PageIndex - 1) * pagingDto.PageSize)
+                .Skip((pagingDto.PageIndex) * pagingDto.PageSize)
                 .Take(pagingDto.PageSize)
                 .Select(x => x.SubcriptionService)
                 .ToListAsync();
@@ -134,10 +155,68 @@ namespace VCareer.Services.Subcription
         }
         public async Task<List<Guid>>? SubcriptionBoughtedAndActive(Guid UserId, Guid SubcriptionServiceId)
         {
-            var  boughtedServiceAndStillActive =  await _user_SubcriptionServicerRepository.GetListAsync(x => x.SubcriptionServiceId == SubcriptionServiceId && x.status== SubcriptionStatus.Active && x.UserId == UserId);
+            var boughtedServiceAndStillActive = await _user_SubcriptionServicerRepository.GetListAsync(x => x.SubcriptionServiceId == SubcriptionServiceId && x.status == SubcriptionStatus.Active && x.UserId == UserId);
 
             return boughtedServiceAndStillActive.Select(x => x.Id).ToList();
         }
-    }
+        //cai nay dung de show len cac childservice voi target laf job post ma nguoi dung co quyen dung sau khi mua goi
+        public async Task<List<ChildServiceViewDto>> GetJobChildServiceAllowForUserAsync(int? serviceAction)
+        {
+            var userId = _currentUser.GetId();
+            if (userId == Guid.Empty) throw new UserFriendlyException("User not found");
 
+            ServiceAction? parsedServiceAction = null;
+
+            if (serviceAction.HasValue && Enum.IsDefined(typeof(ServiceAction), serviceAction.Value))
+            {
+                parsedServiceAction = (ServiceAction)serviceAction.Value;
+            }
+
+            var subcriptionActiveOfUser = await GetAllSubcriptionsByUser(
+                userId,
+                1,
+                new PagingDto { PageIndex = 0, PageSize = 10 });
+
+            if (subcriptionActiveOfUser == null || subcriptionActiveOfUser.Count == 0)
+                return new List<ChildServiceViewDto>();
+
+            var listChildServiceValidLoad = new List<ChildServiceViewDto>();
+
+            foreach (var subciptionService in subcriptionActiveOfUser)
+            {
+                var listChildService = await _subcriptionService.GetChildServices(subciptionService.Id, true);
+
+                listChildService = listChildService
+                    .Where(x => x.Target == ServiceTarget.JobPost && x.IsAutoActive == false)
+                    .ToList();
+
+                if (parsedServiceAction != null)
+                {
+                    listChildService = listChildService
+                        .Where(x => x.Action == parsedServiceAction)
+                        .ToList();
+                }
+
+                listChildServiceValidLoad.AddRange(listChildService);
+            }
+
+            return listChildServiceValidLoad;
+        }
+
+        private async Task UpdateExpireSatusUserSubcriptionOfUser(Guid userId)
+        {
+            var userSubcriptionServices = await _user_SubcriptionServicerRepository.GetListAsync(x => x.UserId == userId && x.status == SubcriptionStatus.Active);
+
+            if (userSubcriptionServices == null || userSubcriptionServices.Count == 0) return;
+            foreach (var userSubcription in userSubcriptionServices)
+            {
+                if (userSubcription.EndDate < DateTime.Now)
+                {
+                    userSubcription.status = SubcriptionStatus.Expired;
+                    await _user_SubcriptionServicerRepository.UpdateAsync(userSubcription);
+                }
+            }
+        }
+
+    }
 }

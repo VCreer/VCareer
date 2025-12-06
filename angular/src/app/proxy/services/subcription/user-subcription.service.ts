@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionsViewDto, User_SubcirptionCreateDto, User_SubcirptionUpdateDto, User_SubcirptionViewDto } from '../../dto/subcriptions/models';
+import type { ChildServiceViewDto, SubcriptionsViewDto, User_SubcirptionCreateDto, User_SubcirptionUpdateDto, User_SubcirptionViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
 @Injectable({
@@ -19,10 +19,10 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
-  cancleUserSubcriptionByUserSubcriptionId = (UserSubcriptionId: string, config?: Partial<Rest.Config>) =>
+  cancleUserSubcriptionBySubcriptionServiceId = (subcriptionServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/user-subcription/cancle-user-subcription/${UserSubcriptionId}`,
+      url: `/api/app/user-subcription/cancle-user-subcription/${subcriptionServiceId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -45,10 +45,28 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
+  getJobChildServiceAllowForUser = (serviceAction: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ChildServiceViewDto[]>({
+      method: 'GET',
+      url: '/api/app/user-subcription/job-child-service-allow-for-user',
+      params: { serviceAction },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getUserSubcriptionServiceByUserSubcriptionServiceId = (UserSubcriptionServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, User_SubcirptionViewDto>({
       method: 'GET',
       url: `/api/app/user-subcription/user-subcription-service/${UserSubcriptionServiceId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  subcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId = (UserId: string, SubcriptionServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string[]>({
+      method: 'POST',
+      url: '/api/app/user-subcription/subcription-boughted-and-active',
+      params: { userId: UserId, subcriptionServiceId: SubcriptionServiceId },
     },
     { apiName: this.apiName,...config });
   

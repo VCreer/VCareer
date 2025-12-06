@@ -105,6 +105,6 @@ export const appConfig: ApplicationConfig = {
       } as SocialAuthServiceConfig,
     },
     //load curent user
-   APP_CURRENT_USER_INITIALIZER,
+  APP_CURRENT_USER_INITIALIZER,
   ],
 };

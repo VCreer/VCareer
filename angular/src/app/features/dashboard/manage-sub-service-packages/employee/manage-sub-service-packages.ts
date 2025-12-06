@@ -220,30 +220,31 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   loadChildServices(): void {
-    const paging: PagingDto = {
-      pageSize: 1000, // Load all for now
-      pageIndex: 0
-    };
+    // const paging: PagingDto = {
+    //   pageSize: 1000, // Load all for now
+    //   pageIndex: 0
+    // };
 
-    const serviceActionParam = this.getServiceActionParam();
-    const targetParam = this.getServiceTargetParam();
+    // const serviceActionParam = this.getServiceActionParam();
+    // const targetParam = this.getServiceTargetParam();
 
-    this.childServiceService.getChildServices(
-      serviceActionParam,
-      targetParam,
-      paging
-    ).subscribe({
-      next: (childServices: ChildServiceViewDto[]) => {
-        this.allChildServices = childServices.map(cs => this.mapToChildService(cs));
-        this.applyFilters();
-      },
-      error: (err) => {
-        console.error('Error loading child services:', err);
-        this.showToastMessage('Không thể tải danh sách dịch vụ phụ', 'error');
-        // Load mock data for development
-        this.loadMockData();
-      }
-    });
+    // this.childServiceService.getChildServices(
+    //   serviceActionParam,
+    //   targetParam,
+    //   null,
+    //   true
+    // ).subscribe({
+    //   next: (childServices: ChildServiceViewDto[]) => {
+    //     this.allChildServices = childServices.map(cs => this.mapToChildService(cs));
+    //     this.applyFilters();
+    //   },
+    //   error: (err) => {
+    //     console.error('Error loading child services:', err);
+    //     this.showToastMessage('Không thể tải danh sách dịch vụ phụ', 'error');
+    //     // Load mock data for development
+    //     this.loadMockData();
+    //   }
+    // });
   }
 
   private loadMockData(): void {
@@ -279,7 +280,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
 
   private mapToChildService(dto: ChildServiceViewDto): ChildService {
     return {
-      id: dto.cHildServiceId || '',
+      id: dto.id|| '',
       name: dto.name || '',
       description: dto.description || '',
       action: dto.action,

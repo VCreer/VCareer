@@ -7,12 +7,7 @@ using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Dto.Subcriptions
 {
-    public class User_ChildServiceCreateDto
-    {
-        public Guid UserId { get; set; }
-        public Guid ChildServiceId { get; set; }
-       }
-    public class User_ChildServiceViewDto
+      public class User_ChildServiceViewDto
     {
         public Guid UserId { get; set; }
         public Guid ChildServiceId { get; set; }
@@ -31,5 +26,11 @@ namespace VCareer.Dto.Subcriptions
         public int? UsedTime { get; set; } //đã dùng bao nhiêu
         public int? TotalUsageLimit { get; set; }  //tổng lượt được phép dùng
         public DateTime? EndDate { get; set; }
+    }
+
+    public class User_ChildServiceGetDto()
+    {
+        public ServiceTarget Target { get; set; }
+        public ServiceAction Action { get; set; }
     }
 }
