@@ -94,16 +94,16 @@
         </div>
 
         <!-- Profile Container -->
-        <div class="profile-container" (mouseenter)="showProfileMenu = true" (mouseleave)="onProfileMouseLeave()">
+        <div class="profile-container">
           <!-- User Profile -->
-          <div class="user-profile">
+          <div class="user-profile" (click)="toggleProfileMenu()">
             <div class="user-avatar-placeholder">
               <i class="fa fa-user"></i>
             </div>
           </div>
 
           <!-- Profile Menu Dropdown -->
-          <div class="profile-menu" *ngIf="showProfileMenu" (mouseenter)="showProfileMenu = true" (mouseleave)="onProfileMouseLeave()">
+          <div class="profile-menu" *ngIf="showProfileMenu">
           <!-- User Info -->
           <div class="profile-header">
             <div class="profile-avatar">
@@ -161,22 +161,6 @@
                           </div>
             </div>
 
-                        <!-- Cài đặt email & thông báo -->
-                        <div class="menu-section" (click)="toggleSection('emailSettings')">
-                          <div class="section-header">
-                            <div class="section-icon">
-                              <i class="fa fa-envelope"></i>
-                              <span class="notification-dot"></span>
-                            </div>
-                            <span class="section-title">{{ translate('profile.email_settings') }}</span>
-                            <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.emailSettings"></i>
-                          </div>
-                          <div class="section-content" *ngIf="expandedSections.emailSettings">
-                            <div class="menu-item">{{ translate('profile.job_notification_settings') }}</div>
-                            <div class="menu-item">{{ translate('profile.email_reception_settings') }}</div>
-                          </div>
-                        </div>
-
                         <!-- Cá nhân & Bảo mật -->
                         <div class="menu-section" (click)="toggleSection('personalSecurity')">
                           <div class="section-header">
@@ -189,25 +173,10 @@
                           </div>
                           <div class="section-content" *ngIf="expandedSections.personalSecurity">
                             <div class="menu-item" (click)="navigateToPersonalInfo()">{{ translate('profile.personal_info_settings') }}</div>
-                            <div class="menu-item">{{ translate('profile.security_settings') }}</div>
                             <div class="menu-item" (click)="navigateToChangePassword()">{{ translate('profile.change_password') }}</div>
                           </div>
                         </div>
 
-                        <!-- Nâng cấp tài khoản -->
-                        <div class="menu-section" (click)="toggleSection('upgradeAccount')">
-                          <div class="section-header">
-                            <div class="section-icon">
-                              <i class="fa fa-star"></i>
-                              <span class="notification-dot"></span>
-                            </div>
-                            <span class="section-title">{{ translate('profile.upgrade_account') }}</span>
-                            <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.upgradeAccount"></i>
-                          </div>
-                          <div class="section-content" *ngIf="expandedSections.upgradeAccount">
-                            <div class="menu-item" (click)="navigateToService()">{{ translate('profile.upgrade_vip_account') }}</div>
-                          </div>
-                        </div>
           </div>
 
           <!-- Logout Button -->

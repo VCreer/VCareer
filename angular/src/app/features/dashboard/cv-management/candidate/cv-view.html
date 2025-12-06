@@ -31,8 +31,8 @@
   </div>
 
   <!-- CV Content -->
-  <div class="cv-content-wrapper" *ngIf="!loading && cvHtml">
-    <div class="cv-content" [innerHTML]="cvHtml"></div>
+  <div class="cv-content-wrapper" *ngIf="!loading && safeCvHtml">
+    <div class="cv-content" [innerHTML]="safeCvHtml"></div>
   </div>
 
   <!-- Toast Notification -->

@@ -41,8 +41,9 @@ export class AuthGuard implements CanActivate {
         const backendRoles = user.roles ?? [];
         const primaryRole = getPrimaryRoutingRole(backendRoles);
 
+     
         if (!primaryRole) {
-          this.router.navigate(['/candidate/login']);
+                  this.router.navigate(['/candidate/login']);
           return false;
         }
 
@@ -52,7 +53,7 @@ export class AuthGuard implements CanActivate {
         if (requiredRole) {
           // Nếu route yêu cầu role cụ thể
           if (primaryRole !== requiredRole) {
-            this.redirectToRoleHome(primaryRole);
+                      this.redirectToRoleHome(primaryRole);
             return false;
           }
         } else {

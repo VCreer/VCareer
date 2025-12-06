@@ -23,7 +23,7 @@ using System.Text;
 
 namespace VCareer.Services.Profile
 {
-    [Authorize(VCareerPermission.Profile.Default)]
+    /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class ProfileAppService : VCareerAppService, IProfileAppService
     {
         private readonly IdentityUserManager _userManager;
@@ -59,7 +59,7 @@ namespace VCareer.Services.Profile
 
         //ádadad
 
-        [Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]
+        /*[Authorize(VCareerPermission.Profile.UpdatePersonalInfo)]*/
         public async Task UpdatePersonalInfoAsync(UpdatePersonalInfoDto input)
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
@@ -111,7 +111,7 @@ namespace VCareer.Services.Profile
 
 
         //ádada
-        [Authorize(VCareerPermission.Profile.ChangePassword)]
+        /*[Authorize(VCareerPermission.Profile.ChangePassword)]*/
         public async Task ChangePasswordAsync(ChangePasswordDto input)
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
@@ -314,7 +314,7 @@ namespace VCareer.Services.Profile
             }
 
             // Get profile info từ Candidate/Employee/Recruiter table
-            var (userType, bio, dateOfBirth, gender, location, jobTitle, skills, experience, salary, workLocation) = await GetUserProfileInfoAsync(user.Id);
+            var (userType, bio, dateOfBirth, gender, location, jobTitle, skills, experience, salary, workLocation, profileVisibility) = await GetUserProfileInfoAsync(user.Id);
 
             // Get CompanyId from RecruiterProfile if user is Recruiter
             int? companyId = null;
@@ -352,13 +352,14 @@ namespace VCareer.Services.Profile
                 Skills = skills ?? "",
                 Experience = experience,
                 Salary = salary,
-                WorkLocation = workLocation ?? ""
+                WorkLocation = workLocation ?? "",
+                ProfileVisibility = profileVisibility
             };
         }
 
 
 
-        [Authorize(VCareerPermission.Profile.DeleteAccount)]
+        /*[Authorize(VCareerPermission.Profile.DeleteAccount)]*/
         public async Task DeleteAccountAsync()
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
@@ -443,7 +444,7 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
-        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location, string JobTitle, string Skills, int? Experience, decimal? Salary, string WorkLocation)>
+        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location, string JobTitle, string Skills, int? Experience, decimal? Salary, string WorkLocation, bool? ProfileVisibility)>
             GetUserProfileInfoAsync(Guid userId)
         {
             // Check CandidateProfile
@@ -452,25 +453,25 @@ namespace VCareer.Services.Profile
             {
                 return ("Candidate", "", candidate.DateOfbirth, candidate.Gender, candidate.Location ?? "", 
                     candidate.JobTitle ?? "", candidate.Skills ?? "", candidate.Experience, 
-                    candidate.Salary, candidate.WorkLocation ?? "");
+                    candidate.Salary, candidate.WorkLocation ?? "", candidate.ProfileVisibility);
             }
 
             // Check EmployeeProfile
             var employee = await _employeeProfileRepository.FirstOrDefaultAsync(e => e.UserId == userId);
             if (employee != null)
             {
-                return ("Employee", employee.Description ?? "", null, null, "", "", "", null, null, "");
+                return ("Employee", employee.Description ?? "", null, null, "", "", "", null, null, "", null);
             }
 
             // Check RecruiterProfile
             var recruiter = await _recruiterProfileRepository.FirstOrDefaultAsync(r => r.UserId == userId);
             if (recruiter != null)
             {
-                return ("Recruiter", "", null, null, "", "", "", null, null, "");
+                return ("Recruiter", "", null, null, "", "", "", null, null, "", null);
             }
 
             // Không tìm thấy profile nào
-            return ("Unknown", "", null, null, "", "", "", null, null, "");
+            return ("Unknown", "", null, null, "", "", "", null, null, "", null);
         }
 
         /// <summary>
@@ -488,6 +489,23 @@ namespace VCareer.Services.Profile
 
             recruiter.CompanyId = input.CompanyId;
             await _recruiterProfileRepository.UpdateAsync(recruiter);
+        }
+
+        /// <summary>
+        /// Updates the profile visibility for the current candidate user
+        /// </summary>
+        public async Task UpdateProfileVisibilityAsync(bool isVisible)
+        {
+            var userId = _currentUser.GetId();
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy thông tin candidate profile.");
+            }
+
+            candidate.ProfileVisibility = isVisible;
+            await _candidateProfileRepository.UpdateAsync(candidate);
         }
 
 

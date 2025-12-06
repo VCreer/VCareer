@@ -1,0 +1,672 @@
+<div class="cv-form-preview" [ngClass]="rootClasses" [ngStyle]="rootStyles">
+  <!-- Add Section Button -->
+  <div class="add-section-container">
+    <button 
+      type="button" 
+      class="btn-add-section" 
+      (click)="showAddSectionMenu = !showAddSectionMenu"
+      [class.active]="showAddSectionMenu">
+      <i class="fa fa-plus"></i>
+      <span>Thêm Section</span>
+    </button>
+
+    <!-- Add Section Menu -->
+    <div class="add-section-menu" *ngIf="showAddSectionMenu">
+      <div 
+        class="menu-item" 
+        (click)="addSection('custom-text'); showAddSectionMenu = false">
+        <i class="fa fa-file-text"></i>
+        <span>Mục tiêu nghề nghiệp</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('education'); showAddSectionMenu = false">
+        <i class="fa fa-graduation-cap"></i>
+        <span>Học vấn</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('work-experience'); showAddSectionMenu = false">
+        <i class="fa fa-briefcase"></i>
+        <span>Kinh nghiệm làm việc</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('skills'); showAddSectionMenu = false">
+        <i class="fa fa-star"></i>
+        <span>Kỹ năng</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('projects'); showAddSectionMenu = false">
+        <i class="fa fa-folder"></i>
+        <span>Dự án</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('certificates'); showAddSectionMenu = false">
+        <i class="fa fa-certificate"></i>
+        <span>Chứng chỉ</span>
+      </div>
+      <div 
+        class="menu-item" 
+        (click)="addSection('languages'); showAddSectionMenu = false">
+        <i class="fa fa-language"></i>
+        <span>Ngoại ngữ</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cv-form-container"
+       [ngClass]="{'layout-two-column': mergedSettings.layout === 'two-column'}"
+       cdkDropList
+       (cdkDropListDropped)="onBlockDrop($event)">
+    <!-- Personal Information Section -->
+    <div class="cv-section personal-info-section full-span" [class.pinned]="personalInfoBlock?.meta?.pinned">
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" *ngIf="!personalInfoBlock?.meta?.pinned" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="personalInfoBlock?.title || 'THÔNG TIN CÁ NHÂN'"
+            (blur)="onSectionTitleChange(personalInfoBlock!.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions" *ngIf="!personalInfoBlock?.meta?.pinned">
+          <button type="button" class="btn-action" (click)="duplicateBlock(personalInfoBlock!.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(personalInfoBlock!.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      
+      <input #avatarFileInput type="file" accept="image/*" class="hidden-file-input" (change)="onAvatarFileSelected($event)">
+      <div class="personal-info-content" *ngIf="personalInfoBlock">
+        <div class="profile-picture-container">
+          <div class="avatar-dropzone"
+               [class.drag-over]="isAvatarDragOver"
+               (click)="onAvatarUploadClick($event)"
+               (dragover)="onAvatarDragOver($event)"
+               (dragleave)="onAvatarDragLeave($event)"
+               (drop)="onAvatarDrop($event)">
+            <div class="avatar-toolbar">
+              <button type="button" class="btn-delete" (click)="onAvatarRemove($event)">Xóa</button>
+            </div>
+            <div class="profile-picture-placeholder">
+              <img *ngIf="personalInfoBlock.data?.profileImageUrl" 
+                   [src]="personalInfoBlock.data.profileImageUrl" 
+                   alt="Profile">
+              <i *ngIf="!personalInfoBlock.data?.profileImageUrl" class="fa fa-user"></i>
+              <button type="button" class="btn-edit" (click)="onAvatarUploadClick($event)">
+                <i class="fa fa-pencil"></i>
+                <span>Sửa ảnh</span>
+              </button>
+            </div>
+            <div class="avatar-hint">Kéo thả hoặc nhấn để chọn ảnh</div>
+          </div>
+        </div>
+        
+        <div class="personal-info-fields">
+          <div class="info-field">
+            <label>Họ và tên <span class="required">*</span></label>
+            <input 
+              type="text" 
+              [(ngModel)]="personalInfoBlock.data.fullName"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="Nhập họ và tên"
+              class="form-control">
+          </div>
+          
+          <div class="info-field">
+            <label>Vị trí ứng tuyển</label>
+            <input 
+              type="text" 
+              [(ngModel)]="personalInfoBlock.data.jobTitle"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="Nhập vị trí ứng tuyển"
+              class="form-control">
+          </div>
+          
+          <div class="info-row">
+            <div class="info-field">
+              <label>Ngày sinh</label>
+              <input 
+                type="date" 
+                [(ngModel)]="personalInfoBlock.data.dateOfBirth"
+                (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+                class="form-control">
+            </div>
+            <div class="info-field">
+              <label>Giới tính</label>
+              <select 
+                [(ngModel)]="personalInfoBlock.data.gender"
+                (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+                class="form-control">
+                <option [value]="null">Chọn giới tính</option>
+                <option [value]="true">Nam</option>
+                <option [value]="false">Nữ</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="info-field">
+            <label>Số điện thoại <span class="required">*</span></label>
+            <input 
+              type="tel" 
+              [(ngModel)]="personalInfoBlock.data.phoneNumber"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="0123 456 789"
+              class="form-control">
+          </div>
+          
+          <div class="info-field">
+            <label>Email <span class="required">*</span></label>
+            <input 
+              type="email" 
+              [(ngModel)]="personalInfoBlock.data.email"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="example@email.com"
+              class="form-control">
+          </div>
+          
+          <div class="info-field">
+            <label>Website</label>
+            <input 
+              type="url" 
+              [(ngModel)]="personalInfoBlock.data.website"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="facebook.com/TopCV.vn"
+              class="form-control">
+          </div>
+          
+          <div class="info-field">
+            <label>Địa chỉ</label>
+            <input 
+              type="text" 
+              [(ngModel)]="personalInfoBlock.data.address"
+              (ngModelChange)="onBlockDataChange(personalInfoBlock.id, personalInfoBlock.data)"
+              placeholder="Quận A, thành phố Hà Nội"
+              class="form-control">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Career Objective Section -->
+    <div class="cv-section" *ngFor="let block of customTextBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'MỤC TIÊU NGHỀ NGHIỆP'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content">
+        <textarea 
+          [(ngModel)]="block.data.html"
+          (ngModelChange)="onBlockDataChange(block.id, block.data)"
+          placeholder="Mục tiêu nghề nghiệp của bạn, bao gồm mục tiêu ngắn hạn và dài hạn"
+          class="form-control textarea-field"
+          rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- Education Section -->
+    <div class="cv-section" *ngFor="let block of educationBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'HỌC VẤN'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm học vấn">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="education-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+          <div class="item-header">
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <span class="item-number">Học vấn #{{ i + 1 }}</span>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bắt đầu - Kết thúc</label>
+              <div class="date-range">
+                <input 
+                  type="date" 
+                  [(ngModel)]="item.startDate"
+                  (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                  class="form-control">
+                <span>-</span>
+                <input 
+                  type="date" 
+                  [(ngModel)]="item.endDate"
+                  (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                  [disabled]="item.isCurrent"
+                  class="form-control">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="item.isCurrent"
+                    (ngModelChange)="onBlockDataChange(block.id, block.data)">
+                  Đang học
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tên trường học</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.institutionName"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Tên trường học"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ngành học / Môn học</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.major"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Ngành học / Môn học"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mô tả quá trình học tập hoặc thành tích của bạn</label>
+              <textarea 
+                [(ngModel)]="item.description"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Mô tả quá trình học tập hoặc thành tích của bạn"
+                class="form-control textarea-field"
+                rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work Experience Section -->
+    <div class="cv-section" *ngFor="let block of workExperienceBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'KINH NGHIỆM LÀM VIỆC'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm kinh nghiệm">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="work-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+          <div class="item-header">
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <span class="item-number">Kinh nghiệm #{{ i + 1 }}</span>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bắt đầu - Kết thúc</label>
+              <div class="date-range">
+                <input 
+                  type="date" 
+                  [(ngModel)]="item.startDate"
+                  (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                  class="form-control">
+                <span>-</span>
+                <input 
+                  type="date" 
+                  [(ngModel)]="item.endDate"
+                  (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                  [disabled]="item.isCurrentJob"
+                  class="form-control">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="item.isCurrentJob"
+                    (ngModelChange)="onBlockDataChange(block.id, block.data)">
+                  Đang làm việc
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tên công ty</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.companyName"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Tên công ty"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Vị trí công việc</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.position"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Vị trí công việc"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mô tả kinh nghiệm làm việc của bạn</label>
+              <textarea 
+                [(ngModel)]="item.description"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Mô tả kinh nghiệm làm việc của bạn"
+                class="form-control textarea-field"
+                rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills Section -->
+    <div class="cv-section" *ngFor="let block of skillsBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'KỸ NĂNG'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm kỹ năng">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="skills-list">
+          <div class="skill-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <input 
+              type="text" 
+              [(ngModel)]="item.skillName"
+              (ngModelChange)="onBlockDataChange(block.id, block.data)"
+              placeholder="Tên kỹ năng"
+              class="form-control skill-input">
+            <select 
+              [(ngModel)]="item.level"
+              (ngModelChange)="onBlockDataChange(block.id, block.data)"
+              class="form-control skill-level">
+              <option value="">Mức độ</option>
+              <option value="Beginner">Cơ bản</option>
+              <option value="Intermediate">Trung bình</option>
+              <option value="Advanced">Nâng cao</option>
+              <option value="Expert">Chuyên gia</option>
+            </select>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div class="cv-section" *ngFor="let block of projectsBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'DỰ ÁN'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm dự án">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="project-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+          <div class="item-header">
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <span class="item-number">Dự án #{{ i + 1 }}</span>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tên dự án</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.projectName"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Tên dự án"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mô tả dự án</label>
+              <textarea 
+                [(ngModel)]="item.description"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Mô tả dự án"
+                class="form-control textarea-field"
+                rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certificates Section -->
+    <div class="cv-section" *ngFor="let block of certificatesBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'CHỨNG CHỈ'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm chứng chỉ">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="certificate-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+          <div class="item-header">
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <span class="item-number">Chứng chỉ #{{ i + 1 }}</span>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Thời gian</label>
+              <input 
+                type="date" 
+                [(ngModel)]="item.issueDate"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tên chứng chỉ</label>
+              <input 
+                type="text" 
+                [(ngModel)]="item.certificateName"
+                (ngModelChange)="onBlockDataChange(block.id, block.data)"
+                placeholder="Tên chứng chỉ"
+                class="form-control">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Languages Section -->
+    <div class="cv-section" *ngFor="let block of languagesBlocks" cdkDrag>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+          <input 
+            type="text" 
+            class="section-title-input"
+            [value]="block.title || 'NGOẠI NGỮ'"
+            (blur)="onSectionTitleChange(block.id, $any($event.target).value)"
+            (keyup.enter)="$any($event.target).blur()"
+            placeholder="Nhập tiêu đề section">
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn-add-item" (click)="addItemToBlock(block.id)" title="Thêm ngoại ngữ">
+            <i class="fa fa-plus"></i>
+            <span>Thêm</span>
+          </button>
+          <button type="button" class="btn-action" (click)="duplicateBlock(block.id)" title="Nhân đôi">
+            <i class="fa fa-copy"></i>
+          </button>
+          <button type="button" class="btn-action btn-delete" (click)="removeBlock(block.id)" title="Xóa">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-content" cdkDropList (cdkDropListDropped)="onItemDrop($event, block.id)">
+        <div class="languages-list">
+          <div class="language-item" *ngFor="let item of block.data?.items || []; let i = index" cdkDrag>
+            <i class="fa fa-grip-vertical drag-handle" cdkDragHandle></i>
+            <input 
+              type="text" 
+              [(ngModel)]="item.languageName"
+              (ngModelChange)="onBlockDataChange(block.id, block.data)"
+              placeholder="Tên ngôn ngữ"
+              class="form-control language-input">
+            <select 
+              [(ngModel)]="item.proficiencyLevel"
+              (ngModelChange)="onBlockDataChange(block.id, block.data)"
+              class="form-control language-level">
+              <option value="">Trình độ</option>
+              <option value="Basic">Cơ bản</option>
+              <option value="Intermediate">Trung bình</option>
+              <option value="Advanced">Nâng cao</option>
+              <option value="Native">Bản ngữ</option>
+            </select>
+            <button type="button" class="btn-remove-item" (click)="removeItemFromBlock(block.id, i)" 
+                    [disabled]="(block.data?.items || []).length === 1" title="Xóa">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

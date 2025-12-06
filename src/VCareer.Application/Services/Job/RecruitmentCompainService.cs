@@ -105,7 +105,7 @@ namespace VCareer.Services.Job
             var compain = await _recuirementRepository.GetAsync(input.Id);
             if (compain == null) throw new BusinessException("Compain not found");
             compain.Name = input.Name;
-            compain.Description= input.Description;
+            compain.Description = input.Description;
             await _recuirementRepository.UpdateAsync(compain, true);
         }
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]

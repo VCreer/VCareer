@@ -1,0 +1,99 @@
+.cv-block-skills {
+  .skill-item {
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: #fafafa;
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: flex-end;
+
+      .form-group {
+        &.action-group {
+          flex: 0 0 auto;
+          padding-bottom: 0;
+        }
+
+        label {
+          display: block;
+          margin-bottom: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #666;
+
+          .required {
+            color: #d32f2f;
+          }
+        }
+
+        .form-control {
+          width: 100%;
+          padding: 6px 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 13px;
+          transition: all 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #0F83BA;
+            box-shadow: 0 0 0 2px rgba(15, 131, 186, 0.1);
+          }
+        }
+
+        select.form-control {
+          cursor: pointer;
+        }
+
+        .btn-remove-item {
+          padding: 6px 10px;
+          background: #fee;
+          color: #d32f2f;
+          border: 1px solid #fcc;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-size: 12px;
+
+          &:hover:not(:disabled) {
+            background: #fcc;
+          }
+
+          &:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+
+  .btn-add-item {
+    width: 100%;
+    padding: 8px;
+    background: #f0f0f0;
+    color: #666;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    &:hover {
+      background: #e0e0e0;
+      border-color: #0F83BA;
+      color: #0F83BA;
+    }
+  }
+}
+
+
+

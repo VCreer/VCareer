@@ -16,12 +16,14 @@ export class HeaderCvEditorComponent implements OnInit {
   @Output() undo = new EventEmitter<void>();
   @Output() redo = new EventEmitter<void>();
   @Output() preview = new EventEmitter<void>();
+  @Output() exportPdf = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
 
   isEditingName: boolean = false;
   internalCvName: string = this.cvName;
   
   previewText: string = 'Xem trước';
+  exportPdfText: string = 'Xuất PDF';
   saveText: string = 'Lưu CV';
 
   constructor(
@@ -38,6 +40,7 @@ export class HeaderCvEditorComponent implements OnInit {
   
   updateTranslations() {
     this.previewText = this.translationService.translate('write_cv.preview');
+    this.exportPdfText = this.translationService.translate('write_cv.export_pdf') || 'Xuất PDF';
     this.saveText = this.translationService.translate('write_cv.save_cv');
     if (this.internalCvName === 'CV chưa đặt tên' || this.internalCvName === 'Unnamed CV') {
       this.internalCvName = this.translationService.translate('write_cv.unnamed_cv');
@@ -73,6 +76,10 @@ export class HeaderCvEditorComponent implements OnInit {
 
   onPreview() {
     this.preview.emit();
+  }
+
+  onExportPdf() {
+    this.exportPdf.emit();
   }
 
   onSave() {

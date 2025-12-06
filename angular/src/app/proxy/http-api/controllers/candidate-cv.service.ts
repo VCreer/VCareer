@@ -1,3 +1,4 @@
+import type { UpdatePreviewImageDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CandidateCvDto, CreateCandidateCvDto, GetCandidateCvListDto, RenderCvDto, UpdateCandidateCvDto } from '../../cv/models';
@@ -90,6 +91,15 @@ export class CandidateCvService {
       method: 'PUT',
       url: `/api/cv/candidates/${id}`,
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updatePreviewImage = (id: string, dto: UpdatePreviewImageDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'PUT',
+      url: `/api/cv/candidates/${id}/preview-image`,
+      body: dto,
     },
     { apiName: this.apiName,...config });
 

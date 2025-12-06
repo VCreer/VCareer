@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using VCareer.Constants.PaymentVNPay;
 using VCareer.Dto.Order;
 using VCareer.Dto.Subcriptions;
+using VCareer.IServices.Cart;
 using VCareer.IServices.Order;
 using VCareer.IServices.Subcriptions;
 using VCareer.Services.Payment;
@@ -32,6 +33,7 @@ namespace VCareer.Services.Order
         private const decimal VAT_RATE = 0.08m; // 8% VAT
         private readonly IUserSubcriptionService _userSubcriptionService;
         private readonly ISubcriptionPriceService _subcriptionPriceService;
+        private readonly ICartAppService _cartService;
 
         public OrderAppService(
             IRepository<Models.Order.Order, Guid> orderRepository,
@@ -42,6 +44,7 @@ namespace VCareer.Services.Order
             IConfiguration configuration,
             IUserSubcriptionService userSubcriptionService,
             ISubcriptionPriceService subcriptionPriceService,
+            ICartAppService cartService,
             ILogger<OrderAppService> logger)
         {
             _orderRepository = orderRepository;
@@ -49,6 +52,7 @@ namespace VCareer.Services.Order
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _vnpayService = vnpayService;
             _currentUser = currentUser;
+            _cartService = cartService;
             _configuration = configuration;
             _userSubcriptionService = userSubcriptionService;
             _subcriptionPriceService = subcriptionPriceService;

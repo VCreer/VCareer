@@ -55,6 +55,13 @@ namespace VCareer.IServices.IProfileServices
         /// </summary>
         Task SelectCompanyAsync(SelectCompanyDto input);
 
+        /// <summary>
+        /// Updates the profile visibility for the current candidate user
+        /// </summary>
+        /// <param name="isVisible">Whether the profile should be visible to recruiters</param>
+        /// <returns>Task representing the asynchronous operation</returns>
+        Task UpdateProfileVisibilityAsync(bool isVisible);
+
         // lấy thông tin của 1 recruiter.  tu  userid của recruiter
 
 

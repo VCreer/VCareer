@@ -30,5 +30,6 @@ namespace VCareer.Dto.Profile
         public int? Experience { get; set; } // Kinh nghiệm (số năm)
         public decimal? Salary { get; set; } // Mức lương mong muốn (decimal 18,2)
         public string WorkLocation { get; set; } // Địa điểm làm việc
+        public bool? ProfileVisibility { get; set; } // Cho phép NTD tìm kiếm hồ sơ (chỉ áp dụng cho Candidate)
     }
 }

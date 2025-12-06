@@ -3,6 +3,7 @@
   (undo)="onUndo()"
   (redo)="onRedo()"
   (preview)="onPreview()"
+  (exportPdf)="onExportPdf()"
   (save)="onSave()">
 </app-header-cv-editor>
 
@@ -53,8 +54,17 @@
     <p>Đang tải template...</p>
   </div>
 
-  <!-- Template Form Container -->
-  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate"></div>
+  <!-- Block-based Editor (New) - Form Preview Style -->
+  <div class="cv-form-preview-container" *ngIf="!loading && useBlockEditor">
+    <app-cv-form-preview
+      [blocks]="blocks"
+      [templateSettings]="templateSettings"
+      (blocksChange)="onBlocksChange($event)">
+    </app-cv-form-preview>
+  </div>
+
+  <!-- Template Form Container (Legacy) -->
+  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate && !useBlockEditor"></div>
 
   <!-- Fallback: Original Form (sẽ được ẩn khi có template) -->
   <div class="cv-section-main" [style.display]="currentTemplate ? 'none' : 'block'">

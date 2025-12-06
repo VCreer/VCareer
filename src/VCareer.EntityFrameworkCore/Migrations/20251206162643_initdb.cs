@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabaseVcareer : Migration
+    public partial class initdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1491,12 +1491,15 @@ namespace VCareer.Migrations
                     TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CvName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     DataJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BlocksJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HtmlContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsPublished = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IsDefault = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IsPublic = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     PublishedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ViewCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    PreviewImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),

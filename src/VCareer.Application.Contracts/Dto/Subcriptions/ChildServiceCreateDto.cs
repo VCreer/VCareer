@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.IServices.Common;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Dto.Subcriptions
@@ -31,7 +32,7 @@ namespace VCareer.Dto.Subcriptions
     }
     public class ChildServiceViewDto
     {
-        public Guid CHildServiceId { get; set; }
+        public Guid Id{ get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public ServiceAction Action { get; set; }
@@ -43,5 +44,13 @@ namespace VCareer.Dto.Subcriptions
         public int? TimeUsedLimit { get; set; }
         public int? DayDuration { get; set; }
         public int? Value { get; set; }
+    }
+
+    public class ChildServiceGetDto
+    {
+        public ServiceAction? ServiceAction { get; set; }
+        public ServiceTarget? Target { get; set; }
+        public PagingDto PagingDto { get; set; } = new PagingDto { PageIndex = 0, PageSize = 10 };
+        public bool? IsActive { get; set; }
     }
 }

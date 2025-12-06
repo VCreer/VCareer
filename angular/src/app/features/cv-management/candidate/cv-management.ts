@@ -22,6 +22,7 @@ import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-s
 import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
 import { ProfileService } from '../../../proxy/services/profile/profile.service';
 import type { ProfileDto } from '../../../proxy/dto/profile/models';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-cv-management',
@@ -63,6 +64,16 @@ export class CvManagementComponent implements OnInit {
   // User info
   currentUser: any = null;
   userName: string = '';
+  profileData = {
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    location: ''
+  };
+  isLoadingProfile: boolean = false;
 
   constructor(
     private router: Router,
@@ -99,8 +110,8 @@ export class CvManagementComponent implements OnInit {
     
     // Load uploaded CVs từ API
     this.loadUploadedCvs();
-    // Load CV mặc định
-    this.loadDefaultCv();
+    // Load CV mặc định - không hiển thị error nếu không có
+    this.loadDefaultCvSilently();
     
     // Subscribe to uploaded CVs service (local state)
     this.localUploadedCvService.uploadedCvs$.subscribe(cvs => {
@@ -111,7 +122,7 @@ export class CvManagementComponent implements OnInit {
     });
     
     // Load user info để hiển thị tên
-    this.loadUserInfo();
+    this.loadProfileData();
   }
 
   loadCvs() {
@@ -165,7 +176,7 @@ export class CvManagementComponent implements OnInit {
           return {
             id: cv.id || '',
             title: cv.cvName || 'Untitled CV',
-            preview: cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
+            preview: cv.previewImageUrl || cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
             version: cv.template?.version || '1.0',
             updatedAt: this.formatDate(updateDate),
             isDefault: cv.isDefault || false,
@@ -385,6 +396,51 @@ export class CvManagementComponent implements OnInit {
     });
   }
 
+  // Load CV mặc định mà không hiển thị error modal
+  // Sử dụng HttpClient trực tiếp để bypass ABP error handler
+  loadDefaultCvSilently() {
+    const apiUrl = `${environment.apis.default.url}/api/cv/candidates/default`;
+    
+    this.http.get<any>(apiUrl, {
+      withCredentials: true
+    }).pipe(
+      catchError((error) => {
+        // Ẩn error hoàn toàn - không hiển thị dialog
+        this.defaultCv = null;
+        // Không log error để không làm phiền user
+        return of(null);
+      })
+    ).subscribe({
+      next: (response: any) => {
+        if (!response) {
+          this.defaultCv = null;
+          return;
+        }
+        
+        let defaultCv: CandidateCvDto | null = null;
+        
+        // Parse response tương tự như loadCvs
+        if (response && response.result) {
+          if (Array.isArray(response.result)) {
+            defaultCv = response.result.length > 0 ? response.result[0] : null;
+          } else {
+            defaultCv = response.result;
+          }
+        } else if (response && response.value) {
+          if (Array.isArray(response.value)) {
+            defaultCv = response.value.length > 0 ? response.value[0] : null;
+          } else {
+            defaultCv = response.value;
+          }
+        } else if (response && !response.result && !response.value) {
+          defaultCv = response;
+        }
+        
+        this.defaultCv = defaultCv;
+      }
+    });
+  }
+
   private showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning') {
     this.toastMessage = message;
     this.toastType = type;
@@ -553,11 +609,24 @@ export class CvManagementComponent implements OnInit {
 
   onAllowRecruiterSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
-    const message = this.allowRecruiterSearch 
-      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
-      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
-    this.showToastMessage(message, 'success');
+    const newValue = target.checked;
+    
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch 
+          ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+          : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+        this.showToastMessage(message, 'success');
+      },
+      error: (error) => {
+        console.error('Error updating profile visibility:', error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showToastMessage('Không thể cập nhật cài đặt. Vui lòng thử lại.', 'error');
+      }
+    });
   }
 
   private formatDate(dateString?: string): string {
@@ -574,58 +643,89 @@ export class CvManagementComponent implements OnInit {
     }
   }
 
-  loadUserInfo() {
-    // Load profile từ API để lấy name và surname
-    this.profileService.getCurrentUserProfile().subscribe({
-      next: (profile: ProfileDto) => {
-        // Kết hợp name và surname để tạo tên đầy đủ
-        if (profile.name || profile.surname) {
-          const nameParts: string[] = [];
-          if (profile.name) nameParts.push(profile.name);
-          if (profile.surname) nameParts.push(profile.surname);
-          this.userName = nameParts.join(' ').trim();
-        } else {
-          // Nếu không có name/surname, dùng email hoặc fallback
-          this.userName = profile.email?.split('@')[0] || 'Người dùng';
-        }
-      },
-      error: (err) => {
-        console.error('Error loading profile:', err);
-        // Fallback: lấy từ CurrentUserInfoDto
-        this.currentUser = this.authStateService.user;
-        if (this.currentUser) {
-          this.userName = this.currentUser.fullName || 
-                         this.currentUser.email?.split('@')[0] || 
-                         this.currentUser.userId || 
-                         'Người dùng';
-        } else {
-          // Nếu chưa có user, thử load từ API
-          this.authFacadeService.loadCurrentUser().subscribe({
-            next: (user) => {
-              this.currentUser = user;
-              this.userName = user?.fullName || 
-                             user?.email?.split('@')[0] || 
-                             user?.userId || 
-                             'Người dùng';
-            },
-            error: (loadErr) => {
-              console.error('Error loading user info:', loadErr);
-              this.userName = 'Người dùng';
-            }
-          });
-        }
-      }
-    });
+  loadProfileData(): void {
+    this.isLoadingProfile = true;
     
-    // Subscribe để cập nhật khi user thay đổi (fallback)
-    this.authStateService.user$.subscribe(user => {
-      this.currentUser = user;
-      // Chỉ update nếu chưa có userName từ profile
-      if (user && !this.userName) {
-        this.userName = user.fullName || 
-                       user.email?.split('@')[0] || 
-                       user.userId || 
-                       'Người dùng';
+    // Với cookies, kiểm tra user từ AuthStateService
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục load profile
+          this.loadProfileDataInternal();
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, không load profile
+          this.isLoadingProfile = false;
+        }
+      });
+      return;
+    }
+
+    // Đã có user, load profile
+    this.loadProfileDataInternal();
+  }
+
+  private loadProfileDataInternal(): void {
+    this.isLoadingProfile = true;
+    
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        if (!response) {
+          this.profileData = {
+            fullName: '',
+            email: '',
+            phone: '',
+            dateOfBirth: '',
+            gender: '',
+            address: '',
+            location: ''
+          };
+          this.userName = '';
+          this.isLoadingProfile = false;
+          return;
+        }
+
+        const fullName = `${response.name || ''} ${response.surname || ''}`.trim() || 'User';
+        this.profileData = {
+          fullName: fullName,
+          email: response.email || '',
+          phone: response.phoneNumber || '',
+          dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
+          gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
+          address: response.location || response.address || '',
+          location: response.location || ''
+        };
+        
+        // Cập nhật userName để tương thích với code cũ
+        this.userName = fullName;
+        
+        // Load ProfileVisibility từ profile
+        if (response.profileVisibility !== undefined && response.profileVisibility !== null) {
+          this.allowRecruiterSearch = response.profileVisibility;
+        }
+
+        this.isLoadingProfile = false;
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        this.profileData = {
+          fullName: '',
+          email: '',
+          phone: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
+          location: ''
+        };
+        this.userName = '';
+        this.isLoadingProfile = false;
       }
     });
   }

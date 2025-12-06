@@ -121,6 +121,31 @@ namespace VCareer.HttpApi.Controllers
             var result = await _candidateCvAppService.GetDefaultCvAsync();
             return Ok(result);
         }
+
+        /// <summary>
+        /// Cập nhật preview image của CV
+        /// </summary>
+        [HttpPut("{id}/preview-image")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> UpdatePreviewImageAsync(Guid id, [FromBody] UpdatePreviewImageDto dto)
+        {
+            if (dto == null || string.IsNullOrEmpty(dto.PreviewImageUrl))
+            {
+                return BadRequest("Preview image URL cannot be empty");
+            }
+            
+            await _candidateCvAppService.UpdatePreviewImageAsync(id, dto.PreviewImageUrl);
+            return NoContent();
+        }
     }
-}
+
+    /// <summary>
+    /// DTO để update preview image
+    /// </summary>
+    public class UpdatePreviewImageDto
+    {
+        public string PreviewImageUrl { get; set; } = string.Empty;
+    }
+    }
+
 

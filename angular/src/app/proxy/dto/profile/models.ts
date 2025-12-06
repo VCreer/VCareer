@@ -147,6 +147,7 @@ export interface ProfileDto extends EntityDto<string> {
   experience?: number;
   salary?: number;
   workLocation?: string;
+  profileVisibility?: boolean;
 }
 
 export interface RejectCompanyDto {

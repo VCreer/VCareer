@@ -495,6 +495,17 @@ public class VCareerDbContext :
              .OnDelete(DeleteBehavior.Cascade); // Xóa liên kết khi job bị xóa
         });
 
+        builder.Entity<Company>(c =>
+        {
+            c.ToTable("Companies");
+            c.ConfigureByConvention();
+
+            // Tắt cơ chế optimistic concurrency cho Company
+            // để tránh lỗi AbpDbConcurrencyException khi nhiều thao tác
+            // (upload file + chỉnh sửa thông tin) cùng cập nhật một bản ghi.
+            c.Property(x => x.ConcurrencyStamp).IsConcurrencyToken(false);
+        });
+
         builder.Entity<Industry>(c =>
         {
             c.ToTable("Industries");

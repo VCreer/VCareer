@@ -13,7 +13,7 @@ namespace VCareer.Profile
 {
     [ApiController]
     [Route("api/candidate-search")]
-    [Authorize(VCareerPermission.Profile.Default)]
+    /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class CandidateSearchController : AbpControllerBase
     {
         private readonly ICandidateSearchAppService _candidateSearchAppService;

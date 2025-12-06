@@ -1,0 +1,48 @@
+<div class="cv-block-languages" [formGroup]="form">
+  <div formArrayName="items">
+    <div 
+      *ngFor="let item of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+      class="language-item"
+      [formGroupName]="i">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên ngôn ngữ</label>
+          <input 
+            type="text" 
+            formControlName="languageName"
+            placeholder="Ví dụ: Tiếng Anh, Tiếng Nhật"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Mức độ thành thạo</label>
+          <select formControlName="proficiencyLevel" class="form-control">
+            <option value="">Chọn mức độ</option>
+            <option *ngFor="let level of proficiencyLevels" [value]="level">{{ level }}</option>
+          </select>
+        </div>
+        <div class="form-group action-group">
+          <button 
+            type="button" 
+            class="btn-remove-item"
+            (click)="removeItem(i)"
+            [disabled]="itemsFormArray.length === 1">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button 
+    type="button" 
+    class="btn-add-item"
+    (click)="addItem()">
+    <i class="fa fa-plus"></i> Thêm ngoại ngữ
+  </button>
+</div>
+
+
+
+
+

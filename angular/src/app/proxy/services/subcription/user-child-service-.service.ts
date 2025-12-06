@@ -1,8 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
-import type { User_ChildServiceCreateDto, User_ChildServiceUpdateDto, User_ChildServiceViewDto } from '../../dto/subcriptions/models';
-import type { PagingDto } from '../../iservices/common/models';
+import type { User_ChildServiceUpdateDto, User_ChildServiceViewDto } from '../../dto/subcriptions/models';
 
 @Injectable({
   providedIn: 'root',
@@ -11,20 +9,11 @@ export class User_ChildService_Service {
   apiName = 'Default';
   
 
-  activeService = (dto: User_ChildServiceCreateDto, config?: Partial<Rest.Config>) =>
+  activeService = (childServiceIds: string[], jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/user_Child-service_/active-service',
-      body: dto,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getAllChildServiceByUser = (userId: string, status: SubcriptionContance_ChildServiceStatus, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, User_ChildServiceViewDto[]>({
-      method: 'GET',
-      url: `/api/app/user_Child-service_/child-service-by-user/${userId}`,
-      params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
+      url: `/api/app/user_Child-service_/active-service/${jobId}`,
+      body: childServiceIds,
     },
     { apiName: this.apiName,...config });
   

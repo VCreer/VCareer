@@ -15,6 +15,7 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.IGeoServices;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
 using VCareer.Job.JobPosting.ISerices;
@@ -48,10 +49,11 @@ namespace VCareer.Services.Job
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly ITagService _tagService;
         private readonly IJobTagService _jobTagService;
+        private readonly IActivityLogAppService _activityLogAppService;
 
 
         public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
-            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService)
+            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService, IActivityLogAppService activityLogAppService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -66,6 +68,7 @@ namespace VCareer.Services.Job
             _childServiceRepository = childServiceRepository;
             _tagService = tagService;
             _jobTagService = jobTagService;
+            _activityLogAppService = activityLogAppService;
         }
 
         [Authorize(VCareerPermission.JobPost.Approve)]
@@ -82,9 +85,21 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             await _jobSearchService.IndexJobAsync(jobPost.Id);
-            //
-            //send email cho recruiter báo đăng bài thành công
-            //
+
+            // Ghi log: duyệt job (Leader / HR Staff)
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobPosted,
+                    "ApproveJobPost",
+                    $"Duyệt job '{jobPost.Title}' (ID: {jobPost.Id})",
+                    jobPost.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
+
+            // TODO: send email cho recruiter báo đăng bài thành công
         }
         [Authorize(VCareerPermission.JobPost.Reject)]
         public async Task RejectJobPostAsync(string id)
@@ -96,9 +111,20 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Rejected;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
-            //
-            //send email cho recruiter với nội dung từ Reject reason 
-            //
+            // Ghi log: từ chối job
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobDeleted,
+                    "RejectJobPost",
+                    $"Từ chối job '{jobPost.Title}' (ID: {jobPost.Id})",
+                    jobPost.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
+
+            // TODO: send email cho recruiter với nội dung từ Reject reason 
         }
         [Authorize(VCareerPermission.JobPost.LoadJobNeedApprove)]
         public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
@@ -274,6 +300,19 @@ namespace VCareer.Services.Job
 
             job.Status = JobStatus.Pending;
             await _jobPostRepository.UpdateAsync(job, true);
+
+            // Ghi log: HR Staff post job (Draft -> Pending)
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobUpdated,
+                    "PostJob",
+                    $"Gửi job '{job.Title}' (ID: {job.Id}) lên duyệt",
+                    job.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
 
         }
         [Authorize(VCareerPermission.JobPost.CLose)]
