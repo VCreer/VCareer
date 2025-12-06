@@ -1,0 +1,27 @@
+<div class="cv-block-custom-text">
+  <div class="form-group">
+    <label>Nội dung văn bản</label>
+    
+    <!-- Quill Editor (if available) -->
+    <div 
+      *ngIf="useQuill" 
+      #editorContainer 
+      class="quill-editor-container">
+    </div>
+    
+    <!-- Fallback Textarea (if Quill not available) -->
+    <textarea 
+      *ngIf="!useQuill"
+      [(ngModel)]="htmlContent"
+      (input)="onContentChange($event)"
+      placeholder="Nhập nội dung văn bản tùy chỉnh..."
+      class="form-control"
+      rows="6"></textarea>
+    
+    <small class="form-hint">
+      <span *ngIf="useQuill">Sử dụng rich text editor để định dạng văn bản</span>
+      <span *ngIf="!useQuill">Bạn có thể nhập HTML hoặc văn bản thuần túy. Để sử dụng rich text editor, cài đặt: npm install quill ngx-quill</span>
+    </small>
+  </div>
+</div>
+

@@ -1,0 +1,49 @@
+.cv-block-custom-text {
+  .form-group {
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .quill-editor-container {
+      min-height: 120px;
+      margin-bottom: 6px;
+
+      ::ng-deep .ql-container {
+        font-size: 13px;
+        min-height: 120px;
+      }
+
+      ::ng-deep .ql-editor {
+        min-height: 120px;
+      }
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      transition: all 0.2s;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: #0F83BA;
+        box-shadow: 0 0 0 2px rgba(15, 131, 186, 0.1);
+      }
+    }
+
+    .form-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #999;
+    }
+  }
+}
+

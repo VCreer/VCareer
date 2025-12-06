@@ -29,7 +29,10 @@ export class NavigationService {
     this.initializeAuthStateIfNeeded();
     
     // Subscribe vào user changes để cập nhật trạng thái
+    // Điều này đảm bảo khi user được set vào authStateService (ví dụ sau khi login),
+    // navigationService cũng được cập nhật ngay lập tức
     this.authStateService.user$.subscribe(user => {
+      console.log('[NavigationService] User changed in authStateService:', user);
       this.updateAuthStateFromUser(user);
     });
     
@@ -134,17 +137,37 @@ export class NavigationService {
     
     let userRole: UserRole = null;
     
-    // Convert roles to lowercase để so sánh
-    const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
-    
-    // Check cho recruiter: recruiter, hr_staff, lead_recruiter, LEAD_RECRUITER, etc.
-    if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
-      userRole = 'recruiter';
-      // setting recruiter role
-    } else if (rolesLowerCase.includes('candidate')) {
-      userRole = 'candidate';
-      // setting candidate role
+    // Nếu có roles, xác định role từ roles array
+    if (roles.length > 0) {
+      // Convert roles to lowercase để so sánh
+      const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
+      console.log('[NavigationService] Roles lowercase:', rolesLowerCase);
+      
+      // Check cho recruiter: recruiter, hr_staff, lead_recruiter, LEAD_RECRUITER, etc.
+      if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
+        userRole = 'recruiter';
+        console.log('[NavigationService] Setting role to recruiter');
+      } else if (rolesLowerCase.includes('candidate')) {
+        userRole = 'candidate';
+        console.log('[NavigationService] Setting role to candidate');
+      } else {
+        console.log('[NavigationService] No matching role found in roles array');
+      }
     } else {
+      // Nếu roles rỗng, xác định role dựa vào route hoặc context
+      // Nếu đang ở route candidate hoặc đã đăng nhập candidate, mặc định là candidate
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/candidate') || currentPath === '/' || currentPath === '/home') {
+        userRole = 'candidate';
+        console.log('[NavigationService] Roles empty, defaulting to candidate based on route');
+      } else if (currentPath.startsWith('/recruiter')) {
+        userRole = 'recruiter';
+        console.log('[NavigationService] Roles empty, defaulting to recruiter based on route');
+      } else {
+        // Nếu không xác định được từ route, mặc định là candidate
+        userRole = 'candidate';
+        console.log('[NavigationService] Roles empty, defaulting to candidate');
+      }
     }
 
 
@@ -185,21 +208,46 @@ export class NavigationService {
   // Chỉ cần load current user để cập nhật state
   loginAsCandidate() {
     this.authStateInitialized = false; // Reset flag để load lại
-    this.authFacadeService.loadCurrentUser().subscribe({
-      next: (user) => {
-        this.updateAuthStateFromUser(user);
-      },
-      error: (err) => {
-        // Nếu không load được, vẫn set state dựa vào route
-        const currentPath = window.location.pathname;
-        if (!currentPath.startsWith('/recruiter')) {
-          this.isLoggedInSubject.next(true);
-          this.userRoleSubject.next('candidate');
-          this.isVerifiedSubject.next(false);
-          this.authStateInitialized = true;
-        }
+    
+    // Kiểm tra xem user đã được load trong authStateService chưa
+    // (vì loginCandidate đã load user rồi)
+    const currentUser = this.authStateService.user;
+    if (currentUser) {
+      console.log('[NavigationService] loginAsCandidate - User already loaded, updating state immediately');
+      this.updateAuthStateFromUser(currentUser);
+      return;
+    }
+    
+    // Nếu chưa có user ngay lập tức, đợi một chút để user được set vào authStateService
+    // (vì loginCandidate có thể đang load user trong background)
+    setTimeout(() => {
+      const userAfterDelay = this.authStateService.user;
+      if (userAfterDelay) {
+        console.log('[NavigationService] loginAsCandidate - User loaded after delay, updating state');
+        this.updateAuthStateFromUser(userAfterDelay);
+        return;
       }
-    });
+      
+      // Nếu vẫn chưa có user, load từ API
+      console.log('[NavigationService] loginAsCandidate - Loading user from API');
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          console.log('[NavigationService] loginAsCandidate - User loaded from API:', user);
+          this.updateAuthStateFromUser(user);
+        },
+        error: (err) => {
+          console.error('[NavigationService] loginAsCandidate - Error loading user:', err);
+          // Nếu không load được, vẫn set state dựa vào route
+          const currentPath = window.location.pathname;
+          if (!currentPath.startsWith('/recruiter')) {
+            this.isLoggedInSubject.next(true);
+            this.userRoleSubject.next('candidate');
+            this.isVerifiedSubject.next(false);
+            this.authStateInitialized = true;
+          }
+        }
+      });
+    }, 100); // Đợi 100ms để user được set vào authStateService
   }
 
   // Đăng nhập recruiter

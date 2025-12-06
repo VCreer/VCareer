@@ -1,0 +1,116 @@
+<div class="cv-block-work-experience" [formGroup]="form">
+  <div formArrayName="items">
+    <div 
+      *ngFor="let item of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+      class="work-experience-item"
+      [formGroupName]="i">
+      
+      <div class="item-header">
+        <h4>Kinh nghiệm làm việc #{{ i + 1 }}</h4>
+        <button 
+          type="button" 
+          class="btn-remove-item"
+          (click)="removeItem(i)"
+          [disabled]="itemsFormArray.length === 1">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên công ty <span class="required">*</span></label>
+          <input 
+            type="text" 
+            formControlName="companyName"
+            placeholder="Nhập tên công ty"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Vị trí <span class="required">*</span></label>
+          <input 
+            type="text" 
+            formControlName="position"
+            placeholder="Nhập vị trí công việc"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày bắt đầu</label>
+          <input 
+            type="date" 
+            formControlName="startDate"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Ngày kết thúc</label>
+          <input 
+            type="date" 
+            formControlName="endDate"
+            class="form-control"
+            [disabled]="item.get('isCurrentJob')?.value">
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input 
+              type="checkbox" 
+              formControlName="isCurrentJob">
+            Đang làm việc tại đây
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Mô tả công việc</label>
+          <textarea 
+            formControlName="description"
+            placeholder="Mô tả công việc và trách nhiệm..."
+            class="form-control"
+            rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="form-row achievements-section">
+        <div class="form-group full-width">
+          <label>Thành tựu</label>
+          <div class="achievements-list">
+            <div 
+              *ngFor="let achievement of item.get('achievements')?.value || []; let j = index"
+              class="achievement-item">
+              <input 
+                type="text" 
+                [value]="achievement"
+                (input)="updateAchievement(i, j, $event)"
+                placeholder="Nhập thành tựu"
+                class="form-control">
+              <button 
+                type="button" 
+                class="btn-remove-achievement"
+                (click)="removeAchievement(i, j)">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <button 
+              type="button" 
+              class="btn-add-achievement"
+              (click)="addAchievement(i)">
+              <i class="fa fa-plus"></i> Thêm thành tựu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button 
+    type="button" 
+    class="btn-add-item"
+    (click)="addItem()">
+    <i class="fa fa-plus"></i> Thêm kinh nghiệm làm việc
+  </button>
+</div>
+
+
+

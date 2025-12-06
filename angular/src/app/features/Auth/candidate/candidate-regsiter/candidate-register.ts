@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
+import { NavigationService } from '../../../../core/services/navigation.service';
+import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -11,6 +13,7 @@ import {
   ToastNotificationComponent 
 } from '../../../../shared/components';
 import { AuthService as ProxyAuthService } from '../../../../proxy/services/auth/auth.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -31,7 +34,9 @@ export class RegisterComponent implements OnInit {
   private router = inject(Router);
   private customAuthService = inject(CustomAuthService);
   private googleAuthService = inject(GoogleAuthService);
-   private proxyAuth = inject(ProxyAuthService);
+  private proxyAuth = inject(ProxyAuthService);
+  private navigationService = inject(NavigationService);
+  private authFacade = inject(AuthFacadeService);
 
   registerForm: FormGroup;
   isLoading = false;
@@ -67,7 +72,7 @@ export class RegisterComponent implements OnInit {
       ]],
       password: ['', [
         Validators.required,
-        Validators.minLength(8),
+        Validators.minLength(6),
         Validators.maxLength(100),
         this.passwordStrengthValidator
       ]],
@@ -207,29 +212,106 @@ export class RegisterComponent implements OnInit {
 
 
   navigateToLogin() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/candidate/login']);
   }
 
   async signUpWithGoogle() {
     try {
       this.isLoading = true;
+      console.log('Starting Google sign up...');
       
-      // Sign up with Google
-      const user = await this.googleAuthService.signInWithGoogle();
+      // Sign in with Google to get idToken
+      const googleUser = await this.googleAuthService.signInWithGoogle();
+      console.log('Google user received:', { 
+        id: googleUser.id, 
+        email: googleUser.email, 
+        name: googleUser.name,
+        hasIdToken: !!googleUser.idToken 
+      });
       
-      console.log('Google user:', user);
+      if (!googleUser.idToken) {
+        console.error('No idToken received from Google');
+        throw new Error('Không thể lấy token từ Google. Vui lòng thử lại.');
+      }
+
+      console.log('Calling backend API with idToken...');
+      // Call backend API with Google idToken (backend will auto-register if user doesn't exist)
+      this.authFacade.loginWithGoogle({ idToken: googleUser.idToken })
+        .pipe(finalize(() => {
+          this.isLoading = false;
+          console.log('Google sign up request completed');
+        }))
+        .subscribe({
+          next: () => {
+            console.log('Google sign up successful');
+            this.showToastMessage('Đăng ký bằng Google thành công!', 'success');
+            this.navigationService.loginAsCandidate();
+            setTimeout(() => {
+              this.router.navigate(['/']);
+            }, 800);
+          },
+          error: (err) => {
+            console.error('Google sign up API error:', err);
+            console.error('Error details:', {
+              status: err?.status,
+              statusText: err?.statusText,
+              error: err?.error,
+              message: err?.message,
+              url: err?.url
+            });
+            
+            let msg = 'Đăng ký bằng Google thất bại. Vui lòng thử lại.';
+            
+            if (err?.error?.message) {
+              msg = err.error.message;
+            } else if (err?.error?.error_description) {
+              msg = err.error.error_description;
+            } else if (err?.error?.error) {
+              msg = err.error.error;
+            } else if (err?.message) {
+              msg = err.message;
+            } else if (err?.status === 0) {
+              msg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else if (err?.status === 401) {
+              msg = 'Xác thực Google thất bại. Vui lòng thử lại.';
+            } else if (err?.status === 500) {
+              msg = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            
+            this.showToastMessage(msg, 'error');
+          }
+        });
       
-      this.isLoading = false;
-      this.showToastMessage('Đăng ký bằng Google thành công!', 'success');
-      
-      setTimeout(() => {
-        this.router.navigate(['/']);
-      }, 2000);
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google sign up error:', error);
+      console.error('Error details:', {
+        name: error?.name,
+        message: error?.message,
+        stack: error?.stack
+      });
+      
       this.isLoading = false;
-      this.showToastMessage('Đăng ký bằng Google thất bại. Vui lòng thử lại.', 'error');
+      
+      let errorMsg = 'Đăng ký bằng Google thất bại. Vui lòng thử lại.';
+      
+      if (error?.message) {
+        errorMsg = error.message;
+      } else if (error?.error) {
+        errorMsg = error.error;
+      } else if (typeof error === 'string') {
+        errorMsg = error;
+      }
+      
+      // Xử lý các lỗi phổ biến của Google OAuth
+      if (errorMsg.includes('popup_closed_by_user') || errorMsg.includes('popup closed')) {
+        errorMsg = 'Bạn đã đóng cửa sổ đăng nhập Google. Vui lòng thử lại.';
+      } else if (errorMsg.includes('access_denied')) {
+        errorMsg = 'Bạn đã từ chối quyền truy cập Google. Vui lòng thử lại và cấp quyền.';
+      } else if (errorMsg.includes('idpiframe_initialization_failed')) {
+        errorMsg = 'Không thể khởi tạo Google OAuth. Vui lòng kiểm tra kết nối mạng và thử lại.';
+      }
+      
+      this.showToastMessage(errorMsg, 'error');
     }
   }
 }

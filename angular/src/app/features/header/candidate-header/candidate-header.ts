@@ -22,12 +22,11 @@ export class CandidateHeaderComponent implements OnInit {
   showProfileMenu = false;
   showNotificationMenu = false;
   currentUser: any = null;
+  selectedLanguage: string = '';
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
-    emailSettings: false,
-    personalSecurity: false,
-    upgradeAccount: false
+    personalSecurity: false
   };
 
   constructor(
@@ -45,18 +44,41 @@ export class CandidateHeaderComponent implements OnInit {
         this.currentRoute = event.url;
       });
 
-    // Subscribe to authentication state changes
-    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
-      this.isLoggedIn = isLoggedIn;
-    });
-
-    // Subscribe to current user changes
-    this.authStateService.user$.subscribe(user => {
-      this.currentUser = user;
+    // Subscribe to language changes
+    this.translationService.currentLanguage$.subscribe(lang => {
+      this.selectedLanguage = lang;
     });
 
     // Load current user on init
     this.currentUser = this.authStateService.user;
+    
+    // Initialize isLoggedIn with current value - check both service and valid user
+    const serviceLoggedIn = this.navigationService.isLoggedIn();
+    const hasValidUser = this.isValidUser(this.currentUser);
+    this.isLoggedIn = serviceLoggedIn && hasValidUser;
+    
+    console.log('[CandidateHeader] OnInit - serviceLoggedIn:', serviceLoggedIn, 'hasValidUser:', hasValidUser, 'isLoggedIn:', this.isLoggedIn);
+    
+    // Subscribe to authentication state changes
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      console.log('[CandidateHeader] isLoggedIn changed to:', isLoggedIn);
+      // Only update if we also have a valid user, otherwise force to false
+      const currentUser = this.authStateService.user;
+      const hasValidUser = this.isValidUser(currentUser);
+      this.isLoggedIn = isLoggedIn && hasValidUser;
+      console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
+    });
+
+    // Subscribe to current user changes
+    this.authStateService.user$.subscribe(user => {
+      console.log('[CandidateHeader] user changed:', user);
+      this.currentUser = user;
+      // Update isLoggedIn based on both user validity and service state
+      const serviceLoggedIn = this.navigationService.isLoggedIn();
+      const hasValidUser = this.isValidUser(user);
+      this.isLoggedIn = serviceLoggedIn && hasValidUser;
+      console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
+    });
   }
 
   navigateToHome() {
@@ -141,25 +163,17 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
-  onProfileMouseLeave() {
-    setTimeout(() => {
-      this.showProfileMenu = false;
-    }, 300);
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+    if (this.showProfileMenu) {
+      this.showNotificationMenu = false; // Đóng notification menu khi mở profile menu
+    }
   }
 
   toggleNotificationMenu() {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
-      this.showProfileMenu = false; // Đóng profile menu khi mở notification
-    }
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as Node;
-    // Đóng menu nếu click ngoài khu vực notification
-    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
-      this.showNotificationMenu = false;
+      this.showProfileMenu = false; // Đóng profile menu khi mở notification menu
     }
   }
 
@@ -167,6 +181,28 @@ export class CandidateHeaderComponent implements OnInit {
     // Logic đánh dấu tất cả thông báo đã đọc
     this.showNotificationMenu = false;
   }
+
+  onProfileMouseLeave() {
+    // Không dùng hover nữa, chỉ dùng click
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    
+    // Đóng notification menu nếu click ngoài khu vực notification
+    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
+      this.showNotificationMenu = false;
+    }
+    
+    // Đóng profile menu nếu click ngoài khu vực profile
+    const profileContainer = target.closest('.profile-container');
+    if (this.showProfileMenu && !profileContainer) {
+      this.showProfileMenu = false;
+    }
+  }
+
 
   navigateToPersonalInfo() {
     this.router.navigate(['/candidate/profile']);
@@ -206,5 +242,29 @@ export class CandidateHeaderComponent implements OnInit {
   navigateToService() {
     this.router.navigate(['/candidate/service']);
     this.showProfileMenu = false;
+  }
+
+  /**
+   * Kiểm tra xem user có hợp lệ không
+   * User hợp lệ phải có id (hoặc userId) - roles có thể rỗng nếu backend chưa trả về
+   */
+  private isValidUser(user: any): boolean {
+    if (!user) {
+      return false;
+    }
+    
+    // User phải có id hoặc userId (một số API trả về userId thay vì id)
+    const hasId = !!(user.id || user.userId);
+    if (!hasId) {
+      return false;
+    }
+    
+    // Nếu có id/userId thì coi là user hợp lệ, roles có thể rỗng (backend có thể chưa trả về)
+    // Chỉ cần kiểm tra roles là array (nếu có)
+    if (user.roles && !Array.isArray(user.roles)) {
+      return false;
+    }
+    
+    return true;
   }
 }

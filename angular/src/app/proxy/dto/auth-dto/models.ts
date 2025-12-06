@@ -29,6 +29,7 @@ export interface ForgotPasswordDto {
 
 export interface GoogleLoginDto {
   idToken: string;
+  role?: string;
 }
 
 export interface LoginDto {

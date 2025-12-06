@@ -1,0 +1,107 @@
+<div class="cv-block-education" [formGroup]="form">
+  <div formArrayName="items">
+    <div 
+      *ngFor="let item of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+      class="education-item"
+      [formGroupName]="i">
+      
+      <div class="item-header">
+        <h4>Học vấn #{{ i + 1 }}</h4>
+        <button 
+          type="button" 
+          class="btn-remove-item"
+          (click)="removeItem(i)"
+          [disabled]="itemsFormArray.length === 1">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên trường <span class="required">*</span></label>
+          <input 
+            type="text" 
+            formControlName="institutionName"
+            placeholder="Nhập tên trường"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Bằng cấp</label>
+          <input 
+            type="text" 
+            formControlName="degree"
+            placeholder="Ví dụ: Cử nhân, Thạc sĩ"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngành học</label>
+          <input 
+            type="text" 
+            formControlName="major"
+            placeholder="Nhập ngành học"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>GPA</label>
+          <input 
+            type="text" 
+            formControlName="gpa"
+            placeholder="Ví dụ: 3.5/4.0"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày bắt đầu</label>
+          <input 
+            type="date" 
+            formControlName="startDate"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Ngày kết thúc</label>
+          <input 
+            type="date" 
+            formControlName="endDate"
+            class="form-control"
+            [disabled]="item.get('isCurrent')?.value">
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input 
+              type="checkbox" 
+              formControlName="isCurrent">
+            Đang học
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Mô tả</label>
+          <textarea 
+            formControlName="description"
+            placeholder="Mô tả về quá trình học tập..."
+            class="form-control"
+            rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button 
+    type="button" 
+    class="btn-add-item"
+    (click)="addItem()">
+    <i class="fa fa-plus"></i> Thêm học vấn
+  </button>
+</div>
+
+
+
+
+

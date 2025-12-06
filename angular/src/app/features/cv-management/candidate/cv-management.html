@@ -116,20 +116,12 @@
               <div class="profile-right-column">
                 <div class="profile-info">
                   <span class="profile-label">Profile</span>
-                  <h3>{{ translate('profile_sidebar.welcome_back') }}, {{ userName || 'Người dùng' }}</h3>
+                  <h3>Chào bạn trở lại, {{ profileData.fullName || 'User' }}</h3>
                 </div>
                 
                 <div class="account-status">
-                  <span class="verified-badge">{{ translate('profile_sidebar.verified_account') }}</span>
+                  <span class="verified-badge">Tài khoản đã xác thực</span>
                 </div>
-                
-                <app-button 
-                  [type]="'primary'"
-                  [size]="'small'"
-                  class="upgrade-btn">
-                  <i class="fa fa-arrow-up"></i>
-                  {{ translate('profile_sidebar.upgrade_account') }}
-                </app-button>
               </div>
             </div>
 
@@ -176,12 +168,9 @@
                     </span>
                     <div class="toggle-description-container">
                       <p class="toggle-description">
-                        {{ translate('profile_sidebar.contact_description') }}
+                        Khi có cơ hội việc làm phù hợp, NTD sẽ liên hệ và trao đổi với bạn qua
                       </p>
-                      <div class="contact-method">
-                        <i class="fa fa-envelope contact-icon"></i>
-                        <span>{{ translate('profile_sidebar.email_phone') }}</span>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>

@@ -2,12 +2,17 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
 import type { ApplicationDto, GetApplicationListDto } from '../../../../proxy/dto/applications/models';
+import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
+import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
+import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 
 interface AppliedJob {
   id: string;
@@ -55,9 +60,19 @@ export class AppliedJobsComponent implements OnInit {
   }
   
   // Profile management
+  profileData = {
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    location: ''
+  };
   jobSearchEnabled: boolean = false;
   allowRecruiterSearch: boolean = true;
   showProfilePictureModal: boolean = false;
+  isLoadingProfile: boolean = false;
 
   // Toast
   showToast: boolean = false;
@@ -67,11 +82,15 @@ export class AppliedJobsComponent implements OnInit {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private http: HttpClient,
+    private authStateService: AuthStateService,
+    private authFacadeService: AuthFacadeService
   ) {}
 
   ngOnInit(): void {
     this.loadAppliedJobs();
+    this.loadProfileData();
   }
 
   translate(key: string): string {
@@ -291,6 +310,82 @@ export class AppliedJobsComponent implements OnInit {
   onProfilePictureDelete(): void {
     this.closeProfilePictureModal();
     this.showToastMessage('Đã xóa ảnh đại diện thành công', 'success');
+  }
+
+  loadProfileData(): void {
+    this.isLoadingProfile = true;
+    
+    // Với cookies, kiểm tra user từ AuthStateService
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục load profile
+          this.loadProfileDataInternal();
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, không load profile
+          this.isLoadingProfile = false;
+        }
+      });
+      return;
+    }
+
+    // Đã có user, load profile
+    this.loadProfileDataInternal();
+  }
+
+  private loadProfileDataInternal(): void {
+    this.isLoadingProfile = true;
+    
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        if (!response) {
+          this.profileData = {
+            fullName: '',
+            email: '',
+            phone: '',
+            dateOfBirth: '',
+            gender: '',
+            address: '',
+            location: ''
+          };
+          this.isLoadingProfile = false;
+          return;
+        }
+
+        this.profileData = {
+          fullName: `${response.name || ''} ${response.surname || ''}`.trim() || 'User',
+          email: response.email || '',
+          phone: response.phoneNumber || '',
+          dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
+          gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
+          address: response.location || response.address || '',
+          location: response.location || ''
+        };
+
+        this.isLoadingProfile = false;
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        this.profileData = {
+          fullName: '',
+          email: '',
+          phone: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
+          location: ''
+        };
+        this.isLoadingProfile = false;
+      }
+    });
   }
 }
 

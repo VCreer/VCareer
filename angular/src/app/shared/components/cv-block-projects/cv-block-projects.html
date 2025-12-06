@@ -1,0 +1,90 @@
+<div class="cv-block-projects" [formGroup]="form">
+  <div formArrayName="items">
+    <div 
+      *ngFor="let item of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+      class="project-item"
+      [formGroupName]="i">
+      
+      <div class="item-header">
+        <h4>Dự án #{{ i + 1 }}</h4>
+        <button 
+          type="button" 
+          class="btn-remove-item"
+          (click)="removeItem(i)"
+          [disabled]="itemsFormArray.length === 1">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên dự án</label>
+          <input 
+            type="text" 
+            formControlName="projectName"
+            placeholder="Nhập tên dự án"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>URL dự án</label>
+          <input 
+            type="url" 
+            formControlName="projectUrl"
+            placeholder="https://..."
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày bắt đầu</label>
+          <input 
+            type="date" 
+            formControlName="startDate"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Ngày kết thúc</label>
+          <input 
+            type="date" 
+            formControlName="endDate"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Công nghệ sử dụng</label>
+          <input 
+            type="text" 
+            formControlName="technologies"
+            placeholder="Ví dụ: Angular, TypeScript, Node.js"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Mô tả dự án</label>
+          <textarea 
+            formControlName="description"
+            placeholder="Mô tả về dự án..."
+            class="form-control"
+            rows="4"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button 
+    type="button" 
+    class="btn-add-item"
+    (click)="addItem()">
+    <i class="fa fa-plus"></i> Thêm dự án
+  </button>
+</div>
+
+
+
+
+

@@ -5,12 +5,15 @@ export interface CandidateCvDto extends EntityDto<string> {
   templateId?: string;
   cvName?: string;
   dataJson?: string;
+  blocksJson?: string;
+  htmlContent?: string;
   isPublished: boolean;
   isDefault: boolean;
   isPublic: boolean;
   publishedAt?: string;
   viewCount: number;
   notes?: string;
+  previewImageUrl?: string;
   template: CvTemplateDto;
 }
 
@@ -18,6 +21,7 @@ export interface CreateCandidateCvDto {
   templateId: string;
   cvName: string;
   dataJson: string;
+  blocksJson?: string;
   isPublished: boolean;
   isDefault: boolean;
   isPublic: boolean;
@@ -78,6 +82,7 @@ export interface UpdateCandidateCvDto {
   templateId?: string;
   cvName?: string;
   dataJson?: string;
+  blocksJson?: string;
   isPublished?: boolean;
   isDefault?: boolean;
   isPublic?: boolean;
