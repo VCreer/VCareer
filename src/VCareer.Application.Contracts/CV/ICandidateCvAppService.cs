@@ -59,6 +59,11 @@ namespace VCareer.CV
         /// Lấy CV mặc định của candidate hiện tại
         /// </summary>
         Task<CandidateCvDto> GetDefaultCvAsync();
+
+        /// <summary>
+        /// Cập nhật preview image của CV
+        /// </summary>
+        Task UpdatePreviewImageAsync(Guid cvId, string previewImageUrl);
     }
 }
 

@@ -22,7 +22,7 @@ using Volo.Abp.Emailing;
 
 namespace VCareer.Services.Profile
 {
-    [Authorize(VCareerPermission.Profile.Default)]
+    /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class CandidateSearchAppService : VCareerAppService, ICandidateSearchAppService
     {
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;

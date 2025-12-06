@@ -38,6 +38,21 @@ namespace VCareer.Models.CV
         public string DataJson { get; set; }
 
         /// <summary>
+        /// Blocks structure dưới dạng JSON (cho block-based editor)
+        /// Lưu nguyên cấu trúc blocks với thứ tự, title, meta (collapsed, pinned, etc.)
+        /// Nếu có BlocksJson, sẽ ưu tiên dùng để rebuild blocks khi load.
+        /// Nếu không có, sẽ fallback về DataJson để rebuild blocks.
+        /// </summary>
+        public string? BlocksJson { get; set; }
+
+        /// <summary>
+        /// Bản HTML đã render của CV tại thời điểm gần nhất.
+        /// Đây là snapshot phục vụ cho việc xem/gửi mail nhanh,
+        /// trong khi DataJson vẫn là nguồn dữ liệu chính (schema).
+        /// </summary>
+        public string? HtmlContent { get; set; }
+
+        /// <summary>
         /// CV có được publish không (true = published, false = draft)
         /// </summary>
         public bool IsPublished { get; set; }
@@ -67,6 +82,11 @@ namespace VCareer.Models.CV
         /// </summary>
         [StringLength(1000)]
         public string? Notes { get; set; }
+
+        /// <summary>
+        /// Preview image URL của CV (base64 hoặc URL) để hiển thị trong danh sách CV
+        /// </summary>
+        public string? PreviewImageUrl { get; set; }
 
         // === NAVIGATION PROPERTIES ===
 

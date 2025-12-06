@@ -44,7 +44,7 @@ export class CandidateCvService {
   
 
   getList = (input: GetCandidateCvListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult>({
+    this.restService.request<any, ActionResult<any>>({
       method: 'GET',
       url: '/api/cv/candidates',
       params: { templateId: input.templateId, isPublished: input.isPublished, isDefault: input.isDefault, isPublic: input.isPublic, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
@@ -90,6 +90,15 @@ export class CandidateCvService {
       method: 'PUT',
       url: `/api/cv/candidates/${id}`,
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updatePreviewImage = (id: string, previewImageUrl: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'PUT',
+      url: `/api/cv/candidates/${id}/preview-image`,
+      body: { previewImageUrl: previewImageUrl },
     },
     { apiName: this.apiName,...config });
 

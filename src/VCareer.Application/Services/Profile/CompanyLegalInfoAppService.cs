@@ -28,7 +28,7 @@ using Volo.Abp.Validation;
 
 namespace VCareer.Services.Profile
 {
-    //  [Authorize(VCareerPermission.Profile.Default)]
+    /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class CompanyLegalInfoAppService : VCareerAppService, ICompanyLegalInfoAppService
     {
         private readonly ICompanyRepository _companyRepository;
@@ -55,7 +55,7 @@ namespace VCareer.Services.Profile
         }
 
 
-        [Authorize(VCareerPermission.Profile.SubmitLegalInformation)]
+        /*[Authorize(VCareerPermission.Profile.SubmitLegalInformation)]*/
         public async Task<CompanyLegalInfoDto> SubmitCompanyLegalInfoAsync(SubmitCompanyLegalInfoDto input)
         {
             // Check if tax code already exists
@@ -217,7 +217,7 @@ namespace VCareer.Services.Profile
 
 
 
-        //[Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
+        /*[Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]*/
         public async Task DeleteCompanyLegalInfoAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);

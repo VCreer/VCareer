@@ -1686,7 +1686,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationStatisticsDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationStatisticsDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetMyApplicationsAsyncByInput": {
@@ -1855,7 +1855,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetCompanyApplicationsAsyncByInput": {
@@ -4344,6 +4344,63 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
+            },
+            "UpdatePreviewImageAsyncByIdAndPreviewImageUrl": {
+              "uniqueName": "UpdatePreviewImageAsyncByIdAndPreviewImageUrl",
+              "name": "UpdatePreviewImageAsync",
+              "httpMethod": "PUT",
+              "url": "api/cv/candidates/{id}/preview-image",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "previewImageUrl",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "previewImageUrl",
+                  "name": "previewImageUrl",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
             }
           }
         },
@@ -5805,7 +5862,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.IActionResult",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "GetCompanyByJobIdAsyncByJobId": {
@@ -6284,6 +6341,43 @@
                   "jsonName": null,
                   "type": "VCareer.Dto.Profile.SelectCompanyDto",
                   "typeSimple": "VCareer.Dto.Profile.SelectCompanyDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
+            "UpdateProfileVisibilityAsyncByIsVisible": {
+              "uniqueName": "UpdateProfileVisibilityAsyncByIsVisible",
+              "name": "UpdateProfileVisibilityAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/profile-visibility",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isVisible",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isVisible",
+                  "name": "isVisible",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -7833,6 +7927,31 @@
                     "type": "VCareer.CV.CandidateCvDto",
                     "typeSimple": "VCareer.CV.CandidateCvDto"
                   }
+                },
+                {
+                  "name": "UpdatePreviewImageAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "cvId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "previewImageUrl",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -8306,6 +8425,63 @@
               "returnValue": {
                 "type": "VCareer.CV.CandidateCvDto",
                 "typeSimple": "VCareer.CV.CandidateCvDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICandidateCvAppService"
+            },
+            "UpdatePreviewImageAsyncByCvIdAndPreviewImageUrl": {
+              "uniqueName": "UpdatePreviewImageAsyncByCvIdAndPreviewImageUrl",
+              "name": "UpdatePreviewImageAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/candidate-cv/preview-image/{cvId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "cvId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "previewImageUrl",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "cvId",
+                  "name": "cvId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "previewImageUrl",
+                  "name": "previewImageUrl",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.CV.ICandidateCvAppService"
@@ -13928,7 +14104,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
@@ -14893,6 +15069,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "UpdateProfileVisibilityAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "isVisible",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -15110,7 +15303,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "SelectCompanyAsyncByInput": {
@@ -15148,6 +15341,43 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "UpdateProfileVisibilityAsyncByIsVisible": {
+              "uniqueName": "UpdateProfileVisibilityAsyncByIsVisible",
+              "name": "UpdateProfileVisibilityAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/profile/profile-visibility",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isVisible",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isVisible",
+                  "name": "isVisible",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             }
           }
@@ -23294,6 +23524,30 @@
           "regex": null
         },
         {
+          "name": "BlocksJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HtmlContent",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "IsPublished",
           "jsonName": null,
           "type": "System.Boolean",
@@ -23366,6 +23620,18 @@
           "regex": null
         },
         {
+          "name": "PreviewImageUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "Template",
           "jsonName": null,
           "type": "VCareer.CV.CvTemplateDto",
@@ -23416,6 +23682,18 @@
           "type": "System.String",
           "typeSimple": "string",
           "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlocksJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
           "minLength": null,
           "maxLength": null,
           "minimum": null,
@@ -23970,6 +24248,18 @@
         },
         {
           "name": "DataJson",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BlocksJson",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -31725,6 +32015,18 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProfileVisibility",
+          "jsonName": null,
+          "type": "System.Boolean?",
+          "typeSimple": "boolean?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

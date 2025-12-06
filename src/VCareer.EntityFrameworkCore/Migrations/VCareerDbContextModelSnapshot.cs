@@ -300,6 +300,9 @@ namespace VCareer.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BlocksJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("CandidateId")
                         .HasColumnType("uniqueidentifier");
 
@@ -340,6 +343,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
+                    b.Property<string>("HtmlContent")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDefault")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -372,6 +378,9 @@ namespace VCareer.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PreviewImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("datetime2");
@@ -673,7 +682,6 @@ namespace VCareer.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)")
@@ -786,7 +794,7 @@ namespace VCareer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("VCareer.Models.Companies.CompanyIndustry", b =>
