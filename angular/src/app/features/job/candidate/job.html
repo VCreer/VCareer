@@ -86,6 +86,7 @@
           [totalCount]="totalCount"
           [isLoading]="isSearching"
           [selectedJobId]="selectedJob?.id"
+          [provinces]="provinces"
           (quickView)="onQuickView($event)"
           (jobClick)="onJobClick($event)"
           (jobHidden)="onJobHidden()"
@@ -97,6 +98,7 @@
     <div class="job-detail-column" *ngIf="selectedJob">
       <app-job-list-detail
         [selectedJob]="selectedJob"
+        [provinces]="provinces"
         (closeDetail)="onCloseDetail()"
         (viewDetail)="onViewDetail($event)"
         (applyJob)="onApply($event)"

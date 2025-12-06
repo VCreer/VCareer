@@ -23,7 +23,7 @@
 
           <!-- Company Info -->
           <div class="company-info">
-            <h4 class="company-name">Tập đoàn {{ job.companyName || 'N/A' }}</h4>
+            <h4 class="company-name">{{ job.companyName || job.company || 'N/A' }}</h4>
           </div>
 
           <!-- Job Tags (Location, Experience) -->
@@ -51,8 +51,6 @@
 
             <!-- Action Icons -->
             <div class="action-icons">
-              <i class="fa fa-eye-slash hide-icon" (click)="hideJob(job); $event.stopPropagation()">
-              </i>
               <button 
                 class="save-btn"
                 [class.saved]="job.isSaved"

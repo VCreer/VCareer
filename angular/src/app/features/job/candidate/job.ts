@@ -112,7 +112,6 @@ export class JobComponent implements OnInit {
         this.isLoadingData = false;
       },
       error: err => {
-        console.error('Load initial data failed:', err);
         this.isLoadingData = false;
       },
     });
@@ -140,23 +139,17 @@ export class JobComponent implements OnInit {
       maxResultCount: this.pageSize,
     };
 
-    console.log('Searching with:', input);
-
     this.jobSearchService.searchJobs(input).subscribe({
       next: (response: any) => {
         // Backend trả mảng luôn → response chính là items
         this.jobs = Array.isArray(response) ? response : response.items ?? [];
         this.totalCount = this.jobs.length; // hoặc response.totalCount nếu có
         this.isSearching = false;
-
-        console.log('Jobs loaded:', this.jobs.length);
-        console.log('First job:', this.jobs[0]);
       },
       error: err => {
-        console.error('Search error:', err);
         this.jobs = [];
         this.totalCount = 0;
-        this.isSearching = false; // ← CŨNG PHẢI CÓ KHI LỖI
+        this.isSearching = false;
       },
     });
   }
@@ -232,7 +225,20 @@ export class JobComponent implements OnInit {
 
   // Quick view / Detail
   onQuickView(job: JobViewDto) {
-    this.selectedJob = job;
+    // Load chi tiết job từ BE
+    if (job.id) {
+      this.jobSearchService.getJobById(job.id).subscribe({
+        next: (jobDetail: any) => {
+          this.selectedJob = jobDetail;
+        },
+        error: (err) => {
+          // Fallback: dùng job cơ bản nếu không load được detail
+          this.selectedJob = job;
+        }
+      });
+    } else {
+      this.selectedJob = job;
+    }
   }
 
   onCloseDetail() {

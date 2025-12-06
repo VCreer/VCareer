@@ -11,7 +11,7 @@
   <div class="fixed-header">
     <!-- Header with Close Button and Job Title -->
     <div class="title-header">
-      <h2 class="job-title">{{ translate(selectedJob.titleKey) }}</h2>
+      <h2 class="job-title">{{ selectedJob.title || 'Chưa có tiêu đề' }}</h2>
       <button class="close-btn" (click)="onClose()">
         <i class="fa fa-times"></i>
       </button>
@@ -20,9 +20,9 @@
     <!-- Job Tags and View Detail Link Row -->
     <div class="tags-row">
       <div class="job-tags">
-        <span class="tag">{{ translate(selectedJob.salaryKey) }}</span>
-        <span class="tag">{{ translate(selectedJob.locationKey) }}</span>
-        <span class="tag">{{ translate(selectedJob.experienceKey) }}</span>
+        <span class="tag">{{ formatSalary(selectedJob) }}</span>
+        <span class="tag">{{ getLocationText(selectedJob) }}</span>
+        <span class="tag">{{ formatExperience(selectedJob.experience) }}</span>
       </div>
       <a class="view-detail-link" (click)="onViewDetail()">
         {{ translate('job_detail.view_detail') }}
@@ -46,43 +46,33 @@
   <!-- Scrollable Content Starts Here -->
   <div class="scrollable-content">
     <!-- Job Description -->
-  <section class="detail-section">
-    <h3 class="section-title">{{ translate('job_detail.job_description') }}</h3>
-    <ul class="detail-list">
-      <li *ngFor="let item of selectedJob?.description">{{ item }}</li>
-    </ul>
-  </section>
+    <section class="detail-section" *ngIf="selectedJob?.description">
+      <h3 class="section-title">{{ translate('job_detail.job_description') }}</h3>
+      <div class="detail-text" [innerHTML]="formatText(selectedJob.description)"></div>
+    </section>
 
-  <!-- Candidate Requirements -->
-  <section class="detail-section">
-    <h3 class="section-title">{{ translate('job_detail.candidate_requirements') }}</h3>
-    <ul class="detail-list">
-      <li *ngFor="let item of selectedJob?.requirements">{{ item }}</li>
-    </ul>
-  </section>
+    <!-- Candidate Requirements -->
+    <section class="detail-section" *ngIf="selectedJob?.requirements">
+      <h3 class="section-title">{{ translate('job_detail.candidate_requirements') }}</h3>
+      <div class="detail-text" [innerHTML]="formatText(selectedJob.requirements)"></div>
+    </section>
 
-  <!-- Benefits -->
-  <section class="detail-section">
-    <h3 class="section-title">{{ translate('job_detail.benefits') }}</h3>
-    <ul class="detail-list">
-      <li *ngFor="let item of selectedJob?.benefits">{{ item }}</li>
-    </ul>
-  </section>
+    <!-- Benefits -->
+    <section class="detail-section" *ngIf="selectedJob?.benefits">
+      <h3 class="section-title">{{ translate('job_detail.benefits') }}</h3>
+      <div class="detail-text" [innerHTML]="formatText(selectedJob.benefits)"></div>
+    </section>
 
-  <!-- Work Location -->
-  <section class="detail-section">
-    <h3 class="section-title">{{ translate('job_detail.work_location') }}</h3>
-    <ul class="detail-list">
-      <li *ngFor="let item of selectedJob?.workLocation">{{ item }}</li>
-    </ul>
-  </section>
+    <!-- Work Location -->
+    <section class="detail-section" *ngIf="selectedJob?.workLocation">
+      <h3 class="section-title">{{ translate('job_detail.work_location') }}</h3>
+      <p class="detail-text">{{ selectedJob.workLocation }}</p>
+    </section>
 
-  <!-- Working Hours -->
-  <section class="detail-section" *ngIf="selectedJob?.workingHours && selectedJob.workingHours.length > 0">
-    <h3 class="section-title">{{ translate('job_detail.working_hours') }}</h3>
-    <ul class="detail-list">
-      <li *ngFor="let item of selectedJob?.workingHours">{{ item }}</li>
-    </ul>
-  </section>
+    <!-- Working Hours -->
+    <section class="detail-section" *ngIf="selectedJob?.workTime">
+      <h3 class="section-title">{{ translate('job_detail.working_hours') }}</h3>
+      <p class="detail-text">{{ selectedJob.workTime }}</p>
+    </section>
   </div> <!-- End scrollable-content -->
 </div> <!-- End job-list-detail -->

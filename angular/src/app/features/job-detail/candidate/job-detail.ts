@@ -4,8 +4,9 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
-import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
+import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { JobListingsComponent } from '../../../shared/components/job-listings/job-listings';
 
 import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api/company.service';
 import { environment } from '../../../../environments/environment';
@@ -19,6 +20,8 @@ import { PositionType } from 'src/app/proxy/constants/job-constant/position-type
 import { GeoService } from 'src/app/proxy/services/geo';
 import { JobCategoryService } from 'src/app/proxy/services/job';
 import { CategoryTreeDto } from 'src/app/proxy/dto/category';
+import { ProvinceDto } from 'src/app/proxy/dto/geo-dto/models';
+import { GeoService as CoreGeoService } from 'src/app/core/services/Geo.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -29,8 +32,9 @@ import { forkJoin } from 'rxjs';
     RouterLink,
     FormsModule,
     ToastNotificationComponent,
-    SearchHeaderComponent,
+    FilterBarComponent,
     ApplyJobModalComponent,
+    JobListingsComponent,
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],
@@ -44,6 +48,9 @@ export class JobDetailComponent implements OnInit {
   selectedCategory: string = '';
   selectedLocation: string = '';
   searchPosition: string = '';
+  selectedCategoryIds: string[] = [];
+  selectedProvinceCodes: number[] = [];
+  selectedWardCodes: number[] = [];
   showApplyModal: boolean = false;
   showLoginModal: boolean = false;
   isAuthenticated: boolean = false;
@@ -71,6 +78,9 @@ export class JobDetailComponent implements OnInit {
   categoryTree: CategoryTreeDto[] = [];
   jobCategories: any[] = [];
 
+  // Provinces for search header
+  provinces: ProvinceDto[] = [];
+
   constructor(
     private translationService: TranslationService,
     private route: ActivatedRoute,
@@ -81,7 +91,8 @@ export class JobDetailComponent implements OnInit {
     private jobCategoryService: JobCategoryService,
     private navigationService: NavigationService,
     private applicationService: ApplicationService,
-    private geoService: GeoService
+    private geoService: GeoService,
+    private coreGeoService: CoreGeoService
   ) {}
 
   ngOnInit() {
@@ -89,13 +100,13 @@ export class JobDetailComponent implements OnInit {
       this.selectedLanguage = lang;
     });
 
-    // Load category tree once
+    // Load category tree and provinces once
     this.loadCategoryTree();
+    this.loadProvinces();
 
     // Check authentication status
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
-      console.log('[JobDetail] isLoggedIn =', isLoggedIn);
       if (isLoggedIn && this.jobId) {
       //  this.checkApplicationStatus();
       //  this.loadSavedStatus();
@@ -108,7 +119,6 @@ export class JobDetailComponent implements OnInit {
     // Get job ID from route params
     this.route.params.subscribe(params => {
       this.jobId = params['id'];
-      console.log('[JobDetail] route jobId =', this.jobId);
       if (this.jobId) {
         this.loadJobDetail();
       } else {
@@ -117,7 +127,6 @@ export class JobDetailComponent implements OnInit {
         const match = urlPath.match(/\/candidate\/job-detail\/([^\/]+)/);
         if (match && match[1]) {
           this.jobId = match[1];
-          console.log('[JobDetail] Fallback: jobId from URL =', this.jobId);
           this.loadJobDetail();
         }
       }
@@ -131,10 +140,23 @@ export class JobDetailComponent implements OnInit {
     this.jobCategoryService.getCategoryTree().subscribe({
       next: (tree: CategoryTreeDto[]) => {
         this.categoryTree = tree;
-        console.log('[JobDetail] Category tree loaded:', tree);
       },
       error: error => {
-        console.error('❌ Error loading category tree:', error);
+        // Error loading category tree
+      },
+    });
+  }
+
+  /**
+   * Load provinces from API for search header
+   */
+  loadProvinces() {
+    this.coreGeoService.getProvinces().subscribe({
+      next: (provinces: ProvinceDto[]) => {
+        this.provinces = provinces;
+      },
+      error: error => {
+        // Error loading provinces
       },
     });
   }
@@ -147,7 +169,6 @@ export class JobDetailComponent implements OnInit {
 
     this.jobSearchService.getJobById(this.jobId).subscribe({
       next: (jobDetail: JobViewDetail) => {
-        console.log('[JobDetail] getJobById result =', jobDetail);
         this.jobDetail = jobDetail;
         this.isLoading = false;
 
@@ -174,7 +195,6 @@ export class JobDetailComponent implements OnInit {
         }
       },
       error: error => {
-        console.error('❌ Error loading job detail:', error);
         this.isLoading = false;
         this.toastMessage = 'Không thể tải chi tiết công việc';
         this.toastType = 'error';
@@ -211,11 +231,10 @@ export class JobDetailComponent implements OnInit {
         next: (results: any) => {
           this.provinceName = results.province || '';
           this.wardName = results.ward || '';
-          console.log('[JobDetail] Location names loaded:', { provinceName: this.provinceName, wardName: this.wardName });
           this.cdr.detectChanges();
         },
         error: error => {
-          console.error('❌ Error loading location names:', error);
+          // Error loading location names
         },
       });
     }
@@ -234,7 +253,6 @@ export class JobDetailComponent implements OnInit {
     if (category) {
       // Build category path (from root to current)
       this.jobCategories = this.buildCategoryPath(this.categoryTree, this.jobDetail.jobCategoryId);
-      console.log('[JobDetail] Job categories loaded:', this.jobCategories);
       this.cdr.detectChanges();
     }
   }
@@ -331,7 +349,6 @@ export class JobDetailComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: error => {
-        console.error('❌ Error loading company info:', error);
         this.isLoadingCompany = false;
         this.companyError = true;
         this.companyInfo = null;
@@ -349,15 +366,13 @@ export class JobDetailComponent implements OnInit {
 
     this.isLoadingRelatedJobs = true;
 
-    this.jobSearchService.getRelatedJobs(this.jobId, 6).subscribe({
+    this.jobSearchService.getRelatedJobs(this.jobId, 7).subscribe({
       next: (jobs: JobViewDto[]) => {
-        console.log('[JobDetail] getRelatedJobs result =', jobs);
         this.relatedJobs = jobs;
         this.isLoadingRelatedJobs = false;
         this.cdr.detectChanges();
       },
       error: error => {
-        console.error('❌ Error loading related jobs:', error);
         this.isLoadingRelatedJobs = false;
         this.relatedJobs = [];
       },
@@ -554,11 +569,10 @@ export class JobDetailComponent implements OnInit {
     this.jobSearchService.getSavedJobStatus(this.jobId).subscribe({
       next: status => {
         this.isHeartActive = status.isSaved;
-        console.log('[JobDetail] loadSavedStatus ->', status);
         this.cdr.detectChanges();
       },
       error: error => {
-        console.error('[JobDetail] Error loading saved status:', error);
+        // Error loading saved status
       },
     });
   }
@@ -581,7 +595,6 @@ export class JobDetailComponent implements OnInit {
           this.showToastMessage('Đã bỏ lưu công việc', 'success');
         },
         error: error => {
-          console.error('Error unsaving job:', error);
           this.showToastMessage('Không thể bỏ lưu công việc', 'error');
         },
       });
@@ -592,7 +605,6 @@ export class JobDetailComponent implements OnInit {
           this.showToastMessage('Đã lưu công việc thành công', 'success');
         },
         error: error => {
-          console.error('Error saving job:', error);
           this.showToastMessage('Không thể lưu công việc', 'error');
         },
       });
@@ -602,19 +614,16 @@ export class JobDetailComponent implements OnInit {
   onLoginSuccess() {
     this.showLoginModal = false;
     this.isAuthenticated = true;
-    setTimeout(() => {
-      if (this.jobId) {
+      setTimeout(() => {
+        if (this.jobId) {
       //  this.checkApplicationStatus();
      //   this.loadSavedStatus();
-      }
-      const currentUrl = window.location.href;
-      console.log('[JobDetail] Reloading page with URL:', currentUrl);
-      if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
-        window.location.reload();
-      } else {
-        console.error('[JobDetail] Cannot reload: jobId not found in URL');
-      }
-    }, 100);
+        }
+        const currentUrl = window.location.href;
+        if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
+          window.location.reload();
+        }
+      }, 100);
   }
 
   closeLoginModal() {
@@ -634,28 +643,32 @@ export class JobDetailComponent implements OnInit {
     this.showToast = false;
   }
 
-  onCategoryChange(event: any): void {
-    this.selectedCategory = event.target.value;
+  onCategorySelected(ids: string[]): void {
+    this.selectedCategoryIds = ids;
   }
 
-  onLocationChange(event: any): void {
-    this.selectedLocation = event.target.value;
-  }
-
-  onPositionChange(event: any): void {
-    this.searchPosition = event.target.value;
+  onLocationSelected(loc: { provinceIds: number[]; districtIds: number[] }): void {
+    this.selectedProvinceCodes = loc.provinceIds;
+    this.selectedWardCodes = loc.districtIds;
   }
 
   onSearch(): void {
-    console.log('Search with params:', {
-      category: this.selectedCategory,
-      location: this.selectedLocation,
-      position: this.searchPosition,
-    });
-  }
-
-  onClearPosition(): void {
-    this.searchPosition = '';
+    // Navigate to job search page with filters
+    const queryParams: any = {};
+    if (this.searchPosition) {
+      queryParams.keyword = this.searchPosition;
+    }
+    if (this.selectedCategoryIds.length > 0) {
+      queryParams.categoryIds = this.selectedCategoryIds.join(',');
+    }
+    if (this.selectedProvinceCodes.length > 0) {
+      queryParams.provinceIds = this.selectedProvinceCodes.join(',');
+    }
+    if (this.selectedWardCodes.length > 0) {
+      queryParams.districtIds = this.selectedWardCodes.join(',');
+    }
+    
+    this.router.navigate(['/candidate/job'], { queryParams });
   }
 
   openApplyModal(): void {
@@ -698,7 +711,6 @@ export class JobDetailComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('[JobDetail] Error checking application status:', error);
         this.hasApplied = false;
       },
     });
