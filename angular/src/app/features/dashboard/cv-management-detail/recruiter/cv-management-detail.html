@@ -41,12 +41,12 @@
         </div>
 
         <!-- HTML Viewer for Online CV -->
-        <div *ngIf="cvType === 'online' && cvHtml" class="cv-viewer-container">
-          <div class="cv-html-content" [innerHTML]="cvHtml"></div>
+        <div *ngIf="cvType === 'online' && safeCvHtml" class="cv-viewer-container">
+          <div class="cv-html-content" [innerHTML]="safeCvHtml"></div>
         </div>
 
         <!-- No CV Message -->
-        <div *ngIf="!pdfUrl && !cvHtml && !loading" class="no-cv-message">
+        <div *ngIf="!pdfUrl && !safeCvHtml && !loading" class="no-cv-message">
           <i class="fa fa-file-pdf-o"></i>
           <p>Không thể hiển thị CV</p>
         </div>

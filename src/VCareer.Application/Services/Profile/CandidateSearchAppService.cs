@@ -9,6 +9,7 @@ using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
+using VCareer.Dto.CVDto;
 using VCareer.Permission;
 using VCareer.Permissions;
 using Volo.Abp;
@@ -18,6 +19,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 using Volo.Abp.Validation;
 using Volo.Abp.Emailing;
+using VCareer.CV;
 
 namespace VCareer.Services.Profile
 {
@@ -88,32 +90,43 @@ namespace VCareer.Services.Profile
             }
 
             // Filter theo Keyword nếu có
+            // Lưu danh sách candidate IDs đã match trong profile để tránh search lại trong CV
+            List<Guid>? profileMatchedCandidateIds = null;
+            
             if (!string.IsNullOrWhiteSpace(input.Keyword))
             {
-                var keyword = input.Keyword.Trim().ToLower();
+                var keyword = input.Keyword.Trim();
+                var keywordLower = keyword.ToLower();
+                
+                // Parse keyword thành các từ khóa riêng lẻ (hỗ trợ comma, semicolon, space)
+                var keywords = ParseKeywords(keyword);
+                var keywordsLower = keywords.Select(k => k.ToLower()).ToList();
 
                 if (hasAnyScopeSelected)
                 {
-                    // Nếu có scope được chọn, chỉ tìm trong các trường tương ứng
+                    // Nếu có scope được chọn, chỉ tìm trong các trường tương ứng trong profile
                     queryable = queryable.Where(c =>
-                        (input.SearchInJobTitle && c.JobTitle != null && c.JobTitle.ToLower().Contains(keyword)) ||
-                        (input.SearchInSkills && c.Skills != null && c.Skills.ToLower().Contains(keyword)) ||
-                        (input.SearchInExperience && c.Experience.HasValue && c.Experience.ToString().Contains(keyword)) ||
-                        (input.SearchInActivity && c.Location != null && c.Location.ToLower().Contains(keyword)) ||
-                        (input.SearchInActivity && c.WorkLocation != null && c.WorkLocation.ToLower().Contains(keyword))
+                        (input.SearchInJobTitle && c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
+                        (input.SearchInSkills && c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
+                        (input.SearchInExperience && c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
+                        (input.SearchInActivity && c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
+                        (input.SearchInActivity && c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
                     );
                 }
                 else
                 {
-                    // Nếu không chọn phạm vi nào, tìm trong tất cả các trường hiện có
+                    // Nếu không chọn phạm vi nào, tìm trong tất cả các trường hiện có trong profile
                     queryable = queryable.Where(c =>
-                        (c.JobTitle != null && c.JobTitle.ToLower().Contains(keyword)) ||
-                        (c.Skills != null && c.Skills.ToLower().Contains(keyword)) ||
-                        (c.Experience.HasValue && c.Experience.ToString().Contains(keyword)) ||
-                        (c.Location != null && c.Location.ToLower().Contains(keyword)) ||
-                        (c.WorkLocation != null && c.WorkLocation.ToLower().Contains(keyword))
+                        (c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
+                        (c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
+                        (c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
+                        (c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
+                        (c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
                     );
                 }
+                
+                // Lưu danh sách candidate IDs đã match trong profile
+                // Sẽ được sử dụng sau để tìm thêm trong CV nếu cần
             }
 
             // Filter theo JobTitle
@@ -180,6 +193,129 @@ namespace VCareer.Services.Profile
             // Pagination
             var skipCount = input.SkipCount >= 0 ? input.SkipCount : 0;
             var maxResultCount = input.MaxResultCount > 0 ? input.MaxResultCount : 10;
+
+            // Nếu có keyword, cần search thêm trong CV mặc định cho các candidates không match trong profile
+            List<Guid>? additionalCandidateIdsFromCv = null;
+            if (!string.IsNullOrWhiteSpace(input.Keyword))
+            {
+                // Lấy tất cả candidates đã được filter (trừ keyword) để search trong CV
+                var allCandidatesQuery = await _candidateProfileRepository.GetQueryableAsync();
+                allCandidatesQuery = allCandidatesQuery.Include(c => c.User);
+                allCandidatesQuery = allCandidatesQuery.Where(c => c.Status && c.ProfileVisibility);
+                
+                // Apply các filter khác (không phải keyword)
+                if (hasAnyScopeSelected)
+                {
+                    if (input.SearchInJobTitle)
+                        allCandidatesQuery = allCandidatesQuery.Where(c => c.JobTitle != null && !string.IsNullOrWhiteSpace(c.JobTitle));
+                    if (input.SearchInActivity)
+                        allCandidatesQuery = allCandidatesQuery.Where(c => (c.Location != null && !string.IsNullOrWhiteSpace(c.Location)) || (c.WorkLocation != null && !string.IsNullOrWhiteSpace(c.WorkLocation)));
+                    if (input.SearchInExperience)
+                        allCandidatesQuery = allCandidatesQuery.Where(c => c.Experience.HasValue);
+                    if (input.SearchInSkills)
+                        allCandidatesQuery = allCandidatesQuery.Where(c => c.Skills != null && !string.IsNullOrWhiteSpace(c.Skills));
+                }
+                
+                // Apply các filter khác
+                if (!string.IsNullOrWhiteSpace(input.JobTitle))
+                {
+                    var jobTitle = input.JobTitle.Trim().ToLower();
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.JobTitle != null && c.JobTitle.ToLower().Contains(jobTitle));
+                }
+                if (!string.IsNullOrWhiteSpace(input.Skills))
+                {
+                    var skills = input.Skills.Trim().ToLower();
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.Skills != null && c.Skills.ToLower().Contains(skills));
+                }
+                if (input.MinExperience.HasValue)
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.Experience.HasValue && c.Experience >= input.MinExperience.Value);
+                if (input.MaxExperience.HasValue)
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.Experience.HasValue && c.Experience <= input.MaxExperience.Value);
+                if (input.MinSalary.HasValue)
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.Salary.HasValue && c.Salary >= input.MinSalary.Value);
+                if (input.MaxSalary.HasValue)
+                    allCandidatesQuery = allCandidatesQuery.Where(c => c.Salary.HasValue && c.Salary <= input.MaxSalary.Value);
+                if (!string.IsNullOrWhiteSpace(input.WorkLocation))
+                {
+                    var workLocation = input.WorkLocation.Trim().ToLower();
+                    allCandidatesQuery = allCandidatesQuery.Where(c => (c.WorkLocation != null && c.WorkLocation.ToLower().Contains(workLocation)) || (c.Location != null && c.Location.ToLower().Contains(workLocation)));
+                }
+                
+                // Lấy tất cả candidate IDs để search trong CV
+                var allCandidateIds = await AsyncExecuter.ToListAsync(
+                    allCandidatesQuery.Select(c => c.Id)
+                );
+                
+                // Lấy danh sách candidate IDs đã match trong profile
+                var profileMatchedIds = await AsyncExecuter.ToListAsync(
+                    queryable.Select(c => c.Id)
+                );
+                
+                // Chỉ search trong CV cho các candidates chưa match trong profile
+                var candidatesToSearchInCv = allCandidateIds.Except(profileMatchedIds).ToList();
+                
+                if (candidatesToSearchInCv.Any())
+                {
+                    // Search trong CV mặc định
+                    additionalCandidateIdsFromCv = await SearchInDefaultCvsAsync(candidatesToSearchInCv, input.Keyword, hasAnyScopeSelected, input);
+                    
+                    // Merge với query từ profile
+                    if (additionalCandidateIdsFromCv != null && additionalCandidateIdsFromCv.Any())
+                    {
+                        var additionalCandidatesQuery = await _candidateProfileRepository.GetQueryableAsync();
+                        additionalCandidatesQuery = additionalCandidatesQuery.Include(c => c.User);
+                        additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Status && c.ProfileVisibility && additionalCandidateIdsFromCv.Contains(c.Id));
+                        
+                        // Apply các filter khác cho additional candidates
+                        if (hasAnyScopeSelected)
+                        {
+                            if (input.SearchInJobTitle)
+                                additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.JobTitle != null && !string.IsNullOrWhiteSpace(c.JobTitle));
+                            if (input.SearchInActivity)
+                                additionalCandidatesQuery = additionalCandidatesQuery.Where(c => (c.Location != null && !string.IsNullOrWhiteSpace(c.Location)) || (c.WorkLocation != null && !string.IsNullOrWhiteSpace(c.WorkLocation)));
+                            if (input.SearchInExperience)
+                                additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Experience.HasValue);
+                            if (input.SearchInSkills)
+                                additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Skills != null && !string.IsNullOrWhiteSpace(c.Skills));
+                        }
+                        
+                        // Apply các filter khác
+                        if (!string.IsNullOrWhiteSpace(input.JobTitle))
+                        {
+                            var jobTitle = input.JobTitle.Trim().ToLower();
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.JobTitle != null && c.JobTitle.ToLower().Contains(jobTitle));
+                        }
+                        if (!string.IsNullOrWhiteSpace(input.Skills))
+                        {
+                            var skills = input.Skills.Trim().ToLower();
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Skills != null && c.Skills.ToLower().Contains(skills));
+                        }
+                        if (input.MinExperience.HasValue)
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Experience.HasValue && c.Experience >= input.MinExperience.Value);
+                        if (input.MaxExperience.HasValue)
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Experience.HasValue && c.Experience <= input.MaxExperience.Value);
+                        if (input.MinSalary.HasValue)
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Salary.HasValue && c.Salary >= input.MinSalary.Value);
+                        if (input.MaxSalary.HasValue)
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => c.Salary.HasValue && c.Salary <= input.MaxSalary.Value);
+                        if (!string.IsNullOrWhiteSpace(input.WorkLocation))
+                        {
+                            var workLocation = input.WorkLocation.Trim().ToLower();
+                            additionalCandidatesQuery = additionalCandidatesQuery.Where(c => (c.WorkLocation != null && c.WorkLocation.ToLower().Contains(workLocation)) || (c.Location != null && c.Location.ToLower().Contains(workLocation)));
+                        }
+                        
+                        // Merge với query từ profile bằng cách lấy union của IDs
+                        var profileIds = await AsyncExecuter.ToListAsync(queryable.Select(c => c.Id));
+                        var additionalIds = await AsyncExecuter.ToListAsync(additionalCandidatesQuery.Select(c => c.Id));
+                        var allMatchedIds = profileIds.Union(additionalIds).ToList();
+                        
+                        // Rebuild query với tất cả matched IDs
+                        queryable = await _candidateProfileRepository.GetQueryableAsync();
+                        queryable = queryable.Include(c => c.User);
+                        queryable = queryable.Where(c => c.Status && c.ProfileVisibility && allMatchedIds.Contains(c.Id));
+                    }
+                }
+            }
 
             var totalCount = await AsyncExecuter.CountAsync(queryable);
             var candidates = await AsyncExecuter.ToListAsync(
@@ -539,6 +675,171 @@ namespace VCareer.Services.Profile
                 ExperienceDetails = null,
                 Education = null
             };
+        }
+
+        /// <summary>
+        /// Parse keyword thành các từ khóa riêng lẻ (hỗ trợ comma, semicolon, space)
+        /// </summary>
+        private List<string> ParseKeywords(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return new List<string>();
+
+            // Split by comma, semicolon, hoặc space (nếu có nhiều từ)
+            var keywords = keyword
+                .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(k => k.Trim())
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .ToList();
+
+            // Nếu không split được (chỉ có 1 từ), trả về keyword gốc
+            if (keywords.Count == 0)
+                keywords.Add(keyword.Trim());
+
+            return keywords;
+        }
+
+        /// <summary>
+        /// Kiểm tra xem text có chứa bất kỳ keyword nào không (case-insensitive)
+        /// </summary>
+        private bool ContainsAnyKeyword(string text, List<string> keywords)
+        {
+            if (string.IsNullOrWhiteSpace(text) || keywords == null || keywords.Count == 0)
+                return false;
+
+            var textLower = text.ToLower();
+            return keywords.Any(k => textLower.Contains(k));
+        }
+
+        /// <summary>
+        /// Search keyword trong CV mặc định của các candidates
+        /// </summary>
+        private async Task<List<Guid>> SearchInDefaultCvsAsync(
+            List<Guid> candidateProfileIds,
+            string keyword,
+            bool hasAnyScopeSelected,
+            SearchCandidateInputDto input)
+        {
+            if (candidateProfileIds == null || candidateProfileIds.Count == 0 || string.IsNullOrWhiteSpace(keyword))
+                return new List<Guid>();
+
+            var keywords = ParseKeywords(keyword);
+            var keywordsLower = keywords.Select(k => k.ToLower()).ToList();
+
+            // Lấy CV mặc định của các candidates
+            var cvQueryable = await _candidateCvRepository.GetQueryableAsync();
+            var defaultCvs = await AsyncExecuter.ToListAsync(
+                cvQueryable
+                    .Where(cv => candidateProfileIds.Contains(cv.CandidateId) && cv.IsDefault && !string.IsNullOrEmpty(cv.DataJson))
+                    .Select(cv => new { cv.CandidateId, cv.DataJson })
+            );
+
+            var matchedCandidateIds = new List<Guid>();
+
+            foreach (var cv in defaultCvs)
+            {
+                try
+                {
+                    // Parse DataJson
+                    var cvData = System.Text.Json.JsonSerializer.Deserialize<CvDataDto>(cv.DataJson, new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (cvData == null)
+                        continue;
+
+                    bool isMatch = false;
+
+                    if (hasAnyScopeSelected)
+                    {
+                        // Nếu có scope được chọn, chỉ tìm trong các trường tương ứng
+                        if (input.SearchInJobTitle && cvData.PersonalInfo != null && !string.IsNullOrWhiteSpace(cvData.PersonalInfo.FullName))
+                        {
+                            isMatch = ContainsAnyKeyword(cvData.PersonalInfo.FullName, keywordsLower);
+                        }
+                        else if (input.SearchInSkills && cvData.Skills != null && cvData.Skills.Any())
+                        {
+                            var skillsText = string.Join(" ", cvData.Skills.Select(s => s.SkillName ?? "").Where(s => !string.IsNullOrWhiteSpace(s)));
+                            isMatch = ContainsAnyKeyword(skillsText, keywordsLower);
+                        }
+                        else if (input.SearchInEducation && cvData.Educations != null && cvData.Educations.Any())
+                        {
+                            var educationText = string.Join(" ", cvData.Educations.Select(e => 
+                                $"{e.InstitutionName} {e.Major} {e.Degree}").Where(e => !string.IsNullOrWhiteSpace(e)));
+                            isMatch = ContainsAnyKeyword(educationText, keywordsLower);
+                        }
+                        else if (input.SearchInExperience && cvData.WorkExperiences != null && cvData.WorkExperiences.Any())
+                        {
+                            var experienceText = string.Join(" ", cvData.WorkExperiences.Select(e => 
+                                $"{e.CompanyName} {e.Position} {e.Description}").Where(e => !string.IsNullOrWhiteSpace(e)));
+                            isMatch = ContainsAnyKeyword(experienceText, keywordsLower);
+                        }
+                    }
+                    else
+                    {
+                        // Nếu không chọn phạm vi nào, tìm trong tất cả các trường trong CV
+                        var allText = new List<string>();
+
+                        // PersonalInfo
+                        if (cvData.PersonalInfo != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(cvData.PersonalInfo.FullName))
+                                allText.Add(cvData.PersonalInfo.FullName);
+                            if (!string.IsNullOrWhiteSpace(cvData.PersonalInfo.Email))
+                                allText.Add(cvData.PersonalInfo.Email);
+                            if (!string.IsNullOrWhiteSpace(cvData.PersonalInfo.Address))
+                                allText.Add(cvData.PersonalInfo.Address);
+                        }
+
+                        // Skills
+                        if (cvData.Skills != null && cvData.Skills.Any())
+                        {
+                            allText.AddRange(cvData.Skills.Select(s => s.SkillName ?? "").Where(s => !string.IsNullOrWhiteSpace(s)));
+                        }
+
+                        // WorkExperiences
+                        if (cvData.WorkExperiences != null && cvData.WorkExperiences.Any())
+                        {
+                            allText.AddRange(cvData.WorkExperiences.Select(e => 
+                                $"{e.CompanyName} {e.Position} {e.Description}").Where(e => !string.IsNullOrWhiteSpace(e)));
+                        }
+
+                        // Educations
+                        if (cvData.Educations != null && cvData.Educations.Any())
+                        {
+                            allText.AddRange(cvData.Educations.Select(e => 
+                                $"{e.InstitutionName} {e.Major} {e.Degree}").Where(e => !string.IsNullOrWhiteSpace(e)));
+                        }
+
+                        // Projects
+                        if (cvData.Projects != null && cvData.Projects.Any())
+                        {
+                            allText.AddRange(cvData.Projects.Select(p => 
+                                $"{p.ProjectName} {p.Description} {p.Technologies}").Where(p => !string.IsNullOrWhiteSpace(p)));
+                        }
+
+                        // CareerObjective
+                        if (!string.IsNullOrWhiteSpace(cvData.CareerObjective))
+                            allText.Add(cvData.CareerObjective);
+
+                        var combinedText = string.Join(" ", allText);
+                        isMatch = ContainsAnyKeyword(combinedText, keywordsLower);
+                    }
+
+                    if (isMatch)
+                    {
+                        matchedCandidateIds.Add(cv.CandidateId);
+                    }
+                }
+                catch
+                {
+                    // Nếu parse CV data lỗi, bỏ qua
+                    continue;
+                }
+            }
+
+            return matchedCandidateIds;
         }
 
         private async Task<Dictionary<Guid, Guid>> GetDefaultCvLookupAsync(List<Guid> candidateUserIds, List<Guid>? candidateProfileIds = null)

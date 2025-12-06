@@ -10,38 +10,6 @@
   <div class="main-content">
     <!-- Left Sidebar - Filters -->
     <div class="sidebar-filters">
-      <!-- Saved Filters Section -->
-      <div class="filter-section">
-        <h3 class="filter-section-title">TÌM KIẾM THEO BỘ LỌC CÓ SẴN</h3>
-        <div class="saved-filter-dropdown">
-          <select 
-            class="filter-select"
-            [(ngModel)]="selectedSavedFilter"
-            (change)="onSavedFilterChange()">
-            <option value="">Chọn bộ lọc có sẵn</option>
-            <option *ngFor="let filter of savedFilters" [value]="filter.id">
-              {{ filter.name }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-actions">
-          <app-button 
-            [type]="'primary'"
-            [size]="'small'"
-            (click)="onCreateNewFilter()"
-            class="create-filter-btn">
-            + Tạo mới bộ lọc
-          </app-button>
-          <app-button 
-            [type]="'secondary'"
-            [size]="'small'"
-            (click)="onUpdateFilter()"
-            class="update-filter-btn">
-            Cập nhật bộ lọc
-          </app-button>
-        </div>
-      </div>
-
       <!-- Basic Search Section -->
       <div class="filter-section">
         <h3 class="filter-section-title">TÌM KIẾM CƠ BẢN</h3>

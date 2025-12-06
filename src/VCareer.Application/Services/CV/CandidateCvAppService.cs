@@ -855,6 +855,61 @@ namespace VCareer.Services.CV
         /// Replace placeholder với case-insensitive matching - replace TẤT CẢ occurrences
         /// Sử dụng cách đơn giản và chắc chắn: tìm và replace từng occurrence
         /// </summary>
+        /// <summary>
+        /// Xóa toàn bộ block {{#foreach ...}}...{{/foreach}} khi không có data
+        /// </summary>
+        private string RemoveForeachBlock(string htmlContent, int startIndex, string startPattern, string endPattern)
+        {
+            if (startIndex == -1) return htmlContent;
+            
+            var actualStartIndex = startIndex + startPattern.Length;
+            
+            // Tìm end pattern, xử lý nested loops
+            var searchStart = actualStartIndex;
+            var endIndex = -1;
+            var foreachCount = 1;
+            
+            while (searchStart < htmlContent.Length && foreachCount > 0)
+            {
+                var nextForeach = htmlContent.IndexOf("{{#foreach", searchStart, StringComparison.OrdinalIgnoreCase);
+                var nextEndForeach = htmlContent.IndexOf(endPattern, searchStart, StringComparison.OrdinalIgnoreCase);
+                
+                if (nextEndForeach == -1)
+                {
+                    // Không tìm thấy end pattern, xóa từ startIndex đến cuối
+                    return htmlContent.Remove(startIndex);
+                }
+                
+                if (nextForeach != -1 && nextForeach < nextEndForeach)
+                {
+                    // Có nested foreach → tăng count
+                    foreachCount++;
+                    searchStart = nextForeach + 1;
+                }
+                else
+                {
+                    // Tìm thấy end foreach
+                    foreachCount--;
+                    if (foreachCount == 0)
+                    {
+                        endIndex = nextEndForeach;
+                        break;
+                    }
+                    searchStart = nextEndForeach + endPattern.Length;
+                }
+            }
+            
+            if (endIndex == -1)
+            {
+                // Không tìm thấy end pattern, xóa từ startIndex đến cuối
+                return htmlContent.Remove(startIndex);
+            }
+            
+            // Xóa toàn bộ block từ startIndex đến endIndex + endPattern.Length
+            var fullEndIndex = endIndex + endPattern.Length;
+            return htmlContent.Remove(startIndex, fullEndIndex - startIndex);
+        }
+
         private string ReplacePlaceholderCaseInsensitive(string htmlContent, string placeholder, string value)
         {
             if (string.IsNullOrEmpty(htmlContent) || string.IsNullOrEmpty(placeholder)) return htmlContent;
@@ -1211,6 +1266,12 @@ namespace VCareer.Services.CV
                 startIndex = htmlContent.IndexOf("{{#foreach workExperiences", StringComparison.OrdinalIgnoreCase);
             }
             
+            // Nếu không có data, xóa toàn bộ block
+            if (startIndex != -1 && (workExperiences == null || !workExperiences.Any()))
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
+            
             if (startIndex == -1)
             {
                 // Nếu không có loop pattern, vẫn replace các placeholders đơn lẻ
@@ -1360,6 +1421,12 @@ namespace VCareer.Services.CV
                 startIndex = htmlContent.IndexOf("{{#foreach educations", StringComparison.OrdinalIgnoreCase);
             }
             
+            // Nếu không có data, xóa toàn bộ block
+            if (startIndex != -1 && (educations == null || !educations.Any()))
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
+            
             if (startIndex == -1)
             {
                 // Nếu không có loop pattern, vẫn replace các placeholders đơn lẻ
@@ -1496,8 +1563,14 @@ namespace VCareer.Services.CV
             
             // Tìm pattern (case-insensitive)
             var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
-            if (startIndex == -1 || skills == null || !skills.Any())
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (skills == null || !skills.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             // Tìm end pattern từ vị trí sau start pattern
             var actualStartIndex = startIndex + startPattern.Length;
@@ -1526,9 +1599,15 @@ namespace VCareer.Services.CV
             var startPattern = "{{#foreach projects}}";
             var endPattern = "{{/foreach}}";
             
-            var startIndex = htmlContent.IndexOf(startPattern);
-            if (startIndex == -1 || projects == null || !projects.Any())
+            var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (projects == null || !projects.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             var endIndex = htmlContent.IndexOf(endPattern, startIndex);
             if (endIndex == -1) return htmlContent;
@@ -1563,8 +1642,14 @@ namespace VCareer.Services.CV
             
             // Tìm pattern (case-insensitive)
             var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
-            if (startIndex == -1 || certificates == null || !certificates.Any())
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (certificates == null || !certificates.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             // Tìm end pattern từ vị trí sau start pattern
             var actualStartIndex = startIndex + startPattern.Length;
@@ -1597,9 +1682,15 @@ namespace VCareer.Services.CV
             var startPattern = "{{#foreach languages}}";
             var endPattern = "{{/foreach}}";
             
-            var startIndex = htmlContent.IndexOf(startPattern);
-            if (startIndex == -1 || languages == null || !languages.Any())
+            var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (languages == null || !languages.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             var endIndex = htmlContent.IndexOf(endPattern, startIndex);
             if (endIndex == -1) return htmlContent;

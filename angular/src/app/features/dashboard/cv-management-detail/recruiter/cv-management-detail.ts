@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import {
   ButtonComponent,
   ToastNotificationComponent
@@ -88,6 +88,7 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   // CV Display
   pdfUrl: SafeResourceUrl | null = null;
   cvHtml: string = '';
+  safeCvHtml: SafeHtml | null = null;
   cvType: 'online' | 'uploaded' | null = null;
 
   // Toast notification
@@ -201,20 +202,34 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   loadOnlineCv(cvId: string): void {
     this.candidateCvService.renderCv(cvId).subscribe({
       next: (response: any) => {
-        // Extract htmlContent từ ActionResult
+        // Extract htmlContent từ ActionResult - kiểm tra nhiều cấu trúc response có thể
         let htmlContent = '';
-        if (response.result?.htmlContent) {
-          htmlContent = response.result.htmlContent;
-        } else if (response.htmlContent) {
+        
+        // Log để debug
+        console.log('Render CV Response:', response);
+        
+        // Thử các cấu trúc response khác nhau
+        if (response.htmlContent) {
           htmlContent = response.htmlContent;
+        } else if (response.result?.htmlContent) {
+          htmlContent = response.result.htmlContent;
         } else if (response.value?.htmlContent) {
           htmlContent = response.value.htmlContent;
+        } else if (response.data?.htmlContent) {
+          htmlContent = response.data.htmlContent;
+        } else if (typeof response.value === 'string') {
+          htmlContent = response.value;
+        } else if (typeof response.result === 'string') {
+          htmlContent = response.result;
         }
         
         if (htmlContent) {
           this.cvHtml = htmlContent;
+          // Sử dụng DomSanitizer để cho phép render HTML/CSS
+          this.safeCvHtml = this.sanitizer.bypassSecurityTrustHtml(htmlContent);
           this.loading = false;
         } else {
+          console.error('Rendered CV HTML is empty. Response structure:', response);
           this.loading = false;
           this.showToastMessage('Không thể render CV online', 'error');
         }

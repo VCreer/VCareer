@@ -58,11 +58,6 @@ export class FindCandidateComponent implements OnInit {
   };
   location: string = '';
   cvClassification: 'all' | 'unseen' | 'seen' = 'all';
-  
-  // Saved filters
-  savedFilters: any[] = [];
-  selectedSavedFilter: string = '';
-  showSavedFilterDropdown: boolean = false;
 
   // Display priority
   displayPriority: 'newest' | 'seeking' | 'experienced' | 'suitable' = 'newest';
@@ -88,18 +83,6 @@ export class FindCandidateComponent implements OnInit {
 
   ngOnInit() {
     // Không tự động search khi load, để user nhập filter trước
-  }
-
-  onSavedFilterChange() {
-    // TODO: Load saved filter
-  }
-
-  onCreateNewFilter() {
-    // TODO: Open modal to create new filter
-  }
-
-  onUpdateFilter() {
-    // TODO: Open modal to update current filter
   }
 
   onSearchScopeChange() {
