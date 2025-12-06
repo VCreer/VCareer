@@ -41,13 +41,9 @@ export class AuthGuard implements CanActivate {
         const backendRoles = user.roles ?? [];
         const primaryRole = getPrimaryRoutingRole(backendRoles);
 
-        console.log('[AuthGuard] User roles:', backendRoles);
-        console.log('[AuthGuard] Primary role:', primaryRole);
-        console.log('[AuthGuard] Required role:', route.data['role']);
-
+     
         if (!primaryRole) {
-          console.warn('[AuthGuard] No primary role found, redirecting to login');
-          this.router.navigate(['/candidate/login']);
+                  this.router.navigate(['/candidate/login']);
           return false;
         }
 
@@ -57,8 +53,7 @@ export class AuthGuard implements CanActivate {
         if (requiredRole) {
           // Nếu route yêu cầu role cụ thể
           if (primaryRole !== requiredRole) {
-            console.warn('[AuthGuard] Role mismatch:', { primaryRole, requiredRole, url: state.url });
-            this.redirectToRoleHome(primaryRole);
+                      this.redirectToRoleHome(primaryRole);
             return false;
           }
         } else {
