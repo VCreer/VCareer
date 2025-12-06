@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using VCareer.CV;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
+using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -76,13 +77,15 @@ namespace VCareer.Services.CV
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly ICurrentUser _currentUser;
         private readonly ILogger<CandidateCvAppService> _logger;
+        private readonly CandidateIndexService _candidateIndexService;
 
         public CandidateCvAppService(
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<CvTemplate, Guid> templateRepository,
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             ICurrentUser currentUser,
-            ILogger<CandidateCvAppService> logger
+            ILogger<CandidateCvAppService> logger,
+            CandidateIndexService candidateIndexService
             )
         {
             _candidateCvRepository = candidateCvRepository;
@@ -90,6 +93,7 @@ namespace VCareer.Services.CV
             _candidateProfileRepository = candidateProfileRepository;
             _currentUser = currentUser;
             _logger = logger;
+            _candidateIndexService = candidateIndexService;
         }
 
         public async Task<CandidateCvDto> CreateAsync(CreateCandidateCvDto input)
@@ -142,6 +146,16 @@ namespace VCareer.Services.CV
             }
 
             await _candidateCvRepository.InsertAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì CV content đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi tạo CV", userId);
+            }
 
             return ObjectMapper.Map<CandidateCv, CandidateCvDto>(cv);
         }
@@ -210,6 +224,16 @@ namespace VCareer.Services.CV
 
             await _candidateCvRepository.UpdateAsync(cv);
 
+            // Auto-index candidate vào Lucene (vì CV content đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi update CV", userId);
+            }
+
             return ObjectMapper.Map<CandidateCv, CandidateCvDto>(cv);
         }
 
@@ -225,7 +249,18 @@ namespace VCareer.Services.CV
                 throw new UserFriendlyException("Bạn không có quyền xóa CV này.");
             }
 
+            var candidateUserId = cv.CandidateId;
             await _candidateCvRepository.DeleteAsync(id);
+
+            // Auto-index candidate vào Lucene (vì CV đã bị xóa, cần update index)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(candidateUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi xóa CV", candidateUserId);
+            }
         }
 
         public async Task<CandidateCvDto> GetAsync(Guid id)
@@ -1732,6 +1767,16 @@ namespace VCareer.Services.CV
 
             cv.IsDefault = true;
             await _candidateCvRepository.UpdateAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì default CV đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi set default CV", userId);
+            }
         }
 
         public async Task PublishAsync(Guid cvId, bool isPublished)
@@ -1752,6 +1797,16 @@ namespace VCareer.Services.CV
             }
 
             await _candidateCvRepository.UpdateAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì publish status đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi publish/unpublish CV", userId);
+            }
         }
 
         public async Task IncrementViewCountAsync(Guid cvId)

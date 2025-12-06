@@ -12,6 +12,7 @@
     <ProjectReference Include="..\VCareer.Domain.Shared\VCareer.Domain.Shared.csproj" />
     <ProjectReference Include="..\VCareer.Domain\VCareer.Domain.csproj" />
     <ProjectReference Include="..\VCareer.Application.Contracts\VCareer.Application.Contracts.csproj" />
+    <ProjectReference Include="..\VCareer.EntityFrameworkCore\VCareer.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

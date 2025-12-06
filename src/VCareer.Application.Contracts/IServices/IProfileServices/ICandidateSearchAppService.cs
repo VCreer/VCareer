@@ -3,12 +3,14 @@ using System.Threading.Tasks;
 using VCareer.Dto.Profile;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp;
 
 namespace VCareer.IServices.IProfileServices
 {
     /// <summary>
     /// Service để tìm kiếm ứng viên cho recruiter
     /// </summary>
+    [RemoteService(false)]
     public interface ICandidateSearchAppService : IApplicationService
     {
         /// <summary>

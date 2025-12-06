@@ -6,6 +6,7 @@ using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
 
@@ -13,14 +14,19 @@ namespace VCareer.Profile
 {
     [ApiController]
     [Route("api/candidate-search")]
+    [IgnoreAntiforgeryToken]
     /*[Authorize(VCareerPermission.Profile.Default)]*/
     public class CandidateSearchController : AbpControllerBase
     {
         private readonly ICandidateSearchAppService _candidateSearchAppService;
+        private readonly CandidateIndexService _candidateIndexService;
 
-        public CandidateSearchController(ICandidateSearchAppService candidateSearchAppService)
+        public CandidateSearchController(
+            ICandidateSearchAppService candidateSearchAppService,
+            CandidateIndexService candidateIndexService)
         {
             _candidateSearchAppService = candidateSearchAppService;
+            _candidateIndexService = candidateIndexService;
         }
 
         /// <summary>
@@ -30,6 +36,7 @@ namespace VCareer.Profile
         /// <returns>Danh sách ứng viên phù hợp</returns>
         [HttpPost("search")]
         [IgnoreAntiforgeryToken]
+        [ProducesResponseType(typeof(PagedResultDto<CandidateSearchResultDto>), 200)]
         public async Task<ActionResult<PagedResultDto<CandidateSearchResultDto>>> SearchCandidatesAsync([FromBody] SearchCandidateInputDto input)
         {
             try
@@ -94,6 +101,42 @@ namespace VCareer.Profile
             input.CandidateProfileId = id;
             await _candidateSearchAppService.SendConnectionRequestAsync(input);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Re-index tất cả candidates vào Lucene
+        /// </summary>
+        [HttpPost("reindex")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> ReIndexAllCandidatesAsync()
+        {
+            try
+            {
+                await _candidateIndexService.ReIndexAllCandidatesAsync();
+                return Ok(new { message = "Re-index thành công" });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi re-index", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Index một candidate cụ thể
+        /// </summary>
+        [HttpPost("index/{userId}")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> IndexCandidateAsync(Guid userId)
+        {
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+                return Ok(new { message = $"Đã index candidate {userId} thành công" });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi index candidate", error = ex.Message });
+            }
         }
     }
 }

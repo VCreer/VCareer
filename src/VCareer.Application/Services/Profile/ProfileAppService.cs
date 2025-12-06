@@ -8,6 +8,7 @@ using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
@@ -20,6 +21,7 @@ using Volo.Abp.Domain.Entities;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace VCareer.Services.Profile
 {
@@ -32,6 +34,7 @@ namespace VCareer.Services.Profile
         private readonly IRepository<EmployeeProfile, Guid> _employeeProfileRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
         private readonly IEmailSender _emailSender;
+        private readonly CandidateIndexService _candidateIndexService;
         private static readonly Dictionary<string, EmailOtpData> _emailOtpStore = new Dictionary<string, EmailOtpData>();
 
         private class EmailOtpData
@@ -47,7 +50,8 @@ namespace VCareer.Services.Profile
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             IRepository<EmployeeProfile, Guid> employeeProfileRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            CandidateIndexService candidateIndexService)
         {
             _userManager = userManager;
             _currentUser = currentUser;
@@ -55,6 +59,7 @@ namespace VCareer.Services.Profile
             _employeeProfileRepository = employeeProfileRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
             _emailSender = emailSender;
+            _candidateIndexService = candidateIndexService;
         }
 
         //ádadad
@@ -379,6 +384,16 @@ namespace VCareer.Services.Profile
             if (candidate != null)
             {
                 await _candidateProfileRepository.DeleteAsync(candidate);
+                
+                // Xóa khỏi Lucene index
+                try
+                {
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(userId);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Lỗi khi xóa candidate {UserId} khỏi Lucene index", userId);
+                }
             }
 
             // 3. Soft delete EmployeeProfile (nếu có)
@@ -414,6 +429,18 @@ namespace VCareer.Services.Profile
                 candidate.Salary = input.Salary ?? candidate.Salary;
                 candidate.WorkLocation = input.WorkLocation ?? candidate.WorkLocation;
                 await _candidateProfileRepository.UpdateAsync(candidate);
+                
+                // Auto-index vào Lucene
+                try
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                catch (Exception ex)
+                {
+                    // Log lỗi nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+                }
+                
                 return;
             }
 
@@ -506,6 +533,25 @@ namespace VCareer.Services.Profile
 
             candidate.ProfileVisibility = isVisible;
             await _candidateProfileRepository.UpdateAsync(candidate);
+            
+            // Auto-index vào Lucene (hoặc xóa nếu visibility = false)
+            try
+            {
+                if (isVisible && candidate.Status)
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                else
+                {
+                    // Nếu visibility = false hoặc status = false, xóa khỏi index
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không throw để không ảnh hưởng đến flow chính
+                Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+            }
         }
 
 

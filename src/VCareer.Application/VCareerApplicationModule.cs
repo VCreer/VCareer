@@ -10,6 +10,7 @@ using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
 using VCareer.Services.LuceneService.JobSearch;
+using VCareer.Services.LuceneService.CandidateSearch;
 using VCareer.Services.Payment;
 using VCareer.Token;
 using VNPAY;
@@ -54,6 +55,7 @@ public class VCareerApplicationModule : AbpModule
         // ISingletonDependency đã được implement trong LuceneJobIndexer
         // ABP tự động đăng ký, nhưng ta có thể đăng ký thủ công để rõ ràng:
         context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
+        context.Services.AddSingleton<ILuceneCandidateIndexer, LuceneCandidateIndexer>();
 
         // 🔧 ĐĂNG KÝ VNPAY CLIENT được thực hiện trong VCareerHttpApiHostModule
         // để có access đến IConfiguration
