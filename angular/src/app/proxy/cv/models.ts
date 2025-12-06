@@ -13,6 +13,7 @@ export interface CandidateCvDto extends EntityDto<string> {
   publishedAt?: string;
   viewCount: number;
   notes?: string;
+  previewImageUrl?: string;
   template: CvTemplateDto;
 }
 

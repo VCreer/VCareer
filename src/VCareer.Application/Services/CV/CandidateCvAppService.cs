@@ -500,8 +500,8 @@ namespace VCareer.Services.CV
                     var gitHubValue = EscapeHtml(personalInfo?.GitHub ?? "");
                     var profileImageValue = personalInfo?.ProfileImageUrl ?? "";
                     
-                    _logger.LogInformation("Replacing placeholders - FullName: '{FullName}', Email: '{Email}', Phone: '{Phone}', Address: '{Address}'", 
-                        fullNameValue, emailValue, phoneValue, addressValue);
+                    _logger.LogInformation("Replacing placeholders - FullName: '{FullName}', Email: '{Email}', Phone: '{Phone}', Address: '{Address}', ProfileImage: '{ProfileImage}'", 
+                        fullNameValue, emailValue, phoneValue, addressValue, string.IsNullOrEmpty(profileImageValue) ? "(empty)" : "(has image)");
                     _logger.LogInformation("Before replace - HTML contains {{personalInfo.fullName}}: {Contains}", 
                         htmlContent.Contains("{{personalInfo.fullName}}", StringComparison.OrdinalIgnoreCase));
                     
@@ -514,7 +514,43 @@ namespace VCareer.Services.CV
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.website}}", websiteValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.linkedIn}}", linkedInValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.gitHub}}", gitHubValue);
-                    htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.profileImageUrl}}", profileImageValue);
+                    
+                    // Xử lý profile image đặc biệt: nếu có ảnh thì hiển thị img, nếu không thì ẩn img và hiển thị placeholder
+                    if (!string.IsNullOrEmpty(profileImageValue))
+                    {
+                        // Có ảnh: replace placeholder trong img src
+                        htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.profileImageUrl}}", profileImageValue);
+                        // Ẩn placeholder div nếu có (xóa cả div và nội dung bên trong)
+                        htmlContent = System.Text.RegularExpressions.Regex.Replace(
+                            htmlContent, 
+                            @"<div[^>]*class=""[^""]*profile-picture-placeholder[^""]*""[^>]*>.*?</div>", 
+                            "", 
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
+                        // Đảm bảo img có style để hiển thị đúng
+                        htmlContent = System.Text.RegularExpressions.Regex.Replace(
+                            htmlContent,
+                            @"(<img[^>]*src=""[^""]*""[^>]*)(>)",
+                            "$1 style=\"display: block;\"$2",
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    }
+                    else
+                    {
+                        // Không có ảnh: ẩn img tag (cả placeholder và không placeholder)
+                        // Xóa img tag có chứa placeholder hoặc empty src
+                        htmlContent = System.Text.RegularExpressions.Regex.Replace(
+                            htmlContent, 
+                            @"<img[^>]*src=""\{\{personalInfo\.profileImageUrl\}\}""[^>]*>", 
+                            "", 
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        // Xóa img tag có src rỗng hoặc không có src
+                        htmlContent = System.Text.RegularExpressions.Regex.Replace(
+                            htmlContent,
+                            @"<img[^>]*src=""\s*""[^>]*>",
+                            "",
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        // Replace placeholder với empty để giữ nguyên placeholder div
+                        htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.profileImageUrl}}", "");
+                    }
                     
                     // Format 2: {{personalinfo.fieldname}} (lowercase)
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalinfo.fullname}}", fullNameValue);
@@ -656,22 +692,31 @@ namespace VCareer.Services.CV
                     }
 
                     // === PROJECTS ===
-                    if (htmlContent.Contains("{{projects}}"))
+                    // Chỉ render projects nếu template có placeholder
+                    bool hasProjectsPlaceholder = htmlContent.Contains("{{projects}}", StringComparison.OrdinalIgnoreCase) ||
+                                                  htmlContent.Contains("{{#foreach projects}}", StringComparison.OrdinalIgnoreCase);
+                    
+                    if (hasProjectsPlaceholder)
                     {
-                        if (cvData.Projects != null && cvData.Projects.Any())
+                        if (htmlContent.Contains("{{projects}}", StringComparison.OrdinalIgnoreCase))
                         {
-                            var projectsHtml = RenderProjects(cvData.Projects);
-                            htmlContent = htmlContent.Replace("{{projects}}", projectsHtml);
+                            if (cvData.Projects != null && cvData.Projects.Any())
+                            {
+                                var projectsHtml = RenderProjects(cvData.Projects);
+                                htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{projects}}", projectsHtml);
+                            }
+                            else
+                            {
+                                htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{projects}}", "");
+                            }
                         }
                         else
                         {
-                            htmlContent = htmlContent.Replace("{{projects}}", "");
+                            // Có {{#foreach projects}} pattern
+                            htmlContent = RenderProjectsWithTemplate(htmlContent, cvData.Projects);
                         }
                     }
-                    else
-                    {
-                        htmlContent = RenderProjectsWithTemplate(htmlContent, cvData.Projects);
-                    }
+                    // Nếu template không có placeholder cho projects, KHÔNG render gì cả
 
                     // === CERTIFICATES ===
                     if (htmlContent.Contains("{{certificates}}"))
@@ -692,107 +737,40 @@ namespace VCareer.Services.CV
                     }
 
                     // === LANGUAGES ===
-                    if (htmlContent.Contains("{{languages}}"))
+                    // Kiểm tra xem template có placeholder cho languages không
+                    bool hasLanguagesPlaceholder = htmlContent.Contains("{{languages}}", StringComparison.OrdinalIgnoreCase) ||
+                                                   htmlContent.Contains("{{#foreach languages}}", StringComparison.OrdinalIgnoreCase);
+                    
+                    if (hasLanguagesPlaceholder)
                     {
-                        if (cvData.Languages != null && cvData.Languages.Any())
+                        if (htmlContent.Contains("{{languages}}", StringComparison.OrdinalIgnoreCase))
                         {
-                            var languagesHtml = RenderLanguages(cvData.Languages);
-                            htmlContent = htmlContent.Replace("{{languages}}", languagesHtml);
+                            if (cvData.Languages != null && cvData.Languages.Any())
+                            {
+                                var languagesHtml = RenderLanguages(cvData.Languages);
+                                htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{languages}}", languagesHtml);
+                            }
+                            else
+                            {
+                                htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{languages}}", "");
+                            }
                         }
                         else
                         {
-                            htmlContent = htmlContent.Replace("{{languages}}", "");
+                            // Có {{#foreach languages}} pattern
+                            htmlContent = RenderLanguagesWithTemplate(htmlContent, cvData.Languages);
                         }
                     }
-                    else
-                    {
-                        htmlContent = RenderLanguagesWithTemplate(htmlContent, cvData.Languages);
-                    }
+                    // Nếu template không có placeholder cho languages, KHÔNG inject vào cuối body
+                    // Vì template không được thiết kế để hiển thị languages section
 
                     // Additional info
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{additionalInfo}}", EscapeHtml(cvData.AdditionalInfo ?? ""));
                     
-                    // Nếu template KHÔNG có placeholders cho các section (kiểm tra từ originalTemplate), inject HTML vào cuối body
-                    // Điều này đảm bảo rằng dữ liệu vẫn được hiển thị ngay cả khi template không có placeholders
-                    // NHƯNG chỉ inject nếu template THỰC SỰ không có placeholders (kiểm tra từ originalTemplate, không phải htmlContent đã replace)
-                    if (cvData.WorkExperiences != null && cvData.WorkExperiences.Any() && !templateHasWorkExpPlaceholder)
-                    {
-                        // Template không có placeholder cho work experiences → inject vào cuối body
-                        var workExpHtml = RenderWorkExperiences(cvData.WorkExperiences);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='work-experiences-section'>{workExpHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='work-experiences-section'>{workExpHtml}</div>";
-                        }
-                    }
-                    
-                    if (cvData.Educations != null && cvData.Educations.Any() && !templateHasEduPlaceholder)
-                    {
-                        var educationHtml = RenderEducations(cvData.Educations);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='educations-section'>{educationHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='educations-section'>{educationHtml}</div>";
-                        }
-                    }
-                    
-                    if (cvData.Skills != null && cvData.Skills.Any() && !templateHasSkillsPlaceholder)
-                    {
-                        var skillsHtml = RenderSkills(cvData.Skills);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='skills-section'>{skillsHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='skills-section'>{skillsHtml}</div>";
-                        }
-                    }
-                    
-                    if (cvData.Projects != null && cvData.Projects.Any() && !templateHasProjectsPlaceholder)
-                    {
-                        var projectsHtml = RenderProjects(cvData.Projects);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='projects-section'>{projectsHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='projects-section'>{projectsHtml}</div>";
-                        }
-                    }
-                    
-                    if (cvData.Certificates != null && cvData.Certificates.Any() && !templateHasCertificatesPlaceholder)
-                    {
-                        var certificatesHtml = RenderCertificates(cvData.Certificates);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='certificates-section'>{certificatesHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='certificates-section'>{certificatesHtml}</div>";
-                        }
-                    }
-                    
-                    if (cvData.Languages != null && cvData.Languages.Any() && !templateHasLanguagesPlaceholder)
-                    {
-                        var languagesHtml = RenderLanguages(cvData.Languages);
-                        if (htmlContent.Contains("</body>"))
-                        {
-                            htmlContent = htmlContent.Replace("</body>", $"<div class='languages-section'>{languagesHtml}</div></body>");
-                        }
-                        else
-                        {
-                            htmlContent += $"<div class='languages-section'>{languagesHtml}</div>";
-                        }
-                    }
+                    // KHÔNG inject bất kỳ section nào vào cuối body nếu template không có placeholder
+                    // Chỉ hiển thị các trường mà template có placeholder
+                    // Nếu template không có placeholder cho một section, section đó sẽ không được hiển thị
+                    // Điều này đảm bảo CV chỉ hiển thị những gì template được thiết kế để hiển thị
                     
                     _logger.LogInformation("=== PLACEHOLDERS REPLACED SUCCESSFULLY ===");
                     
@@ -1705,6 +1683,22 @@ namespace VCareer.Services.CV
             }
 
             return ObjectMapper.Map<CandidateCv, CandidateCvDto>(cv);
+        }
+
+        public async Task UpdatePreviewImageAsync(Guid cvId, string previewImageUrl)
+        {
+            var userId = _currentUser.GetId();
+
+            var cv = await _candidateCvRepository.GetAsync(cvId);
+
+            // Kiểm tra quyền: chỉ có thể update CV của chính mình
+            if (cv.CandidateId != userId)
+            {
+                throw new UserFriendlyException("Bạn không có quyền cập nhật CV này.");
+            }
+
+            cv.PreviewImageUrl = previewImageUrl;
+            await _candidateCvRepository.UpdateAsync(cv);
         }
     }
 }

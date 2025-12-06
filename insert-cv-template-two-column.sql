@@ -404,3 +404,5 @@ VALUES (
 -- Hiển thị Template ID đã tạo
 SELECT @TemplateId AS TemplateId, N'Template đã được tạo thành công!' AS Message;
 
+
+

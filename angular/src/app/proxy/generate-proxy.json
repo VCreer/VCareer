@@ -4344,6 +4344,63 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
+            },
+            "UpdatePreviewImageAsyncByIdAndPreviewImageUrl": {
+              "uniqueName": "UpdatePreviewImageAsyncByIdAndPreviewImageUrl",
+              "name": "UpdatePreviewImageAsync",
+              "httpMethod": "PUT",
+              "url": "api/cv/candidates/{id}/preview-image",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "previewImageUrl",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "previewImageUrl",
+                  "name": "previewImageUrl",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
             }
           }
         },
@@ -7870,6 +7927,31 @@
                     "type": "VCareer.CV.CandidateCvDto",
                     "typeSimple": "VCareer.CV.CandidateCvDto"
                   }
+                },
+                {
+                  "name": "UpdatePreviewImageAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "cvId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "previewImageUrl",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -8343,6 +8425,63 @@
               "returnValue": {
                 "type": "VCareer.CV.CandidateCvDto",
                 "typeSimple": "VCareer.CV.CandidateCvDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICandidateCvAppService"
+            },
+            "UpdatePreviewImageAsyncByCvIdAndPreviewImageUrl": {
+              "uniqueName": "UpdatePreviewImageAsyncByCvIdAndPreviewImageUrl",
+              "name": "UpdatePreviewImageAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/candidate-cv/preview-image/{cvId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "cvId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "previewImageUrl",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "cvId",
+                  "name": "cvId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "previewImageUrl",
+                  "name": "previewImageUrl",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.CV.ICandidateCvAppService"
@@ -23312,6 +23451,18 @@
         },
         {
           "name": "Notes",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PreviewImageUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

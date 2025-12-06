@@ -165,7 +165,7 @@ export class CvManagementComponent implements OnInit {
           return {
             id: cv.id || '',
             title: cv.cvName || 'Untitled CV',
-            preview: cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
+            preview: cv.previewImageUrl || cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
             version: cv.template?.version || '1.0',
             updatedAt: this.formatDate(updateDate),
             isDefault: cv.isDefault || false,

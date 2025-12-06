@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -361,6 +361,7 @@ export class WriteCv implements OnInit {
   }
 
   @ViewChild('templateFormContainer', { static: false }) templateFormContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild(CvFormPreviewComponent, { static: false }) cvFormPreviewComponent!: CvFormPreviewComponent;
 
   loadCvData() {
     console.log('Loading CV data for edit, CV ID:', this.cvId);
@@ -1908,13 +1909,25 @@ export class WriteCv implements OnInit {
       console.log('Updating CV DTO:', updateDto);
 
       this.candidateCvService.update(this.cvId, updateDto).subscribe({
-        next: (response: any) => {
+        next: async (response: any) => {
           console.log('CV updated successfully:', response);
+          
+          // Generate preview image sau khi save thành công
+          const savedCvId = response?.result?.id || response?.id || this.cvId;
+          if (savedCvId) {
+            try {
+              await this.generateAndSavePreviewImage(savedCvId);
+            } catch (error) {
+              console.error('Error generating preview (non-blocking):', error);
+            }
+          }
+          
           this.showToast('Cập nhật CV thành công!', 'success');
           
+          // Đợi thêm một chút để đảm bảo preview đã được lưu
           setTimeout(() => {
             this.router.navigate(['/candidate/cv-management']);
-          }, 2000);
+          }, 3000);
         },
         error: (error) => {
           console.error('Error updating CV:', error);
@@ -1945,13 +1958,29 @@ export class WriteCv implements OnInit {
       console.log('Saving CV DTO:', createDto);
 
       this.candidateCvService.create(createDto).subscribe({
-        next: (response: any) => {
+        next: async (response: any) => {
           console.log('CV saved successfully:', response);
+          
+          // Generate preview image sau khi save thành công
+          const savedCvId = response?.result?.id || response?.id || response?.value?.id;
+          console.log('Saved CV ID for preview:', savedCvId);
+          
+          if (savedCvId) {
+            try {
+              await this.generateAndSavePreviewImage(savedCvId);
+            } catch (error) {
+              console.error('Error generating preview (non-blocking):', error);
+            }
+          } else {
+            console.warn('Could not extract CV ID from response:', response);
+          }
+          
           this.showToast(this.translations.saveSuccess || 'Lưu CV thành công!', 'success');
           
+          // Đợi thêm một chút để đảm bảo preview đã được lưu
           setTimeout(() => {
             this.router.navigate(['/candidate/cv-management']);
-          }, 2000);
+          }, 3000);
         },
         error: (error) => {
           console.error('Error saving CV:', error);
@@ -2697,5 +2726,152 @@ export class WriteCv implements OnInit {
     
     this.blocks = reorderedBlocks;
     this.cvData = this.buildCvDataFromBlocks(this.blocks);
+  }
+
+  /**
+   * Generate preview image từ CV preview và lưu vào backend
+   */
+  private async generateAndSavePreviewImage(cvId: string): Promise<void> {
+    try {
+      console.log('Starting preview image generation for CV:', cvId);
+      
+      // Gọi API render CV để lấy HTML đã render với template
+      const renderResponse: any = await this.candidateCvService.renderCv(cvId).toPromise();
+      
+      if (!renderResponse) {
+        console.warn('Could not get rendered CV HTML');
+        return;
+      }
+
+      // Extract HTML content từ response
+      // ABP framework có thể trả về nhiều format khác nhau
+      let htmlContent = '';
+      
+      // Case 1: { htmlContent: "..." } - trực tiếp trong response (check trước vì đây là format phổ biến nhất)
+      if (renderResponse?.htmlContent) {
+        htmlContent = renderResponse.htmlContent;
+        console.log('Found htmlContent directly in response');
+      } 
+      // Case 2: { value: { htmlContent: "..." } }
+      else if (renderResponse?.value?.htmlContent) {
+        htmlContent = renderResponse.value.htmlContent;
+        console.log('Found htmlContent in response.value.htmlContent');
+      } 
+      // Case 3: { result: { htmlContent: "..." } }
+      else if (renderResponse?.result?.htmlContent) {
+        htmlContent = renderResponse.result.htmlContent;
+        console.log('Found htmlContent in response.result.htmlContent');
+      } 
+      // Case 4: { value: "..." } - value là string trực tiếp
+      else if (renderResponse?.value && typeof renderResponse.value === 'string') {
+        htmlContent = renderResponse.value;
+        console.log('Found htmlContent as response.value (string)');
+      } 
+      // Case 5: { result: "..." } - result là string trực tiếp
+      else if (renderResponse?.result && typeof renderResponse.result === 'string') {
+        htmlContent = renderResponse.result;
+        console.log('Found htmlContent as response.result (string)');
+      } 
+      // Case 6: { data: { htmlContent: "..." } }
+      else if (renderResponse?.data?.htmlContent) {
+        htmlContent = renderResponse.data.htmlContent;
+        console.log('Found htmlContent in response.data.htmlContent');
+      }
+
+      if (!htmlContent || htmlContent.trim() === '') {
+        console.warn('Rendered CV HTML is empty. Response structure:', Object.keys(renderResponse || {}));
+        console.warn('Full response:', renderResponse);
+        return;
+      }
+
+      console.log('Got rendered CV HTML, length:', htmlContent.length);
+
+      // Tạo một hidden container để render HTML
+      const hiddenContainer = document.createElement('div');
+      hiddenContainer.style.position = 'absolute';
+      hiddenContainer.style.left = '-9999px';
+      hiddenContainer.style.top = '-9999px';
+      hiddenContainer.style.width = '210mm'; // A4 width
+      hiddenContainer.style.backgroundColor = '#ffffff';
+      hiddenContainer.innerHTML = htmlContent;
+      document.body.appendChild(hiddenContainer);
+
+      // Đợi images load xong
+      await new Promise<void>((resolve) => {
+        const images = hiddenContainer.querySelectorAll('img');
+        if (images.length === 0) {
+          resolve();
+          return;
+        }
+
+        let loadedCount = 0;
+        const totalImages = images.length;
+
+        const checkComplete = () => {
+          loadedCount++;
+          if (loadedCount === totalImages) {
+            resolve();
+          }
+        };
+
+        images.forEach((img) => {
+          if (img.complete) {
+            checkComplete();
+          } else {
+            img.onload = checkComplete;
+            img.onerror = checkComplete; // Continue even if image fails to load
+          }
+        });
+
+        // Timeout sau 5 giây để tránh đợi quá lâu
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+
+      // Đợi thêm một chút để đảm bảo CSS đã apply
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      console.log('Rendering CV to canvas...');
+
+      // Generate preview image bằng html2canvas
+      const canvas = await html2canvas(hiddenContainer, {
+        scale: 0.5, // Giảm scale để file nhỏ hơn
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: hiddenContainer.scrollWidth,
+        height: hiddenContainer.scrollHeight,
+        windowWidth: hiddenContainer.scrollWidth,
+        windowHeight: hiddenContainer.scrollHeight
+      });
+
+      console.log('Canvas generated, size:', canvas.width, 'x', canvas.height);
+
+      // Xóa hidden container
+      document.body.removeChild(hiddenContainer);
+
+      // Convert canvas thành base64
+      const previewImageUrl = canvas.toDataURL('image/png', 0.8);
+      console.log('Preview image URL length:', previewImageUrl.length);
+
+      // Gọi API để lưu preview image
+      return new Promise<void>((resolve, reject) => {
+        this.candidateCvService.updatePreviewImage(cvId, previewImageUrl).subscribe({
+          next: () => {
+            console.log('Preview image saved successfully for CV:', cvId);
+            resolve();
+          },
+          error: (error) => {
+            console.error('Error saving preview image:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            reject(error);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error generating preview image:', error);
+      throw error;
+    }
   }
 }

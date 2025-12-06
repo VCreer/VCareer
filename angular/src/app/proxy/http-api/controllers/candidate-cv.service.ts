@@ -92,6 +92,15 @@ export class CandidateCvService {
       body: input,
     },
     { apiName: this.apiName,...config });
+  
+
+  updatePreviewImage = (id: string, previewImageUrl: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'PUT',
+      url: `/api/cv/candidates/${id}/preview-image`,
+      body: { previewImageUrl: previewImageUrl },
+    },
+    { apiName: this.apiName,...config });
 
   constructor(private restService: RestService) {}
 }

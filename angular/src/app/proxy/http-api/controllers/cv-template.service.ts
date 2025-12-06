@@ -42,7 +42,7 @@ export class CvTemplateService {
       params: { category: input.category, isActive: input.isActive, isFree: input.isFree, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
-  
+
 
   getList = (input: GetCvTemplateListDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<any>>({

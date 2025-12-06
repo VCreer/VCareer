@@ -102,6 +102,11 @@ namespace VCareer.CV
         public string? Notes { get; set; }
 
         /// <summary>
+        /// Preview image URL của CV (base64 hoặc URL) để hiển thị trong danh sách CV
+        /// </summary>
+        public string? PreviewImageUrl { get; set; }
+
+        /// <summary>
         /// Thông tin template (optional, chỉ load khi cần)
         /// </summary>
         public CvTemplateDto? Template { get; set; }

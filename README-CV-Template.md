@@ -112,3 +112,5 @@ Nếu gặp lỗi khi chạy script:
 
 Sau khi chạy script, TemplateId sẽ được hiển thị. Bạn có thể lưu lại ID này để reference sau này.
 
+
+

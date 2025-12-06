@@ -83,6 +83,11 @@ namespace VCareer.Models.CV
         [StringLength(1000)]
         public string? Notes { get; set; }
 
+        /// <summary>
+        /// Preview image URL của CV (base64 hoặc URL) để hiển thị trong danh sách CV
+        /// </summary>
+        public string? PreviewImageUrl { get; set; }
+
         // === NAVIGATION PROPERTIES ===
 
         /// <summary>
