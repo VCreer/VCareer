@@ -70,7 +70,7 @@ export class EmployeeHeaderComponent implements OnInit {
   }
 
   navigateToHome() {
-    this.router.navigate(['/employee/home']);
+    this.router.navigate(['/employee/statistical-reports']);
   }
 }
 

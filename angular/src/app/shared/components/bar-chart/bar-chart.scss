@@ -1,0 +1,311 @@
+.bar-chart-container {
+  width: 100%;
+  min-height: 300px;
+  padding: 20px 20px 20px 60px; // Extra left padding for Y-axis
+  padding-bottom: 20px; // Ensure space for legend
+  background: white;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .chart-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+
+    // Y-Axis
+    .y-axis {
+      position: absolute;
+      left: -50px;
+      top: 0;
+      bottom: 40px; // Space for X-axis labels
+      width: 50px;
+      display: flex;
+      flex-direction: column;
+
+      // Y-Axis Main Line (vertical line)
+      .y-axis-main-line {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #374151;
+        z-index: 1;
+      }
+
+      .y-axis-label {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 1px;
+        transform: translateY(-50%); // Center on the line
+        z-index: 2;
+
+        .y-axis-value {
+          font-size: 0.75rem;
+          color: #6b7280;
+          font-weight: 500;
+          text-align: right;
+          width: 100%;
+          padding-right: 8px;
+        }
+
+        .y-axis-tick {
+          position: absolute;
+          right: 0;
+          width: 8px;
+          height: 1px;
+          background: #374151;
+        }
+      }
+    }
+
+    // Chart Area
+    .chart-area {
+      flex: 1;
+      position: relative;
+      padding-bottom: 40px; // Space for X-axis labels
+      min-height: 250px;
+
+      // Y-Axis Extension Line (inside chart area, connects with Y-axis)
+      .y-axis-extension-line {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 40px; // Align with X-axis
+        width: 2px;
+        background: #374151;
+        z-index: 1;
+      }
+
+      // X-Axis Line
+      .x-axis-line {
+        position: absolute;
+        bottom: 40px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #374151;
+        z-index: 2;
+      }
+
+      // Grid Lines
+      .grid-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 40px;
+        pointer-events: none;
+
+        .grid-line {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 1px;
+          border-top: 1px dashed #e5e7eb;
+          transform: translateY(-50%); // Center on the line
+        }
+      }
+
+      // Bars
+      .chart-bars {
+        position: absolute;
+        bottom: 40px; // Align with X-axis line
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        gap: 12px;
+        height: calc(100% - 40px);
+        padding: 0;
+        min-height: 250px;
+
+        .bar-item {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+          min-width: 50px;
+          max-width: 100px;
+          position: relative;
+          justify-content: flex-end;
+
+          .bar-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            position: relative;
+            height: 100%;
+
+            .bar {
+              width: 100%;
+              max-width: 60px;
+              background: var(--bar-color, #0F83BA);
+              border-radius: 4px 4px 0 0;
+              transition: all 0.3s ease;
+              position: absolute;
+              bottom: 0; // Bar sits directly on X-axis
+              left: 50%;
+              transform: translateX(-50%);
+              display: flex;
+              align-items: flex-start;
+              justify-content: center;
+              padding-top: 6px;
+              cursor: pointer;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              margin: 0;
+
+              &:hover {
+                opacity: 0.9;
+                transform: translateX(-50%) translateY(-4px);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+              }
+
+              .bar-value {
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+                white-space: nowrap;
+              }
+            }
+          }
+
+          .bar-label {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #374151;
+            text-align: center;
+            font-weight: 600;
+            word-wrap: break-word;
+            max-width: 100%;
+            line-height: 1.2;
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  // Legend
+  .chart-legend {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    width: 100%;
+    flex-shrink: 0;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      align-items: center;
+      justify-content: center;
+
+      @media (max-width: 768px) {
+        gap: 20px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0;
+        flex-shrink: 0;
+
+        .legend-color-box {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+
+          .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: block;
+          }
+        }
+
+        .legend-label {
+          font-size: 1rem;
+          font-weight: 600;
+          line-height: 1.5;
+          letter-spacing: 0.3px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  .chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 250px;
+    color: #9ca3af;
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    p {
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  // Tooltip
+  .chart-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 10000;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateX(-50%);
+    margin-left: 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid rgba(0, 0, 0, 0.85);
+    }
+  }
+}
+

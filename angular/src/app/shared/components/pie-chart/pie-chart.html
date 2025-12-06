@@ -1,0 +1,66 @@
+<div class="pie-chart-container">
+  <div class="pie-chart-content" *ngIf="chartData.length > 0">
+    <!-- Chart -->
+    <div class="chart-wrapper">
+      <svg 
+        [attr.width]="size" 
+        [attr.height]="size" 
+        [attr.viewBox]="'0 0 ' + size + ' ' + size"
+        class="pie-svg"
+        preserveAspectRatio="xMidYMid meet">
+        <g *ngFor="let segment of segments; let i = index">
+          <path
+            [attr.d]="segment.path"
+            [attr.fill]="getSegmentColor(segment.data, i)"
+            class="pie-segment"
+            [attr.data-label]="segment.data.label"
+            [attr.data-value]="segment.data.value"
+            (mouseenter)="onSegmentHover($event, segment)"
+            (mouseleave)="onSegmentLeave()"
+            (mousemove)="onSegmentHover($event, segment)">
+          </path>
+          <text
+            *ngIf="showValues && segment.percentage > 5"
+            [attr.x]="getLabelPosition(segment).x"
+            [attr.y]="getLabelPosition(segment).y"
+            class="pie-label"
+            text-anchor="middle"
+            dominant-baseline="middle">
+            {{ segment.percentage | number:'1.0-0' }}%
+          </text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Legend - Below chart -->
+    <div class="chart-legend" *ngIf="showLegend && chartData.length > 0">
+      <div class="legend-items">
+        <div
+          *ngFor="let item of chartData; let i = index"
+          class="legend-item">
+          <div class="legend-color-box">
+            <div class="legend-color" [style.background-color]="getSegmentColor(item, i)"></div>
+          </div>
+          <span class="legend-label" [style.color]="getSegmentColor(item, i)">
+            {{ item.label }} ({{ item.value }})
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-empty" *ngIf="chartData.length === 0">
+    <i class="fas fa-chart-pie"></i>
+    <p>Chưa có dữ liệu</p>
+  </div>
+
+  <!-- Tooltip -->
+  <div 
+    class="chart-tooltip" 
+    *ngIf="showTooltip"
+    [style.left.px]="tooltipX"
+    [style.top.px]="tooltipY">
+    {{ tooltipText }}
+  </div>
+</div>
+

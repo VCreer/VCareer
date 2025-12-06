@@ -53,7 +53,7 @@ export class AuthRedirectGuard implements CanActivate {
 
   private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
     const map = {
-      EMPLOYEE: ['/employee/home'],
+      EMPLOYEE: ['/employee/statistical-reports'],
       RECRUITER: ['recruiter/recruitment-report'],
       CANDIDATE: ['/home'],
     };

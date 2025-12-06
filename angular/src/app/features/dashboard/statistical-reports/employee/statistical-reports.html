@@ -1,0 +1,141 @@
+<div class="statistical-reports-page" [style.padding-left]="getContentPaddingLeft()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()"
+  >
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="page-header">
+        <h1 class="page-title">Báo cáo thống kê</h1>
+      </div>
+      <div class="action-buttons">
+        <app-button type="secondary" size="small" (click)="showToastMessage('info', 'Tính năng xuất file đang được phát triển')">
+          <i class="fas fa-file-excel"></i>
+          Xuất file Excel
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <app-stat-card
+        [label]="'Tổng tin tuyển dụng'"
+        [value]="totalJobs | number:'1.0-0'"
+        [icon]="'fa fa-briefcase'"
+        [color]="'#0F83BA'">
+      </app-stat-card>
+      <app-stat-card
+        [label]="'Tổng người dùng'"
+        [value]="totalUsers | number:'1.0-0'"
+        [icon]="'fa fa-users'"
+        [color]="'#10b981'">
+      </app-stat-card>
+      <app-stat-card
+        [label]="'Tổng Doanh thu'"
+        [value]="(totalRevenue | number:'1.0-0') + ' VNĐ'"
+        [icon]="'fa fa-money-bill-wave'"
+        [color]="'#f59e0b'">
+      </app-stat-card>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="main-grid-layout">
+      <!-- Left Column -->
+      <div class="left-column">
+        <!-- Chart Section - Bar Chart -->
+        <div class="chart-section">
+          <div class="chart-header">
+            <h2 class="chart-title">Quản lý tin tuyển dụng</h2>
+            <div class="chart-filter">
+              <app-select-field
+                [options]="periodOptions"
+                [(ngModel)]="selectedPeriod"
+                (valueChange)="onPeriodChange($event)"
+                placeholder="Hôm nay">
+              </app-select-field>
+            </div>
+          </div>
+          <div class="chart-container">
+            <app-bar-chart
+              [data]="chartData"
+              [height]="chartHeight"
+              [showValues]="true">
+            </app-bar-chart>
+          </div>
+        </div>
+
+        <!-- Recent Activities Table Section -->
+        <div class="chart-section recent-activities-section">
+          <div class="chart-header">
+            <h2 class="chart-title">Hoạt động gần đây</h2>
+          </div>
+          <div class="table-container">
+            <table class="recent-activities-table">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Loại hoạt động</th>
+                  <th>Người dùng</th>
+                  <th>Công ty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let activity of recentActivities">
+                  <td>{{ activity.time }}</td>
+                  <td>{{ activity.activityType }}</td>
+                  <td>{{ activity.user }}</td>
+                  <td>{{ activity.company }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- Pie Chart Section -->
+        <div class="chart-section pie-chart-section">
+          <div class="chart-header">
+            <h2 class="chart-title">Quản lý người dùng</h2>
+          </div>
+          <div class="chart-container pie-chart-container-wrapper">
+            <app-pie-chart
+              [data]="pieChartData"
+              [size]="pieChartSize"
+              [showLegend]="true"
+              [showValues]="true">
+            </app-pie-chart>
+          </div>
+        </div>
+
+        <!-- Donut Chart Section -->
+        <div class="chart-section donut-chart-section">
+          <div class="chart-header">
+            <h2 class="chart-title">Quản lý gói dịch vụ</h2>
+          </div>
+          <div class="chart-container donut-chart-container-wrapper">
+            <app-pie-chart
+              [data]="donutChartData"
+              [size]="donutChartSize"
+              [showLegend]="true"
+              [showValues]="true"
+              [donut]="true"
+              [donutSize]="0.6">
+            </app-pie-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

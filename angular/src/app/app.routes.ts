@@ -425,14 +425,7 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'home',
-      },
-      {
-        path: 'home',
-        loadComponent: () =>
-          import('./features/dashboard/homepage/employee/employee-home').then(
-            c => c.EmployeeHomeComponent
-          ),
+        redirectTo: 'statistical-reports',
       },
       {
         path: 'manage-recruitment-information',
@@ -559,6 +552,20 @@ export const APP_ROUTES: Routes = [
         loadComponent: () =>
           import('./features/dashboard/company-verify/employee/company-verify').then(
             c => c.CompanyVerifyComponent
+          ),
+      },
+      {
+        path: 'revenue-management',
+        loadComponent: () =>
+          import('./features/dashboard/revenue-management/employee/revenue-management').then(
+            c => c.RevenueManagementComponent
+          ),
+      },
+      {
+        path: 'statistical-reports',
+        loadComponent: () =>
+          import('./features/dashboard/statistical-reports/employee/statistical-reports').then(
+            c => c.StatisticalReportsComponent
           ),
       },
     ],
