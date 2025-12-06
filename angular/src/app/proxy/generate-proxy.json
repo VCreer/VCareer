@@ -1235,7 +1235,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "ApplyWithUploadedCVAsyncByInput": {
@@ -1272,7 +1272,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationListAsyncByInput": {
@@ -1441,7 +1441,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationAsyncById": {
@@ -1478,7 +1478,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "UpdateApplicationStatusAsyncByIdAndInput": {
@@ -1535,7 +1535,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "WithdrawApplicationAsyncByIdAndInput": {
@@ -1592,7 +1592,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "MarkAsViewedAsyncById": {
@@ -1629,7 +1629,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetApplicationStatisticsAsyncByJobIdAndCompanyId": {
@@ -2024,7 +2024,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "GetJobApplicationsAsyncByJobIdAndInput": {
@@ -2213,7 +2213,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Applications.ApplicationDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "DownloadApplicationCVAsyncById": {
@@ -2250,7 +2250,7 @@
                 "type": "System.Byte[]",
                 "typeSimple": "[number]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "DeleteApplicationAsyncById": {
@@ -2287,7 +2287,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "CheckApplicationStatusAsyncByJobId": {
@@ -2324,7 +2324,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationStatusDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationStatusDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "BulkDownloadCompanyCVsAsyncByInput": {
@@ -2361,7 +2361,7 @@
                 "type": "System.Byte[]",
                 "typeSimple": "[number]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             },
             "RateApplicationAsyncByIdAndInput": {
@@ -2418,7 +2418,7 @@
                 "type": "VCareer.Dto.Applications.ApplicationDto",
                 "typeSimple": "VCareer.Dto.Applications.ApplicationDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Application.IJobApply"
             }
           }
@@ -4345,8 +4345,8 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
             },
-            "UpdatePreviewImageAsyncByIdAndPreviewImageUrl": {
-              "uniqueName": "UpdatePreviewImageAsyncByIdAndPreviewImageUrl",
+            "UpdatePreviewImageAsyncByIdAndDto": {
+              "uniqueName": "UpdatePreviewImageAsyncByIdAndDto",
               "name": "UpdatePreviewImageAsync",
               "httpMethod": "PUT",
               "url": "api/cv/candidates/{id}/preview-image",
@@ -4361,10 +4361,10 @@
                   "defaultValue": null
                 },
                 {
-                  "name": "previewImageUrl",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "name": "dto",
+                  "typeAsString": "VCareer.HttpApi.Controllers.UpdatePreviewImageDto, VCareer.HttpApi",
+                  "type": "VCareer.HttpApi.Controllers.UpdatePreviewImageDto",
+                  "typeSimple": "VCareer.HttpApi.Controllers.UpdatePreviewImageDto",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -4383,11 +4383,11 @@
                   "descriptorName": ""
                 },
                 {
-                  "nameOnMethod": "previewImageUrl",
-                  "name": "previewImageUrl",
+                  "nameOnMethod": "dto",
+                  "name": "dto",
                   "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
+                  "type": "VCareer.HttpApi.Controllers.UpdatePreviewImageDto",
+                  "typeSimple": "VCareer.HttpApi.Controllers.UpdatePreviewImageDto",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -5311,7 +5311,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             },
             "GetCandidateDetailAsyncById": {
@@ -5348,7 +5348,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Profile.CandidateSearchResultDto>",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Profile.CandidateSearchResultDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             },
             "SendConnectionRequestAsyncByIdAndInput": {
@@ -5405,7 +5405,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.IActionResult",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             }
           }
@@ -5453,7 +5453,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "UpdateCompanyLegalInfoAsyncByIdAndInput": {
@@ -5510,7 +5510,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "SearchCompaniesAsyncByInput": {
@@ -5731,7 +5731,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "UploadLegalDocumentAsyncByIdAndInput": {
@@ -13665,7 +13665,7 @@
                 "type": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>",
                 "typeSimple": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Profile.CandidateSearchResultDto>"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             },
             "GetCandidateDetailAsyncByCandidateProfileId": {
@@ -13702,7 +13702,7 @@
                 "type": "VCareer.Dto.Profile.CandidateSearchResultDto",
                 "typeSimple": "VCareer.Dto.Profile.CandidateSearchResultDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             },
             "SendConnectionRequestAsyncByInput": {
@@ -13739,7 +13739,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICandidateSearchAppService"
             }
           }
@@ -15125,7 +15125,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "ChangePasswordAsyncByInput": {
@@ -15162,7 +15162,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "VerifyPhoneNumberAsyncByInput": {
@@ -15199,7 +15199,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "SendEmailOtpAsyncByInput": {
@@ -15236,7 +15236,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "VerifyEmailNumberAsyncByInput": {
@@ -15273,7 +15273,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "GetCurrentUserProfileAsync": {
@@ -15288,7 +15288,7 @@
                 "type": "VCareer.Dto.Profile.ProfileDto",
                 "typeSimple": "VCareer.Dto.Profile.ProfileDto"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "DeleteAccountAsync": {
@@ -15340,7 +15340,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
             },
             "UpdateProfileVisibilityAsyncByIsVisible": {
@@ -35039,6 +35039,27 @@
         },
         {
           "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.HttpApi.Controllers.UpdatePreviewImageDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PreviewImageUrl",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",

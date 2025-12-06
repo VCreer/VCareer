@@ -26,9 +26,7 @@ export class CandidateHeaderComponent implements OnInit {
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
-    emailSettings: false,
-    personalSecurity: false,
-    upgradeAccount: false
+    personalSecurity: false
   };
 
   constructor(
@@ -165,25 +163,17 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
-  onProfileMouseLeave() {
-    setTimeout(() => {
-      this.showProfileMenu = false;
-    }, 300);
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+    if (this.showProfileMenu) {
+      this.showNotificationMenu = false; // Đóng notification menu khi mở profile menu
+    }
   }
 
   toggleNotificationMenu() {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
-      this.showProfileMenu = false; // Đóng profile menu khi mở notification
-    }
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as Node;
-    // Đóng menu nếu click ngoài khu vực notification
-    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
-      this.showNotificationMenu = false;
+      this.showProfileMenu = false; // Đóng profile menu khi mở notification menu
     }
   }
 
@@ -191,6 +181,28 @@ export class CandidateHeaderComponent implements OnInit {
     // Logic đánh dấu tất cả thông báo đã đọc
     this.showNotificationMenu = false;
   }
+
+  onProfileMouseLeave() {
+    // Không dùng hover nữa, chỉ dùng click
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    
+    // Đóng notification menu nếu click ngoài khu vực notification
+    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
+      this.showNotificationMenu = false;
+    }
+    
+    // Đóng profile menu nếu click ngoài khu vực profile
+    const profileContainer = target.closest('.profile-container');
+    if (this.showProfileMenu && !profileContainer) {
+      this.showProfileMenu = false;
+    }
+  }
+
 
   navigateToPersonalInfo() {
     this.router.navigate(['/candidate/profile']);

@@ -1,3 +1,4 @@
+import type { UpdatePreviewImageDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { CandidateCvDto, CreateCandidateCvDto, GetCandidateCvListDto, RenderCvDto, UpdateCandidateCvDto } from '../../cv/models';
@@ -44,7 +45,7 @@ export class CandidateCvService {
   
 
   getList = (input: GetCandidateCvListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'GET',
       url: '/api/cv/candidates',
       params: { templateId: input.templateId, isPublished: input.isPublished, isDefault: input.isDefault, isPublic: input.isPublic, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
@@ -94,11 +95,11 @@ export class CandidateCvService {
     { apiName: this.apiName,...config });
   
 
-  updatePreviewImage = (id: string, previewImageUrl: string, config?: Partial<Rest.Config>) =>
+  updatePreviewImage = (id: string, dto: UpdatePreviewImageDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, IActionResult>({
       method: 'PUT',
       url: `/api/cv/candidates/${id}/preview-image`,
-      body: { previewImageUrl: previewImageUrl },
+      body: dto,
     },
     { apiName: this.apiName,...config });
 

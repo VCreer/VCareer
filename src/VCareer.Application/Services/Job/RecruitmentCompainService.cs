@@ -54,7 +54,8 @@ namespace VCareer.Services.Job
             if (user == null) throw new BusinessException("you are not login");
 
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("lead_recruiter"))
+            // Lead Recruiter và HR Staff đều xem được tất cả chiến dịch của công ty
+            if (roles.Contains("lead_recruiter") || roles.Contains("hr_staff"))
             {
                 var companyId = recruiter.CompanyId;
                 if (companyId == null) throw new BusinessException("Company not found");

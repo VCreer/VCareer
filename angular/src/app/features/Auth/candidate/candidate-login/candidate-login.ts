@@ -150,7 +150,8 @@ export class LoginComponent {
           // Lưu trạng thái đăng nhập vào navigation service
           this.navigationService.loginAsCandidate();
           this.showToastMessage('Đăng nhập thành công!', 'success');
-          setTimeout(() => this.router.navigate(['/']), 800);
+          // Redirect đến /home thay vì / để tránh vấn đề với route root
+          setTimeout(() => this.router.navigate(['/home']), 800);
         },
         error: (err) => {
           console.error('Candidate login error:', err);
@@ -186,8 +187,6 @@ export class LoginComponent {
         }
       });
   }
-
-
 
   navigateToSignUp() {
     this.router.navigate(['/candidate/register']);
@@ -228,8 +227,9 @@ export class LoginComponent {
             console.log('Google login successful');
             this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
             this.navigationService.loginAsCandidate();
+            // Redirect đến /home thay vì / để tránh vấn đề với route root
             setTimeout(() => {
-              this.router.navigate(['/']);
+              this.router.navigate(['/home']);
             }, 800);
           },
           error: (err) => {

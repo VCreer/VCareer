@@ -1,12 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ProfileCardComponent } from '../../../../shared/components/profile-card/profile-card';
 import { MultiSelectLocationComponent } from '../../../../shared/components/multi-select-location/multi-select-location';
 import { JobOptionsService } from '../../../../shared/services/job-options.service';
 import { SelectOption } from '../../../../shared/components/select-field/select-field';
+import type { ProfileDto } from '../../../../proxy/dto/profile/models';
+import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
+import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 
 @Component({
   selector: 'app-job-suggestion-settings',
@@ -21,7 +26,7 @@ import { SelectOption } from '../../../../shared/components/select-field/select-
   templateUrl: './job-suggestion-settings.html',
   styleUrls: ['./job-suggestion-settings.scss'],
 })
-export class JobSuggestionSettingsComponent {
+export class JobSuggestionSettingsComponent implements OnInit {
   // Thông tin cá nhân đơn giản cho phần giới tính
   gender: 'male' | 'female' | 'unspecified' = 'male';
   formSubmitted = false;
@@ -59,16 +64,24 @@ export class JobSuggestionSettingsComponent {
   lastSavedMessage: string = '';
   customPositionError: string = '';
   profileUser = {
-    name: 'Uông Hoàng Duy',
+    name: '',
     accountStatus: 'Tài khoản đã xác thực',
-    jobSearchEnabled: true,
+    jobSearchEnabled: false,
     allowRecruiterSearch: true,
   };
+  isLoadingProfile: boolean = false;
 
   constructor(
     private router: Router,
-    private jobOptionsService: JobOptionsService
+    private jobOptionsService: JobOptionsService,
+    private http: HttpClient,
+    private authStateService: AuthStateService,
+    private authFacadeService: AuthFacadeService
   ) {}
+
+  ngOnInit(): void {
+    this.loadProfileData();
+  }
 
   resetPreferences(): void {
     this.jobPreference = {
@@ -157,6 +170,74 @@ export class JobSuggestionSettingsComponent {
 
   onUpgradeAccount(): void {
     this.router.navigate(['/candidate/upgrade-account/pay']);
+  }
+
+  loadProfileData(): void {
+    this.isLoadingProfile = true;
+    
+    // Với cookies, kiểm tra user từ AuthStateService
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục load profile
+          this.loadProfileDataInternal();
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, không load profile
+          this.isLoadingProfile = false;
+        }
+      });
+      return;
+    }
+
+    // Đã có user, load profile
+    this.loadProfileDataInternal();
+  }
+
+  private loadProfileDataInternal(): void {
+    this.isLoadingProfile = true;
+    
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        if (!response) {
+          this.profileUser = {
+            name: '',
+            accountStatus: 'Tài khoản đã xác thực',
+            jobSearchEnabled: false,
+            allowRecruiterSearch: true,
+          };
+          this.isLoadingProfile = false;
+          return;
+        }
+
+        const fullName = `${response.name || ''} ${response.surname || ''}`.trim() || 'User';
+        this.profileUser = {
+          name: fullName,
+          accountStatus: 'Tài khoản đã xác thực',
+          jobSearchEnabled: false, // Có thể load từ API nếu có
+          allowRecruiterSearch: true, // Có thể load từ API nếu có
+        };
+
+        this.isLoadingProfile = false;
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        this.profileUser = {
+          name: '',
+          accountStatus: 'Tài khoản đã xác thực',
+          jobSearchEnabled: false,
+          allowRecruiterSearch: true,
+        };
+        this.isLoadingProfile = false;
+      }
+    });
   }
 }
 

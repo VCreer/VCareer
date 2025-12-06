@@ -207,8 +207,6 @@ export class CandidateProfileComponent implements OnInit {
       updateDto.address = profileData.address.trim();
     } else if (profileData.location?.trim()) updateDto.location = profileData.location.trim();
     if (formattedDateOfBirth) updateDto.dateOfBirth = formattedDateOfBirth;
-    if (profileData.gender === 'male' || profileData.gender === 'female')
-      updateDto.gender = profileData.gender === 'male';
 
     const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
     this.http.put(apiUrl, updateDto, {
@@ -269,10 +267,6 @@ export class CandidateProfileComponent implements OnInit {
     }
     if (!this.profileData.dateOfBirth) {
       this.errors.dateOfBirth = 'Ngày sinh là bắt buộc';
-      valid = false;
-    }
-    if (!this.profileData.gender) {
-      this.errors.gender = 'Giới tính là bắt buộc';
       valid = false;
     }
     if (!this.profileData.phone?.trim()) {

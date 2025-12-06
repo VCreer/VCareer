@@ -2857,7 +2857,7 @@ export class WriteCv implements OnInit {
 
       // Gọi API để lưu preview image
       return new Promise<void>((resolve, reject) => {
-        this.candidateCvService.updatePreviewImage(cvId, previewImageUrl).subscribe({
+        this.candidateCvService.updatePreviewImage(cvId, { previewImageUrl }).subscribe({
           next: () => {
             console.log('Preview image saved successfully for CV:', cvId);
             resolve();
