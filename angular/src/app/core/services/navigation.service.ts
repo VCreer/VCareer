@@ -120,10 +120,8 @@ export class NavigationService {
   }
 
   private updateAuthStateFromUser(user: any) {
-    console.log('[NavigationService] updateAuthStateFromUser called with user:', user);
     
     if (!user) {
-      console.log('[NavigationService] No user, setting logged out state');
       this.isLoggedInSubject.next(false);
       this.userRoleSubject.next(null);
       this.isVerifiedSubject.next(false);
@@ -133,27 +131,22 @@ export class NavigationService {
 
     // Xác định role dựa vào roles array
     const roles = user.roles || [];
-    console.log('[NavigationService] User roles:', roles);
-    console.log('[NavigationService] Roles type:', typeof roles, 'isArray:', Array.isArray(roles));
     
     let userRole: UserRole = null;
     
     // Convert roles to lowercase để so sánh
     const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
-    console.log('[NavigationService] Roles lowercase:', rolesLowerCase);
     
     // Check cho recruiter: recruiter, hr_staff, lead_recruiter, LEAD_RECRUITER, etc.
     if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
       userRole = 'recruiter';
-      console.log('[NavigationService] Setting role to recruiter');
+      // setting recruiter role
     } else if (rolesLowerCase.includes('candidate')) {
       userRole = 'candidate';
-      console.log('[NavigationService] Setting role to candidate');
+      // setting candidate role
     } else {
-      console.log('[NavigationService] No matching role found, role will be null');
     }
 
-    console.log('[NavigationService] Final userRole:', userRole);
 
     // Cập nhật trạng thái đăng nhập + role
     this.isLoggedInSubject.next(true);

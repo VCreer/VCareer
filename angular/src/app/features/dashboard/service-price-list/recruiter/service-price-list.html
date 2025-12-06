@@ -1,0 +1,108 @@
+<div class="service-price-list-page" [style.padding-left]="getContentPaddingLeft()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
+  <div class="container" [style.max-width]="getContentMaxWidth()">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">
+          <i class="fa fa-tags"></i>
+          Báo giá dịch vụ
+        </h1>
+        <p class="page-description">
+          Khám phá các dịch vụ hỗ trợ tuyển dụng hiệu quả với mức giá cạnh tranh
+        </p>
+      </div>
+      <button class="quote-btn" (click)="onRequestQuote()">
+        <i class="fa fa-file-invoice-dollar"></i>
+        <span>Yêu cầu báo giá</span>
+      </button>
+    </div>
+
+    <!-- Important Note Banner -->
+    <div class="important-note">
+      <div class="note-icon">
+        <i class="fa fa-info-circle"></i>
+      </div>
+      <div class="note-content">
+        <h3 class="note-title">Lưu ý quan trọng</h3>
+        <p class="note-text">
+          Nhằm tránh rủi ro mạo danh và lừa đảo, VCareer khuyến nghị Quý khách hàng không chuyển khoản vào bất cứ tài khoản cá nhân nào và chỉ thực hiện thanh toán vào các tài khoản chính thức của chúng tôi.
+        </p>
+      </div>
+    </div>
+
+    <!-- Service Sections -->
+    <div *ngFor="let section of serviceSections" class="service-section">
+      <div class="section-header">
+        <h2 class="section-title">{{ section.title }}</h2>
+        <p class="section-description">{{ section.description }}</p>
+      </div>
+      
+      <div class="packages-grid">
+        <div *ngFor="let pkg of section.packages" class="package-card"
+             [style.--header-color]="pkg.headerColor"
+             [style.--header-gradient-start]="pkg.headerGradientStart"
+             [style.--header-gradient-end]="pkg.headerGradientEnd">
+          <!-- Package Header -->
+          <div class="package-header">
+            <h3 class="package-name">{{ pkg.name }}</h3>
+            <span *ngIf="pkg.isVip" class="vip-badge">VIP</span>
+          </div>
+          
+          <!-- Package Price -->
+          <div class="package-price-section">
+            <span class="price-value">{{ pkg.price }} VNĐ</span>
+            <span class="price-note">* Giá trên chưa bao gồm VAT</span>
+          </div>
+          
+          <!-- Package Features -->
+          <div class="package-features">
+            <h4 class="features-title">Quyền lợi đặc biệt</h4>
+            <ul class="features-list">
+              <li *ngFor="let feature of pkg.features">
+                <i class="fa fa-check-circle"></i>
+                <span>{{ feature }}</span>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Package Action -->
+          <div class="package-action">
+            <button class="consult-btn" 
+                    [class.primary]="pkg.isVip"
+                    (click)="onContactUs(pkg)">
+              <span>Liên hệ tư vấn</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+      <div class="contact-card">
+        <div class="contact-icon">
+          <i class="fa fa-headset"></i>
+        </div>
+        <div class="contact-content">
+          <h3 class="contact-title">Cần hỗ trợ?</h3>
+          <p class="contact-text">
+            Đội ngũ tư vấn của chúng tôi sẵn sàng hỗ trợ bạn 24/7
+          </p>
+          <button class="contact-us-btn" (click)="onRequestQuote()">
+            <i class="fa fa-envelope"></i>
+            <span>Liên hệ ngay</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

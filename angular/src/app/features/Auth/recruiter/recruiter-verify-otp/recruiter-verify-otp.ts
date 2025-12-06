@@ -28,6 +28,7 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
   
   // Account verification
   verificationLevel: string = 'Cấp 1/3';
@@ -122,6 +123,12 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       this.sidebarCheckInterval = setInterval(() => {
         this.checkSidebarState();
       }, 100);
+
+      // Listen to window resize for responsive updates
+      this.resizeListener = () => {
+        this.checkSidebarState();
+      };
+      window.addEventListener('resize', this.resizeListener);
     } catch (error) {
       console.error('Error in ngOnInit:', error);
       this.router.navigate(['/recruiter/login']);
@@ -131,6 +138,9 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
     }
   }
 
@@ -160,17 +170,22 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     if (window.innerWidth <= 768) {
       return '0';
     }
+    // Padding-left để tránh sidebar
     return `${this.sidebarWidth}px`;
   }
 
   getContentMaxWidth(): string {
     const viewportWidth = window.innerWidth;
     if (viewportWidth <= 768) {
-      return '100%';
+      // Mobile: full width với padding nhỏ
+      return 'calc(100vw - 32px)';
     }
-    const padding = 48; // 24px mỗi bên
-    const availableWidth = viewportWidth - this.sidebarWidth - padding;
-    return `${Math.max(0, availableWidth)}px`;
+    // Desktop: tính max-width dựa trên viewportWidth - sidebarWidth - padding
+    const sidePadding = 48; // 24px mỗi bên
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    // Giới hạn max-width để không quá rộng, nhưng vẫn responsive
+    const maxContentWidth = Math.min(1200, Math.max(800, availableWidth));
+    return `${maxContentWidth}px`;
   }
 
   loadVerificationData(): void {

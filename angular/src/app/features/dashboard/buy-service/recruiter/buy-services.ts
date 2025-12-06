@@ -135,7 +135,7 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
   }
 
   onRequestQuote(): void {
-    // TODO: Implement request quote functionality
+    this.router.navigate(['/recruiter/service-price-list']);
   }
 
   onViewDetail(packageId: string): void {

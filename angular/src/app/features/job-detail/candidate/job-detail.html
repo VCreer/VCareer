@@ -1,31 +1,35 @@
 <div class="job-detail-page">
-  <!-- Search Header -->
-  <app-search-header
-    [pageTitle]="translate('job_detail.title')"
-    [showPageTitle]="false"
-    [selectedCategory]="selectedCategory"
-    [selectedLocation]="selectedLocation"
-    [searchPosition]="searchPosition"
-    [categoryPlaceholder]="translate('job_page.category_placeholder')"
-    [positionPlaceholder]="translate('job_page.position_placeholder')"
-    [locationPlaceholder]="translate('job_page.location_placeholder')"
-    [searchButton]="translate('job_page.search_button')"
-    [categories]="{
-      it: translate('job_page.categories.it'),
-      marketing: translate('job_page.categories.marketing'),
-      accounting: translate('job_page.categories.accounting')
-    }"
-    [locationLongAn]="translate('job_data.location_long_an')"
-    [locationHanoi]="translate('job_page.locations.hanoi')"
-    [locationHcm]="translate('job_page.locations.hcm')"
-    [locationDanang]="translate('job_page.locations.danang')"
-    (categoryChange)="onCategoryChange($event)"
-    (locationChange)="onLocationChange($event)"
-    (positionChange)="onPositionChange($event)"
-    (search)="onSearch()"
-    (clearPosition)="onClearPosition()"
-  >
-  </app-search-header>
+  <!-- Search Header - Using FilterBarComponent -->
+  <div class="search-header-wrapper">
+    <app-filter-bar
+      [categories]="categoryTree"
+      [provinces]="provinces"
+      [selectedCategoryIds]="selectedCategoryIds"
+      [selectedProvinceCodes]="selectedProvinceCodes"
+      [selectedWardCodes]="selectedWardCodes"
+      (categorySelected)="onCategorySelected($event)"
+      (locationSelected)="onLocationSelected($event)"
+    >
+      <!-- Search Input -->
+      <input
+        search-input
+        type="text"
+        class="main-search-input"
+        placeholder="{{ translate('job_page.position_placeholder') }}"
+        [(ngModel)]="searchPosition"
+      />
+
+      <!-- Search Button -->
+      <button
+        search-button
+        class="main-search-btn"
+        (click)="onSearch()"
+      >
+        <i class="fa fa-search search-icon"></i>
+        {{ translate('job_page.search_button') }}
+      </button>
+    </app-filter-bar>
+  </div>
 
   <!-- Breadcrumb -->
   <div class="breadcrumb-wrapper">
@@ -93,15 +97,6 @@
                 <div class="job-detail__info-item-value">
                   {{ jobDetail.experienceText || 'Không yêu cầu' }}
                 </div>
-              </div>
-            </div>
-            <div class="job-detail__info-item">
-              <div class="job-detail__info-item-icon">
-                <i class="fa fa-eye"></i>
-              </div>
-              <div class="job-detail__info-item-content">
-                <div class="job-detail__info-item-title">Lượt xem</div>
-                <div class="job-detail__info-item-value">{{ jobDetail.viewCount || 0 }}</div>
               </div>
             </div>
           </div>
@@ -187,6 +182,47 @@
                 >{{ translate('job_detail.deadline') }}: {{ jobDetail.expiresAt | date:'dd/MM/yyyy'
                 }}</span
               >
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="job-detail__action-buttons">
+              <button class="btn-apply-now" (click)="openApplyModal()">
+                <i class="fa fa-paper-plane"></i>
+                {{ hasApplied ? 'Ứng tuyển lại' : 'Ứng tuyển ngay' }}
+              </button>
+              <button class="btn-save-job" [class.active]="isHeartActive" (click)="toggleHeart()">
+                <i class="fa" [ngClass]="isHeartActive ? 'fa-heart' : 'fa-heart-o'"></i>
+                <span>{{ isHeartActive ? 'Đã lưu' : 'Lưu tin' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Related Jobs Section -->
+          <div class="related-jobs-section">
+            <div class="recruitment-details-header">
+              <div class="section-title-bar"></div>
+              <h2 class="section-title">Việc làm liên quan</h2>
+            </div>
+            
+            <!-- Loading State -->
+            <div *ngIf="isLoadingRelatedJobs" class="related-jobs-loading">
+              <div class="loading-spinner"></div>
+              <p>Đang tải việc làm liên quan...</p>
+            </div>
+
+            <!-- Related Jobs List -->
+            <div *ngIf="!isLoadingRelatedJobs && relatedJobs.length > 0" class="related-jobs-list">
+              <app-job-listings
+                [jobListings]="relatedJobs"
+                [categories]="categoryTree"
+                [provinces]="provinces"
+                (jobClick)="navigateToJob($event)"
+              ></app-job-listings>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoadingRelatedJobs && relatedJobs.length === 0" class="related-jobs-empty">
+              <p>Không có việc làm liên quan</p>
             </div>
           </div>
         </div>
@@ -280,17 +316,18 @@
           <div class="category-tags">
             <a
               class="tag"
-              *ngFor="let c of jobDetail.categoryPath"
+              *ngFor="let c of jobCategories"
               href="/candidate/job"
               (click)="onRelatedCategoryClick(c, $event)"
             >
-              {{ c.name }}
+              {{ c.categoryName }}
             </a>
+            <span class="tag" *ngIf="jobCategories.length === 0">Chưa có danh mục</span>
           </div>
 
           <h3 style="margin-top: 1.5rem">{{ translate('job_detail.area') }}</h3>
           <div class="category-tags">
-            <span class="tag">{{ jobDetail.provinceName || 'không có' }}</span>
+            <span class="tag">{{ getFullLocation() }}</span>
           </div>
         </div>
       </div>

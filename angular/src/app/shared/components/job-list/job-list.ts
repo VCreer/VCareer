@@ -13,6 +13,8 @@ import { ToastNotificationComponent } from '../toast-notification/toast-notifica
 import { JobApiService } from '../../../apiTest/api/job.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { Router } from '@angular/router';
+import { GeoService } from '../../../core/services/Geo.service';
+import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
 // Import trực tiếp để tránh circular dependency
 //import { LoginModalComponent } from '../../services/login-modal/login-modal';
 
@@ -29,6 +31,7 @@ export class JobListComponent implements OnInit, OnChanges {
   @Input() totalCount: number = 0; // ✅ Total job count
   @Input() isLoading: boolean = false; // ✅ Loading state
   @Input() selectedJobId: number | null = null;
+  @Input() provinces: any[] = []; // ✅ Provinces để lookup province name
 
   @Output() searchJobs = new EventEmitter<any>();
   @Output() pageChange = new EventEmitter<number>();
@@ -56,7 +59,8 @@ export class JobListComponent implements OnInit, OnChanges {
     private translationService: TranslationService,
     private jobApi: JobApiService,
     private navigationService: NavigationService,
-    private router: Router
+    private router: Router,
+    private geoService: GeoService
   ) {}
 
   ngOnInit() {
@@ -88,13 +92,95 @@ export class JobListComponent implements OnInit, OnChanges {
    * ✅ Helper: Update filteredJobs và recalculate pagination
    */
   private updateFilteredJobs() {
-    this.filteredJobs = [...this.jobs];
+    // Map JobViewDto từ API sang format mà template expect
+    this.filteredJobs = this.jobs.map(job => this.mapJobToTemplateFormat(job));
     this.calculateTotalPages();
 
     console.log('✅ JobListComponent: filteredJobs updated');
     console.log('   📄 Filtered count:', this.filteredJobs.length);
     console.log('   📑 Total pages:', this.totalPages);
-    // Backend đã trả isSaved trong JobViewDto, không cần gọi API thêm
+  }
+
+  /**
+   * Map JobViewDto từ API sang format template expect
+   */
+  private mapJobToTemplateFormat(job: any): any {
+    return {
+      ...job,
+      // Map logo
+      logo: job.companyImageUrl || 'assets/images/vng.png',
+      // Map company name (bỏ "Tập đoàn" prefix vì template đã có)
+      company: job.companyName || 'N/A',
+      // Map salary
+      salaryText: this.formatSalary(job),
+      // Map province name (cần lookup từ provinceCode)
+      provinceName: this.getProvinceName(job.provinceCode) || 'N/A',
+      // Map experience
+      experienceText: this.formatExperience(job.experience) || 'N/A',
+    };
+  }
+
+  /**
+   * Format salary từ JobViewDto
+   */
+  private formatSalary(job: any): string {
+    if (job.salaryDeal) {
+      return 'Thỏa thuận';
+    }
+    if (job.salaryMin && job.salaryMax) {
+      return `${this.formatNumber(job.salaryMin)} - ${this.formatNumber(job.salaryMax)} VNĐ`;
+    }
+    if (job.salaryMin) {
+      return `Từ ${this.formatNumber(job.salaryMin)} VNĐ`;
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Format số với dấu phẩy
+   */
+  private formatNumber(num: number): string {
+    if (!num && num !== 0) return '0';
+    return num.toLocaleString('vi-VN');
+  }
+
+  /**
+   * Format experience level
+   */
+  private formatExperience(level: any): string {
+    if (level === undefined || level === null) return '';
+    const levelMap: { [key: number]: string } = {
+      [ExperienceLevel.None]: 'Không yêu cầu',
+      [ExperienceLevel.Under1]: 'Dưới 1 năm',
+      [ExperienceLevel.Year1]: '1 năm',
+      [ExperienceLevel.Year2]: '2 năm',
+      [ExperienceLevel.Year3]: '3 năm',
+      [ExperienceLevel.Year4]: '4 năm',
+      [ExperienceLevel.Year5]: '5 năm',
+      [ExperienceLevel.Year6]: '6 năm',
+      [ExperienceLevel.Year7]: '7 năm',
+      [ExperienceLevel.Year8]: '8 năm',
+      [ExperienceLevel.Year9]: '9 năm',
+      [ExperienceLevel.Year10]: '10 năm',
+      [ExperienceLevel.Over10]: 'Trên 10 năm'
+    };
+    return levelMap[level] || String(level);
+  }
+
+  /**
+   * Get province name từ provinceCode
+   */
+  private getProvinceName(provinceCode: number): string {
+    if (!provinceCode) return '';
+    
+    // Nếu có provinces từ input, lookup từ đó
+    if (this.provinces && this.provinces.length > 0) {
+      const province = this.provinces.find((p: any) => p.code === provinceCode);
+      if (province) return province.name || '';
+    }
+    
+    // Fallback: return code
+    return `Mã: ${provinceCode}`;
   }
 
   calculateTotalPages() {
@@ -267,12 +353,13 @@ export class JobListComponent implements OnInit, OnChanges {
     return this.translationService.translate(key);
   }
 
-nJobClick(job: any) {
-  if (!job || !job.id) return;
-
-  this.router.navigate(['/candidate/job-detail', job.id]);
-  this.jobClick.emit(job);
-}
+  onJobClick(job: any) {
+    if (!job || !job.id) return;
+    
+    // Trigger quickView để hiển thị detail panel thay vì navigate
+    this.onQuickView(job);
+    this.jobClick.emit(job);
+  }
 
   onSaveJob(job: any) {
     if (!this.isAuthenticated) {

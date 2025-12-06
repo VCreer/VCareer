@@ -229,18 +229,34 @@
       }
     }
 
-    // ✅ No Results
+    // ✅ No Results (wrapper)
     .no-results {
       text-align: center;
-      padding: 4rem 1rem;
+      padding: 2.5rem 1rem;
       background: white;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      
-      p {
-        font-size: 1.125rem;
-        color: #94a3b8;
-        margin: 0;
+
+      // Empty-state block bên trong
+      .empty-state {
+        padding: 0;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        .empty-state-image {
+          width: 140px;
+          height: 140px;
+          margin-bottom: 1rem;
+        }
+
+        .empty-state-text {
+          font-size: 1rem;
+          text-align: center;
+          max-width: 320px;
+        }
       }
     }
   }
