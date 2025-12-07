@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -215,80 +214,54 @@ namespace VCareer.Services.User
             return result.Groups;
         }
         [Authorize]
-        [Authorize]
         public async Task UpdateRolePermissionsAsync(string roleName, List<string> permissions)
         {
-            using (var uow = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: true))
+            try
             {
-                try
+                // Validate role
+                var roleList = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
+                if (!roleList.Items.Any(r => r.Name == roleName))
                 {
-                    // Validate role
-                    var roleList = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
-                    var role = roleList.Items.FirstOrDefault(r => r.Name == roleName);
-                    if (role == null)
-                    {
-                        throw new UserFriendlyException($"Vai trò '{roleName}' không tồn tại");
-                    }
-
-                    // BƯỚC 1: Xóa TẤT CẢ permissions hiện tại của role này
-                    // Lấy tất cả permission grants của role
-                    var currentGrants = await _permissionManager.GetAllAsync(
-                        RolePermissionValueProvider.ProviderName,
-                        roleName
-                    );
-
-                    // Delete tất cả grants hiện tại
-                    foreach (var grant in currentGrants)
-                    {
-                        try
-                        {
-                            await _permissionManager.DeleteAsync(
-                                grant.Name,
-                                RolePermissionValueProvider.ProviderName
-                                
-                            );
-                        }
-                        catch
-                        {
-                            // Ignore delete errors
-                        }
-                    }
-
-                    // Save changes sau khi delete
-                    await uow.SaveChangesAsync();
-
-                    // BƯỚC 2: Thêm lại permissions mới
-                    var desiredSet = (permissions ?? new List<string>()).ToHashSet();
-
-                    foreach (var permissionName in desiredSet)
-                    {
-                        try
-                        {
-                            await _permissionManager.SetAsync(
-                                permissionName,
-                                RolePermissionValueProvider.ProviderName,
-                                roleName,
-                                true
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogWarning($"Failed to grant permission {permissionName}: {ex.Message}");
-                        }
-                    }
-
-                    // Complete UnitOfWork
-                    await uow.CompleteAsync();
+                    throw new UserFriendlyException($"Vai trò '{roleName}' không tồn tại");
                 }
-                catch (UserFriendlyException)
+
+                var desiredSet = (permissions ?? new List<string>()).ToHashSet();
+
+                // Lấy tất cả permission definitions
+                var allPermissionGroups = await _permissionDefinitionManager.GetGroupsAsync();
+                var allPermissionNames = allPermissionGroups
+                    .SelectMany(g => g.GetPermissionsWithChildren())
+                    .Select(p => p.Name)
+                    .ToHashSet();
+
+                // Set permissions một cách đơn giản
+                foreach (var permissionName in allPermissionNames)
                 {
-                    throw;
+                    var shouldGrant = desiredSet.Contains(permissionName);
+
+                    try
+                    {
+                        await _permissionManager.SetAsync(
+                            permissionName,
+                            RolePermissionValueProvider.ProviderName,
+                            roleName,
+                            shouldGrant
+                        );
+                    }
+                    catch
+                    {
+                        // Ignore individual permission errors
+                        continue;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"Error updating role permissions for {roleName}");
-                    throw new UserFriendlyException("Không thể cập nhật quyền. Vui lòng thử lại.");
-                }
+            }
+            catch (UserFriendlyException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException($"Không thể cập nhật quyền: {ex.Message}");
             }
         }
 

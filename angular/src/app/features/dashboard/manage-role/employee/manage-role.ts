@@ -362,6 +362,10 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const currentRole = { ...this.selectedRole };
     const permissions = Array.from(this.selectedPermissions);
+    
+    // Debug: Log để xem permissions gửi đi
+    console.log('Saving permissions for role:', currentRole.name);
+    console.log('Permissions to save:', permissions);
 
     this.userService.updateRolePermissions(currentRole.name, permissions).subscribe({
       next: () => {
