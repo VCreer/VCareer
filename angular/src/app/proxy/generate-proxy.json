@@ -19276,6 +19276,63 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
+            "GetPermissionsByRoleAndGroupAsyncByRoleIdAndGroupName": {
+              "uniqueName": "GetPermissionsByRoleAndGroupAsyncByRoleIdAndGroupName",
+              "name": "GetPermissionsByRoleAndGroupAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/permissions-by-role-and-group/{roleId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "roleId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "groupName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "roleId",
+                  "name": "roleId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "groupName",
+                  "name": "groupName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGrantInfoDto>",
+                "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGrantInfoDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.User.UserService"
+            },
             "GetPermissionGroupsByUserAsyncByUserId": {
               "uniqueName": "GetPermissionGroupsByUserAsyncByUserId",
               "name": "GetPermissionGroupsByUserAsync",

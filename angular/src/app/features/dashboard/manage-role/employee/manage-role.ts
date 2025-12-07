@@ -22,6 +22,7 @@ interface PermissionItem {
   id: string;
   name: string;
   description?: string;
+  isGranted: boolean;
 }
 
 interface PermissionSubGroupViewModel {
@@ -34,7 +35,7 @@ interface PermissionGroupViewModel {
   id: string;
   name: string;
   subGroups: PermissionSubGroupViewModel[];
-  permissions: PermissionItem[]; // Permissions không có parentName (direct permissions)
+  permissions: PermissionItem[];
 }
 
 @Component({
@@ -192,15 +193,15 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
 
     this.userService.getPermissionGroupsByRole(role.id).subscribe({
       next: (groups: PermissionGroupDto[]) => {
+        console.log('API Response - Permission Groups:', groups);
+        
         this.permissionGroups = (groups ?? []).map(group => {
           const groupId = group.name ?? '';
           const groupName = group.displayName ?? group.name ?? '';
           
-          // Phân loại permissions: có parentName (sub-group) và không có parentName (direct)
           const permissionsWithParent = (group.permissions ?? []).filter(p => !!p.name && !!p.parentName);
           const permissionsWithoutParent = (group.permissions ?? []).filter(p => !!p.name && !p.parentName);
           
-          // Nhóm permissions theo parentName để tạo sub-groups
           const subGroupMap = new Map<string, PermissionItem[]>();
           permissionsWithParent.forEach(p => {
             const parentName = p.parentName as string;
@@ -210,23 +211,34 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
             subGroupMap.get(parentName)!.push({
               id: p.name as string,
               name: p.displayName ?? (p.name as string),
-              description: ''
+              description: '',
+              isGranted: p.isGranted ?? false
             });
+            
+            if (p.isGranted) {
+              console.log('Permission granted (sub-group):', p.name);
+              this.selectedPermissions.add(p.name as string);
+            }
           });
           
-          // Tạo sub-groups từ map
           const subGroups: PermissionSubGroupViewModel[] = Array.from(subGroupMap.entries()).map(([parentName, perms]) => ({
             id: `${groupId}_${parentName}`,
             name: parentName,
             permissions: perms
           }));
           
-          // Direct permissions (không có parentName)
-          const directPermissions: PermissionItem[] = permissionsWithoutParent.map(p => ({
-            id: p.name as string,
-            name: p.displayName ?? (p.name as string),
-            description: ''
-          }));
+          const directPermissions: PermissionItem[] = permissionsWithoutParent.map(p => {
+            if (p.isGranted) {
+              console.log('Permission granted (direct):', p.name);
+              this.selectedPermissions.add(p.name as string);
+            }
+            return {
+              id: p.name as string,
+              name: p.displayName ?? (p.name as string),
+              description: '',
+              isGranted: p.isGranted ?? false
+            };
+          });
           
           return {
             id: groupId,
@@ -236,15 +248,8 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
           };
         }).filter(g => g.id);
 
-        // Khởi tạo selectedPermissions theo isGranted
-        (groups ?? []).forEach(group => {
-          (group.permissions ?? []).forEach(p => {
-            if (p.isGranted && p.name) {
-              this.selectedPermissions.add(p.name as string);
-            }
-          });
-        });
-
+        console.log('Selected Permissions:', Array.from(this.selectedPermissions));
+        console.log('Total granted permissions:', this.selectedPermissions.size);
         this.isLoadingPermissions = false;
       },
       error: () => {
@@ -269,7 +274,6 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
   }
 
   onTogglePermissionGroup(group: PermissionGroupViewModel): void {
-    // Lấy tất cả permissions từ sub-groups và direct permissions
     const allPermissions: PermissionItem[] = [];
     for (const subGroup of group.subGroups) {
       allPermissions.push(...subGroup.permissions);
@@ -354,18 +358,44 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
       this.showToastMessage('Vui lòng chọn một vai trò', 'error');
       return;
     }
+    
     this.isSaving = true;
-    const roleName = this.selectedRole.name;
+    const currentRole = { ...this.selectedRole };
     const permissions = Array.from(this.selectedPermissions);
 
-    this.userService.updateRolePermissions(roleName, permissions).subscribe({
+    this.userService.updateRolePermissions(currentRole.name, permissions).subscribe({
       next: () => {
         this.isSaving = false;
         this.showToastMessage('Cập nhật quyền cho vai trò thành công', 'success');
+        
+        // QUAN TRỌNG: Reload ngay lập tức để cập nhật ConcurrencyStamp
+        if (this.selectedRole && this.selectedRole.id === currentRole.id) {
+          this.loadPermissionsForRole(this.selectedRole);
+        }
       },
-      error: () => {
+      error: (error) => {
         this.isSaving = false;
-        this.showToastMessage('Cập nhật quyền cho vai trò thất bại', 'error');
+        console.error('Error updating permissions:', error);
+        
+        let errorMessage = 'Cập nhật quyền cho vai trò thất bại';
+        
+        // Xử lý error response từ ABP
+        if (error?.error?.error) {
+          if (error.error.error.message) {
+            errorMessage = error.error.error.message;
+          } else if (error.error.error.details) {
+            errorMessage = error.error.error.details;
+          }
+        } else if (error?.statusText) {
+          errorMessage = `${errorMessage}: ${error.statusText}`;
+        }
+        
+        this.showToastMessage(errorMessage, 'error');
+        
+        // Reload để đồng bộ lại state
+        if (this.selectedRole && this.selectedRole.id === currentRole.id) {
+          this.loadPermissionsForRole(this.selectedRole);
+        }
       }
     });
   }
@@ -379,5 +409,3 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 }
-
-

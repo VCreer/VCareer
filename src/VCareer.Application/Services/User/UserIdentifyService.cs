@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,11 @@ using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization.Permissions;
+using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.PermissionManagement;
+using Volo.Abp.Uow;
 using Volo.Abp.Users;
 
 
@@ -34,6 +37,8 @@ namespace VCareer.Services.User
         private readonly ICandidateProfileRepository _candidateProfileRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IIdentityRoleRepository _identityRoleRepository;
+        private readonly IPermissionManager _permissionManager;
 
         public UserService(
             IdentityUserAppService userAppService,
@@ -42,7 +47,9 @@ namespace VCareer.Services.User
             IRecruiterRepository recruiterRepository,
             ICandidateProfileRepository candidateProfileRepository,
             IEmployeeRepository employeeRepository,
+            IIdentityRoleRepository identityRoleRepository,
             IPermissionDefinitionManager permissionDefinitionManager,
+            IPermissionManager permissionManager,
             IStringLocalizerFactory stringLocalizerFactory
             )
         {
@@ -54,6 +61,8 @@ namespace VCareer.Services.User
             _employeeRepository = employeeRepository;
             _permissionDefinitionManager = permissionDefinitionManager;
             _stringLocalizerFactory = stringLocalizerFactory;
+            _identityRoleRepository= _identityRoleRepository;
+            _permissionManager = permissionManager;
 
         }
 
@@ -116,7 +125,7 @@ namespace VCareer.Services.User
         {
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
-          
+
             await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
             {
                 IsActive = isActive
@@ -125,7 +134,7 @@ namespace VCareer.Services.User
         public async Task<List<IdentityRoleDto>> GetAllRolesAsync()
         {
             var roles = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
-            return roles.Items.ToList();
+            return roles.Items.Except(roles.Items.Where(r => r.Name.Contains("admin", StringComparison.OrdinalIgnoreCase))).ToList();
         }
         [Authorize(VCareerPermission.User.ViewEmployees)]
         public async Task<List<IdentityRoleDto>> GetAllEmployeeRolesAsync()
@@ -153,13 +162,47 @@ namespace VCareer.Services.User
         {
             var role = await _roleAppService.GetAsync(roleId);
             if (role == null) throw new BusinessException("Role not found");
+
+            // FIX: Sử dụng role.Name thay vì roleId, và "Role" thay vì "R"
             var result = await _permissionAppService.GetAsync(
-                providerName: "R",      // PermissionValueProviderNames.Role
-                providerKey: roleId.ToString()
+                providerName: RolePermissionValueProvider.ProviderName, // Hoặc "Role"
+                providerKey: role.Name  // Dùng Name thay vì Id
             );
 
-            return result.Groups;
+            var excludedGroups = new[]
+            {
+        "Book_Test_Permissions",
+        "AbpTenantManagement",
+        "SettingManagement",
+        "FeatureManagement"
+    };
+
+            return result.Groups
+                         .Where(g => !excludedGroups.Contains(g.Name))
+                         .ToList();
         }
+
+        public async Task<List<PermissionGrantInfoDto>> GetPermissionsByRoleAndGroupAsync(
+            Guid roleId,
+            string groupName)
+        {
+            var role = await _roleAppService.GetAsync(roleId);
+            if (role == null)
+                throw new BusinessException("Role not found");
+
+            // FIX: Sử dụng role.Name thay vì roleId, và "Role" thay vì "R"
+            var result = await _permissionAppService.GetAsync(
+                providerName: RolePermissionValueProvider.ProviderName, // Hoặc "Role"
+                providerKey: role.Name  // Dùng Name thay vì Id
+            );
+
+            var targetGroup = result.Groups.FirstOrDefault(g => g.Name == groupName);
+            if (targetGroup == null)
+                return new List<PermissionGrantInfoDto>();
+
+            return targetGroup.Permissions.ToList();
+        }
+
         public async Task<List<PermissionGroupDto>> GetPermissionGroupsByUserAsync(Guid userId)
         {
             var user = await _userAppService.GetAsync(userId);
@@ -171,71 +214,152 @@ namespace VCareer.Services.User
 
             return result.Groups;
         }
+        [Authorize]
+        [Authorize]
         public async Task UpdateRolePermissionsAsync(string roleName, List<string> permissions)
         {
-            if (permissions == null || permissions.Count == 0) return;
-            var input = new UpdatePermissionsDto
+            using (var uow = UnitOfWorkManager.Begin(requiresNew: true, isTransactional: true))
             {
-                Permissions = permissions.Select(p => new UpdatePermissionDto
+                try
                 {
-                    Name = p,
-                    IsGranted = true
-                }).ToArray()
-            };
+                    // Validate role
+                    var roleList = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
+                    var role = roleList.Items.FirstOrDefault(r => r.Name == roleName);
+                    if (role == null)
+                    {
+                        throw new UserFriendlyException($"Vai trò '{roleName}' không tồn tại");
+                    }
 
-            await _permissionAppService.UpdateAsync(
-                providerName: "R",   // Role provider
-                providerKey: roleName,
-                input
-            );
+                    // BƯỚC 1: Xóa TẤT CẢ permissions hiện tại của role này
+                    // Lấy tất cả permission grants của role
+                    var currentGrants = await _permissionManager.GetAllAsync(
+                        RolePermissionValueProvider.ProviderName,
+                        roleName
+                    );
+
+                    // Delete tất cả grants hiện tại
+                    foreach (var grant in currentGrants)
+                    {
+                        try
+                        {
+                            await _permissionManager.DeleteAsync(
+                                grant.Name,
+                                RolePermissionValueProvider.ProviderName
+                                
+                            );
+                        }
+                        catch
+                        {
+                            // Ignore delete errors
+                        }
+                    }
+
+                    // Save changes sau khi delete
+                    await uow.SaveChangesAsync();
+
+                    // BƯỚC 2: Thêm lại permissions mới
+                    var desiredSet = (permissions ?? new List<string>()).ToHashSet();
+
+                    foreach (var permissionName in desiredSet)
+                    {
+                        try
+                        {
+                            await _permissionManager.SetAsync(
+                                permissionName,
+                                RolePermissionValueProvider.ProviderName,
+                                roleName,
+                                true
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogWarning($"Failed to grant permission {permissionName}: {ex.Message}");
+                        }
+                    }
+
+                    // Complete UnitOfWork
+                    await uow.CompleteAsync();
+                }
+                catch (UserFriendlyException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error updating role permissions for {roleName}");
+                    throw new UserFriendlyException("Không thể cập nhật quyền. Vui lòng thử lại.");
+                }
+            }
         }
+
         public async Task UpdateUserPermissionsAsync(Guid userId, List<string> desiredPermissions)
         {
-            var user = await _userAppService.GetAsync(userId);
-            if (user == null) throw new BusinessException("User not found");
-
-            var currentPermissionsResult = await _permissionAppService.GetAsync(
-                providerName: "U",
-                providerKey: userId.ToString()
-            );
-
-            // Lấy tất cả permission của user đang được grant
-            var currentGranted = currentPermissionsResult.Groups
-                .SelectMany(g => g.Permissions)
-                .Where(p => p.IsGranted)
-                .Select(p => p.Name)
-                .ToList();
-
-            // Tạo danh sách UpdatePermissionDto
-            var updateList = new List<UpdatePermissionDto>();
-
-            // Grant những permission mới có trong desiredPermissions nhưng chưa grant
-            var toGrant = desiredPermissions.Except(currentGranted);
-            updateList.AddRange(toGrant.Select(p => new UpdatePermissionDto
+            try
             {
-                Name = p,
-                IsGranted = true
-            }));
+                var user = await _userAppService.GetAsync(userId);
+                if (user == null) throw new BusinessException("User not found");
 
-            // Revoke những permission hiện có nhưng không còn trong desiredPermissions
-            var toRevoke = currentGranted.Except(desiredPermissions);
-            updateList.AddRange(toRevoke.Select(p => new UpdatePermissionDto
-            {
-                Name = p,
-                IsGranted = false
-            }));
-
-            // Cập nhật permissions
-            if (updateList.Any())
-            {
-                await _permissionAppService.UpdateAsync(
-                    providerName: "U",
-                    providerKey: userId.ToString(),
-                    new UpdatePermissionsDto
-                    {
-                        Permissions = updateList.ToArray()
-                    }
+                var currentPermissionsResult = await _permissionAppService.GetAsync(
+                    providerName: UserPermissionValueProvider.ProviderName, // "User"
+                    providerKey: userId.ToString()
                 );
+
+                // Lấy tất cả permission của user đang được grant
+                var currentGranted = currentPermissionsResult.Groups
+                    .SelectMany(g => g.Permissions)
+                    .Where(p => p.IsGranted)
+                    .Select(p => p.Name)
+                    .ToHashSet();
+
+                // Lấy tất cả permissions có sẵn
+                var allAvailablePermissions = currentPermissionsResult.Groups
+                    .SelectMany(g => g.Permissions)
+                    .Select(p => p.Name)
+                    .ToHashSet();
+
+                var updateList = new List<UpdatePermissionDto>();
+                var desiredSet = (desiredPermissions ?? new List<string>()).ToHashSet();
+
+                // Grant những permission mới
+                foreach (var permission in desiredSet)
+                {
+                    if (allAvailablePermissions.Contains(permission))
+                    {
+                        updateList.Add(new UpdatePermissionDto
+                        {
+                            Name = permission,
+                            IsGranted = true
+                        });
+                    }
+                }
+
+                // Revoke những permission không còn trong danh sách
+                var toRevoke = currentGranted.Except(desiredSet);
+                foreach (var permission in toRevoke)
+                {
+                    updateList.Add(new UpdatePermissionDto
+                    {
+                        Name = permission,
+                        IsGranted = false
+                    });
+                }
+
+                // Cập nhật permissions
+                if (updateList.Any())
+                {
+                    await _permissionAppService.UpdateAsync(
+                        providerName: UserPermissionValueProvider.ProviderName, // "User"
+                        providerKey: userId.ToString(),
+                        new UpdatePermissionsDto
+                        {
+                            Permissions = updateList.ToArray()
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessException($"Failed to update user permissions: {ex.Message}");
             }
         }
 
