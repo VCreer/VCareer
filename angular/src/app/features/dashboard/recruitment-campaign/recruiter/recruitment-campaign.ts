@@ -20,7 +20,6 @@ import {
   RecruimentCampainCreateDto,
   RecruimentCampainUpdateDto,
 } from 'src/app/proxy/dto/job-dto';
-import { ToasterService } from '@abp/ng.theme.shared';
 import { GeoService} from 'src/app/proxy/services/geo';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 
@@ -106,7 +105,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private campaignService: RecruitmentCompainService,
     private geoService: GeoService,
-    private toaster: ToasterService,
     private router: Router
   ) {}
 
@@ -140,7 +138,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
           value: p.code?.toString() || '',
         }));
       },
-      error: () => this.toaster.error('Không tải được danh sách tỉnh/thành'),
+      error: () => this.showToastMessage('Không tải được danh sách tỉnh/thành', 'error'),
     });
   }
 
@@ -194,14 +192,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     this.campaignService.createRecruitmentCompainByInput(input).subscribe({
       next: () => {
-        this.toaster.success('Tạo chiến dịch thành công!');
+        this.showToastMessage('Tạo chiến dịch thành công!', 'success');
         this.loadCampaigns();
         this.showActivityModal = true;
         this.resetForm();
       },
       error: (err) => {
         console.error(err);
-        this.toaster.error('Tạo chiến dịch thất bại');
+        this.showToastMessage('Tạo chiến dịch thất bại', 'error');
       },
       complete: () => {
         this.isCreating = false;
@@ -232,11 +230,11 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           campaign.isActive = checked;
-          this.toaster.success(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch');
+          this.showToastMessage(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch', 'success');
         },
         error: () => {
           campaign.isActive = !checked;
-          this.toaster.error('Cập nhật trạng thái thất bại');
+          this.showToastMessage('Cập nhật trạng thái thất bại', 'error');
         },
         complete: () => {
           this.isTogglingCampaign = false;
@@ -256,7 +254,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     if (this.isSavingEdit) return;
 
     if (!this.editCampaignName.trim()) {
-      this.toaster.error('Tên chiến dịch không được để trống');
+      this.showToastMessage('Tên chiến dịch không được để trống', 'error');
       return;
     }
 
@@ -272,10 +270,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       next: () => {
         this.editingCampaign!.name = this.editCampaignName.trim();
         this.showEditModal = false;
-        this.toaster.success('Cập nhật tên chiến dịch thành công');
+        this.showToastMessage('Cập nhật tên chiến dịch thành công', 'success');
       },
       error: () => {
-        this.toaster.error('Cập nhật thất bại');
+        this.showToastMessage('Cập nhật thất bại', 'error');
       },
       complete: () => {
         this.isSavingEdit = false;
@@ -461,7 +459,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       
       // TODO: Gọi API xóa nếu backend có
       setTimeout(() => {
-        this.toaster.success('Chức năng xóa sẽ được cập nhật sau');
+        this.showToastMessage('Chức năng xóa sẽ được cập nhật sau', 'success');
         this.showActionsMenu = null;
         this.isDeletingCampaign = false;
       }, 500);

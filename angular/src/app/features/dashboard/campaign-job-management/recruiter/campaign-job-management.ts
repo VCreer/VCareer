@@ -7,6 +7,7 @@ import {
   StatusDropdownComponent,
   StatusOption,
   PaginationComponent,
+  ButtonComponent,
 } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { JobViewDetail } from 'src/app/proxy/dto/job';
@@ -71,6 +72,7 @@ export interface CampaignJob {
     ToastNotificationComponent,
     StatusDropdownComponent,
     PaginationComponent,
+    ButtonComponent,
   ],
   templateUrl: './campaign-job-management.html',
   styleUrls: ['./campaign-job-management.scss'],
@@ -134,6 +136,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   selectedChildServices: { [action: number]: string } = {};
   showStatusDropdownModal = false;
 
+  // Sidebar state for responsive modal
+  sidebarExpanded: boolean = false;
+  sidebarWidth: number = 72;
+  private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -152,6 +160,9 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       this.componentId
     );
 
+    // Initialize sidebar observer for responsive modal
+    this.initSidebarObserver();
+
     // Get campaign ID and name from query params
     this.route.queryParams.subscribe(params => {
       this.campaignId = params['campaignId'] || null;
@@ -166,6 +177,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
+    
+    // Cleanup sidebar observer
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
   }
 
   loadJobs(): void {
@@ -405,6 +424,68 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     return isSidebarExpanded ? 280 : 72;
   }
 
+  // Sidebar observer for responsive modal
+  private initSidebarObserver(): void {
+    this.checkSidebarState();
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const resizeObserver = new ResizeObserver(() => {
+        this.checkSidebarState();
+      });
+      resizeObserver.observe(sidebar);
+      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
+      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
+    }
+    this.sidebarCheckInterval = setInterval(() => {
+      this.checkSidebarState();
+    }, 50);
+    
+    this.resizeListener = () => this.checkSidebarState();
+    window.addEventListener('resize', this.resizeListener);
+  }
+
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+      const newWidth = Math.round(width);
+      if (this.sidebarWidth !== newWidth) {
+        this.sidebarWidth = newWidth;
+      }
+    } else {
+      this.sidebarWidth = 72;
+    }
+  }
+
+  // Modal responsive methods
+  getModalPaddingLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getModalMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 40px)'; // Full width với padding nhỏ trên mobile
+    }
+    const overlayPadding = 40; // Padding tổng cộng (20px mỗi bên)
+    const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
+    // Giới hạn max-width cho delete modal (500px) và package modal (1000px)
+    return `${Math.min(1000, availableWidth)}px`;
+  }
+
+  getDeleteModalMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 40px)';
+    }
+    const overlayPadding = 40;
+    const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
+    return `${Math.min(500, availableWidth)}px`;
+  }
+
   @HostListener('window:scroll', ['$event'])
   onWindowScroll() {
     if (this.showActionsMenu) {
@@ -414,6 +495,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize', ['$event'])
   onWindowResize() {
+    this.checkSidebarState();
     if (this.showActionsMenu) {
       this.updateMenuPositionFromButton();
     }
@@ -689,8 +771,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.userChildServiceService.activeService(selectedIds,jobId).subscribe({
       next: () => {
         this.showSuccessToast(`Đã kích hoạt ${selectedIds.length} dịch vụ thành công`);
-        this.isAssigningPackage = false;
-        this.closePackageModal();
+      this.isAssigningPackage = false;
+      this.closePackageModal();
         this.loadJobs(); // Reload để cập nhật UI
       },
       error: err => {

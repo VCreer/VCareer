@@ -12,6 +12,8 @@ import {
   ExperienceLevel,
   PositionType,
 } from '../../../../proxy/constants/job-constant';
+import { RecruitmentCompainService } from 'src/app/proxy/services/job';
+import { RecruimentCampainViewDto } from 'src/app/proxy/dto/job-dto';
 import {
   ButtonComponent,
   InputFieldComponent,
@@ -71,6 +73,7 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   private companyProfile = inject(CompanyLegalInfoService);
   private tagService = inject(TagService);
   private jobCategoryService = inject(JobCategoryService);
+  private recruitmentCampaignService = inject(RecruitmentCompainService);
   
   campaignName = '';
   campaignId = '';
@@ -91,6 +94,8 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   positionLevelOptions = this.enumToOptions(PositionType);
   employmentTypeOptions = this.enumToOptions(EmploymentType);
   private isSubmitting = false;
+
+  campaignOptions: { label: string; value: string }[] = [];
 
   provinceOptions: { label: string; value: number }[] = [];
   wardOptions: { label: string; value: number }[] = [];
@@ -183,6 +188,8 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       } else {
         this.isEditMode = false;
       }
+
+      this.loadCampaignOptions();
     });
   }
 
@@ -593,6 +600,44 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   
   onToastClose() {
     this.showToast = false;
+  }
+  //#endregion
+
+  //#region Campaign Selector
+  private loadCampaignOptions() {
+    this.recruitmentCampaignService.loadRecruitmentCompainByIsActive(true).subscribe({
+      next: (campaigns: RecruimentCampainViewDto[]) => {
+        // Sort campaigns by creationTime descending (newest first)
+        const sortedCampaigns = (campaigns || []).sort((a, b) => {
+          const timeA = a.creationTime ? new Date(a.creationTime).getTime() : 0;
+          const timeB = b.creationTime ? new Date(b.creationTime).getTime() : 0;
+          return timeB - timeA; // Descending order (newest first)
+        });
+
+        this.campaignOptions = sortedCampaigns.map(c => ({
+          label: c.name || `Chiến dịch #${c.id}`,
+          value: c.id?.toString() || '',
+        })).filter(opt => opt.value);
+
+        // Sync campaign name only if campaignId is already set (from query params)
+        if (this.campaignId && this.campaignOptions.length) {
+          this.setCampaignById(this.campaignId);
+        }
+      },
+      error: () => {
+        // silently fail, user can still post without campaign
+      },
+    });
+  }
+
+  onCampaignChange(campaignId: string) {
+    this.setCampaignById(campaignId);
+  }
+
+  private setCampaignById(campaignId: string) {
+    this.campaignId = campaignId;
+    const found = this.campaignOptions.find(c => c.value === campaignId);
+    this.campaignName = found?.label || '';
   }
   //#endregion
 

@@ -159,19 +159,6 @@
             <span class="sidebar-link-text">{{ translate('sidebar.redeem_gifts') }}</span>
           </a>
         </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/toppy-ai')" class="sidebar-link">
-            <i class="fa fa-robot sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.toppy_ai') }}</span>
-            <span class="sidebar-badge">1</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/suggested-cv')" class="sidebar-link">
-            <i class="fa fa-thumbs-up sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.suggested_cv') }}</span>
-          </a>
-        </li>
 
         <!-- Divider -->
         <li class="sidebar-nav-item sidebar-nav-divider"></li>
@@ -181,12 +168,6 @@
           <a (click)="navigateTo('/recruiter/recruitment-campaign')" class="sidebar-link" [class.active]="isActive('/recruiter/recruitment-campaign')">
             <i class="fa fa-briefcase sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.recruitment_campaigns') }}</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/post-job')" class="sidebar-link">
-            <i class="fa fa-file-alt sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.job_postings') }}</span>
           </a>
         </li>
         <li class="sidebar-nav-item">

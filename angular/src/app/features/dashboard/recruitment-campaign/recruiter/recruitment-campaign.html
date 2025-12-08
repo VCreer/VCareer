@@ -32,7 +32,7 @@
 
       <form class="campaign-form" (ngSubmit)="onNext()">
         <!-- Tên chiến dịch -->
-        <div class="form-row">
+        <div class="form-row single-column">
           <div class="form-group">
             <app-input-field
               label="Tên chiến dịch tuyển dụng"
@@ -230,9 +230,9 @@
         placeholder="Nhập tên mới"
       >
       </app-input-field>
-      <div class="mt-4 text-right">
+      <div class="modal-footer-actions">
         <app-button type="secondary" (click)="showEditModal = false">Hủy</app-button>
-        <app-button type="primary" class="ml-2" (click)="onSaveEditCampaign()">Lưu</app-button>
+        <app-button type="primary" (click)="onSaveEditCampaign()">Lưu</app-button>
       </div>
     </div>
   </app-generic-modal>
