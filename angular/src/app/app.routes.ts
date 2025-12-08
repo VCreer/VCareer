@@ -5,15 +5,22 @@ import { AuthGuard } from './guards/auth.guard';
 
 export const APP_ROUTES: Routes = [
 // path public ko can dang nhap
-   {
-        path: 'candidate/job',
+  // Public candidate routes with layout (có header nhưng không cần đăng nhập)
+  {
+    path: 'candidate',
+    loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
+    children: [
+      {
+        path: 'job',
         loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
       },
       {
-        path: 'candidate/job-detail/:id',
+        path: 'job-detail/:id',
         loadComponent: () =>
           import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       },
+    ],
+  },
   //#region Auth Routes (Public - với AuthRedirectGuard để redirect user đã đăng nhập)
   {
     path: 'candidate/login',
@@ -272,6 +279,13 @@ export const APP_ROUTES: Routes = [
         path: 'service',
         loadComponent: () =>
           import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+      },
+      {
+        path: 'service-price-list',
+        loadComponent: () =>
+          import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
+            c => c.ServicePriceListComponent
+          ),
       },
       {
         path: 'job-posting',

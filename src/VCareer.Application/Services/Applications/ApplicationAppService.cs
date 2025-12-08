@@ -25,6 +25,8 @@ using VCareer.Dto.Applications;
 using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.Application;
 using Volo.Abp.Application.Services;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 
 namespace VCareer.Application.Applications
 {
@@ -237,10 +239,41 @@ namespace VCareer.Application.Applications
             if (input.IsResponded.HasValue)
                 query = query.Where(a => input.IsResponded.Value ? a.RespondedAt.HasValue : !a.RespondedAt.HasValue);
 
-            // Apply sorting
-            /*query = string.IsNullOrEmpty(input.Sorting)
-                ? query.OrderByDescending(a => a.CreationTime)
-                : query.OrderBy(input.Sorting);*/
+            // Apply sorting - mặc định sắp xếp theo CreationTime DESC (mới nhất lên đầu)
+            if (string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                query = query.OrderByDescending(a => a.CreationTime);
+            }
+            else
+            {
+                // Parse sorting string (format: "fieldName DESC" or "fieldName ASC")
+                var sortParts = input.Sorting.Trim().Split(' ');
+                var sortField = sortParts[0];
+                var sortDirection = sortParts.Length > 1 && sortParts[1].ToUpper() == "ASC" ? "ASC" : "DESC";
+
+                switch (sortField.ToLower())
+                {
+                    case "creationtime":
+                        query = sortDirection == "ASC" 
+                            ? query.OrderBy(a => a.CreationTime)
+                            : query.OrderByDescending(a => a.CreationTime);
+                        break;
+                    case "lastmodificationtime":
+                        query = sortDirection == "ASC"
+                            ? query.OrderBy(a => a.LastModificationTime ?? a.CreationTime)
+                            : query.OrderByDescending(a => a.LastModificationTime ?? a.CreationTime);
+                        break;
+                    case "status":
+                        query = sortDirection == "ASC"
+                            ? query.OrderBy(a => a.Status)
+                            : query.OrderByDescending(a => a.Status);
+                        break;
+                    default:
+                        // Default to CreationTime DESC if unknown field
+                        query = query.OrderByDescending(a => a.CreationTime);
+                        break;
+                }
+            }
 
             // Get total count
             var totalCount = query.Count();
@@ -683,9 +716,69 @@ namespace VCareer.Application.Applications
 
             if (application.CVType == "Online" && application.CandidateCvId.HasValue)
             {
-                // Render CV online thành HTML, sau đó convert sang PDF (cần implement)
-                // Tạm thời throw exception, cần implement PDF generation từ HTML
-                throw new UserFriendlyException("Tính năng download CV online đang được phát triển");
+                // Render CV online thành HTML
+                var renderResult = await _candidateCvAppService.RenderCvAsync(application.CandidateCvId.Value);
+                var htmlContent = renderResult.HtmlContent;
+
+                if (string.IsNullOrEmpty(htmlContent))
+                {
+                    throw new UserFriendlyException("Không thể render CV online");
+                }
+
+                // Convert HTML sang PDF sử dụng PuppeteerSharp (headless Chrome)
+                try
+                {
+                    // Tải Chromium nếu chưa có (chỉ lần đầu tiên)
+                    var browserFetcher = new BrowserFetcher();
+                    await browserFetcher.DownloadAsync();
+
+                    // Launch browser
+                    using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                    {
+                        Headless = true,
+                        Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } // Cần cho Linux/Docker
+                    });
+
+                    // Tạo page mới
+                    using var page = await browser.NewPageAsync();
+                    
+                    // Set content HTML
+                    await page.SetContentAsync(htmlContent, new NavigationOptions
+                    {
+                        WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+                    });
+
+                    // Generate PDF
+                    var pdfBytes = await page.PdfDataAsync(new PdfOptions
+                    {
+                        Format = PaperFormat.A4,
+                        PrintBackground = true,
+                        MarginOptions = new MarginOptions
+                        {
+                            Top = "10mm",
+                            Bottom = "10mm",
+                            Left = "10mm",
+                            Right = "10mm"
+                        }
+                    });
+
+                    if (pdfBytes == null || pdfBytes.Length == 0)
+                    {
+                        Logger.LogWarning("PDF conversion returned empty result for CV {CvId}", application.CandidateCvId.Value);
+                        throw new UserFriendlyException("Không thể tạo file PDF. Kết quả trống.");
+                    }
+
+                    return pdfBytes;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error converting HTML to PDF for CV {CvId}. Exception type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                        application.CandidateCvId.Value, 
+                        ex.GetType().Name, 
+                        ex.Message, 
+                        ex.StackTrace);
+                    throw new UserFriendlyException($"Không thể chuyển đổi CV sang PDF: {ex.Message}");
+                }
             }
             else if (application.CVType == "Uploaded" && application.UploadedCvId.HasValue)
             {

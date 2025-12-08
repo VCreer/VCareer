@@ -15,6 +15,8 @@ import {
 import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
 import type { ApplicationDto,GetApplicationListDto, UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
 import { environment } from '../../../../environments/environment';
+import * as XLSX from 'xlsx';
+import * as JSZip from 'jszip';
 
 export interface CandidateCv {
   id: string;
@@ -103,6 +105,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 7;
+  
+  // Export
+  exporting: boolean = false;
 
   // Current filters
   currentFilters: CvFilterData = {
@@ -216,7 +221,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
   
   private mapApplicationsToCvs(applications: ApplicationDto[]): CandidateCv[] {
-    return applications.map(app => {
+    // Đảm bảo sắp xếp theo creationTime DESC (mới nhất lên đầu) sau khi map
+    const mapped = applications.map(app => {
       // Generate placeholder email/phone từ candidateId nếu có
       // TODO: Backend nên thêm email và phone vào ApplicationDto
       const candidateIdShort = app.candidateId?.substring(0, 8) || 'unknown';
@@ -248,6 +254,13 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         notes: app.recruiterNotes || '',
         rating: app.rating || undefined
       };
+    });
+    
+    // Sắp xếp lại theo addedDate DESC (mới nhất lên đầu) để đảm bảo thứ tự đúng
+    return mapped.sort((a, b) => {
+      const dateA = new Date(a.addedDate).getTime();
+      const dateB = new Date(b.addedDate).getTime();
+      return dateB - dateA; // DESC: mới nhất lên đầu
     });
   }
 
@@ -545,13 +558,191 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     this.paginatedCvs = this.filteredCvs.slice(startIndex, endIndex);
   }
 
-  onExportCvList(): void {
-    // TODO: Implement export functionality
-    this.showToastMessage('Đang xuất danh sách CV...', 'info');
-    // Simulate export
-    setTimeout(() => {
-      this.showToastMessage('Xuất danh sách CV thành công!', 'success');
-    }, 1000);
+  async onExportCvList(): Promise<void> {
+    if (this.exporting || this.filteredCvs.length === 0) {
+      return;
+    }
+
+    this.exporting = true;
+    this.showToastMessage('Đang xuất Excel và tải CV...', 'info');
+
+    try {
+      // Tạo Excel file với dữ liệu ứng viên
+      const excelData = this.prepareExcelData(this.filteredCvs);
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+      
+      // Set column widths
+      const colWidths = [
+        { wch: 25 }, // Ứng viên
+        { wch: 20 }, // Chiến dịch
+        { wch: 30 }, // Email
+        { wch: 15 }, // Số điện thoại
+        { wch: 15 }, // Nguồn CV
+        { wch: 15 }, // Ngày ứng tuyển
+        { wch: 20 }, // Trạng thái
+        { wch: 10 }, // Đánh giá
+        { wch: 30 }, // Ghi chú
+        { wch: 50 }  // Link CV
+      ];
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách ứng viên');
+      
+      // Convert workbook to buffer
+      const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+      
+      // Tải CV PDF cho từng ứng viên
+      const cvFiles: { name: string; blob: Blob }[] = [];
+      let successCount = 0;
+      let failedCount = 0;
+
+      console.log(`Bắt đầu tải ${this.filteredCvs.length} CV...`);
+
+      for (let i = 0; i < this.filteredCvs.length; i++) {
+        const cv = this.filteredCvs[i];
+        try {
+          console.log(`Đang tải CV ${i + 1}/${this.filteredCvs.length}: ${cv.name} (${cv.id})`);
+          
+          // Sử dụng fetch trực tiếp với responseType blob để đảm bảo nhận được blob
+          const fetchResponse = await fetch(`${environment.apis.default.url}/api/applications/${cv.id}/download-cv`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/pdf, application/octet-stream, */*'
+            }
+          });
+          
+          if (!fetchResponse.ok) {
+            const errorText = await fetchResponse.text();
+            console.error(`✗ Failed to download CV for ${cv.name}: ${fetchResponse.status} - ${errorText}`);
+            failedCount++;
+            continue;
+          }
+          
+          // Kiểm tra content-type để đảm bảo là PDF
+          const contentType = fetchResponse.headers.get('content-type');
+          console.log(`  Content-Type: ${contentType}`);
+          
+          const cvBlob = await fetchResponse.blob();
+          
+          // Kiểm tra blob có hợp lệ không
+          if (!cvBlob || cvBlob.size === 0) {
+            console.warn(`✗ CV của ${cv.name} rỗng hoặc không hợp lệ (size: ${cvBlob?.size || 0})`);
+            failedCount++;
+            continue;
+          }
+          
+          // Kiểm tra xem có phải là PDF không (có thể là error message dạng JSON)
+          if (cvBlob.type === 'application/json' || cvBlob.size < 100) {
+            const text = await cvBlob.text();
+            try {
+              const json = JSON.parse(text);
+              if (json.error || json.message) {
+                console.error(`✗ API trả về lỗi cho ${cv.name}: ${json.error || json.message}`);
+                failedCount++;
+                continue;
+              }
+            } catch {
+              // Không phải JSON, có thể là PDF nhỏ
+            }
+          }
+          
+          const fileName = `${cv.name.replace(/[^a-zA-Z0-9]/g, '_')}_${cv.id.substring(0, 8)}.pdf`;
+          cvFiles.push({ name: fileName, blob: cvBlob });
+          successCount++;
+          console.log(`✓ Đã tải CV ${i + 1}/${this.filteredCvs.length}: ${cv.name} (${cvBlob.size} bytes, type: ${cvBlob.type})`);
+        } catch (error: any) {
+          console.error(`✗ Lỗi khi tải CV cho ${cv.name} (${cv.id}):`, error);
+          if (error?.error?.message) {
+            console.error(`  Chi tiết lỗi: ${error.error.message}`);
+          } else if (error?.message) {
+            console.error(`  Chi tiết lỗi: ${error.message}`);
+          }
+          failedCount++;
+        }
+      }
+
+      console.log(`Hoàn thành: ${successCount} thành công, ${failedCount} thất bại`);
+
+      // Tạo ZIP file chứa Excel + PDFs
+      const zip = new JSZip();
+      
+      // Thêm Excel file
+      zip.file('Danh_sach_ung_vien.xlsx', excelBuffer);
+      
+      // Thêm thư mục CVs và các file PDF
+      const cvFolder = zip.folder('CVs');
+      cvFiles.forEach(file => {
+        cvFolder?.file(file.name, file.blob);
+      });
+
+      // Generate ZIP file
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      // Download ZIP file
+      const url = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      link.download = `Danh_sach_ung_vien_${timestamp}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      this.exporting = false;
+      
+      if (successCount > 0) {
+        const message = failedCount > 0
+          ? `Xuất Excel thành công! Đã tải ${successCount}/${this.filteredCvs.length} CV PDF. ${failedCount} CV không tải được.`
+          : `Xuất Excel thành công! Đã tải ${successCount}/${this.filteredCvs.length} CV PDF.`;
+        this.showToastMessage(message, successCount === this.filteredCvs.length ? 'success' : 'warning');
+      } else {
+        this.showToastMessage('Không thể tải CV nào. Vui lòng kiểm tra lại.', 'error');
+      }
+    } catch (error) {
+      console.error('Error exporting CV list:', error);
+      this.exporting = false;
+      this.showToastMessage('Lỗi khi xuất Excel. Vui lòng thử lại.', 'error');
+    }
+  }
+
+  private prepareExcelData(cvs: CandidateCv[]): any[][] {
+    // Header row
+    const headers = [
+      'Ứng viên',
+      'Chiến dịch',
+      'Email',
+      'Số điện thoại',
+      'Nguồn CV',
+      'Ngày ứng tuyển',
+      'Trạng thái',
+      'Đánh giá',
+      'Ghi chú',
+      'Tên file CV PDF'
+    ];
+
+    const data: any[][] = [headers];
+
+    // Data rows
+    cvs.forEach(cv => {
+      const row = [
+        cv.name,
+        cv.campaignName || cv.campaignId || '',
+        cv.email,
+        cv.phone,
+        this.getSourceName(cv.source),
+        this.formatDate(cv.appliedDate),
+        this.getStatusName(cv.status),
+        cv.rating ? `${cv.rating}/10` : 'Chưa đánh giá',
+        cv.notes || '',
+        `CVs/${cv.name.replace(/[^a-zA-Z0-9]/g, '_')}_${cv.id.substring(0, 8)}.pdf`
+      ];
+      data.push(row);
+    });
+
+    return data;
   }
 
   viewCv(cvId: string): void {

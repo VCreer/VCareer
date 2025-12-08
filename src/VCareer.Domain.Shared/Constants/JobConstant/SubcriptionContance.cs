@@ -30,6 +30,12 @@ namespace VCareer.Constants.JobConstant
             IncreaseQuota,       // Tăng số lượng job được đăng
             ExtendExpiredDate,   // Kéo dài ngày hết hạn job
         }
+        public enum JobServiceAction
+        {
+            BoostScoreJob = 0,        // Tăng điểm hiển thị
+            TopList = 1,             // Cho lên Top N
+            VerifiedBadge = 2       // Gắn badge
+        }
         public enum SubcriptionStatus
         {
             Inactive = 0,

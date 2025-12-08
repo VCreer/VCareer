@@ -54,8 +54,7 @@ namespace VCareer.Services.Job
             if (user == null) throw new BusinessException("you are not login");
 
             var roles = await _userManager.GetRolesAsync(user);
-            // Lead Recruiter và HR Staff đều xem được tất cả chiến dịch của công ty
-            if (roles.Contains("lead_recruiter") || roles.Contains("hr_staff"))
+            if (roles.Contains("lead_recruiter"))
             {
                 var companyId = recruiter.CompanyId;
                 if (companyId == null) throw new BusinessException("Company not found");
@@ -106,7 +105,7 @@ namespace VCareer.Services.Job
             var compain = await _recuirementRepository.GetAsync(input.Id);
             if (compain == null) throw new BusinessException("Compain not found");
             compain.Name = input.Name;
-            compain.Description= input.Description;
+            compain.Description = input.Description;
             await _recuirementRepository.UpdateAsync(compain, true);
         }
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]

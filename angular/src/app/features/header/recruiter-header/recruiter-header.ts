@@ -4,19 +4,17 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
 
 @Component({
   selector: 'app-recruiter-header',
   standalone: true,
-  imports: [CommonModule, LanguageToggleComponent],
+  imports: [CommonModule],
   templateUrl: './recruiter-header.html',
   styleUrls: ['./recruiter-header.scss']
 })
 export class RecruiterHeaderComponent implements OnInit {
   currentRoute = '';
   isMenuOpen = false;
-  selectedLanguage = 'vi';
 
   constructor(
     private router: Router,
@@ -32,10 +30,6 @@ export class RecruiterHeaderComponent implements OnInit {
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
       });
-
-    this.translationService.currentLanguage$.subscribe(lang => {
-      this.selectedLanguage = lang;
-    });
   }
 
   navigateToHome() {
@@ -58,7 +52,7 @@ export class RecruiterHeaderComponent implements OnInit {
   }
 
   navigateToPricing() {
-    this.router.navigate(['/pricing']);
+    this.router.navigate(['/recruiter/service-price-list']);
     this.closeMobileMenu();
   }
 
@@ -111,10 +105,6 @@ export class RecruiterHeaderComponent implements OnInit {
 
   closeMobileMenu() {
     this.isMenuOpen = false;
-  }
-
-  onLanguageChange(lang: string) {
-    this.selectedLanguage = lang;
   }
 
   translate(key: string): string {

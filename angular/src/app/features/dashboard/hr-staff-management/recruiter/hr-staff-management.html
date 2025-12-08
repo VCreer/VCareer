@@ -51,6 +51,12 @@
       </app-stat-card>
     </div>
 
+    <!-- Important Note -->
+    <div class="important-note" *ngIf="!canAddStaff">
+      <i class="fa fa-info-circle"></i>
+      <span>Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.</span>
+    </div>
+
     <!-- Staff Table with Filter -->
     <div class="staff-table-container">
       <div class="table-header">
@@ -93,10 +99,6 @@
             {{ showActivityLog ? 'Danh sách nhân viên' : 'Nhật kí hoạt động' }}
           </button>
         </div>
-      </div>
-      <!-- Thông báo điều kiện thêm HR Staff -->
-      <div class="info-text" *ngIf="!canAddStaff">
-        Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.
       </div>
 
       <!-- Loading State -->

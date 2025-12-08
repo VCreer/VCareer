@@ -142,18 +142,11 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const status = this.getStatusFromTab(this.activeTab);
     
-    console.log('Loading services with params:', {
-      userId: this.currentUser.userId,
-      status: status,
-      pageIndex: this.currentPage,
-      pageSize: this.itemsPerPage
-    });
-    
     this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDto(
       this.currentUser.userId,
       status,
       {
-        pageIndex: this.currentPage,
+        pageIndex: this.currentPage -1,
         pageSize: this.itemsPerPage
       }
     ).subscribe({
@@ -307,7 +300,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
 
   onConfirmCancel(): void {
     if (this.selectedServiceForCancellation) {
-      this.userSubcriptionService.cancleUserSubcriptionByUserSubcriptionId(
+      this.userSubcriptionService.cancleUserSubcriptionBySubcriptionServiceId(
         this.selectedServiceForCancellation.id
       ).subscribe({
         next: () => {
