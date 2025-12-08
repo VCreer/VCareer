@@ -1,0 +1,46 @@
+<div class="date-range-input" (click)="toggleDropdown($event)" [class.disabled]="disabled">
+  <i class="fa fa-calendar"></i>
+  <span *ngIf="getDisplayValue()" class="date-range-value">
+    {{ getDisplayValue() }}
+  </span>
+  <span *ngIf="!getDisplayValue()" class="placeholder">
+    {{ placeholder }}
+  </span>
+  <button 
+    *ngIf="hasValue() && !disabled"
+    type="button"
+    class="clear-btn"
+    (click)="clearDateRange($event)"
+    aria-label="Clear selection"
+  >
+    <i class="fa fa-times"></i>
+  </button>
+  <i class="fa fa-chevron-down" [class.rotated]="showDropdown"></i>
+</div>
+
+<!-- Date Picker Dropdown -->
+<div class="date-picker-dropdown" *ngIf="showDropdown">
+  <div class="date-picker-content">
+    <div class="date-input-group">
+      <label>Từ ngày</label>
+      <input 
+        type="date" 
+        [(ngModel)]="internalStartDate"
+        (ngModelChange)="onStartDateChange()"
+        class="date-input"
+        [disabled]="disabled"
+      />
+    </div>
+    <div class="date-input-group">
+      <label>Đến ngày</label>
+      <input 
+        type="date" 
+        [(ngModel)]="internalEndDate"
+        (ngModelChange)="onEndDateChange()"
+        class="date-input"
+        [disabled]="disabled"
+      />
+    </div>
+  </div>
+</div>
+

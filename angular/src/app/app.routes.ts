@@ -410,6 +410,13 @@ export const APP_ROUTES: Routes = [
             c => c.FindCandidateDetailComponent
           ),
       },
+      {
+        path: 'activity-history',
+        loadComponent: () =>
+          import('./features/dashboard/history-of-activities/recruiter/history-of-activities').then(
+            c => c.HistoryOfActivitiesComponent
+          ),
+      },
     ],
   },
   //#endregion
