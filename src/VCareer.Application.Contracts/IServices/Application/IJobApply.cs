@@ -9,7 +9,7 @@ namespace VCareer.IServices.Application
     /// <summary>
     /// Interface cho Application Management Service
     /// </summary>
-    public interface IJobApply:IApplicationService
+    public interface IJobApply: IApplicationService
     {
         /// <summary>
         /// Nộp đơn ứng tuyển với CV online (CandidateCv)

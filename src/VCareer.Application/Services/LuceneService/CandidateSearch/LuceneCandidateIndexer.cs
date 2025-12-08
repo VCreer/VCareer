@@ -138,32 +138,47 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         /// </summary>
         public Task<List<Guid>> SearchCandidateIdsAsync(SearchCandidateInputDto input)
         {
-            using var reader = DirectoryReader.Open(_directory);
-            var searcher = new IndexSearcher(reader);
-
-            var query = BuildSearchQuery(input);
-            var sortQuery = BuildSortQuery(input);
-
-            int maxResults = (input.SkipCount + (input.MaxResultCount > 0 ? input.MaxResultCount : 10)) * 3;
-            if (maxResults < 100) maxResults = 100;
-
-            var topDocs = searcher.Search(query, maxResults, sortQuery);
-
-            var candidateIds = new List<Guid>();
-
-            foreach (var scoreDoc in topDocs.ScoreDocs)
+            try
             {
-                var doc = searcher.Doc(scoreDoc.Doc);
-                if (Guid.TryParse(doc.Get("UserId"), out var userId))
-                    candidateIds.Add(userId);
+                using var reader = DirectoryReader.Open(_directory);
+                var searcher = new IndexSearcher(reader);
+
+                // Check if index is empty
+                if (reader.NumDocs == 0)
+                {
+                    // Index is empty, return empty list to trigger fallback
+                    return Task.FromResult(new List<Guid>());
+                }
+
+                var query = BuildSearchQuery(input);
+                var sortQuery = BuildSortQuery(input);
+
+                int maxResults = (input.SkipCount + (input.MaxResultCount > 0 ? input.MaxResultCount : 10)) * 3;
+                if (maxResults < 100) maxResults = 100;
+
+                var topDocs = searcher.Search(query, maxResults, sortQuery);
+
+                var candidateIds = new List<Guid>();
+
+                foreach (var scoreDoc in topDocs.ScoreDocs)
+                {
+                    var doc = searcher.Doc(scoreDoc.Doc);
+                    if (Guid.TryParse(doc.Get("UserId"), out var userId))
+                        candidateIds.Add(userId);
+                }
+
+                var pagingIds = candidateIds
+                    .Skip(input.SkipCount)
+                    .Take((input.MaxResultCount <= 0) ? 10 : input.MaxResultCount)
+                    .ToList();
+
+                return Task.FromResult(pagingIds);
             }
-
-            var pagingIds = candidateIds
-                .Skip(input.SkipCount)
-                .Take((input.MaxResultCount <= 0) ? 10 : input.MaxResultCount)
-                .ToList();
-
-            return Task.FromResult(pagingIds);
+            catch (Exception ex)
+            {
+                // If index doesn't exist or has error, return empty to trigger fallback
+                return Task.FromResult(new List<Guid>());
+            }
         }
 
         #region Build Query Methods

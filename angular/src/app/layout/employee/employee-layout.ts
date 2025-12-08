@@ -31,7 +31,14 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
-        // Keep sidebar state on route change (don't auto-close)
+        // Auto-close sidebar after navigation
+        // Always close sidebar after navigation, regardless of how it was opened
+        setTimeout(() => {
+          const sidebar = document.querySelector('.sidebar');
+          if (sidebar && sidebar.classList.contains('show')) {
+            this.onSidebarClose();
+          }
+        }, 50);
       });
   }
 
@@ -46,7 +53,37 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
     if (sidebar) {
       const isExpanded = sidebar.classList.contains('show');
       if (isExpanded !== this.sidebarExpanded) {
+        // If sidebar was just closed, close all dropdowns
+        if (this.sidebarExpanded && !isExpanded) {
+          this.closeAllDropdowns();
+        }
         this.sidebarExpanded = isExpanded;
+      }
+    }
+  }
+
+  private closeAllDropdowns(): void {
+    // Remove dropdown-open class from all dropdown items
+    const dropdownItems = document.querySelectorAll('.sidebar-nav-item-dropdown.dropdown-open');
+    dropdownItems.forEach(item => {
+      item.classList.remove('dropdown-open');
+    });
+    // Remove show class from all submenus
+    const submenus = document.querySelectorAll('.sidebar-submenu.show');
+    submenus.forEach(submenu => {
+      submenu.classList.remove('show');
+    });
+  }
+
+  // Method to handle sidebar toggle from hamburger menu
+  toggleSidebar(): void {
+    this.sidebarExpanded = !this.sidebarExpanded;
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+      if (this.sidebarExpanded) {
+        sidebar.classList.add('show');
+      } else {
+        sidebar.classList.remove('show');
       }
     }
   }
@@ -58,6 +95,8 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
       sidebar.classList.remove('show');
       this.sidebarExpanded = false;
     }
+    // Close all dropdowns when sidebar closes
+    this.closeAllDropdowns();
   }
 }
 

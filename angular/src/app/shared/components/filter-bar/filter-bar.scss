@@ -119,6 +119,10 @@
   // ============================================
   // DROPDOWN CONTAINER (Category & Location)
   // ============================================
+  // Sidebar desktop (nếu có) ~72px + 32px padding 2 bên
+  $sidebar-width: 72px;
+  $viewport-padding: 32px;
+
   .filter-dropdown {
     position: absolute; // Thay đổi từ fixed sang absolute
     top: calc(100% + 8px); // Đặt ngay dưới category-btn
@@ -129,7 +133,11 @@
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
     z-index: 9999; // Tăng z-index để không bị che khuất
-    width: 900px;
+
+    // Desktop: co lại theo viewport - sidebar - padding, nhưng không vượt quá 900px
+    width: min(900px, calc(100vw - #{$sidebar-width} - #{$viewport-padding}));
+    max-width: calc(100vw - #{$sidebar-width} - #{$viewport-padding});
+
     max-height: 70vh; // Dùng viewport height thay vì fixed để không bị che
     display: flex !important;
     flex-direction: column;
@@ -211,11 +219,11 @@
       }
     }
 
-    // Content (2 columns)
+    // Content (2 columns) - cho phép scroll dọc toàn bộ nội dung
     .dropdown-content {
-      height: 450px; // ✅ FIX #7: Cố định chiều cao
-      max-height: 450px; // ✅ FIX #7: Không thay đổi khi scroll
-      overflow: hidden;
+      max-height: 60vh;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     // Grid layout cho tree view
@@ -651,9 +659,43 @@
     top: calc(100% + 8px); // Đặt ngay dưới location-btn
     right: 0; // Căn phải với location-btn (vì filter-bar-container có position: relative)
     z-index: 9999; // Tăng z-index để không bị che khuất
-    width: 900px;
+    // Desktop: co lại theo viewport - sidebar - padding, giống category-dropdown
+    width: min(900px, calc(100vw - #{$sidebar-width} - #{$viewport-padding}));
+    max-width: calc(100vw - #{$sidebar-width} - #{$viewport-padding});
     max-height: 70vh; // Dùng viewport height thay vì fixed để không bị che
     overflow: visible; // Đảm bảo không bị cắt
+  }
+
+  // ============================================
+  // RESPONSIVE (Mobile / Tablet)
+  // ============================================
+  @media (max-width: 768px) {
+    .filter-dropdown {
+      // Full width theo viewport, trừ padding nhỏ 16px mỗi bên
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      width: calc(100vw - 32px);
+      max-width: calc(100vw - 32px);
+
+      // Cao tối đa theo viewport, để luôn nhìn thấy footer
+      max-height: calc(100vh - 120px);
+
+      .dropdown-content {
+        height: auto;
+        max-height: calc(100vh - 220px); // trừ header + search + footer
+        overflow: hidden;
+      }
+    }
+
+    .location-dropdown-wrapper {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      width: calc(100vw - 32px);
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 120px);
+    }
   }
 
   .location-dropdown-container {
@@ -743,10 +785,12 @@
     }
   }
 
-  // Content (CỐ ĐỊNH HEIGHT)
+  // Content (CỐ ĐỊNH HEIGHT, scroll dọc toàn bộ phần giữa)
   .location-content {
     flex: 1;
-    overflow: hidden;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0; // ✅ CHO PHÉP FLEX SHRINK
   }
 

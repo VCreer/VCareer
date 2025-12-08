@@ -23,6 +23,16 @@
         <div class="candidate-count">
           <span>Tìm thấy <strong>{{ totalCount }}</strong> ứng viên</span>
         </div>
+        <div class="header-actions">
+          <app-button
+            type="secondary"
+            size="medium"
+            (click)="onExportCvList()"
+            [disabled]="exporting || filteredCvs.length === 0">
+            <i class="fa fa-file-excel-o" style="margin-right: 8px;"></i>
+            {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
+          </app-button>
+        </div>
       </div>
 
       <!-- CV List or Empty State -->

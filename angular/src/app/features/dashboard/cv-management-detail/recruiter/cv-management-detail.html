@@ -5,8 +5,30 @@
     <p>Đang tải CV...</p>
   </div>
 
+  <!-- Access Denied State -->
+  <div *ngIf="!loading && accessDenied" class="access-denied-container">
+    <div class="access-denied-card">
+      <div class="access-denied-icon">
+        <i class="fa fa-lock"></i>
+      </div>
+      <h2 class="access-denied-title">Không có quyền truy cập</h2>
+      <p class="access-denied-message">
+        Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. 
+        Bạn không thể xem thông tin CV của ứng viên này.
+      </p>
+      <div class="access-denied-actions">
+        <app-button
+          type="primary"
+          size="medium"
+          (click)="onClose()">
+          Quay lại
+        </app-button>
+      </div>
+    </div>
+  </div>
+
   <!-- White Card Wrapper - Contains header and content -->
-  <div *ngIf="!loading" class="cv-detail-card" [class.html-cv-mode]="cvType === 'online'">
+  <div *ngIf="!loading && !accessDenied && hasAccess" class="cv-detail-card" [class.html-cv-mode]="cvType === 'online'">
     <!-- Recruitment Header - Only campaign info and close button -->
     <div class="recruitment-header">
       <!-- Left: Campaign Information -->

@@ -19,6 +19,6 @@ namespace VCareer.IServices.Subcriptions
         public Task UpdateUserSubcription(User_SubcirptionUpdateDto dto);
         public Task<User_SubcirptionViewDto> GetUserSubcriptionService(Guid UserSubcriptionServiceId);
         public Task<List<SubcriptionsViewDto>> GetAllSubcriptionsByUser(Guid userId, int? status, PagingDto pagingDto);
-
+        public Task<List<Guid>>? SubcriptionBoughtedAndActive(Guid UserId, Guid SubcriptionServiceId);
     }
 }

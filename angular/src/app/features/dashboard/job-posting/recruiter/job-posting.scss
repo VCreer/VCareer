@@ -1,28 +1,16 @@
 .job-posting-page {
   min-height: calc(100vh - 64px);
   padding-top: 0;
-  margin-left: 72px;
-  width: calc(100% - 72px);
   padding-right: 0;
   padding-bottom: 20px;
   background: #f8fafc;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  transition: padding-left 0.3s ease;
   position: relative;
   z-index: 1;
-
-  &.sidebar-expanded {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-  }
-
-  @media (max-width: 1024px) {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-  }
+  width: 100%;
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100%;
+    padding-left: 0 !important;
   }
 
   // Breadcrumb Box
@@ -36,17 +24,10 @@
     transition: left 0.3s ease, width 0.3s ease;
     border-bottom: 1px solid #e5e7eb;
     min-height: 56px;
-    left: 72px;
-    width: calc(100% - 72px);
-
-    &.sidebar-expanded {
-      left: 280px;
-      width: calc(100% - 280px);
-    }
 
     @media (max-width: 768px) {
-      left: 0;
-      width: 100%;
+      left: 0 !important;
+      width: 100% !important;
       top: 56px;
     }
 
@@ -98,13 +79,14 @@
 
   // Content Wrapper
   .content-wrapper {
-    max-width: 1400px;
     margin: 80px auto 0;
-    padding: 24px 16px;
+    padding: 24px;
+    transition: max-width 0.3s ease;
 
     @media (max-width: 768px) {
       margin-top: 70px;
-      padding: 16px 12px;
+      padding: 16px;
+      max-width: 100% !important;
     }
   }
 

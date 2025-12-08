@@ -11,6 +11,7 @@ import {
   StatusDropdownComponent,
   StatusOption
 } from '../../../shared/components';
+import { UserService } from '../../../proxy/services/user/user.service';
 
 export interface RecruitingUser {
   id: string;
@@ -118,7 +119,10 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   // IP Restrict Form
   ipAddress = '';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -291,58 +295,18 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    // Mock data - replace with API call
-    this.allUsers = [
-      {
-        id: '1',
-        username: 'recruiter1',
-        email: 'recruiter1@example.com',
-        fullName: 'Nguyễn Văn A',
-        phone: '0901234567',
-        companyName: 'Công ty ABC',
-        isActive: true,
-        isLocked: false,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-15T10:30:00',
-        createdDate: '2023-01-01T00:00:00',
-        ipAddresses: ['192.168.1.1', '192.168.1.2'],
-        mustChangePassword: false,
-        securityStamp: 'stamp1'
+    // Gọi API lấy danh sách userId theo RoleType Recruiter = 2
+    this.userService.getUsersInfoByRole(2).subscribe({
+      next: () => {
+        // Xóa dữ liệu hardcode, chờ map dữ liệu thật từ BE
+        this.allUsers = [];
+        this.applyFilters();
       },
-      {
-        id: '2',
-        username: 'recruiter2',
-        email: 'recruiter2@example.com',
-        fullName: 'Trần Thị B',
-        phone: '0907654321',
-        companyName: 'Công ty XYZ',
-        isActive: true,
-        isLocked: true,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-14T15:20:00',
-        createdDate: '2023-02-01T00:00:00',
-        ipAddresses: ['192.168.1.3'],
-        mustChangePassword: true,
-        securityStamp: 'stamp2'
-      },
-      {
-        id: '3',
-        username: 'recruiter3',
-        email: 'recruiter3@example.com',
-        fullName: 'Lê Văn C',
-        phone: '0912345678',
-        companyName: 'Công ty DEF',
-        isActive: false,
-        isLocked: false,
-        lockoutEnabled: true,
-        createdDate: '2023-03-01T00:00:00',
-        ipAddresses: [],
-        mustChangePassword: false,
-        securityStamp: 'stamp3'
+      error: () => {
+        this.allUsers = [];
+        this.applyFilters();
       }
-    ];
-
-    this.applyFilters();
+    });
   }
 
   applyFilters(): void {
@@ -468,13 +432,20 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onToggleActive(user: RecruitingUser): void {
-    // TODO: Call API to activate/deactivate
-    user.isActive = !user.isActive;
+    const newStatus = !user.isActive;
+    this.userService.setUserActiveStatus(user.id, newStatus).subscribe({
+      next: () => {
+        user.isActive = newStatus;
     this.showToastMessage(
       user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
       'success'
     );
     this.applyFilters();
+      },
+      error: () => {
+        this.showToastMessage('Thay đổi trạng thái hoạt động thất bại', 'error');
+      }
+    });
   }
 
   onToggleLock(user: RecruitingUser): void {

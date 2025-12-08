@@ -1,5 +1,6 @@
 import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
 import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
+import type { PagingDto } from '../../iservices/common/models';
 import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { SubcriptionContance_CurrencyType } from '../../constants/job-constant/subcription-contance-currency-type.enum';
 import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
@@ -24,6 +25,13 @@ export interface ChildServiceCreateDto {
   value?: number;
 }
 
+export interface ChildServiceGetDto {
+  serviceAction?: SubcriptionContance_ServiceAction;
+  target?: SubcriptionContance_ServiceTarget;
+  pagingDto: PagingDto;
+  isActive?: boolean;
+}
+
 export interface ChildServiceUpdateDto {
   cHildServiceId?: string;
   name?: string;
@@ -32,7 +40,7 @@ export interface ChildServiceUpdateDto {
 }
 
 export interface ChildServiceViewDto {
-  cHildServiceId?: string;
+  id?: string;
   name?: string;
   description?: string;
   action?: SubcriptionContance_ServiceAction;
@@ -70,10 +78,28 @@ export interface EffectingJobServiceViewDto {
   endDate?: string;
 }
 
-export interface SubcriptionPriceViewDto {
+export interface SubcriptionPriceCreateDto {
+  subcriptionServiceId?: string;
   salePercent: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+}
+
+export interface SubcriptionPriceUpdateDto {
+  subcriptionPriceId?: string;
+  subcriptionServiceId?: string;
+  salePercent: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+}
+
+export interface SubcriptionPriceViewDto {
+  subcriptionServiceId?: string;
   originalPrice: number;
+  salePercent: number;
   type?: SubcriptionContance_CurrencyType;
+  isExpried: boolean;
+  isActive: boolean;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
@@ -115,11 +141,6 @@ export interface SubcriptionsViewDto {
   isActive: boolean;
 }
 
-export interface User_ChildServiceCreateDto {
-  userId?: string;
-  childServiceId?: string;
-}
-
 export interface User_ChildServiceUpdateDto {
   status?: SubcriptionContance_ChildServiceStatus;
   usedTime?: number;
@@ -142,7 +163,6 @@ export interface User_ChildServiceViewDto {
 export interface User_SubcirptionCreateDto {
   userId?: string;
   subcriptionServiceId?: string;
-  status?: SubcriptionContance_SubcriptionStatus;
 }
 
 export interface User_SubcirptionUpdateDto {

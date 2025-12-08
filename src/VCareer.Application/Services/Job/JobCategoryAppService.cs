@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Category;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.JobCategory;
+using VCareer.Permission;
 using Volo.Abp.Application.Services;
 
 namespace VCareer.Services.Job
@@ -20,7 +22,7 @@ namespace VCareer.Services.Job
         {
             _categoryRepository = categoryRepository;
         }
-
+        [Authorize(VCareerPermission.JobCategory.Create)]
         public async Task CreateCategoryAsync(CategoryUpdateCreateDto dto)
         {
             var category = new Job_Category
@@ -34,6 +36,7 @@ namespace VCareer.Services.Job
             };
             await _categoryRepository.InsertAsync(category,true);
         }
+        [Authorize(VCareerPermission.JobCategory.Delete)]
         public async Task DeleteCategoryAsync(Guid id)
         {
             var category = await _categoryRepository.FindAsync(id);
@@ -42,6 +45,7 @@ namespace VCareer.Services.Job
             await _categoryRepository.DeleteAsync(category, true);
         }
         /// Lấy toàn bộ cây phân cấp category với số lượng job
+        [Authorize(VCareerPermission.JobCategory.View)]
         public async Task<List<CategoryTreeDto>> GetCategoryTreeAsync()
         {
             try
@@ -126,6 +130,7 @@ namespace VCareer.Services.Job
                 throw;
             }
         }
+        [Authorize(VCareerPermission.JobCategory.Update)]
         public async Task UpdateCategoryAsync(Guid id, CategoryUpdateCreateDto dto)
         {
             var category = await _categoryRepository.FindAsync(id);

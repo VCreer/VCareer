@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using VCareer.Constants.Authentication;
 using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.TeamManagementDto;
 using VCareer.IServices.ITeamManagement;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -54,6 +56,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Lấy thông tin user hiện tại (DEBUG)
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.GetCurrentUserInfo)]
         public async Task<StaffListItemDto> GetCurrentUserInfoAsync()
         {
             try
@@ -82,6 +85,7 @@ namespace VCareer.Services.TeamManagement
         /// Lấy danh sách HR Staff (IsLead = 0) trong company
         /// Chỉ Leader Recruiter (IsLead = 1) mới có quyền xem
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.GetAllStaff)]
         public async Task<List<StaffListItemDto>> GetAllStaffAsync()
         {
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
@@ -106,6 +110,7 @@ namespace VCareer.Services.TeamManagement
                 RecruiterProfileId = s.Id,
                 FullName = $"{s.User?.Name} {s.User?.Surname}".Trim(),
                 Email = s.User?.Email ?? "",
+                PhoneNumber = s.User?.PhoneNumber ?? string.Empty,
                 IsLead = s.IsLead,
                 Status = s.Status,
                 CompanyId = s.CompanyId,
@@ -118,6 +123,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Deactivate HR Staff
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.DeactivateStaff)]
         public async Task<StaffStatusChangeDto> DeactivateStaffAsync(DeactivateStaffDto input)
         {
             // Validate input
@@ -213,6 +219,7 @@ namespace VCareer.Services.TeamManagement
         /// Invite HR Staff mới
         /// Tạo tài khoản và gửi email với thông tin đăng nhập
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.InviteStaff)]
         [UnitOfWork]
         public async Task<StaffListItemDto> InviteStaffAsync(InviteStaffDto input)
         {
@@ -256,14 +263,19 @@ namespace VCareer.Services.TeamManagement
             }
 
             // Tạo RecruiterProfile với IsLead = false và CompanyId của Leader
+            // Nếu Leader đã được xác thực (IsVerified = true hoặc RecruiterLevel >= Verified)
+            // thì HR Staff mới sẽ được coi là đã xác thực ngay lập tức.
             var recruiterProfile = new RecruiterProfile
             {
                 UserId = newUser.Id,
                 Status = true,
                 Email = input.Email,
-                RecruiterLevel = Constants.JobConstant.RecruiterLevel.Unverified,
                 IsLead = false, // HR Staff không phải Leader
                 CompanyId = currentRecruiter.CompanyId, // Cùng công ty với Leader
+                IsVerified = currentRecruiter.IsVerified,
+                RecruiterLevel = currentRecruiter.IsVerified 
+                    ? currentRecruiter.RecruiterLevel 
+                    : Constants.JobConstant.RecruiterLevel.Unverified,
             };
             await _recruiterProfileRepository.InsertAsync(recruiterProfile);
             await CurrentUnitOfWork.SaveChangesAsync();
@@ -342,6 +354,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Activate HR Staff
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.ActivateStaff)]
         public async Task<StaffStatusChangeDto> ActivateStaffAsync(ActivateStaffDto input)
         {
             // Validate input

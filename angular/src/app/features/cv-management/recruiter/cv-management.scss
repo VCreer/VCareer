@@ -162,6 +162,11 @@
             font-weight: 600;
           }
         }
+
+        .header-actions {
+          display: flex;
+          gap: 12px;
+        }
       }
 
       .cv-list-container {

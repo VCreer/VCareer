@@ -1,0 +1,374 @@
+<div class="manage-sub-service-packages-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí dịch vụ phụ</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onCreateChildService()">
+        <i class="fa fa-plus"></i>
+        Tạo dịch vụ phụ
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <!-- Page Description -->
+      <div class="page-description">
+        <p class="description-text">
+          <i class="fa fa-info-circle"></i>
+          Quản lý các dịch vụ phụ (child services) có thể được gắn vào các gói dịch vụ. Mỗi dịch vụ phụ có thể có hành động (action), đối tượng (target) và các cấu hình riêng.
+        </p>
+      </div>
+      
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên, mô tả..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="onSearchChange()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-status-dropdown
+              [options]="statusOptions"
+              [selectedValue]="filterStatus"
+              (statusChange)="filterStatus = $event; onFilterChange()">
+            </app-status-dropdown>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả hành động"
+              [options]="actionOptions"
+              [(ngModel)]="filterAction"
+              (ngModelChange)="onFilterChange()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả đối tượng"
+              [options]="targetOptions"
+              [(ngModel)]="filterTarget"
+              (ngModelChange)="onFilterChange()">
+            </app-select-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Child Services Table -->
+      <div class="table-container">
+        <table class="child-services-table">
+          <thead>
+            <tr>
+              <th (click)="onSort('name')" class="sortable">
+                Tên dịch vụ
+                <i class="fa fa-sort" *ngIf="sortField !== 'name'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'name' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'name' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Mô tả</th>
+              <th (click)="onSort('action')" class="sortable">
+                Hành động
+                <i class="fa fa-sort" *ngIf="sortField !== 'action'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'action' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'action' && sortDirection === 'desc'"></i>
+              </th>
+              <th (click)="onSort('target')" class="sortable">
+                Đối tượng
+                <i class="fa fa-sort" *ngIf="sortField !== 'target'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'target' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'target' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Thông tin</th>
+              <th (click)="onSort('isActive')" class="sortable">
+                Trạng thái
+                <i class="fa fa-sort" *ngIf="sortField !== 'isActive'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'isActive' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'isActive' && sortDirection === 'desc'"></i>
+              </th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cs of paginatedChildServices">
+              <td class="name-cell">{{ cs.name }}</td>
+              <td class="description-cell">{{ cs.description }}</td>
+              <td>
+                <span class="action-badge" *ngIf="cs.action !== undefined">
+                  {{ getActionLabel(cs.action) }}
+                </span>
+                <span class="text-muted" *ngIf="cs.action === undefined">-</span>
+              </td>
+              <td>
+                <span class="target-badge" *ngIf="cs.target !== undefined">
+                  {{ getTargetLabel(cs.target) }}
+                </span>
+                <span class="text-muted" *ngIf="cs.target === undefined">-</span>
+              </td>
+              <td class="info-cell">
+                <div class="info-item" *ngIf="cs.isLifeTime">
+                  <i class="fa fa-infinity"></i>
+                  <span>Vĩnh viễn</span>
+                </div>
+                <div class="info-item" *ngIf="!cs.isLifeTime && cs.dayDuration">
+                  <i class="fa fa-calendar"></i>
+                  <span>{{ cs.dayDuration }} ngày</span>
+                </div>
+                <div class="info-item" *ngIf="cs.isLimitUsedTime && cs.timeUsedLimit">
+                  <i class="fa fa-clock"></i>
+                  <span>Giới hạn: {{ cs.timeUsedLimit }} lần</span>
+                </div>
+                <div class="info-item" *ngIf="cs.isAutoActive">
+                  <i class="fa fa-magic"></i>
+                  <span>Tự động kích hoạt</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="cs.isActive ? 'status-active' : 'status-inactive'">
+                  {{ cs.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <div class="actions-menu-container" [attr.data-child-service-id]="cs.id">
+                  <button class="actions-menu-btn" (click)="toggleActionsMenu(cs.id, $event)">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div
+                    class="actions-menu"
+                    [class.show]="showActionsMenu === cs.id"
+                    [attr.data-child-service-id]="cs.id"
+                    [style.top.px]="menuPosition?.top"
+                    [style.left.px]="menuPosition?.left"
+                    [style.max-width.px]="menuPosition?.maxWidth"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onEditChildService(cs)">
+                      <i class="fa fa-edit menu-icon"></i>
+                      <span>Sửa</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item" (click)="onToggleActive(cs)">
+                      <i class="fa" [class.fa-toggle-on]="cs.isActive" [class.fa-toggle-off]="!cs.isActive"></i>
+                      <span>{{ cs.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
+                    </div>
+                    <div class="menu-separator"></div>
+                    <div class="menu-item delete-item" (click)="onDeleteChildService(cs)">
+                      <i class="fa fa-trash menu-icon"></i>
+                      <span>Xóa</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="paginatedChildServices.length === 0" class="empty-state">
+          <i class="fa fa-box"></i>
+          <p>Không có dịch vụ phụ nào</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredChildServices.length > 0">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Child Service Modal -->
+<app-generic-modal
+  [show]="showCreateModal"
+  title="Tạo dịch vụ phụ"
+  [maxWidth]="'700px'"
+  [bodyBackground]="'white'"
+  (close)="showCreateModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên dịch vụ *"
+        type="text"
+        placeholder="VD: Boost CV Score"
+        [(ngModel)]="createForm.name"
+        required>
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Mô tả"
+        type="text"
+        placeholder="Mô tả dịch vụ"
+        [(ngModel)]="createForm.description">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-select-field
+          label="Hành động"
+          [options]="formActionOptions"
+          [(ngModel)]="createFormActionString">
+        </app-select-field>
+      </div>
+      <div class="form-group">
+        <app-select-field
+          label="Đối tượng"
+          [options]="formTargetOptions"
+          [(ngModel)]="createFormTargetString">
+        </app-select-field>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-select-field
+        label="Mức độ ưu tiên"
+        [options]="formPriorityOptions"
+        [(ngModel)]="createFormPriorityString">
+      </app-select-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Giá trị"
+        type="number"
+        placeholder="VD: 100"
+        [(ngModel)]="createForm.value">
+      </app-input-field>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-toggle-switch
+          label="Vĩnh viễn"
+          [(ngModel)]="createForm.isLifeTime">
+        </app-toggle-switch>
+      </div>
+      <div class="form-group" *ngIf="!createForm.isLifeTime">
+        <app-input-field
+          label="Số ngày"
+          type="number"
+          placeholder="VD: 30"
+          [(ngModel)]="createForm.dayDuration">
+        </app-input-field>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <app-toggle-switch
+          label="Tự động kích hoạt"
+          [(ngModel)]="createForm.isAutoActive">
+        </app-toggle-switch>
+      </div>
+      <div class="form-group">
+        <app-toggle-switch
+          label="Đang hoạt động"
+          [(ngModel)]="createForm.isActive">
+        </app-toggle-switch>
+      </div>
+    </div>
+    <div class="form-group">
+      <app-toggle-switch
+        label="Giới hạn số lần dùng"
+        [(ngModel)]="createForm.isLimitUsedTime">
+      </app-toggle-switch>
+    </div>
+    <div class="form-group" *ngIf="createForm.isLimitUsedTime">
+      <app-input-field
+        label="Số lần giới hạn"
+        type="number"
+        placeholder="VD: 10"
+        [(ngModel)]="createForm.timeUsedLimit">
+      </app-input-field>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showCreateModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmCreate()">
+        Tạo dịch vụ phụ
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Edit Child Service Modal -->
+<app-generic-modal
+  [show]="showEditModal"
+  title="Sửa dịch vụ phụ"
+  [maxWidth]="'600px'"
+  [bodyBackground]="'white'"
+  (close)="showEditModal = false">
+  <div class="modal-content-wrapper">
+    <div class="form-group">
+      <app-input-field
+        label="Tên dịch vụ *"
+        type="text"
+        [(ngModel)]="editForm.name"
+        required>
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-input-field
+        label="Mô tả"
+        type="text"
+        [(ngModel)]="editForm.description">
+      </app-input-field>
+    </div>
+    <div class="form-group">
+      <app-toggle-switch
+        label="Đang hoạt động"
+        [(ngModel)]="editForm.isActive">
+      </app-toggle-switch>
+    </div>
+    <div class="modal-actions">
+      <app-button
+        type="secondary"
+        size="medium"
+        (click)="showEditModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        (click)="onConfirmEdit()">
+        Lưu
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+

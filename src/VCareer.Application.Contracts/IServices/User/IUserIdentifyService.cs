@@ -17,7 +17,7 @@ namespace VCareer.IServices.User
     {
         public Task<List<string>> GetRolesByUserIdAsync(Guid userId);
         public Task UpdateUserRolesAsync(Guid userId, List<string> roleNames);
-        public Task<List<Guid>> GetUsersIdByRoleAsync(int roleType);
+        public Task<List<IdentityUserDto>> GetUsersInfoByRoleAsync(int roleType);
         public Task SetUserActiveStatusAsync(Guid userId, bool isActive);
         public Task<List<IdentityRoleDto>> GetAllRolesAsync();
         public Task<List<IdentityRoleDto>> GetAllEmployeeRolesAsync();

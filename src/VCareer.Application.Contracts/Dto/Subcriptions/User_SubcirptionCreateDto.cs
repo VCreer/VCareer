@@ -11,8 +11,7 @@ namespace VCareer.Dto.Subcriptions
     {
         public Guid UserId { get; set; }
         public Guid SubcriptionServiceId { get; set; }
-        public SubcriptionStatus status { get; set; }
-
+   
     }
     public class User_SubcirptionUpdateDto
     {

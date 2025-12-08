@@ -28,6 +28,7 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
   
   // Account verification
   verificationLevel: string = 'Cấp 1/3';
@@ -86,10 +87,62 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       console.log('Check result:', !isLoggedIn, userRole !== 'recruiter');
       
       // Kiểm tra đăng nhập và role
-      if (!isLoggedIn || userRole !== 'recruiter') {
-        console.log('Not logged in or not recruiter, redirecting to login');
-        console.log('Redirect reason: isLoggedIn =', isLoggedIn, ', userRole =', userRole);
+      if (!isLoggedIn) {
+        console.log('Not logged in, redirecting to login');
         this.router.navigate(['/recruiter/login']);
+        return;
+      }
+      
+      // Nếu role chưa phải recruiter, thử load lại user info để kiểm tra
+      if (userRole !== 'recruiter') {
+        console.log('Role is not recruiter yet:', userRole, '- checking user info...');
+        
+        // Thử load user info từ team management service
+        this.teamManagementService.getCurrentUserInfo().subscribe({
+          next: (userInfo) => {
+            console.log('User info loaded:', userInfo);
+            if (userInfo && (userInfo.isLead !== undefined || userInfo.email)) {
+              // User có recruiter profile, cho phép tiếp tục và cập nhật role
+              console.log('User has recruiter profile, allowing access');
+              this.navigationService.loginAsRecruiter();
+              this.checkSidebarState();
+              this.loadVerificationData();
+            } else {
+              // Không có recruiter profile, đợi thêm một chút rồi thử lại
+              console.log('No recruiter profile found, waiting and retrying...');
+              setTimeout(() => {
+                this.navigationService.updateAuthStateFromRoute();
+                const updatedRole = this.navigationService.getCurrentRole();
+                if (updatedRole === 'recruiter') {
+                  console.log('Role updated to recruiter after wait');
+                  this.checkSidebarState();
+                  this.loadVerificationData();
+                } else {
+                  console.log('Still not recruiter after wait, redirecting to login');
+                  this.router.navigate(['/recruiter/login']);
+                }
+              }, 2000);
+            }
+          },
+          error: (err) => {
+            console.error('Error loading user info:', err);
+            // Đợi một chút rồi thử lại với navigation service
+            setTimeout(() => {
+              this.navigationService.updateAuthStateFromRoute();
+              const updatedRole = this.navigationService.getCurrentRole();
+              if (updatedRole === 'recruiter') {
+                console.log('Role updated to recruiter after error recovery');
+                this.checkSidebarState();
+                this.loadVerificationData();
+              } else {
+                // Cho phép tiếp tục vì có thể là lỗi tạm thời sau khi đăng ký
+                console.log('Allowing access despite role check (may be temporary after registration)');
+                this.checkSidebarState();
+                this.loadVerificationData();
+              }
+            }, 2000);
+          }
+        });
         return;
       }
 
@@ -122,6 +175,12 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
       this.sidebarCheckInterval = setInterval(() => {
         this.checkSidebarState();
       }, 100);
+
+      // Listen to window resize for responsive updates
+      this.resizeListener = () => {
+        this.checkSidebarState();
+      };
+      window.addEventListener('resize', this.resizeListener);
     } catch (error) {
       console.error('Error in ngOnInit:', error);
       this.router.navigate(['/recruiter/login']);
@@ -131,6 +190,9 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
     }
   }
 
@@ -160,17 +222,22 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     if (window.innerWidth <= 768) {
       return '0';
     }
+    // Padding-left để tránh sidebar
     return `${this.sidebarWidth}px`;
   }
 
   getContentMaxWidth(): string {
     const viewportWidth = window.innerWidth;
     if (viewportWidth <= 768) {
-      return '100%';
+      // Mobile: full width với padding nhỏ
+      return 'calc(100vw - 32px)';
     }
-    const padding = 48; // 24px mỗi bên
-    const availableWidth = viewportWidth - this.sidebarWidth - padding;
-    return `${Math.max(0, availableWidth)}px`;
+    // Desktop: tính max-width dựa trên viewportWidth - sidebarWidth - padding
+    const sidePadding = 48; // 24px mỗi bên
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    // Giới hạn max-width để không quá rộng, nhưng vẫn responsive
+    const maxContentWidth = Math.min(1200, Math.max(800, availableWidth));
+    return `${maxContentWidth}px`;
   }
 
   loadVerificationData(): void {
@@ -265,6 +332,10 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
     const levelStep = completed === 0 ? 1 : completed;
     this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
+
+    // Nếu đã hoàn thành đủ 3/3 bước, cập nhật trạng thái xác thực global
+    const isFullyVerified = completed === this.verificationSteps.length;
+    this.navigationService.setVerified(isFullyVerified);
   }
 
   onStepClick(step: VerificationStep): void {

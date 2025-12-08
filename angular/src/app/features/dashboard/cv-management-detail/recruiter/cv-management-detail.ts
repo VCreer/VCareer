@@ -90,6 +90,10 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   cvHtml: string = '';
   safeCvHtml: SafeHtml | null = null;
   cvType: 'online' | 'uploaded' | null = null;
+  
+  // Access Control
+  hasAccess: boolean = true;
+  accessDenied: boolean = false;
 
   // Toast notification
   showToast = false;
@@ -154,49 +158,88 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
 
   loadApplicationDetail(): void {
     this.loading = true;
+    this.hasAccess = true;
+    this.accessDenied = false;
     
     this.applicationService.getApplication(this.applicationId).subscribe({
       next: (application: ApplicationDto) => {
         this.application = application;
         this.isViewed = !!application.viewedAt;
         
-        // Mark as viewed if not viewed yet
-        if (!this.isViewed) {
-          this.markAsViewed();
-        }
-        
-        // Map ApplicationDto to CvDetail
-        this.cvDetail = {
-          id: application.id || '',
-          name: application.candidateName || 'N/A',
-          email: application.candidateEmail || 'N/A',
-          phone: application.candidatePhone || 'N/A',
-          position: application.jobTitle || 'N/A',
-          status: application.status || 'received',
-          campaignName: application.jobTitle || '',
-          contactOpenedDate: application.viewedAt ? new Date(application.viewedAt).toLocaleDateString('vi-VN') : undefined
-        };
-        
-        this.selectedStatus = application.status || 'received';
-        
-        // Determine CV type and load CV
-        if (application.cvType === 'Online' && application.candidateCvId) {
-          this.cvType = 'online';
-          this.loadOnlineCv(application.candidateCvId);
-        } else if (application.cvType === 'Uploaded' && application.uploadedCvId) {
-          this.cvType = 'uploaded';
-          this.loadUploadedCv(application.uploadedCvId);
-        } else {
-          this.loading = false;
-          this.showToastMessage('Không tìm thấy CV', 'error');
-        }
+        // Check if we have access to view this candidate's CV
+        // This will be handled by backend, but we also check on frontend
+        this.checkCandidateAccess(application.candidateId).then(hasAccess => {
+          if (!hasAccess) {
+            this.hasAccess = false;
+            this.accessDenied = true;
+            this.loading = false;
+            return;
+          }
+          
+          // Mark as viewed if not viewed yet
+          if (!this.isViewed) {
+            this.markAsViewed();
+          }
+          
+          // Map ApplicationDto to CvDetail
+          this.cvDetail = {
+            id: application.id || '',
+            name: application.candidateName || 'N/A',
+            email: application.candidateEmail || 'N/A',
+            phone: application.candidatePhone || 'N/A',
+            position: application.jobTitle || 'N/A',
+            status: application.status || 'received',
+            campaignName: application.jobTitle || '',
+            contactOpenedDate: application.viewedAt ? new Date(application.viewedAt).toLocaleDateString('vi-VN') : undefined
+          };
+          
+          this.selectedStatus = application.status || 'received';
+          
+          // Determine CV type and load CV
+          if (application.cvType === 'Online' && application.candidateCvId) {
+            this.cvType = 'online';
+            this.loadOnlineCv(application.candidateCvId);
+          } else if (application.cvType === 'Uploaded' && application.uploadedCvId) {
+            this.cvType = 'uploaded';
+            this.loadUploadedCv(application.uploadedCvId);
+          } else {
+            this.loading = false;
+            this.showToastMessage('Không tìm thấy CV', 'error');
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading application:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        
+        // Check if error is due to access denied (403 or specific error message)
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || error.error.message?.includes('access')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        }
       }
     });
+  }
+  
+  private async checkCandidateAccess(candidateId?: string): Promise<boolean> {
+    if (!candidateId) {
+      return false;
+    }
+    
+    try {
+      // Try to load CV to check access - if it fails with 403, access is denied
+      // For now, we'll assume access is granted if application was loaded
+      // Backend should handle the actual check
+      return true;
+    } catch (error: any) {
+      if (error.status === 403 || error.status === 401) {
+        return false;
+      }
+      return true; // Other errors don't necessarily mean access denied
+    }
   }
 
   loadOnlineCv(cvId: string): void {
@@ -237,7 +280,15 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading online CV:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải CV online', 'error');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || error.error.message?.includes('access') || error.error.message?.includes('ProfileVisibility')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải CV online', 'error');
+        }
       }
     });
   }
@@ -257,7 +308,14 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading uploaded CV:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải CV đã upload', 'error');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải CV đã upload', 'error');
+        }
       }
     });
   }

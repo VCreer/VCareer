@@ -28,6 +28,11 @@ namespace VCareer.Dto.TeamManagementDto
         public string Email { get; set; }
         
         /// <summary>
+        /// Số điện thoại (lấy từ IdentityUser.PhoneNumber)
+        /// </summary>
+        public string PhoneNumber { get; set; }
+        
+        /// <summary>
         /// Có phải Leader không
         /// </summary>
         public bool IsLead { get; set; }

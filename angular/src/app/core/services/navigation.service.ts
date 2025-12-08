@@ -123,10 +123,8 @@ export class NavigationService {
   }
 
   private updateAuthStateFromUser(user: any) {
-    console.log('[NavigationService] updateAuthStateFromUser called with user:', user);
     
     if (!user) {
-      console.log('[NavigationService] No user, setting logged out state');
       this.isLoggedInSubject.next(false);
       this.userRoleSubject.next(null);
       this.isVerifiedSubject.next(false);
@@ -136,8 +134,6 @@ export class NavigationService {
 
     // Xác định role dựa vào roles array
     const roles = user.roles || [];
-    console.log('[NavigationService] User roles:', roles);
-    console.log('[NavigationService] Roles type:', typeof roles, 'isArray:', Array.isArray(roles));
     
     let userRole: UserRole = null;
     
@@ -174,7 +170,6 @@ export class NavigationService {
       }
     }
 
-    console.log('[NavigationService] Final userRole:', userRole);
 
     // Cập nhật trạng thái đăng nhập + role
     this.isLoggedInSubject.next(true);

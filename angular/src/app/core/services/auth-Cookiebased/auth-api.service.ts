@@ -1,75 +1,119 @@
+// src/app/core/services/auth-Cookiebased/auth-api.service.ts
 import { Injectable } from '@angular/core';
-import { AuthService } from '../../../proxy/services/auth';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-//bọc thêm api proxy bằng with credential để đính kèm cookie với request nếu ko thì request ko có cookie đi kèm
-
-import type {
+import { environment } from '../../../../environments/environment';
+import {
+  CurrentUserInfoDto,
   LoginDto,
   CandidateRegisterDto,
   RecruiterRegisterDto,
   CreateEmployeeDto,
-  CurrentUserInfoDto,
   EmployeeLoginDto,
   ForgotPasswordDto,
   GoogleLoginDto,
   ResetPasswordDto,
 } from '../../../proxy/dto/auth-dto/models';
 
-@Injectable({ providedIn: 'root' })
+/**
+ * Auth API Service - Wrapper để bypass ABP proxy config issue
+ * Dùng HttpClient trực tiếp thay vì ABP RestService
+ */
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthApiService {
-  constructor(private authService: AuthService) {}
+  private readonly baseUrl = environment.apis.default.url;
 
-  private cfg = { withCredentials: true } as any;
-
-  candidateLogin(input: LoginDto): Observable<void> {
-    return this.authService.candidateLogin(input, this.cfg);
-  }
-
-  candidateRegister(input: CandidateRegisterDto): Observable<void> {
-    return this.authService.candidateRegister(input, this.cfg);
-  }
-
-  recruiterLogin(input: LoginDto): Observable<void> {
-    return this.authService.recruiterLogin(input, this.cfg);
-  }
-
-  recruiterRegister(input: RecruiterRegisterDto): Observable<void> {
-    return this.authService.recruiterRegister(input, this.cfg);
-  }
-
-  employeeLogin(input: EmployeeLoginDto): Observable<void> {
-    return this.authService.employeeLogin(input, this.cfg);
-  }
-
-  createEmployee(input: CreateEmployeeDto): Observable<void> {
-    return this.authService.createEmployee(input, this.cfg);
-  }
-
-  forgotPassword(input: ForgotPasswordDto): Observable<void> {
-    return this.authService.forgotPassword(input, this.cfg);
-  }
-
-  resetPassword(input: ResetPasswordDto): Observable<void> {
-    return this.authService.resetPassword(input, this.cfg);
-  }
-
-  loginWithGoogle(input: GoogleLoginDto): Observable<void> {
-    return this.authService.loginWithGoogle(input, this.cfg);
-  }
+  constructor(private http: HttpClient) {}
 
   getCurrentUser(): Observable<CurrentUserInfoDto> {
-    return this.authService.getCurrentUser(this.cfg);
+    return this.http.get<CurrentUserInfoDto>(
+      `${this.baseUrl}/api/app/auth/current-user`
+    );
   }
 
-  refreshToken(): Observable<void> {
-    return this.authService.refeshToken(this.cfg);
+  candidateLogin(payload: LoginDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/candidate-login`,
+      payload
+    );
+  }
+
+  candidateRegister(payload: CandidateRegisterDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/candidate-register`,
+      payload
+    );
+  }
+
+  recruiterLogin(payload: LoginDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/recruiter-login`,
+      payload
+    );
+  }
+
+  recruiterRegister(payload: RecruiterRegisterDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/recruiter-register`,
+      payload
+    );
+  }
+
+  employeeLogin(payload: EmployeeLoginDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/employee-login`,
+      payload
+    );
+  }
+
+  createEmployee(payload: CreateEmployeeDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/employee`,
+      payload
+    );
+  }
+
+  refeshToken(): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/refesh-token`,
+      {}
+    );
   }
 
   logOut(): Observable<void> {
-    return this.authService.logOut(this.cfg);
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/log-out`,
+      {}
+    );
   }
 
   logOutAllDevice(): Observable<void> {
-    return this.authService.logOutAllDevice(this.cfg);
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/log-out-all-device`,
+      {}
+    );
+  }
+
+  forgotPassword(payload: ForgotPasswordDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/forgot-password`,
+      payload
+    );
+  }
+
+  resetPassword(payload: ResetPasswordDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/reset-password`,
+      payload
+    );
+  }
+
+  loginWithGoogle(payload: GoogleLoginDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/api/app/auth/login-with-google`,
+      payload
+    );
   }
 }

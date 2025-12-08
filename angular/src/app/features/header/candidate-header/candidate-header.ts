@@ -5,13 +5,12 @@ import { filter } from 'rxjs/operators';
 import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 
 @Component({
   selector: 'app-candidate-header',
   standalone: true,
-  imports: [CommonModule, LanguageToggleComponent],
+  imports: [CommonModule],
   templateUrl: './candidate-header.html',
   styleUrls: ['./candidate-header.scss']
 })
@@ -19,17 +18,15 @@ export class CandidateHeaderComponent implements OnInit {
   @ViewChild('notificationContainer', { static: false }) notificationContainer?: ElementRef<HTMLElement>;
   currentRoute = '';
   isMenuOpen = false;
-  selectedLanguage = 'vi';
   isLoggedIn = false;
   showProfileMenu = false;
   showNotificationMenu = false;
   currentUser: any = null;
+  selectedLanguage: string = '';
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
-    emailSettings: false,
-    personalSecurity: false,
-    upgradeAccount: false
+    personalSecurity: false
   };
 
   constructor(
@@ -151,11 +148,6 @@ export class CandidateHeaderComponent implements OnInit {
     return this.currentRoute === route || this.currentRoute.startsWith(route);
   }
 
-  onLanguageChange(lang: string) {
-    this.selectedLanguage = lang;
-    this.translationService.setLanguage(lang);
-  }
-
   translate(key: string): string {
     return this.translationService.translate(key);
   }
@@ -171,25 +163,17 @@ export class CandidateHeaderComponent implements OnInit {
     this.showProfileMenu = false;
   }
 
-  onProfileMouseLeave() {
-    setTimeout(() => {
-      this.showProfileMenu = false;
-    }, 300);
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+    if (this.showProfileMenu) {
+      this.showNotificationMenu = false; // Đóng notification menu khi mở profile menu
+    }
   }
 
   toggleNotificationMenu() {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
-      this.showProfileMenu = false; // Đóng profile menu khi mở notification
-    }
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as Node;
-    // Đóng menu nếu click ngoài khu vực notification
-    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
-      this.showNotificationMenu = false;
+      this.showProfileMenu = false; // Đóng profile menu khi mở notification menu
     }
   }
 
@@ -197,6 +181,28 @@ export class CandidateHeaderComponent implements OnInit {
     // Logic đánh dấu tất cả thông báo đã đọc
     this.showNotificationMenu = false;
   }
+
+  onProfileMouseLeave() {
+    // Không dùng hover nữa, chỉ dùng click
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    
+    // Đóng notification menu nếu click ngoài khu vực notification
+    if (this.showNotificationMenu && this.notificationContainer && !this.notificationContainer.nativeElement.contains(target)) {
+      this.showNotificationMenu = false;
+    }
+    
+    // Đóng profile menu nếu click ngoài khu vực profile
+    const profileContainer = target.closest('.profile-container');
+    if (this.showProfileMenu && !profileContainer) {
+      this.showProfileMenu = false;
+    }
+  }
+
 
   navigateToPersonalInfo() {
     this.router.navigate(['/candidate/profile']);
@@ -262,3 +268,4 @@ export class CandidateHeaderComponent implements OnInit {
     return true;
   }
 }
+

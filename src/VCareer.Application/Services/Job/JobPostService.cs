@@ -15,12 +15,14 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.IGeoServices;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using VCareer.Services.Geo;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -47,10 +49,11 @@ namespace VCareer.Services.Job
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly ITagService _tagService;
         private readonly IJobTagService _jobTagService;
+        private readonly IActivityLogAppService _activityLogAppService;
 
 
         public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
-            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService)
+            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService, IActivityLogAppService activityLogAppService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -65,14 +68,16 @@ namespace VCareer.Services.Job
             _childServiceRepository = childServiceRepository;
             _tagService = tagService;
             _jobTagService = jobTagService;
+            _activityLogAppService = activityLogAppService;
         }
 
+        [Authorize(VCareerPermission.JobPost.Approve)]
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
             if (jobPost == null)
                 throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
-            if(jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
+            if (jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
 
             jobPost.Status = JobStatus.Open;
             jobPost.ApprovedBy = CurrentUser.Id;
@@ -80,11 +85,23 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             await _jobSearchService.IndexJobAsync(jobPost.Id);
-            //
-            //send email cho recruiter báo đăng bài thành công
-            //
-        }
 
+            // Ghi log: duyệt job (Leader / HR Staff)
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobPosted,
+                    "ApproveJobPost",
+                    $"Duyệt job '{jobPost.Title}' (ID: {jobPost.Id})",
+                    jobPost.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
+
+            // TODO: send email cho recruiter báo đăng bài thành công
+        }
+        [Authorize(VCareerPermission.JobPost.Reject)]
         public async Task RejectJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -94,11 +111,22 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Rejected;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
-            //
-            //send email cho recruiter với nội dung từ Reject reason 
-            //
-        }
+            // Ghi log: từ chối job
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobDeleted,
+                    "RejectJobPost",
+                    $"Từ chối job '{jobPost.Title}' (ID: {jobPost.Id})",
+                    jobPost.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
 
+            // TODO: send email cho recruiter với nội dung từ Reject reason 
+        }
+        [Authorize(VCareerPermission.JobPost.LoadJobNeedApprove)]
         public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
         {
             var jobs = await SortJobNeedApproved();
@@ -245,6 +273,7 @@ namespace VCareer.Services.Job
         }
 
         #endregion
+        [Authorize(VCareerPermission.JobPost.PostJob)]
         public async Task PostJobAsync(PostJobDto dto)
         {
             //chir cho phep job o status Draft duoc post
@@ -272,7 +301,21 @@ namespace VCareer.Services.Job
             job.Status = JobStatus.Pending;
             await _jobPostRepository.UpdateAsync(job, true);
 
+            // Ghi log: HR Staff post job (Draft -> Pending)
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                await _activityLogAppService.LogActivityAsync(
+                    _currentUser.Id.Value,
+                    Models.ActivityLogs.ActivityType.JobUpdated,
+                    "PostJob",
+                    $"Gửi job '{job.Title}' (ID: {job.Id}) lên duyệt",
+                    job.Id,
+                    nameof(Job_Post),
+                    "{}");
+            }
+
         }
+        [Authorize(VCareerPermission.JobPost.CLose)]
         public async Task CloseJobPost(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -291,6 +334,7 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
         }
+        [Authorize(VCareerPermission.JobPost.Create)]
         public async Task CreateJobPost(JobPostCreateDto dto)
         {
             if (_currentUser.IsAuthenticated == false) throw new AbpAuthorizationException("User is not authenticated");
@@ -338,6 +382,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.Delete)]
         public async Task DeleteJobPost(string id)
         {
             var job = await _jobPostRepository.FindAsync(Guid.Parse(id));
@@ -351,12 +396,13 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.LoadJobByCompanyId)]
         public async Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10)
         {
             var query = await _jobPostRepository.GetQueryableAsync();
 
             var jobs = await query
-                .Where(x => x.CompanyId == companyId )
+                .Where(x => x.CompanyId == companyId)
                 .OrderByDescending(x => x.PostedAt)
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -364,8 +410,7 @@ namespace VCareer.Services.Job
 
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
         }
-
-
+        [Authorize(VCareerPermission.JobPost.Statistics)]
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
             throw new NotImplementedException();
@@ -378,6 +423,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+        [Authorize(VCareerPermission.JobPost.Update)]
         public async Task UpdateJobPost(JobPostUpdateDto dto)
         {
             var job = await _jobPostRepository.GetAsync(dto.Id);

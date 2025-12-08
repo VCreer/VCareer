@@ -56,7 +56,9 @@ interface ValidationErrors {
 })
 export class JobPostingComponent implements OnInit, OnDestroy {
   sidebarExpanded = false;
+  sidebarWidth = 72; // Default collapsed width
   private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
   private queryParamsSubscription?: Subscription;
   showPreviewModal = false;
   currentCompanyInfo?: CompanyLegalInfoDto;
@@ -134,7 +136,15 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.checkSidebarState();
-    this.sidebarCheckInterval = setInterval(() => this.checkSidebarState(), 100);
+    this.sidebarCheckInterval = setInterval(() => {
+      this.checkSidebarState();
+    }, 100);
+
+    this.resizeListener = () => {
+      this.checkSidebarState();
+    };
+    window.addEventListener('resize', this.resizeListener);
+
     this.loadCategoryTree();
 
     // Load provinces trước
@@ -145,17 +155,18 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           value: p.code ?? 0,
         }));
       },
-      error: err => console.error('Lỗi tải danh sách tỉnh:', err),
+      error: err => {
+        // Error loading provinces
+      },
     });
 
     // Load company info
     this.companyProfile.getCurrentUserCompanyLegalInfo().subscribe({
       next: res => {
         this.currentCompanyInfo = res;
-        console.log('Thông tin công ty hiện tại:', this.currentCompanyInfo);
       },
       error: err => {
-        console.error('Lỗi khi lấy thông tin công ty:', err);
+        // Error loading company info
       },
     });
 
@@ -176,7 +187,12 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    clearInterval(this.sidebarCheckInterval);
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
     this.queryParamsSubscription?.unsubscribe();
   }
 
@@ -196,7 +212,6 @@ export class JobPostingComponent implements OnInit, OnDestroy {
         this.showToastMessage('Đã tải thông tin công việc', 'success');
       },
       error: err => {
-        console.error('Lỗi khi tải thông tin công việc:', err);
         this.showToastMessage('Không thể tải thông tin công việc', 'error');
         this.isLoadingJobData = false;
       }
@@ -354,7 +369,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           value: parent.categoryId || ''
         }));
       },
-      error: err => console.error('Lỗi load danh mục:', err),
+      error: err => {
+        // Error loading category tree
+      },
     });
   }
 
@@ -410,7 +427,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           }).filter(tag => tag.id); // Chỉ giữ tags có ID
         }
       },
-      error: err => console.error('Lỗi load tag:', err),
+      error: err => {
+        // Error loading tags
+      },
     });
   }
   //#endregion
@@ -506,14 +525,12 @@ export class JobPostingComponent implements OnInit, OnDestroy {
                 this.isSubmitting = false;
               },
               error: err => {
-                console.error('Lỗi cập nhật tags:', err);
                 this.showToastMessage('Cập nhật công việc thành công nhưng lỗi khi cập nhật tags', 'warning');
                 this.isSubmitting = false;
               }
             });
           },
           error: err => {
-            console.error('Lỗi cập nhật job:', err);
             this.showToastMessage('Lỗi khi cập nhật công việc', 'error');
             this.isSubmitting = false;
           }
@@ -547,19 +564,16 @@ export class JobPostingComponent implements OnInit, OnDestroy {
 
         this.jobPostService.createJobPostByDto(createDto).subscribe({
           next: res => {
-            console.log(res);
             this.showToastMessage('Đã lưu bản nháp thành công!', 'success');
             this.isSubmitting = false;
           },
           error: err => {
-            console.error(err);
             this.showToastMessage('Lỗi khi lưu bản nháp', 'error');
             this.isSubmitting = false;
           },
         });
       }
     } catch (error: any) {
-      console.error('Error saving job:', error);
       this.showToastMessage('Lỗi khi lưu công việc', 'error');
       this.isSubmitting = false;
     }
@@ -719,8 +733,47 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   checkSidebarState(): void {
-    const sidebar = document.querySelector('app-sidebar .sidebar');
-    this.sidebarExpanded = !!sidebar?.classList.contains('show');
+    const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      this.sidebarWidth = rect.width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || rect.width > 100;
+    } else {
+      this.sidebarWidth = 0;
+      this.sidebarExpanded = false;
+    }
+  }
+
+  getContentPaddingLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100vw - 32px)'; // Full width with padding on mobile
+    }
+    const sidePadding = 48; // 24px on each side
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    const maxContentWidth = Math.min(1400, Math.max(900, availableWidth));
+    return `${maxContentWidth}px`;
+  }
+
+  getBreadcrumbLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    if (window.innerWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
   }
   //#endregion
 }

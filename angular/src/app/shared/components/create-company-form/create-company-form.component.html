@@ -18,38 +18,13 @@
         style="display: none;">
     </div>
 
-    <!-- Company Type Selection -->
-    <div class="company-type-selection">
-      <label class="radio-option">
-        <input 
-          type="radio" 
-          name="companyType" 
-          value="enterprise"
-          [(ngModel)]="formData.companyType"
-          checked>
-        <span class="radio-label">Doanh nghiệp</span>
-      </label>
-      <label class="radio-option">
-        <input 
-          type="radio" 
-          name="companyType" 
-          value="household"
-          [(ngModel)]="formData.companyType">
-        <span class="radio-label">Hộ kinh doanh</span>
-      </label>
-    </div>
   </div>
 
   <!-- Warning Banner -->
   <div class="warning-banner">
     <i class="fa fa-exclamation-triangle warning-icon"></i>
     <p class="warning-text">
-      <span *ngIf="formData.companyType === 'enterprise'">
-        Để tài khoản được xác thực nhanh chóng, vui lòng nhập Mã số thuế và Tên công ty trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế. Bạn có thể tra cứu thông tin doanh nghiệp <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" rel="noopener noreferrer" class="warning-link">Tại đây</a>.
-      </span>
-      <span *ngIf="formData.companyType === 'household'">
-        Để tài khoản được xác thực nhanh chóng, vui lòng nhập Mã số thuế và Tên hộ kinh doanh trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế. Bạn có thể tra cứu thông tin doanh nghiệp <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" rel="noopener noreferrer" class="warning-link">Tại đây</a>.
-      </span>
+      Để tài khoản được xác thực nhanh chóng, vui lòng nhập Mã số thuế và Tên công ty trùng khớp với dữ liệu doanh nghiệp theo Trang thông tin điện tử của Cục Thuế. Bạn có thể tra cứu thông tin doanh nghiệp <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" rel="noopener noreferrer" class="warning-link">Tại đây</a>.
     </p>
   </div>
 
@@ -60,16 +35,14 @@
       <div class="form-column">
         <div class="form-group">
           <label class="form-label">
-            <span *ngIf="formData.companyType === 'enterprise'">Mã số thuế</span>
-            <span *ngIf="formData.companyType === 'household'">Mã số thuế người đại diện</span>
+            Mã số thuế
             <span class="required-star">*</span>
-            <i *ngIf="formData.companyType === 'household'" class="fa fa-info-circle info-icon" title="Mã số thuế của người đại diện hộ kinh doanh"></i>
           </label>
           <input 
             type="text" 
             class="form-input"
             [class.error]="formErrors.taxId"
-            [placeholder]="formData.companyType === 'enterprise' ? 'Nhập mã số thuế' : 'Nhập mã số thuế người đại diện'"
+            placeholder="Nhập mã số thuế"
             [(ngModel)]="formData.taxId"
             name="taxId"
             (blur)="onFieldBlur('taxId')"
@@ -131,15 +104,14 @@
       <div class="form-column">
         <div class="form-group">
           <label class="form-label">
-            <span *ngIf="formData.companyType === 'enterprise'">Tên công ty</span>
-            <span *ngIf="formData.companyType === 'household'">Tên hộ kinh doanh</span>
+            Tên công ty
             <span class="required-star">*</span>
           </label>
           <input 
             type="text" 
             class="form-input"
             [class.error]="formErrors.companyName"
-            [placeholder]="formData.companyType === 'enterprise' ? 'Nhập tên công ty' : 'Nhập tên hộ kinh doanh'"
+            placeholder="Nhập tên công ty"
             [(ngModel)]="formData.companyName"
             name="companyName"
             (blur)="onFieldBlur('companyName')"

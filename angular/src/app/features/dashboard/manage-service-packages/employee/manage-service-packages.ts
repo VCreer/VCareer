@@ -11,6 +11,12 @@ import {
   StatusDropdownComponent,
   StatusOption
 } from '../../../../shared/components';
+import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { SubcriptionPriceService } from 'src/app/proxy/services/subcription';
+import { SubcriptionsCreateDto, SubcriptionsUpdateDto, SubcriptionsViewDto, ChildServiceViewDto } from 'src/app/proxy/dto/subcriptions/models';
+import { PagingDto } from 'src/app/proxy/iservices/common/models';
+import { finalize } from 'rxjs/operators';
+import { SubcriptionContance_SubcriptorTarget, SubcriptionContance_SubcriptionStatus } from 'src/app/proxy/constants/job-constant';
 
 export interface ChildService {
   id: string;
@@ -32,7 +38,7 @@ export interface PackageSale {
   id: string;
   packageId: string;
   package?: ServicePackage;
-  salePercent: number; // %
+  salePercent: number;
   startDate: string;
   endDate: string;
   status: 'active' | 'inactive' | 'upcoming' | 'expired';
@@ -78,16 +84,16 @@ export interface ServicePackage {
   id: string;
   title: string;
   description: string;
-  target: 'candidate' | 'recruiter';
-  status: 'active' | 'inactive' | 'draft';
-  originalPrice: number; // giá gốc
-  isLimited: boolean; // giới hạn số lượng mua trong 1 khoảng thời gian của toàn bộ người dùng
-  isBuyLimited: boolean; // giới hạn số lượng mua của mỗi cá nhân
-  totalBuyEachUser?: number; // số lượng tối đa mua của mỗi cá nhân
+  target: SubcriptionContance_SubcriptorTarget;
+  status: SubcriptionContance_SubcriptionStatus;
+  originalPrice: number;
+  isLimited: boolean;
+  isBuyLimited: boolean;
+  totalBuyEachUser?: number;
   isLifeTime: boolean;
-  dayDuration?: number; // số ngày (nếu không phải lifetime)
+  dayDuration?: number;
   isActive: boolean;
-  childService_SubcriptionServices: ChildServicePackage[]; // list các dịch vụ con
+  childService_SubcriptionServices: ChildServicePackage[];
   serviceActions?: SelectedServiceAction[];
   createdDate: string;
   updatedDate?: string;
@@ -116,35 +122,33 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
 
-  // Toast
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
-  // Packages data
   allPackages: ServicePackage[] = [];
   filteredPackages: ServicePackage[] = [];
   paginatedPackages: ServicePackage[] = [];
 
-  // Search & Filter
   searchKeyword = '';
-  filterStatus = '';
-  filterType = '';
+  filterStatus: SubcriptionContance_SubcriptionStatus | '' = '';
+  filterType: SubcriptionContance_SubcriptorTarget | '' = '';
   sortField: 'title' | 'originalPrice' | 'dayDuration' | 'target' | 'status' | 'createdDate' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  // Status options
   statusOptions: StatusOption[] = [
     { value: '', label: 'Tất cả trạng thái' },
-    { value: 'active', label: 'Đang hoạt động' },
-    { value: 'inactive', label: 'Ngừng hoạt động' }
+    { value: SubcriptionContance_SubcriptionStatus.Active.toString(), label: 'Đang hoạt động' },
+    { value: SubcriptionContance_SubcriptionStatus.Inactive.toString(), label: 'Ngừng hoạt động' },
+    { value: SubcriptionContance_SubcriptionStatus.Expired.toString(), label: 'Hết hạn' },
+    { value: SubcriptionContance_SubcriptionStatus.Cancelled.toString(), label: 'Đã hủy' }
   ];
 
   // Type options (Target)
   typeOptions = [
     { value: '', label: 'Tất cả đối tượng' },
-    { value: 'candidate', label: 'Ứng viên' },
-    { value: 'recruiter', label: 'Nhà tuyển dụng' }
+    { value: SubcriptionContance_SubcriptorTarget.Candidate, label: 'Ứng viên' },
+    { value: SubcriptionContance_SubcriptorTarget.Recruiter, label: 'Nhà tuyển dụng' }
   ];
 
   // Pagination
@@ -186,8 +190,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   packageForm: Partial<ServicePackage> = {
     title: '',
     description: '',
-    target: 'recruiter',
-    status: 'draft',
+    target: SubcriptionContance_SubcriptorTarget.Recruiter,
+    status: SubcriptionContance_SubcriptionStatus.Inactive,
     originalPrice: 0,
     isLimited: false,
     isBuyLimited: false,
@@ -274,6 +278,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   ];
   serviceActions: ServiceActionItem[] = [];
 
+  isLoadingPackages = false;
   isSavingPackage = false;
   isSavingPackageEdit = false;
   isSavingSale = false;
@@ -299,7 +304,11 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     { value: 'expired', label: 'Hết hạn' }
   ];
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private subcriptionService: SubcriptionService_Service,
+    private subcriptionPriceService: SubcriptionPriceService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -319,13 +328,78 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       this.checkSidebarState();
     }, 50);
 
-    // Bắt đầu với bảng trống
-    this.allPackages = [];
-    this.filteredPackages = [];
-    this.paginatedPackages = [];
-    this.applyFilters();
+    this.loadPackages();
     this.applySaleFilters();
     this.initializeServiceActions();
+  }
+
+  loadPackages(): void {
+    this.isLoadingPackages = true;
+    
+    this.subcriptionService.getActiveSubscriptionServices()
+      .pipe(finalize(() => {
+        this.isLoadingPackages = false;
+      }))
+      .subscribe({
+        next: (response: SubcriptionsViewDto[]) => {
+          this.allPackages = response.map(dto => this.mapDtoToServicePackage(dto));
+          this.applyFilters();
+          this.refreshSalePackageOptions();
+          this.showToastMessage('Tải danh sách gói dịch vụ thành công', 'success');
+        },
+        error: (error) => {
+          console.error('Error loading packages:', error);
+          this.showToastMessage('Không thể tải danh sách gói dịch vụ', 'error');
+          this.allPackages = [];
+          this.applyFilters();
+        }
+      });
+  }
+
+  private mapDtoToServicePackage(dto: SubcriptionsViewDto): ServicePackage {
+    return {
+      id: dto.id || '',
+      title: dto.title || '',
+      description: dto.description || '',
+      target: dto.target as SubcriptionContance_SubcriptorTarget,
+      status: dto.status as SubcriptionContance_SubcriptionStatus,
+      originalPrice: dto.originalPrice || 0,
+      isLimited: dto.isLimited || false,
+      isBuyLimited: dto.isBuyLimited || false,
+      totalBuyEachUser: dto.totalBuyEachUser,
+      isLifeTime: dto.isLifeTime || false,
+      dayDuration: dto.dayDuration,
+      isActive: dto.isActive || false,
+      childService_SubcriptionServices: [],
+      serviceActions: [],
+      createdDate: new Date().toISOString()
+    };
+  }
+
+  private mapServicePackageToCreateDto(pkg: Partial<ServicePackage>): SubcriptionsCreateDto {
+    return {
+      title: pkg.title,
+      description: pkg.description,
+      target: pkg.target ?? SubcriptionContance_SubcriptorTarget.Recruiter,
+      status: pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive,
+      originalPrice: pkg.originalPrice || 0,
+      isLimited: pkg.isLimited || false,
+      isBuyLimited: pkg.isBuyLimited || false,
+      totalBuyEachUser: pkg.totalBuyEachUser || 0,
+      isLifeTime: pkg.isLifeTime || false,
+      dayDuration: pkg.dayDuration,
+      isActive: pkg.isActive || false
+    };
+  }
+
+  private mapServicePackageToUpdateDto(pkg: Partial<ServicePackage>): SubcriptionsUpdateDto {
+    return {
+      subcriptionId: pkg.id,
+      title: pkg.title,
+      description: pkg.description,
+      isActive: pkg.isActive || false,
+      dayDuration: pkg.dayDuration
+    };
   }
 
   applySaleFilters(): void {
@@ -426,67 +500,121 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onConfirmCreateSale(): void {
-    if (this.isSavingSale) {
-      return;
-    }
-    if (!this.validateSaleForm()) {
-      return;
-    }
-    this.isSavingSale = true;
-    // TODO: Call API to create sale
-    const newSale: PackageSale = {
-      id: `sale_${Date.now()}`,
-      packageId: this.saleForm.packageId!,
-      package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-      salePercent: this.saleForm.salePercent!,
-      startDate: this.saleForm.startDate!,
-      endDate: this.saleForm.endDate!,
-      status: this.saleForm.status!,
-      isActive: this.saleForm.isActive || false,
-      createdDate: new Date().toISOString()
-    };
+  //   if (this.isSavingSale || !this.validateSaleForm()) {
+  //     return;
+  //   }
+    
+  //   this.isSavingSale = true;
+    
+  //   const createDto: SubcriptionsCreateDto = {
+  //     title: `Sale ${this.saleForm.salePercent}%`,
+  //     description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
+  //     target: SubcriptionContance_SubcriptorTarget.Recruiter,
+  //     status: SubcriptionContance_SubcriptionStatus.Active,
+  //     originalPrice: 0,
+  //     isLimited: false,
+  //     isBuyLimited: false,
+  //     totalBuyEachUser: 0,
+  //     isLifeTime: false,
+  //     dayDuration: undefined,
+  //     isActive: true
+  //   };
 
-    this.allSales = [newSale, ...this.allSales];
-    this.showToastMessage('Tạo sale thành công', 'success');
-    this.showCreateSaleModal = false;
-    this.applySaleFilters();
-    setTimeout(() => (this.isSavingSale = false), 250);
+  //   this.subcriptionPriceService.createSubcriptionPriceByDto(createDto)
+  //     .pipe(finalize(() => {
+  //       setTimeout(() => (this.isSavingSale = false), 250);
+  //     }))
+  //     .subscribe({
+  //       next: () => {
+  //   const newSale: PackageSale = {
+  //     id: `sale_${Date.now()}`,
+  //     packageId: this.saleForm.packageId!,
+  //     package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+  //     salePercent: this.saleForm.salePercent!,
+  //     startDate: this.saleForm.startDate!,
+  //     endDate: this.saleForm.endDate!,
+  //     status: this.saleForm.status!,
+  //     isActive: this.saleForm.isActive || false,
+  //     createdDate: new Date().toISOString()
+  //   };
+
+  //   this.allSales = [newSale, ...this.allSales];
+  //   this.showToastMessage('Tạo sale thành công', 'success');
+  //   this.showCreateSaleModal = false;
+  //   this.applySaleFilters();
+  //       },
+  //       error: (error) => {
+  //         console.error('Error creating sale:', error);
+  //         this.showToastMessage('Không thể tạo sale', 'error');
+  // }
+  //     });
   }
 
   onConfirmEditSale(): void {
-    if (!this.selectedSale) return;
-    if (!this.validateSaleForm()) {
-      return;
-    }
+  //   if (!this.selectedSale || !this.validateSaleForm()) {
+  //     return;
+  //   }
 
-    // TODO: Call API to update sale
-    const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
-    if (index !== -1) {
-      this.allSales[index] = {
-        ...this.allSales[index],
-        packageId: this.saleForm.packageId!,
-        package: this.allPackages.find(p => p.id === this.saleForm.packageId),
-        salePercent: this.saleForm.salePercent!,
-        startDate: this.saleForm.startDate!,
-        endDate: this.saleForm.endDate!,
-        status: this.saleForm.status!,
-        isActive: this.saleForm.isActive || false,
-        updatedDate: new Date().toISOString()
-      };
-    }
+  //   const updateDto: SubcriptionsUpdateDto = {
+  //     subcriptionId: this.selectedSale.id,
+  //     title: `Sale ${this.saleForm.salePercent}%`,
+  //     description: `Sale cho gói ${this.allPackages.find(p => p.id === this.saleForm.packageId)?.title}`,
+  //     isActive: this.saleForm.isActive || false,
+  //     dayDuration: undefined
+  //   };
 
-    this.showToastMessage('Cập nhật sale thành công', 'success');
-    this.showEditSaleModal = false;
-    this.applySaleFilters();
+  //   this.subcriptionPriceService.updateSubcriptionPrice(updateDto)
+  //     .subscribe({
+  //       next: () => {
+  //   const index = this.allSales.findIndex(s => s.id === this.selectedSale!.id);
+  //   if (index !== -1) {
+  //     this.allSales[index] = {
+  //       ...this.allSales[index],
+  //       packageId: this.saleForm.packageId!,
+  //       package: this.allPackages.find(p => p.id === this.saleForm.packageId),
+  //       salePercent: this.saleForm.salePercent!,
+  //       startDate: this.saleForm.startDate!,
+  //       endDate: this.saleForm.endDate!,
+  //       status: this.saleForm.status!,
+  //       isActive: this.saleForm.isActive || false,
+  //       updatedDate: new Date().toISOString()
+  //     };
+  //   }
+
+  //   this.showToastMessage('Cập nhật sale thành công', 'success');
+  //   this.showEditSaleModal = false;
+  //   this.applySaleFilters();
+  //       },
+  //       error: (error) => {
+  //         console.error('Error updating sale:', error);
+  //         this.showToastMessage('Không thể cập nhật sale', 'error');
+  // }
+  //     });
   }
 
   onDeleteSale(sale: PackageSale): void {
     if (confirm(`Bạn có chắc chắn muốn xóa sale này?`)) {
-      // TODO: Call API to delete sale
-      this.allSales = this.allSales.filter(s => s.id !== sale.id);
-      this.showToastMessage('Đã xóa sale', 'success');
-      this.applySaleFilters();
-    }
+      const deleteDto: SubcriptionsUpdateDto = {
+        subcriptionId: sale.id,
+        title: sale.package?.title,
+        description: sale.package?.description,
+        isActive: false,
+        dayDuration: undefined
+      };
+
+    //   this.subcriptionPriceService.deleteSubcriptionPrice(Guid )
+    //     .subscribe({
+    //       next: () => {
+    //   this.allSales = this.allSales.filter(s => s.id !== sale.id);
+    //   this.showToastMessage('Đã xóa sale', 'success');
+    //   this.applySaleFilters();
+    //       },
+    //       error: (error) => {
+    //         console.error('Error deleting sale:', error);
+    //         this.showToastMessage('Không thể xóa sale', 'error');
+    // }
+    //     });
+  }
   }
 
   onToggleSaleActive(sale: PackageSale): void {
@@ -653,11 +781,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     menu.style.top = `${top}px`;
   }
 
-  loadPackages(): void {
-    this.allPackages = [];
-    this.applyFilters();
-  }
-
   applyFilters(): void {
     let result = [...this.allPackages];
 
@@ -667,22 +790,16 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       result = result.filter(pkg =>
         pkg.title.toLowerCase().includes(keyword) ||
         pkg.description.toLowerCase().includes(keyword) ||
-        pkg.target.toLowerCase().includes(keyword) ||
-        pkg.status.toLowerCase().includes(keyword)
+        this.getTargetLabel(pkg.target).toLowerCase().includes(keyword) ||
+        this.getStatusLabel(pkg).toLowerCase().includes(keyword)
       );
     }
 
-    // Filter by status
-    if (this.filterStatus) {
-      if (this.filterStatus === 'active') {
-        result = result.filter(p => p.isActive && p.status === 'active');
-      } else if (this.filterStatus === 'inactive') {
-        result = result.filter(p => !p.isActive || p.status === 'inactive');
-      }
+    if (this.filterStatus !== '') {
+      result = result.filter(p => p.status === this.filterStatus);
     }
 
-    // Filter by type (target)
-    if (this.filterType) {
+    if (this.filterType !== '') {
       result = result.filter(p => p.target === this.filterType);
     }
 
@@ -697,6 +814,12 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       } else if (this.sortField === 'originalPrice' || this.sortField === 'dayDuration') {
         aValue = Number(a[this.sortField] || 0);
         bValue = Number(b[this.sortField] || 0);
+      } else if (this.sortField === 'target') {
+        aValue = this.getTargetLabel(a.target).toLowerCase();
+        bValue = this.getTargetLabel(b.target).toLowerCase();
+      } else if (this.sortField === 'status') {
+        aValue = this.getStatusLabel(a).toLowerCase();
+        bValue = this.getStatusLabel(b).toLowerCase();
       } else {
         aValue = String(a[this.sortField] || '').toLowerCase();
         bValue = String(b[this.sortField] || '').toLowerCase();
@@ -780,8 +903,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.packageForm = {
       title: '',
       description: '',
-      target: 'recruiter',
-      status: 'draft',
+      target: SubcriptionContance_SubcriptorTarget.Recruiter,
+      status: SubcriptionContance_SubcriptionStatus.Inactive,
       originalPrice: 0,
       isLimited: false,
       isBuyLimited: false,
@@ -801,41 +924,29 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSavingPackage = true;
-    try {
       if (!this.validatePackageForm()) {
         return;
       }
 
-      const normalizedStatus = this.packageForm.status || 'draft';
-      const normalizedIsActive = normalizedStatus === 'active';
+    this.isSavingPackage = true;
 
-      const newPackage: ServicePackage = {
-        id: this.generatePackageId(),
-        title: this.packageForm.title!,
-        description: this.packageForm.description!,
-        target: this.packageForm.target!,
-        status: normalizedStatus,
-        originalPrice: this.packageForm.originalPrice!,
-        isLimited: this.packageForm.isLimited || false,
-        isBuyLimited: this.packageForm.isBuyLimited || false,
-        totalBuyEachUser: this.packageForm.totalBuyEachUser,
-        isLifeTime: this.packageForm.isLifeTime || false,
-        dayDuration: this.packageForm.dayDuration,
-        isActive: normalizedIsActive,
-        childService_SubcriptionServices: [],
-        serviceActions: this.getSelectedServiceActions(),
-        createdDate: new Date().toISOString()
-      };
+    const createDto: SubcriptionsCreateDto = this.mapServicePackageToCreateDto(this.packageForm);
 
-      this.allPackages = [newPackage, ...this.allPackages];
-      this.refreshSalePackageOptions();
+    this.subcriptionService.createSubCription(createDto)
+      .pipe(finalize(() => {
+        setTimeout(() => (this.isSavingPackage = false), 250);
+      }))
+      .subscribe({
+        next: () => {
       this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
       this.showCreatePackageModal = false;
-      this.applyFilters();
-    } finally {
-      this.resetSavingFlag('create');
+          this.loadPackages();
+        },
+        error: (error) => {
+          console.error('Error creating package:', error);
+          this.showToastMessage('Không thể tạo gói dịch vụ', 'error');
     }
+      });
   }
 
   onConfirmEditPackage(): void {
@@ -843,49 +954,29 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSavingPackageEdit = true;
-    try {
       if (!this.validatePackageForm()) {
         return;
       }
 
-      const index = this.allPackages.findIndex(p => p.id === this.selectedPackage!.id);
-      if (index !== -1) {
-        const normalizedStatus = this.packageForm.status || 'draft';
-        const normalizedIsActive = normalizedStatus === 'active';
+    this.isSavingPackageEdit = true;
 
-        const updatedPackage: ServicePackage = {
-          ...this.allPackages[index],
-          title: this.packageForm.title!,
-          description: this.packageForm.description!,
-          target: this.packageForm.target!,
-          status: normalizedStatus,
-          originalPrice: this.packageForm.originalPrice!,
-          isLimited: this.packageForm.isLimited || false,
-          isBuyLimited: this.packageForm.isBuyLimited || false,
-          totalBuyEachUser: this.packageForm.totalBuyEachUser,
-          isLifeTime: this.packageForm.isLifeTime || false,
-          dayDuration: this.packageForm.dayDuration,
-          isActive: normalizedIsActive,
-          childService_SubcriptionServices: this.selectedPackage?.childService_SubcriptionServices || [],
-          serviceActions: this.getSelectedServiceActions(),
-          updatedDate: new Date().toISOString()
-        };
+    const updateDto: SubcriptionsUpdateDto = this.mapServicePackageToUpdateDto(this.packageForm);
 
-        this.allPackages = [
-          ...this.allPackages.slice(0, index),
-          updatedPackage,
-          ...this.allPackages.slice(index + 1)
-        ];
-        this.refreshSalePackageOptions();
-      }
-
+    this.subcriptionService.updateSubcription(updateDto)
+      .pipe(finalize(() => {
+        setTimeout(() => (this.isSavingPackageEdit = false), 250);
+      }))
+      .subscribe({
+        next: () => {
       this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
       this.showEditPackageModal = false;
-      this.applyFilters();
-    } finally {
-      this.resetSavingFlag('edit');
+          this.loadPackages();
+        },
+        error: (error) => {
+          console.error('Error updating package:', error);
+          this.showToastMessage('Không thể cập nhật gói dịch vụ', 'error');
     }
+      });
   }
 
   toggleServiceAction(actionKey: string): void {
@@ -928,16 +1019,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     return !!this.serviceActions.find(action => action.actionKey === actionKey && action.selectedOptions.includes(optionValue));
   }
 
-  private resetSavingFlag(type: 'create' | 'edit'): void {
-    setTimeout(() => {
-      if (type === 'create') {
-        this.isSavingPackage = false;
-      } else {
-        this.isSavingPackageEdit = false;
-      }
-    }, 250);
-  }
-
   private validatePackageForm(): boolean {
     this.resetValidationErrors();
     const errors: Record<string, string> = {};
@@ -953,7 +1034,11 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (this.packageForm.originalPrice === null || this.packageForm.originalPrice === undefined || this.packageForm.originalPrice < 0) {
+  if (
+    this.packageForm.originalPrice === null || 
+    this.packageForm.originalPrice === undefined || 
+    this.packageForm.originalPrice < 0
+  ) {
       errors['originalPrice'] = 'Giá gốc phải lớn hơn hoặc bằng 0';
       isValid = false;
     }
@@ -1051,35 +1136,46 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private generatePackageId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-  }
-
   onToggleActive(pkg: ServicePackage): void {
-    // TODO: Call API to toggle active status
-    pkg.isActive = !pkg.isActive;
-    if (pkg.isActive) {
-      pkg.status = 'active';
-    } else {
-      pkg.status = 'inactive';
-    }
+    const newIsActive = !pkg.isActive;
+    
+    const updateDto: SubcriptionsUpdateDto = {
+      subcriptionId: pkg.id,
+      title: pkg.title,
+      description: pkg.description,
+      isActive: newIsActive,
+      dayDuration: pkg.dayDuration
+    };
+
+    this.subcriptionService.updateSubcription(updateDto)
+      .subscribe({
+        next: () => {
     this.showToastMessage(
-      pkg.isActive ? 'Đã kích hoạt gói dịch vụ' : 'Đã vô hiệu hóa gói dịch vụ',
+            newIsActive ? 'Đã kích hoạt gói dịch vụ' : 'Đã vô hiệu hóa gói dịch vụ',
       'success'
     );
-    this.applyFilters();
+          this.loadPackages();
+        },
+        error: (error) => {
+          console.error('Error toggling package status:', error);
+          this.showToastMessage('Không thể thay đổi trạng thái gói dịch vụ', 'error');
+        }
+      });
   }
 
   onDeletePackage(pkg: ServicePackage): void {
-    // TODO: Show confirmation modal and call API to delete
     if (confirm(`Bạn có chắc chắn muốn xóa gói dịch vụ "${pkg.title}"?`)) {
-      // TODO: Call API to delete package
-      this.allPackages = this.allPackages.filter(p => p.id !== pkg.id);
+      this.subcriptionService.deleteSubcription(pkg.id)
+        .subscribe({
+          next: () => {
       this.showToastMessage('Đã xóa gói dịch vụ', 'success');
-      this.applyFilters();
+            this.loadPackages();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
+            this.showToastMessage('Không thể xóa gói dịch vụ', 'error');
+          }
+        });
     }
   }
 
@@ -1098,28 +1194,35 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
   // Helper methods
   getStatusLabel(pkg: ServicePackage): string {
-    if (!pkg.isActive) return 'Ngừng hoạt động';
-    if (pkg.status === 'active') return 'Đang hoạt động';
-    if (pkg.status === 'inactive') return 'Ngừng hoạt động';
-    return 'Bản nháp';
+    const labels: { [key in SubcriptionContance_SubcriptionStatus]: string } = {
+      [SubcriptionContance_SubcriptionStatus.Active]: 'Đang hoạt động',
+      [SubcriptionContance_SubcriptionStatus.Inactive]: 'Ngừng hoạt động',
+      [SubcriptionContance_SubcriptionStatus.Expired]: 'Hết hạn',
+      [SubcriptionContance_SubcriptionStatus.Cancelled]: 'Đã hủy'
+    };
+    return labels[pkg.status];
   }
 
   getStatusClass(pkg: ServicePackage): string {
-    if (!pkg.isActive || pkg.status === 'inactive') return 'status-inactive';
-    if (pkg.status === 'draft') return 'status-draft';
-    return 'status-active';
-  }
-
-  getTargetLabel(target: string): string {
-    const labels: { [key: string]: string } = {
-      'candidate': 'Ứng viên',
-      'recruiter': 'Nhà tuyển dụng'
+    const classes: { [key in SubcriptionContance_SubcriptionStatus]: string } = {
+      [SubcriptionContance_SubcriptionStatus.Active]: 'status-active',
+      [SubcriptionContance_SubcriptionStatus.Inactive]: 'status-inactive',
+      [SubcriptionContance_SubcriptionStatus.Expired]: 'status-expired',
+      [SubcriptionContance_SubcriptionStatus.Cancelled]: 'status-cancelled'
     };
-    return labels[target] || target;
+    return classes[pkg.status];
   }
 
-  getTargetClass(target: string): string {
-    return `target-${target}`;
+  getTargetLabel(target: SubcriptionContance_SubcriptorTarget): string {
+    const labels: { [key in SubcriptionContance_SubcriptorTarget]: string } = {
+      [SubcriptionContance_SubcriptorTarget.Candidate]: 'Ứng viên',
+      [SubcriptionContance_SubcriptorTarget.Recruiter]: 'Nhà tuyển dụng'
+    };
+    return labels[target];
+  }
+
+  getTargetClass(target: SubcriptionContance_SubcriptorTarget): string {
+    return `target-${SubcriptionContance_SubcriptorTarget[target].toLowerCase()}`;
   }
 
   formatPrice(price: number): string {
@@ -1192,7 +1295,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     if (viewportWidth <= 768) {
       return '100%';
     }
-    const padding = 32; // 16px mỗi bên
+    const padding = 32;
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
   }

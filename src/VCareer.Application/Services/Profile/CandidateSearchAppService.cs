@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VCareer.Dto.Profile;
 using VCareer.IServices.IProfileServices;
+using VCareer.IServices.IActivityLogService;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
 using VCareer.Dto.CVDto;
@@ -25,6 +26,7 @@ using VCareer.EntityFrameworkCore;
 using System.Data.Common;
 using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp.EntityFrameworkCore;
+using VCareer.Services.Auth.ActivityLog;
 
 namespace VCareer.Services.Profile
 {
@@ -69,6 +71,9 @@ namespace VCareer.Services.Profile
 
             // Chỉ lấy các candidate có Status = true và ProfileVisibility = true
             queryable = queryable.Where(c => c.Status && c.ProfileVisibility);
+            
+            Logger.LogInformation("After Status && ProfileVisibility filter. Total candidates: {Count}", 
+                await AsyncExecuter.CountAsync(queryable));
 
             // Kiểm tra xem có scope nào được chọn không
             var hasAnyScopeSelected = input.SearchInJobTitle || input.SearchInActivity ||
@@ -169,14 +174,20 @@ namespace VCareer.Services.Profile
             {
                 try
                 {
+                    Logger.LogInformation("Searching with keyword: {Keyword}", input.Keyword);
+                    
                     // Sử dụng Lucene để search
                     var matchedUserIds = await _luceneIndexer.SearchCandidateIdsAsync(input);
+                    
+                    Logger.LogInformation("Lucene search returned {Count} matched user IDs", matchedUserIds.Count);
                     
                     if (matchedUserIds.Any())
                     {
                         // Filter queryable với IDs từ Lucene
                         queryable = queryable.Where(c => matchedUserIds.Contains(c.UserId));
                         candidatesInMemory = await AsyncExecuter.ToListAsync(queryable);
+                        
+                        Logger.LogInformation("Found {Count} candidates from Lucene search", candidatesInMemory.Count);
                         
                         // Sắp xếp lại theo thứ tự từ Lucene (relevance)
                         var userIdOrder = matchedUserIds.ToList();
@@ -186,43 +197,17 @@ namespace VCareer.Services.Profile
                     }
                     else
                     {
-                        candidatesInMemory = new List<CandidateProfile>();
+                        // Lucene không tìm thấy kết quả, có thể index chưa được tạo hoặc rỗng
+                        // Fallback về cách cũ để search trong database
+                        Logger.LogWarning("Lucene search returned no results (index may be empty), falling back to database search");
+                        candidatesInMemory = await PerformFallbackSearchAsync(queryable, input, hasAnyScopeSelected);
                     }
                 }
                 catch (Exception ex)
                 {
                     // Nếu Lucene có lỗi, fallback về cách cũ
                     Logger.LogWarning(ex, "Lucene search có lỗi, sử dụng fallback method. Lỗi: {ErrorMessage}", ex.Message);
-                    
-                    // Load tất cả candidates về memory
-                    candidatesInMemory = await AsyncExecuter.ToListAsync(queryable);
-                    
-                    // Parse keywords
-                    var keyword = input.Keyword.Trim();
-                    var keywords = ParseKeywords(keyword);
-                    var keywordsLower = keywords.Select(k => k.ToLower()).ToList();
-                    
-                    // Filter trong memory bằng ContainsAnyKeyword
-                    if (hasAnyScopeSelected)
-                    {
-                        candidatesInMemory = candidatesInMemory.Where(c =>
-                            (input.SearchInJobTitle && c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
-                            (input.SearchInSkills && c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
-                            (input.SearchInExperience && c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
-                            (input.SearchInActivity && c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
-                            (input.SearchInActivity && c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
-                        ).ToList();
-                    }
-                    else
-                    {
-                        candidatesInMemory = candidatesInMemory.Where(c =>
-                            (c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
-                            (c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
-                            (c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
-                            (c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
-                            (c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
-                        ).ToList();
-                    }
+                    candidatesInMemory = await PerformFallbackSearchAsync(queryable, input, hasAnyScopeSelected);
                 }
                 
                 // Lấy danh sách candidate IDs đã match trong profile
@@ -367,12 +352,20 @@ namespace VCareer.Services.Profile
             else
             {
                 // Không có keyword, query bình thường
+                Logger.LogInformation("No keyword provided, querying all candidates. Query filters applied.");
+                Logger.LogInformation("Queryable count before ordering: {Count}", await AsyncExecuter.CountAsync(queryable));
+                
                 queryable = queryable.OrderBy(sorting);
                 
                 totalCount = await AsyncExecuter.CountAsync(queryable);
+                Logger.LogInformation("Total candidates found: {TotalCount}", totalCount);
+                
                 candidates = await AsyncExecuter.ToListAsync(
                     queryable.Skip(skipCount).Take(maxResultCount)
                 );
+                
+                Logger.LogInformation("Returning {Count} candidates (skip: {Skip}, take: {Take})", 
+                    candidates.Count, skipCount, maxResultCount);
             }
 
             var candidateUserIds = candidates
@@ -403,6 +396,12 @@ namespace VCareer.Services.Profile
 
             if (candidate == null)
             {
+                // Kiểm tra xem candidate có tồn tại nhưng đã tắt ProfileVisibility không
+                var candidateCheck = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.Id == candidateProfileId);
+                if (candidateCheck != null && (!candidateCheck.Status || !candidateCheck.ProfileVisibility))
+                {
+                    throw new UserFriendlyException("Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. Bạn không thể xem thông tin của ứng viên này.");
+                }
                 throw new UserFriendlyException("Không tìm thấy ứng viên");
             }
 
@@ -656,6 +655,8 @@ namespace VCareer.Services.Profile
                 emailBody,
                 true
             );
+
+            
         }
 
         private string GetDefaultSorting(string? displayPriority)
@@ -733,6 +734,68 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Parse keyword thành các từ khóa riêng lẻ (hỗ trợ comma, semicolon, space)
         /// </summary>
+        private async Task<List<CandidateProfile>> PerformFallbackSearchAsync(
+            IQueryable<CandidateProfile> queryable, 
+            SearchCandidateInputDto input, 
+            bool hasAnyScopeSelected)
+        {
+            // Load tất cả candidates về memory
+            var allCandidates = await AsyncExecuter.ToListAsync(queryable);
+            
+            // Parse keywords
+            var keyword = input.Keyword.Trim();
+            var keywords = ParseKeywords(keyword);
+            var keywordsLower = keywords.Select(k => k.ToLower()).ToList();
+            
+            Logger.LogInformation("Fallback search: Searching for keywords {Keywords} in {Count} candidates", 
+                string.Join(", ", keywordsLower), allCandidates.Count);
+            
+            // Filter trong memory bằng ContainsAnyKeyword
+            List<CandidateProfile> filteredCandidates;
+            
+            if (hasAnyScopeSelected)
+            {
+                filteredCandidates = allCandidates.Where(c =>
+                    (input.SearchInJobTitle && c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
+                    (input.SearchInSkills && c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
+                    (input.SearchInExperience && c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
+                    (input.SearchInActivity && c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
+                    (input.SearchInActivity && c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
+                ).ToList();
+            }
+            else
+            {
+                filteredCandidates = allCandidates.Where(c =>
+                    (c.JobTitle != null && ContainsAnyKeyword(c.JobTitle, keywordsLower)) ||
+                    (c.Skills != null && ContainsAnyKeyword(c.Skills, keywordsLower)) ||
+                    (c.Experience.HasValue && keywordsLower.Any(k => c.Experience.ToString().Contains(k))) ||
+                    (c.Location != null && ContainsAnyKeyword(c.Location, keywordsLower)) ||
+                    (c.WorkLocation != null && ContainsAnyKeyword(c.WorkLocation, keywordsLower))
+                ).ToList();
+            }
+            
+            Logger.LogInformation("Fallback search: Found {Count} candidates in profile", filteredCandidates.Count);
+            
+            // Nếu không tìm thấy trong profile, search trong CV
+            if (filteredCandidates.Count == 0)
+            {
+                Logger.LogInformation("No matches in profile, searching in CV data...");
+                var candidateProfileIds = allCandidates.Select(c => c.Id).ToList();
+                var keywordForCvSearch = string.Join(" ", keywordsLower); // Combine keywords back to string
+                var matchedCandidateIds = await SearchInDefaultCvsAsync(candidateProfileIds, keywordForCvSearch, hasAnyScopeSelected, input);
+                
+                if (matchedCandidateIds.Any())
+                {
+                    // matchedCandidateIds là ProfileIds (từ SearchInDefaultCvsAsync)
+                    var matchedProfileIdsSet = matchedCandidateIds.ToHashSet();
+                    filteredCandidates = allCandidates.Where(c => matchedProfileIdsSet.Contains(c.Id)).ToList();
+                    Logger.LogInformation("Found {Count} candidates in CV data", filteredCandidates.Count);
+                }
+            }
+            
+            return filteredCandidates;
+        }
+
         private List<string> ParseKeywords(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword))
@@ -779,15 +842,32 @@ namespace VCareer.Services.Profile
             var keywords = ParseKeywords(keyword);
             var keywordsLower = keywords.Select(k => k.ToLower()).ToList();
 
+            Logger.LogInformation("SearchInDefaultCvsAsync: Searching for keyword '{Keyword}' in {Count} candidate profiles", keyword, candidateProfileIds.Count);
+
+            // Map từ ProfileId sang UserId vì CV.CandidateId là UserId, không phải ProfileId
+            var profileQueryable = await _candidateProfileRepository.GetQueryableAsync();
+            var profileUserIds = await AsyncExecuter.ToListAsync(
+                profileQueryable
+                    .Where(p => candidateProfileIds.Contains(p.Id))
+                    .Select(p => new { p.Id, p.UserId })
+            );
+            
+            var profileIdToUserId = profileUserIds.ToDictionary(p => p.Id, p => p.UserId);
+            var userIds = profileUserIds.Select(p => p.UserId).ToList();
+            
+            Logger.LogInformation("SearchInDefaultCvsAsync: Mapped to {Count} user IDs", userIds.Count);
+
             // Lấy CV mặc định của các candidates
             var cvQueryable = await _candidateCvRepository.GetQueryableAsync();
             var defaultCvs = await AsyncExecuter.ToListAsync(
                 cvQueryable
-                    .Where(cv => candidateProfileIds.Contains(cv.CandidateId) && cv.IsDefault && !string.IsNullOrEmpty(cv.DataJson))
+                    .Where(cv => userIds.Contains(cv.CandidateId) && cv.IsDefault && !string.IsNullOrEmpty(cv.DataJson))
                     .Select(cv => new { cv.CandidateId, cv.DataJson })
             );
+            
+            Logger.LogInformation("SearchInDefaultCvsAsync: Found {Count} default CVs to search in", defaultCvs.Count);
 
-            var matchedCandidateIds = new List<Guid>();
+            var matchedUserIds = new List<Guid>(); // Store UserIds that match
 
             foreach (var cv in defaultCvs)
             {
@@ -905,17 +985,29 @@ namespace VCareer.Services.Profile
 
                     if (isMatch)
                     {
-                        matchedCandidateIds.Add(cv.CandidateId);
+                        matchedUserIds.Add(cv.CandidateId); // cv.CandidateId is UserId
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Nếu parse CV data lỗi, bỏ qua
+                    Logger.LogWarning(ex, "Error parsing CV data for CandidateId: {CandidateId}", cv.CandidateId);
                     continue;
                 }
             }
+            
+            Logger.LogInformation("SearchInDefaultCvsAsync: Found {Count} matching CVs", matchedUserIds.Count);
+            
+            // Map từ UserId sang ProfileId để return
+            var matchedProfileIds = await AsyncExecuter.ToListAsync(
+                profileQueryable
+                    .Where(p => matchedUserIds.Contains(p.UserId))
+                    .Select(p => p.Id)
+            );
+            
+            Logger.LogInformation("SearchInDefaultCvsAsync: Mapped to {Count} profile IDs", matchedProfileIds.Count);
 
-            return matchedCandidateIds;
+            return matchedProfileIds;
         }
 
         private async Task<Dictionary<Guid, Guid>> GetDefaultCvLookupAsync(List<Guid> candidateUserIds, List<Guid>? candidateProfileIds = null)

@@ -1,4 +1,4 @@
-<div class="job-posting-page" [class.sidebar-expanded]="sidebarExpanded">
+<div class="job-posting-page" [style.padding-left]="getContentPaddingLeft()">
   <!-- Toast Notification -->
   <app-toast-notification
     [show]="showToast"
@@ -9,7 +9,7 @@
   </app-toast-notification>
 
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="page-header">
         <h1 class="page-title">Đăng tin tuyển dụng</h1>
@@ -27,7 +27,7 @@
   </div>
 
   <!-- Content Wrapper -->
-  <div class="content-wrapper">
+  <div class="content-wrapper" [style.max-width]="getContentMaxWidth()">
     <!-- Form -->
     <div class="form-wrapper">
       <h2 class="form-main-title">Thông tin công việc</h2>

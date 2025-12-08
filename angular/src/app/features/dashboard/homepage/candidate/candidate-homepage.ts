@@ -148,12 +148,9 @@ export class CandidateHomepageComponent implements OnInit {
     private categoryService: JobCategoryService,
     private geoService: GeoService,
     private jobSearchService: JobSearchService
-  ) {
-    console.log('🏗️ CandidateHomepageComponent constructor called');
-  }
+  ) {}
 
   ngOnInit() {
-    console.log('🚀 CandidateHomepageComponent ngOnInit called');
     this.loadInitialData();
   }
 
@@ -161,7 +158,6 @@ export class CandidateHomepageComponent implements OnInit {
    * ✅ Load Categories, Provinces và Jobs từ API khi init
    */
   loadInitialData() {
-    console.log('📥 Starting to load initial data...');
     this.isLoadingData = true;
 
     forkJoin({
@@ -182,10 +178,6 @@ export class CandidateHomepageComponent implements OnInit {
         this.categories = data.categories || [];
         this.provinces = data.provinces || [];
         this.isLoadingData = false;
-        
-        console.log('✅ Loaded categories:', this.categories.length, this.categories);
-        console.log('✅ Loaded provinces:', this.provinces.length, this.provinces);
-
         // Calculate statistics nếu cần
         this.calculateStatistics();
 
@@ -218,11 +210,6 @@ export class CandidateHomepageComponent implements OnInit {
       this.totalProvinceCount = this.provinces.length;
     }
 
-    console.log('📊 Statistics:', {
-      totalJobCount: this.totalJobCount,
-      totalCategoryCount: this.totalCategoryCount,
-      totalProvinceCount: this.totalProvinceCount
-    });
   }
 
   /**
@@ -250,8 +237,6 @@ export class CandidateHomepageComponent implements OnInit {
 
     // Update pagination
     this.updateCategoryPagination();
-
-    console.log('✅ Mapped categories with images:', this.categoriesWithImages.length, this.categoriesWithImages);
   }
 
   /**
@@ -274,7 +259,6 @@ export class CandidateHomepageComponent implements OnInit {
    * ✅ Load jobs từ API với filters hiện tại
    */
   loadJobs() {
-    console.log('📥 Starting to load jobs...');
     this.isLoadingJobs = true;
 
     const searchInput: JobSearchInputDto = {
@@ -286,8 +270,6 @@ export class CandidateHomepageComponent implements OnInit {
       maxResultCount: this.itemsPerPage,
     };
 
-    console.log('🔍 Loading jobs with filters:', searchInput);
-
     this.jobSearchService.searchJobs(searchInput).pipe(
       catchError(error => {
         console.error('❌ Error loading jobs:', error);
@@ -297,7 +279,6 @@ export class CandidateHomepageComponent implements OnInit {
       next: (jobs) => {
         this.jobListings = jobs || [];
         this.isLoadingJobs = false;
-        
         // Update pagination
         if (this.jobListings.length > 0) {
           this.totalPages = this.jobListings.length < this.itemsPerPage 
@@ -306,9 +287,6 @@ export class CandidateHomepageComponent implements OnInit {
         } else {
           this.totalPages = 1;
         }
-        
-        console.log('✅ Loaded jobs:', this.jobListings.length, this.jobListings);
-        console.log('📄 Current page:', this.currentPage, '/ Total pages:', this.totalPages);
       },
       error: (error) => {
         console.error('❌ Critical error loading jobs:', error);
@@ -323,8 +301,6 @@ export class CandidateHomepageComponent implements OnInit {
    * Event handler: Khi user nhấn nút Search từ HeroSection
    */
   onSearch(searchData: any) {
-    console.log('🔍 Search triggered with data:', searchData);
-
     if (searchData && searchData.keyword) {
       this.searchKeyword = searchData.keyword;
     }
@@ -336,12 +312,6 @@ export class CandidateHomepageComponent implements OnInit {
    * ✅ Navigate đến trang Job Search với filters
    */
   performJobSearch() {
-    console.log('\n🚀 ===== NAVIGATING TO JOB SEARCH PAGE =====');
-    console.log('   - Keyword:', this.searchKeyword);
-    console.log('   - Category IDs:', this.selectedCategoryIds);
-    console.log('   - Province Codes:', this.selectedProvinceCode);
-    console.log('   - Ward Codes:', this.selectedWardCode);
-
     const queryParams: any = {};
 
     if (this.searchKeyword) {
@@ -360,8 +330,6 @@ export class CandidateHomepageComponent implements OnInit {
       queryParams.districtIds = this.selectedWardCode.join(',');
     }
 
-    console.log('📤 Query Params:', queryParams);
-
     this.router.navigate(['/candidate/job'], { queryParams });
   }
 
@@ -370,7 +338,6 @@ export class CandidateHomepageComponent implements OnInit {
    */
   onCategorySelected(categoryIds: string[]) {
     this.selectedCategoryIds = categoryIds || [];
-    console.log('✅ Categories selected:', categoryIds);
 
     if (categoryIds && categoryIds.length > 0) {
       this.performJobSearch();
@@ -383,11 +350,6 @@ export class CandidateHomepageComponent implements OnInit {
   onLocationSelected(location: { provinceCodes: number[]; wardCodes: number[] }) {
     this.selectedProvinceCode = location?.provinceCodes || [];
     this.selectedWardCode = location?.wardCodes || [];
-    
-    console.log('✅ Locations selected:');
-    console.log('   - Province Codes:', this.selectedProvinceCode);
-    console.log('   - Ward Codes:', this.selectedWardCode);
-
     const totalLocationCount = this.selectedProvinceCode.length + this.selectedWardCode.length;
     if (totalLocationCount > 0) {
       this.performJobSearch();
@@ -398,7 +360,6 @@ export class CandidateHomepageComponent implements OnInit {
    * Pagination handlers
    */
   onPageChange(page: number) {
-    console.log('📄 Page changed to:', page);
     this.currentPage = page;
     this.skipCount = (page - 1) * this.itemsPerPage;
     this.loadJobs();
@@ -421,7 +382,6 @@ export class CandidateHomepageComponent implements OnInit {
    * ✅ Job click handler - FIXED: jobId phải là string
    */
   onJobClick(jobId: string) {
-    console.log('💼 Job clicked:', jobId);
     // ✅ Navigate to job detail với string ID
      this.router.navigate(['/candidate/job-detail', jobId]);
   }
@@ -462,7 +422,6 @@ export class CandidateHomepageComponent implements OnInit {
    * ✅ Handle category click - navigate với categoryId từ API
    */
   onCategoryClick(categoryId: string) {
-    console.log('📁 Category clicked:', categoryId);
     // Navigate to category jobs với filter
     this.router.navigate(['/candidate/job'], {
       queryParams: { categoryIds: categoryId }
@@ -474,17 +433,14 @@ export class CandidateHomepageComponent implements OnInit {
    * Action buttons
    */
   searchJobs() {
-    console.log('🔍 Search jobs button clicked');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   learnMore() {
-    console.log('📖 Learn more button clicked');
     this.router.navigate(['/about']);
   }
 
   viewAllJobs() {
-    console.log('👀 View all jobs button clicked');
     this.router.navigate(['/candidate/job']);
   }
 }

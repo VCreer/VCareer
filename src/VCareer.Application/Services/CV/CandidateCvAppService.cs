@@ -339,6 +339,18 @@ namespace VCareer.Services.CV
         public async Task<RenderCvDto> RenderCvAsync(Guid cvId)
         {
             var cv = await _candidateCvRepository.GetAsync(cvId);
+            var currentUserId = _currentUser.GetId();
+            
+            // Kiểm tra quyền truy cập: nếu không phải chính candidate đó, cần check ProfileVisibility
+            if (cv.CandidateId != currentUserId)
+            {
+                var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == cv.CandidateId);
+                if (candidateProfile == null || !candidateProfile.Status || !candidateProfile.ProfileVisibility)
+                {
+                    throw new UserFriendlyException("Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. Bạn không thể xem CV này.");
+                }
+            }
+            
             var template = await _templateRepository.GetAsync(cv.TemplateId);
 
             // Parse JSON data - có thể là CvDataDto hoặc dictionary

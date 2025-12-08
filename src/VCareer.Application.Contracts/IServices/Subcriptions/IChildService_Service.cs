@@ -16,9 +16,9 @@ namespace VCareer.IServices.Subcriptions
         public Task UpdateChildServiceAsync(ChildServiceUpdateDto dto);
         public Task DeleteChildServiceAsync(Guid childServiceId); //delete phari de y quan he cac sbang vaf nghiepj vu xoa
         public Task StopAgentCHildServiceAsync(Guid childServiceId);// cai nay tắt child service này ở tất cả mọi nguồn 
-        public Task<List<ChildServiceViewDto>> GetChildServicesAsync(string? serviceAction, string? target, PagingDto pagin);
+        public Task<List<ChildServiceViewDto>> GetChildServicesAsync(ChildServiceGetDto dto);
 
-    
+
 
     }
 }

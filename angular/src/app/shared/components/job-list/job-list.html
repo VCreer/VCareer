@@ -23,7 +23,7 @@
 
           <!-- Company Info -->
           <div class="company-info">
-            <h4 class="company-name">Tập đoàn {{ job.companyName || 'N/A' }}</h4>
+            <h4 class="company-name">{{ job.companyName || job.company || 'N/A' }}</h4>
           </div>
 
           <!-- Job Tags (Location, Experience) -->
@@ -51,8 +51,6 @@
 
             <!-- Action Icons -->
             <div class="action-icons">
-              <i class="fa fa-eye-slash hide-icon" (click)="hideJob(job); $event.stopPropagation()">
-              </i>
               <button 
                 class="save-btn"
                 [class.saved]="job.isSaved"
@@ -75,11 +73,7 @@
     (loginSuccess)="onLoginSuccess()"
   ></app-login-modal>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="getPaginatedJobs().length === 0">
-    <img src="assets/images/job/no-job.png" alt="No jobs found" class="empty-state-image" />
-    <p class="empty-state-text">{{ translate('job_list.no_jobs_found') }}</p>
-  </div>
+  <!-- Empty state hiển thị ở màn job-page; component không hiển thị gì khi không có job -->
 
   <!-- Pagination -->
   <!-- <div class="pagination">
@@ -126,4 +120,3 @@
     (close)="onToastClose()"
   ></app-toast-notification>
 </div>
--->

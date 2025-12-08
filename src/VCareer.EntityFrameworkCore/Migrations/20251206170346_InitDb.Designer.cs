@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251206031241_UpdatePreviewImage")]
-    partial class UpdatePreviewImage
+    [Migration("20251206170346_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2024,11 +2024,17 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsExpried")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
