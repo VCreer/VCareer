@@ -2,8 +2,9 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { 
-  ButtonComponent, 
+import { finalize } from 'rxjs/operators';
+import {
+  ButtonComponent,
   ToastNotificationComponent,
   InputFieldComponent,
   SelectFieldComponent,
@@ -11,15 +12,18 @@ import {
   GenericModalComponent,
   SelectOption
 } from '../../../../shared/components';
+import {
+  TagCreateDto,
+  TagUpdateDto,
+  TagViewDto
+} from 'src/app/proxy/dto/category/models';
+import { TagService } from 'src/app/proxy/services/job';
 
 export interface Tag {
-  id: string;
+  id: number;
   name: string;
-  categoryId: string;
-  categoryName: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  categoryId: string;
 }
 
 @Component({
@@ -39,21 +43,27 @@ export interface Tag {
   styleUrls: ['./tag-management.scss']
 })
 export class TagManagementComponent implements OnInit, OnDestroy {
-  // Sidebar state
+  // Sidebar
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
 
-  // Category info
+  // Context từ query params
   categoryId: string = '';
-  categoryName: string = '';
+  categoryName: string = 'Danh mục con';
 
   // Toast
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
-  // Tags data
+  // Loading states
+  isLoading = false;
+  isCreating = false;
+  isUpdating = false;
+  isDeleting = false;
+
+  // Data
   allTags: Tag[] = [];
   filteredTags: Tag[] = [];
   paginatedTags: Tag[] = [];
@@ -69,7 +79,6 @@ export class TagManagementComponent implements OnInit, OnDestroy {
   itemsPerPage = 10;
   totalPages = 1;
 
-  // Filter options
   statusOptions: SelectOption[] = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang hoạt động' },
@@ -81,178 +90,118 @@ export class TagManagementComponent implements OnInit, OnDestroy {
   showEditModal = false;
   showDeleteModal = false;
   selectedTag: Tag | null = null;
-  isCreating = false;
 
   // Forms
-  createForm = {
-    name: '',
-    isActive: true
-  };
+  createForm = { name: '' };
+  editForm = { name: '' };
 
-  editForm = {
-    name: '',
-    isActive: true
-  };
-
-  // Actions Menu
-  showActionsMenu: string | null = null;
-  menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
-  private scrollListener?: () => void;
-  private currentMenuTagId: string | null = null;
+  // Actions menu
+  showActionsMenu: number | null = null;
+  menuPosition: { top: number; left: number } | null = null;
   private currentMenuButton: HTMLElement | null = null;
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private tagService: TagService
   ) {}
 
   ngOnInit(): void {
-    // Get category info from query params
     this.route.queryParams.subscribe(params => {
       this.categoryId = params['categoryId'] || '';
-      this.categoryName = params['categoryName'] || 'Danh mục';
+      this.categoryName = params['categoryName'] || 'Danh mục con';
+
+      if (!this.categoryId) {
+        this.showToastMessage('Không tìm thấy danh mục con', 'error');
+        this.router.navigate(['/employee/category-management']);
+        return;
+      }
+
+      this.loadTags();
     });
 
-    this.checkSidebarState();
-    
-    const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    if (sidebar) {
-      this.resizeObserver = new ResizeObserver(() => {
-        this.checkSidebarState();
-      });
-      this.resizeObserver.observe(sidebar);
-      
-      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
-      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
-    }
-    
-    this.sidebarCheckInterval = setInterval(() => {
-      this.checkSidebarState();
-    }, 50);
-
-    this.loadTags();
+    this.setupSidebarObserver();
   }
 
   ngOnDestroy(): void {
-    this.removeScrollListener();
+    if (this.sidebarCheckInterval) clearInterval(this.sidebarCheckInterval);
+    if (this.resizeObserver) this.resizeObserver.disconnect();
     this.removeClickOutsideListener();
-    
-    if (this.sidebarCheckInterval) {
-      clearInterval(this.sidebarCheckInterval);
-    }
-    
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onWindowResize(): void {
-    this.checkSidebarState();
-    this.updateMenuPosition();
-  }
-
-  @HostListener('window:scroll', ['$event'])
-  onWindowScroll(): void {
-    this.updateMenuPosition();
   }
 
   // Sidebar responsive
-  checkSidebarState(): void {
+  private setupSidebarObserver(): void {
+    this.checkSidebarState();
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
-      const isExpanded = sidebar.classList.contains('show') || 
-                       sidebar.classList.contains('sidebar-expanded') ||
-                       window.getComputedStyle(sidebar).width !== '72px';
+      this.resizeObserver = new ResizeObserver(() => this.checkSidebarState());
+      this.resizeObserver.observe(sidebar);
+    }
+    this.sidebarCheckInterval = setInterval(() => this.checkSidebarState(), 100);
+  }
+
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const isExpanded = sidebar.classList.contains('show') ||
+        sidebar.classList.contains('sidebar-expanded') ||
+        window.getComputedStyle(sidebar).width !== '72px';
       this.sidebarWidth = isExpanded ? 280 : 72;
     }
   }
 
-  getPageMarginLeft(): string {
-    return `${this.sidebarWidth}px`;
-  }
+  getPageMarginLeft(): string { return `${this.sidebarWidth}px`; }
+  getPageWidth(): string { return `calc(100% - ${this.sidebarWidth}px)`; }
+  getBreadcrumbLeft(): string { return `${this.sidebarWidth}px`; }
+  getBreadcrumbWidth(): string { return `calc(100% - ${this.sidebarWidth}px)`; }
+  getContentMaxWidth(): string { return `calc(100% - 32px)`; }
 
-  getPageWidth(): string {
-    return `calc(100% - ${this.sidebarWidth}px)`;
-  }
+  @HostListener('window:resize') onResize() { this.checkSidebarState(); this.updateMenuPosition(); }
+  @HostListener('window:scroll') onScroll() { this.updateMenuPosition(); }
 
-  getBreadcrumbLeft(): string {
-    return `${this.sidebarWidth}px`;
-  }
-
-  getBreadcrumbWidth(): string {
-    return `calc(100% - ${this.sidebarWidth}px)`;
-  }
-
-  getContentMaxWidth(): string {
-    const viewportWidth = window.innerWidth;
-    const padding = 32;
-    return `calc(100% - ${padding}px)`;
-  }
-
-  // Load data
-  loadTags(): void {
-    // TODO: Call API to load tags by categoryId
-    // Mock data for now
-    this.allTags = [
-      {
-        id: '1',
-        name: 'Tag 1',
-        categoryId: this.categoryId,
-        categoryName: this.categoryName,
-        isActive: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01')
-      },
-      {
-        id: '2',
-        name: 'Tag 2',
-        categoryId: this.categoryId,
-        categoryName: this.categoryName,
-        isActive: true,
-        createdAt: new Date('2024-01-02'),
-        updatedAt: new Date('2024-01-02')
-      }
-    ];
-    this.applyFilters();
+  // Load tags theo categoryId
+  private loadTags(): void {
+    this.isLoading = true;
+    this.tagService.getTagsByCategoryId(this.categoryId)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (tags: TagViewDto[]) => {
+          this.allTags = tags.map(t => ({
+            id: t.id,
+            name: t.name || '(Không có tên)',
+            isActive: true,
+            categoryId: t.categoryId || this.categoryId
+          }));
+          this.applyFilters();
+        },
+        error: () => {
+          this.showToastMessage('Không thể tải danh sách tag', 'error');
+          this.allTags = [];
+          this.applyFilters();
+        }
+      });
   }
 
   // Filter & Sort
   applyFilters(): void {
-    let filtered = [...this.allTags];
+    let result = [...this.allTags];
 
-    // Filter by category
-    if (this.categoryId) {
-      filtered = filtered.filter(tag => tag.categoryId === this.categoryId);
-    }
-
-    // Search
     if (this.searchKeyword.trim()) {
-      const keyword = this.searchKeyword.toLowerCase();
-      filtered = filtered.filter(tag =>
-        tag.name.toLowerCase().includes(keyword)
-      );
+      const kw = this.searchKeyword.toLowerCase();
+      result = result.filter(t => t.name.toLowerCase().includes(kw));
     }
 
-    // Status filter
     if (this.filterStatus) {
-      filtered = filtered.filter(tag => {
-        if (this.filterStatus === 'active') return tag.isActive;
-        if (this.filterStatus === 'inactive') return !tag.isActive;
-        return true;
-      });
+      const active = this.filterStatus === 'active';
+      result = result.filter(t => t.isActive === active);
     }
 
-    // Sort
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      if (this.sortField === 'name') {
-        comparison = a.name.localeCompare(b.name);
-      }
-      return this.sortDirection === 'asc' ? comparison : -comparison;
+    result.sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name);
+      return this.sortDirection === 'asc' ? cmp : -cmp;
     });
 
-    this.filteredTags = filtered;
+    this.filteredTags = result;
     this.updatePagination();
   }
 
@@ -266,95 +215,88 @@ export class TagManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  // Pagination
   updatePagination(): void {
     this.totalPages = Math.ceil(this.filteredTags.length / this.itemsPerPage);
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTags = this.filteredTags.slice(startIndex, endIndex);
+    if (this.totalPages === 0) this.totalPages = 1;
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedTags = this.filteredTags.slice(start, start + this.itemsPerPage);
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
     this.updatePagination();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // CRUD Operations
+  // CRUD Tag
   onCreateTag(): void {
-    this.createForm = {
-      name: '',
-      isActive: true
-    };
-    this.isCreating = false;
+    this.createForm = { name: '' };
     this.showCreateModal = true;
   }
 
-  onConfirmCreate(event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    
-    if (this.isCreating) {
-      return;
-    }
-
-    if (!this.createForm.name.trim()) {
+  onConfirmCreate(): void {
+    const name = this.createForm.name.trim();
+    if (!name) {
       this.showToastMessage('Vui lòng nhập tên tag', 'error');
       return;
     }
+    if (this.isCreating) return;
 
     this.isCreating = true;
-
-    // TODO: Call API to create tag
-    const newTag: Tag = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      name: this.createForm.name,
-      categoryId: this.categoryId,
-      categoryName: this.categoryName,
-      isActive: this.createForm.isActive,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    const dto: TagCreateDto = {
+      names: [name],
+      categoryId: this.categoryId
     };
 
-    this.allTags.push(newTag);
-    this.applyFilters();
-    this.showToastMessage('Tạo tag thành công', 'success');
-    this.showCreateModal = false;
-    this.isCreating = false;
+    this.tagService.createTags(dto)
+      .pipe(finalize(() => this.isCreating = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Tạo tag thành công', 'success');
+          this.showCreateModal = false;
+          this.loadTags();
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Tạo tag thất bại';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
   }
 
   onEditTag(tag: Tag): void {
     this.selectedTag = tag;
-    this.editForm = {
-      name: tag.name,
-      isActive: tag.isActive
-    };
+    this.editForm = { name: tag.name };
     this.showEditModal = true;
     this.closeActionsMenu();
   }
 
   onConfirmEdit(): void {
-    if (!this.selectedTag || !this.editForm.name.trim()) {
-      this.showToastMessage('Vui lòng nhập tên tag', 'error');
+    if (!this.selectedTag || this.isUpdating) return;
+    const newName = this.editForm.name.trim();
+    if (!newName) {
+      this.showToastMessage('Tên tag không được để trống', 'error');
       return;
     }
 
-    // TODO: Call API to update tag
-    const index = this.allTags.findIndex(t => t.id === this.selectedTag!.id);
-    if (index > -1) {
-      this.allTags[index] = {
-        ...this.allTags[index],
-        name: this.editForm.name,
-        isActive: this.editForm.isActive,
-        updatedAt: new Date()
-      };
-    }
+    this.isUpdating = true;
+    const dto: TagUpdateDto = {
+      tagId: this.selectedTag.id,
+      newName: newName
+    };
 
-    this.applyFilters();
-    this.showToastMessage('Cập nhật tag thành công', 'success');
-    this.showEditModal = false;
-    this.selectedTag = null;
+    this.tagService.updateTag(dto)
+      .pipe(finalize(() => this.isUpdating = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Cập nhật tag thành công', 'success');
+          this.showEditModal = false;
+          this.loadTags();
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Cập nhật thất bại';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
   }
 
   onDeleteTag(tag: Tag): void {
@@ -364,169 +306,93 @@ export class TagManagementComponent implements OnInit, OnDestroy {
   }
 
   onConfirmDelete(): void {
-    if (!this.selectedTag) return;
+    if (!this.selectedTag || this.isDeleting) return;
 
-    // TODO: Call API to delete tag
-    const index = this.allTags.findIndex(t => t.id === this.selectedTag!.id);
-    if (index > -1) {
-      this.allTags.splice(index, 1);
-    }
-
-    this.applyFilters();
-    this.showToastMessage('Xóa tag thành công', 'success');
-    this.showDeleteModal = false;
-    this.selectedTag = null;
+    this.isDeleting = true;
+    this.tagService.deleteTags([this.selectedTag.id])
+      .pipe(finalize(() => this.isDeleting = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Xóa tag thành công', 'success');
+          this.showDeleteModal = false;
+          this.selectedTag = null;
+          this.loadTags();
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Xóa tag thất bại';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
   }
 
   onToggleActive(tag: Tag): void {
+    this.showToastMessage('Chức năng bật/tắt tag đang được phát triển', 'info');
     this.closeActionsMenu();
-    
-    const wasActive = tag.isActive;
-    
-    // TODO: Call API to toggle active status
-    const index = this.allTags.findIndex(t => t.id === tag.id);
-    if (index > -1) {
-      this.allTags[index] = {
-        ...this.allTags[index],
-        isActive: !this.allTags[index].isActive,
-        updatedAt: new Date()
-      };
-    }
-
-    this.applyFilters();
-    this.showToastMessage(
-      wasActive ? 'Đã tắt tag' : 'Đã bật tag',
-      'success'
-    );
   }
 
-  // Actions Menu
-  toggleActionsMenu(tagId: string, event: MouseEvent): void {
+  // Navigation
+  onBackToCategory(): void {
+    const parentId = this.route.snapshot.queryParams['parentId'];
+    const parentName = this.route.snapshot.queryParams['parentName'];
+    this.router.navigate(['/employee/sub-category-management'], {
+      queryParams: { parentId, parentName }
+    });
+  }
+
+  // Actions menu
+  toggleActionsMenu(tagId: number, event: MouseEvent): void {
     event.stopPropagation();
-    
     if (this.showActionsMenu === tagId) {
       this.closeActionsMenu();
       return;
     }
-
-    this.currentMenuTagId = tagId;
     this.currentMenuButton = event.currentTarget as HTMLElement;
     this.showActionsMenu = tagId;
     this.updateMenuPosition();
-    this.addScrollListener();
     this.addClickOutsideListener();
   }
 
   closeActionsMenu(): void {
     this.showActionsMenu = null;
-    this.currentMenuTagId = null;
-    this.currentMenuButton = null;
     this.menuPosition = null;
-    this.removeScrollListener();
+    this.currentMenuButton = null;
     this.removeClickOutsideListener();
-  }
-
-  private clickOutsideListener?: (event: MouseEvent) => void;
-
-  private addClickOutsideListener(): void {
-    this.removeClickOutsideListener();
-    this.clickOutsideListener = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const menu = document.querySelector('.actions-menu');
-      const button = this.currentMenuButton;
-      
-      if (menu && button && !menu.contains(target) && !button.contains(target)) {
-        this.closeActionsMenu();
-      }
-    };
-    setTimeout(() => {
-      document.addEventListener('click', this.clickOutsideListener!, true);
-    }, 0);
-  }
-
-  private removeClickOutsideListener(): void {
-    if (this.clickOutsideListener) {
-      document.removeEventListener('click', this.clickOutsideListener, true);
-      this.clickOutsideListener = undefined;
-    }
   }
 
   private updateMenuPosition(): void {
-    if (!this.currentMenuButton || !this.showActionsMenu) return;
+    if (!this.currentMenuButton) return;
+    const rect = this.currentMenuButton.getBoundingClientRect();
+    let left = rect.right + 8;
+    let top = rect.top;
 
-    const buttonRect = this.currentMenuButton.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const menuWidth = 200;
-    const menuHeight = 200;
-    const padding = 16;
+    if (left + 220 > window.innerWidth) left = rect.left - 228;
+    if (left < this.sidebarWidth + 16) left = this.sidebarWidth + 16;
+    if (top + 180 > window.innerHeight) top = window.innerHeight - 196;
 
-    let left = buttonRect.right + 8;
-    let top = buttonRect.top;
-    let maxWidth = menuWidth;
-
-    // Adjust for viewport
-    if (left + menuWidth > viewportWidth - padding) {
-      left = buttonRect.left - menuWidth - 8;
-    }
-
-    // Adjust for sidebar
-    const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    if (sidebar) {
-      const sidebarRect = sidebar.getBoundingClientRect();
-      if (left < sidebarRect.right + padding) {
-        left = sidebarRect.right + padding;
-        maxWidth = viewportWidth - left - padding;
-      }
-    }
-
-    // Adjust for DevTools (if open)
-    if (left + menuWidth > viewportWidth - 300) {
-      maxWidth = viewportWidth - left - 300;
-    }
-
-    // Adjust for bottom
-    if (top + menuHeight > viewportHeight - padding) {
-      top = viewportHeight - menuHeight - padding;
-    }
-
-    this.menuPosition = { top, left, maxWidth };
+    this.menuPosition = { top, left };
   }
 
-  private addScrollListener(): void {
-    this.removeScrollListener();
-    this.scrollListener = () => {
-      this.updateMenuPosition();
-    };
-    window.addEventListener('scroll', this.scrollListener, true);
+  private addClickOutsideListener(): void {
+    setTimeout(() => {
+      document.addEventListener('click', this.handleClickOutside, true);
+    }, 0);
   }
 
-  private removeScrollListener(): void {
-    if (this.scrollListener) {
-      window.removeEventListener('scroll', this.scrollListener, true);
-      this.scrollListener = undefined;
-    }
+  private handleClickOutside = () => this.closeActionsMenu();
+  
+  private removeClickOutsideListener(): void {
+    document.removeEventListener('click', this.handleClickOutside, true);
   }
 
   // Toast
-  showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {
-    this.toastMessage = message;
+  showToastMessage(msg: string, type: 'success' | 'error' | 'info' | 'warning' = 'info'): void {
+    this.toastMessage = msg;
     this.toastType = type;
     this.showToast = true;
-    setTimeout(() => {
-      this.showToast = false;
-    }, 3000);
+    setTimeout(() => this.showToast = false, 3000);
   }
 
   onCloseToast(): void {
     this.showToast = false;
   }
-
-  // Navigation
-  onBackToCategory(): void {
-    this.router.navigate(['/employee/category-management/sub-categories'], {
-      queryParams: { parentId: this.categoryId, parentName: this.categoryName }
-    });
-  }
 }
-
