@@ -155,16 +155,7 @@ namespace VCareer.Services.Order
                 {
                     var service = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
                     detailDto.SubcriptionServiceTitle = service.Title;
-
-                    //tao user subcription
-                    await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
-                    {
-                        SubcriptionServiceId = detailDto.SubcriptionServiceId,
-                        UserId = _currentUser.Id.Value
-                    });
                 }
-
-
 
                 return orderDto;
             }
@@ -327,8 +318,16 @@ namespace VCareer.Services.Order
                 order.VnpayTransactionId = input.vnp_TransactionNo;
                 order.VnpayResponseCode = input.vnp_ResponseCode;
                 order.PaidAt = DateTime.Now;
-
-                // TODO: Activate subscription services for the user
+                var orderDetails = await _orderDetailRepository.GetListAsync(x => x.OrderId == order.Id);
+                foreach (var detailDto in orderDetails)
+                {
+                    //tao user subcription
+                    await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
+                    {
+                        SubcriptionServiceId = detailDto.SubcriptionServiceId,
+                        UserId = _currentUser.Id.Value
+                    });
+                }
             }
             else
             {
