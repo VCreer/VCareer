@@ -7,6 +7,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import { AuthStateService } from '../core/services/auth-Cookiebased/auth-state.service';
+import { UnauthorizedModalService } from '../shared/services/unauthorized-modal.service';
 import { Observable, of } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { getPrimaryRoutingRole } from './RoleMapping.service';
@@ -19,7 +20,8 @@ import { getPrimaryRoutingRole } from './RoleMapping.service';
 export class AuthGuard implements CanActivate {
   constructor(
     private state: AuthStateService,
-    private router: Router
+    private router: Router,
+    private unauthorizedModal: UnauthorizedModalService
   ) {}
 
   canActivate(
@@ -53,13 +55,15 @@ export class AuthGuard implements CanActivate {
         if (requiredRole) {
           // Nếu route yêu cầu role cụ thể
           if (primaryRole !== requiredRole) {
-                      this.redirectToRoleHome(primaryRole);
+            this.unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+            this.redirectToRoleHome(primaryRole);
             return false;
           }
         } else {
           // Nếu không có yêu cầu role cụ thể → kiểm tra từ URL
           const roleFromUrl = this.getRoleFromUrl(state.url);
           if (roleFromUrl && roleFromUrl !== primaryRole) {
+            this.unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
             this.redirectToRoleHome(primaryRole);
             return false;
           }
@@ -93,7 +97,7 @@ export class AuthGuard implements CanActivate {
 
   private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
     const map = {
-      EMPLOYEE: ['/employee/home'],
+      EMPLOYEE: ['/employee/statistical-reports'],
       RECRUITER: ['/recruiter/recruitment-report'],
       CANDIDATE: ['/home'],
     };

@@ -78,7 +78,7 @@ export const appConfig: ApplicationConfig = {
           console.log('[Navigation] Navigate to profile from:', currentUrl);
           
           if (currentUrl.startsWith('/employee')) {
-            router.navigate(['/employee/home']);
+            router.navigate(['/employee/statistical-reports']);
           } else if (currentUrl.startsWith('/recruiter')) {
             router.navigate(['/recruiter/recruiter-setting']);
           } else {

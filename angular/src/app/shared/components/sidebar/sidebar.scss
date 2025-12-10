@@ -217,8 +217,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.75rem;
-        padding: 0.875rem;
+        gap: 0;
+        padding: 0;
         color: #374151;
         text-decoration: none;
         font-size: 0.9375rem;
@@ -228,6 +228,8 @@
         position: relative;
         margin: 0.25rem 0.5rem;
         border-radius: 8px;
+        min-height: 48px;
+        width: calc(100% - 1rem);
 
         &:hover {
           background-color: #f3f4f6;
@@ -250,19 +252,28 @@
             border-radius: 50%;
             background-color: #e0f2fe;
             z-index: -1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
           }
         }
 
         .sidebar-icon {
           flex-shrink: 0;
-          width: 20px;
-          height: 20px;
+          width: 24px;
+          height: 24px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1.25rem;
           color: #374151;
           transition: color 0.2s ease;
+          line-height: 1;
+          margin: 0;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
         }
 
         .sidebar-link-text {
@@ -272,6 +283,7 @@
           width: 0;
           overflow: hidden;
           transition: opacity 0.3s ease, width 0.3s ease;
+          display: none; // Ẩn hoàn toàn khi collapsed để không ảnh hưởng layout
         }
 
         .sidebar-badge {
@@ -304,6 +316,7 @@
           width: 0;
           overflow: hidden;
           transition: opacity 0.3s ease, width 0.3s ease;
+          display: none; // Ẩn hoàn toàn khi collapsed để không ảnh hưởng layout
         }
 
         &.sidebar-link-has-submenu {
@@ -395,6 +408,8 @@
           justify-content: flex-start;
           padding: 0.875rem 1.5rem;
           margin: 0;
+          gap: 0.75rem; // Khôi phục gap khi expanded
+          width: 100%;
 
           &.active {
             background-color: #f0f9ff;
@@ -409,9 +424,18 @@
             }
           }
 
+          .sidebar-icon {
+            margin: 0;
+            position: static; // Reset position khi expanded
+            left: auto;
+            top: auto;
+            transform: none; // Reset transform khi expanded
+          }
+
           .sidebar-link-text {
             opacity: 1;
             width: auto;
+            display: block; // Hiển thị lại khi expanded
           }
 
           .sidebar-badge {
@@ -424,6 +448,7 @@
           .sidebar-chevron {
             opacity: 1;
             width: auto;
+            display: block; // Hiển thị lại khi expanded
           }
         }
 

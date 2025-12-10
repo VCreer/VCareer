@@ -175,8 +175,8 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content" (click)="$event.stopPropagation()" [style.max-width]="getDeleteModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Xác nhận xóa</h3>
         <button class="modal-close" (click)="closeDeleteModal()">
@@ -188,15 +188,19 @@
         <p class="warning-text">Hành động này không thể hoàn tác.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeDeleteModal()">Hủy</button>
-        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+        <app-button type="secondary" size="medium" (click)="closeDeleteModal()">
+          Hủy
+        </app-button>
+        <app-button type="danger" size="medium" (click)="confirmDelete()">
+          Xóa
+        </app-button>
       </div>
     </div>
   </div>
 
   <!-- Change Status Modal -->
-  <div class="modal-overlay" *ngIf="showStatusDropdownModal" (click)="closeStatusModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showStatusDropdownModal" (click)="closeStatusModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content" (click)="$event.stopPropagation()" [style.max-width]="getDeleteModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Đặt trạng thái</h3>
         <button class="modal-close" (click)="closeStatusModal()">
@@ -224,8 +228,8 @@
   </div>
 
   <!-- Assign Package Modal -->
-  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()">
-    <div class="modal-content package-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content package-modal" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Gắn gói tuyển dụng</h3>
         <button class="modal-close" (click)="closePackageModal()">

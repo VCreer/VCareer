@@ -3,6 +3,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthApiService } from '../services/auth-Cookiebased/auth-api.service';
+import { UnauthorizedModalService } from '../../shared/services/unauthorized-modal.service';
 import { Observable, throwError } from 'rxjs';
 import { catchError, switchMap, finalize } from 'rxjs/operators';
 
@@ -10,10 +11,16 @@ let isRefreshing = false;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authApi = inject(AuthApiService);
+  const unauthorizedModal = inject(UnauthorizedModalService);
   const authReq = req.clone({ withCredentials: true });
 
   return next(authReq).pipe(
     catchError(error => {
+      if (error.status === 403) {
+        unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+        return throwError(() => error);
+      }
+
       if (error.status !== 401) {
         return throwError(() => error);
       }

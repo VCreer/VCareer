@@ -13,6 +13,36 @@
   position: relative;
 }
 
+.unauthorized-modal-body {
+  padding: 16px 20px 8px;
+  color: #374151;
+  text-align: center;
+
+  .error-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #ff0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 28px;
+    margin: 0 auto 16px auto;
+  }
+
+  .error-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+  }
+}
+
 // Sidebar is always visible, just changes width
 :host ::ng-deep {
   .sidebar {

@@ -132,6 +132,10 @@
           gap: 24px;
           margin-bottom: 24px;
 
+          &.single-column {
+            grid-template-columns: 1fr;
+          }
+
           @media (max-width: 768px) {
             grid-template-columns: 1fr;
             gap: 16px;
@@ -960,6 +964,80 @@
       }
     }
   }
+  // Generic Modal Content Styles Override
+  ::ng-deep .generic-modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transition: max-width 0.3s ease;
+
+    .generic-modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+
+      .generic-modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+      }
+
+      .generic-modal-close {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: #f3f4f6;
+          color: #1f2937;
+        }
+
+        i {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .generic-modal-body {
+      padding: 24px;
+
+      @media (max-width: 768px) {
+        padding: 16px;
+      }
+
+      .modal-footer-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #e5e7eb;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: 8px;
+
+          ::ng-deep app-button {
+            width: 100%;
+
+            .btn {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Edit Campaign Modal Styles
   ::ng-deep .edit-campaign-modal-content {
     .edit-form-group {

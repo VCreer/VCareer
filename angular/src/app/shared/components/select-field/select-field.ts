@@ -78,7 +78,6 @@ export class SelectFieldComponent implements ControlValueAccessor {
       this.showDropdown = false;
     }
   }
-
   // ControlValueAccessor implementation
   writeValue(value: string): void {
     this.value = value || '';

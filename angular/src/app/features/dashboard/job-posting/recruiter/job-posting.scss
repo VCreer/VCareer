@@ -47,7 +47,9 @@
       .page-header {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
+        flex-wrap: nowrap;
+        min-height: 44px;
 
         .page-title {
           font-size: 1rem;
@@ -63,6 +65,48 @@
           border-radius: 6px;
           font-size: 0.875rem;
           font-weight: 500;
+        }
+
+        .campaign-selector {
+          min-width: 200px;
+          max-width: 240px;
+          display: flex;
+          align-items: center;
+
+          ::ng-deep app-select-field {
+            width: 100%;
+            margin-bottom: 0;
+
+            .select-field-wrapper {
+              margin-bottom: 0;
+            }
+
+            .select-dropdown {
+              min-height: 40px;
+              padding: 8px 12px;
+              font-size: 14px;
+            }
+
+            .select-label {
+              display: none;
+            }
+          }
+
+          @media (max-width: 768px) {
+            width: 100%;
+            max-width: 100%;
+            min-width: unset;
+          }
+        }
+
+        @media (max-width: 768px) {
+          width: 100%;
+          flex-wrap: wrap;
+          align-items: flex-start;
+
+          .campaign-selector {
+            margin-top: 8px;
+          }
         }
       }
 
