@@ -36,6 +36,8 @@ using VCareer.IServices.IAuth;
 using VCareer.Jwt;
 using VCareer.MultiTenancy;
 using VCareer.Security;
+using VCareer.Woker_Backgrounds;
+using VNPAY;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.MultiTenancy;
@@ -48,6 +50,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Security;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
+using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.BackgroundWorkers.Quartz;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Caching;
@@ -62,14 +66,13 @@ using Volo.Abp.Swashbuckle;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Users;
 using Volo.Abp.VirtualFileSystem;
-using VNPAY;
 
 
 namespace VCareer;
 
 [DependsOn(
     typeof(VCareerHttpApiModule),
-   typeof(AbpStudioClientAspNetCoreModule),
+    typeof(AbpStudioClientAspNetCoreModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
@@ -77,8 +80,8 @@ namespace VCareer;
     typeof(VCareerEntityFrameworkCoreModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
-    typeof(AbpBlobStoringFileSystemModule)
-
+    typeof(AbpBlobStoringFileSystemModule),
+    typeof(AbpBackgroundWorkersQuartzModule)
     )]
 public class VCareerHttpApiHostModule : AbpModule
 {
@@ -129,14 +132,18 @@ public class VCareerHttpApiHostModule : AbpModule
         //cái này để ghi đè cái trạng thái set cookie strict => chỉ gửi cookie nếu chung domain
         //trong khi api hiện tịa của dự án và angular là 2 port khác nhau
         ConfigureCookiePolicy(context);
-        
-        // 🔧 ĐĂNG KÝ VNPAY CLIENT (from VNPAY.NET package)
-        // Register in HttpApi.Host module where we have access to IConfiguration
+
         ConfigureVnpay(context, configuration);
 
-      
+        Configure<AbpBackgroundWorkerQuartzOptions>(options =>
+        {
+            options.IsAutoRegisterEnabled = false; // để chủ động đăng ký
+        });
+        context.Services.AddTransient<JobPostStatusBackground>();
+        context.Services.AddTransient<ReIndexJobPostBackground>();
+
     }
-    
+
     private void ConfigureVnpay(ServiceConfigurationContext context, IConfiguration configuration)
     {
         // Register IHttpContextAccessor if not already registered
@@ -144,40 +151,40 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             context.Services.AddHttpContextAccessor();
         }
-        
+
         // Find VnpayClient and get options type from constructor
         var vnpayAssembly = typeof(IVnpayClient).Assembly;
         var vnpayClientType = vnpayAssembly.GetTypes()
             .FirstOrDefault(t => t.Name == "VnpayClient" && typeof(IVnpayClient).IsAssignableFrom(t));
-        
+
         if (vnpayClientType == null)
         {
             throw new InvalidOperationException("Cannot find VnpayClient class in VNPAY.NET assembly");
         }
-        
+
         // Get constructor that takes IOptions and IHttpContextAccessor
         var constructor = vnpayClientType.GetConstructors()
             .FirstOrDefault(c => c.GetParameters().Length == 2 &&
                                  c.GetParameters().Any(p => p.ParameterType.Name.Contains("Options")) &&
                                  c.GetParameters().Any(p => p.ParameterType == typeof(IHttpContextAccessor)));
-        
+
         if (constructor == null)
         {
             throw new InvalidOperationException("Cannot find suitable constructor for VnpayClient");
         }
-        
+
         // Get the IOptions parameter type
         var optionsParam = constructor.GetParameters()
             .FirstOrDefault(p => p.ParameterType.Name.Contains("Options"));
-        
+
         if (optionsParam == null)
         {
             throw new InvalidOperationException("Cannot find IOptions parameter in VnpayClient constructor");
         }
-        
+
         // Get the generic type argument from IOptions<T>
         var optionsGenericType = optionsParam.ParameterType.GetGenericArguments()[0];
-        
+
         // Configure options from configuration BEFORE registering the service
         // Use reflection to call Configure<T>(IServiceCollection, IConfiguration)
         try
@@ -189,7 +196,7 @@ public class VCareerHttpApiHostModule : AbpModule
                 .FirstOrDefault(m => m.Params.Length == 2 &&
                                      m.Params[0].ParameterType == typeof(IServiceCollection) &&
                                      m.Params[1].ParameterType == typeof(IConfiguration));
-            
+
             if (configureMethod != null)
             {
                 var genericMethod = configureMethod.Method.MakeGenericMethod(optionsGenericType);
@@ -201,25 +208,25 @@ public class VCareerHttpApiHostModule : AbpModule
                 var optionsInstance = Activator.CreateInstance(optionsGenericType);
                 var configSection = configuration.GetSection("VNPay");
                 configSection.Bind(optionsInstance);
-                
+
                 // Map ReturnUrl to CallbackUrl if needed (VnpayConfiguration requires CallbackUrl)
                 var returnUrl = configuration["VNPay:ReturnUrl"];
                 var callbackUrl = configuration["VNPay:CallbackUrl"] ?? returnUrl;
-                
+
                 // Set CallbackUrl property (required by VnpayConfiguration)
                 var callbackUrlProp = optionsGenericType.GetProperty("CallbackUrl");
                 if (callbackUrlProp != null && callbackUrlProp.CanWrite && !string.IsNullOrEmpty(callbackUrl))
                 {
                     callbackUrlProp.SetValue(optionsInstance, callbackUrl);
                 }
-                
+
                 // Also try to set ReturnUrl property if it exists
                 var returnUrlProp = optionsGenericType.GetProperty("ReturnUrl");
                 if (returnUrlProp != null && returnUrlProp.CanWrite && !string.IsNullOrEmpty(returnUrl))
                 {
                     returnUrlProp.SetValue(optionsInstance, returnUrl);
                 }
-                
+
                 // Ensure TmnCode is set (might be required)
                 var tmnCode = configuration["VNPay:TmnCode"];
                 var tmnCodeProp = optionsGenericType.GetProperty("TmnCode");
@@ -227,7 +234,7 @@ public class VCareerHttpApiHostModule : AbpModule
                 {
                     tmnCodeProp.SetValue(optionsInstance, tmnCode);
                 }
-                
+
                 // Ensure HashSecret is set (might be required)
                 var hashSecret = configuration["VNPay:HashSecret"];
                 var hashSecretProp = optionsGenericType.GetProperty("HashSecret");
@@ -235,7 +242,7 @@ public class VCareerHttpApiHostModule : AbpModule
                 {
                     hashSecretProp.SetValue(optionsInstance, hashSecret);
                 }
-                
+
                 // Register as IOptions<T> using OptionsWrapper
                 var optionsWrapperType = typeof(Microsoft.Extensions.Options.OptionsWrapper<>).MakeGenericType(optionsGenericType);
                 var optionsWrapper = Activator.CreateInstance(optionsWrapperType, optionsInstance);
@@ -249,7 +256,7 @@ public class VCareerHttpApiHostModule : AbpModule
                 $"Error configuring VNPay options: {ex.Message}. " +
                 $"Options type: {optionsGenericType.Name}", ex);
         }
-        
+
         // Register IVnpayClient with factory
         context.Services.AddScoped<IVnpayClient>(sp =>
         {
@@ -259,7 +266,7 @@ public class VCareerHttpApiHostModule : AbpModule
                 var optionsGenericServiceType = typeof(IOptions<>).MakeGenericType(optionsGenericType);
                 var options = sp.GetRequiredService(optionsGenericServiceType);
                 var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-                
+
                 // Create VnpayClient instance
                 var instance = Activator.CreateInstance(vnpayClientType, options, httpContextAccessor);
                 return (IVnpayClient)instance;
@@ -290,7 +297,8 @@ public class VCareerHttpApiHostModule : AbpModule
         Configure<VCareer.Constants.FilePolicy.FilePolicyConfigs>(configuration.GetSection("FileBlobStorageConfig"));
     }
 
-    private void ConfigureCookiePolicy(ServiceConfigurationContext context) {
+    private void ConfigureCookiePolicy(ServiceConfigurationContext context)
+    {
         Configure<CookiePolicyOptions>(opts =>
         {
             opts.MinimumSameSitePolicy = SameSiteMode.None;
@@ -302,47 +310,47 @@ public class VCareerHttpApiHostModule : AbpModule
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
-{
-    context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
     {
-        options.IsDynamicClaimsEnabled = true;
-    });
-
-    context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
-
-    context.Services
-        .AddAuthentication(options =>
+        context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
-                ),
-                ClockSkew = TimeSpan.Zero
-            };
+            options.IsDynamicClaimsEnabled = true;
+        });
 
-            //  lấy token từ cookie
-            options.Events = new JwtBearerEvents
+        context.Services.AddTransient<ITokenGenerator, JwtTokenGenerator>();
+
+        context.Services
+            .AddAuthentication(options =>
             {
-                OnMessageReceived = context =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    context.Token = context.Request.Cookies["access_token"];
-                    return Task.CompletedTask;
-                }
-            };
-                  });
-     
-              context.Services.AddAuthorization();
-}
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["Authentication:Jwt:Key"])
+                    ),
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                //  lấy token từ cookie
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["access_token"];
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+        context.Services.AddAuthorization();
+    }
 
     private void ConfigureUrls(IConfiguration configuration)
     {
@@ -529,6 +537,14 @@ public class VCareerHttpApiHostModule : AbpModule
   });
 
     }
+     public override void OnPostApplicationInitialization(ApplicationInitializationContext context)
+    {
+        var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
+
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<JobPostStatusBackground>());
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ReIndexJobPostBackground>());
+    }
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
@@ -547,7 +563,6 @@ public class VCareerHttpApiHostModule : AbpModule
         {
             app.UseErrorPage();
         }
-
         app.UseRouting();
         app.UseCookiePolicy();
 
@@ -558,7 +573,7 @@ public class VCareerHttpApiHostModule : AbpModule
         app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
-       
+
         app.UseAuthentication();
 
         if (MultiTenancyConsts.IsEnabled)

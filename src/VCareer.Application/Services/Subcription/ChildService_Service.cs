@@ -22,21 +22,22 @@ using static VCareer.Constants.JobConstant.SubcriptionContance;
 namespace VCareer.Services.Subcription
 {
     [Route("api/app/childservice-service")]
-    public class ChildService_Service : ApplicationService, IChildService_Service
+    public class ChildService_Service : ApplicationService,IChildService_Service 
     {
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly IUser_ChildServiceRepository _userChildServiceRepository;
         private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
-        private readonly ISubcriptionServiceRepository  _subcriptionServiceRepository;
+        private readonly ISubcriptionServiceRepository _subcriptionServiceRepository;
+        private readonly IJobAffectingService _jobAffectingService;
 
         public ChildService_Service(
-            IChildServiceRepository childServiceRepository,
+            IJobAffectingService jobAffectingService,
             IUser_ChildServiceRepository user_ChildServiceRepository,
             ISubcriptionServiceRepository subcriptionServiceRepository,
             IEffectingJobServiceRepository effectingJobServiceRepository
             )
         {
-            _childServiceRepository = childServiceRepository;
+            _jobAffectingService = jobAffectingService;
             _userChildServiceRepository = user_ChildServiceRepository;
             _effectingJobServiceRepository = effectingJobServiceRepository;
             _subcriptionServiceRepository = subcriptionServiceRepository;
@@ -68,11 +69,11 @@ namespace VCareer.Services.Subcription
         //đối với người dùng đã mua gói thì vẫn sẽ cho dùng nốt đến hết hạn 
         [HttpDelete("delete-childservice")]
         [Authorize(VCareerPermission.ChildService.Delete)]
-        public async Task DeleteChildServiceAsync(Guid childServiceId)
+        public async Task SetStatusChildServiceAsync(Guid childServiceId, bool status)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");
-            childService.IsActive = false;
+            childService.IsActive = status;
 
             await _childServiceRepository.UpdateAsync(childService, true);
         }
@@ -85,39 +86,17 @@ namespace VCareer.Services.Subcription
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");
-            if (childService.IsActive == false) return;
+            childService.IsEnable = false;
             childService.IsActive = false;
 
-            await StopEffectingJobServiceAsync(childServiceId);
-            await StopUserChildServiceAsync(childServiceId);
+            //dừng hết các dịch vụ con đang chạy liên quan tới child service này
+            await _jobAffectingService.DeactiveAllEffectingJobByChildServiceId(childServiceId);
+         //   await StopUserChildServiceAsync(childServiceId);
 
+            await _childServiceRepository.UpdateAsync(childService, true);
             //gui mail thong bao user
         }
 
-        #region logic stop agent child service
-        private async Task StopEffectingJobServiceAsync(Guid childServiceId)
-        {
-            var effectingJobs = await _effectingJobServiceRepository.GetListAsync(es =>
-            es.ChildServiceId == childServiceId &&
-            es.Status == ChildServiceStatus.Active);
-            if (effectingJobs.Count == 0) return;
-
-            foreach (var effectingJob in effectingJobs)
-                effectingJob.Status = Constants.JobConstant.SubcriptionContance.ChildServiceStatus.Inactive;
-        }
-
-        private async Task StopUserChildServiceAsync(Guid childServiceId)
-        {
-            var userChildServices = await _userChildServiceRepository.GetListAsync(u =>
-            u.ChildServiceId == childServiceId &&
-            u.Status == ChildServiceStatus.Active);
-            if (userChildServices.Count == 0) return;
-
-            foreach (var userChildService in userChildServices) userChildService.Status = ChildServiceStatus.Inactive;
-        }
-
-
-        #endregion
 
         // chi cho phep update 1 so truong noi dung
         [HttpPut("update-childservice")]
@@ -148,5 +127,9 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(result);
         }
 
+        public Task DeleteChildServiceAsync(Guid childServiceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

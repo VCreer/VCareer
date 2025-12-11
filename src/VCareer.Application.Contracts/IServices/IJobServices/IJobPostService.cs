@@ -29,7 +29,7 @@ namespace VCareer.IServices.IJobServices
         Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10);
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id); //view ,aapply count
         public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto);
-        public Task ExecuteExpiredJobPostAutomatically(string id);
+        public Task ExecuteExpiredJobPostBackgoundWorker();
 
 
     }
