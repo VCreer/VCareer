@@ -43,6 +43,7 @@ export class LoginComponent {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'error';
+  private rememberCookieKey = 'candidate_remember';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -63,6 +64,7 @@ export class LoginComponent {
 
   ngOnInit(): void {
     this.googleAuthService.initialize();
+    this.prefillRememberedUser();
   }
 
   emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
@@ -129,7 +131,7 @@ export class LoginComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
- onSubmit() {
+  onSubmit() {
     this.submitAttempted = true;
 
     Object.keys(this.loginForm.controls).forEach(k =>
@@ -139,7 +141,7 @@ export class LoginComponent {
     if (this.loginForm.invalid) return;
 
     this.isLoading = true;
-    const { username, password } = this.loginForm.value;
+    const { username, password, rememberMe } = this.loginForm.value;
 
     const payload = { email: username, password };
 
@@ -149,6 +151,8 @@ export class LoginComponent {
         next: () => {
           // Lưu trạng thái đăng nhập vào navigation service
           this.navigationService.loginAsCandidate();
+          // Handle remember me via cookie
+          this.setRememberCookie(rememberMe, username);
           this.showToastMessage('Đăng nhập thành công!', 'success');
           // Redirect đến /home thay vì / để tránh vấn đề với route root
           setTimeout(() => this.router.navigate(['/home']), 800);
@@ -295,5 +299,48 @@ export class LoginComponent {
       
       this.showToastMessage(errorMsg, 'error');
     }
+  }
+
+  private prefillRememberedUser(): void {
+    const cookie = this.getCookie(this.rememberCookieKey);
+    if (!cookie) return;
+
+    try {
+      const parsed = JSON.parse(cookie) as { remember: boolean; username: string };
+      if (parsed.remember && parsed.username) {
+        this.loginForm.patchValue({
+          username: parsed.username,
+          rememberMe: true,
+        });
+      }
+    } catch {
+      // If cookie is malformed, clear it
+      this.clearRememberCookie();
+    }
+  }
+
+  private setRememberCookie(remember: boolean, username: string): void {
+    if (remember) {
+      const payload = JSON.stringify({ remember: true, username });
+      // Set 30-day expiry, path root
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 30);
+      document.cookie = `${this.rememberCookieKey}=${encodeURIComponent(payload)};expires=${expires.toUTCString()};path=/`;
+    } else {
+      this.clearRememberCookie();
+    }
+  }
+
+  private clearRememberCookie(): void {
+    document.cookie = `${this.rememberCookieKey}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  }
+
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return decodeURIComponent(parts.pop()!.split(';').shift() || '');
+    }
+    return null;
   }
 }
