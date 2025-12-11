@@ -141,7 +141,7 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/job-posting')" class="sidebar-link">
+          <a (click)="navigateTo('/recruiter/job-posting')" class="sidebar-link" [class.active]="isActive('/recruiter/job-posting')">
             <i class="fa fa-edit sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.insights') }}</span>
           </a>
@@ -195,7 +195,7 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/activity-history')" class="sidebar-link">
+          <a (click)="navigateTo('/recruiter/activity-history')" class="sidebar-link" [class.active]="isActive('/recruiter/activity-history')">
             <i class="fa fa-history sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.activity_history') }}</span>
           </a>
