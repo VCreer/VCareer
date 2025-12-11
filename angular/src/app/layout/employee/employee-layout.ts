@@ -125,6 +125,10 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
   onCloseUnauthorizedModal(): void {
     this.showUnauthorizedModal = false;
     this.unauthorizedModalService.hide();
+    // Redirect về trang chính của employee khi đóng modal
+    this.router.navigate(['/employee/statistical-reports']).catch(err => {
+      console.error('Navigation error:', err);
+    });
   }
 }
 

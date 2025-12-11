@@ -300,7 +300,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
     }
 
     if (!this.createForm.name.trim()) {
-      this.showToastMessage('Vui lòng nhập tên tag', 'error');
+      this.showToastMessage('Vui lòng nhập tên thẻ', 'error');
       return;
     }
 
@@ -319,7 +319,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
 
     this.allTags.push(newTag);
     this.applyFilters();
-    this.showToastMessage('Tạo tag thành công', 'success');
+    this.showToastMessage('Tạo thẻ thành công', 'success');
     this.showCreateModal = false;
     this.isCreating = false;
   }
@@ -336,7 +336,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
 
   onConfirmEdit(): void {
     if (!this.selectedTag || !this.editForm.name.trim()) {
-      this.showToastMessage('Vui lòng nhập tên tag', 'error');
+      this.showToastMessage('Vui lòng nhập tên thẻ', 'error');
       return;
     }
 
@@ -352,7 +352,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
     }
 
     this.applyFilters();
-    this.showToastMessage('Cập nhật tag thành công', 'success');
+    this.showToastMessage('Cập nhật thẻ thành công', 'success');
     this.showEditModal = false;
     this.selectedTag = null;
   }
@@ -373,7 +373,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
     }
 
     this.applyFilters();
-    this.showToastMessage('Xóa tag thành công', 'success');
+    this.showToastMessage('Xóa thẻ thành công', 'success');
     this.showDeleteModal = false;
     this.selectedTag = null;
   }
@@ -395,7 +395,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
 
     this.applyFilters();
     this.showToastMessage(
-      wasActive ? 'Đã tắt tag' : 'Đã bật tag',
+      wasActive ? 'Đã tắt thẻ' : 'Đã bật thẻ',
       'success'
     );
   }

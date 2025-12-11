@@ -105,14 +105,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
   jobToAssignPackage: CampaignJob | null = null;
-  jobToChangeStatus: CampaignJob | null = null;
-  selectedStatusValue: string = '';
 
   // Khóa để ngăn double request
   private isPostingJob = false;
   private isDeletingJob = false;
-  private isTogglingPublic = false;
-  private isChangingStatus = false;
+  private isClosingJob = false;
+  private isRecreatingJob = false;
   private isAssigningPackage = false;
 
   // Status options
@@ -134,7 +132,6 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   isLoadingServices: boolean = false;
 
   selectedChildServices: { [action: number]: string } = {};
-  showStatusDropdownModal = false;
 
   // Sidebar state for responsive modal
   sidebarExpanded: boolean = false;
@@ -459,6 +456,38 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Page responsive methods
+  getPagePaddingLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getPageWidth(): string {
+    if (window.innerWidth <= 768) return '100%';
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getBreadcrumbLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    if (window.innerWidth <= 768) return '100%';
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 32px)'; // Full width với padding nhỏ trên mobile
+    }
+    const sidePadding = 32; // Padding tổng cộng (16px mỗi bên)
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    const maxContentWidth = Math.min(1400, Math.max(900, availableWidth));
+    return `${maxContentWidth}px`;
+  }
+
   // Modal responsive methods
   getModalPaddingLeft(): string {
     if (window.innerWidth <= 768) return '0';
@@ -579,7 +608,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Lỗi khi đăng bài:', err);
-        this.showErrorToast('Đăng bài thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Đăng bài thất bại');
+        }
       },
       complete: () => {
         this.isPostingJob = false;
@@ -611,7 +643,11 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Lỗi khi xóa công việc:', err);
-        this.showErrorToast('Xóa công việc thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        // Không cần hiển thị toast thêm
+        if (err.status !== 403) {
+          this.showErrorToast('Xóa công việc thất bại');
+        }
       },
       complete: () => {
         this.isDeletingJob = false;
@@ -625,55 +661,57 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.jobToDelete = null;
   }
 
-  onTogglePublicAction(job: CampaignJob): void {
+  onCloseJob(job: CampaignJob): void {
     // Ngăn double request
-    if (this.isTogglingPublic) return;
+    if (this.isClosingJob) return;
 
-    this.isTogglingPublic = true;
-    const newPublicState = !job.isPublic;
-
-    // TODO: Call API to update job public/private status
-    setTimeout(() => {
-      job.isPublic = newPublicState;
-      this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
-      this.showActionsMenu = null;
-      this.menuPosition = null;
-      this.isTogglingPublic = false;
-    }, 500);
-  }
-
-  onChangeStatusAction(job: CampaignJob): void {
-    this.jobToChangeStatus = job;
-    this.selectedStatusValue = job.status;
-    this.showStatusDropdownModal = true;
+    this.isClosingJob = true;
     this.showActionsMenu = null;
     this.menuPosition = null;
+
+    this.jobPostService.closeJobPostById(job.id).subscribe({
+      next: () => {
+        // Cập nhật trạng thái job thành 'closed'
+        const index = this.jobs.findIndex(j => j.id === job.id);
+        if (index > -1) {
+          this.jobs[index].status = 'closed';
+          this.filterJobs();
+        }
+        this.showSuccessToast('Đã đóng công việc thành công');
+      },
+      error: err => {
+        console.error('Lỗi khi đóng công việc:', err);
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Đóng công việc thất bại');
+        }
+      },
+      complete: () => {
+        this.isClosingJob = false;
+      },
+    });
   }
 
-  closeStatusModal(): void {
-    this.showStatusDropdownModal = false;
-    this.jobToChangeStatus = null;
-    this.selectedStatusValue = '';
-  }
-
-  confirmChangeStatus(): void {
+  onRecreateJob(job: CampaignJob): void {
     // Ngăn double request
-    if (this.isChangingStatus || !this.jobToChangeStatus || !this.selectedStatusValue) return;
+    if (this.isRecreatingJob) return;
 
-    this.isChangingStatus = true;
+    this.isRecreatingJob = true;
+    this.showActionsMenu = null;
+    this.menuPosition = null;
 
-    // TODO: Call API to update job status
-    setTimeout(() => {
-      this.jobToChangeStatus!.status = this.selectedStatusValue as CampaignJob['status'];
-      this.showSuccessToast('Đã cập nhật trạng thái công việc');
-      this.isChangingStatus = false;
-      this.closeStatusModal();
-    }, 500);
-  }
-
-  onSelectStatus(status: string): void {
-    this.selectedStatusValue = status;
-    this.confirmChangeStatus();
+    // Redirect về job-posting với jobId để tự động load dữ liệu từ job cũ
+    // job-posting sẽ tự động detect jobId và load dữ liệu vào form
+    this.router.navigate(['/recruiter/job-posting'], {
+      queryParams: {
+        jobId: job.id, // Pass jobId để job-posting load dữ liệu
+        campaignId: this.campaignId,
+        campaignName: this.campaignName,
+        recreate: 'true' // Flag để biết đây là recreate mode
+      }
+    });
+    
+    this.isRecreatingJob = false;
   }
 
   onAssignPackage(job: CampaignJob): void {
@@ -777,7 +815,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Lỗi khi kích hoạt dịch vụ:', err);
-        this.showErrorToast('Kích hoạt dịch vụ thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Kích hoạt dịch vụ thất bại');
+        }
         this.isAssigningPackage = false;
       },
     });

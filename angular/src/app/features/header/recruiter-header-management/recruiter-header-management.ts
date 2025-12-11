@@ -9,33 +9,20 @@ import { LogoSectionComponent } from '../../../shared/components/logo-section/lo
 import { ButtonComponent } from '../../../shared/components/button/button';
 import { IconButtonBadgeComponent } from '../../../shared/components/icon-button-badge/icon-button-badge';
 import { IconActionButtonComponent } from '../../../shared/components/icon-action-button/icon-action-button';
-import { NotificationMenuComponent, NotificationItem } from '../../../shared/components/notification-menu/notification-menu';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-recruiter-header-management',
   standalone: true,
-  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, NotificationMenuComponent, SidebarComponent],
+  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, SidebarComponent],
   templateUrl: './recruiter-header-management.html',
   styleUrls: ['./recruiter-header-management.scss']
 })
 export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   showDropdownMenu = false;
-  showNotificationMenu = false;
   showSidebar = false;
   cartCount = 0;
   private cartSubscription?: Subscription;
-  
-  notifications: NotificationItem[] = [
-    { id: '1', text: 'Bạn có tin tuyển dụng mới phù hợp', date: '15/10/2025', isRead: false },
-    { id: '2', text: 'Ứng viên đã nộp hồ sơ cho vị trí của bạn', date: '14/10/2025', isRead: false },
-    { id: '3', text: 'Tin tuyển dụng của bạn đã được duyệt', date: '13/10/2025', isRead: true },
-    { id: '4', text: 'Nhắc nhở: Tin tuyển dụng sắp hết hạn', date: '12/10/2025', isRead: false }
-  ];
-
-  get notificationCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
-  }
 
   constructor(
     private router: Router,
@@ -66,9 +53,6 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     if (!target.closest('.caret-menu-wrapper')) {
       this.showDropdownMenu = false;
     }
-    if (!target.closest('.notification-menu-wrapper')) {
-      this.showNotificationMenu = false;
-    }
     // Only close sidebar if it was manually opened (has .show class) and click is outside
     const sidebar = document.querySelector('.sidebar');
     if (sidebar && sidebar.classList.contains('show')) {
@@ -82,14 +66,6 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     this.showDropdownMenu = !this.showDropdownMenu;
   }
 
-  toggleNotificationMenu() {
-    this.showNotificationMenu = !this.showNotificationMenu;
-    if (this.showNotificationMenu) {
-      this.showDropdownMenu = false;
-      this.showSidebar = false;
-    }
-  }
-
   toggleSidebar() {
     // Always toggle based on current showSidebar state, not DOM state
     // This ensures consistent behavior
@@ -97,16 +73,11 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     
     if (this.showSidebar) {
       this.showDropdownMenu = false;
-      this.showNotificationMenu = false;
     }
   }
 
   closeSidebar() {
     this.showSidebar = false;
-  }
-
-  onMarkAllRead() {
-    this.notifications.forEach(n => n.isRead = true);
   }
 
   logout() {
@@ -120,10 +91,6 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
 
   navigateToCart() {
     this.router.navigate(['/recruiter/cart']);
-  }
-
-  navigateToNotifications() {
-    this.router.navigate(['/recruiter/notifications']);
   }
 
   navigateToHome() {

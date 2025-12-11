@@ -332,7 +332,7 @@
   }
 
   .toggle-wrap input:checked + .toggle-slider {
-    background: #6366f1;
+    background: #3b82f6;
 
     &::before {
       transform: translateX(20px);
@@ -541,8 +541,8 @@
     transition: all 0.2s;
 
     &:focus {
-      border-color: #7f56d9;
-      box-shadow: 0 0 0 4px rgba(127, 86, 217, 0.1);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
     }
 
     &.has-error {

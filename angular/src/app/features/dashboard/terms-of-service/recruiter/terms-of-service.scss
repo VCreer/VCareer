@@ -1,0 +1,110 @@
+.tos-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: #0f172a;
+  line-height: 1.7;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.hero {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0 8px;
+  background: #fff;
+  border-radius: 0;
+  color: #0f172a;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.hero-text h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.hero-text .subtitle {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.section {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 12px 0;
+  margin-top: 8px;
+  box-shadow: none;
+}
+
+.section h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.section p {
+  margin: 0 0 10px;
+  color: #334155;
+}
+
+.section ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
+.section li {
+  margin-bottom: 6px;
+}
+
+.toc {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.toc-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.toc-item {
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 12px 0 8px;
+  }
+
+  .hero-text h1 {
+    font-size: 22px;
+  }
+
+  .section {
+    padding: 10px 0;
+  }
+}
+

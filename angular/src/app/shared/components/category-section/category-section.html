@@ -18,11 +18,7 @@
     
     <div class="category-grid">
       <div class="category-card" *ngFor="let category of categories" (click)="onCategoryClick(category.id)">
-        <div class="category-icon">
-          <img [src]="category.image" [alt]="category.name" />
-        </div>
         <h3 class="category-name">{{ translate(category.name) }}</h3>
-        <p class="job-count">{{ category.jobCount | number }} {{ translate('homepage.stats.jobs') }}</p>
       </div>
     </div>
   </div>

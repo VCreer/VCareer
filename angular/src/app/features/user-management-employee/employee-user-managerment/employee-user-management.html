@@ -1,12 +1,4 @@
 <div class="employee-user-management-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
-  <!-- Toast Notification -->
-  <app-toast-notification
-    [show]="showToast"
-    [message]="toastMessage"
-    [type]="toastType"
-    (close)="onCloseToast()">
-  </app-toast-notification>
-
   <!-- Breadcrumb Box -->
   <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
@@ -310,6 +302,30 @@
       <p class="validation-error" *ngIf="createErrors.email">{{ createErrors.email }}</p>
     </div>
     <div class="form-group">
+      <label class="form-label">Mật khẩu *</label>
+      <div class="password-input-wrapper">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          class="password-input"
+          placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+          [(ngModel)]="createForm.password"
+          [value]="createForm.password || ''"
+          (blur)="validatePassword()"
+          (input)="onPasswordInput()"
+          autocomplete="new-password"
+          required>
+        <button
+          type="button"
+          class="password-toggle-btn"
+          (click)="showPassword = !showPassword; $event.preventDefault(); $event.stopPropagation()"
+          tabindex="-1"
+          aria-label="Toggle password visibility">
+          <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+        </button>
+      </div>
+      <p class="validation-error" *ngIf="createErrors.password">{{ createErrors.password }}</p>
+    </div>
+    <div class="form-group">
       <label class="form-label">Role *</label>
       <div class="checkbox-list">
         <label class="checkbox-item" *ngFor="let role of roleOptions">
@@ -321,9 +337,6 @@
         </label>
       </div>
       <p class="validation-error" *ngIf="createErrors.roles">{{ createErrors.roles }}</p>
-      <p class="form-hint">Bước 1: Nhập email -> Sinh mật khẩu ngẫu nhiên</p>
-      <p class="form-hint">Bước 2: Gắn role (có thể chọn nhiều)</p>
-      <p class="form-hint">Bước 3: Gắn permission</p>
     </div>
     <div class="modal-actions">
       <app-button

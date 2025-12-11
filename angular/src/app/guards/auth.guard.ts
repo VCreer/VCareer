@@ -56,6 +56,7 @@ export class AuthGuard implements CanActivate {
           // Nếu route yêu cầu role cụ thể
           if (primaryRole !== requiredRole) {
             this.unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+            // Redirect ngay lập tức, không đợi
             this.redirectToRoleHome(primaryRole);
             return false;
           }
@@ -64,6 +65,7 @@ export class AuthGuard implements CanActivate {
           const roleFromUrl = this.getRoleFromUrl(state.url);
           if (roleFromUrl && roleFromUrl !== primaryRole) {
             this.unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+            // Redirect ngay lập tức, không đợi
             this.redirectToRoleHome(primaryRole);
             return false;
           }
@@ -101,6 +103,10 @@ export class AuthGuard implements CanActivate {
       RECRUITER: ['/recruiter/recruitment-report'],
       CANDIDATE: ['/home'],
     };
-    this.router.navigate(map[role]);
+    // Navigate với skipLocationChange: false để đảm bảo route được load đúng
+    this.router.navigate(map[role], { skipLocationChange: false }).catch(err => {
+      console.error('[AuthGuard] Navigation error:', err);
+      // Nếu navigate fail, không redirect về 404, chỉ log error
+    });
   }
 }

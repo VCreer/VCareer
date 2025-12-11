@@ -58,7 +58,7 @@ export const appConfig: ApplicationConfig = {
     // 5. ABP Modules
     provideAbpThemeShared(
       withHttpErrorConfig({
-        skipHandledErrorCodes: [401, 404],
+        skipHandledErrorCodes: [401, 403, 404, 500], // Skip 403 để interceptor tự xử lý
       })
     ),
     provideIdentityConfig(),
