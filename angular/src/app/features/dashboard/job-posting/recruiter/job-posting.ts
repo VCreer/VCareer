@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
 import { GeoService } from '../../../../core/services/Geo.service';
 import { TagService } from 'src/app/proxy/services/job';
@@ -69,17 +69,20 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   private jobSearchService = inject(JobSearchService);
   private jobTagService = inject(JobTagService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private geoService = inject(GeoService);
   private companyProfile = inject(CompanyLegalInfoService);
   private tagService = inject(TagService);
   private jobCategoryService = inject(JobCategoryService);
   private recruitmentCampaignService = inject(RecruitmentCompainService);
+  private cdr = inject(ChangeDetectorRef);
   
   campaignName = '';
   campaignId = '';
   jobId = '';
   isEditMode = false;
   isLoadingJobData = false;
+  private isRecreating = false; // Flag để tránh load nhiều lần khi recreate
   
   validationErrors: ValidationErrors = {};
   showToast = false;
@@ -180,13 +183,40 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       if (params['campaignName']) this.campaignName = params['campaignName'];
       if (params['campaignId']) this.campaignId = params['campaignId'];
       
-      // Check nếu có jobId -> chế độ edit
+      // Check nếu có jobId
       if (params['jobId']) {
-        this.jobId = params['jobId'];
-        this.isEditMode = true;
-        this.loadJobData(this.jobId);
+        const newJobId = params['jobId'];
+        
+        // Nếu có flag recreate=true -> load dữ liệu nhưng ở chế độ create (tạo lại)
+        if (params['recreate'] === 'true') {
+          // Chỉ load nếu chưa load hoặc jobId thay đổi
+          if (!this.isRecreating || this.jobId !== newJobId) {
+            console.log('[Recreate] Recreate mode detected, jobId:', newJobId);
+            console.log('[Recreate] Form before load:', JSON.stringify(this.jobForm));
+            this.isRecreating = true;
+            this.jobId = newJobId;
+            this.isEditMode = false;
+            // Load dữ liệu từ job cũ để điền vào form
+            this.loadJobDataForRecreate(this.jobId);
+          }
+        } else {
+          // Chế độ edit bình thường
+          this.isRecreating = false;
+          if (this.jobId !== newJobId) {
+            this.jobId = newJobId;
+            this.isEditMode = true;
+            this.loadJobData(this.jobId);
+          }
+        }
       } else {
+        // Không có jobId -> chế độ create mới
+        this.isRecreating = false;
         this.isEditMode = false;
+        // Chỉ reset form nếu không phải đang recreate
+        if (!this.isRecreating) {
+          // Reset form về trạng thái ban đầu (chỉ khi không recreate)
+          // Không reset ở đây vì có thể đang trong quá trình recreate
+        }
       }
 
       this.loadCampaignOptions();
@@ -204,6 +234,50 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   //#region Load Job Data for Edit
+  // Load dữ liệu cho chế độ recreate (tạo lại từ job cũ)
+  loadJobDataForRecreate(jobId: string): void {
+    // Ngăn load nhiều lần
+    if (this.isLoadingJobData) {
+      console.log('[Recreate] Already loading, skip');
+      return;
+    }
+    
+    this.isLoadingJobData = true;
+    console.log('[Recreate] Loading job data for recreate, jobId:', jobId);
+    console.log('[Recreate] Form before load:', JSON.stringify(this.jobForm));
+    
+    // Load cả job detail và job tags song song
+    forkJoin({
+      jobDetail: this.jobSearchService.getJobById(jobId),
+      jobTags: this.jobTagService.getTagByJobIdByJobId(jobId)
+    }).subscribe({
+      next: (result) => {
+        console.log('[Recreate] Job data loaded:', result);
+        this.populateFormWithJobData(result.jobDetail);
+        this.populateJobTags(result.jobTags);
+        // Clear jobId sau khi load xong để đảm bảo tạo mới
+        this.jobId = '';
+        this.isLoadingJobData = false;
+        // Force change detection để đảm bảo form được update
+        setTimeout(() => {
+          this.cdr.detectChanges();
+          console.log('[Recreate] Form after detectChanges:', JSON.stringify(this.jobForm));
+        }, 0);
+        this.showToastMessage('Đã tải thông tin công việc để tạo lại', 'success');
+        // Reset flag sau khi load xong (đợi một chút để đảm bảo form đã được populate)
+        setTimeout(() => {
+          this.isRecreating = false;
+          console.log('[Recreate] Flag reset, form final state:', JSON.stringify(this.jobForm));
+        }, 1000);
+      },
+      error: err => {
+        console.error('[Recreate] Error loading job data:', err);
+        this.showToastMessage('Không thể tải thông tin công việc', 'error');
+        this.isLoadingJobData = false;
+      }
+    });
+  }
+
   loadJobData(jobId: string): void {
     this.isLoadingJobData = true;
     
@@ -226,14 +300,19 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
 
   populateFormWithJobData(jobDetail: JobViewDetail): void {
-    // Điền thông tin cơ bản
-    this.jobForm.jobTitle = jobDetail.title || '';
-    this.jobForm.description = jobDetail.description || '';
-    this.jobForm.requirements = jobDetail.requirements || '';
-    this.jobForm.benefits = jobDetail.benefits || '';
-    this.jobForm.workLocation = jobDetail.workLocation || '';
-    this.jobForm.workTime = jobDetail.workTime || '';
-    this.jobForm.quantity = jobDetail.quantity?.toString() || '';
+    console.log('[Populate] Populating form with job data:', jobDetail);
+    console.log('[Populate] Form before populate:', JSON.stringify(this.jobForm));
+    
+    // Điền thông tin cơ bản - sử dụng Object.assign để đảm bảo gán đúng
+    if (jobDetail.title) this.jobForm.jobTitle = jobDetail.title;
+    if (jobDetail.description) this.jobForm.description = jobDetail.description;
+    if (jobDetail.requirements) this.jobForm.requirements = jobDetail.requirements;
+    if (jobDetail.benefits) this.jobForm.benefits = jobDetail.benefits;
+    if (jobDetail.workLocation) this.jobForm.workLocation = jobDetail.workLocation;
+    if (jobDetail.workTime) this.jobForm.workTime = jobDetail.workTime;
+   
+    
+    console.log('[Populate] Form after basic populate:', JSON.stringify(this.jobForm));
     
     // Employment Type
     if (jobDetail.employmentType !== undefined) {
@@ -479,6 +558,29 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   //#endregion
 
   //#region Job
+  // Helper function to convert enum values from string/number to proper enum number
+  private convertToEnum(value: any, enumType: any): number | undefined {
+    if (value === undefined || value === null || value === '') return undefined;
+    
+    // Nếu đã là số, return luôn
+    if (typeof value === 'number') return value;
+    
+    // Nếu là string, convert sang number
+    if (typeof value === 'string') {
+      const numValue = Number(value);
+      // Nếu convert thành công và là số hợp lệ
+      if (!isNaN(numValue) && isFinite(numValue)) {
+        // Kiểm tra xem giá trị có tồn tại trong enum không
+        const enumValues = Object.values(enumType).filter(v => typeof v === 'number') as number[];
+        if (enumValues.includes(numValue)) {
+          return numValue;
+        }
+      }
+    }
+    
+    return undefined;
+  }
+
   async onSaveOrUpdateJob() {
     if (this.isSubmitting) return;
 
@@ -499,10 +601,10 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           requirements: this.jobForm.requirements,
           benefits: this.jobForm.benefits,
           workLocation: this.jobForm.workLocation,
-          employmentType: this.jobForm.employmentType as unknown as EmploymentType,
-          experience: this.jobForm.experience as unknown as ExperienceLevel,
-          positionType: this.jobForm.positionLevel as unknown as PositionType,
-          quantity: Number(this.jobForm.quantity) || 1,
+          employmentType: this.convertToEnum(this.jobForm.employmentType, EmploymentType) as EmploymentType | undefined,
+          experience: this.convertToEnum(this.jobForm.experience, ExperienceLevel) as ExperienceLevel | undefined,
+          positionType: this.convertToEnum(this.jobForm.positionLevel, PositionType) as PositionType | undefined,
+          quantity: Number(this.jobForm.quantity || 0),
           expiresAt: this.jobForm.applicationDeadline
             ? new Date(this.jobForm.applicationDeadline).toISOString()
             : undefined,
@@ -510,11 +612,11 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           salaryMax: this.salaryDeal ? 0 : this.salaryMax,
           salaryDeal: this.salaryDeal,
           provinceCode: this.selectedProvince ?? 0,
-          wardCode: this.selectedWard ?? 0,
+          wardCode: this.selectedWard ?? undefined,
           slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
           workTime: this.jobForm.workTime,
           jobCategoryId: this.selectedCategoryId,
-          tagIds: this.selectedTags.map(t => t.id!).filter(id => id !== undefined),
+          tagIds: this.selectedTags.map(t => t.id!).filter(id => id !== undefined && id !== null),
         };
 
         // Update job post
@@ -530,10 +632,45 @@ export class JobPostingComponent implements OnInit, OnDestroy {
               next: () => {
                 this.showToastMessage('Cập nhật công việc thành công!', 'success');
                 this.isSubmitting = false;
+                
+                // Redirect về campaign-job-management sau khi cập nhật thành công
+                if (this.campaignId) {
+                  // Đảm bảo campaignName được set đúng
+                  if (!this.campaignName && this.campaignId) {
+                    const found = this.campaignOptions.find(c => c.value === this.campaignId);
+                    this.campaignName = found?.label || '';
+                  }
+                  
+                  setTimeout(() => {
+                    this.router.navigate(['/recruiter/campaign-job-management'], {
+                      queryParams: { 
+                        campaignId: this.campaignId,
+                        campaignName: this.campaignName || ''
+                      }
+                    });
+                  }, 1000); // Đợi 1 giây để user thấy toast message
+                }
               },
               error: err => {
                 this.showToastMessage('Cập nhật công việc thành công nhưng lỗi khi cập nhật tags', 'warning');
                 this.isSubmitting = false;
+                
+                // Vẫn redirect về campaign-job-management dù có lỗi tags
+                if (this.campaignId) {
+                  if (!this.campaignName && this.campaignId) {
+                    const found = this.campaignOptions.find(c => c.value === this.campaignId);
+                    this.campaignName = found?.label || '';
+                  }
+                  
+                  setTimeout(() => {
+                    this.router.navigate(['/recruiter/campaign-job-management'], {
+                      queryParams: { 
+                        campaignId: this.campaignId,
+                        campaignName: this.campaignName || ''
+                      }
+                    });
+                  }, 1000);
+                }
               }
             });
           },
@@ -550,9 +687,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           requirements: this.jobForm.requirements,
           benefits: this.jobForm.benefits,
           workLocation: this.jobForm.workLocation,
-          employmentType: this.jobForm.employmentType as unknown as EmploymentType,
-          experience: this.jobForm.experience as unknown as ExperienceLevel,
-          positionType: this.jobForm.positionLevel as unknown as PositionType,
+          employmentType: this.convertToEnum(this.jobForm.employmentType, EmploymentType) as EmploymentType | undefined,
+          experience: this.convertToEnum(this.jobForm.experience, ExperienceLevel) as ExperienceLevel | undefined,
+          positionType: this.convertToEnum(this.jobForm.positionLevel, PositionType) as PositionType | undefined,
           quantity: Number(this.jobForm.quantity) || 1,
           expiresAt: this.jobForm.applicationDeadline
             ? new Date(this.jobForm.applicationDeadline).toISOString()
@@ -561,11 +698,11 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           salaryMax: this.salaryDeal ? 0 : this.salaryMax,
           salaryDeal: this.salaryDeal,
           provinceCode: this.selectedProvince ?? 0,
-          wardCode: this.selectedWard ?? 0,
+          wardCode: this.selectedWard ?? undefined,
           slug: this.jobForm.jobTitle.trim().toLowerCase().replace(/\s+/g, '-'),
           workTime: this.jobForm.workTime,
           jobCategoryId: this.selectedCategoryId,
-          tagIds: this.selectedTags.map(t => t.id!).filter(id => id !== undefined),
+          tagIds: this.selectedTags.map(t => t.id!).filter(id => id !== undefined && id !== null),
           recruitmentCampaignId: this.campaignId || undefined,
         };
 
@@ -573,6 +710,24 @@ export class JobPostingComponent implements OnInit, OnDestroy {
           next: res => {
             this.showToastMessage('Đã lưu bản nháp thành công!', 'success');
             this.isSubmitting = false;
+            
+            // Redirect về campaign-job-management sau khi tạo thành công
+            if (this.campaignId) {
+              // Đảm bảo campaignName được set đúng
+              if (!this.campaignName && this.campaignId) {
+                const found = this.campaignOptions.find(c => c.value === this.campaignId);
+                this.campaignName = found?.label || '';
+              }
+              
+              setTimeout(() => {
+                this.router.navigate(['/recruiter/campaign-job-management'], {
+                  queryParams: { 
+                    campaignId: this.campaignId,
+                    campaignName: this.campaignName || ''
+                  }
+                });
+              }, 1000); // Đợi 1 giây để user thấy toast message
+            }
           },
           error: err => {
             this.showToastMessage('Lỗi khi lưu bản nháp', 'error');
@@ -642,8 +797,100 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   //#endregion
 
   //#region Preview
+  previewJobData: JobFormData = {
+    companyName: '',
+    companySize: '',
+    companyIndustry: '',
+    companyLocation: '',
+    companyWebsite: '',
+    companyImage: null,
+    companyImagePreview: '',
+    positionLevel: '',
+    education: '',
+    quantity: '',
+    employmentType: '',
+    jobTitle: '',
+    location: '',
+    salary: '',
+    experience: '',
+    applicationDeadline: '',
+    description: '',
+    requirements: '',
+    benefits: '',
+    workLocation: '',
+    applicationMethod: '',
+    workTime: '',
+  };
+
   openPreviewModal() {
+    // Prepare preview data từ form và BE data
+    this.preparePreviewData();
     this.showPreviewModal = true;
+  }
+
+  preparePreviewData() {
+    // Format salary cho preview
+    let salaryValue = '';
+    if (this.salaryDeal) {
+      salaryValue = 'negotiable'; // 'negotiable' để match với JobOptionsService
+    } else if (this.salaryMin && this.salaryMax) {
+      // Format salary range để match với JobOptionsService format
+      const minMillion = Math.floor(this.salaryMin / 1_000_000);
+      const maxMillion = Math.floor(this.salaryMax / 1_000_000);
+      salaryValue = `${minMillion}-${maxMillion}`;
+    }
+
+    // Convert enum values sang string để preview component có thể hiển thị
+    const experienceLabel = this.getEnumLabel(this.jobForm.experience, this.experienceOptions);
+    const employmentTypeLabel = this.getEnumLabel(this.jobForm.employmentType, this.employmentTypeOptions);
+    const positionLevelLabel = this.getEnumLabel(this.jobForm.positionLevel, this.positionLevelOptions);
+
+    // Map dữ liệu từ form
+    this.previewJobData = {
+      ...this.jobForm,
+      // Company info từ BE
+      companyName: this.currentCompanyInfo?.companyName || '',
+      companySize: this.currentCompanyInfo?.companySize?.toString() || '',
+      companyIndustry: this.currentCompanyInfo?.industryId?.toString() || '',
+      companyLocation: this.getLocationString(),
+      companyWebsite: this.currentCompanyInfo?.websiteUrl || '',
+      companyImage: null,
+      companyImagePreview: this.currentCompanyInfo?.logoUrl || '',
+      // Location từ province/ward
+      location: this.getLocationString(),
+      // Salary format - convert sang format mà JobOptionsService hiểu
+      salary: salaryValue,
+      // Convert enum values sang string format để preview component hiểu
+      // Note: JobPreviewComponent sẽ sử dụng JobOptionsService để convert lại sang label
+      // Nhưng chúng ta cần pass string value, không phải enum number
+      experience: experienceLabel || this.jobForm.experience?.toString() || '',
+      employmentType: employmentTypeLabel || this.jobForm.employmentType?.toString() || '',
+      positionLevel: positionLevelLabel || this.jobForm.positionLevel?.toString() || '',
+    };
+  }
+
+  getEnumLabel(value: any, options: { label: string; value: any }[]): string {
+    if (value === undefined || value === null || value === '') return '';
+    const option = options.find(opt => opt.value === value || opt.value === Number(value));
+    return option?.label || '';
+  }
+
+  getLocationString(): string {
+    if (!this.selectedProvince) return '';
+    
+    // Tìm province name từ options
+    const province = this.provinceOptions.find(p => p.value === this.selectedProvince);
+    if (!province) return '';
+    
+    // Tìm ward name nếu có
+    if (this.selectedWard) {
+      const ward = this.wardOptions.find(w => w.value === this.selectedWard);
+      if (ward) {
+        return `${ward.label}, ${province.label}`;
+      }
+    }
+    
+    return province.label;
   }
   
   closePreviewModal() {
@@ -691,6 +938,38 @@ export class JobPostingComponent implements OnInit, OnDestroy {
   }
   //#endregion
 
+  //#region Quantity Validation
+  blockNonNumeric(event: KeyboardEvent) {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+    if (allowedKeys.includes(event.key)) return;
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  preventBelowOne(event: KeyboardEvent) {
+    if (event.key === 'ArrowDown') {
+      const current = Number(this.jobForm.quantity || 0);
+      if (isNaN(current) || current <= 0) {
+        event.preventDefault();
+        this.jobForm.quantity = '0';
+      }
+    }
+  }
+
+  preventQuantityWheel(event: WheelEvent) {
+    (event.target as HTMLElement).blur();
+    event.preventDefault();
+  }
+
+  onQuantityChange(value: any) {
+    let sanitized = String(value ?? '').replace(/[^0-9]/g, '');
+    // Cho phép rỗng; validation sẽ kiểm tra khi submit
+    this.jobForm.quantity = sanitized;
+    this.clearFieldError('quantity');
+  }
+  //#endregion
+
   //#region Helper
   getFieldError(field: string) {
     return this.validationErrors[field] || '';
@@ -727,6 +1006,17 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     }
     if (!this.selectedCategoryId) {
       this.validationErrors['jobCategoryId'] = 'Vui lòng chọn lĩnh vực cụ thể';
+    }
+
+    // Quantity - must be positive integer, no letters/negative
+    const quantityStr = (this.jobForm.quantity || '').toString().trim();
+    const quantityNum = Number(quantityStr);
+    if (!quantityStr) {
+      this.validationErrors['quantity'] = 'Vui lòng nhập số lượng tuyển';
+    } else if (!/^\d+$/.test(quantityStr)) {
+      this.validationErrors['quantity'] = 'Số lượng tuyển phải là số nguyên dương';
+    } else if (isNaN(quantityNum) || quantityNum < 1) {
+      this.validationErrors['quantity'] = 'Số lượng tuyển phải lớn hơn 0';
     }
 
     // Validate application deadline - từ 7 ngày đến 2 tháng

@@ -7,6 +7,20 @@ export const APP_ROUTES: Routes = [
 // path public ko can dang nhap
   // Public candidate routes with layout (có header nhưng không cần đăng nhập)
   {
+    path: 'recruiter/terms-of-service',
+    loadComponent: () =>
+      import('./features/dashboard/terms-of-service/recruiter/terms-of-service').then(
+        c => c.TermsOfServiceRecruiterComponent
+      ),
+  },
+  {
+    path: 'candidate/terms-of-service',
+    loadComponent: () =>
+      import('./features/dashboard/terms-of-service/canidate/terms-of-service').then(
+        c => c.TermsOfServiceCandidateComponent
+      ),
+  },
+  {
     path: 'candidate',
     loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
     children: [
@@ -285,6 +299,20 @@ export const APP_ROUTES: Routes = [
         loadComponent: () =>
           import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
             c => c.ServicePriceListComponent
+          ),
+      },
+      {
+        path: 'terms-of-service',
+        loadComponent: () =>
+          import('./features/dashboard/terms-of-service/recruiter/terms-of-service').then(
+            c => c.TermsOfServiceRecruiterComponent
+          ),
+      },
+      {
+        path: 'terms-of-service',
+        loadComponent: () =>
+          import('./features/dashboard/terms-of-service/recruiter/terms-of-service').then(
+            c => c.TermsOfServiceRecruiterComponent
           ),
       },
       {

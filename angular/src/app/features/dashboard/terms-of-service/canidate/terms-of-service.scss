@@ -1,0 +1,69 @@
+.tos-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: #0f172a;
+  line-height: 1.7;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.hero {
+  padding: 12px 0 8px;
+  color: #0f172a;
+}
+
+.hero-text h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.hero-text .subtitle {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.section {
+  padding: 12px 0;
+  margin-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.section:first-of-type {
+  border-top: none;
+}
+
+.section h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.section p {
+  margin: 0 0 10px;
+  color: #334155;
+}
+
+.section ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
+.section li {
+  margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+  .hero-text h1 {
+    font-size: 22px;
+  }
+  .section {
+    padding: 10px 0;
+  }
+}
+

@@ -1,4 +1,12 @@
 <div class="job-page">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
   <!-- ============================================ -->
   <!-- ✅ TOP SEARCH BAR - Using FilterBarComponent -->
   <!-- ============================================ -->
@@ -105,4 +113,13 @@
       ></app-job-list-detail>
     </div>
   </div>
+
+  <!-- Apply Job Modal -->
+  <app-apply-job-modal
+    [show]="showApplyModal"
+    [title]="applyJobTitle"
+    [jobId]="applyJobId"
+    (close)="onCloseApplyModal()"
+    (submit)="onSubmitApply($event)"
+  ></app-apply-job-modal>
 </div>

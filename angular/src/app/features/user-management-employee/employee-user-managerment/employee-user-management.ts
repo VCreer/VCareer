@@ -161,14 +161,17 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   // Forms
   createForm = {
     email: '',
+    password: '',
     roles: [] as string[], // Changed to array for multi-select
     permissions: [] as string[]
   };
   createErrors = {
     email: '',
+    password: '',
     roles: ''
   };
   isCreatingUser = false;
+  showPassword = false; // Toggle show/hide password
   
   // Role assignment form
   roleForm = {
@@ -536,8 +539,23 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
 
   // CRUD Actions
   onCreateUser(): void {
-    this.createForm = { email: '', roles: [], permissions: [] };
+    // Reset form completely to ensure no pre-filled values
+    this.createForm = { 
+      email: '', 
+      password: '', 
+      roles: [], 
+      permissions: [] 
+    };
+    this.createErrors = { email: '', password: '', roles: '' };
+    this.showPassword = false;
     this.showCreateModal = true;
+    
+    // Force clear password field after modal opens (in case of browser autofill)
+    setTimeout(() => {
+      if (this.createForm.password && this.createForm.password !== '') {
+        this.createForm.password = '';
+      }
+    }, 100);
   }
 
   onToggleRoleInCreate(roleValue: string): void {
@@ -549,28 +567,82 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPasswordInput(): void {
+    // Clear error when user starts typing
+    if (this.createErrors.password) {
+      this.createErrors.password = '';
+      this.cdr.detectChanges();
+    }
+  }
+
+  validatePassword(): void {
+    const password = (this.createForm.password || '').trim();
+    if (!password) {
+      this.createErrors.password = 'Vui lòng nhập mật khẩu';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (password.length < 6) {
+      this.createErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (password.length > 128) {
+      this.createErrors.password = 'Mật khẩu không được vượt quá 128 ký tự';
+      this.cdr.detectChanges();
+      return;
+    }
+    // Clear error if valid
+    this.createErrors.password = '';
+    this.cdr.detectChanges();
+  }
+
   onConfirmCreate(event?: Event): void {
     event?.stopPropagation();
 
-    // reset errors
-    this.createErrors.email = '';
-    this.createErrors.roles = '';
+    // Reset errors
+    this.createErrors = { email: '', password: '', roles: '' };
+    let hasError = false;
 
+    // Validate email
     const email = this.createForm.email.trim();
     if (!email) {
       this.createErrors.email = 'Vui lòng nhập email';
-      return;
+      hasError = true;
+    } else {
+      // Simple email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        this.createErrors.email = 'Email không hợp lệ';
+        hasError = true;
+      }
     }
 
-    // Simple email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      this.createErrors.email = 'Email không hợp lệ';
-      return;
+    // Validate password - check if empty first
+    const password = (this.createForm.password || '').trim();
+    if (!password) {
+      this.createErrors.password = 'Vui lòng nhập mật khẩu';
+      hasError = true;
+    } else {
+      // Validate password length
+      if (password.length < 6) {
+        this.createErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+        hasError = true;
+      } else if (password.length > 128) {
+        this.createErrors.password = 'Mật khẩu không được vượt quá 128 ký tự';
+        hasError = true;
+      }
     }
 
+    // Validate roles
     if (this.createForm.roles.length === 0) {
       this.createErrors.roles = 'Vui lòng chọn ít nhất một role';
+      hasError = true;
+    }
+
+    // If there are any errors, show them and return
+    if (hasError) {
+      this.cdr.detectChanges();
       return;
     }
 
@@ -578,6 +650,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     const emailExists = this.allUsers.some(u => u.email?.toLowerCase() === email.toLowerCase());
     if (emailExists) {
       this.createErrors.email = 'Email đã tồn tại trong danh sách nhân viên';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -587,10 +660,9 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.isCreatingUser = true;
 
     // Gọi API tạo nhân viên
-    const randomPassword = Math.random().toString(36).slice(-10);
     const payload: CreateEmployeeDto = {
       email,
-      password: randomPassword,
+      password: password,
       employeeRoles: [...this.createForm.roles]
     };
 
@@ -599,8 +671,8 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         this.showToastMessage('Tạo nhân viên thành công', 'success');
         this.showCreateModal = false;
         this.isCreatingUser = false;
-        this.createForm = { email: '', roles: [], permissions: [] };
-        this.createErrors = { email: '', roles: '' };
+        this.createForm = { email: '', password: '', roles: [], permissions: [] };
+        this.createErrors = { email: '', password: '', roles: '' };
         // Reload danh sách để thấy nhân viên mới
         this.loadUsers();
       },

@@ -382,12 +382,12 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       description: pkg.description,
       target: pkg.target ?? SubcriptionContance_SubcriptorTarget.Recruiter,
       status: pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive,
-      originalPrice: pkg.originalPrice || 0,
+      originalPrice: this.toSafeNumber(pkg.originalPrice),
       isLimited: pkg.isLimited || false,
       isBuyLimited: pkg.isBuyLimited || false,
-      totalBuyEachUser: pkg.totalBuyEachUser || 0,
+      totalBuyEachUser: pkg.isBuyLimited ? this.toSafeNumber(pkg.totalBuyEachUser) : undefined,
       isLifeTime: pkg.isLifeTime || false,
-      dayDuration: pkg.dayDuration,
+      dayDuration: pkg.isLifeTime ? undefined : this.toSafeNumber(pkg.dayDuration),
       isActive: pkg.isActive || false
     };
   }
@@ -398,8 +398,22 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       title: pkg.title,
       description: pkg.description,
       isActive: pkg.isActive || false,
-      dayDuration: pkg.dayDuration
+      dayDuration: pkg.isLifeTime ? undefined : this.toSafeNumber(pkg.dayDuration)
     };
+  }
+
+  private toSafeNumber(value: any): number {
+    const num = Number(String(value ?? '').replace(/[^0-9]/g, ''));
+    if (isNaN(num) || num < 0) return 0;
+    return num;
+  }
+
+  onNumberModelChange(value: any, field: 'originalPrice' | 'totalBuyEachUser' | 'dayDuration'): void {
+    const sanitizedStr = String(value ?? '').replace(/[^0-9]/g, '');
+    const num = this.toSafeNumber(sanitizedStr);
+    if (field === 'originalPrice') this.packageForm.originalPrice = num;
+    if (field === 'totalBuyEachUser') this.packageForm.totalBuyEachUser = num;
+    if (field === 'dayDuration') this.packageForm.dayDuration = num;
   }
 
   applySaleFilters(): void {
@@ -450,6 +464,13 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       value: pkg.id,
       label: pkg.title || 'Gói chưa có tên'
     }));
+  }
+
+  onManageSales(pkg: ServicePackage): void {
+    this.activeTab = 'sales';
+    this.saleSearchKeyword = pkg.title || '';
+    this.saleCurrentPage = 1;
+    this.applySaleFilters();
   }
 
   getSaleStatusLabel(sale: PackageSale): string {

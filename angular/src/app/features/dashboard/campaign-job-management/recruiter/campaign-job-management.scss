@@ -1,8 +1,6 @@
 .campaign-job-management-page {
   min-height: calc(100vh - 64px);
   padding-top: 0;
-  margin-left: 72px;
-  width: calc(100% - 72px);
   padding-right: 0;
   padding-bottom: 20px;
   background: #f8fafc;
@@ -12,30 +10,8 @@
   // Đảm bảo breadcrumb-box không bị che bởi sidebar
   isolation: isolate;
 
-  &.sidebar-expanded {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-  }
-
-  @media (max-width: 1024px) {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-
-    &.sidebar-expanded {
-      margin-left: 72px;
-      width: calc(100% - 72px);
-    }
-  }
-
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100%;
     padding-bottom: 16px;
-
-    &.sidebar-expanded {
-      margin-left: 0;
-      width: 100%;
-    }
   }
 
   // Breadcrumb Box
@@ -44,8 +20,6 @@
     padding: 1rem 0;
     position: fixed;
     top: 64px;
-    left: 72px;
-    width: calc(100% - 72px);
     z-index: 1001; // Cao hơn sidebar (z-index: 100) và header
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -54,32 +28,10 @@
     // Đảm bảo breadcrumb-box luôn nằm trên sidebar
     transform: translateZ(0); // Tạo stacking context mới
 
-    &.sidebar-expanded {
-      left: 280px;
-      width: calc(100% - 280px);
-    }
-
-    @media (max-width: 1024px) {
-      left: 72px;
-      width: calc(100% - 72px);
-
-      &.sidebar-expanded {
-        left: 72px;
-        width: calc(100% - 72px);
-      }
-    }
-
     @media (max-width: 768px) {
-      left: 0;
-      width: 100%;
       top: 56px;
       padding: 0.75rem 0;
       min-height: auto;
-
-      &.sidebar-expanded {
-        left: 0;
-        width: 100%;
-      }
     }
 
     .breadcrumb-container {
@@ -147,7 +99,6 @@
 
   // Main Content
   .main-content {
-    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
     margin-top: 80px;
@@ -157,10 +108,12 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     @media (max-width: 768px) {
       margin-top: 80px;
       padding: 16px;
+      max-width: calc(100% - 32px) !important;
     }
   }
 

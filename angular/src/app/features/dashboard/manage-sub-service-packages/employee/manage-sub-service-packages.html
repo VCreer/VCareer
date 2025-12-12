@@ -11,9 +11,9 @@
   <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="breadcrumb-left">
-        <span class="breadcrumb-item active">Quản lí</span>
+        <span class="breadcrumb-item active">Quản lý</span>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-item">Quản lí dịch vụ phụ</span>
+        <span class="breadcrumb-item">Quản lý dịch vụ con</span>
       </div>
     </div>
     
@@ -24,7 +24,7 @@
         size="medium"
         (click)="onCreateChildService()">
         <i class="fa fa-plus"></i>
-        Tạo dịch vụ phụ
+        Tạo dịch vụ con
       </app-button>
     </div>
   </div>
@@ -36,7 +36,7 @@
       <div class="page-description">
         <p class="description-text">
           <i class="fa fa-info-circle"></i>
-          Quản lý các dịch vụ phụ (child services) có thể được gắn vào các gói dịch vụ. Mỗi dịch vụ phụ có thể có hành động (action), đối tượng (target) và các cấu hình riêng.
+          Quản lý các dịch vụ con (child services) có thể được gắn vào các gói dịch vụ. Mỗi dịch vụ con có thể có hành động (action), đối tượng (target) và các cấu hình riêng.
         </p>
       </div>
       
@@ -193,7 +193,7 @@
         <!-- Empty State -->
         <div *ngIf="paginatedChildServices.length === 0" class="empty-state">
           <i class="fa fa-box"></i>
-          <p>Không có dịch vụ phụ nào</p>
+          <p>Không có dịch vụ con nào</p>
         </div>
       </div>
 
@@ -212,7 +212,7 @@
 <!-- Create Child Service Modal -->
 <app-generic-modal
   [show]="showCreateModal"
-  title="Tạo dịch vụ phụ"
+  title="Tạo dịch vụ con"
   [maxWidth]="'700px'"
   [bodyBackground]="'white'"
   (close)="showCreateModal = false">
@@ -320,7 +320,7 @@
         type="primary"
         size="medium"
         (click)="onConfirmCreate()">
-        Tạo dịch vụ phụ
+        Tạo dịch vụ con
       </app-button>
     </div>
   </div>
@@ -329,7 +329,7 @@
 <!-- Edit Child Service Modal -->
 <app-generic-modal
   [show]="showEditModal"
-  title="Sửa dịch vụ phụ"
+  title="Sửa dịch vụ con"
   [maxWidth]="'600px'"
   [bodyBackground]="'white'"
   (close)="showEditModal = false">
