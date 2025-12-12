@@ -16,9 +16,8 @@ namespace VCareer.Models.Subcription
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public SubcriptionStatus status { get; set; }
-        public bool IsShared { get; set; } = false;
-        public bool IsCompany{ get; set; } = false;
-
+        public bool IsShared { get; set; } = false; //cho phep share các service loại cần kích hoạt
+   
         public virtual IdentityUser User { get; set; }
         public SubcriptionService SubcriptionService { get; set; }
     }

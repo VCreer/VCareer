@@ -44,67 +44,67 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
   serviceSections: ServiceSection[] = [
-    {
-      title: 'Tăng điểm hiển thị CV',
-      action: SubcriptionContance_ServiceAction.BoostScoreCv,
-      description: 'Tăng điểm hiển thị CV của bạn để xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
-      packages: [
-        {
-          id: 'boost-cv-jobpost',
-          name: 'Tăng điểm CV - Tin tuyển dụng',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Tăng điểm hiển thị CV',
-            'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
-            'Tăng khả năng được nhà tuyển dụng chú ý',
-            'Hiệu quả lâu dài'
-          ],
-          headerColor: '#3b82f6',
-          headerGradientStart: '#3b82f6',
-          headerGradientEnd: '#2563eb',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.BoostScoreCv,
-          target: SubcriptionContance_ServiceTarget.JobPost
-        },
-        {
-          id: 'boost-cv-company',
-          name: 'Tăng điểm CV - Công ty',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Tăng điểm hiển thị CV',
-            'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
-            'Tăng khả năng được nhà tuyển dụng chú ý',
-            'Hiệu quả lâu dài'
-          ],
-          headerColor: '#3b82f6',
-          headerGradientStart: '#3b82f6',
-          headerGradientEnd: '#2563eb',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.BoostScoreCv,
-          target: SubcriptionContance_ServiceTarget.Company
-        },
-        {
-          id: 'boost-cv-cv',
-          name: 'Tăng điểm CV - CV',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Tăng điểm hiển thị CV',
-            'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
-            'Tăng khả năng được nhà tuyển dụng chú ý',
-            'Hiệu quả lâu dài'
-          ],
-          headerColor: '#3b82f6',
-          headerGradientStart: '#3b82f6',
-          headerGradientEnd: '#2563eb',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.BoostScoreCv,
-          target: SubcriptionContance_ServiceTarget.Cv
-        }
-      ]
-    },
+    // {
+    //   title: 'Tăng điểm hiển thị CV',
+    //   action: SubcriptionContance_ServiceAction.BoostScoreCv,
+    //   description: 'Tăng điểm hiển thị CV của bạn để xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
+    //   packages: [
+    //     {
+    //       id: 'boost-cv-jobpost',
+    //       name: 'Tăng điểm CV - Tin tuyển dụng',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Tăng điểm hiển thị CV',
+    //         'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
+    //         'Tăng khả năng được nhà tuyển dụng chú ý',
+    //         'Hiệu quả lâu dài'
+    //       ],
+    //       headerColor: '#3b82f6',
+    //       headerGradientStart: '#3b82f6',
+    //       headerGradientEnd: '#2563eb',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.BoostScoreCv,
+    //       target: SubcriptionContance_ServiceTarget.JobPost
+    //     },
+    //     {
+    //       id: 'boost-cv-company',
+    //       name: 'Tăng điểm CV - Công ty',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Tăng điểm hiển thị CV',
+    //         'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
+    //         'Tăng khả năng được nhà tuyển dụng chú ý',
+    //         'Hiệu quả lâu dài'
+    //       ],
+    //       headerColor: '#3b82f6',
+    //       headerGradientStart: '#3b82f6',
+    //       headerGradientEnd: '#2563eb',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.BoostScoreCv,
+    //       target: SubcriptionContance_ServiceTarget.Company
+    //     },
+    //     {
+    //       id: 'boost-cv-cv',
+    //       name: 'Tăng điểm CV - CV',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Tăng điểm hiển thị CV',
+    //         'Xuất hiện ở vị trí cao hơn trong kết quả tìm kiếm',
+    //         'Tăng khả năng được nhà tuyển dụng chú ý',
+    //         'Hiệu quả lâu dài'
+    //       ],
+    //       headerColor: '#3b82f6',
+    //       headerGradientStart: '#3b82f6',
+    //       headerGradientEnd: '#2563eb',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.BoostScoreCv,
+    //       target: SubcriptionContance_ServiceTarget.Cv
+    //     }
+    //   ]
+    // },
     {
       title: 'Tăng điểm hiển thị Job',
       action: SubcriptionContance_ServiceAction.BoostScoreJob,
@@ -191,99 +191,99 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
         }
       ]
     },
-    {
-      title: 'Gắn badge',
-      action: SubcriptionContance_ServiceAction.VerifiedBadge,
-      description: 'Gắn badge xác thực cho tin tuyển dụng để tăng độ tin cậy',
-      packages: [
-        {
-          id: 'badge-jobpost',
-          name: 'Badge xác thực - Tin tuyển dụng',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Badge xác thực tin tuyển dụng',
-            'Tăng độ tin cậy',
-            'Thu hút ứng viên',
-            'Nổi bật so với đối thủ'
-          ],
-          headerColor: '#8b5cf6',
-          headerGradientStart: '#8b5cf6',
-          headerGradientEnd: '#7c3aed',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.VerifiedBadge,
-          target: SubcriptionContance_ServiceTarget.JobPost
-        },
-        {
-          id: 'badge-company',
-          name: 'Badge xác thực - Công ty',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Badge xác thực công ty',
-            'Tăng độ tin cậy',
-            'Thu hút ứng viên',
-            'Nổi bật so với đối thủ'
-          ],
-          headerColor: '#8b5cf6',
-          headerGradientStart: '#8b5cf6',
-          headerGradientEnd: '#7c3aed',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.VerifiedBadge,
-          target: SubcriptionContance_ServiceTarget.Company
-        }
-      ]
-    },
-    {
-      title: 'Tăng số lượng job được đăng',
-      action: SubcriptionContance_ServiceAction.IncreaseQuota,
-      description: 'Tăng số lượng tin tuyển dụng được phép đăng trong tháng',
-      packages: [
-        {
-          id: 'increase-quota-jobpost',
-          name: 'Tăng hạn mức - Tin tuyển dụng',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Tăng số lượng tin được đăng',
-            'Linh hoạt trong tuyển dụng',
-            'Không giới hạn cơ hội',
-            'Phù hợp doanh nghiệp lớn'
-          ],
-          headerColor: '#ef4444',
-          headerGradientStart: '#ef4444',
-          headerGradientEnd: '#dc2626',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.IncreaseQuota,
-          target: SubcriptionContance_ServiceTarget.JobPost
-        }
-      ]
-    },
-    {
-      title: 'Kéo dài ngày hết hạn job',
-      action: SubcriptionContance_ServiceAction.ExtendExpiredDate,
-      description: 'Kéo dài thời gian hiển thị tin tuyển dụng để có thêm thời gian tuyển dụng',
-      packages: [
-        {
-          id: 'extend-date-jobpost',
-          name: 'Gia hạn ngày hết hạn - Tin tuyển dụng',
-          price: 'Liên hệ',
-          priceNumber: 0,
-          features: [
-            'Gia hạn thời gian đăng tin',
-            'Tăng cơ hội tìm ứng viên',
-            'Tiết kiệm chi phí',
-            'Linh hoạt thời gian'
-          ],
-          headerColor: '#0f83ba',
-          headerGradientStart: '#0f83ba',
-          headerGradientEnd: '#0d6fa0',
-          isVip: false,
-          action: SubcriptionContance_ServiceAction.ExtendExpiredDate,
-          target: SubcriptionContance_ServiceTarget.JobPost
-        }
-      ]
-    }
+    // {
+    //   title: 'Gắn badge',
+    //   action: SubcriptionContance_ServiceAction.VerifiedBadge,
+    //   description: 'Gắn badge xác thực cho tin tuyển dụng để tăng độ tin cậy',
+    //   packages: [
+    //     {
+    //       id: 'badge-jobpost',
+    //       name: 'Badge xác thực - Tin tuyển dụng',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Badge xác thực tin tuyển dụng',
+    //         'Tăng độ tin cậy',
+    //         'Thu hút ứng viên',
+    //         'Nổi bật so với đối thủ'
+    //       ],
+    //       headerColor: '#8b5cf6',
+    //       headerGradientStart: '#8b5cf6',
+    //       headerGradientEnd: '#7c3aed',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.VerifiedBadge,
+    //       target: SubcriptionContance_ServiceTarget.JobPost
+    //     },
+    //     {
+    //       id: 'badge-company',
+    //       name: 'Badge xác thực - Công ty',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Badge xác thực công ty',
+    //         'Tăng độ tin cậy',
+    //         'Thu hút ứng viên',
+    //         'Nổi bật so với đối thủ'
+    //       ],
+    //       headerColor: '#8b5cf6',
+    //       headerGradientStart: '#8b5cf6',
+    //       headerGradientEnd: '#7c3aed',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.VerifiedBadge,
+    //       target: SubcriptionContance_ServiceTarget.Company
+    //     }
+    //   ]
+    // },
+    // {
+    //   title: 'Tăng số lượng job được đăng',
+    //   action: SubcriptionContance_ServiceAction.IncreaseQuota,
+    //   description: 'Tăng số lượng tin tuyển dụng được phép đăng trong tháng',
+    //   packages: [
+    //     {
+    //       id: 'increase-quota-jobpost',
+    //       name: 'Tăng hạn mức - Tin tuyển dụng',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Tăng số lượng tin được đăng',
+    //         'Linh hoạt trong tuyển dụng',
+    //         'Không giới hạn cơ hội',
+    //         'Phù hợp doanh nghiệp lớn'
+    //       ],
+    //       headerColor: '#ef4444',
+    //       headerGradientStart: '#ef4444',
+    //       headerGradientEnd: '#dc2626',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.IncreaseQuota,
+    //       target: SubcriptionContance_ServiceTarget.JobPost
+    //     }
+    //   ]
+    // },
+    // {
+    //   title: 'Kéo dài ngày hết hạn job',
+    //   action: SubcriptionContance_ServiceAction.ExtendExpiredDate,
+    //   description: 'Kéo dài thời gian hiển thị tin tuyển dụng để có thêm thời gian tuyển dụng',
+    //   packages: [
+    //     {
+    //       id: 'extend-date-jobpost',
+    //       name: 'Gia hạn ngày hết hạn - Tin tuyển dụng',
+    //       price: 'Liên hệ',
+    //       priceNumber: 0,
+    //       features: [
+    //         'Gia hạn thời gian đăng tin',
+    //         'Tăng cơ hội tìm ứng viên',
+    //         'Tiết kiệm chi phí',
+    //         'Linh hoạt thời gian'
+    //       ],
+    //       headerColor: '#0f83ba',
+    //       headerGradientStart: '#0f83ba',
+    //       headerGradientEnd: '#0d6fa0',
+    //       isVip: false,
+    //       action: SubcriptionContance_ServiceAction.ExtendExpiredDate,
+    //       target: SubcriptionContance_ServiceTarget.JobPost
+    //     }
+    //   ]
+    // }
   ];
 
   constructor(private router: Router) {}

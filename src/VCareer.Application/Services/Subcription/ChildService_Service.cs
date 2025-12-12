@@ -1,4 +1,5 @@
 ﻿using AutoMapper.Execution;
+using AutoMapper.Internal.Mappers;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using VCareer.Models.Subcription;
 using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Uow;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
@@ -22,25 +24,30 @@ using static VCareer.Constants.JobConstant.SubcriptionContance;
 namespace VCareer.Services.Subcription
 {
     [Route("api/app/childservice-service")]
-    public class ChildService_Service : ApplicationService,IChildService_Service 
+    public class ChildService_Service : ApplicationService, IChildService_Service
     {
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly IUser_ChildServiceRepository _userChildServiceRepository;
         private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
         private readonly ISubcriptionServiceRepository _subcriptionServiceRepository;
         private readonly IJobAffectingService _jobAffectingService;
+        private readonly IChildService_SubcriptionServiceRepository _childService_SubcriptionServiceRepository;
 
         public ChildService_Service(
             IJobAffectingService jobAffectingService,
             IUser_ChildServiceRepository user_ChildServiceRepository,
             ISubcriptionServiceRepository subcriptionServiceRepository,
+            IChildService_SubcriptionServiceRepository childService_SubcriptionServiceRepository,
+            IChildServiceRepository childServiceRepository,
             IEffectingJobServiceRepository effectingJobServiceRepository
             )
         {
             _jobAffectingService = jobAffectingService;
             _userChildServiceRepository = user_ChildServiceRepository;
             _effectingJobServiceRepository = effectingJobServiceRepository;
+            _childServiceRepository = childServiceRepository;
             _subcriptionServiceRepository = subcriptionServiceRepository;
+            _childService_SubcriptionServiceRepository = childService_SubcriptionServiceRepository;
         }
         [HttpPost("create-childservice")]
         [Authorize(VCareerPermission.ChildService.Create)]
@@ -49,26 +56,81 @@ namespace VCareer.Services.Subcription
             if (dto.IsLifeTime && dto.TimeUsedLimit > 0) throw new BusinessException("Can't Have timelimit when IsLifeTime");
             if (dto.IsLifeTime == false && dto.TimeUsedLimit <= 0) throw new BusinessException("Need have timeUsedLimit when not IsLifeTime");
             if (dto.DayDuration < 0 || dto.TimeUsedLimit < 0) throw new BusinessException("DayDuration and TimeUsedLimit must be greater than 0");
-            var newChildService = new ChildService
-            {
-                Action = dto.Action,
-                DayDuration = dto.DayDuration,
-                Description = dto.Description,
-                IsActive = dto.IsActive,
-                IsAutoActive = dto.IsAutoActive,
-                IsLifeTime = dto.IsLifeTime,
-                Name = dto.Name,
-                Target = dto.Target,
-                TimeUsedLimit = dto.TimeUsedLimit,
-                Value = dto.Value,
-            };
+            RuleTypeCreateChildService(dto);
+            var newChildService = ObjectMapper.Map<ChildServiceCreateDto, ChildService>(dto);
             await _childServiceRepository.InsertAsync(newChildService, true);
+        }
+        private void RuleTypeCreateChildService(ChildServiceCreateDto dto)
+        {
+            switch (dto.Action)
+            {
+                case ServiceAction.BoostScoreJob:
+                    dto.DayDuration = dto.DayDuration ?? 0;
+                    dto.Description = dto.Description ?? string.Empty;
+                    dto.IsActive = dto.IsActive;
+                    dto.IsEnable = dto.IsEnable;
+                    dto.IsLifeTime = false;
+                    dto.IsLimitUsedTime = true;
+                    dto.IsAutoActive = false;
+                    dto.Name = dto.Name ?? string.Empty;
+                    dto.Priority = dto.Priority;
+                    dto.TimeUsedLimit = dto.TimeUsedLimit ?? 0;
+                    dto.Value = dto.Value ?? 0;
+                    dto.Target = ServiceTarget.JobPost;
+                    break;
+
+                case ServiceAction.TopList:
+                    dto.DayDuration = dto.DayDuration ?? 0;
+                    dto.Description = dto.Description ?? string.Empty;
+                    dto.IsActive = dto.IsActive;
+                    dto.IsEnable = dto.IsEnable;
+                    dto.IsLifeTime = false;
+                    dto.IsLimitUsedTime = true;
+                    dto.IsAutoActive = false;
+                    dto.Name = dto.Name ?? string.Empty;
+                    dto.Priority = dto.Priority;
+                    dto.TimeUsedLimit = dto.TimeUsedLimit ?? 0;
+                    dto.Value = dto.Value ?? 0;
+                    dto.Target = ServiceTarget.JobPost;
+                    break;
+
+                case ServiceAction.JobBadge:
+                    dto.DayDuration = dto.DayDuration ?? 0;
+                    dto.Description = dto.Description ?? string.Empty;
+                    dto.IsActive = dto.IsActive;
+                    dto.IsEnable = dto.IsEnable;
+                    dto.IsLifeTime = false;
+                    dto.IsLimitUsedTime = true;
+                    dto.IsAutoActive = false;
+                    dto.Name = dto.Name ?? string.Empty;
+                    dto.Priority = null;
+                    dto.TimeUsedLimit = dto.TimeUsedLimit ?? 0;
+                    dto.Value = dto.Value ?? 0;
+                    dto.Target = ServiceTarget.JobPost;
+                    break;
+
+                case ServiceAction.ThemeCompany:
+                    dto.DayDuration = dto.DayDuration ?? 0;
+                    dto.Description = dto.Description ?? string.Empty;
+                    dto.IsActive = dto.IsActive;
+                    dto.IsEnable = dto.IsEnable;
+                    dto.IsLifeTime = false;
+                    dto.IsLimitUsedTime = false;
+                    dto.IsAutoActive = true;
+                    dto.Name = dto.Name ?? string.Empty;
+                    dto.Priority = null;
+                    dto.TimeUsedLimit = null;
+                    dto.Value = dto.Value ?? 0;
+                    dto.Target = ServiceTarget.Company;
+                    break;
+
+            }
         }
 
         //sẽ ko hiển thị để người dùng mới dùng nữa
         //đối với người dùng đã mua gói thì vẫn sẽ cho dùng nốt đến hết hạn 
-        [HttpDelete("delete-childservice")]
-        [Authorize(VCareerPermission.ChildService.Delete)]
+        [HttpPost("set-status-childservice")]
+        [Authorize(VCareerPermission.ChildService.Create)]
         public async Task SetStatusChildServiceAsync(Guid childServiceId, bool status)
         {
             var childService = await _childServiceRepository.FindAsync(childServiceId);
@@ -91,7 +153,7 @@ namespace VCareer.Services.Subcription
 
             //dừng hết các dịch vụ con đang chạy liên quan tới child service này
             await _jobAffectingService.DeactiveAllEffectingJobByChildServiceId(childServiceId);
-         //   await StopUserChildServiceAsync(childServiceId);
+            //   await StopUserChildServiceAsync(childServiceId);
 
             await _childServiceRepository.UpdateAsync(childService, true);
             //gui mail thong bao user
@@ -127,9 +189,19 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(result);
         }
 
-        public Task DeleteChildServiceAsync(Guid childServiceId)
+        [HttpDelete("delete-childservice")]
+        [Authorize(VCareerPermission.ChildService.Delete)]
+        public async Task DeleteChildServiceAsync(Guid childServiceId)
         {
-            throw new NotImplementedException();
+            var childService = await _childServiceRepository.GetAsync(childServiceId);
+            if (childService == null) throw new BusinessException("child service not found");
+            //check xem da tung duoc user nao su dung chua
+            var userChildService = await _userChildServiceRepository.FirstOrDefaultAsync(x => x.ChildServiceId == childServiceId);
+            if (userChildService != null) throw new UserFriendlyException("You can just delete child service that never used");
+            //check xem da dang o trong goi subcription service nao chua
+            var subcirptionChildService = _childService_SubcriptionServiceRepository.FirstOrDefaultAsync(x => x.ChildServiceId == childServiceId);
+            if (subcirptionChildService != null) throw new UserFriendlyException("You can't delete child service that is exist in another subcription service");
+            await _childServiceRepository.DeleteAsync(childServiceId);
         }
     }
 }

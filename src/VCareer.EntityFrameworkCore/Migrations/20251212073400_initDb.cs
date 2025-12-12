@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabaseVcareer : Migration
+    public partial class initDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -515,6 +515,7 @@ namespace VCareer.Migrations
                     Action = table.Column<int>(type: "int", nullable: false),
                     Target = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsEnable = table.Column<bool>(type: "bit", nullable: false),
                     IsLifeTime = table.Column<bool>(type: "bit", nullable: false),
                     IsAutoActive = table.Column<bool>(type: "bit", nullable: false),
                     IsLimitUsedTime = table.Column<bool>(type: "bit", nullable: false),
@@ -774,6 +775,8 @@ namespace VCareer.Migrations
                     OriginalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsLimited = table.Column<bool>(type: "bit", nullable: false),
                     IsBuyLimited = table.Column<bool>(type: "bit", nullable: false),
+                    IShareable = table.Column<bool>(type: "bit", nullable: false),
+                    TotalLimitpackage = table.Column<int>(type: "int", nullable: true),
                     TotalBuyEachUser = table.Column<int>(type: "int", nullable: true),
                     IsLifeTime = table.Column<bool>(type: "bit", nullable: false),
                     DayDuration = table.Column<int>(type: "int", nullable: true),
@@ -1185,6 +1188,7 @@ namespace VCareer.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     IsLifeTime = table.Column<bool>(type: "bit", nullable: false),
                     IsLimitUsedTime = table.Column<bool>(type: "bit", nullable: false),
+                    IsPrimaryOwner = table.Column<bool>(type: "bit", nullable: false),
                     UsedTime = table.Column<int>(type: "int", nullable: true),
                     TotalUsageLimit = table.Column<int>(type: "int", nullable: true),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -1406,6 +1410,7 @@ namespace VCareer.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     status = table.Column<int>(type: "int", nullable: false),
+                    IsShared = table.Column<bool>(type: "bit", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
