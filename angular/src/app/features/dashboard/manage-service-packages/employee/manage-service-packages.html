@@ -1,14 +1,23 @@
-<div class="manage-service-packages-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+<div
+  class="manage-service-packages-page"
+  [style.margin-left]="getPageMarginLeft()"
+  [style.width]="getPageWidth()"
+>
   <!-- Toast Notification -->
   <app-toast-notification
     [show]="showToast"
     [message]="toastMessage"
     [type]="toastType"
-    (close)="onCloseToast()">
+    (close)="onCloseToast()"
+  >
   </app-toast-notification>
 
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+  <div
+    class="breadcrumb-box"
+    [style.left]="getBreadcrumbLeft()"
+    [style.width]="getBreadcrumbWidth()"
+  >
     <div class="breadcrumb-container">
       <div class="breadcrumb-left">
         <span class="breadcrumb-item active">Quản lí</span>
@@ -16,13 +25,10 @@
         <span class="breadcrumb-item">Quản lí các gói dịch vụ</span>
       </div>
     </div>
-    
+
     <!-- Action Buttons -->
     <div class="header-actions">
-      <app-button
-        type="primary"
-        size="medium"
-        (click)="onCreatePackage()">
+      <app-button type="primary" size="medium" (click)="onCreatePackage()">
         <i class="fa fa-plus"></i>
         Tạo gói dịch vụ
       </app-button>
@@ -34,8 +40,7 @@
     <div class="content-card">
       <!-- Tabs -->
       <div class="tabs-container single-tab">
-        <button 
-          class="tab-button active">
+        <button class="tab-button active">
           <i class="fa fa-box"></i>
           <span>Gói dịch vụ</span>
         </button>
@@ -53,7 +58,8 @@
               class="search-input"
               placeholder="Tìm theo tên, mô tả, đối tượng..."
               [(ngModel)]="searchKeyword"
-              (ngModelChange)="onSearchChange()">
+              (ngModelChange)="onSearchChange()"
+            />
           </div>
         </div>
 
@@ -63,7 +69,8 @@
             <app-status-dropdown
               [options]="statusOptions"
               [selectedValue]="filterStatus"
-              (statusChange)="filterStatus = $event; onFilterChange()">
+              (statusChange)="filterStatus = $event; onFilterChange()"
+            >
             </app-status-dropdown>
           </div>
           <div class="filter-group">
@@ -71,7 +78,8 @@
               placeholder="Tất cả loại"
               [options]="typeOptions"
               [(ngModel)]="filterType"
-              (ngModelChange)="onFilterChange()">
+              (ngModelChange)="onFilterChange()"
+            >
             </app-select-field>
           </div>
         </div>
@@ -85,33 +93,63 @@
               <th (click)="onSort('title')" class="sortable">
                 Tên gói
                 <i class="fa fa-sort" *ngIf="sortField !== 'title'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'title' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'title' && sortDirection === 'desc'"></i>
+                <i
+                  class="fa fa-sort-up"
+                  *ngIf="sortField === 'title' && sortDirection === 'asc'"
+                ></i>
+                <i
+                  class="fa fa-sort-down"
+                  *ngIf="sortField === 'title' && sortDirection === 'desc'"
+                ></i>
               </th>
               <th>Mô tả</th>
               <th (click)="onSort('target')" class="sortable">
                 Đối tượng
                 <i class="fa fa-sort" *ngIf="sortField !== 'target'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'target' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'target' && sortDirection === 'desc'"></i>
+                <i
+                  class="fa fa-sort-up"
+                  *ngIf="sortField === 'target' && sortDirection === 'asc'"
+                ></i>
+                <i
+                  class="fa fa-sort-down"
+                  *ngIf="sortField === 'target' && sortDirection === 'desc'"
+                ></i>
               </th>
               <th (click)="onSort('originalPrice')" class="sortable">
                 Giá gốc
                 <i class="fa fa-sort" *ngIf="sortField !== 'originalPrice'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'originalPrice' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'originalPrice' && sortDirection === 'desc'"></i>
+                <i
+                  class="fa fa-sort-up"
+                  *ngIf="sortField === 'originalPrice' && sortDirection === 'asc'"
+                ></i>
+                <i
+                  class="fa fa-sort-down"
+                  *ngIf="sortField === 'originalPrice' && sortDirection === 'desc'"
+                ></i>
               </th>
               <th (click)="onSort('dayDuration')" class="sortable">
                 Thời hạn
                 <i class="fa fa-sort" *ngIf="sortField !== 'dayDuration'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'dayDuration' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'dayDuration' && sortDirection === 'desc'"></i>
+                <i
+                  class="fa fa-sort-up"
+                  *ngIf="sortField === 'dayDuration' && sortDirection === 'asc'"
+                ></i>
+                <i
+                  class="fa fa-sort-down"
+                  *ngIf="sortField === 'dayDuration' && sortDirection === 'desc'"
+                ></i>
               </th>
               <th (click)="onSort('status')" class="sortable">
                 Trạng thái
                 <i class="fa fa-sort" *ngIf="sortField !== 'status'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'status' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'status' && sortDirection === 'desc'"></i>
+                <i
+                  class="fa fa-sort-up"
+                  *ngIf="sortField === 'status' && sortDirection === 'asc'"
+                ></i>
+                <i
+                  class="fa fa-sort-down"
+                  *ngIf="sortField === 'status' && sortDirection === 'desc'"
+                ></i>
               </th>
               <th>Thao tác</th>
             </tr>
@@ -137,17 +175,30 @@
                   <button class="actions-menu-btn" (click)="toggleActionsMenu(pkg.id, $event)">
                     <i class="fa fa-ellipsis-h"></i>
                   </button>
-                  <div 
-                    class="actions-menu" 
+                  <div
+                    class="actions-menu"
                     [class.show]="showActionsMenu === pkg.id"
                     [attr.data-package-id]="pkg.id"
-                    (click)="$event.stopPropagation()">
+                    (click)="$event.stopPropagation()"
+                  >
                     <div class="menu-item" (click)="onEditPackage(pkg); closeActionsMenu()">
                       <i class="fa fa-edit"></i>
                       <span>Chỉnh sửa</span>
                     </div>
+                    <div class="menu-item" (click)="onManageChildServices(pkg); closeActionsMenu()">
+                      <i class="fa fa-link"></i>
+                      <span>Gắn dịch vụ con</span>
+                    </div>
+                    <div class="menu-item" (click)="onManagePrices(pkg)">
+                      <i class="fa fa-dollar-sign"></i>
+                      <span>Quản lý giá</span>
+                    </div>
                     <div class="menu-item" (click)="onToggleActive(pkg); closeActionsMenu()">
-                      <i class="fa" [class.fa-toggle-on]="pkg.isActive" [class.fa-toggle-off]="!pkg.isActive"></i>
+                      <i
+                        class="fa"
+                        [class.fa-toggle-on]="pkg.isActive"
+                        [class.fa-toggle-off]="!pkg.isActive"
+                      ></i>
                       <span>{{ pkg.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
                     </div>
                     <div class="menu-item" (click)="onDeletePackage(pkg); closeActionsMenu()">
@@ -173,7 +224,8 @@
         <app-pagination
           [currentPage]="currentPage"
           [totalPages]="totalPages"
-          (pageChange)="onPageChange($event)">
+          (pageChange)="onPageChange($event)"
+        >
         </app-pagination>
       </div>
     </div>
@@ -186,7 +238,8 @@
   title="Tạo gói dịch vụ"
   [maxWidth]="'800px'"
   [bodyBackground]="'white'"
-  (close)="showCreatePackageModal = false">
+  (close)="showCreatePackageModal = false"
+>
   <div class="modal-content-wrapper">
     <!-- Tên gói -->
     <div class="form-group">
@@ -195,9 +248,12 @@
         type="text"
         placeholder="Nhập tên gói dịch vụ"
         [(ngModel)]="packageForm.title"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['title']">{{ validationErrors['title'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['title']">
+        {{ validationErrors['title'] }}
+      </div>
     </div>
 
     <!-- Mô tả -->
@@ -207,9 +263,12 @@
         type="text"
         placeholder="Nhập mô tả gói dịch vụ"
         [(ngModel)]="packageForm.description"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['description']">{{ validationErrors['description'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['description']">
+        {{ validationErrors['description'] }}
+      </div>
     </div>
 
     <!-- Đối tượng và Trạng thái -->
@@ -221,7 +280,8 @@
           [options]="typeOptions"
           [(ngModel)]="packageFormTargetString"
           (ngModelChange)="onTargetChange()"
-          [required]="true">
+          [required]="true"
+        >
         </app-select-field>
       </div>
       <div class="form-group">
@@ -230,7 +290,8 @@
           placeholder="Chọn trạng thái"
           [options]="createStatusOptions"
           [(ngModel)]="packageFormStatusString"
-          [required]="true">
+          [required]="true"
+        >
         </app-select-field>
       </div>
     </div>
@@ -242,22 +303,33 @@
         type="number"
         placeholder="Nhập giá gốc"
         [(ngModel)]="packageForm.originalPrice"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['originalPrice']">{{ validationErrors['originalPrice'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['originalPrice']">
+        {{ validationErrors['originalPrice'] }}
+      </div>
     </div>
 
     <!-- Checkbox options row 1 -->
     <div class="form-row">
       <div class="form-group checkbox-group">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="packageForm.isLimited" (ngModelChange)="onIsLimitedChange()">
+          <input
+            type="checkbox"
+            [(ngModel)]="packageForm.isLimited"
+            (ngModelChange)="onIsLimitedChange()"
+          />
           <span>Giới hạn số lượng gói (toàn bộ)</span>
         </label>
       </div>
       <div class="form-group checkbox-group">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="packageForm.isBuyLimited" [disabled]="packageForm.isLifeTime">
+          <input
+            type="checkbox"
+            [(ngModel)]="packageForm.isBuyLimited"
+            [disabled]="packageForm.isLifeTime"
+          />
           <span>Giới hạn số lượt mua (mỗi người)</span>
         </label>
       </div>
@@ -270,9 +342,12 @@
         type="number"
         placeholder="Nhập tổng số lượng"
         [(ngModel)]="packageForm.totalLimitpackage"
-        [required]="packageForm.isLimited">
+        [required]="packageForm.isLimited"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['totalLimitpackage']">{{ validationErrors['totalLimitpackage'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['totalLimitpackage']">
+        {{ validationErrors['totalLimitpackage'] }}
+      </div>
     </div>
 
     <!-- Số lượt mua tối đa của mỗi người -->
@@ -283,15 +358,21 @@
         placeholder="Nhập số lượt"
         [(ngModel)]="packageForm.totalBuyEachUser"
         [required]="packageForm.isBuyLimited"
-        [disabled]="packageForm.isLifeTime">
+        [disabled]="packageForm.isLifeTime"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['totalBuyEachUser']">{{ validationErrors['totalBuyEachUser'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['totalBuyEachUser']">
+        {{ validationErrors['totalBuyEachUser'] }}
+      </div>
     </div>
 
     <!-- iShareable checkbox (chỉ hiện với Recruiter) -->
-    <div class="form-group checkbox-group" *ngIf="packageFormTargetString === String(SubcriptionContance_SubcriptorTarget.Recruiter)">
+    <div
+      class="form-group checkbox-group"
+      *ngIf="packageFormTargetString === String(SubcriptionContance_SubcriptorTarget.Recruiter)"
+    >
       <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="packageForm.iShareable">
+        <input type="checkbox" [(ngModel)]="packageForm.iShareable" />
         <span>Cho phép chia sẻ</span>
       </label>
     </div>
@@ -299,7 +380,11 @@
     <!-- Vĩnh viễn -->
     <div class="form-group checkbox-group">
       <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="packageForm.isLifeTime" (ngModelChange)="onLifeTimeChange()">
+        <input
+          type="checkbox"
+          [(ngModel)]="packageForm.isLifeTime"
+          (ngModelChange)="onLifeTimeChange()"
+        />
         <span>Vĩnh viễn</span>
       </label>
     </div>
@@ -311,9 +396,12 @@
         type="number"
         placeholder="Nhập số ngày"
         [(ngModel)]="packageForm.dayDuration"
-        [required]="!packageForm.isLifeTime">
+        [required]="!packageForm.isLifeTime"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['dayDuration']">{{ validationErrors['dayDuration'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['dayDuration']">
+        {{ validationErrors['dayDuration'] }}
+      </div>
     </div>
 
     <!-- Thông báo khi chọn vĩnh viễn -->
@@ -327,24 +415,22 @@
     <!-- Kích hoạt -->
     <div class="form-group checkbox-group">
       <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="packageForm.isActive">
+        <input type="checkbox" [(ngModel)]="packageForm.isActive" />
         <span>Kích hoạt ngay</span>
       </label>
     </div>
 
     <!-- Modal Actions -->
     <div class="modal-actions">
-      <app-button
-        type="secondary"
-        size="medium"
-        (click)="showCreatePackageModal = false">
+      <app-button type="secondary" size="medium" (click)="showCreatePackageModal = false">
         Hủy
       </app-button>
       <app-button
         type="primary"
         size="medium"
         [disabled]="isSavingPackage"
-        (click)="onConfirmCreatePackage()">
+        (click)="onConfirmCreatePackage()"
+      >
         Tạo gói
       </app-button>
     </div>
@@ -357,7 +443,8 @@
   title="Chỉnh sửa gói dịch vụ"
   [maxWidth]="'800px'"
   [bodyBackground]="'white'"
-  (close)="showEditPackageModal = false">
+  (close)="showEditPackageModal = false"
+>
   <div class="modal-content-wrapper">
     <!-- Tên gói -->
     <div class="form-group">
@@ -366,9 +453,12 @@
         type="text"
         placeholder="Nhập tên gói dịch vụ"
         [(ngModel)]="packageForm.title"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['title']">{{ validationErrors['title'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['title']">
+        {{ validationErrors['title'] }}
+      </div>
     </div>
 
     <!-- Mô tả -->
@@ -378,9 +468,12 @@
         type="text"
         placeholder="Nhập mô tả gói dịch vụ"
         [(ngModel)]="packageForm.description"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['description']">{{ validationErrors['description'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['description']">
+        {{ validationErrors['description'] }}
+      </div>
     </div>
 
     <!-- Đối tượng và Trạng thái (readonly) -->
@@ -391,7 +484,9 @@
       </div>
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
-        <div class="readonly-field" *ngIf="selectedPackage">{{ getStatusLabel(selectedPackage) }}</div>
+        <div class="readonly-field" *ngIf="selectedPackage">
+          {{ getStatusLabel(selectedPackage) }}
+        </div>
         <div class="readonly-field" *ngIf="!selectedPackage">-</div>
       </div>
     </div>
@@ -427,7 +522,10 @@
     </div>
 
     <!-- iShareable (readonly) -->
-    <div class="form-group" *ngIf="packageForm.target === SubcriptionContance_SubcriptorTarget.Recruiter">
+    <div
+      class="form-group"
+      *ngIf="packageForm.target === SubcriptionContance_SubcriptorTarget.Recruiter"
+    >
       <label class="form-label">Cho phép chia sẻ</label>
       <div class="readonly-field">{{ packageForm.iShareable ? 'Có' : 'Không' }}</div>
     </div>
@@ -445,33 +543,155 @@
         type="number"
         placeholder="Nhập số ngày"
         [(ngModel)]="packageForm.dayDuration"
-        [required]="!packageForm.isLifeTime">
+        [required]="!packageForm.isLifeTime"
+      >
       </app-input-field>
-      <div class="field-error" *ngIf="validationErrors['dayDuration']">{{ validationErrors['dayDuration'] }}</div>
+      <div class="field-error" *ngIf="validationErrors['dayDuration']">
+        {{ validationErrors['dayDuration'] }}
+      </div>
     </div>
 
     <!-- Kích hoạt -->
     <div class="form-group checkbox-group">
       <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="packageForm.isActive">
+        <input type="checkbox" [(ngModel)]="packageForm.isActive" />
         <span>Kích hoạt</span>
       </label>
     </div>
 
     <!-- Modal Actions -->
     <div class="modal-actions">
-      <app-button
-        type="secondary"
-        size="medium"
-        (click)="showEditPackageModal = false">
+      <app-button type="secondary" size="medium" (click)="showEditPackageModal = false">
         Hủy
       </app-button>
       <app-button
         type="primary"
         size="medium"
         [disabled]="isSavingPackageEdit"
-        (click)="onConfirmEditPackage()">
+        (click)="onConfirmEditPackage()"
+      >
         Cập nhật
+      </app-button>
+    </div>
+  </div>
+</app-generic-modal>
+
+<!-- Manage Child Services Modal -->
+<app-generic-modal
+  [show]="showManageChildServicesModal"
+  title="Gắn dịch vụ con"
+  [maxWidth]="'900px'"
+  [bodyBackground]="'white'"
+  (close)="showManageChildServicesModal = false"
+>
+  <div class="modal-content-wrapper">
+    <!-- Package Info -->
+    <div class="package-info-section" *ngIf="selectedPackage">
+      <h4 class="section-title">Gói dịch vụ: {{ selectedPackage.title }}</h4>
+      <p class="section-description">Chọn các dịch vụ con để gắn vào gói dịch vụ này</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoadingChildServices">
+      <i class="fa fa-spinner fa-spin"></i>
+      <p>Đang tải danh sách dịch vụ con...</p>
+    </div>
+
+    <!-- Child Services List -->
+    <div class="child-services-container" *ngIf="!isLoadingChildServices">
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="groupedChildServices.length === 0">
+        <i class="fa fa-inbox"></i>
+        <p>Không có dịch vụ con nào khả dụng</p>
+      </div>
+
+      <!-- Grouped Services -->
+      <div class="service-groups" *ngIf="groupedChildServices.length > 0">
+        <div class="service-group" *ngFor="let group of groupedChildServices">
+          <!-- Group Header -->
+          <div class="group-header" (click)="toggleActionGroup(group)">
+            <div class="group-title-section">
+              <i
+                class="fa"
+                [class.fa-chevron-right]="!group.expanded"
+                [class.fa-chevron-down]="group.expanded"
+              ></i>
+              <h5 class="group-title">{{ group.actionLabel }}</h5>
+              <span class="service-count">({{ group.services.length }} dịch vụ)</span>
+            </div>
+            <div class="group-actions">
+              <span class="selected-badge" *ngIf="getSelectedServicesCount(group) > 0">
+                {{ getSelectedServicesCount(group) }} đã chọn
+              </span>
+            </div>
+          </div>
+
+          <!-- Group Content -->
+          <div class="group-content" *ngIf="group.expanded">
+            <div
+              class="service-item"
+              *ngFor="let service of group.services"
+              [class.selected]="isServiceSelected(group, service.id)"
+              (click)="toggleServiceSelection(group, service.id)"
+            >
+              <div class="service-checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="isServiceSelected(group, service.id)"
+                  (click)="$event.stopPropagation()"
+                />
+              </div>
+              <div class="service-info">
+                <div class="service-name">{{ service.name }}</div>
+                <div class="service-description">{{ service.description }}</div>
+                <div class="service-meta">
+                  <span class="meta-item" *ngIf="service.isLifeTime">
+                    <i class="fa fa-infinity"></i> Vĩnh viễn
+                  </span>
+                  <span class="meta-item" *ngIf="!service.isLifeTime && service.dayDuration">
+                    <i class="fa fa-calendar"></i> {{ service.dayDuration }} ngày
+                  </span>
+                  <span class="meta-item" *ngIf="service.isLimitUsedTime && service.timeUsedLimit">
+                    <i class="fa fa-clock"></i> {{ service.timeUsedLimit }} lượt
+                  </span>
+                  <span class="meta-item" *ngIf="service.value">
+                    <i class="fa fa-star"></i> Giá trị: {{ service.value }}
+                  </span>
+                </div>
+              </div>
+              <div class="service-status">
+                <i class="fa fa-check-circle" *ngIf="isServiceSelected(group, service.id)"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div
+      class="selection-summary"
+      *ngIf="!isLoadingChildServices && groupedChildServices.length > 0"
+    >
+      <div class="summary-content">
+        <i class="fa fa-info-circle"></i>
+        <span>Đã chọn {{ getTotalSelectedServices() }} dịch vụ con</span>
+      </div>
+    </div>
+
+    <!-- Modal Actions -->
+    <div class="modal-actions">
+      <app-button type="secondary" size="medium" (click)="showManageChildServicesModal = false">
+        Hủy
+      </app-button>
+      <app-button
+        type="primary"
+        size="medium"
+        [disabled]="isSavingChildServices || getTotalSelectedServices() === 0"
+        (click)="onConfirmAttachChildServices()"
+      >
+        <i class="fa fa-link"></i>
+        Gắn dịch vụ ({{ getTotalSelectedServices() }})
       </app-button>
     </div>
   </div>

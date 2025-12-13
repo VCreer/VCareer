@@ -12,17 +12,33 @@ import {
   StatusOption,
   SelectOption
 } from '../../../../shared/components';
+import { Router } from '@angular/router';
 import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { ChildService_Service } from 'src/app/proxy/services/subcription';
 import { 
   SubcriptionsCreateDto, 
   SubcriptionsUpdateDto, 
-  SubcriptionsViewDto 
+  SubcriptionsViewDto,
+  ChildServiceGetDto,
+  ChildServiceViewDto,
+  AddChildServicesDto
 } from 'src/app/proxy/dto/subcriptions/models';
+import { PagingDto } from 'src/app/proxy/iservices/common/models';
 import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { 
   SubcriptionContance_SubcriptorTarget, 
-  SubcriptionContance_SubcriptionStatus 
+  SubcriptionContance_SubcriptionStatus,
+  SubcriptionContance_ServiceAction
 } from 'src/app/proxy/constants/job-constant';
+
+interface GroupedChildServices {
+  action: SubcriptionContance_ServiceAction;
+  actionLabel: string;
+  services: ChildServiceViewDto[];
+  expanded: boolean;
+  selectedServices: Set<string>;
+}
 
 @Component({
   selector: 'app-manage-service-packages',
@@ -45,7 +61,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   // Expose enums to template
   SubcriptionContance_SubcriptorTarget = SubcriptionContance_SubcriptorTarget;
   SubcriptionContance_SubcriptionStatus = SubcriptionContance_SubcriptionStatus;
-  String = String; // Expose String constructor to template
+  SubcriptionContance_ServiceAction = SubcriptionContance_ServiceAction;
+  String = String;
 
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
@@ -73,7 +90,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     { value: String(SubcriptionContance_SubcriptionStatus.Cancelled), label: 'Đã hủy' }
   ];
 
-  // Chỉ cho phép chọn Active và Inactive khi tạo/sửa
   createStatusOptions: SelectOption[] = [
     { value: String(SubcriptionContance_SubcriptionStatus.Inactive), label: 'Chưa hoạt động' },
     { value: String(SubcriptionContance_SubcriptionStatus.Active), label: 'Đang hoạt động' }
@@ -81,7 +97,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
   typeOptions: SelectOption[] = [
     { value: '', label: 'Tất cả đối tượng' },
-    { value: String(SubcriptionContance_SubcriptorTarget.Candidate), label: 'Ứng viên' },
     { value: String(SubcriptionContance_SubcriptorTarget.Recruiter), label: 'Nhà tuyển dụng' }
   ];
 
@@ -100,18 +115,25 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   isLoadingPackages = false;
   isSavingPackage = false;
   isSavingPackageEdit = false;
+  isLoadingChildServices = false;
+  isSavingChildServices = false;
   validationErrors: Record<string, string> = {};
 
   // Package Form
   packageForm: SubcriptionsCreateDto = this.getDefaultPackageForm();
-  
-  // String bindings for select fields
   packageFormTargetString: string = '';
   packageFormStatusString: string = '';
 
+  // Child Services Management
+  groupedChildServices: GroupedChildServices[] = [];
+  allChildServices: ChildServiceViewDto[] = [];
+  existingChildServices: ChildServiceViewDto[] = [];
+
   constructor(
     private cdr: ChangeDetectorRef,
-    private subcriptionService: SubcriptionService_Service
+    private subcriptionService: SubcriptionService_Service,
+    private childServiceService: ChildService_Service,
+     private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -288,22 +310,18 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     const target = Number(this.packageFormTargetString) as SubcriptionContance_SubcriptorTarget;
     
     if (target === SubcriptionContance_SubcriptorTarget.Candidate) {
-      // Candidate: iShareable = false
       this.packageForm.iShareable = false;
     } else if (target === SubcriptionContance_SubcriptorTarget.Recruiter) {
-      // Recruiter: Có thể tùy chỉnh
       this.packageForm.iShareable = false;
     }
   }
 
   onLifeTimeChange(): void {
     if (this.packageForm.isLifeTime) {
-      // isLifeTime = true -> dayDuration = undefined, isBuyLimited = true, totalBuyEachUser = 1 (locked)
       this.packageForm.dayDuration = undefined;
       this.packageForm.isBuyLimited = true;
       this.packageForm.totalBuyEachUser = 1;
     } else {
-      // isLifeTime = false -> có thể nhập dayDuration
       this.packageForm.dayDuration = undefined;
       this.packageForm.isBuyLimited = false;
       this.packageForm.totalBuyEachUser = 0;
@@ -421,11 +439,166 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Child Services Management
   onManageChildServices(pkg: SubcriptionsViewDto): void {
     this.selectedPackage = pkg;
     this.showManageChildServicesModal = true;
-    this.showToastMessage('Chức năng gắn dịch vụ con đang được phát triển', 'info');
+    this.loadChildServices();
     this.closeActionsMenu();
+  }
+
+  onManagePrices(pkg: SubcriptionsViewDto): void {
+  this.router.navigate(['/employee/service-price-list', pkg.id]);
+  this.closeActionsMenu();
+}
+
+  loadChildServices(): void {
+    if (!this.selectedPackage?.id) return;
+
+    this.isLoadingChildServices = true;
+    
+    const getDto: ChildServiceGetDto = {
+      isActive: true,
+      pagingDto: {
+        skipCount: 0,
+        maxResultCount: 1000
+      } as unknown as PagingDto
+    };
+
+    // Load cả 2: danh sách tất cả child services VÀ child services đã có của package
+    const allServices$ = this.childServiceService.getChildServices(getDto);
+    const existingServices$ = this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
+      this.selectedPackage.id,
+      true
+    );
+
+    forkJoin({
+      allServices: allServices$,
+      existingServices: existingServices$
+    })
+      .pipe(finalize(() => {
+        this.isLoadingChildServices = false;
+      }))
+      .subscribe({
+        next: (result) => {
+          this.allChildServices = result.allServices;
+          this.existingChildServices = result.existingServices;
+          this.groupServicesByAction();
+        },
+        error: (error) => {
+          console.error('Error loading child services:', error);
+          this.showToastMessage('Không thể tải danh sách dịch vụ con', 'error');
+          this.allChildServices = [];
+          this.existingChildServices = [];
+          this.groupedChildServices = [];
+        }
+      });
+  }
+
+  groupServicesByAction(): void {
+    const grouped = new Map<SubcriptionContance_ServiceAction, ChildServiceViewDto[]>();
+
+    this.allChildServices.forEach(service => {
+      if (service.action !== undefined) {
+        if (!grouped.has(service.action)) {
+          grouped.set(service.action, []);
+        }
+        grouped.get(service.action)!.push(service);
+      }
+    });
+
+    // Tạo Set chứa các ID của child services đã tồn tại
+    const existingServiceIds = new Set(
+      this.existingChildServices
+        .map(s => s.id)
+        .filter((id): id is string => id !== undefined)
+    );
+
+    this.groupedChildServices = Array.from(grouped.entries()).map(([action, services]) => {
+      const selectedServices = new Set<string>();
+      
+      // Tự động đánh dấu các services đã tồn tại
+      services.forEach(service => {
+        if (service.id && existingServiceIds.has(service.id)) {
+          selectedServices.add(service.id);
+        }
+      });
+
+      return {
+        action,
+        actionLabel: this.getServiceActionLabel(action),
+        services,
+        expanded: false,
+        selectedServices
+      };
+    });
+  }
+
+  toggleActionGroup(group: GroupedChildServices): void {
+    group.expanded = !group.expanded;
+  }
+
+  toggleServiceSelection(group: GroupedChildServices, serviceId: string | undefined): void {
+    if (!serviceId) return;
+
+    if (group.selectedServices.has(serviceId)) {
+      group.selectedServices.delete(serviceId);
+    } else {
+      group.selectedServices.add(serviceId);
+    }
+  }
+
+  isServiceSelected(group: GroupedChildServices, serviceId: string | undefined): boolean {
+    if (!serviceId) return false;
+    return group.selectedServices.has(serviceId);
+  }
+
+  getSelectedServicesCount(group: GroupedChildServices): number {
+    return group.selectedServices.size;
+  }
+
+  getTotalSelectedServices(): number {
+    return this.groupedChildServices.reduce((total, group) => total + group.selectedServices.size, 0);
+  }
+
+  onConfirmAttachChildServices(): void {
+    if (this.isSavingChildServices || !this.selectedPackage) {
+      return;
+    }
+
+    const allSelectedIds: string[] = [];
+    this.groupedChildServices.forEach(group => {
+      group.selectedServices.forEach(id => allSelectedIds.push(id));
+    });
+
+    if (allSelectedIds.length === 0) {
+      this.showToastMessage('Vui lòng chọn ít nhất một dịch vụ con', 'warning');
+      return;
+    }
+
+    this.isSavingChildServices = true;
+
+    const addDto: AddChildServicesDto = {
+      subcriptionId: this.selectedPackage.id,
+      childServiceIds: allSelectedIds
+    };
+
+    this.subcriptionService.addChildService(addDto)
+      .pipe(finalize(() => {
+        setTimeout(() => (this.isSavingChildServices = false), 250);
+      }))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Gắn dịch vụ con thành công', 'success');
+          this.showManageChildServicesModal = false;
+          this.loadPackages();
+        },
+        error: (error) => {
+          console.error('Error attaching child services:', error);
+          const errorMsg = error?.error?.error?.message || 'Không thể gắn dịch vụ con';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
   }
 
   onToggleActive(pkg: SubcriptionsViewDto): void {
@@ -624,7 +797,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   getTargetLabel(target: SubcriptionContance_SubcriptorTarget | undefined): string {
     if (target === undefined) return 'Không xác định';
     const labels: { [key: number]: string } = {
-      [SubcriptionContance_SubcriptorTarget.Candidate]: 'Ứng viên',
       [SubcriptionContance_SubcriptorTarget.Recruiter]: 'Nhà tuyển dụng'
     };
     return labels[target] || 'Không xác định';
@@ -633,10 +805,21 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   getTargetClass(target: SubcriptionContance_SubcriptorTarget | undefined): string {
     if (target === undefined) return '';
     const classes: { [key: number]: string } = {
-      [SubcriptionContance_SubcriptorTarget.Candidate]: 'target-candidate',
       [SubcriptionContance_SubcriptorTarget.Recruiter]: 'target-recruiter'
     };
     return classes[target] || '';
+  }
+
+  
+
+  getServiceActionLabel(action: SubcriptionContance_ServiceAction): string {
+    const labels: { [key: number]: string } = {
+      [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm tin tuyển dụng',
+      [SubcriptionContance_ServiceAction.TopList]: 'Đẩy tin lên đầu',
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Huy hiệu tin tuyển dụng',
+      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Giao diện công ty'
+    };
+    return labels[action] || 'Không xác định';
   }
 
   formatPrice(price: number): string {

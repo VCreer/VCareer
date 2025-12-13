@@ -81,7 +81,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   targetOptions: SelectOption[] = [
     { value: '', label: 'Tất cả đối tượng' },
     { value: String(SubcriptionContance_ServiceTarget.JobPost), label: 'Tin tuyển dụng' },
-    { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
+ //   { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
   ];
 
   formTargetOptions: SelectOption[] = [];
@@ -160,7 +160,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     this.formTargetOptions = [
       { value: '', label: 'Chọn đối tượng' },
       { value: String(SubcriptionContance_ServiceTarget.JobPost), label: 'Tin tuyển dụng' },
-      { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
+   //   { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
     ];
 
     this.formPriorityOptions = [
@@ -180,7 +180,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       { value: String(SubcriptionContance_ServiceAction.BoostScoreJob), label: 'Tăng điểm Job' },
       { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
       { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' },
-      { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
+    //  { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
     ];
   }
 
@@ -360,7 +360,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     } else if (target === SubcriptionContance_ServiceTarget.Company) {
       this.formActionOptions = [
         { value: '', label: 'Chọn hành động' },
-        { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
+ //       { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
       ];
     } else {
       this.formActionOptions = [
@@ -736,7 +736,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm Job',
       [SubcriptionContance_ServiceAction.TopList]: 'Top danh sách',
       [SubcriptionContance_ServiceAction.JobBadge]: 'Badge Job',
-      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Theme công ty'
+     [SubcriptionContance_ServiceAction.ThemeCompany]: 'Theme công ty'
     };
     return labels[action] || 'Không xác định';
   }

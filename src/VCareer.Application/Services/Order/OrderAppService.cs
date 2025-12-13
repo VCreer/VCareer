@@ -328,6 +328,7 @@ namespace VCareer.Services.Order
                         UserId = _currentUser.Id.Value
                     });
                 }
+                await _cartService.ClearCartAsync();
             }
             else
             {

@@ -295,13 +295,6 @@ export const APP_ROUTES: Routes = [
           import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
       },
       {
-        path: 'service-price-list',
-        loadComponent: () =>
-          import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
-            c => c.ServicePriceListComponent
-          ),
-      },
-      {
         path: 'terms-of-service',
         loadComponent: () =>
           import('./features/dashboard/terms-of-service/recruiter/terms-of-service').then(
@@ -468,6 +461,13 @@ export const APP_ROUTES: Routes = [
           import(
             './features/dashboard/manage-recruitment-information/employee/employee-job-management'
           ).then(c => c.EmployeeJobManagementComponent),
+      },
+       {
+        path: 'service-price-list/:id',
+        loadComponent: () =>
+          import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
+            c => c.ServicePriceListComponent
+          ),
       },
       {
         path: 'manage-recruitment-information-detail',
