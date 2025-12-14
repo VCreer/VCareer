@@ -28,6 +28,25 @@ export const APP_ROUTES: Routes = [
         loadComponent: () =>
           import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       },
+       {
+        path: 'company',
+        loadComponent: () =>
+          import('./features/dashboard/company/candidate/company-listing').then(
+            c => c.CompanyListingComponent
+          ),
+      },
+       {
+        path: 'about-us',
+        loadComponent: () =>
+          import('./features/dashboard/about-us/candidate/about-us').then(
+            c => c.CandidateAboutUsComponent
+          ),
+      },
+        {
+        path: 'contact',
+        loadComponent: () =>
+          import('./features/contact/candidate/contact').then(c => c.ContactComponent),
+      },
     ],
   },
 
@@ -175,13 +194,7 @@ export const APP_ROUTES: Routes = [
             c => c.UploadedCvViewComponent
           ),
       },
-      {
-        path: 'company',
-        loadComponent: () =>
-          import('./features/dashboard/company/candidate/company-listing').then(
-            c => c.CompanyListingComponent
-          ),
-      },
+     
       {
         path: 'companies',
         redirectTo: 'company',
@@ -219,18 +232,6 @@ export const APP_ROUTES: Routes = [
           import('./features/dashboard/save-jobs/candidate/saved-jobs').then(
             c => c.SavedJobsComponent
           ),
-      },
-      {
-        path: 'about-us',
-        loadComponent: () =>
-          import('./features/dashboard/about-us/candidate/about-us').then(
-            c => c.CandidateAboutUsComponent
-          ),
-      },
-      {
-        path: 'contact',
-        loadComponent: () =>
-          import('./features/contact/candidate/contact').then(c => c.ContactComponent),
       },
       {
         path: 'applied-jobs',
@@ -458,7 +459,7 @@ export const APP_ROUTES: Routes = [
           ).then(c => c.EmployeeJobManagementComponent),
       },
       {
-        path: 'service-price-list/:id',
+        path: 'service-price-list',
         loadComponent: () =>
           import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
             c => c.ServicePriceListComponent

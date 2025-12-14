@@ -58,7 +58,6 @@ interface GroupedChildServices {
   styleUrls: ['./manage-service-packages.scss']
 })
 export class ManageServicePackagesComponent implements OnInit, OnDestroy {
-  // Expose enums to template
   SubcriptionContance_SubcriptorTarget = SubcriptionContance_SubcriptorTarget;
   SubcriptionContance_SubcriptionStatus = SubcriptionContance_SubcriptionStatus;
   SubcriptionContance_ServiceAction = SubcriptionContance_ServiceAction;
@@ -85,9 +84,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   statusOptions: StatusOption[] = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: String(SubcriptionContance_SubcriptionStatus.Active), label: 'Đang hoạt động' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Inactive), label: 'Ngừng hoạt động' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Expired), label: 'Hết hạn' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Cancelled), label: 'Đã hủy' }
+    { value: String(SubcriptionContance_SubcriptionStatus.Inactive), label: 'Ngừng hoạt động' }
   ];
 
   createStatusOptions: SelectOption[] = [
@@ -119,12 +116,10 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   isSavingChildServices = false;
   validationErrors: Record<string, string> = {};
 
-  // Package Form
   packageForm: SubcriptionsCreateDto = this.getDefaultPackageForm();
   packageFormTargetString: string = '';
   packageFormStatusString: string = '';
 
-  // Child Services Management
   groupedChildServices: GroupedChildServices[] = [];
   allChildServices: ChildServiceViewDto[] = [];
   existingChildServices: ChildServiceViewDto[] = [];
@@ -133,7 +128,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private subcriptionService: SubcriptionService_Service,
     private childServiceService: ChildService_Service,
-     private router: Router
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -234,11 +229,17 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     }
 
     if (this.filterStatus) {
-      result = result.filter(p => p.status === Number(this.filterStatus));
+      const filterStatusNum = Number(this.filterStatus);
+      result = result.filter(p => 
+        (p.status ?? SubcriptionContance_SubcriptionStatus.Inactive) === filterStatusNum
+      );
     }
 
     if (this.filterType) {
-      result = result.filter(p => p.target === Number(this.filterType));
+      const filterTypeNum = Number(this.filterType);
+      result = result.filter(p => 
+        (p.target ?? SubcriptionContance_SubcriptorTarget.Recruiter) === filterTypeNum
+      );
     }
 
     result.sort((a, b) => {
@@ -295,7 +296,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.updatePagination();
   }
 
-  // CRUD Actions
   onCreatePackage(): void {
     this.resetPackageForm();
     this.resetValidationErrors();
@@ -387,8 +387,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       originalPrice: pkg.originalPrice,
       isLimited: pkg.isLimited,
       isBuyLimited: pkg.isBuyLimited,
-      iShareable: false,
-      totalLimitpackage: undefined,
+      iShareable: pkg.iShareable,
+      totalLimitpackage: pkg.totalLimitpackage,
       totalBuyEachUser: pkg.totalBuyEachUser,
       isLifeTime: pkg.isLifeTime,
       dayDuration: pkg.dayDuration,
@@ -439,7 +439,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Child Services Management
   onManageChildServices(pkg: SubcriptionsViewDto): void {
     this.selectedPackage = pkg;
     this.showManageChildServicesModal = true;
@@ -448,9 +447,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onManagePrices(pkg: SubcriptionsViewDto): void {
-  this.router.navigate(['/employee/service-price-list', pkg.id]);
-  this.closeActionsMenu();
-}
+    this.router.navigate(['/employee/service-price-list', pkg.id]);
+    this.closeActionsMenu();
+  }
 
   loadChildServices(): void {
     if (!this.selectedPackage?.id) return;
@@ -465,7 +464,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       } as unknown as PagingDto
     };
 
-    // Load cả 2: danh sách tất cả child services VÀ child services đã có của package
     const allServices$ = this.childServiceService.getChildServices(getDto);
     const existingServices$ = this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
       this.selectedPackage.id,
@@ -507,7 +505,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Tạo Set chứa các ID của child services đã tồn tại
     const existingServiceIds = new Set(
       this.existingChildServices
         .map(s => s.id)
@@ -517,7 +514,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.groupedChildServices = Array.from(grouped.entries()).map(([action, services]) => {
       const selectedServices = new Set<string>();
       
-      // Tự động đánh dấu các services đã tồn tại
       services.forEach(service => {
         if (service.id && existingServiceIds.has(service.id)) {
           selectedServices.add(service.id);
@@ -667,7 +663,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (this.packageForm.originalPrice === null || this.packageForm.originalPrice === undefined || this.packageForm.originalPrice < 0) {
+    if (this.packageForm.originalPrice < 0) {
       errors['originalPrice'] = 'Giá gốc phải lớn hơn hoặc bằng 0';
       isValid = false;
     }
@@ -677,7 +673,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (this.packageForm.isBuyLimited && (!this.packageForm.totalBuyEachUser || this.packageForm.totalBuyEachUser <= 0)) {
+    if (this.packageForm.isBuyLimited && this.packageForm.totalBuyEachUser <= 0) {
       errors['totalBuyEachUser'] = 'Vui lòng nhập số lượng tối đa mua của mỗi cá nhân';
       isValid = false;
     }
@@ -695,7 +691,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.validationErrors = {};
   }
 
-  // Actions Menu
   toggleActionsMenu(itemId: string | undefined, event: Event): void {
     if (!itemId) return;
     
@@ -773,25 +768,22 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.checkSidebarState();
   }
 
-  // Helper methods
   getStatusLabel(pkg: SubcriptionsViewDto): string {
+    const status = pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive;
     const labels: { [key: number]: string } = {
       [SubcriptionContance_SubcriptionStatus.Active]: 'Đang hoạt động',
-      [SubcriptionContance_SubcriptionStatus.Inactive]: 'Ngừng hoạt động',
-      [SubcriptionContance_SubcriptionStatus.Expired]: 'Hết hạn',
-      [SubcriptionContance_SubcriptionStatus.Cancelled]: 'Đã hủy'
+      [SubcriptionContance_SubcriptionStatus.Inactive]: 'Ngừng hoạt động'
     };
-    return labels[pkg.status!] || 'Không xác định';
+    return labels[status] || 'Không xác định';
   }
 
   getStatusClass(pkg: SubcriptionsViewDto): string {
+    const status = pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive;
     const classes: { [key: number]: string } = {
       [SubcriptionContance_SubcriptionStatus.Active]: 'status-active',
-      [SubcriptionContance_SubcriptionStatus.Inactive]: 'status-inactive',
-      [SubcriptionContance_SubcriptionStatus.Expired]: 'status-draft',
-      [SubcriptionContance_SubcriptionStatus.Cancelled]: 'status-inactive'
+      [SubcriptionContance_SubcriptionStatus.Inactive]: 'status-inactive'
     };
-    return classes[pkg.status!] || 'status-inactive';
+    return classes[status] || 'status-inactive';
   }
 
   getTargetLabel(target: SubcriptionContance_SubcriptorTarget | undefined): string {
@@ -809,8 +801,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     };
     return classes[target] || '';
   }
-
-  
 
   getServiceActionLabel(action: SubcriptionContance_ServiceAction): string {
     const labels: { [key: number]: string } = {
@@ -831,7 +821,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
   getDurationLabel(pkg: SubcriptionsViewDto): string {
     if (pkg.isLifeTime) return 'Vĩnh viễn';
-    if (pkg.dayDuration) return `${pkg.dayDuration} ngày`;
+    if (pkg.dayDuration && pkg.dayDuration > 0) return `${pkg.dayDuration} ngày`;
     return '-';
   }
 

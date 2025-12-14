@@ -2,26 +2,33 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { TranslationService } from '../../../../core/services/translation.service';
-// import { CartService } from '../../../../core/services/cart.service'; // TODO: Uncomment when cart feature is needed
+import { CartService } from '../../../../core/services/cart.service';
+import { SubscriptionService, SubscriptionServiceDto } from '../../../../core/services/subscription.service';
+import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { ChildServiceViewDto } from 'src/app/proxy/dto/subcriptions/models';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 
 interface ServiceDetail {
   id: string;
   title: string;
-  price: string;
+  price: string; // formatted price
+  originalPrice: number; // raw price
   description: string;
   validityPeriod: string;
-  gift: string;
-  promotionalOffers: string[];
-  countdown: {
-    days: number;
-    hours: number;
-    minutes: number;
-  };
+  isLifeTime: boolean;
+  dayDuration?: number;
+  target: number;
+  status: number;
   isTrial?: boolean;
   isVip?: boolean;
+}
+
+interface GroupedChildServices {
+  actionLabel: string;
+  services: ChildServiceViewDto[];
 }
 
 @Component({
@@ -36,150 +43,26 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   serviceId: string = '';
   serviceDetail: ServiceDetail | null = null;
+  childServices: ChildServiceViewDto[] = [];
+  groupedChildServices: GroupedChildServices[] = [];
+  
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'success';
+  
+  isLoading = false;
+  isLoadingChildServices = false;
+  
   private sidebarCheckInterval?: any;
-
-  // Mock data - in real app, this would come from a service
-  private serviceData: { [key: string]: ServiceDetail } = {
-    'top-max-trial': {
-      id: 'top-max-trial',
-      title: 'TOP MAX TRIAL',
-      price: '2,887,500',
-      description: 'Trải nghiệm đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất kết hợp cùng các dịch vụ cao cấp, giá dùng thử hấp dẫn',
-      validityPeriod: '1 tuần',
-      gift: '250 Credits',
-      isTrial: true,
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 25% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu',
-        'Tặng kèm gói hỗ trợ tư vấn 24/7',
-        'Giảm 20% tổng giá trị đơn hàng'
-      ]
-    },
-    'top-pro-trial': {
-      id: 'top-pro-trial',
-      title: 'TOP PRO TRIAL',
-      price: '2,448,000',
-      description: 'Trải nghiệm đăng tin tuyển dụng tối ưu với vị trí ưu tiên trong Việc làm hấp dẫn kết hợp cùng các dịch vụ cao cấp, giá dùng thử hấp dẫn',
-      validityPeriod: '1 tuần',
-      gift: '200 Credits',
-      isTrial: true,
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 20% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu',
-        'Tặng kèm gói hỗ trợ tư vấn 24/7'
-      ]
-    },
-    'top-eco-plus-trial': {
-      id: 'top-eco-plus-trial',
-      title: 'TOP ECO PLUS TRIAL',
-      price: '2,112,000',
-      description: 'Trải nghiệm đăng tin tuyển dụng tiết kiệm với vị trí hiển thị trong Đề xuất việc làm liên quan kết hợp cùng các dịch vụ khác, giá dùng thử hấp dẫn',
-      validityPeriod: '1 tuần',
-      gift: '150 Credits',
-      isTrial: true,
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 15% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu'
-      ]
-    },
-    'top-max-plus': {
-      id: 'top-max-plus',
-      title: 'TOP MAX PLUS',
-      price: '9,650,000',
-      description: 'Đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất, x2 lượt đấy Top, được sử dụng tỉnh năng CV để xuất kết hợp các dịch vụ cao cấp và được bảo hành với nhiều quyền lợi ưu tiên.',
-      validityPeriod: '1 tháng',
-      gift: '500 Credits',
-      isVip: true,
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 30% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu',
-        'Tặng kèm gói hỗ trợ tư vấn 24/7',
-        'Ưu đãi đặc biệt cho khách hàng VIP'
-      ]
-    },
-    'top-max': {
-      id: 'top-max',
-      title: 'TOP MAX',
-      price: '7,500,000',
-      description: 'Đăng tin tuyển dụng hiệu quả với vị trí nổi bật trong Việc làm tốt nhất, được sử dụng tính năng CV để xuất kết hợp các dịch vụ cao cấp và được bảo hành với nhiều quyền lợi ưu tiên.',
-      validityPeriod: '1 tháng',
-      gift: '400 Credits',
-      isVip: true,
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 25% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu',
-        'Tặng kèm gói hỗ trợ tư vấn 24/7'
-      ]
-    },
-    'top-pro': {
-      id: 'top-pro',
-      title: 'TOP PRO',
-      price: '5,440,000',
-      description: 'Đăng tin tuyển dụng tối ưu với vị trí ưu tiên trong Việc làm hấp dẫn, được sử dụng tính năng CV đề xuất kết hợp các dịch vụ cao cấp và được bảo hành.',
-      validityPeriod: '1 tháng',
-      gift: '300 Credits',
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 20% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu'
-      ]
-    },
-    'top-eco-plus': {
-      id: 'top-eco-plus',
-      title: 'TOP ECO PLUS',
-      price: '4,400,000',
-      description: 'Đăng tin tuyển dụng tiết kiệm với vị trí hiển thị trong Đề xuất việc làm liên quan, được sử dụng tính năng CV để xuất kết hợp các dịch vụ khác và được bảo hành.',
-      validityPeriod: '1 tháng',
-      gift: '250 Credits',
-      countdown: {
-        days: 23,
-        hours: 2,
-        minutes: 9
-      },
-      promotionalOffers: [
-        'Giảm 15% tổng giá trị đơn hàng',
-        'Miễn phí vận chuyển cho đơn hàng trên 5 triệu'
-      ]
-    }
-  };
+  private routerSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private translationService: TranslationService
-    // private cartService: CartService // TODO: Uncomment when cart feature is needed
+    private translationService: TranslationService,
+    private cartService: CartService,
+    private subscriptionService: SubscriptionService,
+    private subcriptionServiceProxy: SubcriptionService_Service
   ) {}
 
   ngOnInit() {
@@ -190,7 +73,12 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     // Get service ID from route
     this.route.params.subscribe(params => {
       this.serviceId = params['id'] || '';
-      this.loadServiceDetail();
+      if (this.serviceId) {
+        this.loadServiceDetail();
+        this.loadChildServices();
+      } else {
+        this.router.navigate(['/recruiter/buy-services']);
+      }
     });
 
     // Check sidebar state periodically
@@ -204,15 +92,123 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
-  loadServiceDetail() {
-    if (this.serviceId && this.serviceData[this.serviceId]) {
-      this.serviceDetail = this.serviceData[this.serviceId];
-    } else {
-      // If service not found, redirect back
-      this.router.navigate(['/recruiter/buy-services']);
+  loadServiceDetail(): void {
+    this.isLoading = true;
+    
+    // Get all active subscription services and find the one with matching ID
+    this.subscriptionService.getActiveSubscriptionServices(1) // 1 = Recruiter
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe({
+        next: (services) => {
+          const service = services.find(s => s.id === this.serviceId);
+          
+          if (service) {
+            this.serviceDetail = {
+              id: service.id,
+              title: service.title,
+              price: this.formatPrice(service.originalPrice),
+              originalPrice: service.originalPrice,
+              description: service.description,
+              validityPeriod: this.getValidityPeriod(service),
+              isLifeTime: service.isLifeTime,
+              dayDuration: service.dayDuration,
+              target: service.target,
+              status: service.status,
+              isTrial: service.title.toLowerCase().includes('trial'),
+              isVip: service.title.toLowerCase().includes('max') || 
+                     service.title.toLowerCase().includes('plus')
+            };
+          } else {
+            this.showToastMessage('error', 'Không tìm thấy thông tin dịch vụ');
+            this.router.navigate(['/recruiter/buy-services']);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading service detail:', error);
+          this.showToastMessage('error', 'Không thể tải thông tin dịch vụ');
+          this.router.navigate(['/recruiter/buy-services']);
+        }
+      });
+  }
+
+  loadChildServices(): void {
+    if (!this.serviceId) return;
+
+    this.isLoadingChildServices = true;
+    
+    this.subcriptionServiceProxy.getChildServicesBySubcriptionIdAndIsActive(
+      this.serviceId,
+      true
+    )
+      .pipe(finalize(() => {
+        this.isLoadingChildServices = false;
+      }))
+      .subscribe({
+        next: (services) => {
+          this.childServices = services;
+          this.groupServicesByAction();
+        },
+        error: (error) => {
+          console.error('Error loading child services:', error);
+          // Don't show error toast, just log it
+          this.childServices = [];
+          this.groupedChildServices = [];
+        }
+      });
+  }
+
+  groupServicesByAction(): void {
+    // Group child services by their action type
+    const grouped = new Map<number, ChildServiceViewDto[]>();
+
+    this.childServices.forEach(service => {
+      if (service.action !== undefined) {
+        if (!grouped.has(service.action)) {
+          grouped.set(service.action, []);
+        }
+        grouped.get(service.action)!.push(service);
+      }
+    });
+
+    // Convert to array with labels
+    this.groupedChildServices = Array.from(grouped.entries()).map(([action, services]) => ({
+      actionLabel: this.getServiceActionLabel(action),
+      services
+    }));
+  }
+
+  getServiceActionLabel(action: number): string {
+    const labels: { [key: number]: string } = {
+      0: 'Tăng điểm tin tuyển dụng',
+      1: 'Đẩy tin lên đầu',
+      2: 'Huy hiệu tin tuyển dụng',
+      3: 'Giao diện công ty'
+    };
+    return labels[action] || 'Dịch vụ khác';
+  }
+
+  private getValidityPeriod(service: SubscriptionServiceDto): string {
+    if (service.isLifeTime) {
+      return 'Vĩnh viễn';
     }
+    if (service.dayDuration) {
+      if (service.dayDuration === 7) return '1 tuần';
+      if (service.dayDuration === 30) return '1 tháng';
+      if (service.dayDuration === 365) return '1 năm';
+      return `${service.dayDuration} ngày`;
+    }
+    return '-';
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('vi-VN').format(price);
   }
 
   checkSidebarState(): void {
@@ -220,7 +216,6 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     if (sidebar) {
       const rect = sidebar.getBoundingClientRect();
       const width = rect.width;
-      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
       this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
     }
   }
@@ -234,20 +229,55 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   onAddToCart(): void {
-    // TODO: Implement cart functionality when needed
-    // if (this.serviceDetail) {
-    //   const added = this.cartService.addToCart({
-    //     id: this.serviceDetail.id,
-    //     title: this.serviceDetail.title,
-    //     price: this.serviceDetail.price,
-    //     originalPrice: parseFloat(this.serviceDetail.price.replace(/,/g, ''))
-    //   });
-    //
-    //   if (added) {
-    //     this.showToastMessage('success', `Đã thêm "${this.serviceDetail.title}" vào giỏ hàng`);
-    //   }
-    // }
-    this.showToastMessage('info', 'Tính năng giỏ hàng đang được phát triển');
+    if (!this.serviceDetail) return;
+
+    this.cartService.addToCart({
+      id: this.serviceDetail.id,
+      subscriptionServiceId: this.serviceDetail.id
+    }).subscribe({
+      next: () => {
+        this.showToastMessage('success', `Đã thêm "${this.serviceDetail!.title}" vào giỏ hàng`);
+      },
+      error: (error) => {
+        console.error('Error adding to cart:', error);
+        const errorMessage = error?.error?.error?.message || 
+                           error?.message || 
+                           'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+        this.showToastMessage('error', errorMessage);
+      }
+    });
+  }
+
+  onBuyNow(): void {
+    if (!this.serviceDetail) return;
+
+    // Check if item already exists in cart
+    const cartItems = this.cartService.getCartItems();
+    const existingItem = cartItems.find(item => 
+      item.subscriptionServiceId === this.serviceDetail!.id
+    );
+
+    if (existingItem) {
+      // Item already exists, just navigate to cart
+      this.router.navigate(['/recruiter/cart']);
+    } else {
+      // Item doesn't exist, add to cart first
+      this.cartService.addToCart({
+        id: this.serviceDetail.id,
+        subscriptionServiceId: this.serviceDetail.id
+      }).subscribe({
+        next: () => {
+          this.router.navigate(['/recruiter/cart']);
+        },
+        error: (error) => {
+          console.error('Error adding to cart:', error);
+          const errorMessage = error?.error?.error?.message || 
+                             error?.message || 
+                             'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+          this.showToastMessage('error', errorMessage);
+        }
+      });
+    }
   }
 
   showToastMessage(type: 'success' | 'error' | 'info' | 'warning', message: string): void {
@@ -258,9 +288,5 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
 
   onToastClose(): void {
     this.showToast = false;
-  }
-
-  onBuyNow(): void {
-    // TODO: Implement buy now functionality
   }
 }

@@ -16,6 +16,7 @@ using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Timing;
 
 namespace VCareer.Services.Subcription
 {
@@ -23,21 +24,27 @@ namespace VCareer.Services.Subcription
     {
         private readonly ISubcriptionPriceRepository _subcriptionPriceRepository;
         private readonly ISubcriptionServiceRepository _subcriptionServiceRepository;
-        public SubcriptionPriceService(ISubcriptionPriceRepository subcriptionPriceRepository, ISubcriptionServiceRepository subcriptionServiceRepository)
+        private readonly IClock _clock;
+        public SubcriptionPriceService(
+            ISubcriptionPriceRepository subcriptionPriceRepository,
+            IClock clock,
+            ISubcriptionServiceRepository subcriptionServiceRepository)
         {
             _subcriptionPriceRepository = subcriptionPriceRepository;
             _subcriptionServiceRepository = subcriptionServiceRepository;
+            _clock = clock;
         }
         //ko dduoc tao gia moi trung thoi gian effect voi 1 gia  khac 
         [Authorize(VCareerPermission.SubcriptionPrice.Create)]
         public async Task CreateSubcriptionPrice(SubcriptionPriceCreateDto dto)
         {
+            var now = _clock.Now;
             if (dto.SalePercent < 0 || dto.SalePercent > 100) throw new UserFriendlyException("Sale percent must be between 0 and 100");
             var subcriptionService = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == dto.SubcriptionServiceId);
             if (subcriptionService == null) throw new UserFriendlyException("Subcription not found");
 
             if (dto.EffectiveFrom > dto.EffectiveTo) throw new UserFriendlyException("EffectiveFrom must be less than EffectiveTo");
-            if (dto.EffectiveTo < DateTime.UtcNow) throw new UserFriendlyException("EffectiveTo must be greater than now");
+            if (dto.EffectiveTo <= now) throw new UserFriendlyException("EffectiveTo must be greater than now");
 
             if (await IsConflictTimeWithOtherPrice(dto.SubcriptionServiceId, dto.EffectiveFrom, dto.EffectiveTo))
                 throw new UserFriendlyException("Conflict time with other price");
@@ -45,7 +52,7 @@ namespace VCareer.Services.Subcription
             await _subcriptionPriceRepository.InsertAsync(new Models.Subcription_Payment.SubcriptionPrice()
             {
                 OriginalPrice = subcriptionService.OriginalPrice,
-                EffectiveFrom = (dto.EffectiveFrom < DateTime.UtcNow) ? DateTime.UtcNow : dto.EffectiveFrom,
+                EffectiveFrom = (dto.EffectiveFrom < now) ? now: dto.EffectiveFrom,
                 EffectiveTo = dto.EffectiveTo,
                 SubcriptionServiceId = dto.SubcriptionServiceId,
                 SalePercent = dto.SalePercent
@@ -90,25 +97,25 @@ namespace VCareer.Services.Subcription
         public async Task UpdateSubcriptionPriceAsync(SubcriptionPriceUpdateDto dto)
         {
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == dto.SubcriptionPriceId);
-            if (subcriptionPrice == null) throw new BusinessException("SubcriptionPrice not found");
-            if (subcriptionPrice.IsExpried) throw new BusinessException("You cant edit expired subcription price");
+            if (subcriptionPrice == null) throw new UserFriendlyException("SubcriptionPrice not found");
+            if (subcriptionPrice.IsExpried) throw new UserFriendlyException("You cant edit expired subcription price");
 
             // Validate input
             if (dto.SalePercent < 0 || dto.SalePercent > 100)
-                throw new BusinessException("Sale percent must be between 0 and 100");
+                throw new UserFriendlyException("Sale percent must be between 0 and 100");
             if (dto.EffectiveFrom > dto.EffectiveTo)
-                throw new BusinessException("EffectiveFrom must be less than EffectiveTo");
+                throw new UserFriendlyException("EffectiveFrom must be less than EffectiveTo");
             if (dto.EffectiveTo < DateTime.UtcNow)
-                throw new BusinessException("EffectiveTo must be greater than now");
+                throw new UserFriendlyException("EffectiveTo must be greater than now");
 
             bool isCurrentlyEffective =
                  subcriptionPrice.IsActive &&
                  subcriptionPrice.EffectiveFrom <= DateTime.UtcNow &&
                  subcriptionPrice.EffectiveTo >= DateTime.UtcNow;
-            if (isCurrentlyEffective) throw new BusinessException("You can't edit active price in effect period");
+            if (isCurrentlyEffective) throw new UserFriendlyException("You can't edit active price in effect period");
 
             if (await IsConflictTimeWithOtherPrice(dto.SubcriptionServiceId, dto.EffectiveFrom, dto.EffectiveTo, dto.SubcriptionPriceId))
-                throw new BusinessException("Conflict time with other price");
+                throw new UserFriendlyException("Conflict time with other price");
 
             subcriptionPrice.EffectiveFrom = (dto.EffectiveFrom < DateTime.UtcNow) ? DateTime.UtcNow : dto.EffectiveFrom;
             subcriptionPrice.EffectiveTo = dto.EffectiveTo;
@@ -127,7 +134,7 @@ namespace VCareer.Services.Subcription
                  subcriptionPrice.EffectiveTo >= DateTime.UtcNow;
 
             if (subcriptionPrice.IsActive && isCurrentlyEffective)
-                throw new BusinessException("You can't delete active price in effect period");
+                throw new UserFriendlyException("You can't delete active price in effect period");
 
 
             await _subcriptionPriceRepository.DeleteAsync(subcriptionPrice);
@@ -140,7 +147,7 @@ namespace VCareer.Services.Subcription
             var subcriptionPrice = await _subcriptionPriceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionPriceId);
             if (subcriptionPrice == null) throw new BusinessException("SubcriptionPrice not found");
             if (isActive)
-        {
+            {
                 if (subcriptionPrice.EffectiveTo < DateTime.UtcNow)
                     throw new UserFriendlyException("You can't activate an expired price.");
                 if (await IsConflictTimeWithOtherPrice(subcriptionPrice.SubcriptionServiceId, subcriptionPrice.EffectiveFrom, subcriptionPrice.EffectiveTo, subcriptionPriceId))
@@ -162,7 +169,7 @@ namespace VCareer.Services.Subcription
             if (expiredItems.Count == 0) return;
 
             foreach (var item in expiredItems)
-        {
+            {
                 item.IsExpried = true;
             }
 
@@ -186,7 +193,7 @@ namespace VCareer.Services.Subcription
 
             // Exclude record hiện tại nếu có
             if (excludeId.HasValue)
-        {
+            {
                 query = query.Where(x => x.Id != excludeId.Value).ToList();
             }
 
