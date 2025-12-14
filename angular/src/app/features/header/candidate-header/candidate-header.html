@@ -110,12 +110,10 @@
               <i class="fa fa-user"></i>
             </div>
             <div class="profile-info">
-              <h3 class="profile-name">{{ currentUser?.name || currentUser?.userName || 'Người dùng' }}</h3>
+              <h3 class="profile-name">{{ getFullName() }}</h3>
               <p class="profile-status">{{ translate('profile.verified_account') }}</p>
-              <p class="profile-details" *ngIf="currentUser">
-                <span *ngIf="currentUser.id">ID {{ currentUser.id }}</span>
-                <span *ngIf="currentUser.id && currentUser.email"> | </span>
-                <span *ngIf="currentUser.email">{{ currentUser.email }}</span>
+              <p class="profile-details" *ngIf="currentUser?.email || profileData?.email">
+                <span>{{ currentUser?.email || profileData?.email }}</span>
               </p>
             </div>
           </div>

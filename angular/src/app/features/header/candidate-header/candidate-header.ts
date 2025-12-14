@@ -2,10 +2,13 @@
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
+import type { ProfileDto } from '../../../proxy/dto/profile/models';
 
 @Component({
   selector: 'app-candidate-header',
@@ -22,6 +25,7 @@ export class CandidateHeaderComponent implements OnInit {
   showProfileMenu = false;
   showNotificationMenu = false;
   currentUser: any = null;
+  profileData: ProfileDto | null = null;
   selectedLanguage: string = '';
   expandedSections = {
     jobManagement: true,
@@ -34,7 +38,8 @@ export class CandidateHeaderComponent implements OnInit {
     private headerTypeService: HeaderTypeService,
     private navigationService: NavigationService,
     private translationService: TranslationService,
-    private authStateService: AuthStateService
+    private authStateService: AuthStateService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -78,7 +83,57 @@ export class CandidateHeaderComponent implements OnInit {
       const hasValidUser = this.isValidUser(user);
       this.isLoggedIn = serviceLoggedIn && hasValidUser;
       console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
+      
+      // Load profile data when user changes
+      if (this.isLoggedIn && hasValidUser) {
+        this.loadProfileData();
+      } else {
+        this.profileData = null;
+      }
     });
+    
+    // Load profile data on init if already logged in
+    if (this.isLoggedIn) {
+      this.loadProfileData();
+    }
+  }
+  
+  loadProfileData() {
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        this.profileData = response;
+      },
+      error: (error) => {
+        console.error('Error loading profile data:', error);
+        this.profileData = null;
+      }
+    });
+  }
+  
+  getFullName(): string {
+    if (this.profileData) {
+      const name = this.profileData.name || '';
+      const surname = this.profileData.surname || '';
+      const fullName = `${name} ${surname}`.trim();
+      if (fullName) return fullName;
+    }
+    if (this.currentUser?.fullName) {
+      return this.currentUser.fullName;
+    }
+    if (this.currentUser?.name) {
+      return this.currentUser.name;
+    }
+    if (this.currentUser?.userName) {
+      return this.currentUser.userName;
+    }
+    return 'Người dùng';
   }
 
   navigateToHome() {
