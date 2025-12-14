@@ -206,7 +206,9 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   handleClickOutside = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
-    if (!target.closest('.filter-dropdown')) {
+    // Đóng dropdown nếu click không phải trong filter-dropdown
+    // Và không phải trong modal
+    if (!target.closest('.filter-dropdown') && !target.closest('.modal-overlay') && !target.closest('.modal-content')) {
       this.showFilterDropdown = false;
     }
   };
@@ -485,10 +487,18 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.staffForm = {
-      email: '',
-    };
-    this.showAddModal = true;
+    // Đóng dropdown khi mở modal - sử dụng setTimeout để đảm bảo đóng trước khi modal mở
+    this.showFilterDropdown = false;
+    this.cdr.detectChanges();
+    
+    // Đợi một chút để đảm bảo dropdown đã đóng
+    setTimeout(() => {
+      this.staffForm = {
+        email: '',
+      };
+      this.showAddModal = true;
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   closeAddModal(): void {
@@ -496,6 +506,9 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   openEditModal(staff: HRStaff): void {
+    // Đóng dropdown khi mở modal
+    this.showFilterDropdown = false;
+    
     this.selectedStaff = staff;
     this.staffForm = { ...staff };
     this.showEditModal = true;
@@ -507,6 +520,9 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   openDeleteModal(staff: HRStaff): void {
+    // Đóng dropdown khi mở modal
+    this.showFilterDropdown = false;
+    
     this.selectedStaff = staff;
     this.showDeleteModal = true;
   }

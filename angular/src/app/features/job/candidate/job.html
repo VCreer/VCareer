@@ -122,4 +122,11 @@
     (close)="onCloseApplyModal()"
     (submit)="onSubmitApply($event)"
   ></app-apply-job-modal>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

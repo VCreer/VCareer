@@ -151,7 +151,8 @@ export class RecruiterLoginComponent implements OnInit {
               // }
 
               this.showToastMessage('Đăng nhập thành công!', 'success');
-              this.setRememberCookie(rememberMe, email);
+              // Handle remember me via cookie - lưu cả email và password
+              this.setRememberCookie(rememberMe, email, password);
 
               // Kiểm tra xem user có phải là Leader không để redirect đúng trang
               this.teamManagementService.getCurrentUserInfo().subscribe({
@@ -199,7 +200,10 @@ export class RecruiterLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.googleAuthService.initialize();
-    this.prefillRememberedUser();
+    // Đợi form được khởi tạo xong rồi mới prefill
+    setTimeout(() => {
+      this.prefillRememberedUser();
+    }, 0);
   }
 
   async signInWithGoogle() {
@@ -353,21 +357,27 @@ export class RecruiterLoginComponent implements OnInit {
     if (!cookie) return;
 
     try {
-      const parsed = JSON.parse(cookie) as { remember: boolean; email: string };
+      const parsed = JSON.parse(cookie) as { remember: boolean; email: string; password?: string };
       if (parsed.remember && parsed.email) {
-        this.loginForm.patchValue({
+        // Điền email và password vào form
+        // Sử dụng setValue thay vì patchValue để đảm bảo tất cả giá trị được set
+        this.loginForm.setValue({
           email: parsed.email,
+          password: parsed.password || '', // Điền password nếu có
           rememberMe: true,
-        });
+        }, { emitEvent: false }); // Không emit event để tránh trigger validation
       }
-    } catch {
+    } catch (error) {
+      // If cookie is malformed, clear it
+      console.error('Error parsing remember cookie:', error);
       this.clearRememberCookie();
     }
   }
 
-  private setRememberCookie(remember: boolean, email: string): void {
+  private setRememberCookie(remember: boolean, email: string, password?: string): void {
     if (remember) {
-      const payload = JSON.stringify({ remember: true, email });
+      // Lưu cả email và password vào cookie
+      const payload = JSON.stringify({ remember: true, email, password: password || '' });
       const expires = new Date();
       expires.setDate(expires.getDate() + 30);
       document.cookie = `${this.rememberCookieKey}=${encodeURIComponent(payload)};expires=${expires.toUTCString()};path=/`;

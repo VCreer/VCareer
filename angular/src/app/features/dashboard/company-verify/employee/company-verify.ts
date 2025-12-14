@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaginationComponent, ToastNotificationComponent } from '../../../../shared/components';
+import { PaginationComponent, ToastNotificationComponent, StatCardComponent } from '../../../../shared/components';
 import { CompanyVerificationViewDto, CompanyVerificationFilterDto, RejectCompanyDto } from 'src/app/proxy/dto/profile/models';
 import { CompanyLegalInfoService } from 'src/app/proxy/services/profile/company-legal-info.service';
 import { environment } from '../../../../../environments/environment';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-company-verify',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent, ToastNotificationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, ToastNotificationComponent, StatCardComponent],
   templateUrl: './company-verify.html',
   styleUrls: ['./company-verify.scss'],
 })
@@ -31,6 +32,11 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
   isLoading = false;
   searchKeyword = '';
   activeTab: 'pending' | 'verified' | 'rejected' = 'pending'; // Tab hiện tại: 'pending', 'verified', hoặc 'rejected'
+  
+  // Counts for stat cards
+  pendingCount = 0;
+  verifiedCount = 0;
+  rejectedCount = 0;
 
   // Toast notification properties
   showToast = false;
@@ -48,6 +54,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initSidebarObserver();
+    this.loadAllCounts();
     this.loadCompanies();
   }
 
@@ -109,6 +116,28 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
 
   //#region Data Loading
 
+  loadAllCounts(): void {
+    const emptyFilter: CompanyVerificationFilterDto = {
+      skipCount: 0,
+      maxResultCount: 1
+    };
+
+    forkJoin({
+      pending: this.companyLegalInfoService.getPendingCompanies(emptyFilter),
+      verified: this.companyLegalInfoService.getVerifiedCompanies(emptyFilter),
+      rejected: this.companyLegalInfoService.getRejectedCompanies(emptyFilter)
+    }).subscribe({
+      next: (results) => {
+        this.pendingCount = results.pending.totalCount || 0;
+        this.verifiedCount = results.verified.totalCount || 0;
+        this.rejectedCount = results.rejected.totalCount || 0;
+      },
+      error: (error) => {
+        console.error('Error loading counts:', error);
+      }
+    });
+  }
+
   loadCompanies(): void {
     if (this.activeTab === 'pending') {
       this.loadPendingCompanies();
@@ -135,6 +164,14 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
         this.filteredCompanies = [...this.companies];
         this.isLoading = false;
+        // Update count for current tab
+        if (this.activeTab === 'pending') {
+          this.pendingCount = this.totalItems;
+        } else if (this.activeTab === 'verified') {
+          this.verifiedCount = this.totalItems;
+        } else if (this.activeTab === 'rejected') {
+          this.rejectedCount = this.totalItems;
+        }
       },
       error: (error) => {
         console.error('Error loading pending companies:', error);
@@ -160,6 +197,14 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
         this.filteredCompanies = [...this.companies];
         this.isLoading = false;
+        // Update count for current tab
+        if (this.activeTab === 'pending') {
+          this.pendingCount = this.totalItems;
+        } else if (this.activeTab === 'verified') {
+          this.verifiedCount = this.totalItems;
+        } else if (this.activeTab === 'rejected') {
+          this.rejectedCount = this.totalItems;
+        }
       },
       error: (error) => {
         console.error('Error loading verified companies:', error);
@@ -185,6 +230,14 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
         this.filteredCompanies = [...this.companies];
         this.isLoading = false;
+        // Update count for current tab
+        if (this.activeTab === 'pending') {
+          this.pendingCount = this.totalItems;
+        } else if (this.activeTab === 'verified') {
+          this.verifiedCount = this.totalItems;
+        } else if (this.activeTab === 'rejected') {
+          this.rejectedCount = this.totalItems;
+        }
       },
       error: (error) => {
         console.error('Error loading rejected companies:', error);
@@ -206,6 +259,10 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
     this.showRejectModal = false;
     this.rejectNotes = '';
     this.loadCompanies();
+  }
+
+  onStatCardClick(tab: 'pending' | 'verified' | 'rejected'): void {
+    this.onTabChange(tab);
   }
 
   //#endregion
@@ -237,6 +294,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
         this.showSuccessToast('Đã duyệt công ty thành công');
         delete this.rejectNotesDraft[this.selectedCompany!.id];
         this.selectedCompany = null;
+        this.loadAllCounts(); // Reload all counts
         this.loadCompanies(); // Reload current tab
       },
       error: (error) => {
@@ -282,6 +340,7 @@ export class CompanyVerifyComponent implements OnInit, OnDestroy {
         this.onCloseRejectModal();
         delete this.rejectNotesDraft[this.selectedCompany!.id];
         this.selectedCompany = null;
+        this.loadAllCounts(); // Reload all counts
         this.loadCompanies(); // Reload current tab
       },
       error: (error) => {
