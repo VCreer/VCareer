@@ -142,22 +142,22 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToJobs() {
-    this.router.navigate(['/candidate/job']);
+    this.router.navigate(['/job']);
     this.closeMobileMenu();
   }
 
   navigateToCompanies() {
-    this.router.navigate(['/candidate/company']);
+    this.router.navigate(['/company']);
     this.closeMobileMenu();
   }
 
   navigateToAbout() {
-    this.router.navigate(['/candidate/about-us']);
+    this.router.navigate(['/about-us']);
     this.closeMobileMenu();
   }
 
   navigateToContact() {
-    this.router.navigate(['/candidate/contact']);
+    this.router.navigate(['/contact']);
     this.closeMobileMenu();
   }
 

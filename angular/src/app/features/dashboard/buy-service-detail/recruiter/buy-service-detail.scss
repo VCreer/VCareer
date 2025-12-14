@@ -568,4 +568,202 @@
     }
   }
 }
+// ============================================
+// THÊM VÀO CUỐI FILE buy-service-detail.scss
+// ============================================
+
+// Loading Container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  min-height: 400px;
+  
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f3f4f6;
+    border-top-color: #0F83BA;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  p {
+    margin-top: 1.5rem;
+    color: #6b7280;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  
+  i {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: #6b7280;
+    font-size: 0.9375rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+// Error State
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 4rem auto;
+  
+  i {
+    font-size: 4rem;
+    color: #ef4444;
+    margin-bottom: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.75rem 0;
+  }
+  
+  p {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+  }
+  
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #0F83BA;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    i {
+      font-size: 0.875rem;
+      margin: 0;
+      color: #ffffff;
+    }
+    
+    &:hover {
+      background: #0A6B96;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Service Features Section Enhancements
+.buy-service-detail-page {
+  .container {
+    .left-content {
+      .service-overview {
+        .service-features-section {
+          .features-group {
+            .features-list {
+              .feature-item {
+                span {
+                  strong {
+                    color: #1f2937;
+                    font-weight: 600;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Loading state inside features section
+          .loading-container {
+            min-height: 200px;
+            padding: 2rem 1rem;
+          }
+          
+          // Empty state inside features section
+          .empty-state {
+            padding: 2rem 1rem;
+            
+            i {
+              font-size: 2rem;
+            }
+            
+            p {
+              font-size: 0.875rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .loading-container {
+    padding: 3rem 1rem;
+    min-height: 300px;
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-width: 3px;
+    }
+    
+    p {
+      font-size: 0.875rem;
+    }
+  }
+  
+  .error-state {
+    margin: 2rem 1rem;
+    padding: 2rem 1rem;
+    
+    i {
+      font-size: 3rem;
+    }
+    
+    h3 {
+      font-size: 1.25rem;
+    }
+    
+    p {
+      font-size: 0.9375rem;
+    }
+  }
+}
 
