@@ -199,6 +199,7 @@ export class LoginComponent {
   async signInWithGoogle() {
     try {
       this.isLoading = true;
+      console.log('Starting Google sign in...');
       
       // Sign in with Google to get idToken
       const googleUser = await this.googleAuthService.signInWithGoogle();

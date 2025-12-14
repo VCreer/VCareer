@@ -7,7 +7,7 @@ import {
   ToastNotificationComponent,
   InputFieldComponent,
   PaginationComponent,
-  GenericModalComponent
+  GenericModalComponent,
 } from '../../../../shared/components';
 import { SubcriptionPriceService } from 'src/app/proxy/services/subcription';
 import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
@@ -15,7 +15,7 @@ import {
   SubcriptionPriceCreateDto,
   SubcriptionPriceUpdateDto,
   SubcriptionPriceViewDto,
-  SubcriptionsViewDto
+  SubcriptionsViewDto,
 } from 'src/app/proxy/dto/subcriptions/models';
 import { finalize } from 'rxjs/operators';
 
@@ -29,10 +29,10 @@ import { finalize } from 'rxjs/operators';
     ToastNotificationComponent,
     InputFieldComponent,
     PaginationComponent,
-    GenericModalComponent
+    GenericModalComponent,
   ],
- templateUrl: './service-price-list.html',
-  styleUrls: ['./service-price-list.scss']
+  templateUrl: './service-price-list.html',
+  styleUrls: ['./service-price-list.scss'],
 })
 export class ServicePriceListComponent implements OnInit, OnDestroy {
   sidebarWidth = 72;
@@ -121,7 +121,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
       subcriptionServiceId: '',
       salePercent: 0,
       effectiveFrom: this.formatDateForInput(new Date()),
-      effectiveTo: undefined
+      effectiveTo: undefined,
     };
   }
 
@@ -141,57 +141,62 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
   }
 
   loadSubcriptionInfo(): void {
-    this.subcriptionService.getActiveSubscriptionServices(undefined)
-      .subscribe({
-        next: (response: SubcriptionsViewDto[]) => {
-          this.subcriptionInfo = response.find(s => s.id === this.subcriptionId) || null;
-        },
-        error: (error) => {
-          console.error('Error loading subcription info:', error);
-        }
-      });
+    this.subcriptionService.getActiveSubscriptionServices(undefined).subscribe({
+      next: (response: SubcriptionsViewDto[]) => {
+        this.subcriptionInfo = response.find(s => s.id === this.subcriptionId) || null;
+      },
+      error: error => {
+        console.error('Error loading subcription info:', error);
+      },
+    });
   }
 
   loadCurrentPrice(): void {
     this.isLoadingCurrentPrice = true;
 
-    this.priceService.getCurrentPriceOfSubcriptionBySubcriptionId(this.subcriptionId)
-      .pipe(finalize(() => {
-        this.isLoadingCurrentPrice = false;
-      }))
+    this.priceService
+      .getCurrentPriceOfSubcriptionBySubcriptionId(this.subcriptionId)
+      .pipe(
+        finalize(() => {
+          this.isLoadingCurrentPrice = false;
+        })
+      )
       .subscribe({
         next: (price: number) => {
           this.currentPrice = price;
         },
-        error: (error) => {
+        error: error => {
           console.error('Error loading current price:', error);
           this.showToastMessage('Không thể tải giá hiện tại', 'error');
-        }
+        },
       });
   }
 
   loadPrices(): void {
     this.isLoadingPrices = true;
 
-    this.priceService.getSubcriptionPricesServiceBySubcriptionIdAndPageIndex(
-      this.subcriptionId,
-      this.currentPage - 1
-    )
-      .pipe(finalize(() => {
-        this.isLoadingPrices = false;
-      }))
+    this.priceService
+      .getSubcriptionPricesServiceBySubcriptionIdAndPageIndex(
+        this.subcriptionId,
+        this.currentPage - 1
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoadingPrices = false;
+        })
+      )
       .subscribe({
         next: (response: SubcriptionPriceViewDto[]) => {
           this.allPrices = response;
           this.updatePagination();
           this.showToastMessage('Tải danh sách giá thành công', 'success');
         },
-        error: (error) => {
+        error: error => {
           console.error('Error loading prices:', error);
           this.showToastMessage('Không thể tải danh sách giá', 'error');
           this.allPrices = [];
           this.updatePagination();
-        }
+        },
       });
   }
 
@@ -237,13 +242,18 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
 
     const createDto: SubcriptionPriceCreateDto = {
       ...this.priceForm,
-      subcriptionServiceId: this.subcriptionId
+      effectiveFrom: new Date(this.priceForm.effectiveFrom).toISOString(),
+      effectiveTo: new Date(this.priceForm.effectiveTo).toISOString(),
+      subcriptionServiceId: this.subcriptionId,
     };
 
-    this.priceService.createSubcriptionPriceByDto(createDto)
-      .pipe(finalize(() => {
-        setTimeout(() => (this.isSavingPrice = false), 250);
-      }))
+    this.priceService
+      .createSubcriptionPriceByDto(createDto)
+      .pipe(
+        finalize(() => {
+          setTimeout(() => (this.isSavingPrice = false), 250);
+        })
+      )
       .subscribe({
         next: () => {
           this.showToastMessage('Tạo giá thành công', 'success');
@@ -251,11 +261,11 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
           this.loadPrices();
           this.loadCurrentPrice();
         },
-        error: (error) => {
+        error: error => {
           console.error('Error creating price:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể tạo giá';
           this.showToastMessage(errorMsg, 'error');
-        }
+        },
       });
   }
 
@@ -265,7 +275,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
       subcriptionServiceId: price.subcriptionServiceId,
       salePercent: price.salePercent,
       effectiveFrom: price.effectiveFrom,
-      effectiveTo: price.effectiveTo
+      effectiveTo: price.effectiveTo,
     };
     this.resetValidationErrors();
     this.showEditPriceModal = true;
@@ -287,14 +297,17 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
       subcriptionPriceId: this.getSubcriptionPriceId(this.selectedPrice),
       subcriptionServiceId: this.subcriptionId,
       salePercent: this.priceForm.salePercent,
-      effectiveFrom: this.priceForm.effectiveFrom,
-      effectiveTo: this.priceForm.effectiveTo
+      effectiveFrom: new Date(this.priceForm.effectiveFrom).toISOString(),
+      effectiveTo: new Date(this.priceForm.effectiveTo).toISOString(),
     };
 
-    this.priceService.updateSubcriptionPrice(updateDto)
-      .pipe(finalize(() => {
-        setTimeout(() => (this.isSavingPriceEdit = false), 250);
-      }))
+    this.priceService
+      .updateSubcriptionPrice(updateDto)
+      .pipe(
+        finalize(() => {
+          setTimeout(() => (this.isSavingPriceEdit = false), 250);
+        })
+      )
       .subscribe({
         next: () => {
           this.showToastMessage('Cập nhật giá thành công', 'success');
@@ -303,11 +316,11 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
           this.loadPrices();
           this.loadCurrentPrice();
         },
-        error: (error) => {
+        error: error => {
           console.error('Error updating price:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể cập nhật giá';
           this.showToastMessage(errorMsg, 'error');
-        }
+        },
       });
   }
 
@@ -320,22 +333,18 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
 
     const newIsActive = !price.isActive;
 
-    this.priceService.setStatusSubcriptionPrice(priceId, newIsActive)
-      .subscribe({
-        next: () => {
-          this.showToastMessage(
-            newIsActive ? 'Đã kích hoạt giá' : 'Đã vô hiệu hóa giá',
-            'success'
-          );
-          this.loadPrices();
-          this.loadCurrentPrice();
-        },
-        error: (error) => {
-          console.error('Error toggling price status:', error);
-          const errorMsg = error?.error?.error?.message || 'Không thể thay đổi trạng thái giá';
-          this.showToastMessage(errorMsg, 'error');
-        }
-      });
+    this.priceService.setStatusSubcriptionPrice(priceId, newIsActive).subscribe({
+      next: () => {
+        this.showToastMessage(newIsActive ? 'Đã kích hoạt giá' : 'Đã vô hiệu hóa giá', 'success');
+        this.loadPrices();
+        this.loadCurrentPrice();
+      },
+      error: error => {
+        console.error('Error toggling price status:', error);
+        const errorMsg = error?.error?.error?.message || 'Không thể thay đổi trạng thái giá';
+        this.showToastMessage(errorMsg, 'error');
+      },
+    });
 
     this.closeActionsMenu();
   }
@@ -347,71 +356,68 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm('Bạn có chắc chắn muốn xóa giá này? Hành động này không thể hoàn tác.')) {
-      return;
-    }
-
-    this.priceService.deleteSubcriptionPrice(priceId)
-      .subscribe({
-        next: () => {
-          this.showToastMessage('Đã xóa giá', 'success');
-          this.loadPrices();
-          this.loadCurrentPrice();
-        },
-        error: (error) => {
-          console.error('Error deleting price:', error);
-          const errorMsg = error?.error?.error?.message || 'Không thể xóa giá';
-          this.showToastMessage(errorMsg, 'error');
-        }
-      });
+    this.priceService.deleteSubcriptionPrice(priceId).subscribe({
+      next: () => {
+        this.showToastMessage('Đã xóa giá', 'success');
+        this.loadPrices();
+        this.loadCurrentPrice();
+      },
+      error: error => {
+        const errorMsg = error?.error?.error?.message || 'Không thể xóa giá';
+        this.showToastMessage(errorMsg, 'error');
+      },
+    });
 
     this.closeActionsMenu();
   }
 
-private validatePriceForm(): boolean {
-  this.resetValidationErrors();
-  const errors: Record<string, string> = {};
-  let isValid = true;
+  private validatePriceForm(): boolean {
+    this.resetValidationErrors();
+    const errors: Record<string, string> = {};
+    let isValid = true;
 
-  // Validate sale percent
-  if (this.priceForm.salePercent < 0 || this.priceForm.salePercent > 100) {
-    errors['salePercent'] = 'Phần trăm giảm giá phải từ 0 đến 100';
-    isValid = false;
-  }
-
-  // Validate effectiveFrom
-  if (!this.priceForm.effectiveFrom) {
-    errors['effectiveFrom'] = 'Vui lòng chọn ngày bắt đầu';
-    isValid = false;
-  }
-
-  // Validate effectiveTo
-  if (!this.priceForm.effectiveTo) {
-    errors['effectiveTo'] = 'Vui lòng chọn ngày kết thúc';
-    isValid = false;
-  }
-
-  // Validate date range logic
-  if (this.priceForm.effectiveFrom && this.priceForm.effectiveTo) {
-    const from = new Date(this.priceForm.effectiveFrom);
-    const to = new Date(this.priceForm.effectiveTo);
-    
-    if (from >= to) {
-      errors['effectiveTo'] = 'Ngày kết thúc phải sau ngày bắt đầu';
+    // Validate sale percent
+    if (this.priceForm.salePercent < 0 || this.priceForm.salePercent > 100) {
+      errors['salePercent'] = 'Phần trăm giảm giá phải từ 0 đến 100';
       isValid = false;
     }
-    
-    // Kiểm tra trùng lặp khoảng thời gian
-    if (isValid && this.checkDateRangeOverlap(this.priceForm.effectiveFrom, this.priceForm.effectiveTo)) {
-      errors['effectiveFrom'] = 'Khoảng thời gian này đã có giá khác';
-      errors['effectiveTo'] = 'Khoảng thời gian bị trùng với giá đã tồn tại';
+
+    // Validate effectiveFrom
+    if (!this.priceForm.effectiveFrom) {
+      errors['effectiveFrom'] = 'Vui lòng chọn ngày bắt đầu';
       isValid = false;
     }
-  }
 
-  this.validationErrors = errors;
-  return isValid;
-}
+    // Validate effectiveTo
+    if (!this.priceForm.effectiveTo) {
+      errors['effectiveTo'] = 'Vui lòng chọn ngày kết thúc';
+      isValid = false;
+    }
+
+    // Validate date range logic
+    if (this.priceForm.effectiveFrom && this.priceForm.effectiveTo) {
+      const from = new Date(this.priceForm.effectiveFrom);
+      const to = new Date(this.priceForm.effectiveTo);
+
+      if (from >= to) {
+        errors['effectiveTo'] = 'Ngày kết thúc phải sau ngày bắt đầu';
+        isValid = false;
+      }
+
+      // Kiểm tra trùng lặp khoảng thời gian
+      if (
+        isValid &&
+        this.checkDateRangeOverlap(this.priceForm.effectiveFrom, this.priceForm.effectiveTo)
+      ) {
+        errors['effectiveFrom'] = 'Khoảng thời gian này đã có giá khác';
+        errors['effectiveTo'] = 'Khoảng thời gian bị trùng với giá đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    this.validationErrors = errors;
+    return isValid;
+  }
 
   private resetValidationErrors(): void {
     this.validationErrors = {};
@@ -500,7 +506,7 @@ private validatePriceForm(): boolean {
   getSubcriptionPriceId(price: SubcriptionPriceViewDto): string | undefined {
     // Vì DTO không có id field, bạn cần thêm logic để lấy ID
     // Hoặc backend cần return id trong SubcriptionPriceViewDto
-    return (price as any).id || price.subcriptionServiceId;
+    return (price as any).id;
   }
 
   getPriceStatus(price: SubcriptionPriceViewDto): string {
@@ -540,7 +546,7 @@ private validatePriceForm(): boolean {
   formatPrice(price: number): string {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
     }).format(price);
   }
 
@@ -552,7 +558,7 @@ private validatePriceForm(): boolean {
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
@@ -608,42 +614,45 @@ private validatePriceForm(): boolean {
   }
   // Thêm các methods này vào ServicePriceListComponent
 
-// Helper method để lấy các khoảng thời gian đã có giá (không bao gồm giá đang edit)
-getExistingActiveRanges(): SubcriptionPriceViewDto[] {
-  return this.allPrices.filter(price => {
-    // Loại bỏ giá đang edit (nếu đang edit)
-    if (this.selectedPrice && this.getSubcriptionPriceId(price) === this.getSubcriptionPriceId(this.selectedPrice)) {
-      return false;
-    }
-    // Loại bỏ giá đã hết hạn
-    if (price.isExpried) {
-      return false;
-    }
-    // Chỉ lấy các giá có khoảng thời gian hợp lệ
-    return price.effectiveFrom && price.effectiveTo;
-  });
-}
-
-// Kiểm tra khoảng thời gian có bị trùng với các giá hiện có không
-private checkDateRangeOverlap(startDate: string, endDate: string): boolean {
-  const newStart = new Date(startDate);
-  const newEnd = new Date(endDate);
-  
-  const existingRanges = this.getExistingActiveRanges();
-  
-  for (const range of existingRanges) {
-    if (!range.effectiveFrom || !range.effectiveTo) continue;
-    
-    const existingStart = new Date(range.effectiveFrom);
-    const existingEnd = new Date(range.effectiveTo);
-    
-    // Kiểm tra overlap:
-    // Overlap xảy ra khi: newStart < existingEnd && newEnd > existingStart
-    if (newStart < existingEnd && newEnd > existingStart) {
-      return true; // Có trùng
-    }
+  // Helper method để lấy các khoảng thời gian đã có giá (không bao gồm giá đang edit)
+  getExistingActiveRanges(): SubcriptionPriceViewDto[] {
+    return this.allPrices.filter(price => {
+      // Loại bỏ giá đang edit (nếu đang edit)
+      if (
+        this.selectedPrice &&
+        this.getSubcriptionPriceId(price) === this.getSubcriptionPriceId(this.selectedPrice)
+      ) {
+        return false;
+      }
+      // Loại bỏ giá đã hết hạn
+      if (price.isExpried) {
+        return false;
+      }
+      // Chỉ lấy các giá có khoảng thời gian hợp lệ
+      return price.effectiveFrom && price.effectiveTo;
+    });
   }
-  
-  return false; // Không trùng
-}
+
+  // Kiểm tra khoảng thời gian có bị trùng với các giá hiện có không
+  private checkDateRangeOverlap(startDate: string, endDate: string): boolean {
+    const newStart = new Date(startDate);
+    const newEnd = new Date(endDate);
+
+    const existingRanges = this.getExistingActiveRanges();
+
+    for (const range of existingRanges) {
+      if (!range.effectiveFrom || !range.effectiveTo) continue;
+
+      const existingStart = new Date(range.effectiveFrom);
+      const existingEnd = new Date(range.effectiveTo);
+
+      // Kiểm tra overlap:
+      // Overlap xảy ra khi: newStart < existingEnd && newEnd > existingStart
+      if (newStart < existingEnd && newEnd > existingStart) {
+        return true; // Có trùng
+      }
+    }
+
+    return false; // Không trùng
+  }
 }

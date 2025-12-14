@@ -19,50 +19,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       // Handle 403 Forbidden
-      if (error.status === 403) {
-        const url = error.url?.toLowerCase() || '';
-        
-        // SKIP retry cho getCurrentUser từ APP_INITIALIZER (khi app start)
-        if (url.includes('/current-user')) {
-          // Không show modal, không retry → guest mode
-          return throwError(() => error);
-        }
-        
-        // Danh sách endpoints có thể bị timing issue sau login
-        const postLoginEndpoints = [
-          '/profile',
-          '/settings',
-          '/dashboard',
-          '/manage-',
-          '/user-management',
-          '/statistical-reports'
-        ];
-        
-        const isPostLoginEndpoint = postLoginEndpoints.some(endpoint => url.includes(endpoint));
-        
-        // Nếu là endpoint sau login, retry 1 lần sau 800ms
-        if (isPostLoginEndpoint && !req.headers.has('X-Retry-403')) {
-          return timer(800).pipe(
-            switchMap(() => {
-              const retryReq = req.clone({
-                withCredentials: true,
-                setHeaders: { 'X-Retry-403': 'true' }
-              });
-              return next(retryReq);
-            }),
-            catchError((retryError: HttpErrorResponse) => {
-              if (retryError.status === 403) {
-                unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
-              }
-              return throwError(() => retryError);
-            })
-          );
-        }
-        
-        // Các trường hợp khác: hiện modal ngay
-        unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
-        return throwError(() => error);
-      }
+     if (error.status === 403) {
+  const abpError = error?.error?.error;
+  const errorCode = abpError?.code;
+  const errorMessage = abpError?.message ?? '';
+
+  // ✅ Business / UserFriendly error → KHÔNG show modal
+  const isAuthorizationError =
+    errorCode?.startsWith('AbpAuthorization') ||
+    errorMessage.toLowerCase().includes('permission') ||
+    errorMessage.toLowerCase().includes('not allowed');
+
+  if (isAuthorizationError) {
+    unauthorizedModal.show(errorMessage || 'Bạn không có quyền truy cập trang này.');
+  }
+
+  return throwError(() => error);
+}
+
 
       // Ignore non-401 errors
       if (error.status !== 401) {

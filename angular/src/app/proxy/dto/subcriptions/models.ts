@@ -98,6 +98,7 @@ export interface SubcriptionPriceUpdateDto {
 
 export interface SubcriptionPriceViewDto {
   subcriptionServiceId?: string;
+  id?: string;
   originalPrice: number;
   salePercent: number;
   type?: SubcriptionContance_CurrencyType;
@@ -140,6 +141,8 @@ export interface SubcriptionsViewDto {
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
+  iShareable: boolean;
+  totalLimitpackage?: number;
   totalBuyEachUser: number;
   isLifeTime: boolean;
   dayDuration?: number;
