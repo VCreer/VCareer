@@ -272,7 +272,6 @@ export class CandidateHomepageComponent implements OnInit {
 
     this.jobSearchService.searchJobs(searchInput).pipe(
       catchError(error => {
-        console.error('❌ Error loading jobs:', error);
         return of([] as JobViewDto[]);
       })
     ).subscribe({
@@ -330,7 +329,7 @@ export class CandidateHomepageComponent implements OnInit {
       queryParams.districtIds = this.selectedWardCode.join(',');
     }
 
-    this.router.navigate(['/candidate/job'], { queryParams });
+    this.router.navigate(['/job'], { queryParams });
   }
 
   /**
@@ -383,7 +382,7 @@ export class CandidateHomepageComponent implements OnInit {
    */
   onJobClick(jobId: string) {
     // ✅ Navigate to job detail với string ID
-     this.router.navigate(['/candidate/job-detail', jobId]);
+     this.router.navigate(['/job-detail', jobId]);
   }
 
   //#region Category Section với images
@@ -423,7 +422,7 @@ export class CandidateHomepageComponent implements OnInit {
    */
   onCategoryClick(categoryId: string) {
     // Navigate to category jobs với filter
-    this.router.navigate(['/candidate/job'], {
+    this.router.navigate(['/job'], {
       queryParams: { categoryIds: categoryId }
     });
   }
@@ -441,6 +440,6 @@ export class CandidateHomepageComponent implements OnInit {
   }
 
   viewAllJobs() {
-    this.router.navigate(['/candidate/job']);
+    this.router.navigate(['/job']);
   }
 }

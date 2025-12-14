@@ -268,11 +268,11 @@ export class JobComponent implements OnInit {
   }
 
   onViewDetail(job: JobViewDto) {
-    this.router.navigate(['/candidate/job-detail', job.id]);
+    this.router.navigate(['/job-detail', job.id]);
   }
 
   onJobClick(job: JobViewDto) {
-    this.router.navigate(['/candidate/job-detail', job.id]);
+    this.router.navigate(['/job-detail', job.id]);
   }
 
   onJobHidden() {

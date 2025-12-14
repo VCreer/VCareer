@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AuthStateService } from './auth-state.service';
+import { catchError, map, switchMap, tap, timeout, shareReplay } from 'rxjs/operators';
+import { Observable, throwError, of, EMPTY } from 'rxjs';
+import { AuthApiService } from './auth-api.service';
 import {
   CurrentUserInfoDto,
   LoginDto,
@@ -11,14 +14,10 @@ import {
   GoogleLoginDto,
   ResetPasswordDto,
 } from '../../../proxy/dto/auth-dto/models';
-import { catchError, map, switchMap, tap, finalize, shareReplay, timeout, take } from 'rxjs/operators';
-import { Observable, throwError, of } from 'rxjs';
-import { AuthApiService } from './auth-api.service';
-
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacadeService {
-  // Cache request đang chạy để tránh gọi API nhiều lần
+  // Cache request với shareReplay
   private loadUserRequest$: Observable<CurrentUserInfoDto | null> | null = null;
 
   constructor(
@@ -27,51 +26,55 @@ export class AuthFacadeService {
   ) {}
 
   /**
-   * Login candidate và load user info
+   * Load user với proper caching và error handling
+   * Tránh vòng lặp bằng cách:
+   * 1. Chỉ call API một lần (shareReplay)
+   * 2. Luôn return of(null) khi error (không throw)
+   * 3. Set timeout để tránh blocking
+   */
+  loadCurrentUser(): Observable<CurrentUserInfoDto | null> {
+    // Return cached request nếu có
+    if (this.loadUserRequest$) {
+      console.log('[AuthFacade] Returning cached user request');
+      return this.loadUserRequest$;
+    }
+
+    // Tạo request mới với shareReplay để cache
+    this.loadUserRequest$ = this.authService.getCurrentUser().pipe(
+      timeout(5000), // Timeout sau 5s
+      tap(user => {
+        this.state.setUser(user);
+        console.log('[AuthFacade] User loaded:', user?.email || 'unknown');
+      }),
+      catchError(err => {
+        console.warn('[AuthFacade] Cannot load user → guest mode', err.status || err.message);
+        this.state.setUser(null);
+        // QUAN TRỌNG: Return of(null) thay vì throwError để không gây loop
+        return of(null);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    return this.loadUserRequest$;
+  }
+
+  /**
+   * Force reload user (clear cache)
+   * Dùng khi: login, logout, refresh profile
+   */
+  forceReloadUser(): Observable<CurrentUserInfoDto | null> {
+    console.log('[AuthFacade] Forcing user reload (cache cleared)');
+    this.loadUserRequest$ = null;
+    return this.loadCurrentUser();
+  }
+
+  /**
+   * Login candidate
    */
   loginCandidate(payload: { email: string; password: string }): Observable<void> {
     return this.authService.candidateLogin(payload as LoginDto).pipe(
-      switchMap(() => this.loadCurrentUser().pipe(map(() => void 0)))
-    );
-  }
-
-  loadCurrentUser(): Observable<CurrentUserInfoDto | null> {
-  return this.authService.getCurrentUser().pipe(
-    take(1),
-    timeout(6000),
-    tap(user => {
-      this.state.setUser(user);
-      console.log('[AuthFacade] User loaded:', user);
-    }),
-    catchError(err => {
-      console.warn('[AuthFacade] Không thể load user → guest mode', err);
-      this.state.setUser(null);
-      return of(null);
-    })
-  );
-}
-
-  /**
-   * Refresh token (dùng trong interceptor)
-   */
-  refreshToken(): Observable<void> {
-    return this.authService.refeshToken();
-  }
-
-  /**
-   * Logout và clear state
-   */
-  logout(): Observable<void> {
-    return this.authService.logOut().pipe(
-      tap(() => {
-        this.state.setUser(null);
-        console.log('[AuthFacade] User logged out');
-      }),
-      catchError(err => {
-        // Dù logout fail vẫn clear state
-        this.state.setUser(null);
-        return throwError(() => err);
-      })
+      switchMap(() => this.forceReloadUser()),
+      map(() => void 0)
     );
   }
 
@@ -83,11 +86,12 @@ export class AuthFacadeService {
   }
 
   /**
-   * Login recruiter và load user info
+   * Login recruiter
    */
   loginRecruiter(payload: LoginDto): Observable<void> {
     return this.authService.recruiterLogin(payload).pipe(
-      switchMap(() => this.loadCurrentUser().pipe(map(() => void 0)))
+      switchMap(() => this.forceReloadUser()),
+      map(() => void 0)
     );
   }
 
@@ -99,11 +103,12 @@ export class AuthFacadeService {
   }
 
   /**
-   * Login employee và load user info
+   * Login employee
    */
   loginEmployee(payload: EmployeeLoginDto): Observable<void> {
     return this.authService.employeeLogin(payload).pipe(
-      switchMap(() => this.loadCurrentUser().pipe(map(() => void 0)))
+      switchMap(() => this.forceReloadUser()),
+      map(() => void 0)
     );
   }
 
@@ -129,37 +134,56 @@ export class AuthFacadeService {
   }
 
   /**
-   * Login with Google và load user info
+   * Login with Google
    */
   loginWithGoogle(payload: GoogleLoginDto): Observable<void> {
     return this.authService.loginWithGoogle(payload).pipe(
-      switchMap(() => this.loadCurrentUser().pipe(map(() => void 0)))
+      switchMap(() => this.forceReloadUser()),
+      map(() => void 0)
     );
   }
 
   /**
-   * Logout all devices và clear state
+   * Logout với proper cleanup
    */
-  logoutAllDevices(): Observable<void> {
-    return this.authService.logOutAllDevice().pipe(
+  logout(): Observable<void> {
+    return this.authService.logOut().pipe(
       tap(() => {
         this.state.setUser(null);
-        console.log('[AuthFacade] User logged out from all devices');
+        this.loadUserRequest$ = null;
+        console.log('[AuthFacade] User logged out');
       }),
+      map(() => void 0),
       catchError(err => {
-        // Dù logout fail vẫn clear state
+        // Clear state ngay cả khi logout API fail
         this.state.setUser(null);
-        return throwError(() => err);
+        this.loadUserRequest$ = null;
+        console.error('[AuthFacade] Logout error (state cleared anyway):', err);
+        // Không throw error → cho phép UI tiếp tục
+        return of(void 0);
       })
     );
   }
 
   /**
-   * Force reload user (clear cache và load lại)
-   * Dùng khi cần refresh user info ngay cả khi đang có request
+   * Logout all devices với proper cleanup
    */
-  forceReloadUser(): Observable<CurrentUserInfoDto | null> {
-    this.loadUserRequest$ = null; // Clear cache
-    return this.loadCurrentUser();
+  logoutAllDevices(): Observable<void> {
+    return this.authService.logOutAllDevice().pipe(
+      tap(() => {
+        this.state.setUser(null);
+        this.loadUserRequest$ = null;
+        console.log('[AuthFacade] User logged out from all devices');
+      }),
+      map(() => void 0),
+      catchError(err => {
+        // Clear state ngay cả khi logout API fail
+        this.state.setUser(null);
+        this.loadUserRequest$ = null;
+        console.error('[AuthFacade] Logout all devices error (state cleared anyway):', err);
+        // Không throw error → cho phép UI tiếp tục
+        return of(void 0);
+      })
+    );
   }
 }
