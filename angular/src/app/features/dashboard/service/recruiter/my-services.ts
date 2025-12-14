@@ -15,7 +15,6 @@ export interface ServiceItem {
   description: string;
   originalPrice: number;
   dayDuration?: number;
-  status: SubcriptionContance_SubcriptionStatus;
   isActive: boolean;
   isLifeTime: boolean;
 }
@@ -177,7 +176,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
       description: dto.description || '',
       originalPrice: dto.originalPrice,
       dayDuration: dto.dayDuration,
-      status: dto.status!,
       isActive: dto.isActive,
       isLifeTime: dto.isLifeTime
     };

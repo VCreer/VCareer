@@ -65,23 +65,25 @@
 
         <!-- Filter Bar -->
         <div class="filter-bar">
-          <div class="filter-group">
-            <app-status-dropdown
-              [options]="statusOptions"
-              [selectedValue]="filterStatus"
-              (statusChange)="filterStatus = $event; onFilterChange()"
-            >
-            </app-status-dropdown>
-          </div>
-          <div class="filter-group">
-            <app-select-field
-              placeholder="Tất cả loại"
-              [options]="typeOptions"
-              [(ngModel)]="filterType"
-              (ngModelChange)="onFilterChange()"
-            >
-            </app-select-field>
-          </div>
+         <div class="filter-group">
+    <app-select-field
+      placeholder="Tất cả trạng thái"
+      [options]="statusOptions"
+      [(ngModel)]="filterStatus"
+      (ngModelChange)="onFilterChange()"
+    >
+    </app-select-field>
+  </div>
+  
+  <div class="filter-group">
+    <app-select-field
+      placeholder="Tất cả loại"
+      [options]="typeOptions"
+      [(ngModel)]="filterType"
+      (ngModelChange)="onFilterChange()"
+    >
+    </app-select-field>
+  </div>
         </div>
       </div>
 
@@ -139,18 +141,6 @@
                   *ngIf="sortField === 'dayDuration' && sortDirection === 'desc'"
                 ></i>
               </th>
-              <th (click)="onSort('status')" class="sortable">
-                Trạng thái
-                <i class="fa fa-sort" *ngIf="sortField !== 'status'"></i>
-                <i
-                  class="fa fa-sort-up"
-                  *ngIf="sortField === 'status' && sortDirection === 'asc'"
-                ></i>
-                <i
-                  class="fa fa-sort-down"
-                  *ngIf="sortField === 'status' && sortDirection === 'desc'"
-                ></i>
-              </th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -165,11 +155,7 @@
               </td>
               <td class="price-cell">{{ formatPrice(pkg.originalPrice) }}</td>
               <td>{{ getDurationLabel(pkg) }}</td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(pkg)">
-                  {{ getStatusLabel(pkg) }}
-                </span>
-              </td>
+             
               <td class="actions-cell">
                 <div class="actions-menu-container">
                   <button class="actions-menu-btn" (click)="toggleActionsMenu(pkg.id, $event)">
@@ -268,31 +254,6 @@
       </app-input-field>
       <div class="field-error" *ngIf="validationErrors['description']">
         {{ validationErrors['description'] }}
-      </div>
-    </div>
-
-    <!-- Đối tượng và Trạng thái -->
-    <div class="form-row">
-      <div class="form-group">
-        <app-select-field
-          label="Đối tượng"
-          placeholder="Chọn đối tượng"
-          [options]="typeOptions"
-          [(ngModel)]="packageFormTargetString"
-          (ngModelChange)="onTargetChange()"
-          [required]="true"
-        >
-        </app-select-field>
-      </div>
-      <div class="form-group">
-        <app-select-field
-          label="Trạng thái"
-          placeholder="Chọn trạng thái"
-          [options]="createStatusOptions"
-          [(ngModel)]="packageFormStatusString"
-          [required]="true"
-        >
-        </app-select-field>
       </div>
     </div>
 
@@ -481,13 +442,6 @@
       <div class="form-group">
         <label class="form-label">Đối tượng</label>
         <div class="readonly-field">{{ getTargetLabel(packageForm.target) }}</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Trạng thái</label>
-        <div class="readonly-field" *ngIf="selectedPackage">
-          {{ getStatusLabel(selectedPackage) }}
-        </div>
-        <div class="readonly-field" *ngIf="!selectedPackage">-</div>
       </div>
     </div>
 

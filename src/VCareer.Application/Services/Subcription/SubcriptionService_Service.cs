@@ -93,7 +93,7 @@ namespace VCareer.Services.Subcription
             return existingChildService;
 
         }
-           
+
         [Authorize(VCareerPermission.SubcriptionService.Create)]
         public async Task CreateSubCriptionAsync(SubcriptionsCreateDto dto)
         {
@@ -109,10 +109,12 @@ namespace VCareer.Services.Subcription
                 Title = dto.Title,
                 Target = dto.Target,
                 TotalBuyEachUser = dto.TotalBuyEachUser,
-                Status = dto.Status,
                 OriginalPrice = dto.OriginalPrice,
                 IsLifeTime = dto.IsLifeTime,
-                DayDuration = dto.DayDuration
+                DayDuration = dto.DayDuration,
+                TotalLimitpackage = dto.TotalLimitpackage,
+                IShareable = dto.IShareable,
+
             };
 
             await _subcriptionServiceRepository.InsertAsync(newSubcription, true);
@@ -147,10 +149,9 @@ namespace VCareer.Services.Subcription
             var subcription = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionId);
             if (subcription == null) throw new BusinessException("Subcription not found");
             subcription.IsActive = false;
-            subcription.Status = SubcriptionContance.SubcriptionStatus.Inactive;
             await _subcriptionServiceRepository.UpdateAsync(subcription);
         }
-        
+
         [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]
         public async Task<List<ChildServiceViewDto>> GetChildServicesWithPaging(Guid subcriptionId, bool? isActive, PagingDto pagingDto)
         {
@@ -230,10 +231,24 @@ namespace VCareer.Services.Subcription
         public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(string? target = null)
         {
             var query = await _subcriptionServiceRepository.GetQueryableAsync();
-            query = query.Where(x => x.IsActive == true && x.Status == SubcriptionContance.SubcriptionStatus.Active);
+            query = query.Where(x => x.IsActive == true);
 
             if (!string.IsNullOrWhiteSpace(target)
       && Enum.TryParse<SubcriptorTarget>(target, true, out var parsedTarget))
+            {
+                query = query.Where(x => x.Target == parsedTarget);
+            }
+
+            var services = await AsyncExecuter.ToListAsync(query);
+            return ObjectMapper.Map<List<SubcriptionService>, List<SubcriptionsViewDto>>(services);
+        }
+        public async Task<List<SubcriptionsViewDto>> GetSubscriptionServicesAsync(string? target, bool? isActive)
+        {
+            var query = await _subcriptionServiceRepository.GetQueryableAsync();
+            if (isActive != null) query = query.Where(x => x.IsActive == isActive);
+
+            if (!string.IsNullOrWhiteSpace(target)
+&& Enum.TryParse<SubcriptorTarget>(target, true, out var parsedTarget))
             {
                 query = query.Where(x => x.Target == parsedTarget);
             }

@@ -74,7 +74,7 @@ namespace VCareer.Services.Subcription
             {
                 endDate = startDate.AddDays((double)subcriptionService.DayDuration);
             }
-            if (subcriptionService.Status != SubcriptionStatus.Active) throw new BusinessException("SubcriptionService is not active");
+            if (!subcriptionService.IsActive) throw new BusinessException("SubcriptionService is not active");
             var listSerivceBoughtedAndWorking = await SubcriptionBoughtedAndActive(dto.UserId, dto.SubcriptionServiceId);
             if (listSerivceBoughtedAndWorking != null)
             {

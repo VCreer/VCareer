@@ -18043,6 +18043,63 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "GetSubscriptionServicesAsyncByTargetAndIsActive": {
+              "uniqueName": "GetSubscriptionServicesAsyncByTargetAndIsActive",
+              "name": "GetSubscriptionServicesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/subscription-services",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "target",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "target",
+                  "name": "target",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.Subcription.SubcriptionService_Service"
             }
           }
         },
@@ -34215,18 +34272,6 @@
           "regex": null
         },
         {
-          "name": "Status",
-          "jsonName": null,
-          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "OriginalPrice",
           "jsonName": null,
           "type": "System.Decimal",
@@ -34452,18 +34497,6 @@
           "name": "Target",
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Status",
-          "jsonName": null,
-          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
           "typeSimple": "enum",
           "isRequired": false,
           "minLength": null,

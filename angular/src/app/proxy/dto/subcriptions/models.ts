@@ -112,7 +112,6 @@ export interface SubcriptionsCreateDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
@@ -137,7 +136,6 @@ export interface SubcriptionsViewDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;

@@ -459,7 +459,7 @@ export const APP_ROUTES: Routes = [
           ).then(c => c.EmployeeJobManagementComponent),
       },
       {
-        path: 'service-price-list',
+        path: 'service-price-list/:id',
         loadComponent: () =>
           import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
             c => c.ServicePriceListComponent
