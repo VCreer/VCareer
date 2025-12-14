@@ -15,7 +15,8 @@ namespace VCareer.Models.Subcription
         public string Description { get; set; }
         public ServiceAction Action { get; set; }
         public ServiceTarget Target { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } //có được phép hiển thị không
+        public bool IsEnable { get; set; } // có được phép chạy logic không
         public bool IsLifeTime { get; set; } = false;
         public bool IsAutoActive { get; set; } = false;
         public bool IsLimitUsedTime { get; set; }  //giới hạn số lần dùng
@@ -27,5 +28,6 @@ namespace VCareer.Models.Subcription
         public virtual ICollection<ChildService_SubcriptionService> childService_Subcriptions { get; set; } = new HashSet<ChildService_SubcriptionService>();
 
         public virtual ICollection<User_ChildService> user_ChildServices { get; set; } = new HashSet<User_ChildService>();
+
     }
 }

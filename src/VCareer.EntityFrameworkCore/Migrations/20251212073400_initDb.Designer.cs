@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251210154855_InitDatabaseVcareer")]
-    partial class InitDatabaseVcareer
+    [Migration("20251212073400_initDb")]
+    partial class initDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1596,6 +1596,9 @@ namespace VCareer.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
 
+                    b.Property<bool>("IsEnable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLifeTime")
                         .HasColumnType("bit");
 
@@ -1784,6 +1787,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
+                    b.Property<bool>("IShareable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -1824,6 +1830,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("TotalBuyEachUser")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalLimitpackage")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1880,6 +1889,9 @@ namespace VCareer.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsLimitUsedTime")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimaryOwner")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
@@ -1955,6 +1967,9 @@ namespace VCareer.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsShared")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")

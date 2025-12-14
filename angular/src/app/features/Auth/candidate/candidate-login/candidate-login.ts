@@ -155,7 +155,7 @@ export class LoginComponent {
           this.setRememberCookie(rememberMe, username);
           this.showToastMessage('Đăng nhập thành công!', 'success');
           // Redirect đến /home thay vì / để tránh vấn đề với route root
-          setTimeout(() => this.router.navigate(['/home']), 800);
+          setTimeout(() => this.router.navigate(['candidate/home']), 800);
         },
         error: (err) => {
           console.error('Candidate login error:', err);
@@ -203,7 +203,6 @@ export class LoginComponent {
   async signInWithGoogle() {
     try {
       this.isLoading = true;
-      console.log('Starting Google sign in...');
       
       // Sign in with Google to get idToken
       const googleUser = await this.googleAuthService.signInWithGoogle();
@@ -215,20 +214,16 @@ export class LoginComponent {
       });
       
       if (!googleUser.idToken) {
-        console.error('No idToken received from Google');
         throw new Error('Không thể lấy token từ Google. Vui lòng thử lại.');
       }
 
-      console.log('Calling backend API with idToken...');
       // Call backend API with Google idToken
       this.authFacade.loginWithGoogle({ idToken: googleUser.idToken })
         .pipe(finalize(() => {
           this.isLoading = false;
-          console.log('Google login request completed');
         }))
         .subscribe({
           next: () => {
-            console.log('Google login successful');
             this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
             this.navigationService.loginAsCandidate();
             // Redirect đến /home thay vì / để tránh vấn đề với route root

@@ -51,10 +51,10 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  executeExpiredJobPostAutomaticallyById = (id: string, config?: Partial<Rest.Config>) =>
+  executeExpiredJobPostBackgoundWorker = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-post/${id}/execute-expired-job-post-automatically`,
+      url: '/api/app/job-post/execute-expired-job-post-backgound-worker',
     },
     { apiName: this.apiName,...config });
   

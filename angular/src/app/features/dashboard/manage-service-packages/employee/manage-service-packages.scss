@@ -17,17 +17,17 @@
 
   // Breadcrumb Box
   .breadcrumb-box {
-    background-color: white;
-    padding: 1rem 0;
-    position: fixed;
-    top: 64px;
-    z-index: 998;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: left 0.3s ease, width 0.3s ease;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+      background-color: white;
+  padding: 1rem 0;
+  position: fixed;
+  top: 64px;
+  z-index: 998;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s ease, width 0.3s ease;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
     @media (max-width: 768px) {
       top: 56px;
@@ -80,12 +80,15 @@
       }
     }
 
-    .header-actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-      padding-right: 16px;
+     .header-actions {
+    display: flex !important; // Force display
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    padding-right: 16px;
+    visibility: visible !important; // Force visible
+    opacity: 1 !important; // Force opacity
+  
 
       @media (max-width: 768px) {
         width: 100%;
@@ -878,5 +881,359 @@
 .sale-status-expired {
   background: #e5e7eb;
   color: #374151;
+}
+// Readonly field style for edit modal
+.modal-content-wrapper {
+  .readonly-field {
+    padding: 12px 16px;
+    background-color: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+}
+// Thêm vào cuối file SCSS hiện có
+
+// Child Services Modal Styles
+.modal-content-wrapper {
+  .package-info-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #0F83BA;
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .section-description {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+
+  .loading-state {
+    padding: 3rem;
+    text-align: center;
+    color: #6b7280;
+
+    i {
+      font-size: 2rem;
+      color: #0F83BA;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  .child-services-container {
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+
+      &:hover {
+        background: #94a3b8;
+      }
+    }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: #6b7280;
+
+      i {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        font-size: 1rem;
+        margin: 0;
+      }
+    }
+  }
+
+  .service-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .service-group {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: white;
+      overflow: hidden;
+
+      .group-header {
+        padding: 1rem 1.25rem;
+        background: #f9fafb;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background-color 0.2s ease;
+        user-select: none;
+
+        &:hover {
+          background: #f3f4f6;
+        }
+
+        .group-title-section {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          i {
+            font-size: 0.875rem;
+            color: #6b7280;
+            transition: transform 0.2s ease;
+          }
+
+          .group-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+          }
+
+          .service-count {
+            font-size: 0.875rem;
+            color: #6b7280;
+          }
+        }
+
+        .group-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          .selected-badge {
+            font-size: 0.8125rem;
+            color: #0F83BA;
+            background: #e0f2fe;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .group-content {
+        border-top: 1px solid #e5e7eb;
+        background: white;
+
+        .service-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid #f3f4f6;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background: #f9fafb;
+          }
+
+          &.selected {
+            background: #eff6ff;
+            border-left: 3px solid #0F83BA;
+
+            .service-checkbox input {
+              border-color: #0F83BA;
+            }
+          }
+
+          .service-checkbox {
+            flex-shrink: 0;
+            padding-top: 0.125rem;
+
+            input[type="checkbox"] {
+              width: 18px;
+              height: 18px;
+              cursor: pointer;
+              accent-color: #0F83BA;
+              border: 2px solid #d1d5db;
+              border-radius: 4px;
+            }
+          }
+
+          .service-info {
+            flex: 1;
+            min-width: 0;
+
+            .service-name {
+              font-size: 0.9375rem;
+              font-weight: 600;
+              color: #111827;
+              margin-bottom: 0.25rem;
+            }
+
+            .service-description {
+              font-size: 0.8125rem;
+              color: #6b7280;
+              margin-bottom: 0.5rem;
+              line-height: 1.5;
+            }
+
+            .service-meta {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.75rem;
+
+              .meta-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.375rem;
+                font-size: 0.75rem;
+                color: #6b7280;
+                background: #f3f4f6;
+                padding: 0.25rem 0.625rem;
+                border-radius: 6px;
+
+                i {
+                  font-size: 0.75rem;
+                  color: #9ca3af;
+                }
+              }
+            }
+          }
+
+          .service-status {
+            flex-shrink: 0;
+            padding-top: 0.125rem;
+
+            i {
+              font-size: 1.25rem;
+              color: #10b981;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .selection-summary {
+    padding: 1rem;
+    background: #eff6ff;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 1.5rem;
+
+    .summary-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      color: #1e40af;
+
+      i {
+        font-size: 1rem;
+        color: #3b82f6;
+      }
+
+      span {
+        font-weight: 500;
+      }
+    }
+  }
+
+  .info-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: #dbeafe;
+    border-radius: 8px;
+    border: 1px solid #93c5fd;
+
+    i {
+      font-size: 1rem;
+      color: #2563eb;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: 0.8125rem;
+      color: #1e40af;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Responsive adjustments for child services modal
+@media (max-width: 768px) {
+  .modal-content-wrapper {
+    .child-services-container {
+      max-height: 400px;
+    }
+
+    .service-groups {
+      .service-group {
+        .group-header {
+          padding: 0.875rem 1rem;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+
+          .group-title-section {
+            width: 100%;
+          }
+
+          .group-actions {
+            width: 100%;
+            justify-content: flex-start;
+          }
+        }
+
+        .group-content {
+          .service-item {
+            padding: 0.875rem 1rem;
+
+            .service-info {
+              .service-meta {
+                gap: 0.5rem;
+
+                .meta-item {
+                  font-size: 0.6875rem;
+                  padding: 0.2rem 0.5rem;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 

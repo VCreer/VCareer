@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Constants.JobConstant;
 using VCareer.IServices.Common;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
 
@@ -14,10 +15,12 @@ namespace VCareer.Dto.Subcriptions
         public string Description { get; set; }
         public ServiceAction Action { get; set; }
         public ServiceTarget Target { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } //có được phép hiển thị không
+        public bool IsEnable { get; set; } // có được phép chạy logic không
         public bool IsLifeTime { get; set; } = false;
         public bool IsAutoActive { get; set; } = false;
         public bool IsLimitUsedTime { get; set; }  //giới hạn số lần dùng
+        public JobPriorityLevel? Priority { get; set; }
         public int? TimeUsedLimit { get; set; }
         public int? DayDuration { get; set; }
         public int? Value { get; set; }

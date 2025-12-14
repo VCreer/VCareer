@@ -28,6 +28,22 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
+  deactiveAllEffectingJobByChildServiceIdByChildServiceId = (childServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-child-service-id/${childServiceId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deactiveAllEffectingJobByJobIDByJobId = (JobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-job-iD/${JobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getEffectingJobServiceByEffectingJobServiceId = (effectingJobServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto>({
       method: 'GET',
@@ -59,6 +75,14 @@ export class JobAffectingService {
       method: 'PUT',
       url: '/api/app/job-affecting/effecting-job-service',
       body: jobAffectingDto,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateExpiredEffectingJobServiceBackgroundJob = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/job-affecting/expired-effecting-job-service-background-job',
     },
     { apiName: this.apiName,...config });
 

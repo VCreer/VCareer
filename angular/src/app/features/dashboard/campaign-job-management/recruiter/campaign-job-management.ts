@@ -732,7 +732,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     const actions = [
       SubcriptionContance_ServiceAction.BoostScoreJob, // 0
       SubcriptionContance_ServiceAction.TopList, // 1
-      SubcriptionContance_ServiceAction.VerifiedBadge, // 2
+      SubcriptionContance_ServiceAction.JobBadge, // 2
+      SubcriptionContance_ServiceAction.ThemeCompany,
     ];
 
     let completedRequests = 0;
@@ -782,12 +783,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   getActionLabel(action: SubcriptionContance_ServiceAction): string {
     const labels: { [key in SubcriptionContance_ServiceAction]: string } = {
-      [SubcriptionContance_ServiceAction.BoostScoreCv]: 'Tăng điểm CV',
+    
       [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm Job',
       [SubcriptionContance_ServiceAction.TopList]: 'Top danh sách',
-      [SubcriptionContance_ServiceAction.VerifiedBadge]: 'Gắn badge xác thực',
-      [SubcriptionContance_ServiceAction.IncreaseQuota]: 'Tăng hạn mức đăng tin',
-      [SubcriptionContance_ServiceAction.ExtendExpiredDate]: 'Gia hạn ngày hết hạn',
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Gắn badge công việc',
+      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Giao diện công ty',
+     
     };
     return labels[action] || 'Dịch vụ';
   }

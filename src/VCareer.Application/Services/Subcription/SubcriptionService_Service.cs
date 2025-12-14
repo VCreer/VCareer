@@ -93,12 +93,12 @@ namespace VCareer.Services.Subcription
             return existingChildService;
 
         }
-        
+           
         [Authorize(VCareerPermission.SubcriptionService.Create)]
         public async Task CreateSubCriptionAsync(SubcriptionsCreateDto dto)
         {
             if (dto.OriginalPrice < 0) throw new UserFriendlyException("OriginalPrice must be greater than 0");
-            if (dto.TotalBuyEachUser <= 0) throw new UserFriendlyException("Incase buy limit , TotalBuyEachUser must be greater than 0");
+            //if (dto.TotalBuyEachUser <= 0) throw new UserFriendlyException("Incase buy limit , TotalBuyEachUser must be greater than 0");
 
             var newSubcription = new SubcriptionService()
             {
