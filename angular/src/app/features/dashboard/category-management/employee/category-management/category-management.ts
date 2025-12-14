@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { 
   ButtonComponent, 
   ToastNotificationComponent,
@@ -11,17 +12,25 @@ import {
   GenericModalComponent,
   SelectOption
 } from '../../../../../shared/components';
+import { 
+  CategoryUpdateCreateDto,
+  CategoryTreeDto
+} from 'src/app/proxy/dto/category';
+import { JobCategoryService } from 'src/app/proxy/services/job'; 
 
 export interface Category {
   id: string;
   name: string;
   description?: string;
+  slug?: string;
   parentCategoryId?: string;
   parentCategoryName?: string;
   isActive: boolean;
-  displayOrder: number;
-  createdAt: Date;
-  updatedAt: Date;
+  sortOrder: number;
+  jobCount: number;
+  subCategories: Category[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Component({
@@ -51,6 +60,12 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
+  // Loading state
+  isLoading = false;
+  isCreating = false;
+  isUpdating = false;
+  isDeleting = false;
+
   // Categories data
   allCategories: Category[] = [];
   filteredCategories: Category[] = [];
@@ -74,26 +89,28 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
     { value: 'inactive', label: 'Ngừng hoạt động' }
   ];
 
-  parentCategoryOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả danh mục cha' },
-    { value: 'none', label: 'Không có danh mục cha' }
-  ];
-
   // Modals
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
   selectedCategory: Category | null = null;
-  isCreating = false;
 
   // Forms
-  createForm = {
+  createForm: CategoryUpdateCreateDto = {
     name: '',
+    slug: '',
+    description: '',
+    parentId: null,
+    sortOrder: 0,
     isActive: true
   };
 
-  editForm = {
+  editForm: CategoryUpdateCreateDto = {
     name: '',
+    slug: '',
+    description: '',
+    parentId: null,
+    sortOrder: 0,
     isActive: true
   };
 
@@ -104,7 +121,10 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
   private currentMenuCategoryId: string | null = null;
   private currentMenuButton: HTMLElement | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private jobCategoryService: JobCategoryService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -125,7 +145,6 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
     }, 50);
 
     this.loadCategories();
-    this.updateParentCategoryOptions();
   }
 
   ngOnDestroy(): void {
@@ -187,69 +206,47 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
 
   // Load data
   loadCategories(): void {
-    // TODO: Call API to load categories
-    // Mock data for now
-    this.allCategories = [
-      {
-        id: '1',
-        name: 'Công nghệ thông tin',
-        description: 'Danh mục về công nghệ thông tin',
-        isActive: true,
-        displayOrder: 1,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01')
-      },
-      {
-        id: '2',
-        name: 'Kế toán',
-        description: 'Danh mục về kế toán',
-        isActive: true,
-        displayOrder: 2,
-        createdAt: new Date('2024-01-02'),
-        updatedAt: new Date('2024-01-02')
-      },
-      {
-        id: '3',
-        name: 'Marketing',
-        description: 'Danh mục về marketing',
-        parentCategoryId: '1',
-        parentCategoryName: 'Công nghệ thông tin',
-        isActive: true,
-        displayOrder: 3,
-        createdAt: new Date('2024-01-03'),
-        updatedAt: new Date('2024-01-03')
-      }
-    ];
-    this.applyFilters();
+    this.isLoading = true;
+    this.jobCategoryService.getCategoryTree()
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (response: CategoryTreeDto[]) => {
+          this.allCategories = this.mapTreeDtoToCategory(response);
+          this.applyFilters();
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+          this.showToastMessage('Không thể tải danh sách danh mục', 'error');
+        }
+      });
   }
 
-  updateParentCategoryOptions(): void {
-    // Add all categories as parent options
-    const parentOptions: SelectOption[] = [
-      { value: '', label: 'Tất cả danh mục cha' },
-      { value: 'none', label: 'Không có danh mục cha' }
-    ];
-    
-    this.allCategories.forEach(cat => {
-      parentOptions.push({ value: cat.id, label: cat.name });
-    });
-    
-    this.parentCategoryOptions = parentOptions;
+  // Map CategoryTreeDto to Category
+  private mapTreeDtoToCategory(treeDtos: CategoryTreeDto[]): Category[] {
+    return treeDtos.map(dto => ({
+      id: dto.categoryId || '',
+      name: dto.categoryName || '',
+      description: dto.description,
+      slug: dto.slug,
+      parentCategoryId: undefined,
+      parentCategoryName: undefined,
+      isActive: true,
+      sortOrder: 0,
+      jobCount: dto.jobCount || 0,
+      subCategories: dto.children ? this.mapTreeDtoToCategory(dto.children) : [],
+      createdAt: undefined,
+      updatedAt: undefined
+    }));
   }
 
   // Filter & Sort
   applyFilters(): void {
     let filtered = [...this.allCategories];
 
-    // Only show categories without parent (main categories)
-    filtered = filtered.filter(cat => !cat.parentCategoryId);
-
     // Search
     if (this.searchKeyword.trim()) {
       const keyword = this.searchKeyword.toLowerCase();
-      filtered = filtered.filter(cat =>
-        cat.name.toLowerCase().includes(keyword)
-      );
+      filtered = this.searchInCategories(filtered, keyword);
     }
 
     // Status filter
@@ -272,6 +269,13 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
 
     this.filteredCategories = filtered;
     this.updatePagination();
+  }
+
+  private searchInCategories(categories: Category[], keyword: string): Category[] {
+    return categories.filter(cat =>
+      cat.name.toLowerCase().includes(keyword) ||
+      (cat.description && cat.description.toLowerCase().includes(keyword))
+    );
   }
 
   onSort(field: 'name'): void {
@@ -302,6 +306,10 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
   onCreateCategory(): void {
     this.createForm = {
       name: '',
+      slug: '',
+      description: '',
+      parentId: null,
+      sortOrder: 0,
       isActive: true
     };
     this.isCreating = false;
@@ -310,7 +318,6 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
 
   onManageSubCategories(category: Category): void {
     this.closeActionsMenu();
-    // Navigate to sub-category management with parent category ID
     this.router.navigate(['/employee/category-management/sub-categories'], {
       queryParams: { parentId: category.id, parentName: category.name }
     });
@@ -325,35 +332,43 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.createForm.name.trim()) {
+    if (!this.createForm.name?.trim()) {
       this.showToastMessage('Vui lòng nhập tên danh mục', 'error');
       return;
     }
 
     this.isCreating = true;
 
-    // TODO: Call API to create category
-    const newCategory: Category = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      name: this.createForm.name,
-      isActive: this.createForm.isActive,
-      displayOrder: this.allCategories.length + 1,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    if (!this.createForm.slug) {
+      this.createForm.slug = this.generateSlug(this.createForm.name);
+    }
 
-    this.allCategories.push(newCategory);
-    this.updateParentCategoryOptions();
-    this.applyFilters();
-    this.showToastMessage('Tạo danh mục thành công', 'success');
-    this.showCreateModal = false;
-    this.isCreating = false;
+    this.jobCategoryService.createCategory(this.createForm)
+      .pipe(finalize(() => this.isCreating = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Tạo danh mục thành công', 'success');
+          this.showCreateModal = false;
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('Error creating category:', error);
+          this.showToastMessage(
+            error?.error?.error?.message || 'Không thể tạo danh mục',
+            'error'
+          );
+        }
+      });
   }
 
   onEditCategory(category: Category): void {
     this.selectedCategory = category;
     this.editForm = {
       name: category.name,
+      slug: category.slug,
+      description: category.description,
+      parentId: category.parentCategoryId || null,
+      sortOrder: category.sortOrder,
       isActive: category.isActive
     };
     this.showEditModal = true;
@@ -361,27 +376,38 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
   }
 
   onConfirmEdit(): void {
-    if (!this.selectedCategory || !this.editForm.name.trim()) {
+    if (!this.selectedCategory || !this.editForm.name?.trim()) {
       this.showToastMessage('Vui lòng nhập tên danh mục', 'error');
       return;
     }
 
-    // TODO: Call API to update category
-    const index = this.allCategories.findIndex(c => c.id === this.selectedCategory!.id);
-    if (index > -1) {
-      this.allCategories[index] = {
-        ...this.allCategories[index],
-        name: this.editForm.name,
-        isActive: this.editForm.isActive,
-        updatedAt: new Date()
-      };
+    if (this.isUpdating) {
+      return;
     }
 
-    this.updateParentCategoryOptions();
-    this.applyFilters();
-    this.showToastMessage('Cập nhật danh mục thành công', 'success');
-    this.showEditModal = false;
-    this.selectedCategory = null;
+    this.isUpdating = true;
+
+    if (!this.editForm.slug) {
+      this.editForm.slug = this.generateSlug(this.editForm.name);
+    }
+
+    this.jobCategoryService.updateCategory(this.selectedCategory.id, this.editForm)
+      .pipe(finalize(() => this.isUpdating = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Cập nhật danh mục thành công', 'success');
+          this.showEditModal = false;
+          this.selectedCategory = null;
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('Error updating category:', error);
+          this.showToastMessage(
+            error?.error?.error?.message || 'Không thể cập nhật danh mục',
+            'error'
+          );
+        }
+      });
   }
 
   onDeleteCategory(category: Category): void {
@@ -393,17 +419,29 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
   onConfirmDelete(): void {
     if (!this.selectedCategory) return;
 
-    // TODO: Call API to delete category
-    const index = this.allCategories.findIndex(c => c.id === this.selectedCategory!.id);
-    if (index > -1) {
-      this.allCategories.splice(index, 1);
+    if (this.isDeleting) {
+      return;
     }
 
-    this.updateParentCategoryOptions();
-    this.applyFilters();
-    this.showToastMessage('Xóa danh mục thành công', 'success');
-    this.showDeleteModal = false;
-    this.selectedCategory = null;
+    this.isDeleting = true;
+
+    this.jobCategoryService.deleteCategory(this.selectedCategory.id)
+      .pipe(finalize(() => this.isDeleting = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Xóa danh mục thành công', 'success');
+          this.showDeleteModal = false;
+          this.selectedCategory = null;
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('Error deleting category:', error);
+          this.showToastMessage(
+            error?.error?.error?.message || 'Không thể xóa danh mục',
+            'error'
+          );
+        }
+      });
   }
 
   onToggleActive(category: Category): void {
@@ -411,22 +449,32 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
     
     const wasActive = category.isActive;
     
-    // TODO: Call API to toggle active status
-    const index = this.allCategories.findIndex(c => c.id === category.id);
-    if (index > -1) {
-      this.allCategories[index] = {
-        ...this.allCategories[index],
-        isActive: !this.allCategories[index].isActive,
-        updatedAt: new Date()
-      };
-    }
+    const updateDto: CategoryUpdateCreateDto = {
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      parentId: category.parentCategoryId || null,
+      sortOrder: category.sortOrder,
+      isActive: !category.isActive
+    };
 
-    this.updateParentCategoryOptions();
-    this.applyFilters();
-    this.showToastMessage(
-      wasActive ? 'Đã tắt danh mục' : 'Đã bật danh mục',
-      'success'
-    );
+    this.jobCategoryService.updateCategory(category.id, updateDto)
+      .subscribe({
+        next: () => {
+          this.showToastMessage(
+            wasActive ? 'Đã tắt danh mục' : 'Đã bật danh mục',
+            'success'
+          );
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('Error toggling category status:', error);
+          this.showToastMessage(
+            error?.error?.error?.message || 'Không thể thay đổi trạng thái danh mục',
+            'error'
+          );
+        }
+      });
   }
 
   // Actions Menu
@@ -494,12 +542,10 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
     let top = buttonRect.top;
     let maxWidth = menuWidth;
 
-    // Adjust for viewport
     if (left + menuWidth > viewportWidth - padding) {
       left = buttonRect.left - menuWidth - 8;
     }
 
-    // Adjust for sidebar
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
       const sidebarRect = sidebar.getBoundingClientRect();
@@ -509,12 +555,10 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Adjust for DevTools (if open)
     if (left + menuWidth > viewportWidth - 300) {
       maxWidth = viewportWidth - left - 300;
     }
 
-    // Adjust for bottom
     if (top + menuHeight > viewportHeight - padding) {
       top = viewportHeight - menuHeight - padding;
     }
@@ -564,21 +608,24 @@ export class CategoryManagementComponent implements OnInit, OnDestroy {
 
   // Get sub-category names for a category
   getSubCategoryNames(categoryId: string): string[] {
-    return this.allCategories
-      .filter(cat => cat.parentCategoryId === categoryId)
-      .map(cat => cat.name);
+    const category = this.allCategories.find(cat => cat.id === categoryId);
+    if (category && category.subCategories) {
+      return category.subCategories.map(sub => sub.name);
+    }
+    return [];
   }
 
-  // Getter methods for filtered options
-  get parentCategoryOptionsForCreate(): SelectOption[] {
-    return this.parentCategoryOptions.filter(opt => opt.value !== '' && opt.value !== 'none');
-  }
-
-  get parentCategoryOptionsForEdit(): SelectOption[] {
-    return this.parentCategoryOptions.filter(opt => 
-      opt.value !== '' && 
-      opt.value !== 'none' && 
-      opt.value !== this.selectedCategory?.id
-    );
+  // Generate slug from name
+  private generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   }
 }

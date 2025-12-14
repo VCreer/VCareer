@@ -11,9 +11,9 @@
   <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="breadcrumb-left">
-        <span class="breadcrumb-item active">Quản lí</span>
+        <span class="breadcrumb-item active">Quản lý</span>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-item">Quản lí dịch vụ phụ</span>
+        <span class="breadcrumb-item">Quản lý dịch vụ con</span>
       </div>
     </div>
     
@@ -24,7 +24,7 @@
         size="medium"
         (click)="onCreateChildService()">
         <i class="fa fa-plus"></i>
-        Tạo dịch vụ phụ
+        Tạo dịch vụ con
       </app-button>
     </div>
   </div>
@@ -36,7 +36,7 @@
       <div class="page-description">
         <p class="description-text">
           <i class="fa fa-info-circle"></i>
-          Quản lý các dịch vụ phụ (child services) có thể được gắn vào các gói dịch vụ. Mỗi dịch vụ phụ có thể có hành động (action), đối tượng (target) và các cấu hình riêng.
+          Quản lý các dịch vụ con (child services) có thể được gắn vào các gói dịch vụ. Mỗi dịch vụ con có thể có hành động (action), đối tượng (target) và các cấu hình riêng.
         </p>
       </div>
       
@@ -83,8 +83,14 @@
         </div>
       </div>
 
+      <!-- Loading Indicator -->
+      <div *ngIf="isLoading" class="loading-state">
+        <i class="fa fa-spinner fa-spin"></i>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
       <!-- Child Services Table -->
-      <div class="table-container">
+      <div *ngIf="!isLoading" class="table-container">
         <table class="child-services-table">
           <thead>
             <tr>
@@ -193,7 +199,7 @@
         <!-- Empty State -->
         <div *ngIf="paginatedChildServices.length === 0" class="empty-state">
           <i class="fa fa-box"></i>
-          <p>Không có dịch vụ phụ nào</p>
+          <p>Không có dịch vụ con nào</p>
         </div>
       </div>
 
@@ -212,14 +218,14 @@
 <!-- Create Child Service Modal -->
 <app-generic-modal
   [show]="showCreateModal"
-  title="Tạo dịch vụ phụ"
+  title="Tạo dịch vụ con"
   [maxWidth]="'700px'"
   [bodyBackground]="'white'"
-  (close)="showCreateModal = false">
+  (close)="showCreateModal = false; isCreating = false">
   <div class="modal-content-wrapper">
     <div class="form-group">
       <app-input-field
-        label="Tên dịch vụ *"
+        label="Tên dịch vụ (Name) *"
         type="text"
         placeholder="VD: Boost CV Score"
         [(ngModel)]="createForm.name"
@@ -228,99 +234,169 @@
     </div>
     <div class="form-group">
       <app-input-field
-        label="Mô tả"
+        label="Mô tả (Description)"
         type="text"
         placeholder="Mô tả dịch vụ"
         [(ngModel)]="createForm.description">
       </app-input-field>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <app-select-field
-          label="Hành động"
-          [options]="formActionOptions"
-          [(ngModel)]="createFormActionString">
-        </app-select-field>
-      </div>
-      <div class="form-group">
-        <app-select-field
-          label="Đối tượng"
-          [options]="formTargetOptions"
-          [(ngModel)]="createFormTargetString">
-        </app-select-field>
-      </div>
-    </div>
+    
+    <!-- Target Selection -->
     <div class="form-group">
       <app-select-field
-        label="Mức độ ưu tiên"
+        label="Đối tượng (Target) *"
+        [options]="formTargetOptions"
+        [(ngModel)]="createFormTargetString"
+        (ngModelChange)="onTargetChange()">
+      </app-select-field>
+    </div>
+    
+    <!-- Action Selection (disabled until target is selected) -->
+    <div class="form-group">
+      <app-select-field
+        label="Hành động (Action) *"
+        [options]="formActionOptions"
+        [(ngModel)]="createFormActionString"
+        (ngModelChange)="onActionChange()"
+        [disabled]="!createFormTargetString">
+      </app-select-field>
+      <small class="field-hint" *ngIf="!createFormTargetString">
+        Vui lòng chọn đối tượng trước
+      </small>
+    </div>
+
+    <!-- Priority (locked for JobBadge and ThemeCompany) -->
+    <div class="form-group" *ngIf="!isFieldLocked.priority">
+      <app-select-field
+        label="Mức độ ưu tiên (Priority)"
         [options]="formPriorityOptions"
         [(ngModel)]="createFormPriorityString">
       </app-select-field>
     </div>
+
     <div class="form-group">
       <app-input-field
-        label="Giá trị"
+        label="Giá trị (Value)"
         type="number"
         placeholder="VD: 100"
         [(ngModel)]="createForm.value">
       </app-input-field>
     </div>
+
+    <!-- Conditional Fields based on Action Rules -->
     <div class="form-row">
       <div class="form-group">
+        <div class="field-label-with-name">
+          <span class="field-name">IsLifeTime</span>
+        </div>
         <app-toggle-switch
           label="Vĩnh viễn"
-          [(ngModel)]="createForm.isLifeTime">
+          [(ngModel)]="createForm.isLifeTime"
+          [disabled]="isFieldLocked.isLifeTime">
         </app-toggle-switch>
+        <small class="field-hint" *ngIf="isFieldLocked.isLifeTime">
+          Giá trị này được khóa theo hành động đã chọn
+        </small>
       </div>
       <div class="form-group" *ngIf="!createForm.isLifeTime">
         <app-input-field
-          label="Số ngày"
+          label="Số ngày (DayDuration) *"
           type="number"
           placeholder="VD: 30"
           [(ngModel)]="createForm.dayDuration">
         </app-input-field>
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
+        <div class="field-label-with-name">
+          <span class="field-name">IsAutoActive</span>
+        </div>
         <app-toggle-switch
           label="Tự động kích hoạt"
-          [(ngModel)]="createForm.isAutoActive">
+          [(ngModel)]="createForm.isAutoActive"
+          [disabled]="isFieldLocked.isAutoActive">
         </app-toggle-switch>
+        <small class="field-hint" *ngIf="isFieldLocked.isAutoActive">
+          Giá trị này được khóa theo hành động đã chọn
+        </small>
       </div>
+    </div>
+
+    <div class="form-row">
       <div class="form-group">
+        <div class="field-label-with-name">
+          <span class="field-name">IsActive</span>
+        </div>
         <app-toggle-switch
           label="Đang hoạt động"
           [(ngModel)]="createForm.isActive">
         </app-toggle-switch>
       </div>
+      <div class="form-group">
+        <div class="field-label-with-name">
+          <span class="field-name">IsEnable</span>
+        </div>
+        <app-toggle-switch
+          label="Bật sử dụng"
+          [(ngModel)]="createForm.isEnable">
+        </app-toggle-switch>
+      </div>
     </div>
+
     <div class="form-group">
+      <div class="field-label-with-name">
+        <span class="field-name">IsLimitUsedTime</span>
+      </div>
       <app-toggle-switch
         label="Giới hạn số lần dùng"
-        [(ngModel)]="createForm.isLimitUsedTime">
+        [(ngModel)]="createForm.isLimitUsedTime"
+        [disabled]="isFieldLocked.isLimitUsedTime">
       </app-toggle-switch>
+      <small class="field-hint" *ngIf="isFieldLocked.isLimitUsedTime">
+        Giá trị này được khóa theo hành động đã chọn
+      </small>
     </div>
-    <div class="form-group" *ngIf="createForm.isLimitUsedTime">
+
+    <div class="form-group" *ngIf="createForm.isLimitUsedTime && !isFieldLocked.timeUsedLimit">
       <app-input-field
-        label="Số lần giới hạn"
+        label="Số lần giới hạn (TimeUsedLimit) *"
         type="number"
         placeholder="VD: 10"
         [(ngModel)]="createForm.timeUsedLimit">
       </app-input-field>
     </div>
+
+    <!-- Validation Messages -->
+    <div class="validation-info" *ngIf="createFormActionString">
+      <p class="info-text">
+        <i class="fa fa-info-circle"></i>
+        <strong>Lưu ý:</strong>
+        <span *ngIf="!createForm.isLifeTime">
+          Vui lòng nhập số ngày và số lần giới hạn (phải lớn hơn 0)
+        </span>
+        <span *ngIf="createForm.isLifeTime">
+          Dịch vụ vĩnh viễn không cần số lần giới hạn
+        </span>
+      </p>
+    </div>
+
     <div class="modal-actions">
       <app-button
         type="secondary"
         size="medium"
-        (click)="showCreateModal = false">
+        (click)="showCreateModal = false; isCreating = false"
+        [disabled]="isCreating">
         Hủy
       </app-button>
       <app-button
         type="primary"
         size="medium"
-        (click)="onConfirmCreate()">
-        Tạo dịch vụ phụ
+        (click)="onConfirmCreate()"
+        [disabled]="isCreating">
+        <i class="fa fa-spinner fa-spin" *ngIf="isCreating"></i>
+        {{ isCreating ? 'Đang tạo...' : 'Tạo dịch vụ con' }}
       </app-button>
     </div>
   </div>
@@ -329,14 +405,14 @@
 <!-- Edit Child Service Modal -->
 <app-generic-modal
   [show]="showEditModal"
-  title="Sửa dịch vụ phụ"
+  title="Sửa dịch vụ con"
   [maxWidth]="'600px'"
   [bodyBackground]="'white'"
-  (close)="showEditModal = false">
+  (close)="showEditModal = false; isUpdating = false">
   <div class="modal-content-wrapper">
     <div class="form-group">
       <app-input-field
-        label="Tên dịch vụ *"
+        label="Tên dịch vụ (Name) *"
         type="text"
         [(ngModel)]="editForm.name"
         required>
@@ -344,12 +420,15 @@
     </div>
     <div class="form-group">
       <app-input-field
-        label="Mô tả"
+        label="Mô tả (Description)"
         type="text"
         [(ngModel)]="editForm.description">
       </app-input-field>
     </div>
     <div class="form-group">
+      <div class="field-label-with-name">
+        <span class="field-name">IsActive</span>
+      </div>
       <app-toggle-switch
         label="Đang hoạt động"
         [(ngModel)]="editForm.isActive">
@@ -359,16 +438,18 @@
       <app-button
         type="secondary"
         size="medium"
-        (click)="showEditModal = false">
+        (click)="showEditModal = false; isUpdating = false"
+        [disabled]="isUpdating">
         Hủy
       </app-button>
       <app-button
         type="primary"
         size="medium"
-        (click)="onConfirmEdit()">
-        Lưu
+        (click)="onConfirmEdit()"
+        [disabled]="isUpdating">
+        <i class="fa fa-spinner fa-spin" *ngIf="isUpdating"></i>
+        {{ isUpdating ? 'Đang lưu...' : 'Lưu' }}
       </app-button>
     </div>
   </div>
 </app-generic-modal>
-

@@ -31,6 +31,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
+using VCareer.Services.LuceneService.JobSearch;
 
 namespace VCareer.Services.Job
 {
@@ -50,10 +51,25 @@ namespace VCareer.Services.Job
         private readonly ITagService _tagService;
         private readonly IJobTagService _jobTagService;
         private readonly IActivityLogAppService _activityLogAppService;
+        private readonly ILuceneJobIndexer _luceneJobIndexer;
 
 
-        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
-            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService, IActivityLogAppService activityLogAppService)
+        public JobPostService(
+            IJobPostRepository repository,
+            IJobSearchService jobSearchService,
+            IJobPriorityRepository jobPriorityRepository,
+            ICompanyRepository companyRepository,
+            ICurrentUser currentUser,
+            IIdentityUserRepository identityUserRepository,
+            IRecruiterRepository recruiterRepository,
+            IGeoService geoService,
+            IJobCategoryRepository jobCategoryRepository,
+            IJobAffectingService jobAffectingService,
+            IChildServiceRepository childServiceRepository,
+            ITagService tagService,
+            IJobTagService jobTagService,
+            ILuceneJobIndexer luceneJobIndexer,
+            IActivityLogAppService activityLogAppService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -69,6 +85,7 @@ namespace VCareer.Services.Job
             _tagService = tagService;
             _jobTagService = jobTagService;
             _activityLogAppService = activityLogAppService;
+            _luceneJobIndexer = luceneJobIndexer;
         }
 
         [Authorize(VCareerPermission.JobPost.Approve)]
@@ -325,14 +342,13 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
         }
-        public async Task ExecuteExpiredJobPostAutomatically(string id)
+        public async Task ExecuteExpiredJobPostBackgoundWorker()
         {
-            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
-
-            jobPost.Status = JobStatus.Closed;
-            await _jobPostRepository.UpdateAsync(jobPost, true);
+            var jobIndexedExpiredId = _luceneJobIndexer.GetExpiredJobIds();
+            if (jobIndexedExpiredId == null || jobIndexedExpiredId.Count == 0) return;
+            await _jobSearchService.RemoveJobsFromIndexAsync(jobIndexedExpiredId);
+            //cap nhat job effect (neu co)
+            foreach (var jobId in jobIndexedExpiredId) await _effectingJobService.DeactiveAllEffectingJobByJobID(jobId);
         }
         [Authorize(VCareerPermission.JobPost.Create)]
         public async Task CreateJobPost(JobPostCreateDto dto)

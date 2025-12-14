@@ -173,8 +173,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] FilePermissions = new[]
         {
-    VCareerPermission.Files.Default,
-    VCareerPermission.Files.View,
+       VCareerPermission.Files.View,
     VCareerPermission.Files.Delete,
     VCareerPermission.Files.Download,
     VCareerPermission.Files.Update,
@@ -183,8 +182,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] ProfilePermissions = new[]
         {
-    VCareerPermission.Profile.Default,
-    VCareerPermission.Profile.UpdatePersonalInfo,
+      VCareerPermission.Profile.UpdatePersonalInfo,
     VCareerPermission.Profile.ChangePassword,
     VCareerPermission.Profile.DeleteAccount,
     VCareerPermission.Profile.SubmitLegalInformation,
@@ -197,14 +195,12 @@ namespace VCareer.DataSeedContributers
 
         private static string[] Candidate_CvTemplatePermissions = new[]
         {
-      VCareerPermission.CvTemplate.Default,
-      VCareerPermission.CvTemplate.Get,
+          VCareerPermission.CvTemplate.Get,
       VCareerPermission.CvTemplate.GetActiveTemplates
 };
         private static string[] Employee_CvTemplatePermissions = new[]
      {
-   VCareerPermission.CvTemplate.Default,
-    VCareerPermission.CvTemplate.Create,
+     VCareerPermission.CvTemplate.Create,
     VCareerPermission.CvTemplate.Update,
     VCareerPermission.CvTemplate.Delete,
     VCareerPermission.CvTemplate.Get,
@@ -214,8 +210,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] CandidateCvPermissions = new[]
         {
-    VCareerPermission.CandidateCv.Default,
-    VCareerPermission.CandidateCv.Create,
+      VCareerPermission.CandidateCv.Create,
     VCareerPermission.CandidateCv.Update,
     VCareerPermission.CandidateCv.Delete,
     VCareerPermission.CandidateCv.Get,
@@ -229,8 +224,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] CartPermissions = new[]
         {
-    VCareerPermission.Cart.Default,
-    VCareerPermission.Cart.AddToCart,
+       VCareerPermission.Cart.AddToCart,
     VCareerPermission.Cart.Clear,
     VCareerPermission.Cart.Update,
     VCareerPermission.Cart.Delete,
@@ -239,14 +233,12 @@ namespace VCareer.DataSeedContributers
 
         private static string[] Candidate_ApplicationPermissions = new[]
         {
-    VCareerPermission.Application.Default,
-    VCareerPermission.Application.Apply,
+      VCareerPermission.Application.Apply,
      VCareerPermission.Application.DownloadCV,
  };
         private static string[] Recruiter_ApplicationPermissions = new[]
 {
-    VCareerPermission.Application.Default,
-     VCareerPermission.Application.View,
+      VCareerPermission.Application.View,
     VCareerPermission.Application.Update,
     VCareerPermission.Application.Delete,
     VCareerPermission.Application.Manage,
@@ -257,8 +249,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] Recruiter_JobPostPermissions = new[]
         {
-    VCareerPermission.JobPost.Default,
-    VCareerPermission.JobPost.Delete,
+      VCareerPermission.JobPost.Delete,
     VCareerPermission.JobPost.Create,
     VCareerPermission.JobPost.Update,
     VCareerPermission.JobPost.CLose,
@@ -269,8 +260,7 @@ namespace VCareer.DataSeedContributers
  };
         private static string[] Employee_JobPostPermissions = new[]
    {
-    VCareerPermission.JobPost.Default,
-     VCareerPermission.JobPost.Approve,
+       VCareerPermission.JobPost.Approve,
      VCareerPermission.JobPost.Reject,
     VCareerPermission.JobPost.LoadJobByRecruiterId,
     VCareerPermission.JobPost.LoadJobByCompanyId,
@@ -279,8 +269,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] RecruimentCampaignPermissions = new[]
         {
-    VCareerPermission.RecruimentCampaign.Default,
-    VCareerPermission.RecruimentCampaign.Delete,
+       VCareerPermission.RecruimentCampaign.Delete,
     VCareerPermission.RecruimentCampaign.Create,
     VCareerPermission.RecruimentCampaign.Update,
     VCareerPermission.RecruimentCampaign.LoadRecruiment,
@@ -290,44 +279,38 @@ namespace VCareer.DataSeedContributers
 
         private static string[] Employee_JobCategoryPermissions = new[]
         {
-    VCareerPermission.JobCategory.Default,
-    VCareerPermission.JobCategory.Delete,
+      VCareerPermission.JobCategory.Delete,
     VCareerPermission.JobCategory.View,
     VCareerPermission.JobCategory.Create,
     VCareerPermission.JobCategory.Update
 };
         private static string[] Common_JobCategoryPermissions = new[]
     {
-    VCareerPermission.JobCategory.Default,
-     VCareerPermission.JobCategory.View,
+       VCareerPermission.JobCategory.View,
 };
 
         private static string[] Employee_TagPermissions = new[]
         {
-    VCareerPermission.Tag.Default,
-    VCareerPermission.Tag.Delete,
+     VCareerPermission.Tag.Delete,
     VCareerPermission.Tag.Create,
     VCareerPermission.Tag.Update,
     VCareerPermission.Tag.View
 };
         private static string[] Common_TagPermissions = new[]
    {
-    VCareerPermission.Tag.Default,
-    VCareerPermission.Tag.View
+      VCareerPermission.Tag.View
 };
 
         private static string[] Common_SubcriptionServicePermissions = new[]
         {
-    VCareerPermission.SubcriptionService.Default,
-    VCareerPermission.SubcriptionService.Buy,
+       VCareerPermission.SubcriptionService.Buy,
      VCareerPermission.SubcriptionService.Load,
        VCareerPermission.SubcriptionService.LoadChildService
 };
 
         private static string[] Employee_SubcriptionServicePermissions = new[]
         {
-    VCareerPermission.SubcriptionService.Default,
-    VCareerPermission.SubcriptionService.Delete,
+      VCareerPermission.SubcriptionService.Delete,
     VCareerPermission.SubcriptionService.Create,
     VCareerPermission.SubcriptionService.Update,
     VCareerPermission.SubcriptionService.AddChildService,
@@ -338,18 +321,17 @@ namespace VCareer.DataSeedContributers
 
         private static string[] ChildServicePermissions = new[]
         {
-    VCareerPermission.ChildService.Default,
-    VCareerPermission.ChildService.Delete,
+     VCareerPermission.ChildService.Delete,
     VCareerPermission.ChildService.Remove,
     VCareerPermission.ChildService.Create,
     VCareerPermission.ChildService.Update,
     VCareerPermission.ChildService.StopAgent,
     VCareerPermission.ChildService.Load
 };
-     
+
         private static string[] SubcriptionPricePermissions = new[]
         {
-    VCareerPermission.SubcriptionPrice.Default,
+
     VCareerPermission.SubcriptionPrice.Delete,
     VCareerPermission.SubcriptionPrice.Load,
     VCareerPermission.SubcriptionPrice.Create,
@@ -359,8 +341,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] UserPermissions = new[]
         {
-    VCareerPermission.User.Default,
-    VCareerPermission.User.CreateEmpLoyeeAccount,
+      VCareerPermission.User.CreateEmpLoyeeAccount,
     VCareerPermission.User.ViewByRole,
     VCareerPermission.User.ViewEmployees,
     VCareerPermission.User.SetStatus
@@ -373,8 +354,7 @@ namespace VCareer.DataSeedContributers
 
         private static string[] TeamManagementPermissions = new[]
         {
-    VCareerPermission.TeamManagement.Default,
-    VCareerPermission.TeamManagement.GetAllStaff,
+      VCareerPermission.TeamManagement.GetAllStaff,
     VCareerPermission.TeamManagement.DeactivateStaff,
     VCareerPermission.TeamManagement.ActivateStaff,
     VCareerPermission.TeamManagement.InviteStaff
@@ -382,16 +362,14 @@ namespace VCareer.DataSeedContributers
 
         private static string[] Recruiter_CompanyVerificationPermissions = new[]
         {
-    VCareerPermission.CompanyVerification.Default,
-    VCareerPermission.CompanyVerification.View,
+     VCareerPermission.CompanyVerification.View,
     VCareerPermission.CompanyVerification.UploadLegalDocument,
     VCareerPermission.CompanyVerification.DownloadLegalDocument
 };
 
         private static string[] Employee_CompanyVerificationPermissions = new[]
         {
-    VCareerPermission.CompanyVerification.Default,
-    VCareerPermission.CompanyVerification.ViewPendingCompanies,
+       VCareerPermission.CompanyVerification.ViewPendingCompanies,
     VCareerPermission.CompanyVerification.View,
     VCareerPermission.CompanyVerification.ApproveCompany,
     VCareerPermission.CompanyVerification.RejectCompany,

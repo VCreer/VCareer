@@ -36,6 +36,15 @@ export class ChildService_Service {
     { apiName: this.apiName,...config });
   
 
+  setStatusChildService = (childServiceId: string, status: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/childservice-service/set-status-childservice',
+      params: { childServiceId, status },
+    },
+    { apiName: this.apiName,...config });
+  
+
   stopAgentCHildService = (childServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',

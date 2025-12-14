@@ -1,23 +1,37 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { HeaderWrapperComponent } from '../../features/header/header-wrapper';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar';
+import { GenericModalComponent } from '../../shared/components/generic-modal/generic-modal';
+import { ButtonComponent } from '../../shared/components/button/button';
+import { UnauthorizedModalService } from '../../shared/services/unauthorized-modal.service';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-employee-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderWrapperComponent, SidebarComponent],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    HeaderWrapperComponent,
+    SidebarComponent,
+    GenericModalComponent,
+    ButtonComponent
+  ],
   templateUrl: './employee-layout.html',
   styleUrls: ['./employee-layout.scss']
 })
 export class EmployeeLayoutComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
+  showUnauthorizedModal = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router
+    private router: Router,
+    private unauthorizedModalService: UnauthorizedModalService
   ) {}
 
   ngOnInit() {
@@ -29,7 +43,7 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
 
     // Subscribe to route changes
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter(event => event instanceof NavigationEnd), takeUntil(this.destroy$))
       .subscribe(() => {
         // Auto-close sidebar after navigation
         // Always close sidebar after navigation, regardless of how it was opened
@@ -40,12 +54,21 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
           }
         }, 50);
       });
+
+    // Listen unauthorized modal trigger
+    this.unauthorizedModalService.show$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(show => {
+        this.showUnauthorizedModal = show;
+      });
   }
 
   ngOnDestroy() {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private checkSidebarState(): void {
@@ -97,6 +120,15 @@ export class EmployeeLayoutComponent implements OnInit, OnDestroy {
     }
     // Close all dropdowns when sidebar closes
     this.closeAllDropdowns();
+  }
+
+  onCloseUnauthorizedModal(): void {
+    this.showUnauthorizedModal = false;
+    this.unauthorizedModalService.hide();
+    // Redirect về trang chính của employee khi đóng modal
+    this.router.navigate(['/employee/statistical-reports']).catch(err => {
+      console.error('Navigation error:', err);
+    });
   }
 }
 

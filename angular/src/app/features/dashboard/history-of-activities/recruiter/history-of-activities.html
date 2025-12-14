@@ -1,0 +1,30 @@
+<div class="history-of-activities-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <h1 class="page-title">Tất cả lịch sử</h1>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- Activities List -->
+    <div class="activities-list">
+      <div class="activity-item" *ngFor="let activity of activities">
+        <div class="activity-date">{{ activity.date }}</div>
+        <div class="activity-separator">
+          <i class="fa fa-circle"></i>
+        </div>
+        <div class="activity-time">{{ activity.time }}</div>
+        <div class="activity-type">{{ activity.type }}</div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="activities.length === 0">
+        <i class="fa fa-history empty-icon"></i>
+        <p class="empty-message">Không có hoạt động nào</p>
+      </div>
+    </div>
+  </div>
+</div>
+

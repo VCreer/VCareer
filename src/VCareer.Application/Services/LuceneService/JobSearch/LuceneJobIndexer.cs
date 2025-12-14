@@ -103,6 +103,30 @@ namespace VCareer.Services.LuceneService.JobSearch
                 writer.Commit();
             });
         }
+        public async Task DeleteJobsFromIndexAsync(List<Guid> jobIds)
+        {
+            if (jobIds == null || jobIds.Count == 0)
+                return;
+
+            await Task.Run(() =>
+            {
+                using var writer = GetWriter();
+
+                // Xóa theo batch 500–1000 item cho an toàn
+                const int batchSize = 500;
+                for (int i = 0; i < jobIds.Count; i += batchSize)
+                {
+                    var batch = jobIds.Skip(i).Take(batchSize);
+
+                    foreach (var id in batch)
+                    {
+                        writer.DeleteDocuments(new Term("Id", id.ToString()));
+                    }
+                }
+
+                writer.Commit();
+            });
+        }
         /// Xóa toàn bộ Lucene index
         /// Gọi khi: Re-index từ đầu
         public async Task ClearIndexAsync()
@@ -151,6 +175,37 @@ namespace VCareer.Services.LuceneService.JobSearch
 
             return Task.FromResult(pagingJobIds);
         }
+        public List<Guid> GetExpiredJobIds()
+        {
+            using var reader = DirectoryReader.Open(_directory);
+            var searcher = new IndexSearcher(reader);
+
+            var nowTicks = DateTime.UtcNow.Ticks;
+
+            var query = NumericRangeQuery.NewInt64Range(
+                "ExpiresAt",
+                null,
+                nowTicks,
+                true,
+                true
+            );
+
+            // Không cần sort, không cần paging
+            var topDocs = searcher.Search(query, reader.NumDocs);
+
+            var jobIds = new List<Guid>();
+
+            foreach (var scoreDoc in topDocs.ScoreDocs)
+            {
+                var doc = searcher.Doc(scoreDoc.Doc);
+                if (Guid.TryParse(doc.Get("Id"), out var id))
+                    jobIds.Add(id);
+            }
+
+            return jobIds;
+        }
+
+
 
         private Sort BuildSortQuery()
         {
@@ -390,6 +445,9 @@ namespace VCareer.Services.LuceneService.JobSearch
 
             return text;
         }
+
+      
+
 
         #endregion
 

@@ -1,6 +1,10 @@
-<div class="campaign-job-management-page">
+<div class="campaign-job-management-page" 
+     [style.margin-left]="getPagePaddingLeft()"
+     [style.width]="getPageWidth()">
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box">
+  <div class="breadcrumb-box"
+       [style.left]="getBreadcrumbLeft()"
+       [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <button class="back-btn" (click)="onBack()">
         <i class="fa fa-arrow-left"></i>
@@ -11,7 +15,7 @@
   </div>
 
   <!-- Main Content -->
-  <div class="main-content">
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
     <!-- Filter Bar -->
     <div class="filter-bar">
       <div class="search-group">
@@ -127,13 +131,13 @@
                     <span>Xem các CV</span>
                   </div>
                   <div class="menu-separator"></div>
-                  <div class="menu-item" (click)="onChangeStatusAction(job)">
-                    <i class="fa fa-tag menu-icon"></i>
-                    <span>Đặt trạng thái</span>
+                  <div class="menu-item" (click)="onCloseJob(job)">
+                    <i class="fa fa-lock menu-icon"></i>
+                    <span>Đóng công việc</span>
                   </div>
-                  <div class="menu-item" (click)="onTogglePublicAction(job)">
-                    <i class="fa fa-eye menu-icon"></i>
-                    <span>{{ job.isPublic ? 'Đặt Private' : 'Đặt Public' }}</span>
+                  <div class="menu-item" (click)="onRecreateJob(job)">
+                    <i class="fa fa-redo menu-icon"></i>
+                    <span>Tạo lại công việc</span>
                   </div>
                   <div class="menu-item" (click)="onAssignPackage(job)">
                     <i class="fa fa-gift menu-icon"></i>
@@ -175,8 +179,8 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content" (click)="$event.stopPropagation()" [style.max-width]="getDeleteModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Xác nhận xóa</h3>
         <button class="modal-close" (click)="closeDeleteModal()">
@@ -188,44 +192,19 @@
         <p class="warning-text">Hành động này không thể hoàn tác.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeDeleteModal()">Hủy</button>
-        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Change Status Modal -->
-  <div class="modal-overlay" *ngIf="showStatusDropdownModal" (click)="closeStatusModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 class="modal-title">Đặt trạng thái</h3>
-        <button class="modal-close" (click)="closeStatusModal()">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Chọn trạng thái</label>
-          <div class="status-dropdown-list">
-            <div 
-              *ngFor="let status of statusOptions.slice(1)" 
-              class="status-option-item"
-              [class.active]="selectedStatusValue === status.value"
-              (click)="onSelectStatus(status.value)">
-              <div class="status-option-content">
-                <span class="status-option-label">{{ status.label }}</span>
-                <i class="fa fa-check status-check-icon" *ngIf="selectedStatusValue === status.value"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-button type="secondary" size="medium" (click)="closeDeleteModal()">
+          Hủy
+        </app-button>
+        <app-button type="danger" size="medium" (click)="confirmDelete()">
+          Xóa
+        </app-button>
       </div>
     </div>
   </div>
 
   <!-- Assign Package Modal -->
-  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()">
-    <div class="modal-content package-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content package-modal" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Gắn gói tuyển dụng</h3>
         <button class="modal-close" (click)="closePackageModal()">

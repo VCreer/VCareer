@@ -29,20 +29,6 @@
             {{ translate('recruiter.pricing') }}
           </a>
         </li>
-        <li class="nav-item">
-          <a (click)="navigateToSupport()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/support')">
-            {{ translate('recruiter.support') }}
-          </a>
-        </li>
-        <li class="nav-item">
-          <a (click)="navigateToBlog()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/blog')">
-            {{ translate('recruiter.blog') }}
-          </a>
-        </li>
       </ul>
     </nav>
 
@@ -91,20 +77,6 @@
            class="nav-link" 
            [class.active]="isActiveRoute('/pricing')">
           {{ translate('recruiter.pricing') }}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a (click)="navigateToSupport()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/support')">
-          {{ translate('recruiter.support') }}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a (click)="navigateToBlog()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/blog')">
-          {{ translate('recruiter.blog') }}
         </a>
       </li>
       <li class="nav-item mobile-auth">

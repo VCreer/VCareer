@@ -10961,17 +10961,8 @@
                   }
                 },
                 {
-                  "name": "ExecuteExpiredJobPostAutomatically",
-                  "parametersOnMethod": [
-                    {
-                      "name": "id",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
+                  "name": "ExecuteExpiredJobPostBackgoundWorker",
+                  "parametersOnMethod": [],
                   "returnValue": {
                     "type": "System.Void",
                     "typeSimple": "System.Void"
@@ -11166,36 +11157,14 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.Services.Job.JobPostService"
             },
-            "ExecuteExpiredJobPostAutomaticallyById": {
-              "uniqueName": "ExecuteExpiredJobPostAutomaticallyById",
-              "name": "ExecuteExpiredJobPostAutomatically",
+            "ExecuteExpiredJobPostBackgoundWorker": {
+              "uniqueName": "ExecuteExpiredJobPostBackgoundWorker",
+              "name": "ExecuteExpiredJobPostBackgoundWorker",
               "httpMethod": "POST",
-              "url": "api/app/job-post/{id}/execute-expired-job-post-automatically",
+              "url": "api/app/job-post/execute-expired-job-post-backgound-worker",
               "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "id",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "id",
-                  "name": "id",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
+              "parametersOnMethod": [],
+              "parameters": [],
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
@@ -11823,6 +11792,23 @@
                   }
                 },
                 {
+                  "name": "RemoveJobsFromIndexAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobId",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.Guid>",
+                      "typeSimple": "[string]",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
                   "name": "SaveJobAsync",
                   "parametersOnMethod": [
                     {
@@ -12071,6 +12057,43 @@
                   "jsonName": null,
                   "type": "System.Guid",
                   "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Job.JobPosting.ISerices.IJobSearchService"
+            },
+            "RemoveJobsFromIndexAsyncByJobId": {
+              "uniqueName": "RemoveJobsFromIndexAsyncByJobId",
+              "name": "RemoveJobsFromIndexAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/job-search/jobs-from-index/{jobId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobId",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
+                  "jsonName": null,
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": [],
@@ -16119,11 +16142,11 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
             },
-            "DeleteChildServiceAsyncByChildServiceId": {
-              "uniqueName": "DeleteChildServiceAsyncByChildServiceId",
-              "name": "DeleteChildServiceAsync",
-              "httpMethod": "DELETE",
-              "url": "api/app/childservice-service/delete-childservice",
+            "SetStatusChildServiceAsyncByChildServiceIdAndStatus": {
+              "uniqueName": "SetStatusChildServiceAsyncByChildServiceIdAndStatus",
+              "name": "SetStatusChildServiceAsync",
+              "httpMethod": "POST",
+              "url": "api/app/childservice-service/set-status-childservice",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -16131,6 +16154,14 @@
                   "typeAsString": "System.Guid, System.Private.CoreLib",
                   "type": "System.Guid",
                   "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "status",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
                   "isOptional": false,
                   "defaultValue": null
                 }
@@ -16147,6 +16178,18 @@
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
                 }
               ],
               "returnValue": {
@@ -16154,7 +16197,7 @@
                 "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
-              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+              "implementFrom": "VCareer.Services.Subcription.ChildService_Service"
             },
             "StopAgentCHildServiceAsyncByChildServiceId": {
               "uniqueName": "StopAgentCHildServiceAsyncByChildServiceId",
@@ -16263,6 +16306,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
                 "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
+            },
+            "DeleteChildServiceAsyncByChildServiceId": {
+              "uniqueName": "DeleteChildServiceAsyncByChildServiceId",
+              "name": "DeleteChildServiceAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/childservice-service/delete-childservice",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "childServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "childServiceId",
+                  "name": "childServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.IChildService_Service"
@@ -16406,6 +16486,48 @@
                     "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.EffectingJobServiceViewDto>",
                     "typeSimple": "[VCareer.Dto.Subcriptions.EffectingJobServiceViewDto]"
                   }
+                },
+                {
+                  "name": "DeactiveAllEffectingJobByJobID",
+                  "parametersOnMethod": [
+                    {
+                      "name": "JobId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeactiveAllEffectingJobByChildServiceId",
+                  "parametersOnMethod": [
+                    {
+                      "name": "childServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "UpdateExpiredEffectingJobServiceBackgroundJob",
+                  "parametersOnMethod": [],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -16438,6 +16560,95 @@
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "UpdateExpiredEffectingJobServiceBackgroundJob": {
+              "uniqueName": "UpdateExpiredEffectingJobServiceBackgroundJob",
+              "name": "UpdateExpiredEffectingJobServiceBackgroundJob",
+              "httpMethod": "PUT",
+              "url": "api/app/job-affecting/expired-effecting-job-service-background-job",
+              "supportedVersions": [],
+              "parametersOnMethod": [],
+              "parameters": [],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "DeactiveAllEffectingJobByJobIDByJobId": {
+              "uniqueName": "DeactiveAllEffectingJobByJobIDByJobId",
+              "name": "DeactiveAllEffectingJobByJobID",
+              "httpMethod": "POST",
+              "url": "api/app/job-affecting/deactive-all-effecting-job-by-job-iD/{JobId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "JobId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "JobId",
+                  "name": "JobId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "DeactiveAllEffectingJobByChildServiceIdByChildServiceId": {
+              "uniqueName": "DeactiveAllEffectingJobByChildServiceIdByChildServiceId",
+              "name": "DeactiveAllEffectingJobByChildServiceId",
+              "httpMethod": "POST",
+              "url": "api/app/job-affecting/deactive-all-effecting-job-by-child-service-id/{childServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "childServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "childServiceId",
+                  "name": "childServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
                   "descriptorName": ""
                 }
               ],
@@ -19263,6 +19474,63 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
+            "GetPermissionsByRoleAndGroupAsyncByRoleIdAndGroupName": {
+              "uniqueName": "GetPermissionsByRoleAndGroupAsyncByRoleIdAndGroupName",
+              "name": "GetPermissionsByRoleAndGroupAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user/permissions-by-role-and-group/{roleId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "roleId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "groupName",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "roleId",
+                  "name": "roleId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "groupName",
+                  "name": "groupName",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<Volo.Abp.PermissionManagement.PermissionGrantInfoDto>",
+                "typeSimple": "[Volo.Abp.PermissionManagement.PermissionGrantInfoDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.User.UserService"
+            },
             "GetPermissionGroupsByUserAsyncByUserId": {
               "uniqueName": "GetPermissionGroupsByUserAsyncByUserId",
               "name": "GetPermissionGroupsByUserAsync",
@@ -19354,7 +19622,7 @@
                 "type": "System.Void",
                 "typeSimple": "System.Void"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.User.IUserIdentifyService"
             },
             "UpdateUserPermissionsAsyncByUserIdAndDesiredPermissions": {
@@ -23218,20 +23486,16 @@
       "baseType": "System.Enum",
       "isEnum": true,
       "enumNames": [
-        "BoostScoreCv",
         "BoostScoreJob",
         "TopList",
-        "VerifiedBadge",
-        "IncreaseQuota",
-        "ExtendExpiredDate"
+        "JobBadge",
+        "ThemeCompany"
       ],
       "enumValues": [
         0,
         1,
         2,
-        3,
-        4,
-        5
+        3
       ],
       "genericArguments": null,
       "properties": null
@@ -23241,13 +23505,11 @@
       "isEnum": true,
       "enumNames": [
         "JobPost",
-        "Company",
-        "Cv"
+        "Company"
       ],
       "enumValues": [
         0,
-        1,
-        2
+        1
       ],
       "genericArguments": null,
       "properties": null
@@ -33082,6 +33344,18 @@
           "regex": null
         },
         {
+          "name": "IsEnable",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "IsLifeTime",
           "jsonName": null,
           "type": "System.Boolean",
@@ -33110,6 +33384,18 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Priority",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobPriorityLevel?",
+          "typeSimple": "enum?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -33944,6 +34230,30 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IShareable",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "TotalLimitpackage",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

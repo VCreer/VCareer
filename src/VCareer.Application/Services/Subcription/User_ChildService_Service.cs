@@ -111,7 +111,6 @@ namespace VCareer.Services.Subcription
             });
         }
 
-
         private async Task<User_ChildService> CreateUserChildServiceAsync(Guid userId, Guid childServiceId)
         {
             var childService = await _childServiceRepository.GetAsync(childServiceId);
@@ -133,7 +132,6 @@ namespace VCareer.Services.Subcription
             };
             return await _userChildServiceRepository.InsertAsync(userChildService, true);
         }
-
 
         public Task<User_ChildServiceViewDto> GetUser_ChildServiceAsync(Guid userChildServiceId)
         {

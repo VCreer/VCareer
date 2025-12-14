@@ -1,0 +1,53 @@
+<div class="date-picker-wrapper">
+  <div class="date-input-container" (click)="toggleCalendar()">
+    <input
+      type="text"
+      class="date-input"
+      [class.disabled]="disabled"
+      [disabled]="disabled"
+      [value]="getDisplayValue()"
+      [placeholder]="placeholder"
+      readonly
+    />
+    <i class="fas fa-calendar-alt date-icon"></i>
+  </div>
+
+  <div class="calendar-popup" *ngIf="showCalendar">
+    <div class="calendar-header">
+      <button type="button" class="nav-btn prev" (click)="previousMonth()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="month-year">
+        <span class="month">{{ getMonthName() }}</span>
+        <span class="year">{{ currentYear }}</span>
+      </div>
+      <button type="button" class="nav-btn next" (click)="nextMonth()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="calendar-weekdays">
+      <div class="weekday" *ngFor="let day of ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']">
+        {{ day }}
+      </div>
+    </div>
+
+    <div class="calendar-days">
+      <div
+        *ngFor="let day of calendarDays"
+        class="calendar-day"
+        [class.disabled]="day.disabled"
+        [class.selected]="day.isSelected"
+        [class.today]="day.isToday"
+        (click)="selectDate(day)">
+        {{ day.date }}
+      </div>
+    </div>
+
+    <div class="calendar-footer">
+      <button type="button" class="footer-btn clear" (click)="clearDate()">Clear</button>
+      <button type="button" class="footer-btn today" (click)="goToToday()">Today</button>
+    </div>
+  </div>
+</div>
+

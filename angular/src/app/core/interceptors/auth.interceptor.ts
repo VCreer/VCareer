@@ -1,57 +1,138 @@
-// src/app/core/interceptors/auth.interceptor.ts
-
-import { HttpInterceptorFn } from '@angular/common/http';
+// auth.interceptor.ts - FINAL VERSION
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthApiService } from '../services/auth-Cookiebased/auth-api.service';
-import { Observable, throwError } from 'rxjs';
-import { catchError, switchMap, finalize } from 'rxjs/operators';
+import { UnauthorizedModalService } from '../../shared/services/unauthorized-modal.service';
+import { throwError, BehaviorSubject, EMPTY, timer } from 'rxjs';
+import { catchError, switchMap, finalize, filter, take } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
-let isRefreshing = false;
+let refreshTokenSubject: BehaviorSubject<boolean> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authApi = inject(AuthApiService);
+  const unauthorizedModal = inject(UnauthorizedModalService);
+  const router = inject(Router);
+  
   const authReq = req.clone({ withCredentials: true });
 
   return next(authReq).pipe(
-    catchError(error => {
+    catchError((error: HttpErrorResponse) => {
+      // Handle 403 Forbidden
+      if (error.status === 403) {
+        const url = error.url?.toLowerCase() || '';
+        
+        // SKIP retry cho getCurrentUser từ APP_INITIALIZER (khi app start)
+        if (url.includes('/current-user')) {
+          // Không show modal, không retry → guest mode
+          return throwError(() => error);
+        }
+        
+        // Danh sách endpoints có thể bị timing issue sau login
+        const postLoginEndpoints = [
+          '/profile',
+          '/settings',
+          '/dashboard',
+          '/manage-',
+          '/user-management',
+          '/statistical-reports'
+        ];
+        
+        const isPostLoginEndpoint = postLoginEndpoints.some(endpoint => url.includes(endpoint));
+        
+        // Nếu là endpoint sau login, retry 1 lần sau 800ms
+        if (isPostLoginEndpoint && !req.headers.has('X-Retry-403')) {
+          return timer(800).pipe(
+            switchMap(() => {
+              const retryReq = req.clone({
+                withCredentials: true,
+                setHeaders: { 'X-Retry-403': 'true' }
+              });
+              return next(retryReq);
+            }),
+            catchError((retryError: HttpErrorResponse) => {
+              if (retryError.status === 403) {
+                unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+              }
+              return throwError(() => retryError);
+            })
+          );
+        }
+        
+        // Các trường hợp khác: hiện modal ngay
+        unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+        return throwError(() => error);
+      }
+
+      // Ignore non-401 errors
       if (error.status !== 401) {
         return throwError(() => error);
       }
 
-      // TRƯỜNG HỢP ĐẶC BIỆT: KHÔNG REFRESH KHI GỌI CURRENT-USER HOẶC REFRESH-TOKEN
       const url = error.url?.toLowerCase() || '';
-      if (
-        url.includes('/current-user') ||
-        url.includes('/refesh-token') ||
-        url.includes('/log-out')
-      ) {
-        console.log('[Interceptor] 401 ignored (startup/refresh/logout):', url);
-        return throwError(() => error); // Không refresh, để APP_INITIALIZER xử lý
+      const skipRefreshEndpoints = [
+        '/current-user',
+        '/refesh-token',
+        '/log-out',
+        '/candidate-login',
+        '/recruiter-login',
+        '/employee-login',
+        '/candidate-register',
+        '/recruiter-register',
+      ];
+
+      if (skipRefreshEndpoints.some(endpoint => url.includes(endpoint))) {
+        return throwError(() => error);
       }
 
-      // Chỉ refresh 1 lần
-      if (isRefreshing) {
-        return throwError(() => error); // Đang refresh → reject luôn, không queue
+      const currentUrl = router.url;
+      const publicRoutes = ['/', '/job', '/job-detail', '/terms-of-service'];
+      const isPublicRoute = publicRoutes.some(route => 
+        currentUrl === route || currentUrl.startsWith(route + '/')
+      );
+
+      if (isPublicRoute) {
+        return throwError(() => error);
       }
 
-      isRefreshing = true;
-      console.log('[Interceptor] Starting token refresh...');
+      if (refreshTokenSubject) {
+        return refreshTokenSubject.pipe(
+          filter(success => success),
+          take(1),
+          switchMap(() => next(authReq)),
+          catchError(() => EMPTY)
+        );
+      }
+
+      refreshTokenSubject = new BehaviorSubject<boolean>(false);
 
       return authApi.refeshToken().pipe(
         switchMap(() => {
-          console.log('[Interceptor] Refresh success → retry original request');
-          isRefreshing = false;
+          refreshTokenSubject?.next(true);
+          refreshTokenSubject?.complete();
+          refreshTokenSubject = null;
           return next(authReq);
         }),
         catchError(refreshError => {
-          console.error('[Interceptor] Refresh failed → logout');
-          isRefreshing = false;
-          return authApi.logOut().pipe(
-            switchMap(() => throwError(() => refreshError))
-          );
-        }),
-        finalize(() => {
-          isRefreshing = false;
+          refreshTokenSubject?.next(false);
+          refreshTokenSubject?.complete();
+          refreshTokenSubject = null;
+
+          if (!isPublicRoute) {
+            return authApi.logOut().pipe(
+              finalize(() => {
+                const loginMap: Record<string, string> = {
+                  '/employee': '/employee/login',
+                  '/recruiter': '/recruiter/login',
+                };
+                const loginPath = Object.keys(loginMap).find(key => currentUrl.startsWith(key));
+                router.navigate([loginPath ? loginMap[loginPath] : '/candidate/login']);
+              }),
+              switchMap(() => throwError(() => refreshError))
+            );
+          }
+
+          return throwError(() => refreshError);
         })
       );
     })

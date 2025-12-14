@@ -17,6 +17,7 @@ namespace VCareer.Models.Subcription
         public ChildServiceStatus Status { get; set; }
         public bool IsLifeTime { get; set; } // có vĩnh viễn ko 
         public bool IsLimitUsedTime { get; set; }  //giới hạn số lần dùng
+        public bool IsPrimaryOwner { get; set; } // la thang nay mua hay là thằng dùng nhờ (dùng để hiện/tắt nút share và trace)
         public int? UsedTime { get; set; } //đã dùng bao nhiêu
         public int? TotalUsageLimit { get; set; }  //tổng lượt được phép dùng
         public DateTime? StartDate { get; set; }

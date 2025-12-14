@@ -7,6 +7,7 @@ import {
   StatusDropdownComponent,
   StatusOption,
   PaginationComponent,
+  ButtonComponent,
 } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
 import { JobViewDetail } from 'src/app/proxy/dto/job';
@@ -71,6 +72,7 @@ export interface CampaignJob {
     ToastNotificationComponent,
     StatusDropdownComponent,
     PaginationComponent,
+    ButtonComponent,
   ],
   templateUrl: './campaign-job-management.html',
   styleUrls: ['./campaign-job-management.scss'],
@@ -103,14 +105,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
   jobToAssignPackage: CampaignJob | null = null;
-  jobToChangeStatus: CampaignJob | null = null;
-  selectedStatusValue: string = '';
 
   // Khóa để ngăn double request
   private isPostingJob = false;
   private isDeletingJob = false;
-  private isTogglingPublic = false;
-  private isChangingStatus = false;
+  private isClosingJob = false;
+  private isRecreatingJob = false;
   private isAssigningPackage = false;
 
   // Status options
@@ -132,7 +132,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   isLoadingServices: boolean = false;
 
   selectedChildServices: { [action: number]: string } = {};
-  showStatusDropdownModal = false;
+
+  // Sidebar state for responsive modal
+  sidebarExpanded: boolean = false;
+  sidebarWidth: number = 72;
+  private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
 
   constructor(
     private router: Router,
@@ -152,6 +157,9 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       this.componentId
     );
 
+    // Initialize sidebar observer for responsive modal
+    this.initSidebarObserver();
+
     // Get campaign ID and name from query params
     this.route.queryParams.subscribe(params => {
       this.campaignId = params['campaignId'] || null;
@@ -166,6 +174,14 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
+    
+    // Cleanup sidebar observer
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
   }
 
   loadJobs(): void {
@@ -405,6 +421,100 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     return isSidebarExpanded ? 280 : 72;
   }
 
+  // Sidebar observer for responsive modal
+  private initSidebarObserver(): void {
+    this.checkSidebarState();
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const resizeObserver = new ResizeObserver(() => {
+        this.checkSidebarState();
+      });
+      resizeObserver.observe(sidebar);
+      sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
+      sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
+    }
+    this.sidebarCheckInterval = setInterval(() => {
+      this.checkSidebarState();
+    }, 50);
+    
+    this.resizeListener = () => this.checkSidebarState();
+    window.addEventListener('resize', this.resizeListener);
+  }
+
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      const width = rect.width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+      const newWidth = Math.round(width);
+      if (this.sidebarWidth !== newWidth) {
+        this.sidebarWidth = newWidth;
+      }
+    } else {
+      this.sidebarWidth = 72;
+    }
+  }
+
+  // Page responsive methods
+  getPagePaddingLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getPageWidth(): string {
+    if (window.innerWidth <= 768) return '100%';
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getBreadcrumbLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    if (window.innerWidth <= 768) return '100%';
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 32px)'; // Full width với padding nhỏ trên mobile
+    }
+    const sidePadding = 32; // Padding tổng cộng (16px mỗi bên)
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    const maxContentWidth = Math.min(1400, Math.max(900, availableWidth));
+    return `${maxContentWidth}px`;
+  }
+
+  // Modal responsive methods
+  getModalPaddingLeft(): string {
+    if (window.innerWidth <= 768) return '0';
+    return `${this.sidebarWidth}px`;
+  }
+
+  getModalMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 40px)'; // Full width với padding nhỏ trên mobile
+    }
+    const overlayPadding = 40; // Padding tổng cộng (20px mỗi bên)
+    const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
+    // Giới hạn max-width cho delete modal (500px) và package modal (1000px)
+    return `${Math.min(1000, availableWidth)}px`;
+  }
+
+  getDeleteModalMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100% - 40px)';
+    }
+    const overlayPadding = 40;
+    const availableWidth = viewportWidth - this.sidebarWidth - overlayPadding;
+    return `${Math.min(500, availableWidth)}px`;
+  }
+
   @HostListener('window:scroll', ['$event'])
   onWindowScroll() {
     if (this.showActionsMenu) {
@@ -414,6 +524,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize', ['$event'])
   onWindowResize() {
+    this.checkSidebarState();
     if (this.showActionsMenu) {
       this.updateMenuPositionFromButton();
     }
@@ -497,7 +608,10 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Lỗi khi đăng bài:', err);
-        this.showErrorToast('Đăng bài thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Đăng bài thất bại');
+        }
       },
       complete: () => {
         this.isPostingJob = false;
@@ -529,7 +643,11 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Lỗi khi xóa công việc:', err);
-        this.showErrorToast('Xóa công việc thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        // Không cần hiển thị toast thêm
+        if (err.status !== 403) {
+          this.showErrorToast('Xóa công việc thất bại');
+        }
       },
       complete: () => {
         this.isDeletingJob = false;
@@ -543,55 +661,57 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.jobToDelete = null;
   }
 
-  onTogglePublicAction(job: CampaignJob): void {
+  onCloseJob(job: CampaignJob): void {
     // Ngăn double request
-    if (this.isTogglingPublic) return;
+    if (this.isClosingJob) return;
 
-    this.isTogglingPublic = true;
-    const newPublicState = !job.isPublic;
-
-    // TODO: Call API to update job public/private status
-    setTimeout(() => {
-      job.isPublic = newPublicState;
-      this.showSuccessToast(`Đã ${job.isPublic ? 'công khai' : 'ẩn'} công việc`);
-      this.showActionsMenu = null;
-      this.menuPosition = null;
-      this.isTogglingPublic = false;
-    }, 500);
-  }
-
-  onChangeStatusAction(job: CampaignJob): void {
-    this.jobToChangeStatus = job;
-    this.selectedStatusValue = job.status;
-    this.showStatusDropdownModal = true;
+    this.isClosingJob = true;
     this.showActionsMenu = null;
     this.menuPosition = null;
+
+    this.jobPostService.closeJobPostById(job.id).subscribe({
+      next: () => {
+        // Cập nhật trạng thái job thành 'closed'
+        const index = this.jobs.findIndex(j => j.id === job.id);
+        if (index > -1) {
+          this.jobs[index].status = 'closed';
+          this.filterJobs();
+        }
+        this.showSuccessToast('Đã đóng công việc thành công');
+      },
+      error: err => {
+        console.error('Lỗi khi đóng công việc:', err);
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Đóng công việc thất bại');
+        }
+      },
+      complete: () => {
+        this.isClosingJob = false;
+      },
+    });
   }
 
-  closeStatusModal(): void {
-    this.showStatusDropdownModal = false;
-    this.jobToChangeStatus = null;
-    this.selectedStatusValue = '';
-  }
-
-  confirmChangeStatus(): void {
+  onRecreateJob(job: CampaignJob): void {
     // Ngăn double request
-    if (this.isChangingStatus || !this.jobToChangeStatus || !this.selectedStatusValue) return;
+    if (this.isRecreatingJob) return;
 
-    this.isChangingStatus = true;
+    this.isRecreatingJob = true;
+    this.showActionsMenu = null;
+    this.menuPosition = null;
 
-    // TODO: Call API to update job status
-    setTimeout(() => {
-      this.jobToChangeStatus!.status = this.selectedStatusValue as CampaignJob['status'];
-      this.showSuccessToast('Đã cập nhật trạng thái công việc');
-      this.isChangingStatus = false;
-      this.closeStatusModal();
-    }, 500);
-  }
-
-  onSelectStatus(status: string): void {
-    this.selectedStatusValue = status;
-    this.confirmChangeStatus();
+    // Redirect về job-posting với jobId để tự động load dữ liệu từ job cũ
+    // job-posting sẽ tự động detect jobId và load dữ liệu vào form
+    this.router.navigate(['/recruiter/job-posting'], {
+      queryParams: {
+        jobId: job.id, // Pass jobId để job-posting load dữ liệu
+        campaignId: this.campaignId,
+        campaignName: this.campaignName,
+        recreate: 'true' // Flag để biết đây là recreate mode
+      }
+    });
+    
+    this.isRecreatingJob = false;
   }
 
   onAssignPackage(job: CampaignJob): void {
@@ -612,7 +732,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     const actions = [
       SubcriptionContance_ServiceAction.BoostScoreJob, // 0
       SubcriptionContance_ServiceAction.TopList, // 1
-      SubcriptionContance_ServiceAction.VerifiedBadge, // 2
+      SubcriptionContance_ServiceAction.JobBadge, // 2
+      SubcriptionContance_ServiceAction.ThemeCompany,
     ];
 
     let completedRequests = 0;
@@ -662,12 +783,12 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   getActionLabel(action: SubcriptionContance_ServiceAction): string {
     const labels: { [key in SubcriptionContance_ServiceAction]: string } = {
-      [SubcriptionContance_ServiceAction.BoostScoreCv]: 'Tăng điểm CV',
+    
       [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm Job',
       [SubcriptionContance_ServiceAction.TopList]: 'Top danh sách',
-      [SubcriptionContance_ServiceAction.VerifiedBadge]: 'Gắn badge xác thực',
-      [SubcriptionContance_ServiceAction.IncreaseQuota]: 'Tăng hạn mức đăng tin',
-      [SubcriptionContance_ServiceAction.ExtendExpiredDate]: 'Gia hạn ngày hết hạn',
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Gắn badge công việc',
+      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Giao diện công ty',
+     
     };
     return labels[action] || 'Dịch vụ';
   }
@@ -689,13 +810,16 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.userChildServiceService.activeService(selectedIds,jobId).subscribe({
       next: () => {
         this.showSuccessToast(`Đã kích hoạt ${selectedIds.length} dịch vụ thành công`);
-        this.isAssigningPackage = false;
-        this.closePackageModal();
+      this.isAssigningPackage = false;
+      this.closePackageModal();
         this.loadJobs(); // Reload để cập nhật UI
       },
       error: err => {
         console.error('Lỗi khi kích hoạt dịch vụ:', err);
-        this.showErrorToast('Kích hoạt dịch vụ thất bại');
+        // Nếu là lỗi 403, interceptor đã xử lý hiển thị modal unauthorized
+        if (err.status !== 403) {
+          this.showErrorToast('Kích hoạt dịch vụ thất bại');
+        }
         this.isAssigningPackage = false;
       },
     });

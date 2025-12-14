@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
 import type { IdentityRoleDto, IdentityUserDto } from '../../volo/abp/identity/models';
-import type { PermissionGroupDto } from '../../volo/abp/permission-management/models';
+import type { PermissionGrantInfoDto, PermissionGroupDto } from '../../volo/abp/permission-management/models';
 
 @Injectable({
   providedIn: 'root',
@@ -46,6 +46,15 @@ export class UserService {
     this.restService.request<any, PermissionGroupDto[]>({
       method: 'GET',
       url: `/api/app/user/permission-groups-by-user/${userId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getPermissionsByRoleAndGroup = (roleId: string, groupName: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PermissionGrantInfoDto[]>({
+      method: 'GET',
+      url: `/api/app/user/permissions-by-role-and-group/${roleId}`,
+      params: { groupName },
     },
     { apiName: this.apiName,...config });
   

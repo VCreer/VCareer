@@ -1,5 +1,6 @@
 import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
 import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
+import type { JobPriorityLevel } from '../../constants/job-constant/job-priority-level.enum';
 import type { PagingDto } from '../../iservices/common/models';
 import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { SubcriptionContance_CurrencyType } from '../../constants/job-constant/subcription-contance-currency-type.enum';
@@ -17,9 +18,11 @@ export interface ChildServiceCreateDto {
   action?: SubcriptionContance_ServiceAction;
   target?: SubcriptionContance_ServiceTarget;
   isActive: boolean;
+  isEnable: boolean;
   isLifeTime: boolean;
   isAutoActive: boolean;
   isLimitUsedTime: boolean;
+  priority?: JobPriorityLevel;
   timeUsedLimit?: number;
   dayDuration?: number;
   value?: number;
@@ -112,6 +115,8 @@ export interface SubcriptionsCreateDto {
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
+  iShareable: boolean;
+  totalLimitpackage?: number;
   totalBuyEachUser: number;
   isLifeTime: boolean;
   dayDuration?: number;
