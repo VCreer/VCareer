@@ -39,6 +39,7 @@ namespace VCareer.Application.Applications
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;
         private readonly IRepository<Job_Post, Guid> _jobPostingRepository;
+        private readonly IRepository<RecruitmentCampaign, Guid> _recruitmentCampaignRepository;
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly IRepository<UploadedCv, Guid> _uploadedCvRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
@@ -55,6 +56,7 @@ namespace VCareer.Application.Applications
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
             IRepository<Job_Post, Guid> jobPostingRepository,
+            IRepository<RecruitmentCampaign, Guid> recruitmentCampaignRepository,
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<UploadedCv, Guid> uploadedCvRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
@@ -70,6 +72,7 @@ namespace VCareer.Application.Applications
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
             _jobPostingRepository = jobPostingRepository;
+            _recruitmentCampaignRepository = recruitmentCampaignRepository;
             _candidateCvRepository = candidateCvRepository;
             _uploadedCvRepository = uploadedCvRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
@@ -852,6 +855,16 @@ namespace VCareer.Application.Applications
             {
                 dto.JobTitle = job.Title;
                 dto.JobSalaryText = FormatJobSalary(job);
+                dto.RecruitmentCampaignId = job.RecruitmentCampaignId;
+
+                if (job.RecruitmentCampaignId != Guid.Empty)
+                {
+                    var campaign = await _recruitmentCampaignRepository.FirstOrDefaultAsync(c => c.Id == job.RecruitmentCampaignId);
+                    if (campaign != null)
+                    {
+                        dto.RecruitmentCampaignName = campaign.Name;
+                    }
+                }
             }
 
             // Load Company để lấy CompanyName

@@ -250,6 +250,11 @@ namespace VCareer.Repositories.Job
             return company.CompanyName;
         }
 
+        public Task FirstOrDefaultAsync(Guid jobId)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
 

@@ -30,6 +30,8 @@ export interface CandidateCv {
   addedDate: string; // Thời gian CV được vào Quản lý CV
   campaignId: string;
   campaignName: string;
+  jobId?: string;
+  jobTitle?: string;
   isViewed: boolean;
   avatarImageUrl?: string; // URL ảnh đại diện từ CV
   avatar?: string; // Fallback initials
@@ -247,8 +249,10 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         source: this.getCvSource(app.cvType),
         appliedDate: app.creationTime ? new Date(app.creationTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         addedDate: app.creationTime ? new Date(app.creationTime).toISOString() : new Date().toISOString(),
-        campaignId: '', // Null theo yêu cầu
-        campaignName: '', // Null theo yêu cầu
+        campaignId: app.recruitmentCampaignId || '',
+        campaignName: app.recruitmentCampaignName || '',
+        jobId: app.jobId || '',
+        jobTitle: app.jobTitle || 'N/A',
         isViewed: !!app.viewedAt,
         candidateCode: app.candidateId || '',
         notes: app.recruiterNotes || '',
@@ -328,6 +332,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         addedDate: '2022-09-16T14:14:00',
         campaignId: '#407764',
         campaignName: 'Tuyển Nhân viên Tester',
+        jobId: '#407764',
+        jobTitle: 'Tuyển Nhân viên Tester',
         isViewed: true,
         candidateCode: 'CV001',
         notes: 'Ứng viên có kinh nghiệm tốt'
@@ -344,6 +350,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         addedDate: '2022-09-15T10:30:00',
         campaignId: '#407767',
         campaignName: 'Tuyển Nhân viên Market...',
+        jobId: '#407767',
+        jobTitle: 'Tuyển Nhân viên Market...',
         isViewed: true,
         candidateCode: 'CV002'
       },
@@ -359,6 +367,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         addedDate: '2022-09-14T16:45:00',
         campaignId: '#407726',
         campaignName: 'chien dich test',
+        jobId: '#407726',
+        jobTitle: 'chien dich test',
         isViewed: true,
         avatar: 'TP',
         candidateCode: 'CV003',
@@ -376,6 +386,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         addedDate: '2022-09-13T09:20:00',
         campaignId: '#407685',
         campaignName: 'Tuyển Designer',
+        jobId: '#407685',
+        jobTitle: 'Tuyển Designer',
         isViewed: true,
         candidateCode: 'CV004'
       }
@@ -416,6 +428,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         addedDate: `${appliedDate}T${addedHour}:${addedMinute}:00`,
         campaignId: randomCampaign.id,
         campaignName: randomCampaign.name,
+        jobId: randomCampaign.id,
+        jobTitle: randomCampaign.name,
         isViewed: Math.random() > 0.3,
         candidateCode: `CV${String(i).padStart(3, '0')}`,
         notes: Math.random() > 0.7 ? 'Có ghi chú' : undefined
@@ -715,7 +729,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       'Chiến dịch',
       'Email',
       'Số điện thoại',
-      'Nguồn CV',
+      'Công việc',
       'Ngày ứng tuyển',
       'Trạng thái',
       'Đánh giá',
@@ -732,7 +746,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         cv.campaignName || cv.campaignId || '',
         cv.email,
         cv.phone,
-        this.getSourceName(cv.source),
+        this.getJobName(cv),
         this.formatDate(cv.appliedDate),
         this.getStatusName(cv.status),
         cv.rating ? `${cv.rating}/10` : 'Chưa đánh giá',
@@ -791,6 +805,10 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         return 'status-default';
     }
   }
+
+  getJobName(cv: CandidateCv): string {
+    return cv.jobTitle || cv.campaignName || cv.campaignId || 'Không rõ công việc';
+  }
   
   // Inline status change
   changingStatusFor: string | null = null;
@@ -845,6 +863,11 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         cv.status = oldStatus;
       }
     });
+  }
+
+  onAiAnalyze(): void {
+    // Placeholder for future AI integration
+    this.showToastMessage('Tính năng AI phân tích đang được phát triển.', 'info');
   }
 
   // Rating methods
@@ -911,17 +934,6 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
-  }
-
-  getSourceIcon(sourceId: string): string {
-    switch (sourceId) {
-      case 'find-cv':
-        return 'fa-briefcase';
-      case 'topcv-support':
-        return 'fa-briefcase';
-      default:
-        return 'fa-circle';
-    }
   }
 
   showActionsMenu: string | null = null;
@@ -1054,12 +1066,6 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  getSourceName(sourceId: string): string {
-    const source = this.sources.find(s => s.id === sourceId);
-    return source ? source.name : sourceId;
-  }
-
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
@@ -1177,5 +1183,10 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   onToastClose(): void {
     this.showToast = false;
   }
+  
+  onAiAnalyzeCandidate(cv: CandidateCv): void {
+    this.showActionsMenu = null;
+    const name = cv.name || 'ứng viên';
+    this.showToastMessage(`AI đang phân tích hồ sơ của ${name} (placeholder).`, 'info');
+  }
 }
-
