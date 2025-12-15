@@ -88,6 +88,15 @@ export class NavigationService {
     // Verification status (chỉ cho recruiter)
     if (userRole !== 'recruiter') {
       this.isVerifiedSubject.next(false);
+    } else {
+      // Đối với recruiter, cần kiểm tra verification status
+      // Nếu user có property verificationStatus, sử dụng nó
+      // Nếu không, giữ nguyên giá trị hiện tại (không reset về false)
+      const verificationStatus = (user as any)?.verificationStatus;
+      if (verificationStatus !== undefined) {
+        this.isVerifiedSubject.next(verificationStatus);
+      }
+      // Nếu không có verificationStatus trong user, giữ nguyên giá trị hiện tại
     }
   }
 

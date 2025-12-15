@@ -11,6 +11,7 @@
   transition: border-color 0.2s ease, background-color 0.2s ease;
   min-width: 240px;
   transform: none !important;
+  z-index: 1;
 
   &:hover:not(.disabled) {
     border-color: #d1d5db;
@@ -117,10 +118,13 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 10000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 10001;
   min-width: 300px;
   padding: 16px;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 
   @media (max-width: 768px) {
     right: auto;
