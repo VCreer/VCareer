@@ -1237,7 +1237,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       userRole: 'Candidate',
       notificationType: 'JobOffer',
       title: 'Đề nghị công việc',
-      message: `Nhà tuyển dụng đã gửi đề nghị công việc cho vị trí "${cv.position}". Vui lòng kiểm tra chi tiết.`,
+      // Message removed per request to avoid duplicate/verbose text
+      message: '',
       relatedEntityType: 'JobPost',
       relatedEntityId: relatedEntityId,
       metadata: JSON.stringify(metadata)

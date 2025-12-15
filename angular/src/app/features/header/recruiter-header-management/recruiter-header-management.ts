@@ -11,6 +11,8 @@ import { IconButtonBadgeComponent } from '../../../shared/components/icon-button
 import { IconActionButtonComponent } from '../../../shared/components/icon-action-button/icon-action-button';
 import { NotificationMenuComponent, NotificationItem } from '../../../shared/components/notification-menu/notification-menu';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
+import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-recruiter-header-management',
@@ -26,22 +28,16 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   cartCount = 0;
   private cartSubscription?: Subscription;
   
-  notifications: NotificationItem[] = [
-    { id: '1', text: 'Bạn có tin tuyển dụng mới phù hợp', date: '15/10/2025', isRead: false },
-    { id: '2', text: 'Ứng viên đã nộp hồ sơ cho vị trí của bạn', date: '14/10/2025', isRead: false },
-    { id: '3', text: 'Tin tuyển dụng của bạn đã được duyệt', date: '13/10/2025', isRead: true },
-    { id: '4', text: 'Nhắc nhở: Tin tuyển dụng sắp hết hạn', date: '12/10/2025', isRead: false }
-  ];
-
-  get notificationCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
-  }
+  notifications: NotificationItem[] = [];
+  notificationCount = 0;
+  isLoadingNotifications = false;
 
   constructor(
     private router: Router,
     private translationService: TranslationService,
     private navigationService: NavigationService,
-    private cartService: CartService
+    private cartService: CartService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -52,6 +48,9 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     this.cartSubscription = this.cartService.cartItems$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
     });
+
+    // Load notifications for recruiter
+    this.loadNotifications();
   }
 
   ngOnDestroy() {
@@ -87,6 +86,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     if (this.showNotificationMenu) {
       this.showDropdownMenu = false;
       this.showSidebar = false;
+      this.loadNotifications();
     }
   }
 
@@ -106,7 +106,16 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   }
 
   onMarkAllRead() {
-    this.notifications.forEach(n => n.isRead = true);
+    this.notificationService.markAllAsRead('Recruiter')
+      .pipe(
+        catchError(error => {
+          console.error('[Recruiter Header] Error mark all as read:', error);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.loadNotifications();
+      });
   }
 
   logout() {
@@ -136,6 +145,34 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  private loadNotifications() {
+    this.isLoadingNotifications = true;
+    this.notificationService.getNotifications('Recruiter', 0, 5)
+      .pipe(
+        catchError(error => {
+          console.error('[Recruiter Header] Error loading notifications:', error);
+          this.isLoadingNotifications = false;
+          return of({ items: [], unreadCount: 0 });
+        })
+      )
+      .subscribe((result: { items: NotificationDto[]; unreadCount: number }) => {
+        this.notifications = (result.items || []).map(n => ({
+          id: n.id,
+          text: n.message || n.title,
+          date: this.formatDate(n.creationTime),
+          isRead: n.isRead
+        }));
+        this.notificationCount = result.unreadCount || 0;
+        this.isLoadingNotifications = false;
+      });
+  }
+
+  private formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 }
 

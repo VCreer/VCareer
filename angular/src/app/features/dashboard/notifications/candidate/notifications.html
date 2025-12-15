@@ -70,7 +70,9 @@
         class="notification-card" 
         *ngFor="let notification of notifications"
         [class.unread]="!notification.isRead"
-        (click)="navigateToJobDetail(notification)">
+        [class.expired]="notification.isExpired"
+        [class.clickable]="!notification.isExpired && notification.relatedEntityType === 'JobPost' && notification.jobId"
+        (click)="onCardClick(notification)">
         
         <!-- Job Card Style -->
         <div class="job-card-content">
@@ -91,6 +93,10 @@
                 <div class="header-right">
                   <span class="title-salary" *ngIf="notification.salaryText">{{ notification.salaryText }}</span>
                   <span class="notification-badge" *ngIf="!notification.isRead">Mới</span>
+                  <span class="deadline-badge expired-badge" *ngIf="notification.isExpired">Đã hết hạn nộp</span>
+                  <span class="deadline-badge" *ngIf="!notification.isExpired && notification.deadline && notification.daysUntilDeadline !== undefined">
+                    {{ getDeadlineText(notification) }}
+                  </span>
                 </div>
               </div>
             </div>

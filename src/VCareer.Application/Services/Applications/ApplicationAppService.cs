@@ -155,6 +155,8 @@ namespace VCareer.Application.Applications
                 await _jobPostingRepository.UpdateAsync(jobToUpdate);
             }
 
+            await NotifyRecruiterNewApplicationAsync(job, candidate, application);
+
             return await MapToDtoAsync(application);
         }
 
@@ -214,6 +216,8 @@ namespace VCareer.Application.Applications
                 jobToUpdate.ApplyCount++;
                 await _jobPostingRepository.UpdateAsync(jobToUpdate);
             }
+
+            await NotifyRecruiterNewApplicationAsync(job, candidate, application);
 
             return await MapToDtoAsync(application);
         }
@@ -350,6 +354,11 @@ namespace VCareer.Application.Applications
             if (input.Status == "offer" && oldStatus != "offer")
             {
                 await SendOfferEmailAsync(application, applicationDto);
+
+                // Tạo notification cho candidate kèm hạn job
+                var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+                var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
+                await NotifyCandidateOfferAsync(job, candidate, application);
             }
 
             return applicationDto;
@@ -944,6 +953,122 @@ namespace VCareer.Application.Applications
             {
                 // Nếu không authenticated hoặc có lỗi, trả về false
                 return new ApplicationStatusDto { HasApplied = false };
+            }
+        }
+
+        private async Task NotifyRecruiterNewApplicationAsync(Job_Post job, CandidateProfile candidate, JobApplication application)
+        {
+            if (job?.RecruiterProfile == null)
+            {
+                Logger.LogWarning("NotifyRecruiterNewApplicationAsync: Job {JobId} has no recruiter profile.", job?.Id);
+                return;
+            }
+
+            var recruiterUserId = job.RecruiterProfile.UserId;
+            if (recruiterUserId == Guid.Empty)
+            {
+                Logger.LogWarning("NotifyRecruiterNewApplicationAsync: Recruiter profile missing UserId for job {JobId}", job.Id);
+                return;
+            }
+
+            try
+            {
+                string candidateName = candidate?.User?.Name;
+                string candidateEmail = candidate?.Email;
+
+                if (string.IsNullOrWhiteSpace(candidateName) || string.IsNullOrWhiteSpace(candidateEmail))
+                {
+                    var candidateUser = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
+                    candidateName ??= candidateUser?.Name ?? candidateUser?.UserName;
+                    candidateEmail ??= candidate?.Email ?? candidateUser?.Email;
+                }
+
+                candidateName ??= "Ứng viên";
+                candidateEmail ??= "N/A";
+
+                var metadata = JsonSerializer.Serialize(new
+                {
+                    JobTitle = job.Title,
+                    JobId = job.Id,
+                    CandidateId = candidate.UserId,
+                    CandidateName = candidateName,
+                    CandidateEmail = candidateEmail,
+                    ApplicationId = application.Id,
+                    ExpiresAt = job.ExpiresAt
+                });
+
+                var notificationDto = new NotificationCreateDto
+                {
+                    UserId = recruiterUserId,
+                    UserRole = "Recruiter",
+                    NotificationType = "ApplicationSubmitted",
+                    Title = "Ứng viên mới ứng tuyển",
+                    Message = $"Ứng viên {candidateName} vừa ứng tuyển vị trí {job.Title}",
+                    RelatedEntityType = "Application",
+                    RelatedEntityId = application.Id,
+                    Metadata = metadata,
+                    CreatedBy = candidate.UserId
+                };
+
+                await _notificationAppService.CreateNotificationAsync(notificationDto);
+
+                Logger.LogInformation("NotifyRecruiterNewApplicationAsync: Sent notification to recruiter {RecruiterUserId} for application {ApplicationId}",
+                    recruiterUserId, application.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "NotifyRecruiterNewApplicationAsync: Failed to create notification for recruiter {RecruiterUserId} and application {ApplicationId}",
+                    recruiterUserId, application.Id);
+            }
+        }
+
+        private async Task NotifyCandidateOfferAsync(Job_Post job, CandidateProfile candidate, JobApplication application)
+        {
+            if (candidate == null)
+            {
+                Logger.LogWarning("NotifyCandidateOfferAsync: Candidate not found for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var candidateUserId = candidate.UserId;
+            if (candidateUserId == Guid.Empty)
+            {
+                Logger.LogWarning("NotifyCandidateOfferAsync: Candidate UserId missing for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var company = job?.CompanyName ?? "Nhà tuyển dụng";
+            var jobTitle = job?.Title ?? "Công việc";
+
+            var metadata = JsonSerializer.Serialize(new
+            {
+                JobTitle = jobTitle,
+                CompanyName = company,
+                JobId = job?.Id,
+                    ApplicationId = application.Id
+            });
+
+            var notificationDto = new NotificationCreateDto
+            {
+                UserId = candidateUserId,
+                UserRole = "Candidate",
+                NotificationType = "JobOffer",
+                Title = "Nhà tuyển dụng đã gửi đề nghị",
+                Message = $"Nhà tuyển dụng đã gửi đề nghị cho vị trí {jobTitle}",
+                RelatedEntityType = "JobPost",
+                RelatedEntityId = application.JobId,
+                Metadata = metadata,
+                CreatedBy = application.RespondedBy
+            };
+
+            try
+            {
+                await _notificationAppService.CreateNotificationAsync(notificationDto);
+                Logger.LogInformation("NotifyCandidateOfferAsync: Notification sent to candidate {CandidateUserId} for application {ApplicationId}", candidateUserId, application.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "NotifyCandidateOfferAsync: Failed to send notification for application {ApplicationId}", application.Id);
             }
         }
 

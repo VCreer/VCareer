@@ -17,6 +17,7 @@ export interface NotificationDto {
   metadata?: string;
   createdBy?: string;
   creationTime: string;
+  expiresAt?: string; // optional expiration timestamp for the notification/job
 }
 
 export interface NotificationListDto {

@@ -199,18 +199,36 @@
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
-  cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &.expired {
+    cursor: not-allowed;
+    opacity: 0.7;
+    background: #f9fafb;
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
   }
 
   &.unread {
     border-left: 4px solid #0F83BA;
     background: #f0f9ff;
+
+    &.expired {
+      background: #f3f4f6;
+    }
   }
 
   .job-card-content {
@@ -284,6 +302,21 @@
       border-radius: 4px;
       font-size: 12px;
       font-weight: 600;
+    }
+
+    .deadline-badge {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+
+      &.expired-badge {
+        background: #fee2e2;
+        color: #991b1b;
+      }
     }
   }
 

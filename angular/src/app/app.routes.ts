@@ -386,6 +386,13 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/recruiter/notifications').then(
+            c => c.RecruiterNotificationsComponent
+          ),
+      },
+      {
         path: 'cart',
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
