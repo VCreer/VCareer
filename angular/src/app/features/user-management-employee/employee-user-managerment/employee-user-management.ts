@@ -15,6 +15,7 @@ import {
 } from '../../../shared/components';
 import { UserService } from '../../../proxy/services/user/user.service';
 import { AuthService } from '../../../proxy/services/auth/auth.service';
+import * as XLSX from 'xlsx';
 import type { PermissionGroupDto } from '../../../proxy/volo/abp/permission-management/models';
 import type { CreateEmployeeDto } from '../../../proxy/dto/auth-dto/models';
 
@@ -35,6 +36,7 @@ export interface EmployeeUser {
   securityStamp: string;
   roles?: string[];
   permissions?: string[];
+  roleDisplay?: string;
 }
 
 interface UserRoleTag {
@@ -102,7 +104,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   filterRole = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -183,12 +185,11 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   expandedPermissionGroups: Set<string> = new Set(); // Track which groups are expanded
   expandedSubGroups: Set<string> = new Set(); // Track which sub-groups are expanded
   
-  // Role options
+  // Role options (cố định 3 role employee)
   roleOptions: SelectOption[] = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'employee', label: 'Employee' },
-    { value: 'viewer', label: 'Viewer' }
+    { value: 'account_employee', label: 'Account Employee' },
+    { value: 'finance_employee', label: 'Finance Employee' },
+    { value: 'system_employee', label: 'System Employee' }
   ];
 
   private roleTagColorMap: Record<string, string> = {
@@ -234,25 +235,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 50);
-
-    // Gọi API lấy danh sách role employee (chỉ gọi, không thay đổi nhiều logic hiện tại)
-    this.userService.getAllEmployeeRoles().subscribe({
-      next: roles => {
-        if (roles && roles.length > 0) {
-          this.roleOptions = roles.map(r => ({
-            value: r.name ?? '',
-            label: r.name ?? ''
-          })).filter(r => r.value);
-          this.roleFilterOptions = [
-            { value: '', label: 'Tất cả vai trò' },
-            ...this.roleOptions
-          ];
-        }
-      },
-      error: () => {
-        // Giữ nguyên roleOptions mặc định nếu lỗi
-      }
-    });
 
     this.loadUsers();
   }
@@ -413,9 +395,46 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Employee = 1
     this.userService.getUsersInfoByRole(1).subscribe({
-      next: () => {
-        // Tạm thời chỉ clear dữ liệu hardcode, sẽ map dữ liệu thật khi BE sẵn sàng
-        this.allUsers = [];
+      next: async (users) => {
+        const mapped: EmployeeUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          const extra = (u as any).extraProperties || {};
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            fullName: fullName || (u as any).userName || '',
+            phone: (u as any).phoneNumber || '',
+            companyName: extra.companyName || '',
+            isActive: (u as any).isActive,
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            lastLoginDate: undefined,
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            permissions: [],
+            roleDisplay: '',
+          };
+        });
+
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
         this.applyFilters();
       },
       error: () => {
@@ -486,7 +505,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -522,7 +541,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -1143,16 +1162,44 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+
+      (worksheet as any)['!cols'] = [
+        { wch: 25 }, // Id
+        { wch: 30 }, // Họ tên
+        { wch: 35 }, // Email
+        { wch: 20 }, // Trạng thái
+        { wch: 25 }, // Vai trò
+      ];
+
+      const fileName = `Employee_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -1433,6 +1480,20 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private mapRoleName(role: string): string {
+    // Map role BE -> label hiển thị
+    switch (role) {
+      case 'account_employee':
+        return 'Account Employee';
+      case 'finance_employee':
+        return 'Finance Employee';
+      case 'system_employee':
+        return 'System Employee';
+      default:
+        return role;
+    }
   }
 }
 

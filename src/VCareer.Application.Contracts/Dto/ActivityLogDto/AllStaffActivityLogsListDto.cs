@@ -14,3 +14,5 @@ namespace VCareer.Dto.ActivityLogDto
     }
 }
 
+
+

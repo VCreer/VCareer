@@ -21,13 +21,6 @@
       <app-button
         type="secondary"
         size="medium"
-        (click)="onImport()">
-        <i class="fa fa-upload"></i>
-        Import
-      </app-button>
-      <app-button
-        type="secondary"
-        size="medium"
         (click)="onExport()">
         <i class="fa fa-download"></i>
         Export
@@ -183,15 +176,13 @@
                 <i class="fa fa-sort-up" *ngIf="sortField === 'email' && sortDirection === 'asc'"></i>
                 <i class="fa fa-sort-down" *ngIf="sortField === 'email' && sortDirection === 'desc'"></i>
               </th>
-              <th>Công ty</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th (click)="onSort('lastLoginDate')" class="sortable">
-                Lần đăng nhập cuối
-                <i class="fa fa-sort" *ngIf="sortField !== 'lastLoginDate'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'desc'"></i>
+              <th (click)="onSort('roleDisplay')" class="sortable">
+                Vai trò
+                <i class="fa fa-sort" *ngIf="sortField !== 'roleDisplay'"></i>
+                <i class="fa fa-sort-up" *ngIf="sortField === 'roleDisplay' && sortDirection === 'asc'"></i>
+                <i class="fa fa-sort-down" *ngIf="sortField === 'roleDisplay' && sortDirection === 'desc'"></i>
               </th>
+              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -200,26 +191,12 @@
               <td class="username-cell">{{ user.username }}</td>
               <td>{{ user.fullName }}</td>
               <td>{{ user.email }}</td>
-              <td>{{ user.companyName }}</td>
-              <td class="role-cell">
-                <ng-container *ngIf="getUserRoleTags(user).length > 0; else noRoles">
-                  <div class="role-tags">
-                    <span
-                      class="role-tag"
-                      [ngClass]="roleTag.tagClass"
-                      *ngFor="let roleTag of getUserRoleTags(user)">
-                      {{ roleTag.label }}
-                    </span>
-                  </div>
-                </ng-container>
-                <ng-template #noRoles>-</ng-template>
-              </td>
+              <td>{{ user.roleDisplay || '-' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(user)">
                   {{ getStatusLabel(user) }}
                 </span>
               </td>
-              <td>{{ formatDate(user.lastLoginDate) }}</td>
               <td class="actions-cell">
                 <div class="actions-menu-container">
                   <button class="actions-menu-btn" (click)="toggleActionsMenu(user.id, $event)">
@@ -230,32 +207,9 @@
                     [class.show]="showActionsMenu === user.id"
                     [attr.data-user-id]="user.id"
                     (click)="$event.stopPropagation()">
-                    <div class="menu-item" (click)="onEditUser(user)">
-                      <i class="fa fa-edit menu-icon"></i>
-                      <span>Sửa</span>
-                    </div>
-                    <div class="menu-item" (click)="onAssignRole(user)">
-                      <i class="fa fa-user-tag menu-icon"></i>
-                      <span>Chỉnh sửa role</span>
-                    </div>
-                    <div class="menu-item" (click)="onAssignPermission(user)">
-                      <i class="fa fa-key menu-icon"></i>
-                      <span>Chỉnh sửa permission</span>
-                    </div>
-                    <div class="menu-separator"></div>
                     <div class="menu-item" (click)="onToggleActive(user)">
                       <i class="fa" [class.fa-toggle-on]="user.isActive" [class.fa-toggle-off]="!user.isActive"></i>
                       <span>{{ user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
-                    </div>
-                    <div class="menu-separator"></div>
-                    <div class="menu-item" (click)="onViewActivityLog(user)">
-                      <i class="fa fa-history menu-icon"></i>
-                      <span>Xem log hoạt động</span>
-                    </div>
-                    <div class="menu-separator"></div>
-                    <div class="menu-item delete-item" (click)="onDeleteUser(user)">
-                      <i class="fa fa-trash menu-icon"></i>
-                      <span>Xóa</span>
                     </div>
                   </div>
                 </div>

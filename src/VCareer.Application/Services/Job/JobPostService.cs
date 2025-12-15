@@ -102,20 +102,7 @@ namespace VCareer.Services.Job
             jobPost.ApproveAt = DateTime.Now;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
-            await _jobSearchService.IndexJobAsync(jobPost.Id);
-
-            // Ghi log: duyệt job (Leader / HR Staff)
-            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
-            {
-                await _activityLogAppService.LogActivityAsync(
-                    _currentUser.Id.Value,
-                    Models.ActivityLogs.ActivityType.JobPosted,
-                    "ApproveJobPost",
-                    $"Duyệt job '{jobPost.Title}' (ID: {jobPost.Id})",
-                    jobPost.Id,
-                    nameof(Job_Post),
-                    "{}");
-            }
+            await _jobSearchService.IndexJobAsync(jobPost.Id);           
 
             // TODO: send email cho recruiter báo đăng bài thành công
         }

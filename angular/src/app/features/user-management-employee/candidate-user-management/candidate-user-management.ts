@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
+import {
   ButtonComponent, 
   ToastNotificationComponent,
   InputFieldComponent,
@@ -12,6 +12,7 @@ import {
   StatusOption
 } from '../../../shared/components';
 import { UserService } from '../../../proxy/services/user/user.service';
+import * as XLSX from 'xlsx';
 
 export interface CandidateUser {
   id: string;
@@ -27,6 +28,8 @@ export interface CandidateUser {
   ipAddresses: string[];
   mustChangePassword: boolean;
   securityStamp: string;
+  roles?: string[];
+  roleDisplay?: string;
 }
 
 @Component({
@@ -66,7 +69,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   filterStatus = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -286,9 +289,43 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Candidate = 3
     this.userService.getUsersInfoByRole(3).subscribe({
-      next: () => {
-        // Xóa dữ liệu hardcode, chờ map dữ liệu thật từ BE
-        this.allUsers = [];
+      next: async (users) => {
+        const mapped: CandidateUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            fullName: fullName || (u as any).userName || '',
+            phone: (u as any).phoneNumber || '',
+            isActive: (u as any).isActive,
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            lastLoginDate: undefined,
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            roleDisplay: ''
+          };
+        });
+
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
         this.applyFilters();
       },
       error: () => {
@@ -348,7 +385,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -384,7 +421,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -490,18 +527,45 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     this.showToastMessage('Đã xóa địa chỉ IP', 'success');
   }
 
-  onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    // Simulate export
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+  onExportExcel(): void {
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidates');
+
+      worksheet['!cols'] = [
+        { wch: 25 }, // Id
+        { wch: 30 }, // Họ tên
+        { wch: 35 }, // Email
+        { wch: 20 }, // Trạng thái
+        { wch: 25 }, // Vai trò
+      ];
+
+      const fileName = `Candidate_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -776,5 +840,14 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private mapRoleName(role: string): string {
+    switch (role) {
+      case 'candidate':
+        return 'Candidate';
+      default:
+        return role;
+    }
   }
 }

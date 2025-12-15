@@ -146,15 +146,63 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   private loadCampaigns() {
     this.loading = true;
 
-    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch(() => []);
-    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch(() => []);
+    // 1. Lấy thông tin user hiện tại để biết role + userId
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        const roles = user.roles || [];
+        const isLeadRecruiter = roles.includes('lead_recruiter');
 
-    Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
-      const all = [...(active || []), ...(inactive || [])];
-        this.campaigns = this.mapToCampaign(all);
-        this.filterCampaigns();
-        this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
+        // 2. Tùy theo role mà chọn API phù hợp
+        let loadActivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+        let loadInactivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+
+        if (isLeadRecruiter) {
+          // Leader recruiter: backend tự dùng companyId
+          loadActivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(false)
+            .toPromise()
+            .catch(() => []);
+        } else {
+          // Recruiter thường: load theo recruiterId
+          const recruiterId = user.userId;
+
+          if (!recruiterId) {
+            this.showToastMessage('Không lấy được thông tin recruiter', 'error');
+            this.loading = false;
+            return;
+          }
+
+          loadActivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, false)
+            .toPromise()
+            .catch(() => []);
+        }
+
+        Promise.all([loadActivePromise, loadInactivePromise]).then(
+          ([active, inactive]) => {
+            const all = [...(active || []), ...(inactive || [])];
+            this.campaigns = this.mapToCampaign(all);
+            this.filterCampaigns();
+            this.viewMode =
+              this.campaigns.length == 0 ? 'create' : 'manage';
+            this.loading = false;
+          }
+        );
+      },
+      error: () => {
+        this.showToastMessage('Không lấy được thông tin người dùng', 'error');
         this.loading = false;
+      },
     });
   }
 
