@@ -145,6 +145,13 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'candidate/notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/candidate/notifications').then(
+            c => c.NotificationsComponent
+          ),
+      },
+      {
         path: 'candidate/cv-management/view/:cvId',
         loadComponent: () =>
           import('./features/dashboard/cv-management/candidate/cv-view').then(

@@ -30,6 +30,10 @@ namespace VCareer.IServices.IAuth
         public Task LoginWithGoogleAsync(GoogleLoginDto input);
         public Task ForgotPasswordAsync(ForgotPasswordDto input);
         public Task ResetPasswordAsync(ResetPasswordDto input);
+        public Task CandidateForgotPasswordAsync(ForgotPasswordDto input);
+        public Task CandidateResetPasswordAsync(ResetPasswordDto input);
+        public Task RecruiterForgotPasswordAsync(ForgotPasswordDto input);
+        public Task RecruiterResetPasswordAsync(ResetPasswordDto input);
         public Task LogOutAsync();
         public Task LogOutAllDeviceAsync();
         public Task RecruiterLoginAsync(LoginDto input);

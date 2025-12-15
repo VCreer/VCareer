@@ -88,6 +88,9 @@ public class VCareerDbContext :
     public DbSet<CandidateCv> CandidateCvs { get; set; }
     public DbSet<RecruitmentCampaign> RecruitmentCampaigns { get; set; }
 
+    // Notification
+    public DbSet<Models.Notification.UserNotification> Notifications { get; set; }
+
 
 
     #region Entities from the modules
@@ -357,6 +360,19 @@ public class VCareerDbContext :
         });
 
         // ========== Candidate CV Configuration ==========
+        builder.Entity<Models.Notification.UserNotification>(n =>
+        {
+            n.ToTable("Notifications");
+            n.ConfigureByConvention();
+            n.HasKey(x => x.Id);
+
+            // Indexes for performance
+            n.HasIndex(x => new { x.UserId, x.UserRole, x.IsRead });
+            n.HasIndex(x => new { x.UserId, x.UserRole });
+            n.HasIndex(x => x.NotificationType);
+            n.HasIndex(x => x.CreationTime);
+        });
+
         builder.Entity<CandidateCv>(cv =>
         {
             cv.ToTable("CandidateCvs");

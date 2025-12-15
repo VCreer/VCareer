@@ -348,9 +348,609 @@ Pre-conditions stated inline; keep steps minimal but clear.
   - New application row present with correct date/status  
   - Count increments accordingly
 
+---
+
+## 6) RECRUITER SEARCH CV FUNCTIONALITY
+
+### 6.1) Basic Search
+
+- **TC-SEARCH-BASIC-KEYWORD**  
+  Description: Search candidates by keyword only.  
+  Procedure:  
+  - Login as recruiter  
+  - Navigate to Find Candidate page  
+  - Enter keyword in "Từ khóa cần tìm" field (e.g., "Java Developer")  
+  - Click "TÌM CV" button  
+  Expected Result:  
+  - Loading indicator shows during search  
+  - Results display with candidates matching keyword  
+  - Total count shown: "TÌM THẤY X ỨNG VIÊN PHÙ HỢP"  
+  - API `/api/profile/candidate-search/search` called with `keyword`, `skipCount=0`, `maxResultCount=10`, bearer token
+
+- **TC-SEARCH-EMPTY-KEYWORD**  
+  Description: Search without keyword (show all candidates).  
+  Procedure:  
+  - Login as recruiter  
+  - Leave keyword field empty  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - All candidates with `isSeekingJob=true` displayed  
+  - Results sorted by default priority (newest)  
+  - No error shown
+
+- **TC-SEARCH-LOCATION**  
+  Description: Search by location only.  
+  Procedure:  
+  - Enter location in "Địa điểm" field (e.g., "Hà Nội")  
+  - Leave keyword empty  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Results filtered by `workLocation` matching input  
+  - API includes `workLocation` parameter
+
+- **TC-SEARCH-KEYWORD-LOCATION**  
+  Description: Search with both keyword and location.  
+  Procedure:  
+  - Enter keyword (e.g., "Frontend")  
+  - Enter location (e.g., "TP.HCM")  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Results match both keyword AND location  
+  - API includes both `keyword` and `workLocation`
+
+- **TC-SEARCH-SPECIAL-CHARS**  
+  Description: Search with special characters in keyword.  
+  Procedure:  
+  - Enter keyword with special chars (e.g., "C#", "C++", "React.js")  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Search handles special chars correctly  
+  - Results show if matches found, or empty state if none
+
+- **TC-SEARCH-NUMERIC-KEYWORD**  
+  Description: Search with numeric keyword (years of experience).  
+  Procedure:  
+  - Enter number as keyword (e.g., "5")  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - System treats as experience years if applicable  
+  - Results sorted by experience relevance  
+  - Candidates with matching experience years prioritized
+
+---
+
+### 6.2) Search Scope Filters
+
+- **TC-SCOPE-ALL-DEFAULT**  
+  Description: Default search scope (all fields when keyword provided).  
+  Procedure:  
+  - Enter keyword  
+  - Do not check any scope checkboxes  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - All scope flags set to `true` in API: `searchInJobTitle`, `searchInActivity`, `searchInEducation`, `searchInExperience`, `searchInSkills`  
+  - Search covers all candidate fields
+
+- **TC-SCOPE-SINGLE-FIELD**  
+  Description: Search in single scope field only.  
+  Procedure:  
+  - Enter keyword  
+  - Check only "Vị trí ứng tuyển"  
+  - Uncheck others  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Only `searchInJobTitle=true`, others `false`  
+  - Results limited to job title matches
+
+- **TC-SCOPE-MULTIPLE-FIELDS**  
+  Description: Search in multiple selected scope fields.  
+  Procedure:  
+  - Enter keyword  
+  - Check "Kinh nghiệm" and "Kỹ năng"  
+  - Uncheck others  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - `searchInExperience=true`, `searchInSkills=true`, others `false`  
+  - Results match keyword in experience OR skills
+
+- **TC-SCOPE-NO-KEYWORD**  
+  Description: Search scope behavior when no keyword.  
+  Procedure:  
+  - Leave keyword empty  
+  - Check/uncheck scope fields  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - All scope flags set to `false` (show all candidates)  
+  - Scope checkboxes do not affect results when no keyword
+
+- **TC-SCOPE-TOGGLE**  
+  Description: Toggle scope checkboxes on/off.  
+  Procedure:  
+  - Check "Học vấn"  
+  - Uncheck it  
+  - Check "Hoạt động"  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Checkbox states update correctly  
+  - Only checked scopes included in search
+
+---
+
+### 6.3) CV Classification Filter
+
+- **TC-CLASSIFICATION-ALL**  
+  Description: Show all CVs (default).  
+  Procedure:  
+  - Select "Tất cả" radio  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - API `cvClassification` parameter is `undefined` or not sent  
+  - All candidates shown regardless of view status
+
+- **TC-CLASSIFICATION-UNSEEN**  
+  Description: Show only unseen CVs.  
+  Procedure:  
+  - Select "Chưa xem" radio  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - API includes `cvClassification: "unseen"`  
+  - Only candidates not viewed by recruiter shown
+
+- **TC-CLASSIFICATION-SEEN**  
+  Description: Show only seen CVs.  
+  Procedure:  
+  - Select "Đã xem" radio  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - API includes `cvClassification: "seen"`  
+  - Only previously viewed candidates shown
+
+- **TC-CLASSIFICATION-SWITCH**  
+  Description: Switch between classification options.  
+  Procedure:  
+  - Select "Chưa xem" → search  
+  - Switch to "Đã xem" → search  
+  - Switch to "Tất cả" → search  
+  Expected Result:  
+  - Radio selection updates correctly  
+  - Each search uses correct classification parameter  
+  - Results update accordingly
+
+---
+
+### 6.4) Display Priority
+
+- **TC-PRIORITY-NEWEST**  
+  Description: Sort by newest (default).  
+  Procedure:  
+  - Select "Mới cập nhật" radio  
+  - Perform search  
+  Expected Result:  
+  - API `sorting: "LastModificationTime DESC, CreationTime DESC"`  
+  - Results sorted by last update time (newest first)
+
+- **TC-PRIORITY-SEEKING**  
+  Description: Sort by seeking job status.  
+  Procedure:  
+  - Select "Đang tìm việc" radio  
+  - Perform search  
+  Expected Result:  
+  - API `sorting: "Status DESC, ProfileVisibility DESC, LastModificationTime DESC"`  
+  - Candidates with `isSeekingJob=true` appear first
+
+- **TC-PRIORITY-EXPERIENCED**  
+  Description: Sort by experience level.  
+  Procedure:  
+  - Select "Có kinh nghiệm" radio  
+  - Perform search  
+  Expected Result:  
+  - API `sorting: "Experience DESC, LastModificationTime DESC"`  
+  - Results sorted by experience years (highest first)
+
+- **TC-PRIORITY-SUITABLE**  
+  Description: Sort by suitability (keyword relevance).  
+  Procedure:  
+  - Enter keyword  
+  - Select "Ứng viên phù hợp" radio  
+  - Perform search  
+  Expected Result:  
+  - API `sorting: "LastModificationTime DESC, Experience DESC"`  
+  - Client-side sorting prioritizes keyword matches  
+  - Most relevant candidates appear first
+
+- **TC-PRIORITY-AUTO-SEARCH**  
+  Description: Changing priority triggers automatic search.  
+  Procedure:  
+  - Perform initial search  
+  - Change priority radio (e.g., from "Mới cập nhật" to "Có kinh nghiệm")  
+  Expected Result:  
+  - Search automatically re-executes  
+  - Results re-sorted without clicking "TÌM CV" again
+
+---
+
+### 6.5) Search Results Display
+
+- **TC-RESULTS-CARD-LAYOUT**  
+  Description: Candidate card displays all required information.  
+  Procedure:  
+  - Perform search with results  
+  - Observe candidate cards  
+  Expected Result:  
+  - Each card shows: avatar/initials, name, job title, location, updated time, salary, view count, contact open count  
+  - "Đang tìm việc" badge shown if `isSeekingJob=true`  
+  - Experience section shows formatted experience (e.g., "5 năm 3 tháng")  
+  - Skills list displayed if available  
+  - Education shown if available
+
+- **TC-RESULTS-AVATAR-FALLBACK**  
+  Description: Avatar fallback to initials when no image.  
+  Procedure:  
+  - View candidate without avatar  
+  Expected Result:  
+  - Initials displayed (first letter of first name + first letter of last name)  
+  - Avatar placeholder styled correctly
+
+- **TC-RESULTS-EXPERIENCE-FORMAT**  
+  Description: Experience formatted correctly.  
+  Procedure:  
+  - View candidates with different experience values  
+  Expected Result:  
+  - "5 năm" for whole years  
+  - "5 năm 3 tháng" for years + months  
+  - "Chưa cập nhật" if no experience
+
+- **TC-RESULTS-SALARY-FORMAT**  
+  Description: Salary formatted in Vietnamese currency.  
+  Procedure:  
+  - View candidates with salary values  
+  Expected Result:  
+  - "X triệu" for values >= 1,000,000  
+  - "X VNĐ" for smaller values  
+  - Empty if no salary
+
+- **TC-RESULTS-TIME-AGO**  
+  Description: Updated time shown as relative time.  
+  Procedure:  
+  - View candidates with different update times  
+  Expected Result:  
+  - "Vừa xong" for < 1 minute  
+  - "X phút trước" for < 1 hour  
+  - "X giờ trước" for < 24 hours  
+  - "X ngày trước" for < 7 days  
+  - "X tuần trước" for < 4 weeks  
+  - "X tháng trước" for < 12 months  
+  - "X năm trước" for >= 12 months
+
+- **TC-RESULTS-EMPTY-SECTIONS**  
+  Description: Sections hidden when data unavailable.  
+  Procedure:  
+  - View candidate with missing skills/education/experience  
+  Expected Result:  
+  - Missing sections not displayed  
+  - Card layout remains clean
+
+---
+
+### 6.6) Pagination
+
+- **TC-PAGINATION-DISPLAY**  
+  Description: Pagination controls shown when needed.  
+  Procedure:  
+  - Perform search returning > 10 results  
+  Expected Result:  
+  - Pagination controls visible at bottom  
+  - Shows "Hiển thị 1 - 10 trong tổng số X ứng viên"  
+  - Page numbers, Previous/Next buttons shown
+
+- **TC-PAGINATION-FIRST-PAGE**  
+  Description: First page behavior.  
+  Procedure:  
+  - On first page of results  
+  Expected Result:  
+  - "Trước" button disabled  
+  - Page 1 highlighted as active  
+  - "Hiển thị 1 - 10" shown
+
+- **TC-PAGINATION-LAST-PAGE**  
+  Description: Last page behavior.  
+  Procedure:  
+  - Navigate to last page  
+  Expected Result:  
+  - "Sau" button disabled  
+  - Last page number highlighted  
+  - "Hiển thị X - Y" shows correct range
+
+- **TC-PAGINATION-NEXT-PAGE**  
+  Description: Navigate to next page.  
+  Procedure:  
+  - Click "Sau" button or page number  
+  Expected Result:  
+  - `currentPage` increments  
+  - API called with updated `skipCount`  
+  - Results refresh for new page  
+  - Page scrolls to top
+
+- **TC-PAGINATION-PREVIOUS-PAGE**  
+  Description: Navigate to previous page.  
+  Procedure:  
+  - On page 2+, click "Trước" or lower page number  
+  Expected Result:  
+  - `currentPage` decrements  
+  - API called with updated `skipCount`  
+  - Results refresh
+
+- **TC-PAGINATION-PAGE-NUMBERS**  
+  Description: Page number buttons display correctly.  
+  Procedure:  
+  - Navigate through multiple pages  
+  Expected Result:  
+  - Shows max 5 page numbers around current page  
+  - Active page highlighted  
+  - Clicking page number navigates to that page
+
+- **TC-PAGINATION-RESET-ON-SEARCH**  
+  Description: Pagination resets when new search performed.  
+  Procedure:  
+  - Navigate to page 3  
+  - Change keyword/filter and search again  
+  Expected Result:  
+  - `currentPage` resets to 1  
+  - Results show first page of new search
+
+- **TC-PAGINATION-HIDE-SINGLE-PAGE**  
+  Description: Pagination hidden when results fit in one page.  
+  Procedure:  
+  - Perform search returning <= 10 results  
+  Expected Result:  
+  - Pagination controls not displayed  
+  - Only results count shown
+
+---
+
+### 6.7) Candidate Detail Navigation
+
+- **TC-CLICK-CANDIDATE-CARD**  
+  Description: Click candidate card to view detail.  
+  Procedure:  
+  - Click anywhere on candidate card  
+  Expected Result:  
+  - Navigate to `/recruiter/find-cv/detail/{candidateId}`  
+  - Query param `cvId` included if `defaultCvId` exists  
+  - Candidate data passed via router state
+
+- **TC-CLICK-BOOKMARK**  
+  Description: Click bookmark button (stops propagation).  
+  Procedure:  
+  - Click bookmark icon on candidate card  
+  Expected Result:  
+  - Bookmark action triggered (if implemented)  
+  - Card click event not fired (no navigation)  
+  - Event propagation stopped
+
+- **TC-CLICK-INVALID-CANDIDATE**  
+  Description: Click candidate without valid ID.  
+  Procedure:  
+  - Attempt to click candidate with missing/invalid ID  
+  Expected Result:  
+  - No navigation occurs  
+  - No error thrown
+
+---
+
+### 6.8) Empty State & Loading
+
+- **TC-EMPTY-NO-RESULTS**  
+  Description: Show empty state when no results found.  
+  Procedure:  
+  - Search with filters returning zero results  
+  Expected Result:  
+  - Empty state message: "Không tìm thấy ứng viên phù hợp"  
+  - No candidate cards displayed  
+  - Pagination hidden
+
+- **TC-LOADING-DURING-SEARCH**  
+  Description: Show loading indicator during API call.  
+  Procedure:  
+  - Click "TÌM CV" button  
+  - Observe UI during API request  
+  Expected Result:  
+  - Loading spinner/indicator visible  
+  - "Đang tìm kiếm..." message shown  
+  - Search button shows loading state  
+  - Previous results hidden during load
+
+- **TC-LOADING-COMPLETE**  
+  Description: Loading state clears after results received.  
+  Procedure:  
+  - Wait for search to complete  
+  Expected Result:  
+  - Loading indicator hidden  
+  - Results displayed or empty state shown
+
+---
+
+### 6.9) Error Handling
+
+- **TC-ERROR-NETWORK**  
+  Description: Handle network error during search.  
+  Procedure:  
+  - Disconnect network  
+  - Click "TÌM CV"  
+  Expected Result:  
+  - Error toast shown: "Có lỗi xảy ra khi tìm kiếm ứng viên: [error message]"  
+  - Loading state cleared  
+  - Previous results remain or empty state shown  
+  - No crash
+
+- **TC-ERROR-401-UNAUTHORIZED**  
+  Description: Handle unauthorized access (token expired).  
+  Procedure:  
+  - Let token expire or remove it  
+  - Perform search  
+  Expected Result:  
+  - 401 error returned  
+  - User prompted to login  
+  - No redirect loop
+
+- **TC-ERROR-403-FORBIDDEN**  
+  Description: Handle forbidden access (non-recruiter).  
+  Procedure:  
+  - Login as candidate/employee  
+  - Attempt to access Find Candidate page  
+  Expected Result:  
+  - 403 error or redirect  
+  - Access denied message shown
+
+- **TC-ERROR-SERVER-500**  
+  Description: Handle server error.  
+  Procedure:  
+  - Trigger server error (500)  
+  - Observe error handling  
+  Expected Result:  
+  - Error toast shown with message  
+  - Loading cleared  
+  - UI remains stable
+
+- **TC-ERROR-INVALID-RESPONSE**  
+  Description: Handle malformed API response.  
+  Procedure:  
+  - API returns unexpected format  
+  Expected Result:  
+  - Error logged to console  
+  - Empty results shown  
+  - Error toast displayed  
+  - No crash
+
+---
+
+### 6.10) Authentication & Authorization
+
+- **TC-AUTH-REQUIRED**  
+  Description: Authentication required to search.  
+  Procedure:  
+  - Logout  
+  - Navigate to Find Candidate page  
+  Expected Result:  
+  - Redirect to login or access denied  
+  - Search API not called without token
+
+- **TC-AUTH-RECRUITER-ONLY**  
+  Description: Only recruiters can search candidates.  
+  Procedure:  
+  - Login as candidate  
+  - Attempt to access Find Candidate page  
+  Expected Result:  
+  - Access denied (403) or redirect  
+  - Page not accessible
+
+- **TC-AUTH-TOKEN-IN-REQUEST**  
+  Description: Bearer token included in search requests.  
+  Procedure:  
+  - Perform search  
+  - Inspect network request headers  
+  Expected Result:  
+  - Header `Authorization: Bearer {token}` present  
+  - Missing token would yield 401
+
+---
+
+### 6.11) UI/UX Interactions
+
+- **TC-UI-RESPONSIVE-LAYOUT**  
+  Description: Layout responsive on mobile/tablet.  
+  Procedure:  
+  - Open Find Candidate page on mobile/tablet  
+  - Test filters, results, pagination  
+  Expected Result:  
+  - Sidebar filters stack or collapse appropriately  
+  - Candidate cards readable on small screens  
+  - Pagination usable on touch devices  
+  - Buttons tappable
+
+- **TC-UI-TOAST-NOTIFICATION**  
+  Description: Toast notifications display correctly.  
+  Procedure:  
+  - Trigger error/success scenarios  
+  Expected Result:  
+  - Toast appears with correct message and type  
+  - Auto-hides after 3 seconds  
+  - Can be manually closed
+
+- **TC-UI-FILTER-RESET**  
+  Description: Filters persist during session.  
+  Procedure:  
+  - Set filters and search  
+  - Navigate away and return  
+  Expected Result:  
+  - Filters may reset or persist (depending on implementation)  
+  - User can easily re-apply filters
+
+- **TC-UI-SCROLL-TO-TOP**  
+  Description: Page scrolls to top on pagination.  
+  Procedure:  
+  - Scroll down results  
+  - Click next page  
+  Expected Result:  
+  - Page smoothly scrolls to top  
+  - New results visible
+
+- **TC-UI-SEARCH-BUTTON-DISABLED**  
+  Description: Search button disabled during loading.  
+  Procedure:  
+  - Click "TÌM CV"  
+  - Attempt to click again during loading  
+  Expected Result:  
+  - Button shows loading state  
+  - Button disabled or click ignored during load
+
+---
+
+### 6.12) Search Logic & Data
+
+- **TC-SEARCH-ONLY-SEEKING-JOB**  
+  Description: Only candidates with `isSeekingJob=true` shown.  
+  Procedure:  
+  - Search without filters  
+  - Check all results  
+  Expected Result:  
+  - All displayed candidates have `isSeekingJob=true`  
+  - Candidates with `isSeekingJob=false` not shown
+
+- **TC-SEARCH-CLIENT-SORTING**  
+  Description: Client-side sorting when keyword provided.  
+  Procedure:  
+  - Enter keyword  
+  - Perform search  
+  Expected Result:  
+  - Results sorted by relevance score (keyword matches prioritized)  
+  - Candidates with keyword in job title/skills/experience appear first
+
+- **TC-SEARCH-SKILLS-PARSING**  
+  Description: Skills string parsed correctly.  
+  Procedure:  
+  - View candidate with skills string (comma/semicolon/newline separated)  
+  Expected Result:  
+  - Skills split into array  
+  - Each skill displayed as separate tag/item
+
+- **TC-SEARCH-EXPERIENCE-DETAILS**  
+  Description: Experience details mapped correctly.  
+  Procedure:  
+  - View candidate with experience details  
+  Expected Result:  
+  - Experience entries show position and company  
+  - Fallback to job title if no experience details  
+  - "Chưa cập nhật" if no data
+
+---
+
 ## Quick Notes
 - Only logged-in candidates can apply.  
 - Valid files: .pdf/.doc/.docx, <5MB.  
 - Cover letter is optional.  
 - Always send bearer token on apply/upload requests.  
+- **Recruiter Search CV**: Only candidates with `isSeekingJob=true` are searchable.  
+- Default pagination: 10 items per page.  
+- Search requires recruiter role; candidates/employees cannot access.  
 

@@ -73,12 +73,14 @@ namespace VCareer.Profile
         /// <summary>
         /// Lấy chi tiết một ứng viên
         /// </summary>
+        /// <param name="id">ID của CandidateProfile</param>
+        /// <param name="jobId">ID của Job (optional, để tạo notification khi recruiter xem CV)</param>
         [HttpGet("{id}")]
-        public async Task<ActionResult<CandidateSearchResultDto>> GetCandidateDetailAsync(Guid id)
+        public async Task<ActionResult<CandidateSearchResultDto>> GetCandidateDetailAsync(Guid id, [FromQuery] Guid? jobId = null)
         {
             try
             {
-                var result = await _candidateSearchAppService.GetCandidateDetailAsync(id);
+                var result = await _candidateSearchAppService.GetCandidateDetailAsync(id, jobId);
                 return Ok(result);
             }
             catch (Volo.Abp.UserFriendlyException ex)

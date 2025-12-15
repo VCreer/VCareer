@@ -27,6 +27,12 @@ using VCareer.IServices.Application;
 using Volo.Abp.Application.Services;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
+using VCareer.IServices.Notification;
+using VCareer.Dto.Notification;
+using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.Job;
+using VCareer.Constants.JobConstant;
+using System.Text.Json;
 
 namespace VCareer.Application.Applications
 {
@@ -48,6 +54,9 @@ namespace VCareer.Application.Applications
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
+        private readonly INotificationAppService _notificationAppService;
+        private readonly IRecruiterRepository _recruiterRepository;
+        private readonly IJobPostRepository _jobPostRepository;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogAppService _activityLogAppService;
 
@@ -65,7 +74,10 @@ namespace VCareer.Application.Applications
             ICurrentUser currentUser,
             IEmailSender emailSender,
             IConfiguration configuration,
-            IActivityLogAppService activityLogAppService)
+            IActivityLogAppService activityLogAppService,
+            INotificationAppService notificationAppService,
+            IRecruiterRepository recruiterRepository,
+            IJobPostRepository jobPostRepository)
         {
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
@@ -81,6 +93,9 @@ namespace VCareer.Application.Applications
             _emailSender = emailSender;
             _configuration = configuration;
             _activityLogAppService = activityLogAppService;
+            _notificationAppService = notificationAppService;
+            _recruiterRepository = recruiterRepository;
+            _jobPostRepository = jobPostRepository;
         }
 
         /// <summary>
@@ -619,6 +634,99 @@ namespace VCareer.Application.Applications
                         application.Id,
                         nameof(JobApplication),
                         "{}");
+                }
+
+                // Tạo notification cho candidate khi recruiter xem CV
+                try
+                {
+                    Logger.LogInformation("MarkAsViewedAsync: Starting notification creation. ApplicationId: {ApplicationId}, CandidateId: {CandidateId}, JobId: {JobId}, UserId: {UserId}",
+                        application.Id, application.CandidateId, application.JobId, userId);
+
+                    // Verify user là recruiter
+                    var recruiter = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == userId);
+                    if (recruiter == null)
+                    {
+                        Logger.LogWarning("MarkAsViewedAsync: User {UserId} is not a recruiter. Skipping notification.", userId);
+                    }
+                    else if (!recruiter.Status)
+                    {
+                        Logger.LogWarning("MarkAsViewedAsync: Recruiter {RecruiterId} is not active. Skipping notification.", recruiter.UserId);
+                    }
+                    else
+                    {
+                        Logger.LogInformation("MarkAsViewedAsync: Recruiter found. RecruiterId: {RecruiterId}", recruiter.UserId);
+
+                        // Lấy thông tin job
+                        var job = await _jobPostRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+                        if (job == null)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} not found. Skipping notification.", application.JobId);
+                        }
+                        else if (job.Status == JobStatus.Deleted)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} is deleted. Skipping notification.", application.JobId);
+                        }
+                        else if (job.ExpiresAt <= DateTime.Now)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} is expired (ExpiresAt: {ExpiresAt}). Skipping notification.", 
+                                application.JobId, job.ExpiresAt);
+                        }
+                        else
+                        {
+                            Logger.LogInformation("MarkAsViewedAsync: Job found. JobTitle: {JobTitle}, CompanyName: {CompanyName}", 
+                                job.Title, job.CompanyName);
+
+                            // Lấy candidate profile - CandidateId trong JobApplication là UserId
+                            var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
+                            if (candidate == null)
+                            {
+                                Logger.LogWarning("MarkAsViewedAsync: Candidate with UserId {CandidateId} not found. Skipping notification.", 
+                                    application.CandidateId);
+                            }
+                            else if (!candidate.Status)
+                            {
+                                Logger.LogWarning("MarkAsViewedAsync: Candidate {CandidateId} is not active. Skipping notification.", 
+                                    application.CandidateId);
+                            }
+                            else
+                            {
+                                Logger.LogInformation("MarkAsViewedAsync: Candidate found. Creating notification...");
+
+                                // Tạo notification cho candidate
+                                var metadata = JsonSerializer.Serialize(new
+                                {
+                                    JobTitle = job.Title,
+                                    CompanyName = job.CompanyName,
+                                    JobId = job.Id,
+                                    RecruiterId = recruiter.UserId,
+                                    ApplicationId = application.Id
+                                });
+
+                                var notificationDto = new NotificationCreateDto
+                                {
+                                    UserId = application.CandidateId,
+                                    UserRole = "Candidate",
+                                    NotificationType = "CvViewed",
+                                    Title = "Nhà tuyển dụng vừa xem CV của bạn",
+                                    Message = $"Công ty {job.CompanyName} đã xem CV của bạn cho vị trí {job.Title}",
+                                    RelatedEntityType = "JobPost",
+                                    RelatedEntityId = application.JobId,
+                                    Metadata = metadata,
+                                    CreatedBy = recruiter.UserId
+                                };
+
+                                var createdNotification = await _notificationAppService.CreateNotificationAsync(notificationDto);
+                                Logger.LogInformation("MarkAsViewedAsync: Notification created successfully. NotificationId: {NotificationId}", 
+                                    createdNotification.Id);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không fail toàn bộ request
+                    Logger.LogError(ex, "MarkAsViewedAsync: Failed to create notification when recruiter viewed CV. ApplicationId: {ApplicationId}, JobId: {JobId}, CandidateId: {CandidateId}, UserId: {UserId}",
+                        application.Id, application.JobId, application.CandidateId, userId);
                 }
             }
 

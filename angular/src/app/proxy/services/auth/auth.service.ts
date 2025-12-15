@@ -52,6 +52,15 @@ export class AuthService {
       body: input,
     },
     { apiName: this.apiName,...config });
+
+
+  candidateForgotPassword = (input: ForgotPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-forgot-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
   
 
   getCurrentUser = (config?: Partial<Rest.Config>) =>
@@ -117,6 +126,33 @@ export class AuthService {
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/reset-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+
+  candidateResetPassword = (input: ResetPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-reset-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+
+  recruiterForgotPassword = (input: ForgotPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/recruiter-forgot-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+
+
+  recruiterResetPassword = (input: ResetPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/recruiter-reset-password',
       body: input,
     },
     { apiName: this.apiName,...config });
