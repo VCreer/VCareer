@@ -41,6 +41,17 @@ export interface CandidateCv {
   rating?: number; // Đánh giá từ 1-10
 }
 
+// Đồng bộ với enum ApplicationDisplayStatus bên backend:
+// VCareer.Constants.JobConstant.ApplicationDisplayStatus
+export enum ApplicationDisplayStatus {
+  RECEIVED = 'received',        // CV tiếp nhận
+  SUITABLE = 'suitable',        // Phù hợp
+  INTERVIEW = 'interview',      // Hẹn phỏng vấn
+  OFFER = 'offer',              // Gửi đề nghị
+  HIRED = 'hired',              // Nhận việc
+  NOT_SUITABLE = 'not-suitable' // Chưa phù hợp
+}
+
 @Component({
   selector: 'app-recruiter-cv-management',
   standalone: true,
@@ -73,12 +84,12 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   ];
 
   statuses: { id: string; name: string }[] = [
-    { id: 'received', name: 'CV tiếp nhận' },  // Trạng thái mặc định
-    { id: 'suitable', name: 'Phù hợp' },
-    { id: 'interview', name: 'Hẹn phỏng vấn' },
-    { id: 'offer', name: 'Gửi đề nghị' },
-    { id: 'hired', name: 'Nhận việc' },
-    { id: 'not-suitable', name: 'Chưa phù hợp' }
+    { id: ApplicationDisplayStatus.RECEIVED, name: 'CV tiếp nhận' },  // Trạng thái mặc định
+    { id: ApplicationDisplayStatus.SUITABLE, name: 'Phù hợp' },
+    { id: ApplicationDisplayStatus.INTERVIEW, name: 'Hẹn phỏng vấn' },
+    { id: ApplicationDisplayStatus.OFFER, name: 'Gửi đề nghị' },
+    { id: ApplicationDisplayStatus.HIRED, name: 'Nhận việc' },
+    { id: ApplicationDisplayStatus.NOT_SUITABLE, name: 'Chưa phù hợp' }
   ];
 
   sources: { id: string; name: string }[] = [
@@ -188,11 +199,18 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     this.applicationService.getCompanyApplications(input).subscribe({
       next: (response) => {
         console.log('Applications loaded from API:', response);
-        this.candidateCvs = this.mapApplicationsToCvs(response.items || []);
-        this.totalCount = response.totalCount || 0;
+        const applications = response.items || [];
+        // Hiển thị tất cả CV (không dedupe)
+        this.candidateCvs = this.mapApplicationsToCvs(applications);
+        // Đếm số ứng viên duy nhất cho totalCount
+        const uniqueCandidateCount = this.countUniqueCandidates(applications);
+        this.totalCount = uniqueCandidateCount;
         this.loading = false;
         this.applyFilters();
-        this.showToastMessage(`Đã tải ${response.items?.length || 0} ứng viên từ hệ thống.`, 'success');
+        this.showToastMessage(
+          `Đã tải ${applications.length} CV từ ${uniqueCandidateCount} ứng viên.`,
+          'success'
+        );
       },
       error: (error) => {
         console.error('Error loading applications:', error);
@@ -269,6 +287,18 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Đếm số ứng viên duy nhất (unique candidateId) từ danh sách applications
+   */
+  private countUniqueCandidates(applications: ApplicationDto[]): number {
+    const uniqueCandidateIds = new Set<string>();
+    applications.forEach((app, index) => {
+      const candidateId = app.candidateId || app.id || `unknown-${index}`;
+      uniqueCandidateIds.add(candidateId);
+    });
+    return uniqueCandidateIds.size;
+  }
+
+  /**
    * Normalize backend status values to frontend status values
    * Backend: "Pending", "Reviewed", "Shortlisted", "Interviewed", "Accepted", "Rejected", "Withdrawn"
    * Frontend: 'received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable'
@@ -282,27 +312,27 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     const statusLower = backendStatus.toLowerCase().trim();
     
     // If already in frontend format, return as is
-    const frontendStatuses = ['received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable'];
+    const frontendStatuses = Object.values(ApplicationDisplayStatus) as string[];
     if (frontendStatuses.includes(statusLower)) {
       return statusLower;
     }
 
     // Map backend status to frontend status
     const statusMap: { [key: string]: string } = {
-      'pending': 'received',           // CV tiếp nhận
-      'reviewed': 'suitable',          // Phù hợp
-      'shortlisted': 'suitable',       // Phù hợp
-      'interviewed': 'interview',      // Hẹn phỏng vấn
-      'accepted': 'hired',             // Nhận việc
-      'rejected': 'not-suitable',      // Chưa phù hợp
-      'withdrawn': 'not-suitable',     // Chưa phù hợp
-      'offer': 'offer',                // Gửi đề nghị
-      'send-offer': 'offer',           // Gửi đề nghị (alternative)
-      'new': 'received',               // Mới = CV tiếp nhận
-      'viewed': 'received'              // Đã xem nhưng chưa đánh giá = CV tiếp nhận
+      'pending': ApplicationDisplayStatus.RECEIVED,           // CV tiếp nhận
+      'reviewed': ApplicationDisplayStatus.SUITABLE,          // Phù hợp
+      'shortlisted': ApplicationDisplayStatus.SUITABLE,       // Phù hợp
+      'interviewed': ApplicationDisplayStatus.INTERVIEW,      // Hẹn phỏng vấn
+      'accepted': ApplicationDisplayStatus.HIRED,             // Nhận việc
+      'rejected': ApplicationDisplayStatus.NOT_SUITABLE,      // Chưa phù hợp
+      'withdrawn': ApplicationDisplayStatus.NOT_SUITABLE,     // Chưa phù hợp
+      'offer': ApplicationDisplayStatus.OFFER,                // Gửi đề nghị
+      'send-offer': ApplicationDisplayStatus.OFFER,           // Gửi đề nghị (alternative)
+      'new': ApplicationDisplayStatus.RECEIVED,               // Mới = CV tiếp nhận
+      'viewed': ApplicationDisplayStatus.RECEIVED             // Đã xem nhưng chưa đánh giá = CV tiếp nhận
     };
 
-    const normalizedStatus = statusMap[statusLower] || 'received';
+    const normalizedStatus = statusMap[statusLower] || ApplicationDisplayStatus.RECEIVED;
     
     // Log unknown status values for debugging
     if (!statusMap[statusLower]) {
@@ -545,7 +575,15 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     }
 
     this.filteredCvs = result;
-    this.totalCount = result.length;
+    // Đếm số ứng viên duy nhất từ kết quả đã filter
+    const uniqueCandidateIds = new Set<string>();
+    result.forEach(cv => {
+      const candidateId = cv.candidateCode || cv.id || '';
+      if (candidateId) {
+        uniqueCandidateIds.add(candidateId);
+      }
+    });
+    this.totalCount = uniqueCandidateIds.size;
     
     // Reset to page 1 when filters change
     this.currentPage = 1;

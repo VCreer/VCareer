@@ -508,13 +508,14 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
         const stats: ApplicationStatisticsDto = response?.result || response?.data || response;
         
         if (stats) {
-          // Update recruitment funnel
+          // Tổng đơn ứng tuyển theo công ty hiện tại
           const total = stats.totalApplications || 0;
           const pending = stats.pendingApplications || 0;
           const shortlisted = stats.shortlistedApplications || 0;
-          const accepted = stats.acceptedApplications || 0;
-          const rejected = stats.rejectedApplications || 0;
+          const accepted = stats.acceptedApplications || 0; // CV có trạng thái nhận việc
+          const rejected = stats.rejectedApplications || 0; // CV từ chối
           
+          // Cập nhật funnel trạng thái hồ sơ
           this.recruitmentFunnel = {
             stages: [
               { name: 'Hồ sơ tiếp nhận', count: total, color: '#6b7280' },
@@ -524,9 +525,22 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
               { name: 'Từ chối', count: rejected, color: '#ef4444' }
             ]
           };
+
+          // Cập nhật 2 thẻ metric: Tổng CV đã duyệt & Tổng CV từ chối
+          if (this.metrics && this.metrics.length >= 4) {
+            // Tổng ứng viên đã apply vào công ty vẫn dùng số unique candidate từ dashboard (đang set ở loadMetrics)
+            // Chỉ cập nhật lại 2 ô CV theo số đơn ứng tuyển (application) từ thống kê
+            this.metrics[2] = {
+              ...this.metrics[2],
+              value: accepted
+            };
+            this.metrics[3] = {
+              ...this.metrics[3],
+              value: rejected
+            };
+          }
           
-          // Cost breakdown - using placeholder values as cost data might not be available
-          // TODO: Calculate actual costs if cost data is available in API
+          // Cost breakdown - placeholder, có thể cập nhật theo dữ liệu thực tế nếu backend trả về
           const baseCost = 10000;
           this.costBreakdown = {
             stages: [

@@ -70,6 +70,7 @@ export interface BulkDownloadCVsDto {
 
 export interface GetApplicationListDto extends PagedAndSortedResultRequestDto {
   jobId?: string;
+  recruitmentCampaignId?: string;
   candidateId?: string;
   companyId?: number;
   status?: string;
@@ -78,6 +79,7 @@ export interface GetApplicationListDto extends PagedAndSortedResultRequestDto {
   toDate?: string;
   isViewed?: boolean;
   isResponded?: boolean;
+  keyword?: string;
 }
 
 export interface RateApplicationDto {
