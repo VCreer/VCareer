@@ -45,12 +45,12 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         {
             _candidateCvRepository = candidateCvRepository;
             _dbContextProvider = dbContextProvider;
-            
+
             // Setup index path (riêng biệt với Job index)
             _indexPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneCandidateIndex");
             if (!System.IO.Directory.Exists(_indexPath))
                 System.IO.Directory.CreateDirectory(_indexPath);
-            
+
             var emptyStopWords = new CharArraySet(AppLuceneVersion, 0, ignoreCase: false);
             _analyzer = new StandardAnalyzer(AppLuceneVersion, emptyStopWords);
             _directory = FSDirectory.Open(_indexPath);
@@ -134,23 +134,6 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         }
 
         /// <summary>
-        /// Lấy số lượng documents đã được index trong Lucene
-        /// </summary>
-        public Task<int> GetIndexedCountAsync()
-        {
-            try
-            {
-                using var reader = DirectoryReader.Open(_directory);
-                return Task.FromResult(reader.NumDocs);
-            }
-            catch (Exception)
-            {
-                // If index doesn't exist or has error, return 0
-                return Task.FromResult(0);
-            }
-        }
-
-        /// <summary>
         /// Tìm kiếm candidates theo keyword và filters
         /// </summary>
         public Task<List<Guid>> SearchCandidateIdsAsync(SearchCandidateInputDto input)
@@ -168,26 +151,12 @@ namespace VCareer.Services.LuceneService.CandidateSearch
                 }
 
                 var query = BuildSearchQuery(input);
-                
-                // Debug: Log query info
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Search query: {query}");
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Index has {reader.NumDocs} documents");
-                
-                // If query is null or MatchAllDocsQuery without keyword, return empty to use fallback
-                if (query is MatchAllDocsQuery && !string.IsNullOrWhiteSpace(input.Keyword))
-                {
-                    System.Diagnostics.Debug.WriteLine("[Lucene] Query is MatchAllDocsQuery but keyword exists - returning empty");
-                    return Task.FromResult(new List<Guid>());
-                }
-                
                 var sortQuery = BuildSortQuery(input);
 
                 int maxResults = (input.SkipCount + (input.MaxResultCount > 0 ? input.MaxResultCount : 10)) * 3;
                 if (maxResults < 100) maxResults = 100;
 
                 var topDocs = searcher.Search(query, maxResults, sortQuery);
-                
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Search returned {topDocs.TotalHits} total hits");
 
                 var candidateIds = new List<Guid>();
 
@@ -197,8 +166,6 @@ namespace VCareer.Services.LuceneService.CandidateSearch
                     if (Guid.TryParse(doc.Get("UserId"), out var userId))
                         candidateIds.Add(userId);
                 }
-
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Parsed {candidateIds.Count} candidate IDs from search results");
 
                 var pagingIds = candidateIds
                     .Skip(input.SkipCount)
@@ -210,8 +177,6 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             catch (Exception ex)
             {
                 // If index doesn't exist or has error, return empty to trigger fallback
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Error during search: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Stack trace: {ex.StackTrace}");
                 return Task.FromResult(new List<Guid>());
             }
         }
@@ -249,7 +214,6 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             var boolQuery = new BooleanQuery();
 
             // Must have: Status = true, ProfileVisibility = true
-            // Note: These fields are stored as StringField with "1" or "0"
             boolQuery.Add(new TermQuery(new Term("Status", "1")), Occur.MUST);
             boolQuery.Add(new TermQuery(new Term("ProfileVisibility", "1")), Occur.MUST);
 
@@ -258,17 +222,8 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             {
                 var keywordQuery = BuildKeywordQuery(input.Keyword, input);
                 if (keywordQuery != null)
-                {
                     boolQuery.Add(keywordQuery, Occur.MUST);
-                    System.Diagnostics.Debug.WriteLine($"[Lucene] Added keyword query to boolean query");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[Lucene] Keyword query is null, skipping keyword search");
-                }
             }
-            
-            System.Diagnostics.Debug.WriteLine($"[Lucene] Boolean query has {boolQuery.Clauses.Count} clauses");
 
             // Filters
             AddJobTitleFilter(boolQuery, input.JobTitle);
@@ -280,7 +235,7 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             // Scope filters (nếu có scope được chọn)
             var hasAnyScopeSelected = input.SearchInJobTitle || input.SearchInActivity ||
                                       input.SearchInEducation || input.SearchInExperience || input.SearchInSkills;
-            
+
             if (hasAnyScopeSelected)
             {
                 if (input.SearchInJobTitle)
@@ -297,15 +252,7 @@ namespace VCareer.Services.LuceneService.CandidateSearch
                     }, Occur.MUST);
             }
 
-            // If no clauses (shouldn't happen with Status/ProfileVisibility), return MatchAllDocsQuery
-            if (boolQuery.Clauses.Count == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("[Lucene] Boolean query has no clauses, returning MatchAllDocsQuery");
-                return new MatchAllDocsQuery();
-            }
-            
-            System.Diagnostics.Debug.WriteLine($"[Lucene] Final boolean query: {boolQuery}");
-            return boolQuery;
+            return boolQuery.Clauses.Count == 0 ? new MatchAllDocsQuery() : boolQuery;
         }
 
         private Query BuildKeywordQuery(string keyword, SearchCandidateInputDto input)
@@ -315,68 +262,58 @@ namespace VCareer.Services.LuceneService.CandidateSearch
                 var hasAnyScopeSelected = input.SearchInJobTitle || input.SearchInActivity ||
                                           input.SearchInEducation || input.SearchInExperience || input.SearchInSkills;
 
-                var keywordLower = keyword.ToLower().Trim();
-                if (string.IsNullOrWhiteSpace(keywordLower))
-                {
-                    System.Diagnostics.Debug.WriteLine("[Lucene] Keyword is empty after trim, returning null");
-                    return null;
-                }
-
-                var boolQuery = new BooleanQuery();
+                var searchFields = new List<string>();
+                var boosts = new Dictionary<string, float>();
 
                 if (hasAnyScopeSelected)
                 {
                     // Chỉ search trong các trường được chọn
                     if (input.SearchInJobTitle)
                     {
-                        boolQuery.Add(new WildcardQuery(new Term("JobTitle", $"*{keywordLower}*")), Occur.SHOULD);
+                        searchFields.Add("JobTitle");
+                        boosts["JobTitle"] = 3.0f;
                     }
                     if (input.SearchInSkills)
                     {
-                        boolQuery.Add(new WildcardQuery(new Term("Skills", $"*{keywordLower}*")), Occur.SHOULD);
+                        searchFields.Add("Skills");
+                        boosts["Skills"] = 2.5f;
                     }
                     if (input.SearchInActivity)
                     {
-                        boolQuery.Add(new WildcardQuery(new Term("Location", $"*{keywordLower}*")), Occur.SHOULD);
-                        boolQuery.Add(new WildcardQuery(new Term("WorkLocation", $"*{keywordLower}*")), Occur.SHOULD);
+                        searchFields.Add("Location");
+                        searchFields.Add("WorkLocation");
+                        boosts["Location"] = 1.5f;
+                        boosts["WorkLocation"] = 1.5f;
                     }
-                    if (input.SearchInEducation || input.SearchInExperience)
-                    {
-                        // Search in CV content for education/experience
-                        boolQuery.Add(new WildcardQuery(new Term("CvContent", $"*{keywordLower}*")), Occur.SHOULD);
-                    }
+                    // Experience không thể search bằng keyword vì là số
                 }
                 else
                 {
-                    // Search trong tất cả các trường (sử dụng SHOULD để match bất kỳ field nào)
-                    boolQuery.Add(new WildcardQuery(new Term("JobTitle", $"*{keywordLower}*")), Occur.SHOULD);
-                    boolQuery.Add(new WildcardQuery(new Term("Skills", $"*{keywordLower}*")), Occur.SHOULD);
-                    boolQuery.Add(new WildcardQuery(new Term("Location", $"*{keywordLower}*")), Occur.SHOULD);
-                    boolQuery.Add(new WildcardQuery(new Term("WorkLocation", $"*{keywordLower}*")), Occur.SHOULD);
-                    boolQuery.Add(new WildcardQuery(new Term("CvContent", $"*{keywordLower}*")), Occur.SHOULD);
+                    // Search trong tất cả các trường
+                    searchFields.AddRange(new[] { "JobTitle", "Skills", "Location", "WorkLocation", "CvContent" });
+                    boosts["JobTitle"] = 3.0f;
+                    boosts["Skills"] = 2.5f;
+                    boosts["CvContent"] = 2.0f;
+                    boosts["Location"] = 1.5f;
+                    boosts["WorkLocation"] = 1.5f;
                 }
 
-                if (boolQuery.Clauses.Count == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("[Lucene] No search fields selected, returning null query");
+                if (searchFields.Count == 0)
                     return null;
-                }
 
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Built keyword query with {boolQuery.Clauses.Count} clauses, keyword: '{keywordLower}'");
-                return boolQuery;
+                var parser = new MultiFieldQueryParser(
+                    AppLuceneVersion,
+                    searchFields.ToArray(),
+                    _analyzer,
+                    boosts
+                );
+                parser.DefaultOperator = Operator.OR;
+                return parser.Parse(EscapeSpecialCharacters(keyword));
             }
-            catch (Exception ex)
+            catch (ParseException)
             {
-                System.Diagnostics.Debug.WriteLine($"[Lucene] Exception in BuildKeywordQuery: {ex.Message}, using simple wildcard fallback");
-                // Fallback: Simple wildcard query
-                try
-                {
-                    return new WildcardQuery(new Term("JobTitle", $"*{keyword.ToLower().Trim()}*"));
-                }
-                catch
-                {
-                    return null;
-                }
+                // Fallback: Wildcard query
+                return new WildcardQuery(new Term("JobTitle", $"*{keyword.ToLower()}*"));
             }
         }
 
@@ -486,7 +423,7 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             doc.Add(new Int32Field("Experience", candidate.Experience ?? 0, Field.Store.NO));
             doc.Add(new DoubleField("Salary", (double)(candidate.Salary ?? 0), Field.Store.NO));
             doc.Add(new Int64Field("LastModificationTime", (candidate.LastModificationTime ?? candidate.CreationTime).Ticks, Field.Store.NO));
-            
+
             // Status fields
             doc.Add(new StringField("Status", candidate.Status ? "1" : "0", Field.Store.NO));
             doc.Add(new StringField("ProfileVisibility", candidate.ProfileVisibility ? "1" : "0", Field.Store.NO));

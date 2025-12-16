@@ -155,13 +155,6 @@ namespace VCareer.Services.Order
                 {
                     var service = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
                     detailDto.SubcriptionServiceTitle = service.Title;
-
-                    //tao user subcription
-                    await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
-                    {
-                        SubcriptionServiceId = detailDto.SubcriptionServiceId,
-                        UserId = _currentUser.Id.Value
-                    });
                 }
 
                 return orderDto;

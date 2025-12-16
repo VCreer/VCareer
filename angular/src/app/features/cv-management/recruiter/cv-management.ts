@@ -38,7 +38,6 @@ export interface CandidateCv {
   avatar?: string; // Fallback initials
   candidateCode?: string; // Mã ứng viên
   candidateId?: string; // ID của candidate để gửi notification
-  jobId?: string; // ID của job để gửi notification
   notes?: string; // Ghi chú
   labels?: string[];
   rating?: number; // Đánh giá từ 1-10
@@ -283,8 +282,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         isViewed: !!app.viewedAt,
         candidateCode: app.candidateId || '',
         candidateId: app.candidateId || '',
-        jobId: app.jobId || '',
-        notes: app.recruiterNotes || '',
+           notes: app.recruiterNotes || '',
         rating: app.rating || undefined
       };
     });
