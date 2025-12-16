@@ -25,6 +25,8 @@ using VCareer.Dto.Applications;
 using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.Application;
 using Volo.Abp.Application.Services;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 
 namespace VCareer.Application.Applications
 {
@@ -37,6 +39,7 @@ namespace VCareer.Application.Applications
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;
         private readonly IRepository<Job_Post, Guid> _jobPostingRepository;
+        private readonly IRepository<RecruitmentCampaign, Guid> _recruitmentCampaignRepository;
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly IRepository<UploadedCv, Guid> _uploadedCvRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
@@ -53,6 +56,7 @@ namespace VCareer.Application.Applications
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
             IRepository<Job_Post, Guid> jobPostingRepository,
+            IRepository<RecruitmentCampaign, Guid> recruitmentCampaignRepository,
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<UploadedCv, Guid> uploadedCvRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
@@ -68,6 +72,7 @@ namespace VCareer.Application.Applications
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
             _jobPostingRepository = jobPostingRepository;
+            _recruitmentCampaignRepository = recruitmentCampaignRepository;
             _candidateCvRepository = candidateCvRepository;
             _uploadedCvRepository = uploadedCvRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
@@ -207,40 +212,103 @@ namespace VCareer.Application.Applications
         /*[Authorize(VCareerPermission.Application.View)]*/
         public async Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input)
         {
-            var query = await _applicationRepository.GetQueryableAsync();
+            var applicationQuery = await _applicationRepository.GetQueryableAsync();
+            var jobQuery = await _jobPostingRepository.GetQueryableAsync();
+            var candidateQuery = await _candidateRepository.GetQueryableAsync();
+            var userQuery = await _identityUserRepository.GetQueryableAsync();
+
+            var query =
+                from app in applicationQuery
+                join job in jobQuery on app.JobId equals job.Id into jobJoin
+                from job in jobJoin.DefaultIfEmpty()
+                join candidate in candidateQuery on app.CandidateId equals candidate.UserId into candidateJoin
+                from candidate in candidateJoin.DefaultIfEmpty()
+                join user in userQuery on candidate.UserId equals user.Id into userJoin
+                from user in userJoin.DefaultIfEmpty()
+                select new { app, job, user };
 
             // Apply filters
             if (input.JobId.HasValue)
-                query = query.Where(a => a.JobId == input.JobId.Value);
+                query = query.Where(x => x.app.JobId == input.JobId.Value);
+
+            if (input.RecruitmentCampaignId.HasValue)
+                query = query.Where(x => x.job != null && x.job.RecruitmentCampaignId == input.RecruitmentCampaignId.Value);
 
             if (input.CandidateId.HasValue)
-                query = query.Where(a => a.CandidateId == input.CandidateId.Value);
+                query = query.Where(x => x.app.CandidateId == input.CandidateId.Value);
 
             if (input.CompanyId.HasValue)
-                query = query.Where(a => a.CompanyId == input.CompanyId.Value);
+                query = query.Where(x => x.app.CompanyId == input.CompanyId.Value);
 
             if (!string.IsNullOrEmpty(input.Status))
-                query = query.Where(a => a.Status == input.Status);
+                query = query.Where(x => x.app.Status == input.Status);
 
             if (!string.IsNullOrEmpty(input.CVType))
-                query = query.Where(a => a.CVType == input.CVType);
+                query = query.Where(x => x.app.CVType == input.CVType);
 
             if (input.FromDate.HasValue)
-                query = query.Where(a => a.CreationTime >= input.FromDate.Value);
+                query = query.Where(x => x.app.CreationTime >= input.FromDate.Value);
 
             if (input.ToDate.HasValue)
-                query = query.Where(a => a.CreationTime <= input.ToDate.Value);
+                query = query.Where(x => x.app.CreationTime <= input.ToDate.Value);
 
             if (input.IsViewed.HasValue)
-                query = query.Where(a => input.IsViewed.Value ? a.ViewedAt.HasValue : !a.ViewedAt.HasValue);
+                query = query.Where(x => input.IsViewed.Value ? x.app.ViewedAt.HasValue : !x.app.ViewedAt.HasValue);
 
             if (input.IsResponded.HasValue)
-                query = query.Where(a => input.IsResponded.Value ? a.RespondedAt.HasValue : !a.RespondedAt.HasValue);
+                query = query.Where(x => input.IsResponded.Value ? x.app.RespondedAt.HasValue : !x.app.RespondedAt.HasValue);
 
-            // Apply sorting
-            /*query = string.IsNullOrEmpty(input.Sorting)
-                ? query.OrderByDescending(a => a.CreationTime)
-                : query.OrderBy(input.Sorting);*/
+            if (!string.IsNullOrWhiteSpace(input.Keyword))
+            {
+                var keyword = input.Keyword.Trim().ToLower();
+                query = query.Where(x =>
+                    (x.user != null &&
+                        (
+                            (!string.IsNullOrEmpty(x.user.Name) && x.user.Name.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.Surname) && x.user.Surname.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.Email) && x.user.Email.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.PhoneNumber) && x.user.PhoneNumber.ToLower().Contains(keyword))
+                        )
+                    ) ||
+                    (x.job != null && !string.IsNullOrEmpty(x.job.Title) && x.job.Title.ToLower().Contains(keyword))
+                );
+            }
+
+            // Apply sorting - mặc định sắp xếp theo CreationTime DESC (mới nhất lên đầu)
+            if (string.IsNullOrWhiteSpace(input.Sorting))
+            {
+                query = query.OrderByDescending(x => x.app.CreationTime);
+            }
+            else
+            {
+                // Parse sorting string (format: "fieldName DESC" or "fieldName ASC")
+                var sortParts = input.Sorting.Trim().Split(' ');
+                var sortField = sortParts[0];
+                var sortDirection = sortParts.Length > 1 && sortParts[1].ToUpper() == "ASC" ? "ASC" : "DESC";
+
+                switch (sortField.ToLower())
+                {
+                    case "creationtime":
+                        query = sortDirection == "ASC" 
+                            ? query.OrderBy(x => x.app.CreationTime)
+                            : query.OrderByDescending(x => x.app.CreationTime);
+                        break;
+                    case "lastmodificationtime":
+                        query = sortDirection == "ASC"
+                            ? query.OrderBy(x => x.app.LastModificationTime ?? x.app.CreationTime)
+                            : query.OrderByDescending(x => x.app.LastModificationTime ?? x.app.CreationTime);
+                        break;
+                    case "status":
+                        query = sortDirection == "ASC"
+                            ? query.OrderBy(x => x.app.Status)
+                            : query.OrderByDescending(x => x.app.Status);
+                        break;
+                    default:
+                        // Default to CreationTime DESC if unknown field
+                        query = query.OrderByDescending(x => x.app.CreationTime);
+                        break;
+                }
+            }
 
             // Get total count
             var totalCount = query.Count();
@@ -249,6 +317,7 @@ namespace VCareer.Application.Applications
             var applications = query
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount)
+                .Select(x => x.app)
                 .ToList();
 
             var applicationDtos = new List<ApplicationDto>();
@@ -683,9 +752,69 @@ namespace VCareer.Application.Applications
 
             if (application.CVType == "Online" && application.CandidateCvId.HasValue)
             {
-                // Render CV online thành HTML, sau đó convert sang PDF (cần implement)
-                // Tạm thời throw exception, cần implement PDF generation từ HTML
-                throw new UserFriendlyException("Tính năng download CV online đang được phát triển");
+                // Render CV online thành HTML
+                var renderResult = await _candidateCvAppService.RenderCvAsync(application.CandidateCvId.Value);
+                var htmlContent = renderResult.HtmlContent;
+
+                if (string.IsNullOrEmpty(htmlContent))
+                {
+                    throw new UserFriendlyException("Không thể render CV online");
+                }
+
+                // Convert HTML sang PDF sử dụng PuppeteerSharp (headless Chrome)
+                try
+                {
+                    // Tải Chromium nếu chưa có (chỉ lần đầu tiên)
+                    var browserFetcher = new BrowserFetcher();
+                    await browserFetcher.DownloadAsync();
+
+                    // Launch browser
+                    using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                    {
+                        Headless = true,
+                        Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } // Cần cho Linux/Docker
+                    });
+
+                    // Tạo page mới
+                    using var page = await browser.NewPageAsync();
+                    
+                    // Set content HTML
+                    await page.SetContentAsync(htmlContent, new NavigationOptions
+                    {
+                        WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+                    });
+
+                    // Generate PDF
+                    var pdfBytes = await page.PdfDataAsync(new PdfOptions
+                    {
+                        Format = PaperFormat.A4,
+                        PrintBackground = true,
+                        MarginOptions = new MarginOptions
+                        {
+                            Top = "10mm",
+                            Bottom = "10mm",
+                            Left = "10mm",
+                            Right = "10mm"
+                        }
+                    });
+
+                    if (pdfBytes == null || pdfBytes.Length == 0)
+                    {
+                        Logger.LogWarning("PDF conversion returned empty result for CV {CvId}", application.CandidateCvId.Value);
+                        throw new UserFriendlyException("Không thể tạo file PDF. Kết quả trống.");
+                    }
+
+                    return pdfBytes;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error converting HTML to PDF for CV {CvId}. Exception type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                        application.CandidateCvId.Value, 
+                        ex.GetType().Name, 
+                        ex.Message, 
+                        ex.StackTrace);
+                    throw new UserFriendlyException($"Không thể chuyển đổi CV sang PDF: {ex.Message}");
+                }
             }
             else if (application.CVType == "Uploaded" && application.UploadedCvId.HasValue)
             {
@@ -759,6 +888,16 @@ namespace VCareer.Application.Applications
             {
                 dto.JobTitle = job.Title;
                 dto.JobSalaryText = FormatJobSalary(job);
+                dto.RecruitmentCampaignId = job.RecruitmentCampaignId;
+
+                if (job.RecruitmentCampaignId != Guid.Empty)
+                {
+                    var campaign = await _recruitmentCampaignRepository.FirstOrDefaultAsync(c => c.Id == job.RecruitmentCampaignId);
+                    if (campaign != null)
+                    {
+                        dto.RecruitmentCampaignName = campaign.Name;
+                    }
+                }
             }
 
             // Load Company để lấy CompanyName

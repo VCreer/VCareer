@@ -142,6 +142,10 @@ public class VCareerHttpApiHostModule : AbpModule
         context.Services.AddTransient<JobPostStatusBackground>();
         context.Services.AddTransient<ReIndexJobPostBackground>();
 
+        
+        // Register HttpClientFactory for external API calls (e.g., VietQR API)
+        context.Services.AddHttpClient();
+      
     }
 
     private void ConfigureVnpay(ServiceConfigurationContext context, IConfiguration configuration)

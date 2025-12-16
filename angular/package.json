@@ -37,6 +37,7 @@
     "@swimlane/ngx-datatable": "^22.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
+    "jszip": "^3.10.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.0.0",
     "xlsx": "^0.18.5",

@@ -38,6 +38,9 @@
     <!-- Metrics Cards -->
     <div class="metrics-grid">
       <app-report-metric-card *ngFor="let metric of metrics" [metric]="metric"></app-report-metric-card>
+      <div *ngIf="isLoadingMetrics" class="loading-overlay">
+        <p>Đang tải dữ liệu...</p>
+      </div>
     </div>
 
     <!-- Service Overview -->
@@ -172,6 +175,12 @@
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="isLoadingStaff">
+              <td colspan="6" class="text-center">Đang tải dữ liệu...</td>
+            </tr>
+            <tr *ngIf="!isLoadingStaff && hrStaffPerformance.length === 0">
+              <td colspan="6" class="text-center">Không có dữ liệu</td>
+            </tr>
             <tr *ngFor="let staff of hrStaffPerformance">
               <td class="staff-name">{{ staff.name }}</td>
               <td class="text-center">{{ staff.campaigns }}</td>
@@ -180,7 +189,7 @@
               <td class="text-center text-danger">{{ staff.rejected }}</td>
               <td class="text-center">
                 <span class="efficiency-badge" [class.high]="staff.efficiency >= 70" [class.medium]="staff.efficiency >= 60 && staff.efficiency < 70" [class.low]="staff.efficiency < 60">
-                  {{ staff.efficiency }}%
+                  {{ staff.efficiency.toFixed(1) }}%
                 </span>
               </td>
             </tr>
@@ -199,6 +208,8 @@
         <p class="section-subtitle">Danh sách các chiến dịch mới nhất</p>
       </div>
       <div class="campaigns-list">
+        <div *ngIf="isLoadingCampaigns" class="loading-message">Đang tải chiến dịch...</div>
+        <div *ngIf="!isLoadingCampaigns && recentCampaigns.length === 0" class="empty-message">Không có chiến dịch nào</div>
         <div class="campaign-item" *ngFor="let campaign of recentCampaigns">
           <div class="campaign-header">
             <div class="campaign-id">{{ campaign.id }}</div>

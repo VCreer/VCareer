@@ -19,6 +19,22 @@ export class CandidateSearchService {
     { apiName: this.apiName,...config });
   
 
+  indexCandidate = (userId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'POST',
+      url: `/api/candidate-search/index/${userId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  reIndexAllCandidates = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'POST',
+      url: '/api/candidate-search/reindex',
+    },
+    { apiName: this.apiName,...config });
+  
+
   searchCandidates = (input: SearchCandidateInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<PagedResultDto<CandidateSearchResultDto>>>({
       method: 'POST',

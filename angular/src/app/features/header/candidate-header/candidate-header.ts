@@ -268,3 +268,10 @@ export class CandidateHeaderComponent implements OnInit {
     return true;
   }
 }
+
+
+
+
+
+
+

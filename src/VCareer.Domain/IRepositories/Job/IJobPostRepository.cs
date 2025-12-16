@@ -47,5 +47,6 @@ namespace VCareer.IRepositories.Job
 
         // lấy thông itn name company theo id cua job
         Task<string> GetNameComany(Guid job);
+        Task FirstOrDefaultAsync(Guid jobId);
     }
 }
