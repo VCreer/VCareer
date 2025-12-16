@@ -394,7 +394,8 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
             id: u.id,
             username: (u as any).userName || '',
             email: (u as any).email || '',
-            fullName: fullName || (u as any).userName || '',
+            // Nếu name và surname đều null/empty thì để trống Họ tên
+            fullName: fullName || '',
             phone: (u as any).phoneNumber || '',
             companyName: extra.companyName || '',
             isActive: (u as any).isActive,
@@ -1199,6 +1200,14 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getShortId(user: EmployeeUser): string {
+    if (!user || user.id === undefined || user.id === null) {
+      return '';
+    }
+    const idStr = String(user.id);
+    return idStr.length > 7 ? idStr.slice(-7) : idStr;
   }
 
   getUserRoleTags(user: EmployeeUser): UserRoleTag[] {

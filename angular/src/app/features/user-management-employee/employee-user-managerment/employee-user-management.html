@@ -150,6 +150,9 @@
         <table class="users-table">
           <thead>
             <tr>
+              <th>
+                ID
+              </th>
               <th (click)="onSort('fullName')" class="sortable">
                 Họ tên
                 <i class="fa fa-sort" *ngIf="sortField !== 'fullName'"></i>
@@ -174,6 +177,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let user of paginatedUsers">
+              <td>{{ getShortId(user) }}</td>
               <td>{{ user.fullName }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.roleDisplay || '-' }}</td>
