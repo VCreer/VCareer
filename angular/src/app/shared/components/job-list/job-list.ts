@@ -94,6 +94,10 @@ export class JobListComponent implements OnInit, OnChanges {
   private updateFilteredJobs() {
     // Map JobViewDto từ API sang format mà template expect
     this.filteredJobs = this.jobs.map(job => this.mapJobToTemplateFormat(job));
+
+    // Đồng bộ trạng thái đã lưu từ backend
+    this.syncSavedStatus();
+
     this.calculateTotalPages();
 
     console.log('✅ JobListComponent: filteredJobs updated');
@@ -118,6 +122,30 @@ export class JobListComponent implements OnInit, OnChanges {
       // Map experience
       experienceText: this.formatExperience(job.experience) || 'N/A',
     };
+  }
+
+  /**
+   * Lấy danh sách job đã lưu và set cờ isSaved cho filteredJobs
+   */
+  private syncSavedStatus() {
+    if (!this.isAuthenticated || !this.filteredJobs.length) {
+      this.filteredJobs = this.filteredJobs.map(j => ({ ...j, isSaved: false }));
+      return;
+    }
+
+    this.jobSearchService.getSavedJobs(0, 200, { skipHandleError: true }).subscribe({
+      next: res => {
+        const items = res.items || [];
+        const savedIds = new Set(items.map(x => x.jobId));
+        this.filteredJobs = this.filteredJobs.map(j => ({
+          ...j,
+          isSaved: savedIds.has(j.id)
+        }));
+      },
+      error: err => {
+        console.error('Error syncing saved status in JobList:', err);
+      }
+    });
   }
 
   /**

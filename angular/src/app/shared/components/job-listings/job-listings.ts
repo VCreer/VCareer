@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -18,7 +18,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
   templateUrl: './job-listings.html',
   styleUrls: ['./job-listings.scss']
 })
-export class JobListingsComponent {
+export class JobListingsComponent implements OnInit, OnChanges {
   @Input() jobListings: JobViewDto[] = [];  
   @Input() currentPage = 1;
   @Input() totalPages = 1;
@@ -85,6 +85,31 @@ export class JobListingsComponent {
     }
   }
 
+  /**
+   * Đồng bộ trạng thái đã lưu cho danh sách job trên home
+   */
+  private syncSavedStatus() {
+    if (!this.isAuthenticated || !this.jobListings?.length) {
+      this.jobListings = this.jobListings.map(j => ({ ...j, isBookmarked: false }));
+      return;
+    }
+
+    this.jobSearchService.getSavedJobs(0, 200, { skipHandleError: true }).subscribe({
+      next: res => {
+        const items = res.items || [];
+        const savedIds = new Set(items.map(x => x.jobId));
+
+        this.jobListings = this.jobListings.map(j => ({
+          ...j,
+          isBookmarked: savedIds.has(j.id as any)
+        }));
+      },
+      error: err => {
+        console.error('Error syncing saved status in JobListings:', err);
+      }
+    });
+  }
+
   onPageChange(page: number) {
     this.pageChange.emit(page);
   }
@@ -107,10 +132,21 @@ export class JobListingsComponent {
     private translationService: TranslationService,
     private jobSearchService: JobSearchService,
     private navigationService: NavigationService
-  ) {
+  ) {}
+
+  ngOnInit() {
     this.navigationService.isLoggedIn$.subscribe(isLogged => {
       this.isAuthenticated = isLogged;
+      if (isLogged) {
+        this.syncSavedStatus();
+      }
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['jobListings'] && this.isAuthenticated) {
+      this.syncSavedStatus();
+    }
   }
   translate(key: string): string { return this.translationService.translate(key); }
 
