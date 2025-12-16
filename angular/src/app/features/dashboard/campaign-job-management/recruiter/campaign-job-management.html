@@ -237,21 +237,32 @@
                 <div 
                   *ngFor="let service of section.packages; let serviceIndex = index" 
                   class="service-item-card"
-                  [class.selected]="isChildServiceSelected(section.action, service.id)"
-                  (click)="selectChildService(section.action, service.id)">
+                  [class.selected]="isChildServiceSelected(section.action, service.uniqueId)"
+                  (click)="selectChildService(section.action, service.uniqueId)">
                   <div class="service-card-content">
                     <div class="service-card-header">
                       <div class="service-card-title-wrapper">
-                        <span class="service-card-name">{{ service.name }}</span>
-                        <span class="service-card-number">#{{ serviceIndex + 1 }}</span>
+                        <span class="service-card-name">{{ service.displayLabel }}</span>
+                        <span class="service-card-badge" *ngIf="service.isShared">🔗</span>
                       </div>
                       <div class="service-radio-wrapper">
-                        <div class="radio-button" [class.checked]="isChildServiceSelected(section.action, service.id)">
+                        <div class="radio-button" [class.checked]="isChildServiceSelected(section.action, service.uniqueId)">
                           <div class="radio-inner"></div>
                         </div>
                       </div>
                     </div>
-                    <p class="service-card-description" *ngIf="service.description">{{ service.description }}</p>
+                    
+                    <!-- Thông tin chi tiết về usage -->
+                    <div class="service-card-info" *ngIf="service.userChildService || service.description">
+                      <p *ngIf="service.userChildService && service.isLimitUsedTime" class="service-used-info">
+                        <i class="fa fa-chart-line"></i>
+                        Đã dùng: {{ service.usedTime }}/{{ service.totalUsageLimit || '∞' }}
+                      </p>
+                      <p *ngIf="service.description" class="service-card-description">
+                        <i class="fa fa-info-circle"></i>
+                        {{ service.description }}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

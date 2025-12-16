@@ -615,9 +615,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onDeletePackage(pkg: SubcriptionsViewDto): void {
-    if (!confirm(`Bạn có chắc chắn muốn xóa gói dịch vụ "${pkg.title}"? Hành động này không thể hoàn tác.`)) {
-      return;
-    }
 
     this.subcriptionService.deleteSubcription(pkg.id!)
       .subscribe({

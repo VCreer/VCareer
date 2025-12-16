@@ -1,20 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { filter, finalize } from 'rxjs/operators';
+import { Subscription, forkJoin } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { CartService } from '../../../../core/services/cart.service';
-import { SubscriptionService, SubscriptionServiceDto } from '../../../../core/services/subscription.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
+import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { SubcriptionPriceService } from 'src/app/proxy/services/subcription';
+import { SubcriptionsViewDto } from 'src/app/proxy/dto/subcriptions/models';
 
-interface ServicePackage {
-  id: string;
-  title: string;
-  price: string;
-  originalPrice: number;
-  description: string;
+interface ServicePackageWithPrice extends SubcriptionsViewDto {
+  currentPrice: number;
+  formattedPrice: string;
   isVip?: boolean;
   isTrial?: boolean;
 }
@@ -36,14 +35,15 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
   private routerSubscription?: Subscription;
   private sidebarCheckInterval?: any;
 
-  trialPackages: ServicePackage[] = [];
-  regularPackages: ServicePackage[] = [];
+  trialPackages: ServicePackageWithPrice[] = [];
+  regularPackages: ServicePackageWithPrice[] = [];
 
   constructor(
     private translationService: TranslationService,
     private router: Router,
     private cartService: CartService,
-    private subscriptionService: SubscriptionService
+    private subcriptionServiceProxy: SubcriptionService_Service,
+    private priceService: SubcriptionPriceService
   ) {}
 
   ngOnInit() {
@@ -70,45 +70,93 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
 
   loadSubscriptionServices(): void {
     this.isLoading = true;
-    this.subscriptionService.getActiveSubscriptionServices(1) // 1 = Recruiter
+    
+    // Target = 1 for Recruiter (based on SubcriptionContance_SubcriptorTarget enum)
+    this.subcriptionServiceProxy.getActiveSubscriptionServices('1')
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
       .subscribe({
         next: (services) => {
           this.processSubscriptionServices(services);
-          this.isLoading = false;
         },
         error: (error) => {
           console.error('Error loading subscription services:', error);
           this.showToastMessage('error', 'Không thể tải danh sách dịch vụ. Vui lòng thử lại sau.');
-          this.isLoading = false;
         }
       });
   }
 
-  processSubscriptionServices(services: SubscriptionServiceDto[]): void {
-    this.trialPackages = [];
-    this.regularPackages = [];
+  processSubscriptionServices(services: SubcriptionsViewDto[]): void {
+    if (!services || services.length === 0) {
+      this.trialPackages = [];
+      this.regularPackages = [];
+      return;
+    }
 
-    services.forEach(service => {
-      const packageItem: ServicePackage = {
-        id: service.id,
-        title: service.title,
-        price: this.formatPrice(service.originalPrice),
-        originalPrice: service.originalPrice,
-        description: service.description,
-        isTrial: service.title.toLowerCase().includes('trial'),
-        isVip: service.title.toLowerCase().includes('max') || service.title.toLowerCase().includes('plus')
-      };
+    // Load prices for all services
+    const priceRequests = services.map(service => 
+      this.priceService.getCurrentPriceOfSubcriptionBySubcriptionId(service.id!)
+    );
 
-      if (packageItem.isTrial) {
-        this.trialPackages.push(packageItem);
-      } else {
-        this.regularPackages.push(packageItem);
+    forkJoin(priceRequests).subscribe({
+      next: (prices) => {
+        this.trialPackages = [];
+        this.regularPackages = [];
+
+        services.forEach((service, index) => {
+          const currentPrice = prices[index];
+          
+          const packageItem: ServicePackageWithPrice = {
+            ...service,
+            currentPrice: currentPrice,
+            formattedPrice: this.formatPrice(currentPrice),
+            isTrial: service.title?.toLowerCase().includes('trial') || false,
+            isVip: service.title?.toLowerCase().includes('max') || 
+                   service.title?.toLowerCase().includes('plus') || false
+          };
+
+          if (packageItem.isTrial) {
+            this.trialPackages.push(packageItem);
+          } else {
+            this.regularPackages.push(packageItem);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading prices:', error);
+        // Fallback: use original prices if current prices fail to load
+        this.trialPackages = [];
+        this.regularPackages = [];
+
+        services.forEach(service => {
+          const packageItem: ServicePackageWithPrice = {
+            ...service,
+            currentPrice: service.originalPrice,
+            formattedPrice: this.formatPrice(service.originalPrice),
+            isTrial: service.title?.toLowerCase().includes('trial') || false,
+            isVip: service.title?.toLowerCase().includes('max') || 
+                   service.title?.toLowerCase().includes('plus') || false
+          };
+
+          if (packageItem.isTrial) {
+            this.trialPackages.push(packageItem);
+          } else {
+            this.regularPackages.push(packageItem);
+          }
+        });
       }
     });
   }
 
   formatPrice(price: number): string {
     return new Intl.NumberFormat('vi-VN').format(price);
+  }
+
+  getDiscountPercent(originalPrice: number, currentPrice: number): string {
+    if (originalPrice <= 0 || currentPrice >= originalPrice) return '0';
+    const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
+    return discount.toFixed(0);
   }
 
   ngOnDestroy() {
@@ -125,7 +173,6 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     if (sidebar) {
       const rect = sidebar.getBoundingClientRect();
       const width = rect.width;
-      // Consider sidebar expanded if it has 'show' class OR width > 100px (hover state)
       this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
     }
   }
@@ -148,15 +195,17 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     
     if (selectedPackage) {
       this.cartService.addToCart({
-        id: selectedPackage.id,
-        subscriptionServiceId: selectedPackage.id
+        id: selectedPackage.id!,
+        subscriptionServiceId: selectedPackage.id!
       }).subscribe({
         next: () => {
           this.showToastMessage('success', `Đã thêm "${selectedPackage.title}" vào giỏ hàng`);
         },
         error: (error) => {
           console.error('Error adding to cart:', error);
-          const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+          const errorMessage = error?.error?.error?.message || 
+                             error?.message || 
+                             'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
           this.showToastMessage('error', errorMessage);
         }
       });
@@ -188,15 +237,17 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
       } else {
         // Item doesn't exist, add to cart first
         this.cartService.addToCart({
-          id: selectedPackage.id,
-          subscriptionServiceId: selectedPackage.id
+          id: selectedPackage.id!,
+          subscriptionServiceId: selectedPackage.id!
         }).subscribe({
           next: () => {
             this.router.navigate(['/recruiter/cart']);
           },
           error: (error) => {
             console.error('Error adding to cart:', error);
-            const errorMessage = error?.error?.error?.message || error?.message || 'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
+            const errorMessage = error?.error?.error?.message || 
+                               error?.message || 
+                               'Không thể thêm vào giỏ hàng. Vui lòng thử lại.';
             this.showToastMessage('error', errorMessage);
           }
         });

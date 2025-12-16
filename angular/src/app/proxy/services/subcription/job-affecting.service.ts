@@ -10,6 +10,15 @@ export class JobAffectingService {
   apiName = 'Default';
   
 
+  addJobBoostLogicByJobIdAndEffectingJobId = (jobId: string, effectingJobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/job-affecting/job-boost-logic',
+      params: { jobId, effectingJobId },
+    },
+    { apiName: this.apiName,...config });
+  
+
   applyServiceToJobByJobAffectingDto = (jobAffectingDto: EffectingJobServiceCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

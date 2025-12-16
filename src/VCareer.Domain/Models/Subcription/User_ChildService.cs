@@ -13,6 +13,7 @@ namespace VCareer.Models.Subcription
     public class User_ChildService : FullAuditedAggregateRoot<Guid>
     {
         public Guid UserId { get; set; }
+        public Guid UserSubcriptionId { get; set; } // để phân biệt với các dịch vụ con cùng id , nhưng mua khác lần 
         public Guid ChildServiceId { get; set; }
         public ChildServiceStatus Status { get; set; }
         public bool IsLifeTime { get; set; } // có vĩnh viễn ko 

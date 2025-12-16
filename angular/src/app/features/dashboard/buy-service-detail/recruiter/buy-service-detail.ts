@@ -5,26 +5,14 @@ import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { CartService } from '../../../../core/services/cart.service';
-import { SubscriptionService, SubscriptionServiceDto } from '../../../../core/services/subscription.service';
 import { SubcriptionService_Service } from 'src/app/proxy/services/subcription';
-import { ChildServiceViewDto } from 'src/app/proxy/dto/subcriptions/models';
+import { SubcriptionPriceService } from 'src/app/proxy/services/subcription';
+import { 
+  ChildServiceViewDto, 
+  SubcriptionsViewDto 
+} from 'src/app/proxy/dto/subcriptions/models';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
-
-interface ServiceDetail {
-  id: string;
-  title: string;
-  price: string; // formatted price
-  originalPrice: number; // raw price
-  description: string;
-  validityPeriod: string;
-  isLifeTime: boolean;
-  dayDuration?: number;
-  target: number;
-  status: number;
-  isTrial?: boolean;
-  isVip?: boolean;
-}
 
 interface GroupedChildServices {
   actionLabel: string;
@@ -42,7 +30,8 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   selectedLanguage = 'vi';
   sidebarExpanded: boolean = false;
   serviceId: string = '';
-  serviceDetail: ServiceDetail | null = null;
+  serviceDetail: SubcriptionsViewDto | null = null;
+  currentPrice: number = 0;
   childServices: ChildServiceViewDto[] = [];
   groupedChildServices: GroupedChildServices[] = [];
   
@@ -52,6 +41,7 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   
   isLoading = false;
   isLoadingChildServices = false;
+  isLoadingPrice = false;
   
   private sidebarCheckInterval?: any;
   private routerSubscription?: Subscription;
@@ -61,8 +51,8 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService,
     private cartService: CartService,
-    private subscriptionService: SubscriptionService,
-    private subcriptionServiceProxy: SubcriptionService_Service
+    private subcriptionServiceProxy: SubcriptionService_Service,
+    private priceService: SubcriptionPriceService
   ) {}
 
   ngOnInit() {
@@ -75,6 +65,7 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
       this.serviceId = params['id'] || '';
       if (this.serviceId) {
         this.loadServiceDetail();
+        this.loadCurrentPrice();
         this.loadChildServices();
       } else {
         this.router.navigate(['/recruiter/buy-services']);
@@ -100,40 +91,39 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
   loadServiceDetail(): void {
     this.isLoading = true;
     
-    // Get all active subscription services and find the one with matching ID
-    this.subscriptionService.getActiveSubscriptionServices(1) // 1 = Recruiter
+    this.subcriptionServiceProxy.getSubcriptionServiceBySubcriptionId(this.serviceId)
       .pipe(finalize(() => {
         this.isLoading = false;
       }))
       .subscribe({
-        next: (services) => {
-          const service = services.find(s => s.id === this.serviceId);
-          
-          if (service) {
-            this.serviceDetail = {
-              id: service.id,
-              title: service.title,
-              price: this.formatPrice(service.originalPrice),
-              originalPrice: service.originalPrice,
-              description: service.description,
-              validityPeriod: this.getValidityPeriod(service),
-              isLifeTime: service.isLifeTime,
-              dayDuration: service.dayDuration,
-              target: service.target,
-              status: service.status,
-              isTrial: service.title.toLowerCase().includes('trial'),
-              isVip: service.title.toLowerCase().includes('max') || 
-                     service.title.toLowerCase().includes('plus')
-            };
-          } else {
-            this.showToastMessage('error', 'Không tìm thấy thông tin dịch vụ');
-            this.router.navigate(['/recruiter/buy-services']);
-          }
+        next: (service) => {
+          this.serviceDetail = service;
         },
         error: (error) => {
           console.error('Error loading service detail:', error);
           this.showToastMessage('error', 'Không thể tải thông tin dịch vụ');
           this.router.navigate(['/recruiter/buy-services']);
+        }
+      });
+  }
+
+  loadCurrentPrice(): void {
+    this.isLoadingPrice = true;
+    
+    this.priceService.getCurrentPriceOfSubcriptionBySubcriptionId(this.serviceId)
+      .pipe(finalize(() => {
+        this.isLoadingPrice = false;
+      }))
+      .subscribe({
+        next: (price) => {
+          this.currentPrice = price;
+        },
+        error: (error) => {
+          console.error('Error loading current price:', error);
+          // Fallback to originalPrice if current price not available
+          if (this.serviceDetail) {
+            this.currentPrice = this.serviceDetail.originalPrice;
+          }
         }
       });
   }
@@ -157,7 +147,6 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading child services:', error);
-          // Don't show error toast, just log it
           this.childServices = [];
           this.groupedChildServices = [];
         }
@@ -194,15 +183,17 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     return labels[action] || 'Dịch vụ khác';
   }
 
-  private getValidityPeriod(service: SubscriptionServiceDto): string {
-    if (service.isLifeTime) {
+  getValidityPeriod(): string {
+    if (!this.serviceDetail) return '-';
+    
+    if (this.serviceDetail.isLifeTime) {
       return 'Vĩnh viễn';
     }
-    if (service.dayDuration) {
-      if (service.dayDuration === 7) return '1 tuần';
-      if (service.dayDuration === 30) return '1 tháng';
-      if (service.dayDuration === 365) return '1 năm';
-      return `${service.dayDuration} ngày`;
+    if (this.serviceDetail.dayDuration) {
+      if (this.serviceDetail.dayDuration === 7) return '1 tuần';
+      if (this.serviceDetail.dayDuration === 30) return '1 tháng';
+      if (this.serviceDetail.dayDuration === 365) return '1 năm';
+      return `${this.serviceDetail.dayDuration} ngày`;
     }
     return '-';
   }
@@ -232,8 +223,8 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     if (!this.serviceDetail) return;
 
     this.cartService.addToCart({
-      id: this.serviceDetail.id,
-      subscriptionServiceId: this.serviceDetail.id
+      id: this.serviceDetail.id!,
+      subscriptionServiceId: this.serviceDetail.id!
     }).subscribe({
       next: () => {
         this.showToastMessage('success', `Đã thêm "${this.serviceDetail!.title}" vào giỏ hàng`);
@@ -263,8 +254,8 @@ export class BuyServiceDetailComponent implements OnInit, OnDestroy {
     } else {
       // Item doesn't exist, add to cart first
       this.cartService.addToCart({
-        id: this.serviceDetail.id,
-        subscriptionServiceId: this.serviceDetail.id
+        id: this.serviceDetail.id!,
+        subscriptionServiceId: this.serviceDetail.id!
       }).subscribe({
         next: () => {
           this.router.navigate(['/recruiter/cart']);

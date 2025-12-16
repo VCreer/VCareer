@@ -30,15 +30,18 @@ namespace VCareer.Services.Subcription
         private readonly IChildService_SubcriptionServiceRepository _childService_SubcriptionServiceRepository;
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly ISubcriptionPriceRepository _subcriptionPriceRepository;
+        private readonly IUser_SubcriptionServicerRepository _user_SubcriptionServicerRepository;
 
         public SubcriptionService_Service(ISubcriptionServiceRepository subcriptionServiceRepository,
             IChildService_SubcriptionServiceRepository childService_SubcriptionServiceRepository,
             IChildServiceRepository childServiceRepository,
+            IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository,
             ISubcriptionPriceRepository subcriptionPriceRepository)
         {
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _childService_SubcriptionServiceRepository = childService_SubcriptionServiceRepository;
             _childServiceRepository = childServiceRepository;
+            _user_SubcriptionServicerRepository = user_SubcriptionServicerRepository;
             _subcriptionPriceRepository = subcriptionPriceRepository;
         }
         [Authorize(VCareerPermission.SubcriptionService.AddChildService)]
@@ -149,7 +152,9 @@ namespace VCareer.Services.Subcription
             var subcription = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionId);
             if (subcription == null) throw new BusinessException("Subcription not found");
             subcription.IsActive = false;
-            await _subcriptionServiceRepository.UpdateAsync(subcription);
+            var userSubcriptionService = _user_SubcriptionServicerRepository.FirstOrDefaultAsync(x=>x.SubcriptionServiceId==subcriptionId);
+            if(userSubcriptionService != null) throw new UserFriendlyException("This subcription has been used by user, you cant delete it");
+            await _subcriptionServiceRepository.DeleteAsync(subcription);
         }
 
         [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]

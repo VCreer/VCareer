@@ -31,7 +31,7 @@ import { finalize } from 'rxjs/operators';
     PaginationComponent,
     GenericModalComponent
   ],
- templateUrl: './service-price-list.html',
+  templateUrl: './service-price-list.html',
   styleUrls: ['./service-price-list.scss']
 })
 export class ServicePriceListComponent implements OnInit, OnDestroy {
@@ -119,7 +119,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
   private getDefaultPriceForm(): SubcriptionPriceCreateDto {
     return {
       subcriptionServiceId: '',
-      salePercent: 0,
+      newPrice: 0,
       effectiveFrom: this.formatDateForInput(new Date()),
       effectiveTo: undefined
     };
@@ -263,7 +263,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
     this.selectedPrice = price;
     this.priceForm = {
       subcriptionServiceId: price.subcriptionServiceId,
-      salePercent: price.salePercent,
+      newPrice: price.newPrice,
       effectiveFrom: price.effectiveFrom,
       effectiveTo: price.effectiveTo
     };
@@ -286,7 +286,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
     const updateDto: SubcriptionPriceUpdateDto = {
       subcriptionPriceId: this.getSubcriptionPriceId(this.selectedPrice),
       subcriptionServiceId: this.subcriptionId,
-      salePercent: this.priceForm.salePercent,
+      newPrice: this.priceForm.newPrice,
       effectiveFrom: this.priceForm.effectiveFrom,
       effectiveTo: this.priceForm.effectiveTo
     };
@@ -368,50 +368,50 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
     this.closeActionsMenu();
   }
 
-private validatePriceForm(): boolean {
-  this.resetValidationErrors();
-  const errors: Record<string, string> = {};
-  let isValid = true;
+  private validatePriceForm(): boolean {
+    this.resetValidationErrors();
+    const errors: Record<string, string> = {};
+    let isValid = true;
 
-  // Validate sale percent
-  if (this.priceForm.salePercent < 0 || this.priceForm.salePercent > 100) {
-    errors['salePercent'] = 'Phần trăm giảm giá phải từ 0 đến 100';
-    isValid = false;
-  }
-
-  // Validate effectiveFrom
-  if (!this.priceForm.effectiveFrom) {
-    errors['effectiveFrom'] = 'Vui lòng chọn ngày bắt đầu';
-    isValid = false;
-  }
-
-  // Validate effectiveTo
-  if (!this.priceForm.effectiveTo) {
-    errors['effectiveTo'] = 'Vui lòng chọn ngày kết thúc';
-    isValid = false;
-  }
-
-  // Validate date range logic
-  if (this.priceForm.effectiveFrom && this.priceForm.effectiveTo) {
-    const from = new Date(this.priceForm.effectiveFrom);
-    const to = new Date(this.priceForm.effectiveTo);
-    
-    if (from >= to) {
-      errors['effectiveTo'] = 'Ngày kết thúc phải sau ngày bắt đầu';
+    // Validate newPrice
+    if (!this.priceForm.newPrice || this.priceForm.newPrice <= 0) {
+      errors['newPrice'] = 'Giá mới phải lớn hơn 0';
       isValid = false;
     }
-    
-    // Kiểm tra trùng lặp khoảng thời gian
-    if (isValid && this.checkDateRangeOverlap(this.priceForm.effectiveFrom, this.priceForm.effectiveTo)) {
-      errors['effectiveFrom'] = 'Khoảng thời gian này đã có giá khác';
-      errors['effectiveTo'] = 'Khoảng thời gian bị trùng với giá đã tồn tại';
+
+    // Validate effectiveFrom
+    if (!this.priceForm.effectiveFrom) {
+      errors['effectiveFrom'] = 'Vui lòng chọn ngày bắt đầu';
       isValid = false;
     }
-  }
 
-  this.validationErrors = errors;
-  return isValid;
-}
+    // Validate effectiveTo
+    if (!this.priceForm.effectiveTo) {
+      errors['effectiveTo'] = 'Vui lòng chọn ngày kết thúc';
+      isValid = false;
+    }
+
+    // Validate date range logic
+    if (this.priceForm.effectiveFrom && this.priceForm.effectiveTo) {
+      const from = new Date(this.priceForm.effectiveFrom);
+      const to = new Date(this.priceForm.effectiveTo);
+      
+      if (from >= to) {
+        errors['effectiveTo'] = 'Ngày kết thúc phải sau ngày bắt đầu';
+        isValid = false;
+      }
+      
+      // Kiểm tra trùng lặp khoảng thời gian
+      if (isValid && this.checkDateRangeOverlap(this.priceForm.effectiveFrom, this.priceForm.effectiveTo)) {
+        errors['effectiveFrom'] = 'Khoảng thời gian này đã có giá khác';
+        errors['effectiveTo'] = 'Khoảng thời gian bị trùng với giá đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    this.validationErrors = errors;
+    return isValid;
+  }
 
   private resetValidationErrors(): void {
     this.validationErrors = {};
@@ -498,8 +498,6 @@ private validatePriceForm(): boolean {
 
   // Helper methods
   getSubcriptionPriceId(price: SubcriptionPriceViewDto): string | undefined {
-    // Vì DTO không có id field, bạn cần thêm logic để lấy ID
-    // Hoặc backend cần return id trong SubcriptionPriceViewDto
     return (price as any).id || price.subcriptionServiceId;
   }
 
@@ -533,8 +531,9 @@ private validatePriceForm(): boolean {
     return 'status-draft';
   }
 
-  calculateDiscountedPrice(price: SubcriptionPriceViewDto): number {
-    return price.originalPrice * (1 - price.salePercent / 100);
+  getDiscountPercent(price: SubcriptionPriceViewDto): number {
+    if (price.originalPrice <= 0) return 0;
+    return ((price.originalPrice - price.newPrice) / price.originalPrice) * 100;
   }
 
   formatPrice(price: number): string {
@@ -606,44 +605,43 @@ private validatePriceForm(): boolean {
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
   }
-  // Thêm các methods này vào ServicePriceListComponent
 
-// Helper method để lấy các khoảng thời gian đã có giá (không bao gồm giá đang edit)
-getExistingActiveRanges(): SubcriptionPriceViewDto[] {
-  return this.allPrices.filter(price => {
-    // Loại bỏ giá đang edit (nếu đang edit)
-    if (this.selectedPrice && this.getSubcriptionPriceId(price) === this.getSubcriptionPriceId(this.selectedPrice)) {
-      return false;
-    }
-    // Loại bỏ giá đã hết hạn
-    if (price.isExpried) {
-      return false;
-    }
-    // Chỉ lấy các giá có khoảng thời gian hợp lệ
-    return price.effectiveFrom && price.effectiveTo;
-  });
-}
-
-// Kiểm tra khoảng thời gian có bị trùng với các giá hiện có không
-private checkDateRangeOverlap(startDate: string, endDate: string): boolean {
-  const newStart = new Date(startDate);
-  const newEnd = new Date(endDate);
-  
-  const existingRanges = this.getExistingActiveRanges();
-  
-  for (const range of existingRanges) {
-    if (!range.effectiveFrom || !range.effectiveTo) continue;
-    
-    const existingStart = new Date(range.effectiveFrom);
-    const existingEnd = new Date(range.effectiveTo);
-    
-    // Kiểm tra overlap:
-    // Overlap xảy ra khi: newStart < existingEnd && newEnd > existingStart
-    if (newStart < existingEnd && newEnd > existingStart) {
-      return true; // Có trùng
-    }
+  // Helper method để lấy các khoảng thời gian đã có giá (không bao gồm giá đang edit)
+  getExistingActiveRanges(): SubcriptionPriceViewDto[] {
+    return this.allPrices.filter(price => {
+      // Loại bỏ giá đang edit (nếu đang edit)
+      if (this.selectedPrice && this.getSubcriptionPriceId(price) === this.getSubcriptionPriceId(this.selectedPrice)) {
+        return false;
+      }
+      // Loại bỏ giá đã hết hạn
+      if (price.isExpried) {
+        return false;
+      }
+      // Chỉ lấy các giá có khoảng thời gian hợp lệ
+      return price.effectiveFrom && price.effectiveTo;
+    });
   }
-  
-  return false; // Không trùng
-}
+
+  // Kiểm tra khoảng thời gian có bị trùng với các giá hiện có không
+  private checkDateRangeOverlap(startDate: string, endDate: string): boolean {
+    const newStart = new Date(startDate);
+    const newEnd = new Date(endDate);
+    
+    const existingRanges = this.getExistingActiveRanges();
+    
+    for (const range of existingRanges) {
+      if (!range.effectiveFrom || !range.effectiveTo) continue;
+      
+      const existingStart = new Date(range.effectiveFrom);
+      const existingEnd = new Date(range.effectiveTo);
+      
+      // Kiểm tra overlap:
+      // Overlap xảy ra khi: newStart < existingEnd && newEnd > existingStart
+      if (newStart < existingEnd && newEnd > existingStart) {
+        return true; // Có trùng
+      }
+    }
+    
+    return false; // Không trùng
+  }
 }
