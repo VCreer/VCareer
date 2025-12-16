@@ -9,9 +9,14 @@ import { ProfileCardComponent } from '../../../../shared/components/profile-card
 import { MultiSelectLocationComponent } from '../../../../shared/components/multi-select-location/multi-select-location';
 import { JobOptionsService } from '../../../../shared/services/job-options.service';
 import { SelectOption } from '../../../../shared/components/select-field/select-field';
-import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
+import { JobCategoryService } from '../../../../proxy/services/job/job-category.service';
+import { GeoService } from '../../../../proxy/services/geo/geo.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
+import type { CategoryTreeDto } from '../../../../proxy/dto/category/models';
+import type { ProvinceDto } from '../../../../proxy/dto/geo-dto/models';
+import type { UpdatePersonalInfoDto, ProfileDto } from '../../../../proxy/dto/profile/models';
 
 @Component({
   selector: 'app-job-suggestion-settings',
@@ -30,20 +35,25 @@ export class JobSuggestionSettingsComponent implements OnInit {
   // Thông tin cá nhân đơn giản cho phần giới tính
   gender: 'male' | 'female' | 'unspecified' = 'male';
   formSubmitted = false;
+  isSaving: boolean = false;
+  currentProfile: ProfileDto | null = null;
 
   // Options cho dropdown
-  positionOptions: SelectOption[] = this.jobOptionsService.JOB_POSITION_OPTIONS;
+  positionOptions: SelectOption[] = [];
+  skillOptions: SelectOption[] = [];
+  experienceOptions: SelectOption[] = [];
+  locationOptions: SelectOption[] = [];
 
-  skillOptions: string[] = [
-    'Angular',
-    'TypeScript',
-    'React',
-    'UI/UX',
-    'REST API',
-  ];
+  // Data từ API
+  categoryTree: CategoryTreeDto[] = [];
+  provinces: ProvinceDto[] = [];
+  
+  // Loading states
+  isLoadingCategories: boolean = false;
+  isLoadingLocations: boolean = false;
+  categoriesLoaded: boolean = false;
+  locationsLoaded: boolean = false;
 
-  // Địa điểm và vị trí dùng multi-select-location
-  locationOptions: SelectOption[] = this.jobOptionsService.PROVINCE_OPTIONS;
   selectedPositions: string[] = [];
   selectedLocations: string[] = [];
   positionError: string = '';
@@ -76,10 +86,18 @@ export class JobSuggestionSettingsComponent implements OnInit {
     private jobOptionsService: JobOptionsService,
     private http: HttpClient,
     private authStateService: AuthStateService,
-    private authFacadeService: AuthFacadeService
+    private authFacadeService: AuthFacadeService,
+    private jobCategoryService: JobCategoryService,
+    private geoService: GeoService,
+    private profileService: ProfileService
   ) {}
 
   ngOnInit(): void {
+    this.loadExperienceOptions();
+    // Load categories và locations trước, sau đó mới load profile để pre-fill form
+    this.loadJobCategories();
+    this.loadLocations();
+    // Load profile ngay, nhưng sẽ pre-fill sau khi options đã load
     this.loadProfileData();
   }
 
@@ -157,7 +175,99 @@ export class JobSuggestionSettingsComponent implements OnInit {
     this.jobPreference.desiredPosition = this.selectedPositions.join(', ');
     this.jobPreference.mainLocation = this.selectedLocations.join(', ');
 
-    this.savePreferences();
+    // Gọi API để cập nhật profile
+    this.savePreferencesToApi();
+  }
+
+  /**
+   * Lưu thông tin vào CandidateProfile qua API
+   */
+  private savePreferencesToApi(): void {
+    this.isSaving = true;
+
+    // Lấy tên vị trí từ selectedPositions
+    const positionNames: string[] = [];
+    this.selectedPositions.forEach(positionId => {
+      const position = this.positionOptions.find(p => p.value === positionId);
+      if (position) {
+        positionNames.push(position.label);
+      }
+    });
+
+    // Thêm custom positions nếu có
+    if (this.jobPreference.customPosition) {
+      const customPositions = this.jobPreference.customPosition
+        .split(',')
+        .map(p => p.trim())
+        .filter(p => !!p);
+      positionNames.push(...customPositions);
+    }
+
+    // Lấy tên kỹ năng từ skillsText (categoryId)
+    let skillName = '';
+    if (this.jobPreference.skillsText) {
+      const skill = this.skillOptions.find(s => s.value === this.jobPreference.skillsText);
+      if (skill) {
+        skillName = skill.label;
+      }
+    }
+
+    // Lấy tên địa điểm từ selectedLocations
+    const locationNames: string[] = [];
+    this.selectedLocations.forEach(locationCode => {
+      const location = this.locationOptions.find(l => l.value === locationCode);
+      if (location) {
+        locationNames.push(location.label);
+      }
+    });
+
+    // Convert gender
+    let genderValue: boolean | undefined = undefined;
+    if (this.gender === 'male') {
+      genderValue = true;
+    } else if (this.gender === 'female') {
+      genderValue = false;
+    }
+
+    // Convert experience level từ string sang number
+    let experienceValue: number | undefined = undefined;
+    if (this.jobPreference.experienceLevel) {
+      experienceValue = parseInt(this.jobPreference.experienceLevel, 10);
+    }
+
+    // Build UpdatePersonalInfoDto
+    const updateDto: UpdatePersonalInfoDto = {
+      name: this.currentProfile?.name || this.profileUser.name.split(' ')[0] || '',
+      surname: this.currentProfile?.surname || this.profileUser.name.split(' ').slice(1).join(' ') || '',
+      email: this.currentProfile?.email,
+      phoneNumber: this.currentProfile?.phoneNumber,
+      gender: genderValue,
+      jobTitle: positionNames.length > 0 ? positionNames.join(', ') : undefined,
+      skills: skillName || undefined,
+      experience: experienceValue,
+      salary: this.jobPreference.salaryFrom > 0 ? this.jobPreference.salaryFrom : undefined,
+      workLocation: locationNames.length > 0 ? locationNames.join(', ') : undefined,
+      location: this.currentProfile?.location, // Giữ nguyên location hiện tại nếu có
+    };
+
+    // Gọi API
+    this.profileService.updatePersonalInfo(updateDto).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.savePreferences(); // Hiển thị thông báo thành công
+        // Reload profile để cập nhật dữ liệu mới nhất
+        this.loadProfileDataInternal();
+      },
+      error: (error) => {
+        console.error('Error updating profile:', error);
+        this.isSaving = false;
+        this.lastSavedMessage = 'Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.';
+        // Reset message sau 5 giây
+        setTimeout(() => {
+          this.lastSavedMessage = '';
+        }, 5000);
+      }
+    });
   }
 
   onJobSearchToggle(enabled: boolean): void {
@@ -197,16 +307,12 @@ export class JobSuggestionSettingsComponent implements OnInit {
   private loadProfileDataInternal(): void {
     this.isLoadingProfile = true;
     
-    const apiUrl = `${environment.apis.default.url}/api/profile`;
-    this.http.get<ProfileDto>(apiUrl, {
-      withCredentials: true,
-      headers: {
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    }).subscribe({
-      next: (response) => {
-        if (!response) {
+    this.profileService.getCurrentUserProfile().subscribe({
+      next: (response: any) => {
+        // Handle response structure
+        const profile: ProfileDto = response?.result || response?.data || response;
+        
+        if (!profile) {
           this.profileUser = {
             name: '',
             accountStatus: 'Tài khoản đã xác thực',
@@ -217,13 +323,18 @@ export class JobSuggestionSettingsComponent implements OnInit {
           return;
         }
 
-        const fullName = `${response.name || ''} ${response.surname || ''}`.trim() || 'User';
+        this.currentProfile = profile;
+
+        const fullName = `${profile.name || ''} ${profile.surname || ''}`.trim() || 'User';
         this.profileUser = {
           name: fullName,
           accountStatus: 'Tài khoản đã xác thực',
-          jobSearchEnabled: false, // Có thể load từ API nếu có
-          allowRecruiterSearch: true, // Có thể load từ API nếu có
+          jobSearchEnabled: false,
+          allowRecruiterSearch: profile.profileVisibility ?? true,
         };
+
+        // Pre-fill form với dữ liệu từ profile
+        this.loadFormDataFromProfile(profile);
 
         this.isLoadingProfile = false;
       },
@@ -238,6 +349,235 @@ export class JobSuggestionSettingsComponent implements OnInit {
         this.isLoadingProfile = false;
       }
     });
+  }
+
+  /**
+   * Load dữ liệu từ profile để pre-fill form
+   */
+  private loadFormDataFromProfile(profile: ProfileDto): void {
+    // Chỉ pre-fill nếu categories và locations đã load xong
+    if (!this.categoriesLoaded || !this.locationsLoaded) {
+      return;
+    }
+
+    // Gender
+    if (profile.gender !== null && profile.gender !== undefined) {
+      this.gender = profile.gender ? 'male' : 'female';
+    }
+
+    // JobTitle - có thể là từ jobTitle hoặc cần parse từ skills
+    if (profile.jobTitle && this.positionOptions.length > 0) {
+      // Nếu jobTitle có nhiều giá trị, split và set vào selectedPositions
+      const jobTitles = profile.jobTitle.split(',').map(t => t.trim()).filter(t => !!t);
+      // Tìm matching category IDs từ positionOptions
+      jobTitles.forEach(title => {
+        const matchingPosition = this.positionOptions.find(p => p.label === title);
+        if (matchingPosition) {
+          if (!this.selectedPositions.includes(matchingPosition.value)) {
+            this.selectedPositions.push(matchingPosition.value);
+          }
+        } else {
+          // Nếu không tìm thấy trong danh mục, thêm vào customPosition
+          if (this.jobPreference.customPosition) {
+            this.jobPreference.customPosition += ', ' + title;
+          } else {
+            this.jobPreference.customPosition = title;
+          }
+        }
+      });
+    }
+
+    // Skills - cần đợi skillOptions được cập nhật sau khi selectedPositions đã set
+    // Sẽ được xử lý sau khi updateSkillOptions được gọi
+
+    // Experience
+    if (profile.experience !== null && profile.experience !== undefined) {
+      this.jobPreference.experienceLevel = profile.experience.toString();
+    }
+
+    // Salary
+    if (profile.salary !== null && profile.salary !== undefined) {
+      this.jobPreference.salaryFrom = profile.salary;
+    }
+
+    // WorkLocation
+    if (profile.workLocation && this.locationOptions.length > 0) {
+      const locations = profile.workLocation.split(',').map(l => l.trim()).filter(l => !!l);
+      // Tìm matching location codes từ locationOptions
+      locations.forEach(location => {
+        const matchingLocation = this.locationOptions.find(l => l.label === location);
+        if (matchingLocation && !this.selectedLocations.includes(matchingLocation.value)) {
+          this.selectedLocations.push(matchingLocation.value);
+        }
+      });
+    }
+
+    // Cập nhật skillOptions sau khi đã set selectedPositions
+    if (this.selectedPositions.length > 0) {
+      this.updateSkillOptions();
+      
+      // Sau khi skillOptions đã được cập nhật, set skills từ profile
+      if (profile.skills && this.skillOptions.length > 0) {
+        const skills = profile.skills.split(',').map(s => s.trim()).filter(s => !!s);
+        skills.forEach(skill => {
+          const matchingSkill = this.skillOptions.find(s => s.label === skill);
+          if (matchingSkill) {
+            this.jobPreference.skillsText = matchingSkill.value;
+          }
+        });
+      }
+    }
+  }
+
+  /**
+   * Load JobCategory tree từ API
+   * Parent categories sẽ là "Vị trí chuyên môn"
+   * Children của parent sẽ là "Kỹ năng"
+   */
+  loadJobCategories(): void {
+    this.isLoadingCategories = true;
+    this.jobCategoryService.getCategoryTree().subscribe({
+      next: (response: any) => {
+        // Handle response structure
+        const categories: CategoryTreeDto[] = response?.result || response?.data || response || [];
+        this.categoryTree = categories;
+        
+        // Tạo positionOptions từ parent categories (categories không có parent)
+        this.positionOptions = categories
+          .filter(cat => cat.children && cat.children.length > 0) // Chỉ lấy categories có children
+          .map(cat => ({
+            value: cat.categoryId || '',
+            label: cat.categoryName || ''
+          }));
+
+        // Cập nhật skillOptions khi có selectedPositions
+        this.updateSkillOptions();
+        
+        this.isLoadingCategories = false;
+        this.categoriesLoaded = true;
+        
+        // Nếu profile đã load, pre-fill lại form
+        if (this.currentProfile) {
+          this.loadFormDataFromProfile(this.currentProfile);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading job categories:', error);
+        this.isLoadingCategories = false;
+        // Fallback to default options
+        this.positionOptions = this.jobOptionsService.JOB_POSITION_OPTIONS;
+      }
+    });
+  }
+
+  /**
+   * Cập nhật skillOptions dựa trên selectedPositions
+   * Lấy tất cả children của các position đã chọn
+   */
+  updateSkillOptions(): void {
+    if (!this.selectedPositions.length || !this.categoryTree.length) {
+      this.skillOptions = [];
+      return;
+    }
+
+    const allSkills: SelectOption[] = [];
+    
+    // Duyệt qua các position đã chọn
+    this.selectedPositions.forEach(positionId => {
+      // Tìm category trong tree
+      const findCategory = (categories: CategoryTreeDto[]): CategoryTreeDto | null => {
+        for (const cat of categories) {
+          if (cat.categoryId === positionId) {
+            return cat;
+          }
+          if (cat.children && cat.children.length > 0) {
+            const found = findCategory(cat.children);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const category = findCategory(this.categoryTree);
+      if (category && category.children && category.children.length > 0) {
+        // Thêm tất cả children vào skillOptions
+        category.children.forEach(child => {
+          // Tránh duplicate
+          if (!allSkills.find(s => s.value === child.categoryId)) {
+            allSkills.push({
+              value: child.categoryId || '',
+              label: child.categoryName || ''
+            });
+          }
+        });
+      }
+    });
+
+    this.skillOptions = allSkills;
+  }
+
+  /**
+   * Load địa điểm từ GeoService
+   */
+  loadLocations(): void {
+    this.isLoadingLocations = true;
+    this.geoService.getProvinces().subscribe({
+      next: (response: any) => {
+        // Handle response structure
+        const provinces: ProvinceDto[] = response?.result || response?.data || response || [];
+        this.provinces = provinces;
+        
+        // Tạo locationOptions từ provinces
+        this.locationOptions = provinces.map(province => ({
+          value: province.code?.toString() || '',
+          label: province.name || ''
+        }));
+        
+        this.isLoadingLocations = false;
+        this.locationsLoaded = true;
+        
+        // Nếu profile đã load, pre-fill lại form
+        if (this.currentProfile) {
+          this.loadFormDataFromProfile(this.currentProfile);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading locations:', error);
+        this.isLoadingLocations = false;
+        // Fallback to default options
+        this.locationOptions = this.jobOptionsService.PROVINCE_OPTIONS;
+      }
+    });
+  }
+
+  /**
+   * Tạo options cho kinh nghiệm từ ExperienceLevel enum
+   */
+  loadExperienceOptions(): void {
+    this.experienceOptions = [
+      { value: '0', label: 'Không yêu cầu kinh nghiệm' },
+      { value: '1', label: 'Dưới 1 năm' },
+      { value: '2', label: '1 năm' },
+      { value: '3', label: '2 năm' },
+      { value: '4', label: '3 năm' },
+      { value: '5', label: '4 năm' },
+      { value: '6', label: '5 năm' },
+      { value: '7', label: '6 năm' },
+      { value: '8', label: '7 năm' },
+      { value: '9', label: '8 năm' },
+      { value: '10', label: '9 năm' },
+      { value: '11', label: '10 năm' },
+      { value: '12', label: 'Trên 10 năm' }
+    ];
+  }
+
+  /**
+   * Handler khi selectedPositions thay đổi
+   * Cập nhật lại skillOptions
+   */
+  onPositionsChange(positions: string[]): void {
+    this.selectedPositions = positions;
+    this.updateSkillOptions();
   }
 }
 

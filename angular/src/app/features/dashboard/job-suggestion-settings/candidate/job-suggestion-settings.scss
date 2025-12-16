@@ -170,6 +170,20 @@
     color: #e74c3c;
   }
 
+  .loading-text {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+  }
+
+  .field-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+  }
+
   .salary-input {
     display: flex;
     align-items: center;
@@ -212,6 +226,16 @@
 
     i {
       color: #28a745;
+    }
+
+    &.error {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+
+      i {
+        color: #dc2626;
+      }
     }
   }
 

@@ -411,3 +411,9 @@ export class CandidateHeaderComponent implements OnInit {
   }
 }
 
+
+
+
+
+
+

@@ -133,6 +133,9 @@ public class VCareerHttpApiHostModule : AbpModule
         // 🔧 ĐĂNG KÝ VNPAY CLIENT (from VNPAY.NET package)
         // Register in HttpApi.Host module where we have access to IConfiguration
         ConfigureVnpay(context, configuration);
+        
+        // Register HttpClientFactory for external API calls (e.g., VietQR API)
+        context.Services.AddHttpClient();
       
     }
     
