@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace VCareer.Services.Profile
 {
@@ -78,8 +79,10 @@ namespace VCareer.Services.Profile
             }
 
             // 1. Update basic user information in IdentityUser
+            // Nếu surname không nhập, fallback = name để tránh lỗi validation
+            var safeSurname = string.IsNullOrWhiteSpace(input.Surname) ? input.Name : input.Surname;
             user.Name = input.Name;
-            user.Surname = input.Surname;
+            user.Surname = safeSurname;
 
             // nếu inpuit email khác email hiện tại của user
             if (!string.IsNullOrEmpty(input.Email) && user.Email != input.Email)
@@ -94,6 +97,16 @@ namespace VCareer.Services.Profile
             // Update PhoneNumber using IdentityUserManager method
             if (!string.IsNullOrEmpty(input.PhoneNumber) && user.PhoneNumber != input.PhoneNumber)
             {
+                // Kiểm tra trùng số điện thoại với user khác
+                var existingUserWithPhone = await _userManager.Users
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.PhoneNumber == input.PhoneNumber);
+
+                if (existingUserWithPhone != null && existingUserWithPhone.Id != user.Id)
+                {
+                    throw new UserFriendlyException("Số điện thoại này đã được sử dụng cho một tài khoản khác.");
+                }
+
                 var phoneResult = await _userManager.SetPhoneNumberAsync(user, input.PhoneNumber);
                 if (!phoneResult.Succeeded)
                 {

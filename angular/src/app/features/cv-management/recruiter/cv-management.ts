@@ -113,11 +113,14 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   filteredCvs: CandidateCv[] = [];
   paginatedCvs: CandidateCv[] = [];
   loading = false;
-  totalCount = 0;
+  // Đếm ứng viên (unique) và số đơn
+  totalCandidateCount = 0;
+  totalApplicationCount = 0;
+  filteredCandidateCount = 0;
 
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 7;
+  itemsPerPage: number = 20;
   
   // Export
   exporting: boolean = false;
@@ -202,13 +205,13 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         const applications = response.items || [];
         // Hiển thị tất cả CV (không dedupe)
         this.candidateCvs = this.mapApplicationsToCvs(applications);
-        // Đếm số ứng viên duy nhất cho totalCount
-        const uniqueCandidateCount = this.countUniqueCandidates(applications);
-        this.totalCount = uniqueCandidateCount;
+        // Tổng số đơn ứng tuyển & số ứng viên duy nhất
+        this.totalApplicationCount = applications.length;
+        this.totalCandidateCount = this.countUniqueCandidates(applications);
         this.loading = false;
         this.applyFilters();
         this.showToastMessage(
-          `Đã tải ${applications.length} CV từ ${uniqueCandidateCount} ứng viên.`,
+          `Đã tải ${this.totalApplicationCount} đơn ứng tuyển từ ${this.totalCandidateCount} ứng viên.`,
           'success'
         );
       },
@@ -234,7 +237,9 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         this.candidateCvs = [];
         this.filteredCvs = [];
         this.paginatedCvs = [];
-        this.totalCount = 0;
+        this.totalApplicationCount = 0;
+        this.totalCandidateCount = 0;
+        this.filteredCandidateCount = 0;
         this.applyFilters();
       }
     });
@@ -575,15 +580,13 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     }
 
     this.filteredCvs = result;
-    // Đếm số ứng viên duy nhất từ kết quả đã filter
+    // Đếm lại ứng viên (unique) theo filter
     const uniqueCandidateIds = new Set<string>();
     result.forEach(cv => {
       const candidateId = cv.candidateCode || cv.id || '';
-      if (candidateId) {
-        uniqueCandidateIds.add(candidateId);
-      }
+      if (candidateId) uniqueCandidateIds.add(candidateId);
     });
-    this.totalCount = uniqueCandidateIds.size;
+    this.filteredCandidateCount = uniqueCandidateIds.size;
     
     // Reset to page 1 when filters change
     this.currentPage = 1;
@@ -591,7 +594,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   }
 
   get totalPages(): number {
-    return Math.ceil(this.totalCount / this.itemsPerPage);
+    return Math.ceil(this.filteredCvs.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {

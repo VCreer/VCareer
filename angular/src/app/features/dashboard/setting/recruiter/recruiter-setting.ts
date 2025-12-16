@@ -399,8 +399,17 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     
     const nameParts = this.profileData.fullName.trim().split(' ');
-    const surname = nameParts.pop() || '';
-    const name = nameParts.join(' ') || '';
+    let surname = nameParts.pop() || '';
+    let name = nameParts.join(' ') || '';
+
+    // Nếu chỉ có 1 từ (name rỗng), gán name = surname để tránh gửi Name rỗng
+    if (!name && surname) {
+      name = surname;
+    }
+    // Nếu surname rỗng, fallback = name
+    if (!surname && name) {
+      surname = name;
+    }
 
     const updateDto: UpdatePersonalInfoDto = {
       name,

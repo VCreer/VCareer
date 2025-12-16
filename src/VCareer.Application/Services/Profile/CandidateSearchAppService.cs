@@ -211,7 +211,10 @@ namespace VCareer.Services.Profile
                 }
                 
                 // Lấy danh sách candidate IDs đã match trong profile
-                var profileMatchedIds = candidatesInMemory.Select(c => c.Id).ToHashSet();
+                // Nếu Lucene không trả về gì (candidatesInMemory null hoặc rỗng) -> dùng danh sách đã filter (queryable) làm input fallback CV
+                var profileMatchedIds = (candidatesInMemory ?? new List<CandidateProfile>())
+                    .Select(c => c.Id)
+                    .ToHashSet();
                 
                 // Lấy tất cả candidates đã được filter (trừ keyword) để search trong CV
                 var allCandidatesQuery = await _candidateProfileRepository.GetQueryableAsync();
@@ -317,6 +320,11 @@ namespace VCareer.Services.Profile
                         var newCandidates = additionalCandidates.Where(c => !existingIds.Contains(c.Id)).ToList();
                         candidatesInMemory = candidatesInMemory.Union(newCandidates).ToList();
                     }
+                }
+                // Nếu cả profileMatchedIds và CV đều rỗng nhưng ban đầu query có dữ liệu, trả về tất cả candidates đã filter (để user vẫn thấy kết quả)
+                if ((candidatesInMemory == null || !candidatesInMemory.Any()) && allCandidateIds.Any())
+                {
+                    candidatesInMemory = await AsyncExecuter.ToListAsync(queryable);
                 }
             }
 
