@@ -4,20 +4,29 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, PaginationComponent, GenericModalComponent, CvEmptyStateComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
-import { UserSubcriptionService } from 'src/app/proxy/services/subcription';
-import { SubcriptionsViewDto } from 'src/app/proxy/dto/subcriptions';
-import { SubcriptionContance_SubcriptionStatus } from 'src/app/proxy/constants/job-constant';
+import { UserSubcriptionService, SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { OptionsChildServiceViewDto, User_ChildServiceViewDto, ChildServiceViewDto, User_SubcirptionViewDto, SubcriptionsViewDto } from 'src/app/proxy/dto/subcriptions';
+import { SubcriptionContance_SubcriptionStatus, SubcriptionContance_ChildServiceStatus, SubcriptionContance_ServiceAction, SubcriptionContance_ServiceTarget } from 'src/app/proxy/constants/job-constant';
 import { CurrentUserInfoDto } from 'src/app/proxy/dto/auth-dto';
 import { AuthStateService } from 'src/app/core/services/auth-Cookiebased/auth-state.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 export interface ServiceItem {
   id: string;
   title: string;
   description: string;
   originalPrice: number;
   dayDuration?: number;
-  status: SubcriptionContance_SubcriptionStatus;
   isActive: boolean;
   isLifeTime: boolean;
+  userSubscription?: User_SubcirptionViewDto;
+  childServices?: ChildServiceInfo[];
+}
+
+export interface ChildServiceInfo {
+  childService: ChildServiceViewDto;
+  userChildService: User_ChildServiceViewDto;
 }
 
 export type ServiceStatus = 'running' | 'ended' | 'expired';
@@ -35,47 +44,59 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
   
-  // Active tab
   activeTab: ServiceStatus = 'running';
   
-  // Service list
   allServices: ServiceItem[] = [];
   filteredServices: ServiceItem[] = [];
   paginatedServices: ServiceItem[] = [];
   
-  // Filters
   selectedServiceType: string = 'all';
   
-  // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
   
-  // Service type options
   serviceTypeOptions: StatusOption[] = [
-    { value: 'all', label: 'Tất cả loại dịch vụ' }
+    { value: 'all', label: 'Tất cả loại dịch vụ' },
+    { value: 'boost', label: 'Tăng điểm Job' },
+    { value: 'top', label: 'Top danh sách' },
+    { value: 'badge', label: 'Badge công việc' },
+    { value: 'theme', label: 'Giao diện công ty' }
   ];
   
-  // Toast notification
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
   
-  // Cancel subscription modal
   showCancelModal = false;
   selectedServiceForCancellation: ServiceItem | null = null;
   
-  // Actions menu
+  showDetailsModal = false;
+  selectedServiceForDetails: ServiceItem | null = null;
+  detailedChildServices: ChildServiceViewDto[] = [];
+  isLoadingDetails: boolean = false;
+  
+  showUsageHistoryModal = false;
+  selectedServiceForUsageHistory: ServiceItem | null = null;
+  usageHistoryData: OptionsChildServiceViewDto[] = [];
+  isLoadingUsageHistory: boolean = false;
+  
+  showToggleShareModal = false;
+  selectedServiceForShare: ServiceItem | null = null;
+  
   showActionsMenu: string | null = null;
   private scrollListener?: () => void;
   private currentMenuServiceId: string | null = null;
   private currentMenuButton: HTMLElement | null = null;
 
-  // Loading state
   isLoading: boolean = false;
 
-  // Current user
   private currentUser: CurrentUserInfoDto | null = null;
+
+  SubcriptionStatus = SubcriptionContance_SubcriptionStatus;
+  ChildServiceStatus = SubcriptionContance_ChildServiceStatus;
+  ServiceAction = SubcriptionContance_ServiceAction;
+  ServiceTarget = SubcriptionContance_ServiceTarget;
 
   constructor(
     private router: Router,
@@ -83,27 +104,24 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     private sidebarSync: SidebarSyncService,
     private cdr: ChangeDetectorRef,
     private userSubcriptionService: UserSubcriptionService,
+    private subcriptionService: SubcriptionService_Service,
     private authApi: AuthStateService
   ) {}
 
   ngOnInit(): void {
-    // Setup sidebar sync
     this.sidebarSync.setupSync(
       '.my-services-page',
       '.breadcrumb-box',
       this.componentId
     );
     
-    // Check sidebar state periodically
     this.checkSidebarState();
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 100);
     
-    // Get current user from auth service
     this.currentUser = this.authApi.user;
     
-    // Check route for tab parameter
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         const tab = params['tab'] as ServiceStatus;
@@ -133,7 +151,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   loadServices(): void {
-    // Check if user is available
     if (!this.currentUser || !this.currentUser.userId) {
       console.warn('User ID not available');
       return;
@@ -142,19 +159,54 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const status = this.getStatusFromTab(this.activeTab);
     
-    this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDto(
-      this.currentUser.userId,
-      status,
-      {
-        pageIndex: this.currentPage -1,
-        pageSize: this.itemsPerPage
-      }
-    ).subscribe({
-      next: (services: SubcriptionsViewDto[]) => {
-        console.log('Services loaded:', services);
-        this.allServices = services.map(s => this.mapToServiceItem(s));
+    const actions = [
+      SubcriptionContance_ServiceAction.BoostScoreJob,
+      SubcriptionContance_ServiceAction.TopList,
+      SubcriptionContance_ServiceAction.JobBadge,
+      SubcriptionContance_ServiceAction.ThemeCompany,
+    ];
+
+    const requests = actions.map(action => 
+      this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction(
+        this.currentUser!.userId,
+        status,
+        {
+          pageIndex: 0,
+          pageSize: 1000
+        },
+        action
+      ).pipe(
+        catchError(error => {
+          console.error(`Error loading services for action ${action}:`, error);
+          return of([]);
+        })
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results: OptionsChildServiceViewDto[][]) => {
+        console.log('Services loaded from all actions:', results);
         
-        // Reset filters when loading new tab data
+        const allOptions = results.reduce((acc, curr) => acc.concat(curr), []);
+        
+        const subscriptionMap = new Map<string, OptionsChildServiceViewDto[]>();
+        
+        allOptions.forEach(opt => {
+          const subId = opt.user_subcription?.id;
+          if (subId) {
+            if (!subscriptionMap.has(subId)) {
+              subscriptionMap.set(subId, []);
+            }
+            subscriptionMap.get(subId)!.push(opt);
+          }
+        });
+        
+        this.allServices = Array.from(subscriptionMap.entries()).map(([subId, options]) => 
+          this.mapToServiceItem(options)
+        );
+        
+        console.log('Mapped services:', this.allServices);
+        
         this.selectedServiceType = 'all';
         
         this.filterServices();
@@ -170,20 +222,42 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private mapToServiceItem(dto: SubcriptionsViewDto): ServiceItem {
+  private mapToServiceItem(options: OptionsChildServiceViewDto[]): ServiceItem {
+    if (options.length === 0) {
+      throw new Error('Empty options array');
+    }
+    
+    const userSubscription = options[0].user_subcription!;
+    const subscriptionDto = options[0].subcriptionsViewDto!;
+    
+    const childServices: ChildServiceInfo[] = [];
+    
+    options.forEach(opt => {
+      if (opt.childService && opt.user_ChildServices) {
+        childServices.push({
+          childService: opt.childService,
+          userChildService: opt.user_ChildServices
+        });
+      }
+    });
+    
+    const isLifeTime = childServices.some(cs => cs.childService.isLifeTime) || subscriptionDto.isLifeTime;
+    const dayDuration = subscriptionDto.dayDuration;
+    
     return {
-      id: dto.id || '',
-      title: dto.title || '',
-      description: dto.description || '',
-      originalPrice: dto.originalPrice,
-      dayDuration: dto.dayDuration,
-      status: dto.status!,
-      isActive: dto.isActive,
-      isLifeTime: dto.isLifeTime
+      id: userSubscription.id || '',
+      title: subscriptionDto.title || 'Gói dịch vụ',
+      description: subscriptionDto.description || '',
+      originalPrice: subscriptionDto.originalPrice || 0,
+      dayDuration: dayDuration,
+      isActive: userSubscription.status === SubcriptionContance_SubcriptionStatus.Active,
+      isLifeTime: isLifeTime,
+      userSubscription: userSubscription,
+      childServices: childServices
     };
   }
 
-  private getStatusFromTab(tab: ServiceStatus): number {
+  private getStatusFromTab(tab: ServiceStatus): SubcriptionContance_SubcriptionStatus {
     const statusMap: Record<ServiceStatus, SubcriptionContance_SubcriptionStatus> = {
       'running': SubcriptionContance_SubcriptionStatus.Active,
       'ended': SubcriptionContance_SubcriptionStatus.Cancelled,
@@ -195,7 +269,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   onTabChange(tab: ServiceStatus): void {
     this.activeTab = tab;
     this.currentPage = 1;
-    // Reset filters when changing tabs
     this.selectedServiceType = 'all';
     this.router.navigate([], {
       relativeTo: this.route,
@@ -214,10 +287,26 @@ export class MyServicesComponent implements OnInit, OnDestroy {
 
   filterServices(): void {
     this.filteredServices = this.allServices.filter(service => {
-      // Filter by service type
       if (this.selectedServiceType !== 'all') {
-        const titleLower = service.title.toLowerCase();
-        return titleLower.includes(this.selectedServiceType.toLowerCase());
+        const hasMatchingType = service.childServices?.some(cs => {
+          const action = cs.childService.action;
+          switch (this.selectedServiceType) {
+            case 'boost':
+              return action === SubcriptionContance_ServiceAction.BoostScoreJob;
+            case 'top':
+              return action === SubcriptionContance_ServiceAction.TopList;
+            case 'badge':
+              return action === SubcriptionContance_ServiceAction.JobBadge;
+            case 'theme':
+              return action === SubcriptionContance_ServiceAction.ThemeCompany;
+            default:
+              return false;
+          }
+        });
+        
+        if (!hasMatchingType) {
+          return false;
+        }
       }
       return true;
     });
@@ -281,14 +370,186 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
+  onViewDetails(service: ServiceItem, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForDetails = service;
+    this.showDetailsModal = true;
+    
+    this.loadServiceDetails(service);
+  }
+
+  private loadServiceDetails(service: ServiceItem): void {
+    if (!service.userSubscription?.subcriptionServiceId) {
+      console.warn('No subscription service ID available');
+      return;
+    }
+
+    this.isLoadingDetails = true;
+    this.detailedChildServices = [];
+    
+    this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
+      service.userSubscription.subcriptionServiceId,
+      true
+    ).subscribe({
+      next: (childServices: ChildServiceViewDto[]) => {
+        console.log('Child services loaded:', childServices);
+        this.detailedChildServices = childServices;
+        this.isLoadingDetails = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading child services:', error);
+        this.showErrorToast('Không thể tải chi tiết dịch vụ');
+        this.isLoadingDetails = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCloseDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedServiceForDetails = null;
+    this.detailedChildServices = [];
+    this.isLoadingDetails = false;
+  }
+
+  onViewUsageHistory(service: ServiceItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForUsageHistory = service;
+    this.showUsageHistoryModal = true;
+    
+    this.loadUsageHistory(service);
+  }
+
+  private loadUsageHistory(service: ServiceItem): void {
+    if (!this.currentUser || !this.currentUser.userId) {
+      console.warn('User ID not available');
+      return;
+    }
+
+    if (!service.userSubscription?.subcriptionServiceId) {
+      console.warn('No subscription service ID available');
+      return;
+    }
+
+    this.isLoadingUsageHistory = true;
+    this.usageHistoryData = [];
+    
+    const status = this.getStatusFromTab(this.activeTab);
+    
+    const actions = [
+      SubcriptionContance_ServiceAction.BoostScoreJob,
+      SubcriptionContance_ServiceAction.TopList,
+      SubcriptionContance_ServiceAction.JobBadge,
+      SubcriptionContance_ServiceAction.ThemeCompany,
+    ];
+
+    const requests = actions.map(action => 
+      this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction(
+        this.currentUser!.userId,
+        status,
+        {
+          pageIndex: 0,
+          pageSize: 1000
+        },
+        action
+      ).pipe(
+        catchError(error => {
+          console.error(`Error loading usage history for action ${action}:`, error);
+          return of([]);
+        })
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results: OptionsChildServiceViewDto[][]) => {
+        const allOptions = results.reduce((acc, curr) => acc.concat(curr), []);
+        
+        this.usageHistoryData = allOptions.filter(opt => 
+          opt.user_subcription?.id === service.id
+        );
+        
+        console.log('Usage history loaded:', this.usageHistoryData);
+        
+        this.isLoadingUsageHistory = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading usage history:', error);
+        this.showErrorToast('Không thể tải lịch sử sử dụng');
+        this.isLoadingUsageHistory = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCloseUsageHistoryModal(): void {
+    this.showUsageHistoryModal = false;
+    this.selectedServiceForUsageHistory = null;
+    this.usageHistoryData = [];
+    this.isLoadingUsageHistory = false;
+  }
+
+  onToggleShare(service: ServiceItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForShare = service;
+    this.showToggleShareModal = true;
+  }
+
+  onCloseToggleShareModal(): void {
+    this.showToggleShareModal = false;
+    this.selectedServiceForShare = null;
+  }
+
+  onConfirmToggleShare(): void {
+    if (!this.selectedServiceForShare?.userSubscription?.id) {
+      this.showErrorToast('Không thể thay đổi trạng thái chia sẻ');
+      return;
+    }
+
+    const newShareStatus = !this.selectedServiceForShare.userSubscription.isShared;
+    
+    this.userSubcriptionService.setStatusShareSuubcriptionServiceByUser_subcriptionServiceIdAndIsShare(
+      this.selectedServiceForShare.userSubscription.id,
+      newShareStatus
+    ).subscribe({
+      next: () => {
+        this.showSuccessToast(
+          newShareStatus 
+            ? 'Đã bật chia sẻ dịch vụ thành công!' 
+            : 'Đã tắt chia sẻ dịch vụ thành công!'
+        );
+        this.showToggleShareModal = false;
+        this.selectedServiceForShare = null;
+        this.loadServices();
+      },
+      error: (error) => {
+        console.error('Error toggling share status:', error);
+        this.showErrorToast('Không thể thay đổi trạng thái chia sẻ. Vui lòng thử lại.');
+      }
+    });
+  }
+
   onCancelSubscription(service: ServiceItem, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     
-    // Close menu
     this.closeActionsMenu();
     
-    // Show cancel modal
     this.selectedServiceForCancellation = service;
     this.showCancelModal = true;
   }
@@ -299,15 +560,14 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   onConfirmCancel(): void {
-    if (this.selectedServiceForCancellation) {
+    if (this.selectedServiceForCancellation && this.selectedServiceForCancellation.userSubscription?.subcriptionServiceId) {
       this.userSubcriptionService.cancleUserSubcriptionBySubcriptionServiceId(
-        this.selectedServiceForCancellation.id
+        this.selectedServiceForCancellation.userSubscription.subcriptionServiceId
       ).subscribe({
         next: () => {
           this.showSuccessToast('Hủy dịch vụ thành công!');
           this.showCancelModal = false;
           this.selectedServiceForCancellation = null;
-          // Reload services
           this.loadServices();
         },
         error: (error) => {
@@ -318,23 +578,16 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     }
   }
 
-  onViewCampaignReport(service: ServiceItem, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Close menu
-    this.showActionsMenu = null;
-    
-    // Navigate to recruitment report page
-    this.router.navigate(['/recruiter/recruitment-report'], {
-      queryParams: {
-        serviceId: service.id
-      }
-    });
-  }
-
   trackByServiceId(index: number, service: ServiceItem): string {
     return service.id;
+  }
+
+  trackByChildServiceId(index: number, childService: ChildServiceViewDto): string {
+    return childService.id || index.toString();
+  }
+
+  trackByOptionId(index: number, option: OptionsChildServiceViewDto): string {
+    return option.user_ChildServices?.childServiceId || index.toString();
   }
 
   toggleActionsMenu(serviceId: string, event?: Event): void {
@@ -457,6 +710,18 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     return price.toLocaleString('vi-VN') + ' đ';
   }
 
+  formatDate(date?: string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('vi-VN');
+  }
+
+  formatDateTime(date?: string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleString('vi-VN');
+  }
+
   getDurationText(service: ServiceItem): string {
     if (service.isLifeTime) {
       return 'Vĩnh viễn';
@@ -471,6 +736,121 @@ export class MyServicesComponent implements OnInit, OnDestroy {
       }
     }
     return '-';
+  }
+
+  getDurationTextForOption(option: OptionsChildServiceViewDto): string {
+    if (option.user_ChildServices?.isLifeTime) {
+      return 'Vĩnh viễn';
+    }
+    
+    const dayDuration = option.childService?.dayDuration;
+    if (dayDuration) {
+      if (dayDuration < 7) {
+        return `${dayDuration} ngày`;
+      } else if (dayDuration % 7 === 0) {
+        return `${dayDuration / 7} tuần`;
+      } else {
+        return `${dayDuration} ngày`;
+      }
+    }
+    return '-';
+  }
+
+  getServiceActionLabel(action?: SubcriptionContance_ServiceAction): string {
+    const labels: Record<SubcriptionContance_ServiceAction, string> = {
+      [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm việc làm',
+      [SubcriptionContance_ServiceAction.TopList]: 'Đưa lên đầu danh sách',
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Huy hiệu việc làm',
+      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Giao diện công ty'
+    };
+    return action !== undefined ? labels[action] : '-';
+  }
+
+  getServiceTargetLabel(target?: SubcriptionContance_ServiceTarget): string {
+    const labels: Record<SubcriptionContance_ServiceTarget, string> = {
+      [SubcriptionContance_ServiceTarget.JobPost]: 'Bài đăng việc làm',
+      [SubcriptionContance_ServiceTarget.Company]: 'Công ty'
+    };
+    return target !== undefined ? labels[target] : '-';
+  }
+
+  getChildServiceStatusLabel(status?: SubcriptionContance_ChildServiceStatus): string {
+    const labels: Record<number, string> = {
+      0: 'Không hoạt động',
+      1: 'Đang hoạt động',
+      2: 'Hết hạn',
+      3: 'Đã hủy'
+    };
+    return status !== undefined ? labels[status] : '-';
+  }
+
+  getChildServiceStatusClass(status?: SubcriptionContance_ChildServiceStatus): string {
+    const classes: Record<number, string> = {
+      0: 'status-inactive',
+      1: 'status-active',
+      2: 'status-expired',
+      3: 'status-cancelled'
+    };
+    return status !== undefined ? classes[status] : '';
+  }
+
+  getRemainingUsageForChild(childService: ChildServiceViewDto): string {
+    if (!this.selectedServiceForDetails?.childServices) return '-';
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    if (!matchingChild) {
+      if (childService.isLifeTime) return 'Vĩnh viễn';
+      if (!childService.isLimitUsedTime) return 'Không giới hạn';
+      return `${childService.timeUsedLimit || 0}`;
+    }
+    
+    const userChildService = matchingChild.userChildService;
+    
+    if (userChildService.isLifeTime) return 'Vĩnh viễn';
+    if (!userChildService.isLimitUsedTime) return 'Không giới hạn';
+    
+    const used = userChildService.usedTime || 0;
+    const total = userChildService.totalUsageLimit || 0;
+    const remaining = total - used;
+    
+    return `${remaining}`;
+  }
+
+  getUsedTimeForChild(childService: ChildServiceViewDto): number {
+    if (!this.selectedServiceForDetails?.childServices) return 0;
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    return matchingChild?.userChildService?.usedTime || 0;
+  }
+
+  getTotalUsageLimitForChild(childService: ChildServiceViewDto): number {
+    if (!this.selectedServiceForDetails?.childServices) {
+      return childService.isLimitUsedTime ? (childService.timeUsedLimit || 0) : 0;
+    }
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    if (matchingChild?.userChildService) {
+      return matchingChild.userChildService.totalUsageLimit || 0;
+    }
+    
+    return childService.isLimitUsedTime ? (childService.timeUsedLimit || 0) : 0;
+  }
+
+  getRemainingDays(endDate?: string): number {
+    if (!endDate) return 0;
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 
   @HostListener('document:click', ['$event'])

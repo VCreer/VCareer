@@ -43,12 +43,23 @@
             <div class="detail-item">
               <i class="fa fa-clock detail-icon"></i>
               <span class="detail-label">Thời gian hiệu lực:</span>
-              <span class="detail-value">{{ serviceDetail.validityPeriod }}</span>
+              <span class="detail-value">{{ getValidityPeriod() }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fa fa-tag detail-icon"></i>
+              <span class="detail-label">Giá gốc:</span>
+              <span class="detail-value">{{ formatPrice(serviceDetail.originalPrice) }} VND</span>
+            </div>
+            <div class="detail-item" *ngIf="!isLoadingPrice && currentPrice !== serviceDetail.originalPrice">
+              <i class="fa fa-badge-percent detail-icon"></i>
+              <span class="detail-label">Giá khuyến mãi:</span>
+              <span class="detail-value highlight">{{ formatPrice(currentPrice) }} VND</span>
             </div>
           </div>
 
           <!-- Service Features - Dynamic from Child Services -->
           <div class="service-features-section" *ngIf="!isLoadingChildServices && groupedChildServices.length > 0">
+            <h3 class="details-title">Các tính năng của gói dịch vụ</h3>
             <div class="features-group" *ngFor="let group of groupedChildServices">
               <div class="features-group-header">
                 <div class="features-group-bar"></div>
@@ -61,6 +72,9 @@
                     <strong>{{ service.name }}</strong>
                     <span *ngIf="service.description"> - {{ service.description }}</span>
                     <span *ngIf="service.value"> ({{ service.value }})</span>
+                    <span *ngIf="service.isLifeTime" class="badge-lifetime">Vĩnh viễn</span>
+                    <span *ngIf="!service.isLifeTime && service.dayDuration" class="badge-duration">{{ service.dayDuration }} ngày</span>
+                    <span *ngIf="service.isLimitUsedTime && service.timeUsedLimit" class="badge-limit">Giới hạn {{ service.timeUsedLimit }} lần</span>
                   </span>
                 </li>
               </ul>
@@ -91,8 +105,26 @@
           <h3 class="purchase-title">{{ serviceDetail.title }}</h3>
           
           <div class="price-section">
-            <span class="price-amount">{{ serviceDetail.price }}</span>
-            <span class="price-currency">VND <span class="asterisk">*</span></span>
+            <div *ngIf="isLoadingPrice" class="price-loading">
+              <i class="fa fa-spinner fa-spin"></i>
+              <span>Đang tải giá...</span>
+            </div>
+            <div *ngIf="!isLoadingPrice">
+              <!-- Show original price if there's a discount -->
+              <div *ngIf="currentPrice !== serviceDetail.originalPrice" class="original-price">
+                <span class="price-strikethrough">{{ formatPrice(serviceDetail.originalPrice) }}</span>
+                <span class="price-currency">VND</span>
+              </div>
+              <!-- Show current/discounted price -->
+              <div class="current-price">
+                <span class="price-amount">{{ formatPrice(currentPrice) }}</span>
+                <span class="price-currency">VND <span class="asterisk">*</span></span>
+              </div>
+              <!-- Show discount percentage if applicable -->
+              <div *ngIf="currentPrice !== serviceDetail.originalPrice" class="discount-badge">
+                Tiết kiệm {{ formatPrice(serviceDetail.originalPrice - currentPrice) }} VND
+              </div>
+            </div>
           </div>
 
           <div class="quantity-section">
@@ -105,16 +137,28 @@
           </div>
 
           <div class="action-buttons">
-            <button class="btn-add-cart" (click)="onAddToCart()">
+            <button class="btn-add-cart" (click)="onAddToCart()" [disabled]="!serviceDetail.isActive">
               <i class="fa fa-shopping-cart"></i>
               <span>Thêm vào giỏ</span>
             </button>
-            <button class="btn-buy-now" (click)="onBuyNow()">
+            <button class="btn-buy-now" (click)="onBuyNow()" [disabled]="!serviceDetail.isActive">
               <span>Mua ngay</span>
             </button>
           </div>
 
           <p class="price-disclaimer"><span class="asterisk">*</span> Giá dịch vụ chưa bao gồm VAT</p>
+
+          <!-- Service Limitations Info -->
+          <div class="service-info" *ngIf="serviceDetail.isLimited || serviceDetail.isBuyLimited">
+            <div class="info-item" *ngIf="serviceDetail.isLimited">
+              <i class="fa fa-info-circle"></i>
+              <span>Số lượng gói còn lại: {{ serviceDetail.totalLimitpackage || 0 }}</span>
+            </div>
+            <div class="info-item" *ngIf="serviceDetail.isBuyLimited">
+              <i class="fa fa-info-circle"></i>
+              <span>Giới hạn mua: {{ serviceDetail.totalBuyEachUser }} gói/người</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

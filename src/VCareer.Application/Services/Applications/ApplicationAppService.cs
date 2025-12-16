@@ -27,6 +27,12 @@ using VCareer.IServices.Application;
 using Volo.Abp.Application.Services;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
+using VCareer.IServices.Notification;
+using VCareer.Dto.Notification;
+using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.Job;
+using VCareer.Constants.JobConstant;
+using System.Text.Json;
 
 namespace VCareer.Application.Applications
 {
@@ -39,6 +45,7 @@ namespace VCareer.Application.Applications
         private readonly IRepository<JobApplication, Guid> _applicationRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateRepository;
         private readonly IRepository<Job_Post, Guid> _jobPostingRepository;
+        private readonly IRepository<RecruitmentCampaign, Guid> _recruitmentCampaignRepository;
         private readonly IRepository<CandidateCv, Guid> _candidateCvRepository;
         private readonly IRepository<UploadedCv, Guid> _uploadedCvRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
@@ -48,6 +55,9 @@ namespace VCareer.Application.Applications
         private readonly IUploadedCvAppService _uploadedCvAppService;
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
+        private readonly INotificationAppService _notificationAppService;
+        private readonly IRecruiterRepository _recruiterRepository;
+        private readonly IJobPostRepository _jobPostRepository;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogAppService _activityLogAppService;
 
@@ -55,6 +65,7 @@ namespace VCareer.Application.Applications
             IRepository<JobApplication, Guid> applicationRepository,
             IRepository<CandidateProfile, Guid> candidateRepository,
             IRepository<Job_Post, Guid> jobPostingRepository,
+            IRepository<RecruitmentCampaign, Guid> recruitmentCampaignRepository,
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<UploadedCv, Guid> uploadedCvRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
@@ -65,11 +76,15 @@ namespace VCareer.Application.Applications
             ICurrentUser currentUser,
             IEmailSender emailSender,
             IConfiguration configuration,
-            IActivityLogAppService activityLogAppService)
+            IActivityLogAppService activityLogAppService,
+            INotificationAppService notificationAppService,
+            IRecruiterRepository recruiterRepository,
+            IJobPostRepository jobPostRepository)
         {
             _applicationRepository = applicationRepository;
             _candidateRepository = candidateRepository;
             _jobPostingRepository = jobPostingRepository;
+            _recruitmentCampaignRepository = recruitmentCampaignRepository;
             _candidateCvRepository = candidateCvRepository;
             _uploadedCvRepository = uploadedCvRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
@@ -81,6 +96,9 @@ namespace VCareer.Application.Applications
             _emailSender = emailSender;
             _configuration = configuration;
             _activityLogAppService = activityLogAppService;
+            _notificationAppService = notificationAppService;
+            _recruiterRepository = recruiterRepository;
+            _jobPostRepository = jobPostRepository;
         }
 
         /// <summary>
@@ -139,6 +157,8 @@ namespace VCareer.Application.Applications
                 jobToUpdate.ApplyCount++;
                 await _jobPostingRepository.UpdateAsync(jobToUpdate);
             }
+
+            await NotifyRecruiterNewApplicationAsync(job, candidate, application);
 
             return await MapToDtoAsync(application);
         }
@@ -200,6 +220,8 @@ namespace VCareer.Application.Applications
                 await _jobPostingRepository.UpdateAsync(jobToUpdate);
             }
 
+            await NotifyRecruiterNewApplicationAsync(job, candidate, application);
+
             return await MapToDtoAsync(application);
         }
 
@@ -209,40 +231,72 @@ namespace VCareer.Application.Applications
         /*[Authorize(VCareerPermission.Application.View)]*/
         public async Task<PagedResultDto<ApplicationDto>> GetApplicationListAsync(GetApplicationListDto input)
         {
-            var query = await _applicationRepository.GetQueryableAsync();
+            var applicationQuery = await _applicationRepository.GetQueryableAsync();
+            var jobQuery = await _jobPostingRepository.GetQueryableAsync();
+            var candidateQuery = await _candidateRepository.GetQueryableAsync();
+            var userQuery = await _identityUserRepository.GetQueryableAsync();
+
+            var query =
+                from app in applicationQuery
+                join job in jobQuery on app.JobId equals job.Id into jobJoin
+                from job in jobJoin.DefaultIfEmpty()
+                join candidate in candidateQuery on app.CandidateId equals candidate.UserId into candidateJoin
+                from candidate in candidateJoin.DefaultIfEmpty()
+                join user in userQuery on candidate.UserId equals user.Id into userJoin
+                from user in userJoin.DefaultIfEmpty()
+                select new { app, job, user };
 
             // Apply filters
             if (input.JobId.HasValue)
-                query = query.Where(a => a.JobId == input.JobId.Value);
+                query = query.Where(x => x.app.JobId == input.JobId.Value);
+
+            if (input.RecruitmentCampaignId.HasValue)
+                query = query.Where(x => x.job != null && x.job.RecruitmentCampaignId == input.RecruitmentCampaignId.Value);
 
             if (input.CandidateId.HasValue)
-                query = query.Where(a => a.CandidateId == input.CandidateId.Value);
+                query = query.Where(x => x.app.CandidateId == input.CandidateId.Value);
 
             if (input.CompanyId.HasValue)
-                query = query.Where(a => a.CompanyId == input.CompanyId.Value);
+                query = query.Where(x => x.app.CompanyId == input.CompanyId.Value);
 
             if (!string.IsNullOrEmpty(input.Status))
-                query = query.Where(a => a.Status == input.Status);
+                query = query.Where(x => x.app.Status == input.Status);
 
             if (!string.IsNullOrEmpty(input.CVType))
-                query = query.Where(a => a.CVType == input.CVType);
+                query = query.Where(x => x.app.CVType == input.CVType);
 
             if (input.FromDate.HasValue)
-                query = query.Where(a => a.CreationTime >= input.FromDate.Value);
+                query = query.Where(x => x.app.CreationTime >= input.FromDate.Value);
 
             if (input.ToDate.HasValue)
-                query = query.Where(a => a.CreationTime <= input.ToDate.Value);
+                query = query.Where(x => x.app.CreationTime <= input.ToDate.Value);
 
             if (input.IsViewed.HasValue)
-                query = query.Where(a => input.IsViewed.Value ? a.ViewedAt.HasValue : !a.ViewedAt.HasValue);
+                query = query.Where(x => input.IsViewed.Value ? x.app.ViewedAt.HasValue : !x.app.ViewedAt.HasValue);
 
             if (input.IsResponded.HasValue)
-                query = query.Where(a => input.IsResponded.Value ? a.RespondedAt.HasValue : !a.RespondedAt.HasValue);
+                query = query.Where(x => input.IsResponded.Value ? x.app.RespondedAt.HasValue : !x.app.RespondedAt.HasValue);
+
+            if (!string.IsNullOrWhiteSpace(input.Keyword))
+            {
+                var keyword = input.Keyword.Trim().ToLower();
+                query = query.Where(x =>
+                    (x.user != null &&
+                        (
+                            (!string.IsNullOrEmpty(x.user.Name) && x.user.Name.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.Surname) && x.user.Surname.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.Email) && x.user.Email.ToLower().Contains(keyword)) ||
+                            (!string.IsNullOrEmpty(x.user.PhoneNumber) && x.user.PhoneNumber.ToLower().Contains(keyword))
+                        )
+                    ) ||
+                    (x.job != null && !string.IsNullOrEmpty(x.job.Title) && x.job.Title.ToLower().Contains(keyword))
+                );
+            }
 
             // Apply sorting - mặc định sắp xếp theo CreationTime DESC (mới nhất lên đầu)
             if (string.IsNullOrWhiteSpace(input.Sorting))
             {
-                query = query.OrderByDescending(a => a.CreationTime);
+                query = query.OrderByDescending(x => x.app.CreationTime);
             }
             else
             {
@@ -255,22 +309,22 @@ namespace VCareer.Application.Applications
                 {
                     case "creationtime":
                         query = sortDirection == "ASC" 
-                            ? query.OrderBy(a => a.CreationTime)
-                            : query.OrderByDescending(a => a.CreationTime);
+                            ? query.OrderBy(x => x.app.CreationTime)
+                            : query.OrderByDescending(x => x.app.CreationTime);
                         break;
                     case "lastmodificationtime":
                         query = sortDirection == "ASC"
-                            ? query.OrderBy(a => a.LastModificationTime ?? a.CreationTime)
-                            : query.OrderByDescending(a => a.LastModificationTime ?? a.CreationTime);
+                            ? query.OrderBy(x => x.app.LastModificationTime ?? x.app.CreationTime)
+                            : query.OrderByDescending(x => x.app.LastModificationTime ?? x.app.CreationTime);
                         break;
                     case "status":
                         query = sortDirection == "ASC"
-                            ? query.OrderBy(a => a.Status)
-                            : query.OrderByDescending(a => a.Status);
+                            ? query.OrderBy(x => x.app.Status)
+                            : query.OrderByDescending(x => x.app.Status);
                         break;
                     default:
                         // Default to CreationTime DESC if unknown field
-                        query = query.OrderByDescending(a => a.CreationTime);
+                        query = query.OrderByDescending(x => x.app.CreationTime);
                         break;
                 }
             }
@@ -282,6 +336,7 @@ namespace VCareer.Application.Applications
             var applications = query
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount)
+                .Select(x => x.app)
                 .ToList();
 
             var applicationDtos = new List<ApplicationDto>();
@@ -335,6 +390,11 @@ namespace VCareer.Application.Applications
             if (input.Status == "offer" && oldStatus != "offer")
             {
                 await SendOfferEmailAsync(application, applicationDto);
+
+                // Tạo notification cho candidate kèm hạn job
+                var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+                var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
+                await NotifyCandidateOfferAsync(job, candidate, application);
             }
 
             return applicationDto;
@@ -620,6 +680,99 @@ namespace VCareer.Application.Applications
                         nameof(JobApplication),
                         "{}");
                 }
+
+                // Tạo notification cho candidate khi recruiter xem CV
+                try
+                {
+                    Logger.LogInformation("MarkAsViewedAsync: Starting notification creation. ApplicationId: {ApplicationId}, CandidateId: {CandidateId}, JobId: {JobId}, UserId: {UserId}",
+                        application.Id, application.CandidateId, application.JobId, userId);
+
+                    // Verify user là recruiter
+                    var recruiter = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == userId);
+                    if (recruiter == null)
+                    {
+                        Logger.LogWarning("MarkAsViewedAsync: User {UserId} is not a recruiter. Skipping notification.", userId);
+                    }
+                    else if (!recruiter.Status)
+                    {
+                        Logger.LogWarning("MarkAsViewedAsync: Recruiter {RecruiterId} is not active. Skipping notification.", recruiter.UserId);
+                    }
+                    else
+                    {
+                        Logger.LogInformation("MarkAsViewedAsync: Recruiter found. RecruiterId: {RecruiterId}", recruiter.UserId);
+
+                        // Lấy thông tin job
+                        var job = await _jobPostRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+                        if (job == null)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} not found. Skipping notification.", application.JobId);
+                        }
+                        else if (job.Status == JobStatus.Deleted)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} is deleted. Skipping notification.", application.JobId);
+                        }
+                        else if (job.ExpiresAt <= DateTime.Now)
+                        {
+                            Logger.LogWarning("MarkAsViewedAsync: Job {JobId} is expired (ExpiresAt: {ExpiresAt}). Skipping notification.", 
+                                application.JobId, job.ExpiresAt);
+                        }
+                        else
+                        {
+                            Logger.LogInformation("MarkAsViewedAsync: Job found. JobTitle: {JobTitle}, CompanyName: {CompanyName}", 
+                                job.Title, job.CompanyName);
+
+                            // Lấy candidate profile - CandidateId trong JobApplication là UserId
+                            var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
+                            if (candidate == null)
+                            {
+                                Logger.LogWarning("MarkAsViewedAsync: Candidate with UserId {CandidateId} not found. Skipping notification.", 
+                                    application.CandidateId);
+                            }
+                            else if (!candidate.Status)
+                            {
+                                Logger.LogWarning("MarkAsViewedAsync: Candidate {CandidateId} is not active. Skipping notification.", 
+                                    application.CandidateId);
+                            }
+                            else
+                            {
+                                Logger.LogInformation("MarkAsViewedAsync: Candidate found. Creating notification...");
+
+                                // Tạo notification cho candidate
+                                var metadata = JsonSerializer.Serialize(new
+                                {
+                                    JobTitle = job.Title,
+                                    CompanyName = job.CompanyName,
+                                    JobId = job.Id,
+                                    RecruiterId = recruiter.UserId,
+                                    ApplicationId = application.Id
+                                });
+
+                                var notificationDto = new NotificationCreateDto
+                                {
+                                    UserId = application.CandidateId,
+                                    UserRole = "Candidate",
+                                    NotificationType = "CvViewed",
+                                    Title = "Nhà tuyển dụng vừa xem CV của bạn",
+                                    Message = $"Công ty {job.CompanyName} đã xem CV của bạn cho vị trí {job.Title}",
+                                    RelatedEntityType = "JobPost",
+                                    RelatedEntityId = application.JobId,
+                                    Metadata = metadata,
+                                    CreatedBy = recruiter.UserId
+                                };
+
+                                var createdNotification = await _notificationAppService.CreateNotificationAsync(notificationDto);
+                                Logger.LogInformation("MarkAsViewedAsync: Notification created successfully. NotificationId: {NotificationId}", 
+                                    createdNotification.Id);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không fail toàn bộ request
+                    Logger.LogError(ex, "MarkAsViewedAsync: Failed to create notification when recruiter viewed CV. ApplicationId: {ApplicationId}, JobId: {JobId}, CandidateId: {CandidateId}, UserId: {UserId}",
+                        application.Id, application.JobId, application.CandidateId, userId);
+                }
             }
 
             return await MapToDtoAsync(application);
@@ -839,6 +992,122 @@ namespace VCareer.Application.Applications
             }
         }
 
+        private async Task NotifyRecruiterNewApplicationAsync(Job_Post job, CandidateProfile candidate, JobApplication application)
+        {
+            if (job?.RecruiterProfile == null)
+            {
+                Logger.LogWarning("NotifyRecruiterNewApplicationAsync: Job {JobId} has no recruiter profile.", job?.Id);
+                return;
+            }
+
+            var recruiterUserId = job.RecruiterProfile.UserId;
+            if (recruiterUserId == Guid.Empty)
+            {
+                Logger.LogWarning("NotifyRecruiterNewApplicationAsync: Recruiter profile missing UserId for job {JobId}", job.Id);
+                return;
+            }
+
+            try
+            {
+                string candidateName = candidate?.User?.Name;
+                string candidateEmail = candidate?.Email;
+
+                if (string.IsNullOrWhiteSpace(candidateName) || string.IsNullOrWhiteSpace(candidateEmail))
+                {
+                    var candidateUser = await _identityUserRepository.FirstOrDefaultAsync(u => u.Id == candidate.UserId);
+                    candidateName ??= candidateUser?.Name ?? candidateUser?.UserName;
+                    candidateEmail ??= candidate?.Email ?? candidateUser?.Email;
+                }
+
+                candidateName ??= "Ứng viên";
+                candidateEmail ??= "N/A";
+
+                var metadata = JsonSerializer.Serialize(new
+                {
+                    JobTitle = job.Title,
+                    JobId = job.Id,
+                    CandidateId = candidate.UserId,
+                    CandidateName = candidateName,
+                    CandidateEmail = candidateEmail,
+                    ApplicationId = application.Id,
+                    ExpiresAt = job.ExpiresAt
+                });
+
+                var notificationDto = new NotificationCreateDto
+                {
+                    UserId = recruiterUserId,
+                    UserRole = "Recruiter",
+                    NotificationType = "ApplicationSubmitted",
+                    Title = "Ứng viên mới ứng tuyển",
+                    Message = $"Ứng viên {candidateName} vừa ứng tuyển vị trí {job.Title}",
+                    RelatedEntityType = "Application",
+                    RelatedEntityId = application.Id,
+                    Metadata = metadata,
+                    CreatedBy = candidate.UserId
+                };
+
+                await _notificationAppService.CreateNotificationAsync(notificationDto);
+
+                Logger.LogInformation("NotifyRecruiterNewApplicationAsync: Sent notification to recruiter {RecruiterUserId} for application {ApplicationId}",
+                    recruiterUserId, application.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "NotifyRecruiterNewApplicationAsync: Failed to create notification for recruiter {RecruiterUserId} and application {ApplicationId}",
+                    recruiterUserId, application.Id);
+            }
+        }
+
+        private async Task NotifyCandidateOfferAsync(Job_Post job, CandidateProfile candidate, JobApplication application)
+        {
+            if (candidate == null)
+            {
+                Logger.LogWarning("NotifyCandidateOfferAsync: Candidate not found for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var candidateUserId = candidate.UserId;
+            if (candidateUserId == Guid.Empty)
+            {
+                Logger.LogWarning("NotifyCandidateOfferAsync: Candidate UserId missing for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var company = job?.CompanyName ?? "Nhà tuyển dụng";
+            var jobTitle = job?.Title ?? "Công việc";
+
+            var metadata = JsonSerializer.Serialize(new
+            {
+                JobTitle = jobTitle,
+                CompanyName = company,
+                JobId = job?.Id,
+                    ApplicationId = application.Id
+            });
+
+            var notificationDto = new NotificationCreateDto
+            {
+                UserId = candidateUserId,
+                UserRole = "Candidate",
+                NotificationType = "JobOffer",
+                Title = "Nhà tuyển dụng đã gửi đề nghị",
+                Message = $"Nhà tuyển dụng đã gửi đề nghị cho vị trí {jobTitle}",
+                RelatedEntityType = "JobPost",
+                RelatedEntityId = application.JobId,
+                Metadata = metadata,
+                CreatedBy = application.RespondedBy
+            };
+
+            try
+            {
+                await _notificationAppService.CreateNotificationAsync(notificationDto);
+                Logger.LogInformation("NotifyCandidateOfferAsync: Notification sent to candidate {CandidateUserId} for application {ApplicationId}", candidateUserId, application.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "NotifyCandidateOfferAsync: Failed to send notification for application {ApplicationId}", application.Id);
+            }
+        }
+
         /// <summary>
         /// Map JobApplication entity to DTO với đầy đủ thông tin
         /// </summary>
@@ -852,6 +1121,16 @@ namespace VCareer.Application.Applications
             {
                 dto.JobTitle = job.Title;
                 dto.JobSalaryText = FormatJobSalary(job);
+                dto.RecruitmentCampaignId = job.RecruitmentCampaignId;
+
+                if (job.RecruitmentCampaignId != Guid.Empty)
+                {
+                    var campaign = await _recruitmentCampaignRepository.FirstOrDefaultAsync(c => c.Id == job.RecruitmentCampaignId);
+                    if (campaign != null)
+                    {
+                        dto.RecruitmentCampaignName = campaign.Name;
+                    }
+                }
             }
 
             // Load Company để lấy CompanyName

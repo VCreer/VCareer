@@ -103,6 +103,9 @@ export class FindCandidateComponent implements OnInit {
     
     const searchInput: SearchCandidateInputDto = {
       keyword: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
+      // Đẩy keyword sang jobTitle/skills để backend Lucene có thêm field match (CandidateProfile)
+      jobTitle: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
+      skills: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
       workLocation: this.location && this.location.trim() ? this.location.trim() : undefined,
       searchInJobTitle: false,
       searchInActivity: false,
@@ -125,17 +128,15 @@ export class FindCandidateComponent implements OnInit {
       searchInput.searchInExperience = this.searchScope.experience;
       searchInput.searchInSkills = this.searchScope.skills;
     } else {
-      // Nếu không có custom scope, không filter theo scope (hiển thị tất cả)
-      // Chỉ search trong scope khi có keyword
+      // Không chọn scope: nếu có keyword thì bật tìm tất cả field (jobTitle/skills/education/experience/activity + dataJson CV)
       if (this.keyword && this.keyword.trim()) {
-        // Có keyword, search trong tất cả các scope
         searchInput.searchInJobTitle = true;
         searchInput.searchInActivity = true;
         searchInput.searchInEducation = true;
         searchInput.searchInExperience = true;
         searchInput.searchInSkills = true;
       } else {
-        // Không có keyword, không filter theo scope (hiển thị tất cả candidates)
+        // Không keyword: không filter scope
         searchInput.searchInJobTitle = false;
         searchInput.searchInActivity = false;
         searchInput.searchInEducation = false;

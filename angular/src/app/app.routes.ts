@@ -65,6 +65,31 @@ export const APP_ROUTES: Routes = [
         c => c.TermsOfServiceCandidateComponent
       ),
   },
+  // Public Recruiter Routes (có layout nhưng không yêu cầu đăng nhập)
+  {
+    path: 'recruiter',
+    loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
+    // ← KHÔNG CÓ canActivate → public, ai cũng vào được
+    children: [
+      {
+        path: 'about-us',
+        loadComponent: () =>
+          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+      },
+      {
+        path: 'service',
+        loadComponent: () =>
+          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+      },
+      {
+        path: 'service-quotation',
+        loadComponent: () =>
+          import('./features/dashboard/service-quotation/recruiter/service-quotation').then(
+            c => c.ServiceQuotationComponent
+          ),
+      },
+    ],
+  },
   //#endregion
 
   //#region Auth Routes - Redirect nếu đã login
@@ -181,7 +206,14 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
-        path: 'cv-management/view/:cvId',
+        path: 'candidate/notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/candidate/notifications').then(
+            c => c.NotificationsComponent
+          ),
+      },
+      {
+        path: 'candidate/cv-management/view/:cvId',
         loadComponent: () =>
           import('./features/dashboard/cv-management/candidate/cv-view').then(
             c => c.CvViewComponent
@@ -288,16 +320,6 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
-        path: 'about-us',
-        loadComponent: () =>
-          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
-      },
-      {
-        path: 'service',
-        loadComponent: () =>
-          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
-      },
-      {
         path: 'terms-of-service',
         loadComponent: () =>
           import('./features/dashboard/terms-of-service/recruiter/terms-of-service').then(
@@ -396,6 +418,13 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/recruiter/notifications').then(
+            c => c.RecruiterNotificationsComponent
+          ),
+      },
+      {
         path: 'cart',
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
@@ -459,7 +488,7 @@ export const APP_ROUTES: Routes = [
           ).then(c => c.EmployeeJobManagementComponent),
       },
       {
-        path: 'service-price-list',
+        path: 'service-price-list/:id',
         loadComponent: () =>
           import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
             c => c.ServicePriceListComponent

@@ -19,8 +19,10 @@ export interface NotificationItem {
 export class NotificationMenuComponent {
   @Input() notifications: NotificationItem[] = [];
   @Input() showMenu: boolean = false;
+  @Input() showViewAll: boolean = false;
   @Output() markAllRead = new EventEmitter<void>();
   @Output() closeMenu = new EventEmitter<void>();
+  @Output() viewAll = new EventEmitter<void>();
 
   constructor(private translationService: TranslationService) {}
 
@@ -34,6 +36,11 @@ export class NotificationMenuComponent {
 
   onCloseMenu() {
     this.closeMenu.emit();
+  }
+
+  onViewAll(event: Event) {
+    event.stopPropagation();
+    this.viewAll.emit();
   }
 }
 

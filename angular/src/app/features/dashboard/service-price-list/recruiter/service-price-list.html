@@ -19,7 +19,6 @@
           </p>
         </div>
       </div>
-      <!-- FIX: Sửa app-button theo component hiện tại -->
       <app-button type="primary" size="medium" (click)="onCreatePrice()">
         <i class="fa fa-plus"></i>
         <span>Thêm giá mới</span>
@@ -49,24 +48,23 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th style="width: 15%">Giá gốc</th>
-              <th style="width: 12%">Giảm giá</th>
-              <th style="width: 15%">Giá sau giảm</th>
-              <th style="width: 18%">Bắt đầu</th>
-              <th style="width: 18%">Kết thúc</th>
+              <th style="width: 20%">Giá gốc</th>
+              <th style="width: 20%">Giá mới</th>
+              <th style="width: 20%">Bắt đầu</th>
+              <th style="width: 20%">Kết thúc</th>
               <th style="width: 12%">Trạng thái</th>
-              <th style="width: 10%">Thao tác</th>
+              <th style="width: 8%">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="isLoadingPrices">
-              <td colspan="7" class="loading-cell">
+              <td colspan="6" class="loading-cell">
                 <i class="fa fa-spinner fa-spin"></i>
                 <span>Đang tải dữ liệu...</span>
               </td>
             </tr>
             <tr *ngIf="!isLoadingPrices && paginatedPrices.length === 0">
-              <td colspan="7" class="empty-cell">
+              <td colspan="6" class="empty-cell">
                 <i class="fa fa-inbox"></i>
                 <span>Chưa có giá nào được thiết lập</span>
               </td>
@@ -79,12 +77,7 @@
               </td>
               <td>
                 <div class="cell-content">
-                  <span class="discount-badge">{{ price.salePercent }}%</span>
-                </div>
-              </td>
-              <td>
-                <div class="cell-content">
-                  <strong>{{ formatPrice(calculateDiscountedPrice(price)) }}</strong>
+                  <strong>{{ formatPrice(price.newPrice) }}</strong>
                 </div>
               </td>
               <td>
@@ -146,20 +139,22 @@
   <app-generic-modal *ngIf="showCreatePriceModal" [show]="showCreatePriceModal" title="Thêm giá mới"
     (close)="showCreatePriceModal = false">
     <div class="modal-content">
-      <!-- Sale Percent Input -->
+      <!-- New Price Input -->
       <div class="form-field">
-        <label>Phần trăm giảm giá (%)</label>
+        <label>Giá mới</label>
         <input 
           type="number" 
-          [(ngModel)]="priceForm.salePercent" 
-          placeholder="0"
+          [(ngModel)]="priceForm.newPrice" 
+          placeholder="Nhập giá mới"
           min="0" 
-          max="100" 
-          step="0.01"
-          [class.error]="validationErrors['salePercent']"
+          step="1000"
+          [class.error]="validationErrors['newPrice']"
         >
-        <span class="error-text" *ngIf="validationErrors['salePercent']">
-          {{ validationErrors['salePercent'] }}
+        <span class="error-text" *ngIf="validationErrors['newPrice']">
+          {{ validationErrors['newPrice'] }}
+        </span>
+        <span class="help-text" *ngIf="subcriptionInfo && !validationErrors['newPrice']">
+          Giá gốc: {{ formatPrice(subcriptionInfo.originalPrice) }}
         </span>
       </div>
 
@@ -197,7 +192,7 @@
           <ul>
             <li *ngFor="let range of getExistingActiveRanges()">
               {{ formatDate(range.effectiveFrom) }} → {{ formatDate(range.effectiveTo) }}
-              <span class="range-discount">(Giảm {{ range.salePercent }}%)</span>
+              <span class="range-discount">({{ formatPrice(range.newPrice) }})</span>
             </li>
           </ul>
           <p class="range-note">Vui lòng chọn khoảng thời gian không trùng với các khoảng trên</p>
@@ -209,7 +204,7 @@
         <div>
           <p><strong>Lưu ý:</strong></p>
           <ul>
-            <li>Giá gốc được lấy từ gói dịch vụ</li>
+            <li>Giá mới phải lớn hơn 0</li>
             <li>Các khoảng thời gian không được chồng lấn</li>
             <li>Giá chỉ có hiệu lực khi được kích hoạt</li>
           </ul>
@@ -233,20 +228,22 @@
   <app-generic-modal *ngIf="showEditPriceModal" [show]="showEditPriceModal" title="Chỉnh sửa giá"
     (close)="showEditPriceModal = false">
     <div class="modal-content">
-      <!-- Sale Percent Input -->
+      <!-- New Price Input -->
       <div class="form-field">
-        <label>Phần trăm giảm giá (%)</label>
+        <label>Giá mới</label>
         <input 
           type="number" 
-          [(ngModel)]="priceForm.salePercent" 
-          placeholder="0"
+          [(ngModel)]="priceForm.newPrice" 
+          placeholder="Nhập giá mới"
           min="0" 
-          max="100" 
-          step="0.01"
-          [class.error]="validationErrors['salePercent']"
+          step="1000"
+          [class.error]="validationErrors['newPrice']"
         >
-        <span class="error-text" *ngIf="validationErrors['salePercent']">
-          {{ validationErrors['salePercent'] }}
+        <span class="error-text" *ngIf="validationErrors['newPrice']">
+          {{ validationErrors['newPrice'] }}
+        </span>
+        <span class="help-text" *ngIf="subcriptionInfo && !validationErrors['newPrice']">
+          Giá gốc: {{ formatPrice(subcriptionInfo.originalPrice) }}
         </span>
       </div>
 
@@ -276,7 +273,7 @@
         </span>
       </div>
 
-      <!-- Existing Date Ranges Warning - THÊM VÀO EDIT MODAL -->
+      <!-- Existing Date Ranges Warning -->
       <div class="existing-ranges-box" *ngIf="getExistingActiveRanges().length > 0">
         <i class="fa fa-calendar-times"></i>
         <div>
@@ -284,7 +281,7 @@
           <ul>
             <li *ngFor="let range of getExistingActiveRanges()">
               {{ formatDate(range.effectiveFrom) }} → {{ formatDate(range.effectiveTo) }}
-              <span class="range-discount">(Giảm {{ range.salePercent }}%)</span>
+              <span class="range-discount">({{ formatPrice(range.newPrice) }})</span>
             </li>
           </ul>
           <p class="range-note">Vui lòng chọn khoảng thời gian không trùng với các khoảng trên</p>

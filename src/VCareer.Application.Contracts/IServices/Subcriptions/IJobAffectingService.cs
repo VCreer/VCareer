@@ -7,6 +7,7 @@ using VCareer.Constants.JobConstant;
 using VCareer.Dto.Subcriptions;
 using VCareer.IServices.Common;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
+using static VCareer.Permission.VCareerPermission;
 
 namespace VCareer.IServices.Subcriptions
 {
@@ -21,5 +22,6 @@ namespace VCareer.IServices.Subcriptions
         public Task DeactiveAllEffectingJobByJobID(Guid JobId);
         public Task DeactiveAllEffectingJobByChildServiceId(Guid childServiceId);
         public Task UpdateExpiredEffectingJobServiceBackgroundJob();
+        public Task AddJobBoostLogic(Guid jobid, Guid jobEffectingIdS);
     }
 }

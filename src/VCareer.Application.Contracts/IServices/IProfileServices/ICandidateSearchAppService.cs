@@ -24,7 +24,8 @@ namespace VCareer.IServices.IProfileServices
         /// Lấy thông tin chi tiết của một ứng viên
         /// </summary>
         /// <param name="candidateProfileId">ID của CandidateProfile</param>
-        Task<CandidateSearchResultDto> GetCandidateDetailAsync(Guid candidateProfileId);
+        /// <param name="jobId">ID của Job (optional, để tạo notification khi recruiter xem CV)</param>
+        Task<CandidateSearchResultDto> GetCandidateDetailAsync(Guid candidateProfileId, Guid? jobId = null);
 
         /// <summary>
         /// Gửi yêu cầu kết nối đến ứng viên qua email

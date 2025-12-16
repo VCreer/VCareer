@@ -12,7 +12,6 @@ namespace VCareer.Dto.Subcriptions
         public string Title { get; set; }
         public string Description { get; set; }
         public SubcriptorTarget Target { get; set; }
-        public SubcriptionStatus Status { get; set; }
         public decimal OriginalPrice { get; set; } // giá gốc , sau thêm giá thì chỉnh percent sale ơ bang price
         public bool IsLimited { get; set; } = true; // giới hạn số lượng mua trong 1 khonảg thời gian của toàn bộ người dùng
         public bool IsBuyLimited { get; set; } = false; // giới hạn số lượng mua của mỗi cá nhân
@@ -39,7 +38,6 @@ namespace VCareer.Dto.Subcriptions
         public string Title { get; set; }
         public string Description { get; set; }
         public SubcriptorTarget Target { get; set; }
-        public SubcriptionStatus Status { get; set; }
         public decimal OriginalPrice { get; set; }
         public bool IsLimited { get; set; } = true; // giới hạn số lượng mua trong 1 khonảg thời gian của toàn bộ người dùng
         public bool IsBuyLimited { get; set; } = false; // giới hạn số lượng mua của mỗi cá nhân

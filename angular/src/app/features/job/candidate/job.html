@@ -110,6 +110,7 @@
         (closeDetail)="onCloseDetail()"
         (viewDetail)="onViewDetail($event)"
         (applyJob)="onApply($event)"
+        (saveStatusChange)="onSaveStatusChange($event)"
       ></app-job-list-detail>
     </div>
   </div>
@@ -122,4 +123,11 @@
     (close)="onCloseApplyModal()"
     (submit)="onSubmitApply($event)"
   ></app-apply-job-modal>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

@@ -23,10 +23,12 @@ namespace VCareer.Dto.Subcriptions
 
     public class User_SubcirptionViewDto
     {
+        public Guid Id { get; set; }
         public Guid UserId { get; set; }
         public Guid SubcriptionServiceId { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public SubcriptionStatus status { get; set; }
+        public bool IsShared { get; set; } = false; //cho phep share các service loại cần kích hoạt
     }
 }

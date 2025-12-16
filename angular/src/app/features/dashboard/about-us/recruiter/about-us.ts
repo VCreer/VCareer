@@ -60,10 +60,8 @@ export class AboutUs implements OnInit, AfterViewInit, OnDestroy {
     if (!this.navigationService.isLoggedIn()) {
       this.router.navigate(['/recruiter/login']);
     } else {
-      const isVerified = this.navigationService.isVerified();
-      if (!isVerified) {
-        this.router.navigate(['/recruiter/recruiter-verify']);
-      }
+      // Navigate to recruitment-report page
+      this.router.navigate(['/recruiter/recruitment-report']);
     }
   }
 

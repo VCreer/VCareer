@@ -10,11 +10,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
-import { JobApiService } from '../../../apiTest/api/job.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { Router } from '@angular/router';
 import { GeoService } from '../../../core/services/Geo.service';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
+import { JobSearchService } from '../../../proxy/services/job/job-search.service';
 // Import trực tiếp để tránh circular dependency
 //import { LoginModalComponent } from '../../services/login-modal/login-modal';
 
@@ -57,10 +57,10 @@ export class JobListComponent implements OnInit, OnChanges {
 
   constructor(
     private translationService: TranslationService,
-    private jobApi: JobApiService,
     private navigationService: NavigationService,
     private router: Router,
-    private geoService: GeoService
+    private geoService: GeoService,
+    private jobSearchService: JobSearchService
   ) {}
 
   ngOnInit() {
@@ -94,6 +94,10 @@ export class JobListComponent implements OnInit, OnChanges {
   private updateFilteredJobs() {
     // Map JobViewDto từ API sang format mà template expect
     this.filteredJobs = this.jobs.map(job => this.mapJobToTemplateFormat(job));
+
+    // Đồng bộ trạng thái đã lưu từ backend
+    this.syncSavedStatus();
+
     this.calculateTotalPages();
 
     console.log('✅ JobListComponent: filteredJobs updated');
@@ -118,6 +122,30 @@ export class JobListComponent implements OnInit, OnChanges {
       // Map experience
       experienceText: this.formatExperience(job.experience) || 'N/A',
     };
+  }
+
+  /**
+   * Lấy danh sách job đã lưu và set cờ isSaved cho filteredJobs
+   */
+  private syncSavedStatus() {
+    if (!this.isAuthenticated || !this.filteredJobs.length) {
+      this.filteredJobs = this.filteredJobs.map(j => ({ ...j, isSaved: false }));
+      return;
+    }
+
+    this.jobSearchService.getSavedJobs(0, 200, { skipHandleError: true }).subscribe({
+      next: res => {
+        const items = res.items || [];
+        const savedIds = new Set(items.map(x => x.jobId));
+        this.filteredJobs = this.filteredJobs.map(j => ({
+          ...j,
+          isSaved: savedIds.has(j.id)
+        }));
+      },
+      error: err => {
+        console.error('Error syncing saved status in JobList:', err);
+      }
+    });
   }
 
   /**
@@ -370,7 +398,7 @@ export class JobListComponent implements OnInit, OnChanges {
     if (!job || !job.id) return;
 
     if (job.isSaved) {
-      this.jobApi.unsaveJob(job.id).subscribe({
+      this.jobSearchService.unsaveJob(job.id, { skipHandleError: true }).subscribe({
         next: () => {
           job.isSaved = false;
           this.showSuccessToast('Đã bỏ lưu công việc khỏi danh sách yêu thích');
@@ -380,7 +408,7 @@ export class JobListComponent implements OnInit, OnChanges {
         },
       });
     } else {
-      this.jobApi.saveJob(job.id).subscribe({
+      this.jobSearchService.saveJob(job.id, { skipHandleError: true }).subscribe({
         next: () => {
           job.isSaved = true;
           this.showSuccessToast('Đã lưu công việc vào danh sách yêu thích');

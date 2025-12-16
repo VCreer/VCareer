@@ -47,6 +47,7 @@ export class RecruiterLoginComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'error';
+  private rememberCookieKey = 'recruiter_remember';
 
   constructor(
     private fb: FormBuilder,
@@ -125,7 +126,7 @@ export class RecruiterLoginComponent implements OnInit {
 
     this.isLoading = true;
 
-    const { email, password } = this.loginForm.value;
+    const { email, password, rememberMe } = this.loginForm.value;
 
     this.authFacade
       .loginRecruiter({ email, password })
@@ -150,6 +151,8 @@ export class RecruiterLoginComponent implements OnInit {
               // }
 
               this.showToastMessage('Đăng nhập thành công!', 'success');
+              // Handle remember me via cookie - lưu cả email và password
+              this.setRememberCookie(rememberMe, email, password);
 
               // Kiểm tra xem user có phải là Leader không để redirect đúng trang
               this.teamManagementService.getCurrentUserInfo().subscribe({
@@ -197,6 +200,10 @@ export class RecruiterLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.googleAuthService.initialize();
+    // Đợi form được khởi tạo xong rồi mới prefill
+    setTimeout(() => {
+      this.prefillRememberedUser();
+    }, 0);
   }
 
   async signInWithGoogle() {
@@ -343,5 +350,52 @@ export class RecruiterLoginComponent implements OnInit {
 
   goToSelector() {
     this.router.navigate(['/auth/selector']);
+  }
+
+  private prefillRememberedUser(): void {
+    const cookie = this.getCookie(this.rememberCookieKey);
+    if (!cookie) return;
+
+    try {
+      const parsed = JSON.parse(cookie) as { remember: boolean; email: string; password?: string };
+      if (parsed.remember && parsed.email) {
+        // Điền email và password vào form
+        // Sử dụng setValue thay vì patchValue để đảm bảo tất cả giá trị được set
+        this.loginForm.setValue({
+          email: parsed.email,
+          password: parsed.password || '', // Điền password nếu có
+          rememberMe: true,
+        }, { emitEvent: false }); // Không emit event để tránh trigger validation
+      }
+    } catch (error) {
+      // If cookie is malformed, clear it
+      console.error('Error parsing remember cookie:', error);
+      this.clearRememberCookie();
+    }
+  }
+
+  private setRememberCookie(remember: boolean, email: string, password?: string): void {
+    if (remember) {
+      // Lưu cả email và password vào cookie
+      const payload = JSON.stringify({ remember: true, email, password: password || '' });
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 30);
+      document.cookie = `${this.rememberCookieKey}=${encodeURIComponent(payload)};expires=${expires.toUTCString()};path=/`;
+    } else {
+      this.clearRememberCookie();
+    }
+  }
+
+  private clearRememberCookie(): void {
+    document.cookie = `${this.rememberCookieKey}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  }
+
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return decodeURIComponent(parts.pop()!.split(';').shift() || '');
+    }
+    return null;
   }
 }

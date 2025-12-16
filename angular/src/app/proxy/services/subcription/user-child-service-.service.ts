@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { User_ChildServiceUpdateDto, User_ChildServiceViewDto } from '../../dto/subcriptions/models';
+import type { User_ChildServiceActiveDto, User_ChildServiceUpdateDto, User_ChildServiceViewDto } from '../../dto/subcriptions/models';
 
 @Injectable({
   providedIn: 'root',
@@ -9,11 +9,11 @@ export class User_ChildService_Service {
   apiName = 'Default';
   
 
-  activeService = (childServiceIds: string[], jobId: string, config?: Partial<Rest.Config>) =>
+  activeService = (childServiceIdWithSubcriptionsIds: User_ChildServiceActiveDto[], jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/user_Child-service_/active-service/${jobId}`,
-      body: childServiceIds,
+      body: childServiceIdWithSubcriptionsIds,
     },
     { apiName: this.apiName,...config });
   

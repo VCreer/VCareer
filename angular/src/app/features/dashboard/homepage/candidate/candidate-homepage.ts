@@ -21,6 +21,7 @@ import { GeoService } from 'src/app/core/services/Geo.service';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 import { CategoryTreeDto } from 'src/app/proxy/dto/category';
 import { JobCategoryService } from 'src/app/proxy/services/job';
+import { NavigationService } from '../../../../core/services/navigation.service';
 
 // Interface cho category với image để hiển thị
 interface CategoryWithImage {
@@ -147,11 +148,84 @@ export class CandidateHomepageComponent implements OnInit {
     private router: Router,
     private categoryService: JobCategoryService,
     private geoService: GeoService,
-    private jobSearchService: JobSearchService
+    private jobSearchService: JobSearchService,
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit() {
+    // Kiểm tra trạng thái đăng nhập hiện tại
+    const isCurrentlyLoggedIn = this.navigationService.isLoggedIn();
+    
+    // Luôn load từ cache trước (nếu chưa đăng nhập)
+    if (!isCurrentlyLoggedIn) {
+      this.loadStatsFromCache();
+    }
+    
+    // Sau đó load từ API (logic trong loadInitialData sẽ xử lý cache)
     this.loadInitialData();
+    
+    // Subscribe vào authentication state để reload stats khi thay đổi
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        // Khi đăng nhập, reload stats từ API
+        this.loadInitialData();
+      } else {
+        // Khi đăng xuất, load stats từ cache nếu có
+        this.loadStatsFromCache();
+      }
+    });
+  }
+
+  /**
+   * Load stats và categories từ cache (localStorage) nếu có
+   */
+  loadStatsFromCache() {
+    try {
+      const cachedStats = localStorage.getItem('homepage_stats');
+      if (cachedStats) {
+        const stats = JSON.parse(cachedStats);
+        // Kiểm tra xem cache có còn hợp lệ không (24 giờ)
+        const cacheTime = stats.timestamp || 0;
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+        
+        if (now - cacheTime < oneDay) {
+          this.totalJobCount = stats.totalJobCount || 0;
+          this.totalCategoryCount = stats.totalCategoryCount || 0;
+          this.totalProvinceCount = stats.totalProvinceCount || 0;
+          
+          // Load categories từ cache nếu có
+          if (stats.categories && Array.isArray(stats.categories) && stats.categories.length > 0) {
+            this.categories = stats.categories;
+            // Map categories với images để hiển thị
+            this.mapCategoriesToDisplayFormat();
+          }
+        } else {
+          // Cache hết hạn, xóa cache
+          localStorage.removeItem('homepage_stats');
+        }
+      }
+    } catch (error) {
+      // Ignore cache errors
+    }
+  }
+
+  /**
+   * Lưu stats và categories vào cache (localStorage)
+   */
+  saveStatsToCache() {
+    try {
+      const stats = {
+        totalJobCount: this.totalJobCount,
+        totalCategoryCount: this.totalCategoryCount,
+        totalProvinceCount: this.totalProvinceCount,
+        categories: this.categories, // Lưu categories để hiển thị khi chưa đăng nhập
+        timestamp: Date.now()
+      };
+      localStorage.setItem('homepage_stats', JSON.stringify(stats));
+    } catch (error) {
+      // Ignore cache errors
+    }
   }
 
   /**
@@ -160,56 +234,168 @@ export class CandidateHomepageComponent implements OnInit {
   loadInitialData() {
     this.isLoadingData = true;
 
+    // Gọi API searchJobs để lấy jobs (có thể không yêu cầu auth)
+    // Dùng để tính tổng số jobs nếu categories không có dữ liệu
+    const searchJobsForCount$ = this.jobSearchService.searchJobs({
+      categoryIds: [],
+      provinceCodes: [],
+      wardCodes: [],
+      skipCount: 0,
+      maxResultCount: 10000, // Lấy nhiều để đếm tổng số
+    }).pipe(
+      catchError(error => {
+        // Nếu lỗi, trả về mảng rỗng
+        return of([] as JobViewDto[]);
+      })
+    );
+
     forkJoin({
       categories: this.categoryService.getCategoryTree().pipe(
         catchError(error => {
-          console.error('❌ Error loading categories:', error);
+          // Nếu lỗi 401, trả về mảng rỗng
           return of([] as CategoryTreeDto[]);
         })
       ),
       provinces: this.geoService.getProvinces().pipe(
         catchError(error => {
-          console.error('❌ Error loading provinces:', error);
           return of([] as ProvinceDto[]);
         })
       ),
+      jobs: searchJobsForCount$,
     }).subscribe({
       next: data => {
-        this.categories = data.categories || [];
-        this.provinces = data.provinces || [];
+        const isLoggedIn = this.navigationService.isLoggedIn();
+        
+        // Lưu categories từ cache trước khi cập nhật (nếu chưa đăng nhập)
+        const cachedCategories = !isLoggedIn && this.categories.length > 0 ? [...this.categories] : [];
+        
+        // Cập nhật categories và provinces từ API
+        if (data.categories && data.categories.length > 0) {
+          // Có categories từ API, cập nhật
+          this.categories = data.categories;
+        } else if (!isLoggedIn && cachedCategories.length > 0) {
+          // Chưa đăng nhập và không có categories từ API, giữ nguyên từ cache
+          // Không ghi đè categories từ cache
+        } else {
+          // Không có categories từ API và không có cache, set rỗng
+          this.categories = [];
+        }
+        
+        // Cập nhật provinces
+        if (data.provinces && data.provinces.length > 0) {
+          this.provinces = data.provinces;
+        }
+        
         this.isLoadingData = false;
-        // Calculate statistics nếu cần
-        this.calculateStatistics();
+        
+        // Tính statistics
+        // Ưu tiên dùng jobs từ searchJobs để tính totalJobCount (chính xác hơn)
+        if (data.jobs && Array.isArray(data.jobs) && data.jobs.length > 0) {
+          // Dùng số lượng jobs từ searchJobs làm totalJobCount
+          this.totalJobCount = data.jobs.length;
+          // Nếu lấy được 10000 jobs, có thể còn nhiều hơn
+          if (data.jobs.length >= 10000) {
+            this.totalJobCount = 10000;
+          }
+        } else if (this.categories.length > 0) {
+          // Nếu không có jobs từ searchJobs, tính từ categories
+          this.calculateStatistics();
+        } else {
+          // Không có cả jobs và categories, set về 0
+          this.totalJobCount = 0;
+        }
+        
+        // Tính totalCategoryCount và totalProvinceCount
+        if (this.categories.length > 0) {
+          // Đếm tổng số parent categories (root level) chỉ
+          const rootCategories = this.categories.filter(cat => {
+            return !cat.fullPath || !cat.fullPath.includes('/');
+          });
+          this.totalCategoryCount = rootCategories.length;
+        } else {
+          this.totalCategoryCount = 0;
+        }
+        
+        if (this.provinces.length > 0) {
+          this.totalProvinceCount = this.provinces.length;
+        } else {
+          this.totalProvinceCount = 0;
+        }
+        
+        // Lưu stats vào cache CHỈ KHI đã đăng nhập và có dữ liệu hợp lệ
+        if (isLoggedIn && (this.totalJobCount > 0 || this.totalCategoryCount > 0 || this.totalProvinceCount > 0)) {
+          this.saveStatsToCache();
+        }
 
-        // Map categories với images
-        this.mapCategoriesToDisplayFormat();
+        // Map categories với images (chỉ nếu có categories)
+        if (this.categories.length > 0) {
+          this.mapCategoriesToDisplayFormat();
+        }
 
         // Load jobs sau khi có categories và provinces
         this.loadJobs();
       },
       error: error => {
-        console.error('❌ Critical error loading initial data:', error);
         this.isLoadingData = false;
-        
-        // Vẫn load jobs dù có lỗi
+        // Nếu lỗi 401 (Unauthorized), vẫn dùng stats từ cache nếu có
+        if (error?.status === 401) {
+          // Stats đã được load từ cache trong ngOnInit
+        }
+        // Vẫn tính stats và load jobs dù có lỗi
+        this.calculateStatistics();
         this.loadJobs();
       },
     });
   }
 
   /**
-   * ✅ Calculate statistics từ API data (optional)
+   * ✅ Calculate statistics từ API data
+   * Luôn được gọi để đảm bảo stats được cập nhật
+   * Logic nhất quán cho cả đăng nhập và chưa đăng nhập
    */
   calculateStatistics() {
+    // Tính totalJobCount từ TẤT CẢ categories (parent + children)
+    // Vì jobCount có thể nằm ở children thay vì parent
     if (this.categories && this.categories.length > 0) {
-      this.totalJobCount = this.categories.reduce((sum, cat) => sum + (cat.jobCount || 0), 0);
-      this.totalCategoryCount = this.categories.length;
+      const calculateJobCount = (cats: CategoryTreeDto[]): number => {
+        let total = 0;
+        cats.forEach(cat => {
+          // Cộng jobCount của category hiện tại
+          total += cat.jobCount || 0;
+          // Nếu có children, tính đệ quy
+          if (cat.children && cat.children.length > 0) {
+            total += calculateJobCount(cat.children);
+          }
+        });
+        return total;
+      };
+      
+      this.totalJobCount = calculateJobCount(this.categories);
+    } else {
+      // Nếu không có categories, set về 0
+      // (sẽ được cập nhật từ searchJobs nếu có trong loadInitialData)
+      this.totalJobCount = 0;
     }
     
+    // Đếm tổng số parent categories (root level) chỉ, không đếm children
+    if (this.categories && this.categories.length > 0) {
+      // Chỉ đếm parent categories (root level)
+      const rootCategories = this.categories.filter(cat => {
+        // Nếu không có fullPath hoặc fullPath không chứa '/', đó là root category
+        return !cat.fullPath || !cat.fullPath.includes('/');
+      });
+      
+      this.totalCategoryCount = rootCategories.length;
+    } else {
+      this.totalCategoryCount = 0;
+    }
+    
+    // Tính totalProvinceCount
     if (this.provinces && this.provinces.length > 0) {
       this.totalProvinceCount = this.provinces.length;
+    } else {
+      this.totalProvinceCount = 0;
     }
-
   }
 
   /**
@@ -288,7 +474,6 @@ export class CandidateHomepageComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('❌ Critical error loading jobs:', error);
         this.isLoadingJobs = false;
         this.jobListings = [];
         this.totalPages = 1;

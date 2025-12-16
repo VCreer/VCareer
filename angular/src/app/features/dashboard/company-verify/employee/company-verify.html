@@ -14,35 +14,32 @@
   </div>
 
   <div class="company-verify-content" [style.max-width]="getContentMaxWidth()">
-    <!-- Tab Selector -->
-    <div class="tab-selector">
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'pending'"
-        (click)="onTabChange('pending')"
-      >
-        <i class="fa fa-clock"></i>
-        <span>Chờ xác thực</span>
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'verified'"
-        (click)="onTabChange('verified')"
-      >
-        <i class="fa fa-check-circle"></i>
-        <span>Đã xác minh</span>
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'rejected'"
-        (click)="onTabChange('rejected')"
-      >
-        <i class="fa fa-times-circle"></i>
-        <span>Đã từ chối</span>
-      </button>
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card-wrapper" [class.active]="activeTab === 'pending'" (click)="onStatCardClick('pending')">
+        <app-stat-card
+          [label]="'Chờ xác thực'"
+          [value]="pendingCount | number:'1.0-0'"
+          [icon]="'fa fa-clock'"
+          [color]="'#f59e0b'">
+        </app-stat-card>
+      </div>
+      <div class="stat-card-wrapper" [class.active]="activeTab === 'verified'" (click)="onStatCardClick('verified')">
+        <app-stat-card
+          [label]="'Đã xác minh'"
+          [value]="verifiedCount | number:'1.0-0'"
+          [icon]="'fa fa-check-circle'"
+          [color]="'#10b981'">
+        </app-stat-card>
+      </div>
+      <div class="stat-card-wrapper" [class.active]="activeTab === 'rejected'" (click)="onStatCardClick('rejected')">
+        <app-stat-card
+          [label]="'Đã từ chối'"
+          [value]="rejectedCount | number:'1.0-0'"
+          [icon]="'fa fa-times-circle'"
+          [color]="'#ef4444'">
+        </app-stat-card>
+      </div>
     </div>
 
     <!-- Search Bar -->
@@ -59,17 +56,6 @@
         <button type="button" class="search-btn" (click)="onSearch()">
           Tìm kiếm
         </button>
-      </div>
-    </div>
-
-    <div class="verified-summary-card" *ngIf="activeTab === 'verified'">
-      <div class="verified-summary-icon">
-        <i class="fa fa-check-circle"></i>
-      </div>
-      <div class="verified-summary-content">
-        <div class="label">Tổng số công ty đã xác minh</div>
-        <div class="value">{{ totalItems | number }}</div>
-        <div class="hint" *ngIf="totalItems === 0">Chưa có công ty nào được xác minh.</div>
       </div>
     </div>
 
@@ -412,21 +398,33 @@
 
             <!-- Action Buttons -->
             <div class="detail-actions" *ngIf="activeTab === 'pending'">
-              <button type="button" class="action-btn approve-btn" (click)="onApprove()" [disabled]="isLoading">
+              <button 
+                type="button" 
+                class="action-btn approve-btn"
+                [disabled]="isLoading"
+                (click)="onApprove()">
                 <i class="fa fa-check"></i>
-                Duyệt
+                <span>Duyệt</span>
               </button>
-              <button type="button" class="action-btn reject-btn" (click)="onReject()" [disabled]="isLoading">
+              <button 
+                type="button" 
+                class="action-btn reject-btn"
+                [disabled]="isLoading"
+                (click)="onReject()">
                 <i class="fa fa-times"></i>
-                Từ chối
+                <span>Từ chối</span>
               </button>
             </div>
 
             <!-- Approve Button for Rejected Companies -->
             <div class="detail-actions" *ngIf="activeTab === 'rejected'">
-              <button type="button" class="action-btn approve-btn" (click)="onApprove()" [disabled]="isLoading">
+              <button 
+                type="button" 
+                class="action-btn approve-btn"
+                [disabled]="isLoading"
+                (click)="onApprove()">
                 <i class="fa fa-check"></i>
-                Duyệt lại
+                <span>Duyệt lại</span>
               </button>
             </div>
           </div>

@@ -1306,6 +1306,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -1394,6 +1406,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -1720,6 +1744,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -1808,6 +1844,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -1889,6 +1937,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -1977,6 +2037,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -2078,6 +2150,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -2166,6 +2250,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -2575,6 +2671,356 @@
             }
           }
         },
+        "VCareer.Controllers.NotificationController": {
+          "controllerName": "Notification",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Controllers.NotificationController",
+          "interfaces": [],
+          "actions": {
+            "CreateNotificationAsyncByInput": {
+              "uniqueName": "CreateNotificationAsyncByInput",
+              "name": "CreateNotificationAsync",
+              "httpMethod": "POST",
+              "url": "api/notifications",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Notification.NotificationCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "typeSimple": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "typeSimple": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Notification.NotificationDto>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Notification.NotificationDto>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "GetNotificationsAsyncByUserRoleAndPageIndexAndPageSizeAndNotificationTypeAndIsRead": {
+              "uniqueName": "GetNotificationsAsyncByUserRoleAndPageIndexAndPageSizeAndNotificationTypeAndIsRead",
+              "name": "GetNotificationsAsync",
+              "httpMethod": "GET",
+              "url": "api/notifications",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pageIndex",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": true,
+                  "defaultValue": 0
+                },
+                {
+                  "name": "pageSize",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": true,
+                  "defaultValue": 10
+                },
+                {
+                  "name": "notificationType",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isRead",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pageIndex",
+                  "name": "pageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pageSize",
+                  "name": "pageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "notificationType",
+                  "name": "notificationType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isRead",
+                  "name": "isRead",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Notification.NotificationListDto>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<VCareer.Dto.Notification.NotificationListDto>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "GetUnreadCountAsyncByUserRole": {
+              "uniqueName": "GetUnreadCountAsyncByUserRole",
+              "name": "GetUnreadCountAsync",
+              "httpMethod": "GET",
+              "url": "api/notifications/unread-count",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.ActionResult<System.Int32>",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.ActionResult<number>"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "MarkAsReadAsyncById": {
+              "uniqueName": "MarkAsReadAsyncById",
+              "name": "MarkAsReadAsync",
+              "httpMethod": "PUT",
+              "url": "api/notifications/{id}/read",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "MarkAllAsReadAsyncByUserRole": {
+              "uniqueName": "MarkAllAsReadAsyncByUserRole",
+              "name": "MarkAllAsReadAsync",
+              "httpMethod": "PUT",
+              "url": "api/notifications/mark-all-read",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "DeleteNotificationAsyncById": {
+              "uniqueName": "DeleteNotificationAsyncById",
+              "name": "DeleteNotificationAsync",
+              "httpMethod": "DELETE",
+              "url": "api/notifications/{id}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            },
+            "DeleteAllNotificationsAsyncByUserRole": {
+              "uniqueName": "DeleteAllNotificationsAsyncByUserRole",
+              "name": "DeleteAllNotificationsAsync",
+              "httpMethod": "DELETE",
+              "url": "api/notifications/all",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Controllers.NotificationController"
+            }
+          }
+        },
         "VCareer.Controllers.OrderController": {
           "controllerName": "Order",
           "controllerGroupName": null,
@@ -2727,6 +3173,54 @@
             }
           }
         },
+        "VCareer.Controllers.TaxCodeValidationController": {
+          "controllerName": "TaxCodeValidation",
+          "controllerGroupName": null,
+          "isRemoteService": false,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Controllers.TaxCodeValidationController",
+          "interfaces": [],
+          "actions": {
+            "ValidateTaxCodeByTaxCode": {
+              "uniqueName": "ValidateTaxCodeByTaxCode",
+              "name": "ValidateTaxCode",
+              "httpMethod": "GET",
+              "url": "api/app/tax-code/validate/{taxCode}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "taxCode",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "taxCode",
+                  "name": "taxCode",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": true,
+              "implementFrom": "VCareer.Controllers.TaxCodeValidationController"
+            }
+          }
+        },
         "VCareer.HttpApi.Controllers.ApplicationController": {
           "controllerName": "Application",
           "controllerGroupName": null,
@@ -2841,6 +3335,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -2929,6 +3435,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -3255,6 +3773,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -3343,6 +3873,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -3424,6 +3966,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -3512,6 +4066,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -3613,6 +4179,18 @@
                 },
                 {
                   "nameOnMethod": "input",
+                  "name": "RecruitmentCampaignId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
                   "name": "CandidateId",
                   "jsonName": null,
                   "type": "System.Guid?",
@@ -3701,6 +4279,18 @@
                   "jsonName": null,
                   "type": "System.Boolean?",
                   "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": "input"
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "Keyword",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -5314,8 +5904,8 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CandidateSearchController"
             },
-            "GetCandidateDetailAsyncById": {
-              "uniqueName": "GetCandidateDetailAsyncById",
+            "GetCandidateDetailAsyncByIdAndJobId": {
+              "uniqueName": "GetCandidateDetailAsyncByIdAndJobId",
               "name": "GetCandidateDetailAsync",
               "httpMethod": "GET",
               "url": "api/candidate-search/{id}",
@@ -5327,6 +5917,14 @@
                   "type": "System.Guid",
                   "typeSimple": "string",
                   "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "jobId",
+                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": true,
                   "defaultValue": null
                 }
               ],
@@ -5341,6 +5939,18 @@
                   "defaultValue": null,
                   "constraintTypes": [],
                   "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
                   "descriptorName": ""
                 }
               ],
@@ -6987,6 +7597,74 @@
                   }
                 },
                 {
+                  "name": "CandidateForgotPasswordAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.AuthDto.ForgotPasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "CandidateResetPasswordAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.AuthDto.ResetPasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RecruiterForgotPasswordAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.AuthDto.ForgotPasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "RecruiterResetPasswordAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.AuthDto.ResetPasswordDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                      "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
                   "name": "LogOutAsync",
                   "parametersOnMethod": [],
                   "returnValue": {
@@ -7061,6 +7739,43 @@
               "name": "ForgotPasswordAsync",
               "httpMethod": "POST",
               "url": "api/app/auth/forgot-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.AuthDto.ForgotPasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "CandidateForgotPasswordAsyncByInput": {
+              "uniqueName": "CandidateForgotPasswordAsyncByInput",
+              "name": "CandidateForgotPasswordAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/candidate-forgot-password",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -7313,6 +8028,117 @@
               "name": "ResetPasswordAsync",
               "httpMethod": "POST",
               "url": "api/app/auth/reset-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.AuthDto.ResetPasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "CandidateResetPasswordAsyncByInput": {
+              "uniqueName": "CandidateResetPasswordAsyncByInput",
+              "name": "CandidateResetPasswordAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/candidate-reset-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.AuthDto.ResetPasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ResetPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "RecruiterForgotPasswordAsyncByInput": {
+              "uniqueName": "RecruiterForgotPasswordAsyncByInput",
+              "name": "RecruiterForgotPasswordAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/recruiter-forgot-password",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.AuthDto.ForgotPasswordDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "typeSimple": "VCareer.Dto.AuthDto.ForgotPasswordDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IAuth.IAuthAppService"
+            },
+            "RecruiterResetPasswordAsyncByInput": {
+              "uniqueName": "RecruiterResetPasswordAsyncByInput",
+              "name": "RecruiterResetPasswordAsync",
+              "httpMethod": "POST",
+              "url": "api/app/auth/recruiter-reset-password",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -13469,6 +14295,610 @@
             }
           }
         },
+        "VCareer.Services.Notification.NotificationAppService": {
+          "controllerName": "Notification",
+          "controllerGroupName": "Notification",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Notification.NotificationAppService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.Notification.INotificationAppService",
+              "name": "INotificationAppService",
+              "methods": [
+                {
+                  "name": "CreateNotificationAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "VCareer.Dto.Notification.NotificationCreateDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Notification.NotificationCreateDto",
+                      "typeSimple": "VCareer.Dto.Notification.NotificationCreateDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Notification.NotificationDto",
+                    "typeSimple": "VCareer.Dto.Notification.NotificationDto"
+                  }
+                },
+                {
+                  "name": "GetNotificationsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "userRole",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "pagingDto",
+                      "typeAsString": "VCareer.Dto.Notification.PagingDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.Notification.PagingDto",
+                      "typeSimple": "VCareer.Dto.Notification.PagingDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "notificationType",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": true,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "isRead",
+                      "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Boolean?",
+                      "typeSimple": "boolean?",
+                      "isOptional": true,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Notification.NotificationListDto",
+                    "typeSimple": "VCareer.Dto.Notification.NotificationListDto"
+                  }
+                },
+                {
+                  "name": "GetUnreadCountAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "userRole",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Int32",
+                    "typeSimple": "number"
+                  }
+                },
+                {
+                  "name": "MarkAsReadAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "notificationId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "MarkAllAsReadAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "userRole",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteNotificationAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "notificationId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                },
+                {
+                  "name": "DeleteAllNotificationsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "userRole",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "CreateNotificationAsyncByInput": {
+              "uniqueName": "CreateNotificationAsyncByInput",
+              "name": "CreateNotificationAsync",
+              "httpMethod": "POST",
+              "url": "api/app/notification/notification",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Notification.NotificationCreateDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "typeSimple": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "typeSimple": "VCareer.Dto.Notification.NotificationCreateDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Notification.NotificationDto",
+                "typeSimple": "VCareer.Dto.Notification.NotificationDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "GetNotificationsAsyncByUserIdAndUserRoleAndPagingDtoAndNotificationTypeAndIsRead": {
+              "uniqueName": "GetNotificationsAsyncByUserIdAndUserRoleAndPagingDtoAndNotificationTypeAndIsRead",
+              "name": "GetNotificationsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/notification/notifications/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.Dto.Notification.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Notification.PagingDto",
+                  "typeSimple": "VCareer.Dto.Notification.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "notificationType",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": true,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isRead",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": true,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "notificationType",
+                  "name": "notificationType",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isRead",
+                  "name": "isRead",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Notification.NotificationListDto",
+                "typeSimple": "VCareer.Dto.Notification.NotificationListDto"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "GetUnreadCountAsyncByUserIdAndUserRole": {
+              "uniqueName": "GetUnreadCountAsyncByUserIdAndUserRole",
+              "name": "GetUnreadCountAsync",
+              "httpMethod": "GET",
+              "url": "api/app/notification/unread-count/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Int32",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "MarkAsReadAsyncByNotificationId": {
+              "uniqueName": "MarkAsReadAsyncByNotificationId",
+              "name": "MarkAsReadAsync",
+              "httpMethod": "POST",
+              "url": "api/app/notification/mark-as-read/{notificationId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "notificationId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "notificationId",
+                  "name": "notificationId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "MarkAllAsReadAsyncByUserIdAndUserRole": {
+              "uniqueName": "MarkAllAsReadAsyncByUserIdAndUserRole",
+              "name": "MarkAllAsReadAsync",
+              "httpMethod": "POST",
+              "url": "api/app/notification/mark-all-as-read/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "DeleteNotificationAsyncByNotificationId": {
+              "uniqueName": "DeleteNotificationAsyncByNotificationId",
+              "name": "DeleteNotificationAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/notification/notification/{notificationId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "notificationId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "notificationId",
+                  "name": "notificationId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            },
+            "DeleteAllNotificationsAsyncByUserIdAndUserRole": {
+              "uniqueName": "DeleteAllNotificationsAsyncByUserIdAndUserRole",
+              "name": "DeleteAllNotificationsAsync",
+              "httpMethod": "DELETE",
+              "url": "api/app/notification/all-notifications/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "userRole",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "userRole",
+                  "name": "userRole",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.Notification.INotificationAppService"
+            }
+          }
+        },
         "VCareer.Services.Order.OrderAppService": {
           "controllerName": "Order",
           "controllerGroupName": "Order",
@@ -16528,6 +17958,31 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "AddJobBoostLogic",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobid",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "jobEffectingIdS",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -16560,6 +18015,63 @@
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "AddJobBoostLogicByJobIdAndEffectingJobId": {
+              "uniqueName": "AddJobBoostLogicByJobIdAndEffectingJobId",
+              "name": "AddJobBoostLogic",
+              "httpMethod": "POST",
+              "url": "api/app/job-affecting/job-boost-logic",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "effectingJobId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobId",
+                  "name": "jobId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "effectingJobId",
+                  "name": "effectingJobId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -18030,6 +19542,63 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.Subcriptions.ISubcriptionService"
+            },
+            "GetSubscriptionServicesAsyncByTargetAndIsActive": {
+              "uniqueName": "GetSubscriptionServicesAsyncByTargetAndIsActive",
+              "name": "GetSubscriptionServicesAsync",
+              "httpMethod": "GET",
+              "url": "api/app/subcription-service_/subscription-services",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "target",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isActive",
+                  "typeAsString": "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "target",
+                  "name": "target",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isActive",
+                  "name": "isActive",
+                  "jsonName": null,
+                  "type": "System.Boolean?",
+                  "typeSimple": "boolean?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.Subcription.SubcriptionService_Service"
             }
           }
         },
@@ -18049,10 +19618,10 @@
                   "name": "ActiveServiceAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "childServiceIds",
-                      "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                      "type": "System.Collections.Generic.List<System.Guid>",
-                      "typeSimple": "[string]",
+                      "name": "childServiceIdWithSubcriptionsIds",
+                      "typeAsString": "System.Collections.Generic.List`1[[VCareer.Dto.Subcriptions.User_ChildServiceActiveDto, VCareer.Application.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceActiveDto>",
+                      "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceActiveDto]",
                       "isOptional": false,
                       "defaultValue": null
                     },
@@ -18108,18 +19677,18 @@
             }
           ],
           "actions": {
-            "ActiveServiceAsyncByChildServiceIdsAndJobId": {
-              "uniqueName": "ActiveServiceAsyncByChildServiceIdsAndJobId",
+            "ActiveServiceAsyncByChildServiceIdWithSubcriptionsIdsAndJobId": {
+              "uniqueName": "ActiveServiceAsyncByChildServiceIdWithSubcriptionsIdsAndJobId",
               "name": "ActiveServiceAsync",
               "httpMethod": "POST",
               "url": "api/app/user_Child-service_/active-service/{jobId}",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "childServiceIds",
-                  "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                  "type": "System.Collections.Generic.List<System.Guid>",
-                  "typeSimple": "[string]",
+                  "name": "childServiceIdWithSubcriptionsIds",
+                  "typeAsString": "System.Collections.Generic.List`1[[VCareer.Dto.Subcriptions.User_ChildServiceActiveDto, VCareer.Application.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceActiveDto>",
+                  "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceActiveDto]",
                   "isOptional": false,
                   "defaultValue": null
                 },
@@ -18134,11 +19703,11 @@
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "childServiceIds",
-                  "name": "childServiceIds",
+                  "nameOnMethod": "childServiceIdWithSubcriptionsIds",
+                  "name": "childServiceIdWithSubcriptionsIds",
                   "jsonName": null,
-                  "type": "System.Collections.Generic.List<System.Guid>",
-                  "typeSimple": "[string]",
+                  "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceActiveDto>",
+                  "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceActiveDto]",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -18339,6 +19908,48 @@
                   }
                 },
                 {
+                  "name": "SubcriptionBoughtedAndActive",
+                  "parametersOnMethod": [
+                    {
+                      "name": "UserId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "SubcriptionServiceId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<System.Guid>",
+                    "typeSimple": "[string]"
+                  }
+                },
+                {
+                  "name": "GetJobChildServiceAllowForUserAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "serviceAction",
+                      "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Int32?",
+                      "typeSimple": "number?",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.OptionsChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.OptionsChildServiceViewDto]"
+                  }
+                },
+                {
                   "name": "GetAllSubcriptionsByUser",
                   "parametersOnMethod": [
                     {
@@ -18364,18 +19975,26 @@
                       "typeSimple": "VCareer.IServices.Common.PagingDto",
                       "isOptional": false,
                       "defaultValue": null
+                    },
+                    {
+                      "name": "serviceAction",
+                      "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                      "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
+                      "typeSimple": "enum?",
+                      "isOptional": false,
+                      "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
-                    "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.OptionsChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.OptionsChildServiceViewDto]"
                   }
                 },
                 {
-                  "name": "SubcriptionBoughtedAndActive",
+                  "name": "SetStatusShareSuubcriptionService",
                   "parametersOnMethod": [
                     {
-                      "name": "UserId",
+                      "name": "user_subcriptionServiceId",
                       "typeAsString": "System.Guid, System.Private.CoreLib",
                       "type": "System.Guid",
                       "typeSimple": "string",
@@ -18383,17 +20002,17 @@
                       "defaultValue": null
                     },
                     {
-                      "name": "SubcriptionServiceId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
+                      "name": "isShare",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
                       "isOptional": false,
                       "defaultValue": null
                     }
                   ],
                   "returnValue": {
-                    "type": "System.Collections.Generic.List<System.Guid>",
-                    "typeSimple": "[string]"
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
                   }
                 }
               ]
@@ -18507,95 +20126,6 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
-              },
-              "allowAnonymous": null,
-              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
-            },
-            "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDto": {
-              "uniqueName": "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDto",
-              "name": "GetAllSubcriptionsByUser",
-              "httpMethod": "GET",
-              "url": "api/app/user-subcription/subcriptions-by-user/{userId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "userId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "status",
-                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "pagingDto",
-                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
-                  "type": "VCareer.IServices.Common.PagingDto",
-                  "typeSimple": "VCareer.IServices.Common.PagingDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "userId",
-                  "name": "userId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "status",
-                  "name": "status",
-                  "jsonName": null,
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageSize",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                },
-                {
-                  "nameOnMethod": "pagingDto",
-                  "name": "PageIndex",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "pagingDto"
-                }
-              ],
-              "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.SubcriptionsViewDto>",
-                "typeSimple": "[VCareer.Dto.Subcriptions.SubcriptionsViewDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
@@ -18762,11 +20292,177 @@
                 }
               ],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewDto>",
-                "typeSimple": "[VCareer.Dto.Subcriptions.ChildServiceViewDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.OptionsChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.OptionsChildServiceViewDto]"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Services.Subcription.UserSubcriptionService"
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction": {
+              "uniqueName": "GetAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction",
+              "name": "GetAllSubcriptionsByUser",
+              "httpMethod": "GET",
+              "url": "api/app/user-subcription/subcriptions-by-user/{userId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "status",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "pagingDto",
+                  "typeAsString": "VCareer.IServices.Common.PagingDto, VCareer.Application.Contracts",
+                  "type": "VCareer.IServices.Common.PagingDto",
+                  "typeSimple": "VCareer.IServices.Common.PagingDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "serviceAction",
+                  "typeAsString": "System.Nullable`1[[VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction, VCareer.Domain.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib",
+                  "type": "VCareer.Constants.JobConstant.SubcriptionContance_ServiceAction?",
+                  "typeSimple": "enum?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userId",
+                  "name": "userId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "pagingDto",
+                  "name": "PageIndex",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "pagingDto"
+                },
+                {
+                  "nameOnMethod": "serviceAction",
+                  "name": "serviceAction",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.OptionsChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.OptionsChildServiceViewDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
+            },
+            "SetStatusShareSuubcriptionServiceByUser_subcriptionServiceIdAndIsShare": {
+              "uniqueName": "SetStatusShareSuubcriptionServiceByUser_subcriptionServiceIdAndIsShare",
+              "name": "SetStatusShareSuubcriptionService",
+              "httpMethod": "POST",
+              "url": "api/app/user-subcription/set-status-share-suubcription-service/{user_subcriptionServiceId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "user_subcriptionServiceId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "isShare",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "user_subcriptionServiceId",
+                  "name": "user_subcriptionServiceId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "isShare",
+                  "name": "isShare",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUserSubcriptionService"
             }
           }
         },
@@ -23458,12 +25154,14 @@
       "enumNames": [
         "Inactive",
         "Active",
-        "Expired"
+        "Expired",
+        "UsageLimitReached"
       ],
       "enumValues": [
         0,
         1,
-        2
+        2,
+        3
       ],
       "genericArguments": null,
       "properties": null
@@ -25094,6 +26792,30 @@
           "regex": null
         },
         {
+          "name": "RecruitmentCampaignId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RecruitmentCampaignName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "JobSalaryText",
           "jsonName": null,
           "type": "System.String",
@@ -25712,6 +27434,18 @@
           "regex": null
         },
         {
+          "name": "RecruitmentCampaignId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "CandidateId",
           "jsonName": null,
           "type": "System.Guid?",
@@ -25800,6 +27534,18 @@
           "jsonName": null,
           "type": "System.Boolean?",
           "typeSimple": "boolean?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Keyword",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -30124,6 +31870,330 @@
         }
       ]
     },
+    "VCareer.Dto.Notification.NotificationCreateDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserRole",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NotificationType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 200,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": true,
+          "minLength": 0,
+          "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RelatedEntityType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": 0,
+          "maxLength": 50,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RelatedEntityId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Metadata",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatedBy",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Notification.NotificationDto": {
+      "baseType": "Volo.Abp.Application.Dtos.EntityDto<System.Guid>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserRole",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NotificationType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Message",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsRead",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ReadAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RelatedEntityType",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RelatedEntityId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Metadata",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreatedBy",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CreationTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Notification.NotificationListDto": {
+      "baseType": "Volo.Abp.Application.Dtos.PagedResultDto<VCareer.Dto.Notification.NotificationDto>",
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UnreadCount",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Notification.PagingDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PageIndex",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PageSize",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Order.CreateOrderDetailDto": {
       "baseType": null,
       "isEnum": false,
@@ -32979,7 +35049,7 @@
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
-          "isRequired": true,
+          "isRequired": false,
           "minLength": 0,
           "maxLength": 256,
           "minimum": null,
@@ -33623,7 +35693,7 @@
           "regex": null
         },
         {
-          "name": "IsLimitUsedTime",
+          "name": "IsActive",
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
@@ -33635,7 +35705,7 @@
           "regex": null
         },
         {
-          "name": "IsActive",
+          "name": "IsEnable",
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
@@ -33663,6 +35733,30 @@
           "jsonName": null,
           "type": "System.Boolean",
           "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsLimitUsedTime",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Priority",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobPriorityLevel?",
+          "typeSimple": "enum?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -33915,6 +36009,63 @@
         }
       ]
     },
+    "VCareer.Dto.Subcriptions.OptionsChildServiceViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "user_ChildServices",
+          "jsonName": null,
+          "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
+          "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "childService",
+          "jsonName": null,
+          "type": "VCareer.Dto.Subcriptions.ChildServiceViewDto",
+          "typeSimple": "VCareer.Dto.Subcriptions.ChildServiceViewDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "user_subcription",
+          "jsonName": null,
+          "type": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+          "typeSimple": "VCareer.Dto.Subcriptions.User_SubcirptionViewDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "subcriptionsViewDto",
+          "jsonName": null,
+          "type": "VCareer.Dto.Subcriptions.SubcriptionsViewDto",
+          "typeSimple": "VCareer.Dto.Subcriptions.SubcriptionsViewDto",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Subcriptions.SubcriptionPriceCreateDto": {
       "baseType": null,
       "isEnum": false,
@@ -33935,9 +36086,9 @@
           "regex": null
         },
         {
-          "name": "SalePercent",
+          "name": "NewPrice",
           "jsonName": null,
-          "type": "System.Int32",
+          "type": "System.Decimal",
           "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
@@ -34004,9 +36155,9 @@
           "regex": null
         },
         {
-          "name": "SalePercent",
+          "name": "NewPrice",
           "jsonName": null,
-          "type": "System.Int32",
+          "type": "System.Decimal",
           "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
@@ -34085,9 +36236,9 @@
           "regex": null
         },
         {
-          "name": "SalePercent",
+          "name": "NewPrice",
           "jsonName": null,
-          "type": "System.Int32",
+          "type": "System.Decimal",
           "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
@@ -34193,18 +36344,6 @@
           "name": "Target",
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptorTarget",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Status",
-          "jsonName": null,
-          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
           "typeSimple": "enum",
           "isRequired": false,
           "minLength": null,
@@ -34448,18 +36587,6 @@
           "regex": null
         },
         {
-          "name": "Status",
-          "jsonName": null,
-          "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
-          "typeSimple": "enum",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "OriginalPrice",
           "jsonName": null,
           "type": "System.Decimal",
@@ -34569,6 +36696,39 @@
         }
       ]
     },
+    "VCareer.Dto.Subcriptions.User_ChildServiceActiveDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserSubcriptionServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ChildServiceId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Subcriptions.User_ChildServiceUpdateDto": {
       "baseType": null,
       "isEnum": false,
@@ -34646,6 +36806,18 @@
           "regex": null
         },
         {
+          "name": "UserSubcriptionId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "ChildServiceId",
           "jsonName": null,
           "type": "System.Guid",
@@ -34662,6 +36834,18 @@
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.SubcriptionContance_ChildServiceStatus",
           "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsPrimaryOwner",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -34829,6 +37013,18 @@
       "genericArguments": null,
       "properties": [
         {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "UserId",
           "jsonName": null,
           "type": "System.Guid",
@@ -34881,6 +37077,18 @@
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.SubcriptionContance_SubcriptionStatus",
           "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsShared",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

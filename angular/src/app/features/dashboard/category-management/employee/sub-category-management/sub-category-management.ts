@@ -17,6 +17,8 @@ import {
   CategoryTreeDto
 } from 'src/app/proxy/dto/category';
 import { JobCategoryService } from 'src/app/proxy/services/job';
+import { TagService } from 'src/app/proxy/services/job';
+import { TagViewDto } from 'src/app/proxy/dto/category';
 
 export interface SubCategory {
   id: string;
@@ -126,7 +128,8 @@ export class SubCategoryManagementComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private jobCategoryService: JobCategoryService
+    private jobCategoryService: JobCategoryService,
+     private tagService: TagService
   ) {}
 
   ngOnInit(): void {
@@ -182,39 +185,43 @@ export class SubCategoryManagementComponent implements OnInit, OnDestroy {
   @HostListener('window:resize') onResize() { this.checkSidebarState(); this.updateMenuPosition(); }
   @HostListener('window:scroll') onScroll() { this.updateMenuPosition(); }
 
-  // Load sub-categories
-  private loadSubCategories(): void {
-    this.isLoading = true;
-    this.jobCategoryService.getCategoryTree()
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe({
-        next: (tree: CategoryTreeDto[]) => {
-          const parent = this.findCategoryById(tree, this.parentCategoryId);
-          if (parent?.children) {
-            this.allCategories = parent.children.map(child => ({
-              id: child.categoryId || '',
-              name: child.categoryName || '',
-              description: child.description,
-              slug: child.slug,
-              parentCategoryId: this.parentCategoryId,
-              parentCategoryName: this.parentCategoryName,
-              isActive: true, // Backend chưa trả isActive → tạm để true, sau bổ sung
-              sortOrder: 0,
-              jobCount: child.jobCount || 0,
-              tags: this.mockTagsForDemo(child.categoryId || ''), // TODO: Thay bằng API thật khi có
-              createdAt: undefined,
-              updatedAt: undefined
-            }));
-          } else {
-            this.allCategories = [];
-          }
-          this.applyFilters();
-        },
-        error: () => {
-          this.showToastMessage('Không thể tải danh sách danh mục con', 'error');
+private loadSubCategories(): void {
+  this.isLoading = true;
+  this.jobCategoryService.getCategoryTree()
+    .pipe(finalize(() => this.isLoading = false))
+    .subscribe({
+      next: (tree: CategoryTreeDto[]) => {
+        const parent = this.findCategoryById(tree, this.parentCategoryId);
+        if (parent?.children) {
+          this.allCategories = parent.children.map(child => ({
+            id: child.categoryId || '',
+            name: child.categoryName || '',
+            description: child.description,
+            slug: child.slug,
+            parentCategoryId: this.parentCategoryId,
+            parentCategoryName: this.parentCategoryName,
+            isActive: true,
+            sortOrder: 0,
+            jobCount: child.jobCount || 0,
+            tags: [], // ✅ Khởi tạo mảng rỗng
+            createdAt: undefined,
+            updatedAt: undefined
+          }));
+          
+          // ✅ THÊM: Load tags cho từng category
+          this.allCategories.forEach(cat => {
+            this.loadTagsForCategory(cat.id);
+          });
+        } else {
+          this.allCategories = [];
         }
-      });
-  }
+        this.applyFilters();
+      },
+      error: () => {
+        this.showToastMessage('Không thể tải danh sách danh mục con', 'error');
+      }
+    });
+}
 
   // Tìm category trong cây
   private findCategoryById(nodes: CategoryTreeDto[], id: string): CategoryTreeDto | null {
@@ -228,21 +235,11 @@ export class SubCategoryManagementComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  // Mock tags (sẽ thay bằng API thật sau)
-  private mockTagsForDemo(categoryId: string): string[] {
-    const mockData: Record<string, string[]> = {
-      '1': ['IT', 'Fullstack⏚', 'Remote'],
-      '2': ['Marketing', 'Digital', 'Content'],
-      '3': ['Thiết kế', 'UI/UX', 'Figma'],
-    };
-    return mockData[categoryId] || [];
-  }
-
-  // Lấy tên tag để hiển thị
-  getTagNames(categoryId: string): string[] {
-    const cat = this.allCategories.find(c => c.id === categoryId);
-    return cat?.tags || [];
-  }
+ // ✅ GIỮ NGUYÊN - hàm này đã đúng
+getTagNames(categoryId: string): string[] {
+  const cat = this.allCategories.find(c => c.id === categoryId);
+  return cat?.tags || [];
+}
 
   // Filter & Sort
   applyFilters(): void {
@@ -376,6 +373,19 @@ export class SubCategoryManagementComponent implements OnInit, OnDestroy {
         error: () => this.showToastMessage('Xóa thất bại', 'error')
       });
   }
+private loadTagsForCategory(categoryId: string): void {
+  this.tagService.getTagsByCategoryId(categoryId).subscribe({
+    next: (tags: TagViewDto[]) => {
+      const category = this.allCategories.find(c => c.id === categoryId);
+      if (category) {
+        category.tags = tags.map(t => t.name || '');
+      }
+    },
+    error: (err) => {
+      console.error('Error loading tags for category:', categoryId, err);
+    }
+  });
+}
 
   onToggleActive(cat: SubCategory): void {
     const updateDto: CategoryUpdateCreateDto = {

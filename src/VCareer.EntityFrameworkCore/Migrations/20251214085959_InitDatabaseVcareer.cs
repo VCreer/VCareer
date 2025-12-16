@@ -6,7 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
+<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251214085959_InitDatabaseVcareer.cs
     public partial class InitDatabaseVcareer : Migration
+========
+    public partial class initDb : Migration
+>>>>>>>> origin/khuong:src/VCareer.EntityFrameworkCore/Migrations/20251216165550_initDb.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -561,16 +565,16 @@ namespace VCareer.Migrations
                     WebsiteUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CultureVideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VerifyAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TaxCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BusinessLicenseNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaxCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BusinessLicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     BusinessLicenseIssueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BusinessLicenseIssuePlace = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LegalRepresentative = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BusinessLicenseFile = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TaxCertificateFile = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RepresentativeIdCardFile = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OtherSupportFile = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LegalVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BusinessLicenseIssuePlace = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    LegalRepresentative = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    BusinessLicenseFile = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    TaxCertificateFile = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RepresentativeIdCardFile = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    OtherSupportFile = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    LegalVerificationStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     LegalReviewedBy = table.Column<long>(type: "bigint", nullable: true),
                     LegalReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RejectionNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -701,6 +705,32 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserRole = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    NotificationType = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RelatedEntityType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RelatedEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Metadata = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
                 columns: table => new
                 {
@@ -771,7 +801,6 @@ namespace VCareer.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Target = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
                     OriginalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsLimited = table.Column<bool>(type: "bit", nullable: false),
                     IsBuyLimited = table.Column<bool>(type: "bit", nullable: false),
@@ -1184,6 +1213,7 @@ namespace VCareer.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserSubcriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChildServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     IsLifeTime = table.Column<bool>(type: "bit", nullable: false),
@@ -1373,7 +1403,7 @@ namespace VCareer.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SubcriptionServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OriginalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SalePercent = table.Column<int>(type: "int", nullable: false),
+                    NewPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     type = table.Column<int>(type: "int", nullable: false),
                     IsExpried = table.Column<bool>(type: "bit", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -1845,6 +1875,29 @@ namespace VCareer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppSavedJobs",
+                columns: table => new
+                {
+                    CandidateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppSavedJobs", x => new { x.CandidateId, x.JobId });
+                    table.ForeignKey(
+                        name: "FK_AppSavedJobs_CandidateProfile_CandidateId",
+                        column: x => x.CandidateId,
+                        principalTable: "CandidateProfile",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_AppSavedJobs_JobPost_JobId",
+                        column: x => x.JobId,
+                        principalTable: "JobPost",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EffectingJobServices",
                 columns: table => new
                 {
@@ -2210,6 +2263,22 @@ namespace VCareer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppSavedJobs_CandidateId",
+                table: "AppSavedJobs",
+                column: "CandidateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppSavedJobs_CandidateId_JobId",
+                table: "AppSavedJobs",
+                columns: new[] { "CandidateId", "JobId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppSavedJobs_JobId",
+                table: "AppSavedJobs",
+                column: "JobId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CandidateCvs_CandidateId",
                 table: "CandidateCvs",
                 column: "CandidateId");
@@ -2274,6 +2343,20 @@ namespace VCareer.Migrations
                 name: "IX_ChildService_SubcriptionServices_SubcriptionServiceId",
                 table: "ChildService_SubcriptionServices",
                 column: "SubcriptionServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_BusinessLicenseNumber",
+                table: "Companies",
+                column: "BusinessLicenseNumber",
+                unique: true,
+                filter: "[BusinessLicenseNumber] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_TaxCode",
+                table: "Companies",
+                column: "TaxCode",
+                unique: true,
+                filter: "[TaxCode] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CompanyIndustries_CompanyId_IndustryId",
@@ -2421,6 +2504,26 @@ namespace VCareer.Migrations
                 name: "IX_JobTag_TagId",
                 table: "JobTag",
                 column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_CreationTime",
+                table: "Notifications",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_NotificationType",
+                table: "Notifications",
+                column: "NotificationType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId_UserRole",
+                table: "Notifications",
+                columns: new[] { "UserId", "UserRole" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_UserId_UserRole_IsRead",
+                table: "Notifications",
+                columns: new[] { "UserId", "UserRole", "IsRead" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -2651,6 +2754,9 @@ namespace VCareer.Migrations
                 name: "AppRefreshTokens");
 
             migrationBuilder.DropTable(
+                name: "AppSavedJobs");
+
+            migrationBuilder.DropTable(
                 name: "Carts");
 
             migrationBuilder.DropTable(
@@ -2676,6 +2782,9 @@ namespace VCareer.Migrations
 
             migrationBuilder.DropTable(
                 name: "JobTag");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");

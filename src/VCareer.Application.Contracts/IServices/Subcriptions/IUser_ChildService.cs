@@ -11,7 +11,7 @@ namespace VCareer.IServices.Subcriptions
 {
     public interface IUser_ChildService
     {
-        public Task ActiveServiceAsync(List<Guid> childServiceIds, Guid? jobId);//là tạo 1 bản ghi UserChildservice mới 
+        public Task ActiveServiceAsync(List<User_ChildServiceActiveDto> childServiceIdWithSubcriptionsIds, Guid? jobId);//là tạo 1 bản ghi UserChildservice mới 
         public Task UpdateUser_ChildServiceAsync(User_ChildServiceUpdateDto dto);
         public Task<User_ChildServiceViewDto> GetUser_ChildServiceAsync(Guid userChildServiceId);
         }

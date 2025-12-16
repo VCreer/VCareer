@@ -48,10 +48,12 @@ export interface ChildServiceViewDto {
   description?: string;
   action?: SubcriptionContance_ServiceAction;
   target?: SubcriptionContance_ServiceTarget;
-  isLimitUsedTime: boolean;
   isActive: boolean;
+  isEnable: boolean;
   isLifeTime: boolean;
   isAutoActive: boolean;
+  isLimitUsedTime: boolean;
+  priority?: JobPriorityLevel;
   timeUsedLimit?: number;
   dayDuration?: number;
   value?: number;
@@ -81,9 +83,16 @@ export interface EffectingJobServiceViewDto {
   endDate?: string;
 }
 
+export interface OptionsChildServiceViewDto {
+  user_ChildServices: User_ChildServiceViewDto;
+  childService: ChildServiceViewDto;
+  user_subcription: User_SubcirptionViewDto;
+  subcriptionsViewDto: SubcriptionsViewDto;
+}
+
 export interface SubcriptionPriceCreateDto {
   subcriptionServiceId?: string;
-  salePercent: number;
+  newPrice: number;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
@@ -91,7 +100,7 @@ export interface SubcriptionPriceCreateDto {
 export interface SubcriptionPriceUpdateDto {
   subcriptionPriceId?: string;
   subcriptionServiceId?: string;
-  salePercent: number;
+  newPrice: number;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
@@ -100,7 +109,7 @@ export interface SubcriptionPriceViewDto {
   subcriptionServiceId?: string;
   id?: string;
   originalPrice: number;
-  salePercent: number;
+  newPrice: number;
   type?: SubcriptionContance_CurrencyType;
   isExpried: boolean;
   isActive: boolean;
@@ -112,7 +121,6 @@ export interface SubcriptionsCreateDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
@@ -137,7 +145,6 @@ export interface SubcriptionsViewDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
@@ -149,6 +156,11 @@ export interface SubcriptionsViewDto {
   isActive: boolean;
 }
 
+export interface User_ChildServiceActiveDto {
+  userSubcriptionServiceId?: string;
+  childServiceId?: string;
+}
+
 export interface User_ChildServiceUpdateDto {
   status?: SubcriptionContance_ChildServiceStatus;
   usedTime?: number;
@@ -158,8 +170,10 @@ export interface User_ChildServiceUpdateDto {
 
 export interface User_ChildServiceViewDto {
   userId?: string;
+  userSubcriptionId?: string;
   childServiceId?: string;
   status?: SubcriptionContance_ChildServiceStatus;
+  isPrimaryOwner: boolean;
   isLifeTime: boolean;
   isLimitUsedTime: boolean;
   usedTime?: number;
@@ -180,9 +194,11 @@ export interface User_SubcirptionUpdateDto {
 }
 
 export interface User_SubcirptionViewDto {
+  id?: string;
   userId?: string;
   subcriptionServiceId?: string;
   startDate?: string;
   endDate?: string;
   status?: SubcriptionContance_SubcriptionStatus;
+  isShared: boolean;
 }

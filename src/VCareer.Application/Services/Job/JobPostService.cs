@@ -14,8 +14,8 @@ using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
-using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IActivityLogService;
+using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
 using VCareer.Job.JobPosting.ISerices;
@@ -24,15 +24,16 @@ using VCareer.Models.Subcription;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Services.Geo;
+using VCareer.Services.LuceneService.JobSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
 using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using static Quartz.Logging.OperationName;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
-using VCareer.Services.LuceneService.JobSearch;
-using Microsoft.Extensions.Logging;
+using static VCareer.Permission.VCareerPermission;
 
 namespace VCareer.Services.Job
 {
@@ -53,6 +54,7 @@ namespace VCareer.Services.Job
         private readonly IJobTagService _jobTagService;
         private readonly IActivityLogAppService _activityLogAppService;
         private readonly ILuceneJobIndexer _luceneJobIndexer;
+        private readonly IEffectingJobServiceRepository _jobAffectingRepository;
 
 
         public JobPostService(
@@ -68,6 +70,7 @@ namespace VCareer.Services.Job
             IJobAffectingService jobAffectingService,
             IChildServiceRepository childServiceRepository,
             ITagService tagService,
+            IEffectingJobServiceRepository jobAffectingRepository,
             IJobTagService jobTagService,
             ILuceneJobIndexer luceneJobIndexer,
             IActivityLogAppService activityLogAppService)
@@ -87,25 +90,44 @@ namespace VCareer.Services.Job
             _jobTagService = jobTagService;
             _activityLogAppService = activityLogAppService;
             _luceneJobIndexer = luceneJobIndexer;
+            _jobAffectingRepository= jobAffectingRepository;
         }
 
         [Authorize(VCareerPermission.JobPost.Approve)]
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            if (jobPost == null) throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
             if (jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
 
             jobPost.Status = JobStatus.Open;
             jobPost.ApprovedBy = CurrentUser.Id;
             jobPost.ApproveAt = DateTime.Now;
+
+            var jobEffects = await _jobAffectingRepository.GetListAsync(x => x.JobPostId == jobPost.Id);
+            if (jobEffects != null && jobEffects.Count > 0)
+            {
+                //chay nhung cai child service ko tu auto active de tranh  bi lap logic 
+                var childServiceIds = jobEffects
+                    .Where(x => x.Status == ChildServiceStatus.Inactive)
+                    .Select(x => x.ChildServiceId)
+                    .ToList();
+                foreach (var childServiceId in childServiceIds)
+                {
+                    var childService = await _childServiceRepository.GetAsync(childServiceId);
+                    if (childService == null) continue;
+                    if (jobPost.Status == JobStatus.Draft && childService.Target == ServiceTarget.JobPost && childService.IsEnable)
+                    {
+                        await _effectingJobService.AddJobBoostLogic(Guid.Parse(id), childServiceId);
+                    }
+                }
+            }
+
             await _jobPostRepository.UpdateAsync(jobPost, true);
-
             await _jobSearchService.IndexJobAsync(jobPost.Id);           
-
             // TODO: send email cho recruiter báo đăng bài thành công
         }
+
         [Authorize(VCareerPermission.JobPost.Reject)]
         public async Task RejectJobPostAsync(string id)
         {
@@ -128,6 +150,7 @@ namespace VCareer.Services.Job
                     nameof(Job_Post),
                     "{}");
             }
+            //logic trả lại service
 
             // TODO: send email cho recruiter với nội dung từ Reject reason 
         }

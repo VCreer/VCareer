@@ -125,6 +125,10 @@
         gap: 0.25rem;
         flex-wrap: wrap;
 
+        &.verified {
+          color: #10b981; // Màu xanh lá khi đã verified
+        }
+
         &.not-verified {
           color: #dc2626;
         }
@@ -136,13 +140,21 @@
         }
 
         .verification-badge {
-          background-color: #fee2e2;
-          color: #dc2626;
           font-size: 0.75rem;
           padding: 0.125rem 0.5rem;
           border-radius: 4px;
           font-weight: 500;
           margin-left: auto;
+
+          &.verified-badge {
+            background-color: #d1fae5; // Nền xanh lá nhạt
+            color: #10b981; // Màu xanh lá
+          }
+
+          &.not-verified-badge {
+            background-color: #fee2e2;
+            color: #dc2626;
+          }
         }
       }
     }

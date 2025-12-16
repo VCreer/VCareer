@@ -110,6 +110,16 @@
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        &.expired {
+          opacity: 0.7;
+
+          .job-title.clickable {
+            color: #9ca3af;
+            cursor: default;
+            text-decoration: none;
+          }
+        }
+
         // Company Logo
         .company-logo {
           min-width: 120px;
@@ -178,6 +188,13 @@
             font-size: 0.875rem;
             color: #666;
             margin: 0;
+          }
+
+          .deadline-text {
+            font-size: 0.875rem;
+            margin: 4px 0 0 0;
+            font-weight: 500;
+            color: #2563eb; // xanh dương nhẹ
           }
 
           .job-tags {

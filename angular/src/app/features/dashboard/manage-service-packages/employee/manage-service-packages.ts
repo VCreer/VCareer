@@ -28,7 +28,6 @@ import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { 
   SubcriptionContance_SubcriptorTarget, 
-  SubcriptionContance_SubcriptionStatus,
   SubcriptionContance_ServiceAction
 } from 'src/app/proxy/constants/job-constant';
 
@@ -59,7 +58,6 @@ interface GroupedChildServices {
 })
 export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   SubcriptionContance_SubcriptorTarget = SubcriptionContance_SubcriptorTarget;
-  SubcriptionContance_SubcriptionStatus = SubcriptionContance_SubcriptionStatus;
   SubcriptionContance_ServiceAction = SubcriptionContance_ServiceAction;
   String = String;
 
@@ -78,22 +76,18 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   searchKeyword = '';
   filterStatus: string = '';
   filterType: string = '';
-  sortField: 'title' | 'originalPrice' | 'dayDuration' | 'target' | 'status' = 'title';
+  sortField: 'title' | 'originalPrice' | 'dayDuration' | 'target' = 'title';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  statusOptions: StatusOption[] = [
-    { value: '', label: 'Tất cả trạng thái' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Active), label: 'Đang hoạt động' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Inactive), label: 'Ngừng hoạt động' }
-  ];
-
-  createStatusOptions: SelectOption[] = [
-    { value: String(SubcriptionContance_SubcriptionStatus.Inactive), label: 'Chưa hoạt động' },
-    { value: String(SubcriptionContance_SubcriptionStatus.Active), label: 'Đang hoạt động' }
-  ];
+  statusOptions: SelectOption[] = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'true', label: 'Đang hoạt động' },
+  { value: 'false', label: 'Ngừng hoạt động' }
+];
 
   typeOptions: SelectOption[] = [
     { value: '', label: 'Tất cả đối tượng' },
+    { value: String(SubcriptionContance_SubcriptorTarget.Candidate), label: 'Ứng viên' },
     { value: String(SubcriptionContance_SubcriptorTarget.Recruiter), label: 'Nhà tuyển dụng' }
   ];
 
@@ -118,7 +112,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
 
   packageForm: SubcriptionsCreateDto = this.getDefaultPackageForm();
   packageFormTargetString: string = '';
-  packageFormStatusString: string = '';
+
 
   groupedChildServices: GroupedChildServices[] = [];
   allChildServices: ChildServiceViewDto[] = [];
@@ -166,7 +160,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       title: '',
       description: '',
       target: SubcriptionContance_SubcriptorTarget.Recruiter,
-      status: SubcriptionContance_SubcriptionStatus.Inactive,
       originalPrice: 0,
       isLimited: false,
       isBuyLimited: false,
@@ -194,31 +187,42 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadPackages(): void {
-    this.isLoadingPackages = true;
-    
-    this.subcriptionService.getActiveSubscriptionServices(undefined)
-      .pipe(finalize(() => {
-        this.isLoadingPackages = false;
-      }))
-      .subscribe({
-        next: (response: SubcriptionsViewDto[]) => {
-          this.allPackages = response;
-          this.applyFilters();
-          this.showToastMessage('Tải danh sách gói dịch vụ thành công', 'success');
-        },
-        error: (error) => {
-          console.error('Error loading packages:', error);
-          this.showToastMessage('Không thể tải danh sách gói dịch vụ', 'error');
-          this.allPackages = [];
-          this.applyFilters();
-        }
-      });
+ loadPackages(): void {
+  this.isLoadingPackages = true;
+  
+  const target = this.filterType || undefined;
+  
+  // ✅ Convert filterStatus thành boolean hoặc undefined
+  let isActive: boolean | undefined = undefined;
+  if (this.filterStatus === 'true') {
+    isActive = true;
+  } else if (this.filterStatus === 'false') {
+    isActive = false;
   }
+  
+  this.subcriptionService.getSubscriptionServices(target as any, isActive as any)
+    .pipe(finalize(() => {
+      this.isLoadingPackages = false;
+    }))
+    .subscribe({
+      next: (response: SubcriptionsViewDto[]) => {
+        this.allPackages = response;
+        this.applyFilters();
+        this.showToastMessage('Tải danh sách gói dịch vụ thành công', 'success');
+      },
+      error: (error) => {
+        console.error('Error loading packages:', error);
+        this.showToastMessage('Không thể tải danh sách gói dịch vụ', 'error');
+        this.allPackages = [];
+        this.applyFilters();
+      }
+    });
+}
 
   applyFilters(): void {
     let result = [...this.allPackages];
 
+    // Search filter
     if (this.searchKeyword.trim()) {
       const keyword = this.searchKeyword.toLowerCase();
       result = result.filter(pkg =>
@@ -227,21 +231,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         this.getTargetLabel(pkg.target).toLowerCase().includes(keyword)
       );
     }
-
-    if (this.filterStatus) {
-      const filterStatusNum = Number(this.filterStatus);
-      result = result.filter(p => 
-        (p.status ?? SubcriptionContance_SubcriptionStatus.Inactive) === filterStatusNum
-      );
-    }
-
-    if (this.filterType) {
-      const filterTypeNum = Number(this.filterType);
-      result = result.filter(p => 
-        (p.target ?? SubcriptionContance_SubcriptorTarget.Recruiter) === filterTypeNum
-      );
-    }
-
+    // Sort
     result.sort((a, b) => {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
@@ -276,12 +266,13 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  // ✅ UPDATED: Reload từ API khi filter change
   onFilterChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    this.loadPackages(); // Gọi lại API với filter mới
   }
 
-  onSort(field: 'title' | 'originalPrice' | 'dayDuration' | 'target' | 'status'): void {
+  onSort(field: 'title' | 'originalPrice' | 'dayDuration' | 'target'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -337,7 +328,6 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   resetPackageForm(): void {
     this.packageForm = this.getDefaultPackageForm();
     this.packageFormTargetString = String(SubcriptionContance_SubcriptorTarget.Recruiter);
-    this.packageFormStatusString = String(SubcriptionContance_SubcriptionStatus.Inactive);
     this.selectedPackage = null;
     this.resetValidationErrors();
   }
@@ -347,16 +337,15 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackage = true;
 
     const createDto: SubcriptionsCreateDto = {
       ...this.packageForm,
-      target: Number(this.packageFormTargetString) as SubcriptionContance_SubcriptorTarget,
-      status: Number(this.packageFormStatusString) as SubcriptionContance_SubcriptionStatus
+      target: Number(this.packageFormTargetString) as SubcriptionContance_SubcriptorTarget
     };
 
     this.subcriptionService.createSubCription(createDto)
@@ -365,15 +354,15 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
-          this.showCreatePackageModal = false;
+      this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
+      this.showCreatePackageModal = false;
           this.loadPackages();
         },
         error: (error) => {
           console.error('Error creating package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể tạo gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
-        }
+    }
       });
   }
 
@@ -383,19 +372,17 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       title: pkg.title,
       description: pkg.description,
       target: pkg.target,
-      status: pkg.status,
       originalPrice: pkg.originalPrice,
-      isLimited: pkg.isLimited,
-      isBuyLimited: pkg.isBuyLimited,
-      iShareable: pkg.iShareable,
+      isLimited: pkg.isLimited ?? false,  // ✅ Đảm bảo boolean
+      isBuyLimited: pkg.isBuyLimited ?? false,
+      iShareable: pkg.iShareable ?? false,
       totalLimitpackage: pkg.totalLimitpackage,
-      totalBuyEachUser: pkg.totalBuyEachUser,
-      isLifeTime: pkg.isLifeTime,
+      totalBuyEachUser: pkg.totalBuyEachUser ?? 0,
+      isLifeTime: pkg.isLifeTime ?? false,
       dayDuration: pkg.dayDuration,
-      isActive: pkg.isActive
+      isActive: pkg.isActive ?? false
     };
     this.packageFormTargetString = String(pkg.target);
-    this.packageFormStatusString = String(pkg.status);
     this.resetValidationErrors();
     this.showEditPackageModal = true;
     this.closeActionsMenu();
@@ -406,9 +393,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackageEdit = true;
 
@@ -426,8 +413,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
-          this.showEditPackageModal = false;
+      this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
+      this.showEditPackageModal = false;
           this.selectedPackage = null;
           this.loadPackages();
         },
@@ -435,7 +422,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
           console.error('Error updating package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể cập nhật gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
-        }
+    }
       });
   }
 
@@ -611,10 +598,10 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.subcriptionService.updateSubcription(updateDto)
       .subscribe({
         next: () => {
-          this.showToastMessage(
+    this.showToastMessage(
             newIsActive ? 'Đã kích hoạt gói dịch vụ' : 'Đã vô hiệu hóa gói dịch vụ',
-            'success'
-          );
+      'success'
+    );
           this.loadPackages();
         },
         error: (error) => {
@@ -628,18 +615,15 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   onDeletePackage(pkg: SubcriptionsViewDto): void {
-    if (!confirm(`Bạn có chắc chắn muốn xóa gói dịch vụ "${pkg.title}"? Hành động này không thể hoàn tác.`)) {
-      return;
-    }
 
     this.subcriptionService.deleteSubcription(pkg.id!)
-      .subscribe({
-        next: () => {
-          this.showToastMessage('Đã xóa gói dịch vụ', 'success');
-          this.loadPackages();
-        },
-        error: (error) => {
-          console.error('Error deleting package:', error);
+        .subscribe({
+          next: () => {
+      this.showToastMessage('Đã xóa gói dịch vụ', 'success');
+            this.loadPackages();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể xóa gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
         }
@@ -768,27 +752,11 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.checkSidebarState();
   }
 
-  getStatusLabel(pkg: SubcriptionsViewDto): string {
-    const status = pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive;
-    const labels: { [key: number]: string } = {
-      [SubcriptionContance_SubcriptionStatus.Active]: 'Đang hoạt động',
-      [SubcriptionContance_SubcriptionStatus.Inactive]: 'Ngừng hoạt động'
-    };
-    return labels[status] || 'Không xác định';
-  }
-
-  getStatusClass(pkg: SubcriptionsViewDto): string {
-    const status = pkg.status ?? SubcriptionContance_SubcriptionStatus.Inactive;
-    const classes: { [key: number]: string } = {
-      [SubcriptionContance_SubcriptionStatus.Active]: 'status-active',
-      [SubcriptionContance_SubcriptionStatus.Inactive]: 'status-inactive'
-    };
-    return classes[status] || 'status-inactive';
-  }
-
+  // ✅ UPDATED: Thêm labels cho target mới
   getTargetLabel(target: SubcriptionContance_SubcriptorTarget | undefined): string {
     if (target === undefined) return 'Không xác định';
     const labels: { [key: number]: string } = {
+      [SubcriptionContance_SubcriptorTarget.Candidate]: 'Ứng viên',
       [SubcriptionContance_SubcriptorTarget.Recruiter]: 'Nhà tuyển dụng'
     };
     return labels[target] || 'Không xác định';
@@ -797,6 +765,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   getTargetClass(target: SubcriptionContance_SubcriptorTarget | undefined): string {
     if (target === undefined) return '';
     const classes: { [key: number]: string } = {
+      [SubcriptionContance_SubcriptorTarget.Candidate]: 'target-candidate',
       [SubcriptionContance_SubcriptorTarget.Recruiter]: 'target-recruiter'
     };
     return classes[target] || '';

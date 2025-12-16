@@ -99,6 +99,20 @@ namespace VCareer.Constants.JobConstant
 
     #region phục vụ display job
 
+    /// <summary>
+    /// Trạng thái hiển thị của đơn ứng tuyển/CV trên UI recruiter.
+    /// Lưu ý: Giá trị enum này cần được đồng bộ với phía frontend (Angular) để tránh fix cứng string.
+    /// </summary>
+    public enum ApplicationDisplayStatus
+    {
+        Received = 0,      // CV tiếp nhận
+        Suitable = 1,      // Phù hợp
+        Interview = 2,     // Hẹn phỏng vấn
+        Offer = 3,         // Gửi đề nghị
+        Hired = 4,         // Nhận việc
+        NotSuitable = 5    // Chưa phù hợp / Từ chối
+    }
+
     public enum SortByField
     {
         Relevance = 0,

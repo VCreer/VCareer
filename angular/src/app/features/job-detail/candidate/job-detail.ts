@@ -7,6 +7,7 @@ import { ToastNotificationComponent } from '../../../shared/components/toast-not
 import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
 import { JobListingsComponent } from '../../../shared/components/job-listings/job-listings';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
 
 import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api/company.service';
 import { environment } from '../../../../environments/environment';
@@ -35,6 +36,7 @@ import { forkJoin } from 'rxjs';
     FilterBarComponent,
     ApplyJobModalComponent,
     JobListingsComponent,
+    LoginModalComponent,
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],
@@ -108,8 +110,7 @@ export class JobDetailComponent implements OnInit {
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
       if (isLoggedIn && this.jobId) {
-      //  this.checkApplicationStatus();
-      //  this.loadSavedStatus();
+        this.loadSavedStatus();
       } else {
         this.hasApplied = false;
         this.isHeartActive = false;
@@ -167,7 +168,7 @@ export class JobDetailComponent implements OnInit {
   loadJobDetail() {
     this.isLoading = true;
 
-    this.jobSearchService.getJobById(this.jobId).subscribe({
+    this.jobSearchService.getJobById(this.jobId, { skipHandleError: true }).subscribe({
       next: (jobDetail: JobViewDetail) => {
         this.jobDetail = jobDetail;
         this.isLoading = false;
@@ -186,7 +187,7 @@ export class JobDetailComponent implements OnInit {
 
         // Load saved status if authenticated
         if (this.isAuthenticated) {
-        //  this.loadSavedStatus();
+          this.loadSavedStatus();
         }
 
         // Check application status if authenticated
@@ -566,15 +567,17 @@ export class JobDetailComponent implements OnInit {
   loadSavedStatus() {
     if (!this.jobId || !this.isAuthenticated) return;
 
-    this.jobSearchService.getSavedJobStatus(this.jobId).subscribe({
-      next: status => {
-        this.isHeartActive = status.isSaved;
-        this.cdr.detectChanges();
-      },
-      error: error => {
-        // Error loading saved status
-      },
-    });
+    this.jobSearchService
+      .getSavedJobStatus(this.jobId, { skipHandleError: true })
+      .subscribe({
+        next: status => {
+          this.isHeartActive = status.isSaved;
+          this.cdr.detectChanges();
+        },
+        error: error => {
+          // swallow error to avoid ABP modal
+        },
+      });
   }
 
   /**
@@ -589,7 +592,7 @@ export class JobDetailComponent implements OnInit {
     if (!this.jobId) return;
 
     if (this.isHeartActive) {
-      this.jobSearchService.unsaveJob(this.jobId).subscribe({
+      this.jobSearchService.unsaveJob(this.jobId, { skipHandleError: true }).subscribe({
         next: () => {
           this.isHeartActive = false;
           this.showToastMessage('Đã bỏ lưu công việc', 'success');
@@ -599,7 +602,7 @@ export class JobDetailComponent implements OnInit {
         },
       });
     } else {
-      this.jobSearchService.saveJob(this.jobId).subscribe({
+      this.jobSearchService.saveJob(this.jobId, { skipHandleError: true }).subscribe({
         next: () => {
           this.isHeartActive = true;
           this.showToastMessage('Đã lưu công việc thành công', 'success');
@@ -616,8 +619,7 @@ export class JobDetailComponent implements OnInit {
     this.isAuthenticated = true;
       setTimeout(() => {
         if (this.jobId) {
-      //  this.checkApplicationStatus();
-     //   this.loadSavedStatus();
+          this.loadSavedStatus();
         }
         const currentUrl = window.location.href;
         if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
@@ -674,6 +676,7 @@ export class JobDetailComponent implements OnInit {
   openApplyModal(): void {
     if (!this.isAuthenticated) {
       this.showLoginModal = true;
+      this.cdr.detectChanges();
       return;
     }
     this.showApplyModal = true;

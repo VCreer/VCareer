@@ -9,6 +9,8 @@ import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 import type { ProfileDto } from '../../../proxy/dto/profile/models';
+import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-candidate-header',
@@ -27,6 +29,9 @@ export class CandidateHeaderComponent implements OnInit {
   currentUser: any = null;
   profileData: ProfileDto | null = null;
   selectedLanguage: string = '';
+  notifications: NotificationDto[] = [];
+  unreadCount: number = 0;
+  isLoadingNotifications = false;
   expandedSections = {
     jobManagement: true,
     cvManagement: true,
@@ -39,7 +44,8 @@ export class CandidateHeaderComponent implements OnInit {
     private navigationService: NavigationService,
     private translationService: TranslationService,
     private authStateService: AuthStateService,
-    private http: HttpClient
+    private http: HttpClient,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -84,17 +90,23 @@ export class CandidateHeaderComponent implements OnInit {
       this.isLoggedIn = serviceLoggedIn && hasValidUser;
       console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
       
-      // Load profile data when user changes
       if (this.isLoggedIn && hasValidUser) {
         this.loadProfileData();
+        this.loadNotifications();
+        this.loadUnreadCount();
       } else {
         this.profileData = null;
+        this.notifications = [];
+        this.unreadCount = 0;
+        this.isLoadingNotifications = false;
       }
     });
     
-    // Load profile data on init if already logged in
-    if (this.isLoggedIn) {
+    // Load profile data + notifications on init nếu đã đăng nhập
+    if (this.isLoggedIn && this.isValidUser(this.currentUser)) {
       this.loadProfileData();
+      this.loadNotifications();
+      this.loadUnreadCount();
     }
   }
   
@@ -229,12 +241,139 @@ export class CandidateHeaderComponent implements OnInit {
     this.showNotificationMenu = !this.showNotificationMenu;
     if (this.showNotificationMenu) {
       this.showProfileMenu = false; // Đóng profile menu khi mở notification menu
+      this.loadNotifications(); // Reload notifications when opening menu
     }
   }
 
+  loadNotifications() {
+    if (!this.isLoggedIn) {
+      console.log('[Notification] User not logged in, skipping load');
+      return;
+    }
+    
+    console.log('[Notification] Loading notifications for Candidate role');
+    this.isLoadingNotifications = true;
+    // Load only 3 notifications for popup, sorted by creationTime DESC (newest first)
+    this.notificationService.getNotifications('Candidate', 0, 3)
+      .pipe(
+        catchError(error => {
+          console.error('[Notification] Error loading notifications:', error);
+          console.error('[Notification] Error details:', error.error, error.status, error.statusText);
+          return of({ items: [], totalCount: 0, unreadCount: 0 });
+        })
+      )
+      .subscribe({
+        next: (result) => {
+          console.log('[Notification] Received notifications:', result);
+          console.log('[Notification] Items count:', result.items?.length || 0);
+          console.log('[Notification] Total count:', result.totalCount);
+          console.log('[Notification] Unread count:', result.unreadCount);
+          
+          // Sort by creationTime DESC (newest first) to ensure newest notifications appear at top
+          const sortedItems = (result.items || []).sort((a, b) => {
+            const dateA = new Date(a.creationTime).getTime();
+            const dateB = new Date(b.creationTime).getTime();
+            return dateB - dateA; // DESC: newest first
+          });
+          
+          // Take only first 3 items
+          this.notifications = sortedItems.slice(0, 3);
+          this.unreadCount = result.unreadCount || 0;
+          this.isLoadingNotifications = false;
+        },
+        error: (error) => {
+          console.error('[Notification] Subscription error:', error);
+          this.isLoadingNotifications = false;
+        }
+      });
+  }
+
+  loadUnreadCount() {
+    if (!this.isLoggedIn) {
+      console.log('[Notification] User not logged in, skipping unread count');
+      return;
+    }
+    
+    console.log('[Notification] Loading unread count for Candidate role');
+    this.notificationService.getUnreadCount('Candidate')
+      .pipe(
+        catchError(error => {
+          console.error('[Notification] Error loading unread count:', error);
+          console.error('[Notification] Error details:', error.error, error.status, error.statusText);
+          return of(0);
+        })
+      )
+      .subscribe({
+        next: (count) => {
+          console.log('[Notification] Unread count:', count);
+          this.unreadCount = count;
+        },
+        error: (error) => {
+          console.error('[Notification] Unread count subscription error:', error);
+        }
+      });
+  }
+
   markAllAsRead() {
-    // Logic đánh dấu tất cả thông báo đã đọc
+    if (!this.isLoggedIn) return;
+    
+    this.notificationService.markAllAsRead('Candidate')
+      .pipe(
+        catchError(error => {
+          console.error('Error marking all as read:', error);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.loadNotifications();
+        this.loadUnreadCount();
+      });
+  }
+
+  markAsRead(notification: NotificationDto) {
+    if (notification.isRead) return;
+    
+    this.notificationService.markAsRead(notification.id)
+      .pipe(
+        catchError(error => {
+          console.error('Error marking notification as read:', error);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        notification.isRead = true;
+        this.loadUnreadCount();
+      });
+  }
+
+  navigateToJobDetail(notification: NotificationDto) {
+    if (notification.relatedEntityType === 'JobPost' && notification.relatedEntityId) {
+      this.markAsRead(notification);
+      this.showNotificationMenu = false;
+      this.router.navigate(['/candidate/job-detail', notification.relatedEntityId]);
+    }
+  }
+
+  navigateToAllNotifications() {
     this.showNotificationMenu = false;
+    this.router.navigate(['/candidate/notifications']);
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Vừa xong';
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
   onProfileMouseLeave() {
@@ -323,4 +462,10 @@ export class CandidateHeaderComponent implements OnInit {
     return true;
   }
 }
+
+
+
+
+
+
 

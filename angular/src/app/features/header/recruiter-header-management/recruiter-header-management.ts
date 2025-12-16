@@ -29,12 +29,12 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private navigationService: NavigationService,
     private cartService: CartService
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Load initial cart count
     this.cartCount = this.cartService.getCartCount();
-    
+
     // Subscribe to cart changes
     this.cartSubscription = this.cartService.cartItems$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
@@ -70,7 +70,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     // Always toggle based on current showSidebar state, not DOM state
     // This ensures consistent behavior
     this.showSidebar = !this.showSidebar;
-    
+
     if (this.showSidebar) {
       this.showDropdownMenu = false;
     }
