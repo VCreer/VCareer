@@ -8,6 +8,8 @@ import { JobViewDto } from '../../../proxy/dto/job-dto/models';
 import { EmploymentType } from '../../../proxy/constants/job-constant/employment-type.enum';
 import { PositionType } from '../../../proxy/constants/job-constant/position-type.enum';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
+import { JobSearchService } from '../../../proxy/services/job/job-search.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-job-listings',
@@ -32,21 +34,54 @@ export class JobListingsComponent {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
+  isAuthenticated = false;
 
   onImgError(event: Event) {
     (event.target as HTMLImageElement).src = this.defaultLogo;
   }
 
   toggleBookmark(job: any) {
-    job.isBookmarked = !job.isBookmarked;
-    if (job.isBookmarked) {
-      this.toastType = 'success';
-      this.toastMessage = 'Lưu tin thành công';
+    if (!this.isAuthenticated) {
+      this.toastType = 'warning';
+      this.toastMessage = 'Bạn cần đăng nhập để lưu công việc';
       this.showToast = true;
       setTimeout(() => (this.showToast = false), 2500);
+      return;
+    }
+
+    if (!job || !job.id) {
+      return;
+    }
+
+    if (job.isBookmarked) {
+      this.jobSearchService.unsaveJob(job.id, { skipHandleError: true }).subscribe({
+        next: () => {
+          job.isBookmarked = false;
+          // Không cần toast khi bỏ lưu theo yêu cầu cũ
+        },
+        error: () => {
+          this.toastType = 'error';
+          this.toastMessage = 'Không thể bỏ lưu công việc';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        }
+      });
     } else {
-      // Không hiển thị toast khi bỏ lưu theo yêu cầu
-      this.showToast = false;
+      this.jobSearchService.saveJob(job.id, { skipHandleError: true }).subscribe({
+        next: () => {
+          job.isBookmarked = true;
+          this.toastType = 'success';
+          this.toastMessage = 'Lưu tin thành công';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        },
+        error: () => {
+          this.toastType = 'error';
+          this.toastMessage = 'Không thể lưu công việc';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        }
+      });
     }
   }
 
@@ -68,7 +103,15 @@ export class JobListingsComponent {
     this.locationSelected.emit(location);
   }
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private jobSearchService: JobSearchService,
+    private navigationService: NavigationService
+  ) {
+    this.navigationService.isLoggedIn$.subscribe(isLogged => {
+      this.isAuthenticated = isLogged;
+    });
+  }
   translate(key: string): string { return this.translationService.translate(key); }
 
   getProvinceName(provinceCode: number): string {

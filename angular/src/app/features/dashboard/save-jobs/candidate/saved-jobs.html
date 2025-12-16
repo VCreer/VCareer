@@ -22,7 +22,7 @@
 
     <!-- Jobs List -->
     <div class="jobs-list" *ngIf="!loading && savedJobs.length > 0">
-      <div class="job-card" *ngFor="let job of savedJobs; trackBy: trackByJobId">
+      <div class="job-card" *ngFor="let job of savedJobs; trackBy: trackByJobId" [class.expired]="isJobExpired(job)">
         <!-- Company Logo -->
         <div class="company-logo">
           <div class="logo-content">
@@ -35,6 +35,7 @@
           <h2 class="job-title clickable" (click)="onJobTitleClick(job)">{{ job.jobTitle }}</h2>
           <p class="company-name">{{ job.companyName }}</p>
           <p class="saved-date">Đã lưu: {{ formatSavedDate(job.savedAt) }}</p>
+          <p class="deadline-text" *ngIf="getDeadlineText(job)">{{ getDeadlineText(job) }}</p>
           
           <!-- Tags -->
           <div class="job-tags">
