@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { 
   ButtonComponent, 
   ToastNotificationComponent
@@ -11,7 +12,7 @@ import { RecruitmentCompainService } from '../../../../proxy/services/job/recrui
 import { ApplicationService } from '../../../../proxy/application/applications/application.service';
 import type { CompanyDashboardDto, DashboardFilterDto, StaffPerformanceDto } from '../../../../proxy/dto/dashboard-dto/models';
 import type { RecruimentCampainViewDto } from '../../../../proxy/dto/job-dto/models';
-import type { ApplicationStatisticsDto } from '../../../../proxy/dto/applications/models';
+import type { ApplicationDto, ApplicationStatisticsDto } from '../../../../proxy/dto/applications/models';
 import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 
 interface ReportMetric {
@@ -39,6 +40,7 @@ interface ReportMetric {
   styleUrls: ['./recruitment-report.scss']
 })
 export class RecruitmentReportComponent implements OnInit, OnDestroy {
+  private readonly MAX_FETCH = 1000; // API limit for MaxResultCount
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
   
@@ -232,6 +234,7 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
    */
   loadAllData(): void {
     this.loadMetrics();
+    this.loadMetricsFromApplicationsAndCampaigns();
     this.loadCampaignStatus();
     this.loadStaffPerformance();
     this.loadApplicationStatistics();
@@ -385,14 +388,16 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
               trend: { value: 0, isPositive: true }
             },
             {
-              label: 'Tổng CV đã duyệt',
+              label: 'Tổng đơn đã duyệt',
+              // Sẽ được cập nhật lại bằng số đơn ứng tuyển (acceptedApplications) ở loadApplicationStatistics
               value: dashboard.totalCandidatesApproved || 0,
               icon: 'fa-check-circle',
               color: '#10b981',
               trend: { value: 0, isPositive: true }
             },
             {
-              label: 'Tổng CV từ chối',
+              label: 'Tổng đơn chưa duyệt',
+              // Sẽ được cập nhật lại bằng số đơn ứng tuyển (pendingApplications) ở loadApplicationStatistics
               value: dashboard.totalCandidatesRejected || 0,
               icon: 'fa-times-circle',
               color: '#ef4444',
@@ -405,6 +410,105 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading metrics:', error);
+        this.isLoadingMetrics = false;
+      }
+    });
+  }
+
+  /**
+   * Load metrics directly từ dữ liệu Campaigns + JobApplications để tránh sai lệch
+   */
+  private loadMetricsFromApplicationsAndCampaigns(): void {
+    if (!this.companyId) {
+      return;
+    }
+
+    this.isLoadingMetrics = true;
+
+    const active$ = this.recruitmentCampaignService.getCompainByCompanyIdByCompanyIdAndIsActive(this.companyId, true);
+    const inactive$ = this.recruitmentCampaignService.getCompainByCompanyIdByCompanyIdAndIsActive(this.companyId, false);
+    const applications$ = this.applicationService.getCompanyApplications({
+      companyId: this.companyId,
+      skipCount: 0,
+      maxResultCount: this.MAX_FETCH
+    });
+
+    forkJoin([active$, inactive$, applications$]).subscribe({
+      next: ([activeRes, inactiveRes, appRes]) => {
+        // API trả thẳng mảng RecruimentCampainViewDto
+        const activeCampaigns: RecruimentCampainViewDto[] = activeRes || [];
+        const inactiveCampaigns: RecruimentCampainViewDto[] = inactiveRes || [];
+        // getCompanyApplications trả PagedResultDto<ApplicationDto>
+        const apps: ApplicationDto[] = (appRes && appRes.items) ? appRes.items : [];
+
+        const totalCampaigns = (activeCampaigns?.length || 0) + (inactiveCampaigns?.length || 0);
+
+        // Đếm ứng viên duy nhất và trạng thái đơn
+        const uniqueCandidates = new Set<string>();
+        let approved = 0;
+        let pending = 0;
+
+        const approvedStatuses = new Set(['accepted', 'hired']);
+        const rejectedStatuses = new Set(['rejected', 'withdrawn']);
+        const pendingLikeStatuses = new Set([
+          'pending', 'reviewed', 'shortlisted', 'interviewed',
+          'offer', 'send-offer', 'new', 'viewed', 'received'
+        ]);
+
+        apps.forEach((app, index) => {
+          const candidateKey = app.candidateId || app.id || `unknown-${index}`;
+          uniqueCandidates.add(candidateKey);
+
+          const status = (app.status || '').toLowerCase().trim();
+          if (approvedStatuses.has(status)) {
+            approved += 1;
+          } else if (rejectedStatuses.has(status)) {
+            // Ở đây chúng ta chỉ hiển thị "đã duyệt" vs "chưa duyệt" theo yêu cầu,
+            // nên rejected cũng xem như đã có kết quả, không tính vào pending.
+          } else if (pendingLikeStatuses.has(status) || !status) {
+            pending += 1;
+          } else {
+            pending += 1; // unknown -> xem như chưa duyệt
+          }
+        });
+
+        const totalCandidates = uniqueCandidates.size;
+
+        this.metrics = [
+          {
+            label: 'Tổng chiến dịch',
+            value: totalCampaigns,
+            icon: 'fa-briefcase',
+            color: '#0F83BA',
+            trend: { value: 0, isPositive: true }
+          },
+          {
+            label: 'Tổng ứng viên',
+            value: this.formatNumber(totalCandidates),
+            icon: 'fa-users',
+            color: '#10b981',
+            trend: { value: 0, isPositive: true }
+          },
+          {
+            label: 'Tổng đơn đã duyệt',
+            value: approved,
+            icon: 'fa-check-circle',
+            color: '#10b981',
+            trend: { value: 0, isPositive: true }
+          },
+          {
+            label: 'Tổng đơn chưa duyệt',
+            value: pending,
+            icon: 'fa-times-circle',
+            color: '#ef4444',
+            trend: { value: 0, isPositive: false }
+          }
+        ];
+
+        this.isLoadingMetrics = false;
+      },
+      error: (err) => {
+        console.error('Error loading metrics from applications/campaigns', err);
         this.isLoadingMetrics = false;
       }
     });
@@ -495,6 +599,7 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
 
   /**
    * Load application statistics for funnel and cost breakdown
+   * Đếm theo trạng thái đơn (job application) đã fix cứng
    */
   private loadApplicationStatistics(): void {
     if (!this.companyId) {
@@ -503,56 +608,89 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
 
     this.isLoadingApplications = true;
     
-    this.applicationService.getApplicationStatistics(undefined, this.companyId).subscribe({
-      next: (response: any) => {
-        const stats: ApplicationStatisticsDto = response?.result || response?.data || response;
-        
-        if (stats) {
-          // Tổng đơn ứng tuyển theo công ty hiện tại
-          const total = stats.totalApplications || 0;
-          const pending = stats.pendingApplications || 0;
-          const shortlisted = stats.shortlistedApplications || 0;
-          const accepted = stats.acceptedApplications || 0; // CV có trạng thái nhận việc
-          const rejected = stats.rejectedApplications || 0; // CV từ chối
-          
-          // Cập nhật funnel trạng thái hồ sơ
-          this.recruitmentFunnel = {
-            stages: [
-              { name: 'Hồ sơ tiếp nhận', count: total, color: '#6b7280' },
-              { name: 'Hẹn phỏng vấn', count: shortlisted, color: '#0F83BA' },
-              { name: 'Gửi đề nghị', count: accepted, color: '#f59e0b' },
-              { name: 'Nhận việc', count: accepted, color: '#10b981' },
-              { name: 'Từ chối', count: rejected, color: '#ef4444' }
-            ]
-          };
+    this.applicationService.getCompanyApplications({
+      companyId: this.companyId,
+      skipCount: 0,
+      maxResultCount: this.MAX_FETCH
+    }).subscribe({
+      next: (appRes: any) => {
+        const apps: ApplicationDto[] = (appRes && appRes.items) ? appRes.items : [];
 
-          // Cập nhật 2 thẻ metric: Tổng CV đã duyệt & Tổng CV từ chối
-          if (this.metrics && this.metrics.length >= 4) {
-            // Tổng ứng viên đã apply vào công ty vẫn dùng số unique candidate từ dashboard (đang set ở loadMetrics)
-            // Chỉ cập nhật lại 2 ô CV theo số đơn ứng tuyển (application) từ thống kê
-            this.metrics[2] = {
-              ...this.metrics[2],
-              value: accepted
-            };
-            this.metrics[3] = {
-              ...this.metrics[3],
-              value: rejected
-            };
+        let receivedCount = 0;
+        let interviewCount = 0;
+        let offerCount = 0;
+        let hiredCount = 0;
+        let rejectedCount = 0;
+
+        const approvedStatuses = new Set(['accepted', 'hired']);
+        const interviewStatuses = new Set(['interview', 'interviewed']);
+        const offerStatuses = new Set(['offer', 'send-offer']);
+        const rejectedStatuses = new Set(['rejected', 'withdrawn', 'not-suitable']);
+        const pendingLikeStatuses = new Set([
+          'pending', 'reviewed', 'shortlisted',
+          'new', 'viewed', 'received', 'suitable'
+        ]);
+
+        apps.forEach((app) => {
+          const status = (app.status || '').toLowerCase().trim();
+          if (approvedStatuses.has(status)) {
+            hiredCount += 1;
+          } else if (rejectedStatuses.has(status)) {
+            rejectedCount += 1;
+          } else if (offerStatuses.has(status)) {
+            offerCount += 1;
+          } else if (interviewStatuses.has(status)) {
+            interviewCount += 1;
+          } else if (pendingLikeStatuses.has(status) || !status) {
+            receivedCount += 1;
+          } else {
+            receivedCount += 1; // trạng thái lạ xem như tiếp nhận
           }
-          
-          // Cost breakdown - placeholder, có thể cập nhật theo dữ liệu thực tế nếu backend trả về
-          const baseCost = 10000;
-          this.costBreakdown = {
-            stages: [
-              { name: 'Hồ sơ tiếp nhận', cost: total * baseCost, color: '#6b7280' },
-              { name: 'Hẹn phỏng vấn', cost: shortlisted * baseCost * 1.5, color: '#0F83BA' },
-              { name: 'Gửi đề nghị', cost: accepted * baseCost * 10, color: '#f59e0b' },
-              { name: 'Nhận việc', cost: accepted * baseCost * 25, color: '#10b981' },
-              { name: 'Từ chối', cost: rejected * baseCost * 8, color: '#ef4444' }
-            ]
-          };
+        });
+
+        // Cập nhật funnel trạng thái hồ sơ
+        this.recruitmentFunnel = {
+          stages: [
+            { name: 'Hồ sơ tiếp nhận', count: receivedCount, color: '#6b7280' },
+            { name: 'Hẹn phỏng vấn', count: interviewCount, color: '#0F83BA' },
+            { name: 'Gửi đề nghị', count: offerCount, color: '#f59e0b' },
+            { name: 'Nhận việc', count: hiredCount, color: '#10b981' },
+            { name: 'Từ chối', count: rejectedCount, color: '#ef4444' }
+          ]
+        };
+
+        // Cập nhật cost breakdown theo counts (placeholder)
+        const baseCost = 10000;
+        this.costBreakdown = {
+          stages: [
+            { name: 'Hồ sơ tiếp nhận', cost: receivedCount * baseCost, color: '#6b7280' },
+            { name: 'Hẹn phỏng vấn', cost: interviewCount * baseCost * 1.5, color: '#0F83BA' },
+            { name: 'Gửi đề nghị', cost: offerCount * baseCost * 10, color: '#f59e0b' },
+            { name: 'Nhận việc', cost: hiredCount * baseCost * 25, color: '#10b981' },
+            { name: 'Từ chối', cost: rejectedCount * baseCost * 8, color: '#ef4444' }
+          ]
+        };
+
+        // Đồng bộ lại hai ô metric đã duyệt/chưa duyệt
+        if (!this.metrics || this.metrics.length < 4) {
+          this.metrics = [
+            { label: 'Tổng chiến dịch', value: 0, icon: 'fa-briefcase', color: '#0F83BA' },
+            { label: 'Tổng ứng viên', value: 0, icon: 'fa-users', color: '#10b981' },
+            { label: 'Tổng đơn đã duyệt', value: 0, icon: 'fa-check-circle', color: '#10b981' },
+            { label: 'Tổng đơn chưa duyệt', value: 0, icon: 'fa-times-circle', color: '#ef4444' }
+          ];
         }
-        
+        this.metrics[2] = {
+          ...this.metrics[2],
+          label: 'Tổng đơn đã duyệt',
+          value: hiredCount
+        };
+        this.metrics[3] = {
+          ...this.metrics[3],
+          label: 'Tổng đơn chưa duyệt',
+          value: receivedCount + interviewCount + offerCount // các đơn chưa có kết quả cuối
+        };
+
         this.isLoadingApplications = false;
       },
       error: (error) => {
