@@ -277,10 +277,9 @@ export class RecruiterVerifyOtpComponent implements OnInit, OnDestroy {
     this.companyLegalInfoService.getCompanyLegalInfo(companyId).subscribe({
       next: (companyDetail) => {
         // Check if company info is updated (step 2)
-        // Consider company info updated if companyName and other basic info exists
-        const hasCompanyInfo = !!(companyDetail.companyName && 
-                                 companyDetail.headquartersAddress && 
-                                 companyDetail.contactEmail);
+        // Company được coi là đã cập nhật thông tin nếu có verificationStatus = true
+        // Logic này phải khớp với NavigationService để đảm bảo consistency
+        const hasCompanyInfo = !!companyDetail.verificationStatus;
         this.updateCompanyVerificationStepStatus(hasCompanyInfo);
         
         // Check if legal document is verified (step 3)

@@ -11,7 +11,9 @@ import { JobFilterComponent } from '../../../shared/components/job-filter/job-fi
 import { JobListComponent } from '../../../shared/components/job-list/job-list';
 import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
 import { ToastNotificationComponent } from '../../../shared/components';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 // DTOs & Enums (từ ABP proxy)
 import { CategoryTreeDto } from 'src/app/proxy/dto/category/models';
@@ -40,6 +42,7 @@ import { TranslationService } from 'src/app/core/services/translation.service';
     JobListComponent,
     JobListDetailComponent,
     ApplyJobModalComponent,
+    LoginModalComponent,
     ToastNotificationComponent,
   ],
   templateUrl: './job.html',
@@ -81,6 +84,10 @@ export class JobComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
+  
+  // Login modal
+  showLoginModal = false;
+  isAuthenticated = false;
 
   constructor(
     private router: Router,
@@ -88,11 +95,17 @@ export class JobComponent implements OnInit {
     private translationService: TranslationService,
     private categoryService: JobCategoryService,
     private geoService: GeoService,
-    private jobSearchService: JobSearchService // ← ĐÚNG SERVICE PROXY
+    private jobSearchService: JobSearchService, // ← ĐÚNG SERVICE PROXY
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit(): void {
     this.loadInitialData();
+
+    // Check authentication status
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isAuthenticated = isLoggedIn;
+    });
 
     // Đọc query params từ URL (khi chuyển từ Homepage sang)
     this.route.queryParams.subscribe(params => {
@@ -282,6 +295,13 @@ export class JobComponent implements OnInit {
   // Apply actions
   onApply(job: JobViewDto) {
     if (!job || !job.id) return;
+    
+    // Check authentication
+    if (!this.isAuthenticated) {
+      this.showLoginModal = true;
+      return;
+    }
+    
     this.applyJobId = job.id.toString();
     this.applyJobTitle = job.title || '';
     this.showApplyModal = true;
@@ -300,6 +320,16 @@ export class JobComponent implements OnInit {
 
   onToastClose() {
     this.showToast = false;
+  }
+
+  // Login modal handlers
+  closeLoginModal() {
+    this.showLoginModal = false;
+  }
+
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
   }
 
   // Normalize experience value (number | string) to enum number for filtering

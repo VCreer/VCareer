@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, of } from 'rxjs';
+import { filter, catchError } from 'rxjs/operators';
 import { AuthStateService } from './auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from './auth-Cookiebased/auth-facade.service';
+import { TeamManagementService } from '../../proxy/services/team-management';
+import { ProfileService } from '../../proxy/profile/profile.service';
+import { CompanyLegalInfoService } from '../../proxy/profile/company-legal-info.service';
 
 export type UserRole = 'candidate' | 'recruiter' | null;
 
@@ -22,7 +25,10 @@ export class NavigationService {
   constructor(
     private router: Router,
     private authStateService: AuthStateService,
-    private authFacadeService: AuthFacadeService
+    private authFacadeService: AuthFacadeService,
+    private teamManagementService: TeamManagementService,
+    private profileService: ProfileService,
+    private companyLegalInfoService: CompanyLegalInfoService
   ) {
     console.log('[NavigationService] Constructor');
     
@@ -31,6 +37,13 @@ export class NavigationService {
     this.authStateService.user$.subscribe(user => {
       console.log('[NavigationService] User changed in authStateService:', user);
       this.updateAuthStateFromUser(user);
+      
+      // Reload verification status khi user data được update (sau khi đăng nhập lại)
+      if (user && this.getCurrentRole() === 'recruiter') {
+        setTimeout(() => {
+          this.reloadVerificationStatus();
+        }, 500);
+      }
     });
     
     // KHÔNG cần subscribe vào router events để load user
@@ -88,7 +101,118 @@ export class NavigationService {
     // Verification status (chỉ cho recruiter)
     if (userRole !== 'recruiter') {
       this.isVerifiedSubject.next(false);
+    } else {
+      // Load verification status từ backend cho recruiter
+      this.loadVerificationStatus(0);
     }
+  }
+
+  // Load verification status từ backend
+  private loadVerificationStatus(retryCount: number = 0): void {
+    const maxRetries = 2; // Chỉ retry tối đa 2 lần
+    
+    this.teamManagementService.getCurrentUserInfo().pipe(
+      catchError(error => {
+        console.error('[NavigationService] Error loading user info:', error);
+        // Retry sau 1 giây nếu lỗi và chưa vượt quá maxRetries
+        if (retryCount < maxRetries) {
+          setTimeout(() => {
+            this.loadVerificationStatus(retryCount + 1);
+          }, 1000);
+        } else {
+          this.isVerifiedSubject.next(false);
+        }
+        return of(null);
+      })
+    ).subscribe({
+      next: (userInfo) => {
+        if (!userInfo) {
+          // Retry sau 1 giây nếu không có userInfo và chưa vượt quá maxRetries
+          if (retryCount < maxRetries) {
+            setTimeout(() => {
+              this.loadVerificationStatus(retryCount + 1);
+            }, 1000);
+          } else {
+            this.isVerifiedSubject.next(false);
+          }
+          return;
+        }
+
+        // Kiểm tra verification status dựa trên các bước xác thực
+        // Nếu là HR Staff (không phải Leader), coi như đã verified (vì Leader đã verify công ty)
+        if (!userInfo.isLead) {
+          // HR Staff: coi như đã verified vì công ty đã được Leader verify
+          this.isVerifiedSubject.next(true);
+          return;
+        }
+
+        // Leader: cần kiểm tra 3 bước xác thực
+        // Bước 1: Email verification (emailConfirmed)
+        // Bước 2: Company verification (có companyId và company đã được verify)
+        // Bước 3: Legal verification (legalVerificationStatus === 'approved')
+        this.loadFullVerificationStatus(userInfo.companyId);
+      }
+    });
+  }
+
+  // Public method để reload verification status (có thể gọi từ bên ngoài)
+  reloadVerificationStatus(): void {
+    const currentRole = this.getCurrentRole();
+    if (currentRole === 'recruiter') {
+      this.loadVerificationStatus(0); // Reset retry count
+    }
+  }
+
+  // Load đầy đủ verification status cho Leader
+  private loadFullVerificationStatus(companyId?: number): void {
+    // Load profile để lấy emailConfirmed
+    const profile$ = this.profileService.getCurrentUserProfile().pipe(
+      catchError(error => {
+        console.error('[NavigationService] Error loading profile:', error);
+        return of(null);
+      })
+    );
+
+    // Load company legal info nếu có companyId
+    const company$ = companyId 
+      ? this.companyLegalInfoService.getCompanyLegalInfo(companyId).pipe(
+          catchError(error => {
+            console.error('[NavigationService] Error loading company info:', error);
+            return of(null);
+          })
+        )
+      : of(null);
+
+    forkJoin({
+      profile: profile$,
+      company: company$
+    }).subscribe({
+      next: ({ profile, company }) => {
+        // Bước 1: Email verification
+        const emailVerified = !!profile?.emailConfirmed;
+
+        // Bước 2: Company verification (có companyId và company đã được verify)
+        const companyVerified = !!companyId && !!company?.verificationStatus;
+
+        // Bước 3: Legal verification
+        const legalVerified = company?.legalVerificationStatus === 'approved';
+
+        // Tất cả 3 bước phải hoàn thành
+        const isVerified = emailVerified && companyVerified && legalVerified;
+        
+        this.isVerifiedSubject.next(isVerified);
+        console.log('[NavigationService] Verification status loaded:', {
+          emailVerified,
+          companyVerified,
+          legalVerified,
+          isVerified
+        });
+      },
+      error: (error) => {
+        console.error('[NavigationService] Error loading full verification status:', error);
+        this.isVerifiedSubject.next(false);
+      }
+    });
   }
 
   // Update auth state based on route context (call this when route changes)
@@ -96,6 +220,14 @@ export class NavigationService {
     // Chỉ update từ user hiện có trong AuthStateService
     const currentUser = this.authStateService.user;
     this.updateAuthStateFromUser(currentUser);
+    
+    // Reload verification status khi route changes để đảm bảo data luôn được cập nhật
+    const currentRole = this.getCurrentRole();
+    if (currentRole === 'recruiter') {
+      setTimeout(() => {
+        this.reloadVerificationStatus();
+      }, 300);
+    }
   }
 
   // Đăng nhập candidate
@@ -122,11 +254,16 @@ export class NavigationService {
 
   // Đăng nhập recruiter
   loginAsRecruiter() {
-    // Wait for user to be set
+    // Wait for user to be set - tăng delay để đảm bảo user data đã được load đầy đủ
     setTimeout(() => {
       const user = this.authStateService.user;
       if (user) {
         this.updateAuthStateFromUser(user);
+        
+        // Reload verification status sau một khoảng thời gian để đảm bảo backend data đã được refresh
+        setTimeout(() => {
+          this.reloadVerificationStatus();
+        }, 500);
         
         const isVerified = this.isVerified();
         if (!isVerified) {
@@ -141,7 +278,7 @@ export class NavigationService {
         this.isVerifiedSubject.next(false);
         this.router.navigate(['/recruiter/recruiter-verify']);
       }
-    }, 100);
+    }, 300);
   }
 
   // Đăng nhập recruiter mà không redirect đến verify (dùng cho HR Staff)
@@ -168,6 +305,8 @@ export class NavigationService {
     this.clearAuthState();
     
     // Clear cookies client-side
+    // Lưu ý: Remember me cookie sẽ được giữ lại để điền username/password vào form login
+    // Nhưng session cookie sẽ bị xóa để logout hoàn toàn
     this.clearAuthCookies();
     
     // Call API logout
@@ -192,6 +331,7 @@ export class NavigationService {
   }
   
   // Xóa tất cả cookies liên quan đến authentication
+  // Lưu ý: KHÔNG xóa remember me cookie (candidate_remember) để giữ lại username/password
   private clearAuthCookies() {
     const cookies = [
       'access_token',
@@ -205,6 +345,8 @@ export class NavigationService {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
     });
+    
+    // KHÔNG xóa remember cookies (candidate_remember, recruiter_remember) - giữ lại để điền email/password vào form login
   }
 
   // Kiểm tra trạng thái đăng nhập

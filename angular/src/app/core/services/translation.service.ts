@@ -220,6 +220,9 @@ export class TranslationService {
       'apply_modal.file_type_error': 'Chỉ hỗ trợ file .doc, .docx, pdf',
       'apply_modal.file_size_error': 'Kích thước file không được vượt quá 5MB',
       'apply_modal.submit_success': 'Đã nộp hồ sơ ứng tuyển thành công',
+      'apply_modal.cover_letter': 'Thư giới thiệu:',
+      'apply_modal.cover_letter_description': 'Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.',
+      'apply_modal.cover_letter_placeholder': 'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.',
       
       // Job Detail - Benefits Section
       'job_detail.financial_benefits': 'Financial Benefits',
@@ -760,6 +763,9 @@ export class TranslationService {
       'apply_modal.file_type_error': 'Only .doc, .docx, pdf files are supported',
       'apply_modal.file_size_error': 'File size must not exceed 5MB',
       'apply_modal.submit_success': 'Application submitted successfully',
+      'apply_modal.cover_letter': 'Cover Letter:',
+      'apply_modal.cover_letter_description': 'A brief, well-written cover letter will help you appear more professional and make a better impression on employers.',
+      'apply_modal.cover_letter_placeholder': 'Write a brief introduction about yourself (strengths, weaknesses) and clearly state your desires and reasons for applying for this position.',
       
       // Job Detail - Benefits Section
       'job_detail.financial_benefits': 'Financial Benefits',
@@ -1201,7 +1207,6 @@ export class TranslationService {
 
   setLanguage(language: string) {
     this.currentLanguage.next(language);
-    console.log('🌐 Language changed to:', language);
   }
 
   getCurrentLanguage(): string {

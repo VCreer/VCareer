@@ -1,26 +1,23 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { NavigationService } from '../../../../core/services/navigation.service';
-import { GoogleAuthService } from '../../../../core/services/google-auth.service';
+import { NavigationService } from '../../../core/services/navigation.service';
+import { GoogleAuthService } from '../../../core/services/google-auth.service';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
   ButtonComponent, 
   ToastNotificationComponent 
-} from '../../../../shared/components';
+} from '../index';
 import { finalize } from 'rxjs/operators';
-import {AuthFacadeService} from '../../../../core/services/auth-Cookiebased/auth-facade.service';
-
-
-
+import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-login-modal',
   standalone: true,
-  templateUrl: './candidate-login.html',
-  styleUrls: ['./candidate-login.scss'],
+  templateUrl: './login-modal.html',
+  styleUrls: ['./login-modal.scss'],
   imports: [
     ReactiveFormsModule, 
     CommonModule,
@@ -30,7 +27,11 @@ import {AuthFacadeService} from '../../../../core/services/auth-Cookiebased/auth
     ToastNotificationComponent
   ]
 })
-export class LoginComponent {
+export class LoginModalComponent implements OnInit {
+  @Input() show: boolean = false;
+  @Output() close = new EventEmitter<void>();
+  @Output() loginSuccess = new EventEmitter<void>();
+
   private navigationService = inject(NavigationService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -64,10 +65,7 @@ export class LoginComponent {
 
   ngOnInit(): void {
     this.googleAuthService.initialize();
-    // Đợi form được khởi tạo xong rồi mới prefill
-    setTimeout(() => {
-      this.prefillRememberedUser();
-    }, 0);
+    this.prefillRememberedUser();
   }
 
   emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
@@ -134,6 +132,11 @@ export class LoginComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
+  onClose(): void {
+    this.resetForm();
+    this.close.emit();
+  }
+
   onSubmit() {
     this.submitAttempted = true;
 
@@ -154,21 +157,17 @@ export class LoginComponent {
         next: () => {
           // Lưu trạng thái đăng nhập vào navigation service
           this.navigationService.loginAsCandidate();
-          // Handle remember me via cookie - lưu cả username và password
-          this.setRememberCookie(rememberMe, username, password);
+          // Handle remember me via cookie
+          this.setRememberCookie(rememberMe, username);
           this.showToastMessage('Đăng nhập thành công!', 'success');
-          // Redirect đến /home thay vì / để tránh vấn đề với route root
-          setTimeout(() => this.router.navigate(['candidate/home']), 800);
+          // Emit login success event
+          setTimeout(() => {
+            this.loginSuccess.emit();
+            this.onClose();
+          }, 800);
         },
         error: (err) => {
           console.error('Candidate login error:', err);
-          console.error('Error details:', {
-            status: err?.status,
-            statusText: err?.statusText,
-            error: err?.error,
-            message: err?.message,
-            url: err?.url
-          });
           
           let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
           
@@ -196,26 +195,21 @@ export class LoginComponent {
   }
 
   navigateToSignUp() {
+    this.onClose();
     this.router.navigate(['/candidate/register']);
   }
 
   forgotPassword() {
+    this.onClose();
     this.router.navigate(['/candidate/forget-password']);
   }
 
   async signInWithGoogle() {
     try {
       this.isLoading = true;
-      console.log('Starting Google sign in...');
       
       // Sign in with Google to get idToken
       const googleUser = await this.googleAuthService.signInWithGoogle();
-      console.log('Google user received:', { 
-        id: googleUser.id, 
-        email: googleUser.email, 
-        name: googleUser.name,
-        hasIdToken: !!googleUser.idToken 
-      });
       
       if (!googleUser.idToken) {
         throw new Error('Không thể lấy token từ Google. Vui lòng thử lại.');
@@ -230,20 +224,14 @@ export class LoginComponent {
           next: () => {
             this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
             this.navigationService.loginAsCandidate();
-            // Redirect đến /home thay vì / để tránh vấn đề với route root
+            // Emit login success event
             setTimeout(() => {
-              this.router.navigate(['/home']);
+              this.loginSuccess.emit();
+              this.onClose();
             }, 800);
           },
           error: (err) => {
             console.error('Google login API error:', err);
-            console.error('Error details:', {
-              status: err?.status,
-              statusText: err?.statusText,
-              error: err?.error,
-              message: err?.message,
-              url: err?.url
-            });
             
             let msg = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
             
@@ -269,11 +257,6 @@ export class LoginComponent {
       
     } catch (error: any) {
       console.error('Google sign in error:', error);
-      console.error('Error details:', {
-        name: error?.name,
-        message: error?.message,
-        stack: error?.stack
-      });
       
       this.isLoading = false;
       
@@ -305,27 +288,22 @@ export class LoginComponent {
     if (!cookie) return;
 
     try {
-      const parsed = JSON.parse(cookie) as { remember: boolean; username: string; password?: string };
+      const parsed = JSON.parse(cookie) as { remember: boolean; username: string };
       if (parsed.remember && parsed.username) {
-        // Điền username và password vào form
-        // Sử dụng setValue thay vì patchValue để đảm bảo tất cả giá trị được set
-        this.loginForm.setValue({
+        this.loginForm.patchValue({
           username: parsed.username,
-          password: parsed.password || '', // Điền password nếu có
           rememberMe: true,
-        }, { emitEvent: false }); // Không emit event để tránh trigger validation
+        });
       }
-    } catch (error) {
+    } catch {
       // If cookie is malformed, clear it
-      console.error('Error parsing remember cookie:', error);
       this.clearRememberCookie();
     }
   }
 
-  private setRememberCookie(remember: boolean, username: string, password?: string): void {
+  private setRememberCookie(remember: boolean, username: string): void {
     if (remember) {
-      // Lưu cả username và password vào cookie
-      const payload = JSON.stringify({ remember: true, username, password: password || '' });
+      const payload = JSON.stringify({ remember: true, username });
       // Set 30-day expiry, path root
       const expires = new Date();
       expires.setDate(expires.getDate() + 30);
@@ -347,4 +325,15 @@ export class LoginComponent {
     }
     return null;
   }
+
+  private resetForm(): void {
+    this.loginForm.reset({
+      username: '',
+      password: '',
+      rememberMe: false
+    });
+    this.submitAttempted = false;
+    this.showToast = false;
+  }
 }
+

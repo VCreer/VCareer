@@ -337,9 +337,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackage = true;
 
@@ -354,15 +354,15 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
-          this.showCreatePackageModal = false;
+      this.showToastMessage('Tạo gói dịch vụ thành công', 'success');
+      this.showCreatePackageModal = false;
           this.loadPackages();
         },
         error: (error) => {
           console.error('Error creating package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể tạo gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
-        }
+    }
       });
   }
 
@@ -393,9 +393,9 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.validatePackageForm()) {
-      return;
-    }
+      if (!this.validatePackageForm()) {
+        return;
+      }
 
     this.isSavingPackageEdit = true;
 
@@ -413,8 +413,8 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: () => {
-          this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
-          this.showEditPackageModal = false;
+      this.showToastMessage('Cập nhật gói dịch vụ thành công', 'success');
+      this.showEditPackageModal = false;
           this.selectedPackage = null;
           this.loadPackages();
         },
@@ -422,7 +422,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
           console.error('Error updating package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể cập nhật gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
-        }
+    }
       });
   }
 
@@ -598,10 +598,10 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     this.subcriptionService.updateSubcription(updateDto)
       .subscribe({
         next: () => {
-          this.showToastMessage(
+    this.showToastMessage(
             newIsActive ? 'Đã kích hoạt gói dịch vụ' : 'Đã vô hiệu hóa gói dịch vụ',
-            'success'
-          );
+      'success'
+    );
           this.loadPackages();
         },
         error: (error) => {
@@ -617,13 +617,13 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   onDeletePackage(pkg: SubcriptionsViewDto): void {
 
     this.subcriptionService.deleteSubcription(pkg.id!)
-      .subscribe({
-        next: () => {
-          this.showToastMessage('Đã xóa gói dịch vụ', 'success');
-          this.loadPackages();
-        },
-        error: (error) => {
-          console.error('Error deleting package:', error);
+        .subscribe({
+          next: () => {
+      this.showToastMessage('Đã xóa gói dịch vụ', 'success');
+            this.loadPackages();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
           const errorMsg = error?.error?.error?.message || 'Không thể xóa gói dịch vụ';
           this.showToastMessage(errorMsg, 'error');
         }

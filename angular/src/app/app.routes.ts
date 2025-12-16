@@ -65,6 +65,31 @@ export const APP_ROUTES: Routes = [
         c => c.TermsOfServiceCandidateComponent
       ),
   },
+  // Public Recruiter Routes (có layout nhưng không yêu cầu đăng nhập)
+  {
+    path: 'recruiter',
+    loadComponent: () => import('./layout/candidate-layout').then(c => c.CandidateLayoutComponent),
+    // ← KHÔNG CÓ canActivate → public, ai cũng vào được
+    children: [
+      {
+        path: 'about-us',
+        loadComponent: () =>
+          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+      },
+      {
+        path: 'service',
+        loadComponent: () =>
+          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
+      },
+      {
+        path: 'service-quotation',
+        loadComponent: () =>
+          import('./features/dashboard/service-quotation/recruiter/service-quotation').then(
+            c => c.ServiceQuotationComponent
+          ),
+      },
+    ],
+  },
   //#endregion
 
   //#region Auth Routes - Redirect nếu đã login
@@ -286,16 +311,6 @@ export const APP_ROUTES: Routes = [
           import('./features/dashboard/homepage/candidate/candidate-homepage').then(
             c => c.CandidateHomepageComponent
           ),
-      },
-      {
-        path: 'about-us',
-        loadComponent: () =>
-          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
-      },
-      {
-        path: 'service',
-        loadComponent: () =>
-          import('./features/dashboard/about-us/recruiter/about-us').then(c => c.AboutUs),
       },
       {
         path: 'terms-of-service',

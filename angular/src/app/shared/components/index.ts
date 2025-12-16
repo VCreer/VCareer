@@ -71,3 +71,4 @@ export { DatePickerComponent } from './date-picker/date-picker';
 export { DateRangePickerComponent, DateRange } from './date-range-picker/date-range-picker';
 export { BarChartComponent, BarChartData } from './bar-chart/bar-chart';
 export { PieChartComponent, PieChartData } from './pie-chart/pie-chart';
+export { LoginModalComponent } from './login-modal/login-modal';

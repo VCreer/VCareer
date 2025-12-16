@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -44,7 +44,8 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     private navigationService: NavigationService,
     private teamManagementService: TeamManagementService,
     private authStateService: AuthStateService,
-    private authFacadeService: AuthFacadeService
+    private authFacadeService: AuthFacadeService,
+    private cdr: ChangeDetectorRef
   ) {
     // Subscribe to verification status
     this.isVerified = this.navigationService.isVerified();
@@ -53,16 +54,21 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       if (this.isHRStaff) {
         this.isVerified = true;
         this.verificationLevel = 'Cấp 3/3';
+        this.cdr.detectChanges();
         return;
       }
 
       // Đối với Leader Recruiter, dùng trạng thái verification global
       this.isVerified = verified;
       if (!verified) {
+        // Load verification level từ backend nếu chưa verified
+        // Tạm thời hiển thị "Chưa xác thực" hoặc có thể load chi tiết từ backend
         this.verificationLevel = 'Chưa xác thực';
       } else {
         this.verificationLevel = 'Cấp 3/3';
       }
+      // Trigger change detection
+      this.cdr.detectChanges();
     });
     
     // Kiểm tra role để phân biệt Leader Recruiter vs HR Staff
@@ -98,6 +104,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         this.updateRouteType(this.currentRoute);
         // Reload user info when route changes (in case user switched accounts)
         this.loadUserInfo();
+        // Reload verification status when route changes (đặc biệt khi vào recruiter-setting)
+        if (this.currentRoute.startsWith('/recruiter')) {
+          // Trigger reload verification status trong NavigationService
+          // NavigationService sẽ tự động load lại khi user thay đổi
+        }
       });
 
     // Monitor sidebar state changes to close dropdowns when sidebar closes
