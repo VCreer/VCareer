@@ -28,28 +28,6 @@ export interface ActivityLogListDto {
   totalCount: number;
 }
 
-export interface ActivityStatisticsDto {
-  totalActivities: number;
-  jobActivities: number;
-  emailActivities: number;
-  evaluationActivities: number;
-  interviewActivities: number;
-  todayActivities: number;
-  thisWeekActivities: number;
-  thisMonthActivities: number;
-}
-
-export interface StaffInfoDto {
-  id?: string;
-  userId?: string;
-  email?: string;
-  name?: string;
-  surname?: string;
-  fullName?: string;
-  isLead: boolean;
-  status: boolean;
-}
-
 export interface ActivityLogWithStaffDto {
   id?: string;
   userId?: string;
@@ -63,7 +41,29 @@ export interface ActivityLogWithStaffDto {
   creationTime?: string;
 }
 
+export interface ActivityStatisticsDto {
+  totalActivities: number;
+  jobActivities: number;
+  emailActivities: number;
+  evaluationActivities: number;
+  interviewActivities: number;
+  todayActivities: number;
+  thisWeekActivities: number;
+  thisMonthActivities: number;
+}
+
 export interface AllStaffActivityLogsListDto {
   activities: ActivityLogWithStaffDto[];
   totalCount: number;
+}
+
+export interface StaffInfoDto {
+  id?: string;
+  userId?: string;
+  email?: string;
+  name?: string;
+  surname?: string;
+  fullName?: string;
+  isLead: boolean;
+  status: boolean;
 }

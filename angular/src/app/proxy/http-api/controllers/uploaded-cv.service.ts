@@ -11,21 +11,21 @@ export class UploadedCvService {
   
 
   delete = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'DELETE',
       url: `/api/cv/uploaded/${id}`,
     },
     { apiName: this.apiName,...config });
-
+  
 
   downloadCv = (id: string, inline: boolean = true, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'GET',
       url: `/api/cv/uploaded/${id}/download`,
       params: { inline },
     },
     { apiName: this.apiName,...config });
-
+  
 
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<UploadedCvDto>>({
@@ -33,19 +33,19 @@ export class UploadedCvService {
       url: `/api/cv/uploaded/${id}`,
     },
     { apiName: this.apiName,...config });
-
+  
 
   getList = (input: GetUploadedCvListDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'GET',
       url: '/api/cv/uploaded',
       params: { candidateId: input.candidateId, isDefault: input.isDefault, isPublic: input.isPublic, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
-
+  
 
   setDefault = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ActionResult<any>>({
+    this.restService.request<any, ActionResult>({
       method: 'POST',
       url: `/api/cv/uploaded/${id}/set-default`,
     },

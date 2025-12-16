@@ -353,16 +353,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.showFilterDropdown = false;
     this.selectedStaff = null;
     this.cdr.detectChanges();
-    }, 50);
-  }
-
-  closeAllModals(): void {
-    this.showAddModal = false;
-    this.showEditModal = false;
-    this.showDeleteModal = false;
-    this.showFilterDropdown = false;
-    this.selectedStaff = null;
-    this.cdr.detectChanges();
   }
 
   closeAddModal(): void {

@@ -69,7 +69,7 @@
       <div class="notification-menu-wrapper">
         <app-icon-button-badge
           [badgeCount]="notificationCount"
-          [showBadge]="true"
+          [showBadge]="notificationCount > 0"
           [ariaLabel]="'Notifications'"
           [buttonClass]="'icon-btn notification-btn'"
           (click)="toggleNotificationMenu(); $event.stopPropagation()"

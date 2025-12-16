@@ -1,5 +1,9 @@
+
+export interface ActionResult {
+}
+
 export interface ActionResult<TValue=any> {
-  result: IActionResult;
+  result: ActionResult;
   value: TValue;
 }
 

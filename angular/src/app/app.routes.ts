@@ -206,7 +206,7 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
-        path: 'candidate/notifications',
+        path: 'notifications',
         loadComponent: () =>
           import('./features/dashboard/notifications/candidate/notifications').then(
             c => c.NotificationsComponent

@@ -6,11 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:src/VCareer.EntityFrameworkCore/Migrations/20251214085959_InitDatabaseVcareer.cs
     public partial class InitDatabaseVcareer : Migration
-========
-    public partial class initDb : Migration
->>>>>>>> origin/khuong:src/VCareer.EntityFrameworkCore/Migrations/20251216165550_initDb.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
