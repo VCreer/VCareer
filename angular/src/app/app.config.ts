@@ -16,6 +16,7 @@ import { provideAbpOAuth } from '@abp/ng.oauth';
 
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorHandlerInterceptor } from './core/interceptors/error-handler.interceptor';
 import { APP_CURRENT_USER_INITIALIZER } from './core/services/auth-Cookiebased/app-auth-initializer';
 
 import {
@@ -48,7 +49,7 @@ export const appConfig: ApplicationConfig = {
 
     // 3. HTTP Client
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      withInterceptors([errorHandlerInterceptor, authInterceptor]),
     ),
 
     // 4. Router

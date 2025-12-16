@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using VCareer.Dto.Profile;
 using VCareer.Models.Users;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -115,13 +116,52 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         {
             try
             {
-                // Lucene không có method trực tiếp để đếm, nên ta sẽ thử search với MatchAllDocsQuery
-                // Tạm thời return 0, có thể implement sau nếu cần
+                return await _luceneIndexer.GetIndexedCountAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Lỗi khi lấy số lượng candidates đã index");
                 return 0;
             }
-            catch
+        }
+
+        /// <summary>
+        /// Test search với MatchAllDocsQuery để kiểm tra index có data không
+        /// </summary>
+        public async Task<Dictionary<string, object>> TestIndexAsync()
+        {
+            try
             {
-                return 0;
+                var result = new Dictionary<string, object>();
+                
+                // Get indexed count
+                var count = await _luceneIndexer.GetIndexedCountAsync();
+                result["IndexedCount"] = count;
+                
+                // Test search with MatchAllDocsQuery
+                var testInput = new SearchCandidateInputDto
+                {
+                    Keyword = null, // No keyword to test MatchAllDocsQuery
+                    MaxResultCount = 5,
+                    SkipCount = 0
+                };
+                
+                var testResults = await _luceneIndexer.SearchCandidateIdsAsync(testInput);
+                result["MatchAllDocsCount"] = testResults.Count;
+                result["MatchAllDocsIds"] = testResults;
+                
+                // Test search with a simple keyword
+                testInput.Keyword = "*"; // Wildcard to match all
+                var keywordResults = await _luceneIndexer.SearchCandidateIdsAsync(testInput);
+                result["KeywordSearchCount"] = keywordResults.Count;
+                result["KeywordSearchIds"] = keywordResults;
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Lỗi khi test index");
+                return new Dictionary<string, object> { { "Error", ex.Message } };
             }
         }
     }

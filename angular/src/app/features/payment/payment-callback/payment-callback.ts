@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
+import { CartService } from '../../../core/services/cart.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { ButtonComponent } from '../../../shared/components/button/button';
@@ -27,7 +28,8 @@ export class PaymentCallbackComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private orderService: OrderService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cartService: CartService
   ) {}
 
   ngOnInit() {
@@ -48,11 +50,13 @@ export class PaymentCallbackComponent implements OnInit {
       } else if (this.error) {
         this.paymentStatus = 'error';
         this.isLoading = false;
+        this.redirectToCartOnFailure();
       } else if (this.orderId) {
         this.loadOrderDetails();
       } else {
         this.paymentStatus = 'error';
         this.isLoading = false;
+        this.redirectToCartOnFailure();
       }
     });
   }
@@ -68,8 +72,20 @@ export class PaymentCallbackComponent implements OnInit {
         // Determine payment status
         if (order.paymentStatus === PaymentStatus.Paid) {
           this.paymentStatus = 'success';
+          // Clear cart after successful payment
+          this.cartService.clearCart().subscribe({
+            next: () => {
+              // Cart cleared, nothing else to do here
+            },
+            error: (err) => {
+              console.error('Error clearing cart after successful payment:', err);
+            }
+          });
         } else if (order.paymentStatus === PaymentStatus.Failed) {
           this.paymentStatus = 'failed';
+          this.isLoading = false;
+          this.redirectToCartOnFailure();
+          return;
         } else {
           this.paymentStatus = 'pending';
         }
@@ -81,7 +97,7 @@ export class PaymentCallbackComponent implements OnInit {
         console.error('Error processing VNPay callback:', error);
         this.paymentStatus = 'error';
         this.isLoading = false;
-        this.replaceWithCleanParams({ error: 'Có lỗi khi xử lý thanh toán.' });
+        this.redirectToCartOnFailure();
       }
     });
   }
@@ -100,8 +116,18 @@ export class PaymentCallbackComponent implements OnInit {
         // Determine payment status based on PaymentStatus enum
         if (order.paymentStatus === PaymentStatus.Paid) {
           this.paymentStatus = 'success';
+          // Clear cart after successful payment
+          this.cartService.clearCart().subscribe({
+            next: () => {},
+            error: (err) => {
+              console.error('Error clearing cart after successful payment:', err);
+            }
+          });
         } else if (order.paymentStatus === PaymentStatus.Failed) {
           this.paymentStatus = 'failed';
+          this.isLoading = false;
+          this.redirectToCartOnFailure();
+          return;
         } else if (order.paymentStatus === PaymentStatus.Processing) {
           this.paymentStatus = 'pending';
         } else {
@@ -109,13 +135,13 @@ export class PaymentCallbackComponent implements OnInit {
         }
         
         this.isLoading = false;
-      this.replaceWithCleanParams();
+        this.replaceWithCleanParams();
       },
       error: (error) => {
         console.error('Error loading order details:', error);
         this.paymentStatus = 'error';
         this.isLoading = false;
-      this.replaceWithCleanParams({ error: 'Không thể tải thông tin đơn hàng.' });
+        this.redirectToCartOnFailure();
       }
     });
   }
@@ -191,6 +217,14 @@ export class PaymentCallbackComponent implements OnInit {
       queryParams,
       replaceUrl: true
     });
+  }
+
+  /**
+   * Khi thanh toán thất bại/hủy, chuyển ngay về giỏ hàng recruiter.
+   * Tránh hiện trang thất bại riêng.
+   */
+  private redirectToCartOnFailure(): void {
+    this.router.navigate(['/recruiter/cart']);
   }
 }
 

@@ -19,5 +19,9 @@
       <p>{{ translate('notifications.no_notifications') || 'Không có thông báo mới' }}</p>
     </div>
   </div>
+
+  <div class="notification-view-all" *ngIf="showViewAll">
+    <a (click)="onViewAll($event)">Xem tất cả thông báo</a>
+  </div>
 </div>
 
