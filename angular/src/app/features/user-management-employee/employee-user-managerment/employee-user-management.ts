@@ -100,7 +100,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   // Search & Filter
   searchKeyword = '';
   filterStatus = '';
-  filterCompany = '';
   filterRole = '';
   filterDateFrom = '';
   filterDateTo = '';
@@ -124,14 +123,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     { value: 'active', label: 'Đang hoạt động' },
     { value: 'inactive', label: 'Ngừng hoạt động' },
     { value: 'locked', label: 'Đã khóa' }
-  ];
-
-  // Company options
-  companyOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả công ty' },
-    { value: 'Công ty ABC', label: 'Công ty ABC' },
-    { value: 'Công ty XYZ', label: 'Công ty XYZ' },
-    { value: 'Công ty DEF', label: 'Công ty DEF' }
   ];
 
   // Role filter options
@@ -467,11 +458,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       } else if (this.filterStatus === 'locked') {
         result = result.filter(u => u.isLocked);
       }
-    }
-
-    // Filter by company
-    if (this.filterCompany) {
-      result = result.filter(u => u.companyName === this.filterCompany);
     }
 
     // Filter by role

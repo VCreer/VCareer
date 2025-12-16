@@ -156,10 +156,20 @@ namespace VCareer.Services.User
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
 
-            await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
+            // IdentityUserUpdateDto yêu cầu các trường bắt buộc (UserName, Email, ...) khi cập nhật
+            // nên cần map lại từ user hiện tại thay vì chỉ truyền IsActive.
+            var updateDto = new IdentityUserUpdateDto
             {
-                IsActive = isActive
-            });
+                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = isActive,
+                ConcurrencyStamp = user.ConcurrencyStamp
+            };
+
+            await _userAppService.UpdateAsync(userId, updateDto);
         }
         public async Task<List<IdentityRoleDto>> GetAllRolesAsync()
         {

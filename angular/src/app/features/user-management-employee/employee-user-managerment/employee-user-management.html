@@ -58,14 +58,6 @@
           </div>
           <div class="filter-group">
             <app-select-field
-              placeholder="Tất cả công ty"
-              [options]="companyOptions"
-              [(ngModel)]="filterCompany"
-              (ngModelChange)="onFilterChange()">
-            </app-select-field>
-          </div>
-          <div class="filter-group">
-            <app-select-field
               placeholder="Tất cả vai trò"
               [options]="roleFilterOptions"
               [(ngModel)]="filterRole"
@@ -158,12 +150,6 @@
         <table class="users-table">
           <thead>
             <tr>
-              <th (click)="onSort('username')" class="sortable">
-                Id
-                <i class="fa fa-sort" *ngIf="sortField !== 'username'"></i>
-                <i class="fa fa-sort-up" *ngIf="sortField === 'username' && sortDirection === 'asc'"></i>
-                <i class="fa fa-sort-down" *ngIf="sortField === 'username' && sortDirection === 'desc'"></i>
-              </th>
               <th (click)="onSort('fullName')" class="sortable">
                 Họ tên
                 <i class="fa fa-sort" *ngIf="sortField !== 'fullName'"></i>
@@ -188,7 +174,6 @@
           </thead>
           <tbody>
             <tr *ngFor="let user of paginatedUsers">
-              <td class="username-cell">{{ user.username }}</td>
               <td>{{ user.fullName }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.roleDisplay || '-' }}</td>
