@@ -326,10 +326,7 @@ export class CartComponent implements OnInit, OnDestroy {
         this.orderService.createVnpayPaymentUrl({ orderId: order.id }).subscribe({
           next: (paymentResponse) => {
             console.log('Payment URL created:', paymentResponse.paymentUrl);
-            
-            // Clear selected items from cart before redirecting to payment
-            this.clearSelectedItemsFromCart();
-            
+
             this.isProcessing = false;
             
             // Redirect to VNPay payment page

@@ -79,7 +79,7 @@ public class VCareerDbContext :
     public DbSet<Tag> Tags { get; set; }
     public DbSet<JobTag> JobPostingTags { get; set; }
     public DbSet<Categoty_Tag> CategoryTags { get; set; }
-    /*   public DbSet<SavedJob> SavedJobs { get; set; }*/
+    public DbSet<SavedJob> SavedJobs { get; set; }
     public DbSet<FileDescriptor> FileDescriptors { get; set; }
     public DbSet<UploadedCv> UploadedCvs { get; set; }
 
@@ -238,6 +238,23 @@ public class VCareerDbContext :
          .HasForeignKey(x => x.JobId)
          .OnDelete(DeleteBehavior.Cascade);
     });
+
+        // SavedJob: composite key + tránh multiple cascade paths
+        builder.Entity<SavedJob>(b =>
+        {
+            b.ToTable("SavedJobs");
+            b.HasKey(x => new { x.CandidateId, x.JobId });
+
+            b.HasOne(x => x.CandidateProfile)
+                .WithMany()
+                .HasForeignKey(x => x.CandidateId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            b.HasOne(x => x.JobPosting)
+                .WithMany()
+                .HasForeignKey(x => x.JobId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
         builder.Entity<RecruitmentCampaign>(r =>
         {
 
@@ -265,7 +282,7 @@ public class VCareerDbContext :
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
         });
 
-        /*   builder.Entity<SavedJob>(e =>
+          builder.Entity<SavedJob>(e =>
       {
           e.ToTable(VCareerConsts.DbTablePrefix + "SavedJobs", VCareerConsts.DbSchema);
           e.ConfigureByConvention();
@@ -325,7 +342,7 @@ public class VCareerDbContext :
                // Unique constraints
                c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
                c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
-           });*/
+           });
         // ========== CV Template Configuration ==========
         builder.Entity<CvTemplate>(template =>
         {
