@@ -453,7 +453,9 @@ namespace VCareer.Services.Auth
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            //check ma so thue
+            // TODO: validate tax code format / external VietQR service if needed.
+            // Logic: allow multiple recruiters to share the same company by TaxCode.
+            // If a company with the given TaxCode already exists, reuse it instead of creating a new one.
 
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
@@ -465,16 +467,20 @@ namespace VCareer.Services.Auth
             result = await _identityManager.AddToRoleAsync(newUser, role.Name);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            //tạo công ty
-            var company = new Company
+            // Tạo hoặc tái sử dụng công ty theo mã số thuế
+            Company company = await _companyRepository.FirstOrDefaultAsync(c => c.TaxCode == input.TaxCode);
+            if (company == null)
             {
-                CompanyName = input.CompanyName,
-                TaxCode = input.TaxCode,
-            };
-            await _companyRepository.InsertAsync(company);
-            await CurrentUnitOfWork.SaveChangesAsync();  // lay id som
+                company = new Company
+                {
+                    CompanyName = input.CompanyName,
+                    TaxCode = input.TaxCode,
+                };
+                await _companyRepository.InsertAsync(company);
+                await CurrentUnitOfWork.SaveChangesAsync();  // Lấy Id sớm cho recruiter profile
+            }
 
-            // cập nhật tạo bản ghi vào canđiate profile
+            // Tạo RecruiterProfile và gắn với CompanyId ở trên
             var recruiterProfile = new RecruiterProfile
             {
                 UserId = newUser.Id,

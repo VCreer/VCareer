@@ -233,21 +233,39 @@ export class CandidateProfileComponent implements OnInit {
         }
 
         let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
-        if (error.status === 400 && error.error) {
-          if (error.error.errors) {
+        
+        // ABP Framework error structure can be:
+        // { error: { message: "...", details: "...", code: "..." } }
+        // or { message: "...", details: "..." } (top level)
+        if (error.error) {
+          // Check nested error structure first
+          if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          } 
+          // Check direct error.message (most common for UserFriendlyException)
+          else if (error.error.message) {
+            errorMessage = error.error.message;
+          } 
+          // Check error.details as fallback
+          else if (error.error.details) {
+            errorMessage = error.error.details;
+          } 
+          // Check validation errors
+          else if (error.error.errors) {
             const messages: string[] = [];
             Object.keys(error.error.errors).forEach(k => {
               const errs = error.error.errors[k];
-              if (Array.isArray(errs)) errs.forEach(e => messages.push(`${k}: ${e}`));
-              else messages.push(`${k}: ${errs}`);
+              if (Array.isArray(errs)) errs.forEach(e => messages.push(e));
+              else messages.push(errs);
             });
-            if (messages.length > 0) errorMessage = 'Lỗi validation:\n' + messages.join('\n');
-          } else if (error.error.error?.message) {
-            errorMessage = error.error.error.message;
-          } else if (error.error.message) {
-            errorMessage = error.error.message;
+            if (messages.length > 0) errorMessage = messages.join('\n');
           }
         }
+        // Fallback: check top-level message
+        else if (error.message) {
+          errorMessage = error.message;
+        }
+        
         this.showErrorMessage(errorMessage);
       }
     });
@@ -373,3 +391,4 @@ export class CandidateProfileComponent implements OnInit {
     this.showSuccessMessage('Đã bật tìm việc thành công!');
   }
 }
+

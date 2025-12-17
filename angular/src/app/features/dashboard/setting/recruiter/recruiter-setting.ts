@@ -442,16 +442,49 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isSaving = false;
         
-        setTimeout(() => {
-          if (!this.router.url.includes('/recruiter/recruiter-setting')) {
-            this.router.navigateByUrl(targetUrl, { skipLocationChange: false, replaceUrl: true });
+        // Extract error message from ABP UserFriendlyException
+        // ABP error structure can be:
+        // { error: { message: "...", details: "...", code: "..." } }
+        // or { message: "...", details: "..." } (top level)
+        let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
+        if (error.error) {
+          // Check nested error structure first
+          if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          } 
+          // Check direct error.message (most common for UserFriendlyException)
+          else if (error.error.message) {
+            errorMessage = error.error.message;
+          } 
+          // Check error.details as fallback
+          else if (error.error.details) {
+            errorMessage = error.error.details;
+          } 
+          // Check validation errors
+          else if (error.error.errors) {
+            const messages: string[] = [];
+            Object.keys(error.error.errors).forEach(k => {
+              const errs = error.error.errors[k];
+              if (Array.isArray(errs)) errs.forEach(e => messages.push(e));
+              else messages.push(errs);
+            });
+            if (messages.length > 0) errorMessage = messages.join('\n');
           }
-        }, 100);
+        }
+        // Fallback: check top-level message
+        else if (error.message) {
+          errorMessage = error.message;
+        }
         
-        if (error.status === 401) {
+        if (error.status === 401 || error.status === 403) {
           this.showToastMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+          setTimeout(() => {
+            if (!this.router.url.includes('/recruiter/recruiter-setting')) {
+              this.router.navigateByUrl(targetUrl, { skipLocationChange: false, replaceUrl: true });
+            }
+          }, 100);
         } else {
-          this.showToastMessage('Có lỗi xảy ra khi lưu thông tin', 'error');
+          this.showToastMessage(errorMessage, 'error');
         }
       }
     });
