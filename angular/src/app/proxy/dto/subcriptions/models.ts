@@ -1,5 +1,6 @@
 import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
 import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
+import type { JobPriorityLevel } from '../../constants/job-constant/job-priority-level.enum';
 import type { PagingDto } from '../../iservices/common/models';
 import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
 import type { SubcriptionContance_CurrencyType } from '../../constants/job-constant/subcription-contance-currency-type.enum';
@@ -17,9 +18,11 @@ export interface ChildServiceCreateDto {
   action?: SubcriptionContance_ServiceAction;
   target?: SubcriptionContance_ServiceTarget;
   isActive: boolean;
+  isEnable: boolean;
   isLifeTime: boolean;
   isAutoActive: boolean;
   isLimitUsedTime: boolean;
+  priority?: JobPriorityLevel;
   timeUsedLimit?: number;
   dayDuration?: number;
   value?: number;
@@ -45,10 +48,12 @@ export interface ChildServiceViewDto {
   description?: string;
   action?: SubcriptionContance_ServiceAction;
   target?: SubcriptionContance_ServiceTarget;
-  isLimitUsedTime: boolean;
   isActive: boolean;
+  isEnable: boolean;
   isLifeTime: boolean;
   isAutoActive: boolean;
+  isLimitUsedTime: boolean;
+  priority?: JobPriorityLevel;
   timeUsedLimit?: number;
   dayDuration?: number;
   value?: number;
@@ -78,9 +83,16 @@ export interface EffectingJobServiceViewDto {
   endDate?: string;
 }
 
+export interface OptionsChildServiceViewDto {
+  user_ChildServices: User_ChildServiceViewDto;
+  childService: ChildServiceViewDto;
+  user_subcription: User_SubcirptionViewDto;
+  subcriptionsViewDto: SubcriptionsViewDto;
+}
+
 export interface SubcriptionPriceCreateDto {
   subcriptionServiceId?: string;
-  salePercent: number;
+  newPrice: number;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
@@ -88,15 +100,16 @@ export interface SubcriptionPriceCreateDto {
 export interface SubcriptionPriceUpdateDto {
   subcriptionPriceId?: string;
   subcriptionServiceId?: string;
-  salePercent: number;
+  newPrice: number;
   effectiveFrom?: string;
   effectiveTo?: string;
 }
 
 export interface SubcriptionPriceViewDto {
   subcriptionServiceId?: string;
+  id?: string;
   originalPrice: number;
-  salePercent: number;
+  newPrice: number;
   type?: SubcriptionContance_CurrencyType;
   isExpried: boolean;
   isActive: boolean;
@@ -108,10 +121,11 @@ export interface SubcriptionsCreateDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
+  iShareable: boolean;
+  totalLimitpackage?: number;
   totalBuyEachUser: number;
   isLifeTime: boolean;
   dayDuration?: number;
@@ -131,14 +145,20 @@ export interface SubcriptionsViewDto {
   title?: string;
   description?: string;
   target?: SubcriptionContance_SubcriptorTarget;
-  status?: SubcriptionContance_SubcriptionStatus;
   originalPrice: number;
   isLimited: boolean;
   isBuyLimited: boolean;
+  iShareable: boolean;
+  totalLimitpackage?: number;
   totalBuyEachUser: number;
   isLifeTime: boolean;
   dayDuration?: number;
   isActive: boolean;
+}
+
+export interface User_ChildServiceActiveDto {
+  userSubcriptionServiceId?: string;
+  childServiceId?: string;
 }
 
 export interface User_ChildServiceUpdateDto {
@@ -150,8 +170,10 @@ export interface User_ChildServiceUpdateDto {
 
 export interface User_ChildServiceViewDto {
   userId?: string;
+  userSubcriptionId?: string;
   childServiceId?: string;
   status?: SubcriptionContance_ChildServiceStatus;
+  isPrimaryOwner: boolean;
   isLifeTime: boolean;
   isLimitUsedTime: boolean;
   usedTime?: number;
@@ -172,9 +194,11 @@ export interface User_SubcirptionUpdateDto {
 }
 
 export interface User_SubcirptionViewDto {
+  id?: string;
   userId?: string;
   subcriptionServiceId?: string;
   startDate?: string;
   endDate?: string;
   status?: SubcriptionContance_SubcriptionStatus;
+  isShared: boolean;
 }

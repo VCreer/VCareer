@@ -157,9 +157,6 @@ namespace VCareer.Services.Order
                     detailDto.SubcriptionServiceTitle = service.Title;
                 }
 
-                // NOTE: Subscription services will be created AFTER successful payment in HandleVnpayCallbackAsync
-                // Do NOT create subscription here to prevent users from getting services without paying
-
                 return orderDto;
             }
             catch (UserFriendlyException)
@@ -321,29 +318,17 @@ namespace VCareer.Services.Order
                 order.VnpayTransactionId = input.vnp_TransactionNo;
                 order.VnpayResponseCode = input.vnp_ResponseCode;
                 order.PaidAt = DateTime.Now;
-
-                // Activate subscription services for the user AFTER successful payment
-                var orderDetails = await _orderDetailRepository.GetListAsync(d => d.OrderId == order.Id);
-                foreach (var orderDetail in orderDetails)
+                var orderDetails = await _orderDetailRepository.GetListAsync(x => x.OrderId == order.Id);
+                foreach (var detailDto in orderDetails)
                 {
-                    try
+                    //tao user subcription
+                    await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
                     {
-                        await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
-                        {
-                            SubcriptionServiceId = orderDetail.SubcriptionServiceId,
-                            UserId = order.UserId
-                        });
-                        _logger.LogInformation("Subscription service {ServiceId} activated for user {UserId} after successful payment for order {OrderId}",
-                            orderDetail.SubcriptionServiceId, order.UserId, order.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log error but don't fail the entire callback
-                        // The order is already marked as paid, subscription activation failure should be handled separately
-                        _logger.LogError(ex, "Failed to activate subscription service {ServiceId} for user {UserId} after payment for order {OrderId}",
-                            orderDetail.SubcriptionServiceId, order.UserId, order.Id);
-                    }
+                        SubcriptionServiceId = detailDto.SubcriptionServiceId,
+                        UserId = _currentUser.Id.Value
+                    });
                 }
+                await _cartService.ClearCartAsync();
             }
             else
             {

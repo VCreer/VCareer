@@ -470,9 +470,32 @@ namespace VCareer.Services.Auth
                if (await _identityManager.FindByEmailAsync(input.Email) != null)
                    throw new UserFriendlyException("Email already exist");
 
-               var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-               var result = await _identityManager.CreateAsync(newUser, input.Password);
-               if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            // Tách tên thành name và surname
+            var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string name = string.Empty;
+            string surname = string.Empty;
+            
+            if (nameParts.Length == 0)
+            {
+                name = surname = string.Empty;
+            }
+            else if (nameParts.Length == 1)
+            {
+                name = surname = nameParts[0];
+            }
+            else
+            {
+                surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
+                name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
+            }
+
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
+            {
+                Name = name,
+                Surname = surname
+            };
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
             //gắn role canđiate
             var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);

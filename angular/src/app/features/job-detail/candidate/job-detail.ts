@@ -7,6 +7,7 @@ import { ToastNotificationComponent } from '../../../shared/components/toast-not
 import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
 import { JobListingsComponent } from '../../../shared/components/job-listings/job-listings';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
 
 import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api/company.service';
 import { environment } from '../../../../environments/environment';
@@ -35,6 +36,7 @@ import { forkJoin } from 'rxjs';
     FilterBarComponent,
     ApplyJobModalComponent,
     JobListingsComponent,
+    LoginModalComponent,
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],
@@ -674,6 +676,7 @@ export class JobDetailComponent implements OnInit {
   openApplyModal(): void {
     if (!this.isAuthenticated) {
       this.showLoginModal = true;
+      this.cdr.detectChanges();
       return;
     }
     this.showApplyModal = true;

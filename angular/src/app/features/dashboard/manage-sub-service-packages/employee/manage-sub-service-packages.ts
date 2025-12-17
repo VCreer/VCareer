@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { 
   ButtonComponent, 
   ToastNotificationComponent,
@@ -14,27 +15,15 @@ import {
   ToggleSwitchComponent
 } from '../../../../shared/components';
 import { ChildService_Service } from '../../../../proxy/services/subcription/child-service-.service';
-import { ChildServiceCreateDto, ChildServiceViewDto } from '../../../../proxy/dto/subcriptions/models';
-import { SubcriptionContance_ServiceAction, subcriptionContance_ServiceActionOptions } from '../../../../proxy/constants/job-constant/subcription-contance-service-action.enum';
-import { SubcriptionContance_ServiceTarget, subcriptionContance_ServiceTargetOptions } from '../../../../proxy/constants/job-constant/subcription-contance-service-target.enum';
+import { 
+  ChildServiceCreateDto, 
+  ChildServiceViewDto, 
+  ChildServiceGetDto,
+  ChildServiceUpdateDto 
+} from '../../../../proxy/dto/subcriptions/models';
+import { SubcriptionContance_ServiceAction } from '../../../../proxy/constants/job-constant/subcription-contance-service-action.enum';
+import { SubcriptionContance_ServiceTarget } from '../../../../proxy/constants/job-constant/subcription-contance-service-target.enum';
 import { JobPriorityLevel, jobPriorityLevelOptions } from '../../../../proxy/constants/job-constant/job-priority-level.enum';
-import { PagingDto } from '../../../../proxy/iservices/common/models';
-
-export interface ChildService {
-  id: string;
-  name: string;
-  description: string;
-  action?: SubcriptionContance_ServiceAction;
-  target?: SubcriptionContance_ServiceTarget;
-  priority?: JobPriorityLevel;
-  isActive: boolean;
-  isLifeTime: boolean;
-  isAutoActive: boolean;
-  isLimitUsedTime: boolean;
-  timeUsedLimit?: number;
-  dayDuration?: number;
-  value?: number;
-}
 
 @Component({
   selector: 'app-manage-sub-service-packages',
@@ -55,22 +44,23 @@ export interface ChildService {
   styleUrls: ['./manage-sub-service-packages.scss']
 })
 export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
-  // Sidebar state
   sidebarWidth = 72;
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
 
-  // Toast
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
-  // Data
-  allChildServices: ChildService[] = [];
-  filteredChildServices: ChildService[] = [];
-  paginatedChildServices: ChildService[] = [];
+  isLoading = false;
+  isCreating = false;
+  isUpdating = false;
+  isDeleting = false;
 
-  // Search & Filter
+  allChildServices: ChildServiceViewDto[] = [];
+  filteredChildServices: ChildServiceViewDto[] = [];
+  paginatedChildServices: ChildServiceViewDto[] = [];
+
   searchKeyword = '';
   filterAction: string = '';
   filterTarget: string = '';
@@ -78,71 +68,57 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   sortField: 'name' | 'action' | 'target' | 'isActive' = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  // Status options
   statusOptions: StatusOption[] = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang hoạt động' },
     { value: 'inactive', label: 'Ngừng hoạt động' }
   ];
 
-  // Action options
   actionOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả hành động' },
-    ...subcriptionContance_ServiceActionOptions.map(opt => ({
-      value: String(opt.value),
-      label: this.getActionLabel(opt.value as SubcriptionContance_ServiceAction)
-    }))
+    { value: '', label: 'Tất cả hành động' }
   ];
 
-  // Target options
   targetOptions: SelectOption[] = [
     { value: '', label: 'Tất cả đối tượng' },
-    ...subcriptionContance_ServiceTargetOptions.map(opt => ({
-      value: String(opt.value),
-      label: this.getTargetLabel(opt.value as SubcriptionContance_ServiceTarget)
-    }))
+    { value: String(SubcriptionContance_ServiceTarget.JobPost), label: 'Tin tuyển dụng' },
+ //   { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
   ];
 
-  // Form options for create/edit - will be initialized in ngOnInit
-  formActionOptions: SelectOption[] = [];
   formTargetOptions: SelectOption[] = [];
+  formActionOptions: SelectOption[] = [];
   formPriorityOptions: SelectOption[] = [];
 
-  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
 
-  // Modals
   showCreateModal = false;
   showEditModal = false;
-  selectedChildService: ChildService | null = null;
+  selectedChildService: ChildServiceViewDto | null = null;
 
-  // Actions Menu
   showActionsMenu: string | null = null;
   menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
 
-  // Form data
-  createForm: ChildServiceCreateDto = {
-    name: '',
-    description: '',
-    action: undefined,
-    target: undefined,
-    isActive: true,
-    isLifeTime: false,
-    isAutoActive: false,
-    isLimitUsedTime: false,
-    timeUsedLimit: undefined,
-    dayDuration: undefined,
-    value: undefined
-  };
-
-  // String bindings for select fields (SelectFieldComponent uses string)
+  createForm: ChildServiceCreateDto = this.getDefaultCreateForm();
   createFormActionString: string = '';
   createFormTargetString: string = '';
   createFormPriorityString: string = '';
 
-  editForm: Partial<ChildService> = {};
+  editForm: ChildServiceUpdateDto = {
+    cHildServiceId: '',
+    name: '',
+    description: '',
+    isActive: true
+  };
+
+  // Các trường được khóa dựa trên action
+  isFieldLocked = {
+    isLifeTime: false,
+    isLimitUsedTime: false,
+    isAutoActive: false,
+    priority: false,
+    timeUsedLimit: false
+  };
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -150,31 +126,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Initialize form options
-    this.formActionOptions = [
-      { value: '', label: 'Chọn hành động' },
-      ...subcriptionContance_ServiceActionOptions.map(opt => ({
-        value: String(opt.value),
-        label: this.getActionLabel(opt.value as SubcriptionContance_ServiceAction)
-      }))
-    ];
-
-    this.formTargetOptions = [
-      { value: '', label: 'Chọn đối tượng' },
-      ...subcriptionContance_ServiceTargetOptions.map(opt => ({
-        value: String(opt.value),
-        label: this.getTargetLabel(opt.value as SubcriptionContance_ServiceTarget)
-      }))
-    ];
-
-    this.formPriorityOptions = [
-      { value: '', label: 'Chọn mức độ ưu tiên' },
-      ...jobPriorityLevelOptions.map(opt => ({
-        value: String(opt.value),
-        label: this.getPriorityLabel(opt.value as JobPriorityLevel)
-      }))
-    ];
-
+    this.initializeFormOptions();
     this.checkSidebarState();
     
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
@@ -204,6 +156,52 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private initializeFormOptions(): void {
+    this.formTargetOptions = [
+      { value: '', label: 'Chọn đối tượng' },
+      { value: String(SubcriptionContance_ServiceTarget.JobPost), label: 'Tin tuyển dụng' },
+   //   { value: String(SubcriptionContance_ServiceTarget.Company), label: 'Công ty' }
+    ];
+
+    this.formPriorityOptions = [
+      { value: '', label: 'Chọn mức độ ưu tiên' },
+      ...jobPriorityLevelOptions.map(opt => ({
+        value: String(opt.value),
+        label: this.getPriorityLabel(opt.value as JobPriorityLevel)
+      }))
+    ];
+
+    this.formActionOptions = [
+      { value: '', label: 'Chọn hành động' }
+    ];
+
+    this.actionOptions = [
+      { value: '', label: 'Tất cả hành động' },
+      { value: String(SubcriptionContance_ServiceAction.BoostScoreJob), label: 'Tăng điểm Job' },
+      { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
+      { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' },
+    //  { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
+    ];
+  }
+
+  private getDefaultCreateForm(): ChildServiceCreateDto {
+    return {
+      name: '',
+      description: '',
+      action: undefined,
+      target: undefined,
+      isActive: true,
+      isEnable: true,
+      isLifeTime: false,
+      isAutoActive: false,
+      isLimitUsedTime: false,
+      priority: undefined,
+      timeUsedLimit: undefined,
+      dayDuration: undefined,
+      value: undefined
+    };
+  }
+
   private checkSidebarState(): void {
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
@@ -220,131 +218,52 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   }
 
   loadChildServices(): void {
-    // const paging: PagingDto = {
-    //   pageSize: 1000, // Load all for now
-    //   pageIndex: 0
-    // };
-
-    // const serviceActionParam = this.getServiceActionParam();
-    // const targetParam = this.getServiceTargetParam();
-
-    // this.childServiceService.getChildServices(
-    //   serviceActionParam,
-    //   targetParam,
-    //   null,
-    //   true
-    // ).subscribe({
-    //   next: (childServices: ChildServiceViewDto[]) => {
-    //     this.allChildServices = childServices.map(cs => this.mapToChildService(cs));
-    //     this.applyFilters();
-    //   },
-    //   error: (err) => {
-    //     console.error('Error loading child services:', err);
-    //     this.showToastMessage('Không thể tải danh sách dịch vụ phụ', 'error');
-    //     // Load mock data for development
-    //     this.loadMockData();
-    //   }
-    // });
-  }
-
-  private loadMockData(): void {
-    this.allChildServices = [
-      {
-        id: '1',
-        name: 'Boost CV Score',
-        description: 'Tăng điểm CV để hiển thị ưu tiên',
-        action: SubcriptionContance_ServiceAction.BoostScoreCv,
-        target: SubcriptionContance_ServiceTarget.Cv,
-        isActive: true,
-        isLifeTime: false,
-        isAutoActive: true,
-        isLimitUsedTime: true,
-        timeUsedLimit: 10,
-        dayDuration: 30,
-        value: 100
+    this.isLoading = true;
+    const dto: ChildServiceGetDto = {
+      pagingDto: {
+        pageSize: 1000,
+        pageIndex: 0
       },
-      {
-        id: '2',
-        name: 'Top List Job',
-        description: 'Đưa tin tuyển dụng lên top danh sách',
-        action: SubcriptionContance_ServiceAction.TopList,
-        target: SubcriptionContance_ServiceTarget.JobPost,
-        isActive: true,
-        isLifeTime: true,
-        isAutoActive: false,
-        isLimitUsedTime: false
-      }
-    ];
-    this.applyFilters();
-  }
-
-  private mapToChildService(dto: ChildServiceViewDto): ChildService {
-    return {
-      id: dto.id|| '',
-      name: dto.name || '',
-      description: dto.description || '',
-      action: dto.action,
-      target: dto.target,
-      priority: (dto as any).priority as JobPriorityLevel | undefined,
-      isActive: dto.isActive,
-      isLifeTime: dto.isLifeTime,
-      isAutoActive: dto.isAutoActive,
-      isLimitUsedTime: dto.isLimitUsedTime,
-      timeUsedLimit: dto.timeUsedLimit,
-      dayDuration: dto.dayDuration,
-      value: dto.value
+      serviceAction: undefined,
+      target: undefined,
+      isActive: undefined
     };
-  }
 
-  private getServiceActionParam(): string | undefined {
-    if (!this.filterAction && this.filterAction !== '0') {
-      return undefined;
-    }
-
-    const actionIndex = Number(this.filterAction);
-    if (Number.isNaN(actionIndex)) {
-      return undefined;
-    }
-
-    return SubcriptionContance_ServiceAction[actionIndex];
-  }
-
-  private getServiceTargetParam(): string | undefined {
-    if (!this.filterTarget && this.filterTarget !== '0') {
-      return undefined;
-    }
-
-    const targetIndex = Number(this.filterTarget);
-    if (Number.isNaN(targetIndex)) {
-      return undefined;
-    }
-
-    return SubcriptionContance_ServiceTarget[targetIndex];
+    this.childServiceService.getChildServices(dto)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (childServices: ChildServiceViewDto[]) => {
+          this.allChildServices = childServices;
+          this.applyFilters();
+        },
+        error: (err) => {
+          console.error('Error loading child services:', err);
+          this.showToastMessage('Không thể tải danh sách dịch vụ con', 'error');
+          this.allChildServices = [];
+          this.applyFilters();
+        }
+      });
   }
 
   applyFilters(): void {
     let result = [...this.allChildServices];
 
-    // Search
     if (this.searchKeyword.trim()) {
       const keyword = this.searchKeyword.toLowerCase();
       result = result.filter(cs =>
-        cs.name.toLowerCase().includes(keyword) ||
-        cs.description.toLowerCase().includes(keyword)
+        (cs.name || '').toLowerCase().includes(keyword) ||
+        (cs.description || '').toLowerCase().includes(keyword)
       );
     }
 
-    // Filter by action
     if (this.filterAction) {
       result = result.filter(cs => cs.action === Number(this.filterAction));
     }
 
-    // Filter by target
     if (this.filterTarget) {
       result = result.filter(cs => cs.target === Number(this.filterTarget));
     }
 
-    // Filter by status
     if (this.filterStatus) {
       if (this.filterStatus === 'active') {
         result = result.filter(cs => cs.isActive);
@@ -353,7 +272,6 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Sort
     result.sort((a, b) => {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
@@ -372,6 +290,8 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
 
     this.filteredChildServices = result;
     this.totalPages = Math.ceil(this.filteredChildServices.length / this.itemsPerPage);
+    if (this.totalPages === 0) this.totalPages = 1;
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
     this.updatePagination();
   }
 
@@ -408,23 +328,113 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
 
   // CRUD Actions
   onCreateChildService(): void {
-    this.createForm = {
-      name: '',
-      description: '',
-      action: undefined,
-      target: undefined,
-      isActive: true,
-      isLifeTime: false,
-      isAutoActive: false,
-      isLimitUsedTime: false,
-      timeUsedLimit: undefined,
-      dayDuration: undefined,
-      value: undefined
-    };
+    this.createForm = this.getDefaultCreateForm();
     this.createFormActionString = '';
     this.createFormTargetString = '';
     this.createFormPriorityString = '';
+    this.resetFieldLocks();
     this.showCreateModal = true;
+  }
+
+  onTargetChange(): void {
+    this.createFormActionString = '';
+    this.createForm.action = undefined;
+    this.resetFieldLocks();
+
+    if (!this.createFormTargetString) {
+      this.formActionOptions = [
+        { value: '', label: 'Chọn hành động' }
+      ];
+      return;
+    }
+
+    const target = Number(this.createFormTargetString);
+
+    if (target === SubcriptionContance_ServiceTarget.JobPost) {
+      this.formActionOptions = [
+        { value: '', label: 'Chọn hành động' },
+        { value: String(SubcriptionContance_ServiceAction.BoostScoreJob), label: 'Tăng điểm Job' },
+        { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
+        { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' }
+      ];
+    } else if (target === SubcriptionContance_ServiceTarget.Company) {
+      this.formActionOptions = [
+        { value: '', label: 'Chọn hành động' },
+ //       { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
+      ];
+    } else {
+      this.formActionOptions = [
+        { value: '', label: 'Chọn hành động' }
+      ];
+    }
+  }
+
+  onActionChange(): void {
+    if (!this.createFormActionString) {
+      this.resetFieldLocks();
+      return;
+    }
+
+    const action = Number(this.createFormActionString) as SubcriptionContance_ServiceAction;
+    this.applyActionRules(action);
+  }
+
+  private applyActionRules(action: SubcriptionContance_ServiceAction): void {
+    this.resetFieldLocks();
+
+    switch (action) {
+      case SubcriptionContance_ServiceAction.BoostScoreJob:
+      case SubcriptionContance_ServiceAction.TopList:
+        this.createForm.isLifeTime = false;
+        this.createForm.isLimitUsedTime = true;
+        this.createForm.isAutoActive = false;
+        this.createForm.target = SubcriptionContance_ServiceTarget.JobPost;
+        
+        this.isFieldLocked.isLifeTime = true;
+        this.isFieldLocked.isLimitUsedTime = true;
+        this.isFieldLocked.isAutoActive = true;
+        break;
+
+      case SubcriptionContance_ServiceAction.JobBadge:
+        this.createForm.isLifeTime = false;
+        this.createForm.isLimitUsedTime = true;
+        this.createForm.isAutoActive = false;
+        this.createForm.target = SubcriptionContance_ServiceTarget.JobPost;
+        this.createForm.priority = undefined;
+        this.createFormPriorityString = '';
+        
+        this.isFieldLocked.isLifeTime = true;
+        this.isFieldLocked.isLimitUsedTime = true;
+        this.isFieldLocked.isAutoActive = true;
+        this.isFieldLocked.priority = true;
+        break;
+
+      case SubcriptionContance_ServiceAction.ThemeCompany:
+        this.createForm.isLifeTime = false;
+        this.createForm.isLimitUsedTime = false;
+        this.createForm.isAutoActive = true;
+        this.createForm.target = SubcriptionContance_ServiceTarget.Company;
+        this.createForm.timeUsedLimit = undefined;
+        this.createForm.priority = undefined;
+        this.createFormPriorityString = '';
+        
+        this.isFieldLocked.isLifeTime = true;
+        this.isFieldLocked.isLimitUsedTime = true;
+        this.isFieldLocked.isAutoActive = true;
+        this.isFieldLocked.priority = true;
+        this.isFieldLocked.timeUsedLimit = true;
+        break;
+    }
+  }
+
+  private resetFieldLocks(): void {
+    this.isFieldLocked = {
+      isLifeTime: false,
+      isLimitUsedTime: false,
+      isAutoActive: false,
+      priority: false,
+      timeUsedLimit: false
+    };
   }
 
   onConfirmCreate(): void {
@@ -433,45 +443,80 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const dto: ChildServiceCreateDto & { priority?: JobPriorityLevel } = {
+    if (!this.createFormTargetString) {
+      this.showToastMessage('Vui lòng chọn đối tượng', 'error');
+      return;
+    }
+
+    if (!this.createFormActionString) {
+      this.showToastMessage('Vui lòng chọn hành động', 'error');
+      return;
+    }
+
+    if (this.createForm.isLifeTime && this.createForm.timeUsedLimit && this.createForm.timeUsedLimit > 0) {
+      this.showToastMessage('Không thể có giới hạn số lần dùng khi là vĩnh viễn', 'error');
+      return;
+    }
+
+    if (!this.createForm.isLifeTime && (!this.createForm.timeUsedLimit || this.createForm.timeUsedLimit <= 0)) {
+      this.showToastMessage('Cần có giới hạn số lần dùng khi không phải vĩnh viễn', 'error');
+      return;
+    }
+
+    if (this.createForm.dayDuration && this.createForm.dayDuration < 0) {
+      this.showToastMessage('Số ngày phải lớn hơn 0', 'error');
+      return;
+    }
+
+    if (this.createForm.timeUsedLimit && this.createForm.timeUsedLimit < 0) {
+      this.showToastMessage('Số lần dùng phải lớn hơn 0', 'error');
+      return;
+    }
+
+    if (this.isCreating) return;
+
+    this.isCreating = true;
+    const dto: ChildServiceCreateDto = {
       name: this.createForm.name,
       description: this.createForm.description,
-      action: this.createFormActionString ? (Number(this.createFormActionString) as SubcriptionContance_ServiceAction) : undefined,
-      target: this.createFormTargetString ? (Number(this.createFormTargetString) as SubcriptionContance_ServiceTarget) : undefined,
+      action: Number(this.createFormActionString) as SubcriptionContance_ServiceAction,
+      target: Number(this.createFormTargetString) as SubcriptionContance_ServiceTarget,
       isActive: this.createForm.isActive,
+      isEnable: this.createForm.isEnable,
       isLifeTime: this.createForm.isLifeTime,
       isAutoActive: this.createForm.isAutoActive,
       isLimitUsedTime: this.createForm.isLimitUsedTime,
+      priority: this.createFormPriorityString ? (Number(this.createFormPriorityString) as JobPriorityLevel) : undefined,
       timeUsedLimit: this.createForm.isLimitUsedTime ? this.createForm.timeUsedLimit : undefined,
       dayDuration: !this.createForm.isLifeTime ? this.createForm.dayDuration : undefined,
-      value: this.createForm.value,
-      priority: this.createFormPriorityString ? (Number(this.createFormPriorityString) as JobPriorityLevel) : undefined
+      value: this.createForm.value
     };
 
-    this.childServiceService.createChildService(dto).subscribe({
-      next: () => {
-        this.showToastMessage('Tạo dịch vụ phụ thành công', 'success');
-        this.showCreateModal = false;
-        this.loadChildServices();
-      },
-      error: (err) => {
-        console.error('Error creating child service:', err);
-        this.showToastMessage('Tạo dịch vụ phụ thất bại', 'error');
-      }
-    });
+    this.childServiceService.createChildService(dto)
+      .pipe(finalize(() => this.isCreating = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Tạo dịch vụ con thành công', 'success');
+          this.showCreateModal = false;
+          this.loadChildServices();
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Tạo dịch vụ con thất bại';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
   }
 
-  onEditChildService(childService: ChildService): void {
+  onEditChildService(childService: ChildServiceViewDto): void {
     this.selectedChildService = childService;
     this.editForm = {
-      id: childService.id,
+      cHildServiceId: childService.id,
       name: childService.name,
       description: childService.description,
       isActive: childService.isActive
     };
     this.showEditModal = true;
-    this.showActionsMenu = null;
-    this.menuPosition = null;
+    this.closeActionsMenu();
   }
 
   onConfirmEdit(): void {
@@ -480,46 +525,69 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: Call update API when available
-    const index = this.allChildServices.findIndex(cs => cs.id === this.selectedChildService!.id);
-    if (index > -1) {
-      this.allChildServices[index].name = this.editForm.name || '';
-      this.allChildServices[index].description = this.editForm.description || '';
-      this.allChildServices[index].isActive = this.editForm.isActive ?? true;
-      this.applyFilters();
-      this.showToastMessage('Cập nhật dịch vụ phụ thành công', 'success');
-    }
-    this.showEditModal = false;
-    this.selectedChildService = null;
-  }
+    if (this.isUpdating) return;
 
-  onDeleteChildService(childService: ChildService): void {
-    if (confirm(`Xóa dịch vụ phụ "${childService.name}"?`)) {
-      this.childServiceService.deleteChildService(childService.id).subscribe({
+    this.isUpdating = true;
+    this.childServiceService.updateChildService(this.editForm)
+      .pipe(finalize(() => this.isUpdating = false))
+      .subscribe({
         next: () => {
-          this.showToastMessage('Đã xóa dịch vụ phụ', 'success');
+          this.showToastMessage('Cập nhật dịch vụ con thành công', 'success');
+          this.showEditModal = false;
+          this.selectedChildService = null;
           this.loadChildServices();
         },
         error: (err) => {
-          console.error('Error deleting child service:', err);
-          this.showToastMessage('Xóa dịch vụ phụ thất bại', 'error');
+          const errorMsg = err?.error?.error?.message || 'Cập nhật dịch vụ con thất bại';
+          this.showToastMessage(errorMsg, 'error');
         }
       });
-    }
-    this.showActionsMenu = null;
-    this.menuPosition = null;
   }
 
-  onToggleActive(childService: ChildService): void {
-    // TODO: Call API to toggle active status
-    childService.isActive = !childService.isActive;
-    this.applyFilters();
-    this.showToastMessage(
-      childService.isActive ? 'Đã kích hoạt dịch vụ phụ' : 'Đã vô hiệu hóa dịch vụ phụ',
-      'success'
-    );
-    this.showActionsMenu = null;
-    this.menuPosition = null;
+  onDeleteChildService(childService: ChildServiceViewDto): void {
+    if (!confirm(`Bạn có chắc chắn muốn xóa dịch vụ con "${childService.name}"? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+
+    if (this.isDeleting) return;
+
+    this.isDeleting = true;
+    this.childServiceService.deleteChildService(childService.id!)
+      .pipe(finalize(() => this.isDeleting = false))
+      .subscribe({
+        next: () => {
+          this.showToastMessage('Đã xóa dịch vụ con', 'success');
+          this.loadChildServices();
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Xóa dịch vụ con thất bại';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
+    
+    this.closeActionsMenu();
+  }
+
+  onToggleActive(childService: ChildServiceViewDto): void {
+    const newStatus = !childService.isActive;
+    
+    this.childServiceService.setStatusChildService(childService.id!, newStatus)
+      .subscribe({
+        next: () => {
+          childService.isActive = newStatus;
+          this.applyFilters();
+          this.showToastMessage(
+            newStatus ? 'Đã kích hoạt dịch vụ con' : 'Đã vô hiệu hóa dịch vụ con',
+            'success'
+          );
+        },
+        error: (err) => {
+          const errorMsg = err?.error?.error?.message || 'Không thể thay đổi trạng thái';
+          this.showToastMessage(errorMsg, 'error');
+        }
+      });
+    
+    this.closeActionsMenu();
   }
 
   // Actions Menu
@@ -538,6 +606,11 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private closeActionsMenu(): void {
+    this.showActionsMenu = null;
+    this.menuPosition = null;
+  }
+
   private updateMenuPosition(buttonRect: DOMRect) {
     if (!this.showActionsMenu) return;
     
@@ -553,37 +626,30 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     const viewportHeight = window.innerHeight;
     const isMobile = viewportWidth <= 768;
     
-    // Tính sidebar width
     const sidebarWidth = this.getSidebarWidth();
     const padding = isMobile ? 16 : 24;
     const paddingLeft = sidebarWidth + padding;
     
-    // Tính left position: đặt menu bên phải button
     const menuGap = 8;
     let menuLeft = buttonRect.right + menuGap;
     
-    // Nếu không đủ chỗ bên phải, đặt menu bên trái button
     const spaceOnRight = viewportWidth - buttonRect.right;
     if (spaceOnRight < menuWidth) {
       menuLeft = buttonRect.left - menuWidth - menuGap;
       
-      // Nếu menu bị che bởi sidebar, đặt menu ở paddingLeft
       if (menuLeft < paddingLeft) {
         menuLeft = paddingLeft;
       }
     }
     
-    // Đảm bảo menu không vượt quá viewport bên phải
     if (menuLeft + menuWidth > viewportWidth - padding) {
       menuLeft = Math.max(paddingLeft, viewportWidth - menuWidth - padding);
     }
     
-    // Đảm bảo menu không bị che bởi sidebar
     if (menuLeft < paddingLeft) {
       menuLeft = paddingLeft;
     }
     
-    // Tính top position: đo chính xác breadcrumb-box height
     const breadcrumbBox = document.querySelector('.breadcrumb-box') as HTMLElement;
     const breadcrumbBottom = breadcrumbBox ? breadcrumbBox.getBoundingClientRect().bottom : 120;
     
@@ -592,22 +658,18 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     
     let top = buttonRect.bottom + menuGap;
     
-    // Đảm bảo menu không đè lên breadcrumb-box
     if (top < breadcrumbBottom + menuGap) {
       top = breadcrumbBottom + menuGap;
     }
     
-    // Nếu không đủ chỗ bên dưới và có đủ chỗ phía trên, hiển thị menu phía trên button
     if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
       top = buttonRect.top - menuHeight - menuGap;
       
-      // Đảm bảo menu không đè lên breadcrumb-box khi hiển thị phía trên
       if (top < breadcrumbBottom + menuGap) {
         top = breadcrumbBottom + menuGap;
       }
     }
     
-    // Đảm bảo menu không vượt quá viewport
     if (top < breadcrumbBottom + menuGap) {
       top = breadcrumbBottom + menuGap;
     }
@@ -632,14 +694,14 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     return isSidebarExpanded ? 280 : 72;
   }
 
-  @HostListener('window:scroll', ['$event'])
+  @HostListener('window:scroll')
   onWindowScroll() {
     if (this.showActionsMenu) {
       this.updateMenuPositionFromButton();
     }
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onWindowResize() {
     if (this.showActionsMenu) {
       this.updateMenuPositionFromButton();
@@ -664,20 +726,17 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container') && !target.closest('.actions-menu')) {
-      this.showActionsMenu = null;
-      this.menuPosition = null;
+      this.closeActionsMenu();
     }
   }
 
   // Helper methods
   getActionLabel(action: SubcriptionContance_ServiceAction): string {
     const labels: { [key in SubcriptionContance_ServiceAction]: string } = {
-      [SubcriptionContance_ServiceAction.BoostScoreCv]: 'Tăng điểm CV',
       [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm Job',
       [SubcriptionContance_ServiceAction.TopList]: 'Top danh sách',
-      [SubcriptionContance_ServiceAction.VerifiedBadge]: 'Badge xác thực',
-      [SubcriptionContance_ServiceAction.IncreaseQuota]: 'Tăng hạn mức',
-      [SubcriptionContance_ServiceAction.ExtendExpiredDate]: 'Gia hạn ngày hết hạn'
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Badge Job',
+     [SubcriptionContance_ServiceAction.ThemeCompany]: 'Theme công ty'
     };
     return labels[action] || 'Không xác định';
   }
@@ -685,8 +744,7 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
   getTargetLabel(target: SubcriptionContance_ServiceTarget): string {
     const labels: { [key in SubcriptionContance_ServiceTarget]: string } = {
       [SubcriptionContance_ServiceTarget.JobPost]: 'Tin tuyển dụng',
-      [SubcriptionContance_ServiceTarget.Company]: 'Công ty',
-      [SubcriptionContance_ServiceTarget.Cv]: 'CV'
+      [SubcriptionContance_ServiceTarget.Company]: 'Công ty'
     };
     return labels[target] || 'Không xác định';
   }
@@ -753,4 +811,3 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     return `${Math.max(0, availableWidth)}px`;
   }
 }
-

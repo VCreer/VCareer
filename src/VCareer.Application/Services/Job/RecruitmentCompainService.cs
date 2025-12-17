@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,9 @@ using VCareer.Dto.JobDto;
 using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.IJobServices;
+using VCareer.Models.ActivityLogs;
 using VCareer.Models.Job;
 using VCareer.Permission;
 using Volo.Abp;
@@ -33,8 +36,16 @@ namespace VCareer.Services.Job
         private readonly ICurrentUser _currentUser;
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IdentityUserManager _userManager;
+        private readonly IActivityLogAppService _activityLogAppService;
 
-        public RecruitmentCompainService(IRecruitmentCampainRepository repository, IJobPostRepository jobPostRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IRecruiterRepository recruiterRepository, IdentityUserManager uesrManager)
+        public RecruitmentCompainService(
+            IRecruitmentCampainRepository repository, 
+            IJobPostRepository jobPostRepository, 
+            ICompanyRepository companyRepository, 
+            ICurrentUser currentUser, 
+            IRecruiterRepository recruiterRepository, 
+            IdentityUserManager uesrManager,
+            IActivityLogAppService activityLogAppService)
         {
             _recuirementRepository = repository;
             _jobRepository = jobPostRepository;
@@ -42,6 +53,7 @@ namespace VCareer.Services.Job
             _currentUser = currentUser;
             _recruiterRepository = recruiterRepository;
             _userManager = uesrManager;
+            _activityLogAppService = activityLogAppService;
         }
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> LoadRecruitmentCompain(bool? isActive)
@@ -80,6 +92,27 @@ namespace VCareer.Services.Job
                 RecruiterId = recruiter.UserId
             };
             await _recuirementRepository.InsertAsync(compain, true);
+
+            // Ghi log: Thêm chiến dịch
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        _currentUser.Id.Value,
+                        ActivityType.CampaignCreated,
+                        "CreateRecruitmentCampaign",
+                        $"Thêm chiến dịch tuyển dụng: {input.Name}",
+                        compain.Id,
+                        nameof(RecruitmentCampaign),
+                        null);
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning($"Failed to log activity for CampaignCreated: {ex.Message}");
+                }
+            }
         }
         //compain dang co job chay thi ko cho close
         [Authorize(VCareerPermission.RecruimentCampaign.SetStatus)]

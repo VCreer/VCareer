@@ -59,7 +59,7 @@ export const appConfig: ApplicationConfig = {
     // 5. ABP Modules
     provideAbpThemeShared(
       withHttpErrorConfig({
-        skipHandledErrorCodes: [401, 404, 400, 500],
+        skipHandledErrorCodes: [401, 403, 404, 500], // Skip 403 để interceptor tự xử lý
       })
     ),
     provideIdentityConfig(),
@@ -79,7 +79,7 @@ export const appConfig: ApplicationConfig = {
           console.log('[Navigation] Navigate to profile from:', currentUrl);
           
           if (currentUrl.startsWith('/employee')) {
-            router.navigate(['/employee/home']);
+            router.navigate(['/employee/statistical-reports']);
           } else if (currentUrl.startsWith('/recruiter')) {
             router.navigate(['/recruiter/recruiter-setting']);
           } else {

@@ -14,6 +14,17 @@ namespace VCareer.IServices.IActivityLogService
         Task<ActivityLogListDto> GetStaffActivityLogsAsync(Guid staffId, ActivityLogFilterDto input);
 
         /// <summary>
+        /// Get activity logs for current user (recruiter)
+        /// </summary>
+        Task<AllStaffActivityLogsListDto> GetMyActivityLogsAsync(ActivityLogFilterDto input);
+
+        /// <summary>
+        /// Get activity logs for all HR Staff in the same company
+        /// Only accessible by Team Leader
+        /// </summary>
+        Task<AllStaffActivityLogsListDto> GetAllStaffActivityLogsAsync(ActivityLogFilterDto input);
+
+        /// <summary>
         /// Log a new activity
         /// </summary>
         Task LogActivityAsync(

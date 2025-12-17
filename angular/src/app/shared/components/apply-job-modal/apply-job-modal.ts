@@ -32,9 +32,6 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
   // Upload CV
   uploadedFile: File | null = null;
   
-  // Cover Letter
-  coverLetter: string = '';
-  
   // CV Lists
   onlineCvs: CandidateCvDto[] = [];
   uploadedCvs: UploadedCvDto[] = [];
@@ -42,7 +39,6 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
   
   // Validation errors
   cvError: string = '';
-  coverLetterError: string = '';
 
   constructor(
     private translationService: TranslationService,
@@ -188,8 +184,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
       // Submit with online CV
       this.applicationService.applyWithOnlineCV({
         jobId: this.jobId,
-        candidateCvId: this.selectedOnlineCvId,
-        coverLetter: this.coverLetter || undefined
+        candidateCvId: this.selectedOnlineCvId
       }).subscribe({
         next: (response: any) => {
           this.submit.emit({
@@ -211,8 +206,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
       // Submit with uploaded CV
       this.applicationService.applyWithUploadedCV({
         jobId: this.jobId,
-        uploadedCvId: this.selectedUploadedCvId,
-        coverLetter: this.coverLetter || undefined
+        uploadedCvId: this.selectedUploadedCvId
       }).subscribe({
         next: (response: any) => {
           this.submit.emit({
@@ -277,8 +271,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
         // Then submit application with uploaded CV
         this.applicationService.applyWithUploadedCV({
           jobId: this.jobId,
-          uploadedCvId: uploadedCvId,
-          coverLetter: this.coverLetter || undefined
+          uploadedCvId: uploadedCvId
         }).subscribe({
           next: (response: any) => {
             this.submit.emit({
@@ -367,9 +360,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
     this.selectedOnlineCvId = '';
     this.selectedUploadedCvId = '';
     this.uploadedFile = null;
-    this.coverLetter = '';
     this.cvError = '';
-    this.coverLetterError = '';
   }
 
   // Helper methods

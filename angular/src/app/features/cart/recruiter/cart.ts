@@ -326,7 +326,7 @@ export class CartComponent implements OnInit, OnDestroy {
         this.orderService.createVnpayPaymentUrl({ orderId: order.id }).subscribe({
           next: (paymentResponse) => {
             console.log('Payment URL created:', paymentResponse.paymentUrl);
-
+         
             this.isProcessing = false;
             
             // Redirect to VNPay payment page

@@ -29,27 +29,13 @@
             {{ translate('recruiter.pricing') }}
           </a>
         </li>
-        <li class="nav-item">
-          <a (click)="navigateToSupport()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/support')">
-            {{ translate('recruiter.support') }}
-          </a>
-        </li>
-        <li class="nav-item">
-          <a (click)="navigateToBlog()" 
-             class="nav-link" 
-             [class.active]="isActiveRoute('/blog')">
-            {{ translate('recruiter.blog') }}
-          </a>
-        </li>
       </ul>
     </nav>
 
     <!-- Right Section -->
     <div class="right-section">
-      <!-- Login Button -->
-      <button class="login-btn" (click)="navigateToLogin()">
+      <!-- Login Button (chỉ hiển thị khi chưa đăng nhập) -->
+      <button class="login-btn" *ngIf="!isLoggedIn" (click)="navigateToLogin()">
         {{ translate('header.login') }}
       </button>
 
@@ -93,22 +79,8 @@
           {{ translate('recruiter.pricing') }}
         </a>
       </li>
-      <li class="nav-item">
-        <a (click)="navigateToSupport()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/support')">
-          {{ translate('recruiter.support') }}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a (click)="navigateToBlog()" 
-           class="nav-link" 
-           [class.active]="isActiveRoute('/blog')">
-          {{ translate('recruiter.blog') }}
-        </a>
-      </li>
       <li class="nav-item mobile-auth">
-        <button class="login-btn" (click)="navigateToLogin()">
+        <button class="login-btn" *ngIf="!isLoggedIn" (click)="navigateToLogin()">
           {{ translate('header.login') }}
         </button>
         <button class="post-job-btn" (click)="navigateToPostJob()">

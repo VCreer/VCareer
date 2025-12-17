@@ -360,7 +360,7 @@
 
   <!-- Login Modal -->
   <app-login-modal
-    *ngIf="showLoginModal"
+    [show]="showLoginModal"
     (close)="closeLoginModal()"
     (loginSuccess)="onLoginSuccess()"
   ></app-login-modal>

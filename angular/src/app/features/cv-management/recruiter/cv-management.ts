@@ -35,14 +35,13 @@ export interface CandidateCv {
   addedDate: string; // Thời gian CV được vào Quản lý CV
   campaignId: string;
   campaignName: string;
-
+  jobId?: string;
   jobTitle?: string;
   isViewed: boolean;
   avatarImageUrl?: string; // URL ảnh đại diện từ CV
   avatar?: string; // Fallback initials
   candidateCode?: string; // Mã ứng viên
   candidateId?: string; // ID của candidate để gửi notification
-  jobId?: string; // ID của job để gửi notification
   notes?: string; // Ghi chú
   labels?: string[];
   rating?: number; // Đánh giá từ 1-10

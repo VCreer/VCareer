@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,8 @@ using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
-using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IActivityLogService;
+using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
 using VCareer.Job.JobPosting.ISerices;
@@ -24,13 +25,16 @@ using VCareer.Models.Subcription;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Services.Geo;
+using VCareer.Services.LuceneService.JobSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
 using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using static Quartz.Logging.OperationName;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
+using static VCareer.Permission.VCareerPermission;
 
 namespace VCareer.Services.Job
 {
@@ -50,10 +54,27 @@ namespace VCareer.Services.Job
         private readonly ITagService _tagService;
         private readonly IJobTagService _jobTagService;
         private readonly IActivityLogAppService _activityLogAppService;
+        private readonly ILuceneJobIndexer _luceneJobIndexer;
+        private readonly IEffectingJobServiceRepository _jobAffectingRepository;
 
 
-        public JobPostService(IJobPostRepository repository, IJobSearchService jobSearchService, IJobPriorityRepository jobPriorityRepository, ICompanyRepository companyRepository, ICurrentUser currentUser, IIdentityUserRepository identityUserRepository, IRecruiterRepository recruiterRepository, IGeoService geoService, IJobCategoryRepository jobCategoryRepository, IJobAffectingService jobAffectingService,
-            IChildServiceRepository childServiceRepository, ITagService tagService, IJobTagService jobTagService, IActivityLogAppService activityLogAppService)
+        public JobPostService(
+            IJobPostRepository repository,
+            IJobSearchService jobSearchService,
+            IJobPriorityRepository jobPriorityRepository,
+            ICompanyRepository companyRepository,
+            ICurrentUser currentUser,
+            IIdentityUserRepository identityUserRepository,
+            IRecruiterRepository recruiterRepository,
+            IGeoService geoService,
+            IJobCategoryRepository jobCategoryRepository,
+            IJobAffectingService jobAffectingService,
+            IChildServiceRepository childServiceRepository,
+            ITagService tagService,
+            IEffectingJobServiceRepository jobAffectingRepository,
+            IJobTagService jobTagService,
+            ILuceneJobIndexer luceneJobIndexer,
+            IActivityLogAppService activityLogAppService)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -69,38 +90,45 @@ namespace VCareer.Services.Job
             _tagService = tagService;
             _jobTagService = jobTagService;
             _activityLogAppService = activityLogAppService;
+            _luceneJobIndexer = luceneJobIndexer;
+            _jobAffectingRepository= jobAffectingRepository;
         }
 
         [Authorize(VCareerPermission.JobPost.Approve)]
         public async Task ApproveJobPostAsync(string id)
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            if (jobPost == null) throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
             if (jobPost.ExpiresAt < DateTime.Now) throw new Volo.Abp.BusinessException($"This job is expired !");
 
             jobPost.Status = JobStatus.Open;
             jobPost.ApprovedBy = CurrentUser.Id;
             jobPost.ApproveAt = DateTime.Now;
-            await _jobPostRepository.UpdateAsync(jobPost, true);
 
-            await _jobSearchService.IndexJobAsync(jobPost.Id);
-
-            // Ghi log: duyệt job (Leader / HR Staff)
-            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            var jobEffects = await _jobAffectingRepository.GetListAsync(x => x.JobPostId == jobPost.Id);
+            if (jobEffects != null && jobEffects.Count > 0)
             {
-                await _activityLogAppService.LogActivityAsync(
-                    _currentUser.Id.Value,
-                    Models.ActivityLogs.ActivityType.JobPosted,
-                    "ApproveJobPost",
-                    $"Duyệt job '{jobPost.Title}' (ID: {jobPost.Id})",
-                    jobPost.Id,
-                    nameof(Job_Post),
-                    "{}");
+                //chay nhung cai child service ko tu auto active de tranh  bi lap logic 
+                var childServiceIds = jobEffects
+                    .Where(x => x.Status == ChildServiceStatus.Inactive)
+                    .Select(x => x.ChildServiceId)
+                    .ToList();
+                foreach (var childServiceId in childServiceIds)
+                {
+                    var childService = await _childServiceRepository.GetAsync(childServiceId);
+                    if (childService == null) continue;
+                    if (jobPost.Status == JobStatus.Draft && childService.Target == ServiceTarget.JobPost && childService.IsEnable)
+                    {
+                        await _effectingJobService.AddJobBoostLogic(Guid.Parse(id), childServiceId);
+                    }
+                }
             }
 
+            await _jobPostRepository.UpdateAsync(jobPost, true);
+            await _jobSearchService.IndexJobAsync(jobPost.Id);           
             // TODO: send email cho recruiter báo đăng bài thành công
         }
+
         [Authorize(VCareerPermission.JobPost.Reject)]
         public async Task RejectJobPostAsync(string id)
         {
@@ -123,6 +151,7 @@ namespace VCareer.Services.Job
                     nameof(Job_Post),
                     "{}");
             }
+            //logic trả lại service
 
             // TODO: send email cho recruiter với nội dung từ Reject reason 
         }
@@ -325,14 +354,13 @@ namespace VCareer.Services.Job
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
         }
-        public async Task ExecuteExpiredJobPostAutomatically(string id)
+        public async Task ExecuteExpiredJobPostBackgoundWorker()
         {
-            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
-
-            jobPost.Status = JobStatus.Closed;
-            await _jobPostRepository.UpdateAsync(jobPost, true);
+            var jobIndexedExpiredId = _luceneJobIndexer.GetExpiredJobIds();
+            if (jobIndexedExpiredId == null || jobIndexedExpiredId.Count == 0) return;
+            await _jobSearchService.RemoveJobsFromIndexAsync(jobIndexedExpiredId);
+            //cap nhat job effect (neu co)
+            foreach (var jobId in jobIndexedExpiredId) await _effectingJobService.DeactiveAllEffectingJobByJobID(jobId);
         }
         [Authorize(VCareerPermission.JobPost.Create)]
         public async Task CreateJobPost(JobPostCreateDto dto)
@@ -377,6 +405,27 @@ namespace VCareer.Services.Job
             if (dto.TagIds != null && dto.TagIds.Count > 0) await _jobTagService
                     .AddTagsToJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = job.Id, TagIds = dto.TagIds });
             await AddDefaultJobPriority(job);
+
+            // Ghi log: Thêm công việc
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        _currentUser.Id.Value,
+                        Models.ActivityLogs.ActivityType.JobCreated,
+                        "CreateJobPost",
+                        $"Thêm công việc mới: {dto.Title}",
+                        job.Id,
+                        nameof(Job_Post),
+                        null);
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning($"Failed to log activity for JobCreated: {ex.Message}");
+                }
+            }
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)
         {

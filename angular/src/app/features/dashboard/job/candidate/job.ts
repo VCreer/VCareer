@@ -158,7 +158,7 @@ export class JobComponent implements OnInit {
   onViewDetail(job: any) {
     console.log('View detail:', job);
     // Navigate to full job detail page
-    this.router.navigate(['/candidate/job-detail']);
+    this.router.navigate(['/job-detail']);
   }
 
   onApply(job: any) {
@@ -168,7 +168,7 @@ export class JobComponent implements OnInit {
 
   onJobClick(job: any) {
     // Navigate to job detail page when clicking on job card
-    this.router.navigate(['/candidate/job-detail']);
+    this.router.navigate(['/job-detail']);
   }
 
   onJobHidden() {

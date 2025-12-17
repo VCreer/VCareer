@@ -1710,6 +1710,9 @@ namespace VCareer.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
 
+                    b.Property<bool>("IsEnable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLifeTime")
                         .HasColumnType("bit");
 
@@ -1898,6 +1901,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
+                    b.Property<bool>("IShareable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -1927,9 +1933,6 @@ namespace VCareer.Migrations
                     b.Property<decimal>("OriginalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<int>("Target")
                         .HasColumnType("int");
 
@@ -1938,6 +1941,9 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("TotalBuyEachUser")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalLimitpackage")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1996,6 +2002,9 @@ namespace VCareer.Migrations
                     b.Property<bool>("IsLimitUsedTime")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsPrimaryOwner")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("LastModificationTime");
@@ -2017,6 +2026,9 @@ namespace VCareer.Migrations
                         .HasColumnType("int");
 
                     b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserSubcriptionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -2069,6 +2081,9 @@ namespace VCareer.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsShared")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -2158,11 +2173,11 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
-                    b.Property<decimal>("OriginalPrice")
+                    b.Property<decimal>("NewPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("SalePercent")
-                        .HasColumnType("int");
+                    b.Property<decimal>("OriginalPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SubcriptionServiceId")
                         .HasColumnType("uniqueidentifier");

@@ -40,11 +40,6 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         /// Trả về list các UserId của candidates match
         /// </summary>
         Task<List<Guid>> SearchCandidateIdsAsync(SearchCandidateInputDto searchInput);
-
-        /// <summary>
-        /// Lấy số lượng documents đã được index trong Lucene
-        /// </summary>
-        Task<int> GetIndexedCountAsync();
     }
 }
 

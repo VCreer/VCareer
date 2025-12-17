@@ -15,6 +15,7 @@ import {
 } from '../../../shared/components';
 import { UserService } from '../../../proxy/services/user/user.service';
 import { AuthService } from '../../../proxy/services/auth/auth.service';
+import * as XLSX from 'xlsx';
 import type { PermissionGroupDto } from '../../../proxy/volo/abp/permission-management/models';
 import type { CreateEmployeeDto } from '../../../proxy/dto/auth-dto/models';
 
@@ -35,6 +36,7 @@ export interface EmployeeUser {
   securityStamp: string;
   roles?: string[];
   permissions?: string[];
+  roleDisplay?: string;
 }
 
 interface UserRoleTag {
@@ -98,11 +100,10 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   // Search & Filter
   searchKeyword = '';
   filterStatus = '';
-  filterCompany = '';
   filterRole = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -122,14 +123,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     { value: 'active', label: 'Đang hoạt động' },
     { value: 'inactive', label: 'Ngừng hoạt động' },
     { value: 'locked', label: 'Đã khóa' }
-  ];
-
-  // Company options
-  companyOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả công ty' },
-    { value: 'Công ty ABC', label: 'Công ty ABC' },
-    { value: 'Công ty XYZ', label: 'Công ty XYZ' },
-    { value: 'Công ty DEF', label: 'Công ty DEF' }
   ];
 
   // Role filter options
@@ -161,14 +154,17 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   // Forms
   createForm = {
     email: '',
+    password: '',
     roles: [] as string[], // Changed to array for multi-select
     permissions: [] as string[]
   };
   createErrors = {
     email: '',
+    password: '',
     roles: ''
   };
   isCreatingUser = false;
+  showPassword = false; // Toggle show/hide password
   
   // Role assignment form
   roleForm = {
@@ -180,12 +176,11 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   expandedPermissionGroups: Set<string> = new Set(); // Track which groups are expanded
   expandedSubGroups: Set<string> = new Set(); // Track which sub-groups are expanded
   
-  // Role options
+  // Role options (cố định 3 role employee)
   roleOptions: SelectOption[] = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'employee', label: 'Employee' },
-    { value: 'viewer', label: 'Viewer' }
+    { value: 'account_employee', label: 'Account Employee' },
+    { value: 'finance_employee', label: 'Finance Employee' },
+    { value: 'system_employee', label: 'System Employee' }
   ];
 
   private roleTagColorMap: Record<string, string> = {
@@ -231,25 +226,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 50);
-
-    // Gọi API lấy danh sách role employee (chỉ gọi, không thay đổi nhiều logic hiện tại)
-    this.userService.getAllEmployeeRoles().subscribe({
-      next: roles => {
-        if (roles && roles.length > 0) {
-          this.roleOptions = roles.map(r => ({
-            value: r.name ?? '',
-            label: r.name ?? ''
-          })).filter(r => r.value);
-          this.roleFilterOptions = [
-            { value: '', label: 'Tất cả vai trò' },
-            ...this.roleOptions
-          ];
-        }
-      },
-      error: () => {
-        // Giữ nguyên roleOptions mặc định nếu lỗi
-      }
-    });
 
     this.loadUsers();
   }
@@ -410,9 +386,47 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     // Gọi API lấy danh sách userId theo RoleType Employee = 1
     this.userService.getUsersInfoByRole(1).subscribe({
-      next: () => {
-        // Tạm thời chỉ clear dữ liệu hardcode, sẽ map dữ liệu thật khi BE sẵn sàng
-        this.allUsers = [];
+      next: async (users) => {
+        const mapped: EmployeeUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          const extra = (u as any).extraProperties || {};
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            // Nếu name và surname đều null/empty thì để trống Họ tên
+            fullName: fullName || '',
+            phone: (u as any).phoneNumber || '',
+            companyName: extra.companyName || '',
+            isActive: (u as any).isActive,
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            lastLoginDate: undefined,
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            permissions: [],
+            roleDisplay: '',
+          };
+        });
+
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
         this.applyFilters();
       },
       error: () => {
@@ -447,11 +461,6 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Filter by company
-    if (this.filterCompany) {
-      result = result.filter(u => u.companyName === this.filterCompany);
-    }
-
     // Filter by role
     if (this.filterRole) {
       result = result.filter(u => Array.isArray(u.roles) && u.roles.includes(this.filterRole));
@@ -483,7 +492,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -519,7 +528,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -536,8 +545,23 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
 
   // CRUD Actions
   onCreateUser(): void {
-    this.createForm = { email: '', roles: [], permissions: [] };
+    // Reset form completely to ensure no pre-filled values
+    this.createForm = { 
+      email: '', 
+      password: '', 
+      roles: [], 
+      permissions: [] 
+    };
+    this.createErrors = { email: '', password: '', roles: '' };
+    this.showPassword = false;
     this.showCreateModal = true;
+    
+    // Force clear password field after modal opens (in case of browser autofill)
+    setTimeout(() => {
+      if (this.createForm.password && this.createForm.password !== '') {
+        this.createForm.password = '';
+      }
+    }, 100);
   }
 
   onToggleRoleInCreate(roleValue: string): void {
@@ -549,28 +573,82 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPasswordInput(): void {
+    // Clear error when user starts typing
+    if (this.createErrors.password) {
+      this.createErrors.password = '';
+      this.cdr.detectChanges();
+    }
+  }
+
+  validatePassword(): void {
+    const password = (this.createForm.password || '').trim();
+    if (!password) {
+      this.createErrors.password = 'Vui lòng nhập mật khẩu';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (password.length < 6) {
+      this.createErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (password.length > 128) {
+      this.createErrors.password = 'Mật khẩu không được vượt quá 128 ký tự';
+      this.cdr.detectChanges();
+      return;
+    }
+    // Clear error if valid
+    this.createErrors.password = '';
+    this.cdr.detectChanges();
+  }
+
   onConfirmCreate(event?: Event): void {
     event?.stopPropagation();
 
-    // reset errors
-    this.createErrors.email = '';
-    this.createErrors.roles = '';
+    // Reset errors
+    this.createErrors = { email: '', password: '', roles: '' };
+    let hasError = false;
 
+    // Validate email
     const email = this.createForm.email.trim();
     if (!email) {
       this.createErrors.email = 'Vui lòng nhập email';
-      return;
+      hasError = true;
+    } else {
+      // Simple email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        this.createErrors.email = 'Email không hợp lệ';
+        hasError = true;
+      }
     }
 
-    // Simple email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      this.createErrors.email = 'Email không hợp lệ';
-      return;
+    // Validate password - check if empty first
+    const password = (this.createForm.password || '').trim();
+    if (!password) {
+      this.createErrors.password = 'Vui lòng nhập mật khẩu';
+      hasError = true;
+    } else {
+      // Validate password length
+      if (password.length < 6) {
+        this.createErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+        hasError = true;
+      } else if (password.length > 128) {
+        this.createErrors.password = 'Mật khẩu không được vượt quá 128 ký tự';
+        hasError = true;
+      }
     }
 
+    // Validate roles
     if (this.createForm.roles.length === 0) {
       this.createErrors.roles = 'Vui lòng chọn ít nhất một role';
+      hasError = true;
+    }
+
+    // If there are any errors, show them and return
+    if (hasError) {
+      this.cdr.detectChanges();
       return;
     }
 
@@ -578,6 +656,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     const emailExists = this.allUsers.some(u => u.email?.toLowerCase() === email.toLowerCase());
     if (emailExists) {
       this.createErrors.email = 'Email đã tồn tại trong danh sách nhân viên';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -587,10 +666,9 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     this.isCreatingUser = true;
 
     // Gọi API tạo nhân viên
-    const randomPassword = Math.random().toString(36).slice(-10);
     const payload: CreateEmployeeDto = {
       email,
-      password: randomPassword,
+      password: password,
       employeeRoles: [...this.createForm.roles]
     };
 
@@ -599,8 +677,8 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         this.showToastMessage('Tạo nhân viên thành công', 'success');
         this.showCreateModal = false;
         this.isCreatingUser = false;
-        this.createForm = { email: '', roles: [], permissions: [] };
-        this.createErrors = { email: '', roles: '' };
+        this.createForm = { email: '', password: '', roles: [], permissions: [] };
+        this.createErrors = { email: '', password: '', roles: '' };
         // Reload danh sách để thấy nhân viên mới
         this.loadUsers();
       },
@@ -1071,16 +1149,44 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+
+      (worksheet as any)['!cols'] = [
+        { wch: 25 }, // Id
+        { wch: 30 }, // Họ tên
+        { wch: 35 }, // Email
+        { wch: 20 }, // Trạng thái
+        { wch: 25 }, // Vai trò
+      ];
+
+      const fileName = `Employee_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -1094,6 +1200,14 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getShortId(user: EmployeeUser): string {
+    if (!user || user.id === undefined || user.id === null) {
+      return '';
+    }
+    const idStr = String(user.id);
+    return idStr.length > 7 ? idStr.slice(-7) : idStr;
   }
 
   getUserRoleTags(user: EmployeeUser): UserRoleTag[] {
@@ -1361,6 +1475,20 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private mapRoleName(role: string): string {
+    // Map role BE -> label hiển thị
+    switch (role) {
+      case 'account_employee':
+        return 'Account Employee';
+      case 'finance_employee':
+        return 'Finance Employee';
+      case 'system_employee':
+        return 'System Employee';
+      default:
+        return role;
+    }
   }
 }
 

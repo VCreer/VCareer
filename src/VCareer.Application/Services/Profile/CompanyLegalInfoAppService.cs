@@ -430,7 +430,7 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
         /// </summary>
-        //[Authorize(VCareerPermission.CompanyVerification.ViewPendingCompanies)]
+        [Authorize(VCareerPermission.CompanyVerification.ViewPendingCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetPendingCompaniesAsync(CompanyVerificationFilterDto input)
         {
             var queryable = await _companyRepository.GetQueryableAsync();
@@ -532,7 +532,7 @@ namespace VCareer.Services.Profile
         /// Duyệt công ty (chỉ Employee/Admin)
         /// Cho phép duyệt các công ty đang ở trạng thái "pending" hoặc "rejected"
         /// </summary>
-       // [Authorize(VCareerPermission.CompanyVerification.ApproveCompany)]
+       [Authorize(VCareerPermission.CompanyVerification.ApproveCompany)]
         public async Task ApproveCompanyAsync(int id)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -559,7 +559,7 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Từ chối công ty (chỉ Employee/Admin)
         /// </summary>
-        //[Authorize(VCareerPermission.CompanyVerification.RejectCompany)]
+        [Authorize(VCareerPermission.CompanyVerification.RejectCompany)]
         public async Task RejectCompanyAsync(int id, RejectCompanyDto input)
         {
             var company = await _companyRepository.GetAsync(id);
@@ -592,7 +592,7 @@ namespace VCareer.Services.Profile
         /// Phải thỏa mãn cả VerificationStatus = true VÀ LegalVerificationStatus = "approved"
         /// Điều này đảm bảo chỉ hiển thị các công ty đã được duyệt và chưa bị cập nhật lại
         /// </summary>
-        //[Authorize(VCareerPermission.CompanyVerification.ViewVerifiedCompanies)]
+        [Authorize(VCareerPermission.CompanyVerification.ViewVerifiedCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetVerifiedCompaniesAsync(CompanyVerificationFilterDto input)
         {
             try
@@ -739,7 +739,7 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
         /// </summary>
-       // [Authorize(VCareerPermission.CompanyVerification.ViewRejectedCompanies)]
+        [Authorize(VCareerPermission.CompanyVerification.ViewRejectedCompanies)]
         public async Task<PagedResultDto<CompanyVerificationViewDto>> GetRejectedCompaniesAsync(CompanyVerificationFilterDto input)
         {
             try

@@ -20,7 +20,6 @@ import {
   RecruimentCampainCreateDto,
   RecruimentCampainUpdateDto,
 } from 'src/app/proxy/dto/job-dto';
-import { ToasterService } from '@abp/ng.theme.shared';
 import { GeoService} from 'src/app/proxy/services/geo';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 
@@ -106,7 +105,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private campaignService: RecruitmentCompainService,
     private geoService: GeoService,
-    private toaster: ToasterService,
     private router: Router
   ) {}
 
@@ -140,7 +138,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
           value: p.code?.toString() || '',
         }));
       },
-      error: () => this.toaster.error('Không tải được danh sách tỉnh/thành'),
+      error: () => this.showToastMessage('Không tải được danh sách tỉnh/thành', 'error'),
     });
   }
 
@@ -148,15 +146,63 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   private loadCampaigns() {
     this.loading = true;
 
-    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch(() => []);
-    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch(() => []);
+    // 1. Lấy thông tin user hiện tại để biết role + userId
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        const roles = user.roles || [];
+        const isLeadRecruiter = roles.includes('lead_recruiter');
 
-    Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
-      const all = [...(active || []), ...(inactive || [])];
-        this.campaigns = this.mapToCampaign(all);
-        this.filterCampaigns();
-        this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
+        // 2. Tùy theo role mà chọn API phù hợp
+        let loadActivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+        let loadInactivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+
+        if (isLeadRecruiter) {
+          // Leader recruiter: backend tự dùng companyId
+          loadActivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(false)
+            .toPromise()
+            .catch(() => []);
+        } else {
+          // Recruiter thường: load theo recruiterId
+          const recruiterId = user.userId;
+
+          if (!recruiterId) {
+            this.showToastMessage('Không lấy được thông tin recruiter', 'error');
+            this.loading = false;
+            return;
+          }
+
+          loadActivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, false)
+            .toPromise()
+            .catch(() => []);
+        }
+
+        Promise.all([loadActivePromise, loadInactivePromise]).then(
+          ([active, inactive]) => {
+            const all = [...(active || []), ...(inactive || [])];
+            this.campaigns = this.mapToCampaign(all);
+            this.filterCampaigns();
+            this.viewMode =
+              this.campaigns.length == 0 ? 'create' : 'manage';
+            this.loading = false;
+          }
+        );
+      },
+      error: () => {
+        this.showToastMessage('Không lấy được thông tin người dùng', 'error');
         this.loading = false;
+      },
     });
   }
 
@@ -194,14 +240,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     this.campaignService.createRecruitmentCompainByInput(input).subscribe({
       next: () => {
-        this.toaster.success('Tạo chiến dịch thành công!');
+        this.showToastMessage('Tạo chiến dịch thành công!', 'success');
         this.loadCampaigns();
         this.showActivityModal = true;
         this.resetForm();
       },
       error: (err) => {
         console.error(err);
-        this.toaster.error('Tạo chiến dịch thất bại');
+        this.showToastMessage('Tạo chiến dịch thất bại', 'error');
       },
       complete: () => {
         this.isCreating = false;
@@ -232,11 +278,11 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           campaign.isActive = checked;
-          this.toaster.success(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch');
+          this.showToastMessage(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch', 'success');
         },
         error: () => {
           campaign.isActive = !checked;
-          this.toaster.error('Cập nhật trạng thái thất bại');
+          this.showToastMessage('Cập nhật trạng thái thất bại', 'error');
         },
         complete: () => {
           this.isTogglingCampaign = false;
@@ -256,7 +302,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     if (this.isSavingEdit) return;
 
     if (!this.editCampaignName.trim()) {
-      this.toaster.error('Tên chiến dịch không được để trống');
+      this.showToastMessage('Tên chiến dịch không được để trống', 'error');
       return;
     }
 
@@ -272,10 +318,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       next: () => {
         this.editingCampaign!.name = this.editCampaignName.trim();
         this.showEditModal = false;
-        this.toaster.success('Cập nhật tên chiến dịch thành công');
+        this.showToastMessage('Cập nhật tên chiến dịch thành công', 'success');
       },
       error: () => {
-        this.toaster.error('Cập nhật thất bại');
+        this.showToastMessage('Cập nhật thất bại', 'error');
       },
       complete: () => {
         this.isSavingEdit = false;
@@ -461,7 +507,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       
       // TODO: Gọi API xóa nếu backend có
       setTimeout(() => {
-        this.toaster.success('Chức năng xóa sẽ được cập nhật sau');
+        this.showToastMessage('Chức năng xóa sẽ được cập nhật sau', 'success');
         this.showActionsMenu = null;
         this.isDeletingCampaign = false;
       }, 500);

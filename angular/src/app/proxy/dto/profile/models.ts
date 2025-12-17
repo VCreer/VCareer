@@ -233,7 +233,7 @@ export interface UpdateCompanyLegalInfoDto {
 
 export interface UpdatePersonalInfoDto {
   name: string;
-  surname: string;
+  surname?: string;
   email?: string;
   phoneNumber?: string;
   bio?: string;

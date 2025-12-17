@@ -2,10 +2,13 @@
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { HeaderTypeService } from '../../../core/services/header-type.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
+import type { ProfileDto } from '../../../proxy/dto/profile/models';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
 import { catchError, of } from 'rxjs';
 
@@ -24,6 +27,7 @@ export class CandidateHeaderComponent implements OnInit {
   showProfileMenu = false;
   showNotificationMenu = false;
   currentUser: any = null;
+  profileData: ProfileDto | null = null;
   selectedLanguage: string = '';
   notifications: NotificationDto[] = [];
   unreadCount: number = 0;
@@ -40,6 +44,7 @@ export class CandidateHeaderComponent implements OnInit {
     private navigationService: NavigationService,
     private translationService: TranslationService,
     private authStateService: AuthStateService,
+    private http: HttpClient,
     private notificationService: NotificationService
   ) {}
 
@@ -85,15 +90,62 @@ export class CandidateHeaderComponent implements OnInit {
       this.isLoggedIn = serviceLoggedIn && hasValidUser;
       console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
       
-      // Load notifications when user is logged in
-      if (this.isLoggedIn) {
+      if (this.isLoggedIn && hasValidUser) {
+        this.loadProfileData();
         this.loadNotifications();
         this.loadUnreadCount();
       } else {
+        this.profileData = null;
         this.notifications = [];
         this.unreadCount = 0;
+        this.isLoadingNotifications = false;
       }
     });
+    
+    // Load profile data + notifications on init nếu đã đăng nhập
+    if (this.isLoggedIn && this.isValidUser(this.currentUser)) {
+      this.loadProfileData();
+      this.loadNotifications();
+      this.loadUnreadCount();
+    }
+  }
+  
+  loadProfileData() {
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        this.profileData = response;
+      },
+      error: (error) => {
+        console.error('Error loading profile data:', error);
+        this.profileData = null;
+      }
+    });
+  }
+  
+  getFullName(): string {
+    if (this.profileData) {
+      const name = this.profileData.name || '';
+      const surname = this.profileData.surname || '';
+      const fullName = `${name} ${surname}`.trim();
+      if (fullName) return fullName;
+    }
+    if (this.currentUser?.fullName) {
+      return this.currentUser.fullName;
+    }
+    if (this.currentUser?.name) {
+      return this.currentUser.name;
+    }
+    if (this.currentUser?.userName) {
+      return this.currentUser.userName;
+    }
+    return 'Người dùng';
   }
 
   navigateToHome() {
@@ -102,22 +154,22 @@ export class CandidateHeaderComponent implements OnInit {
   }
 
   navigateToJobs() {
-    this.router.navigate(['/candidate/job']);
+    this.router.navigate(['/job']);
     this.closeMobileMenu();
   }
 
   navigateToCompanies() {
-    this.router.navigate(['/candidate/company']);
+    this.router.navigate(['/company']);
     this.closeMobileMenu();
   }
 
   navigateToAbout() {
-    this.router.navigate(['/candidate/about-us']);
+    this.router.navigate(['/about-us']);
     this.closeMobileMenu();
   }
 
   navigateToContact() {
-    this.router.navigate(['/candidate/contact']);
+    this.router.navigate(['/contact']);
     this.closeMobileMenu();
   }
 

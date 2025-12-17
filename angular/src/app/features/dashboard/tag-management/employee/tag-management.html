@@ -15,7 +15,7 @@
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item" (click)="onBackToCategory()" style="cursor: pointer;">{{ categoryName }}</span>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-item active">Quản lí các tag</span>
+        <span class="breadcrumb-item active">Quản lý các thẻ</span>
       </div>
     </div>
     
@@ -26,7 +26,7 @@
         size="medium"
         (click)="onCreateTag()">
         <i class="fa fa-plus"></i>
-        Tạo tag
+        Tạo thẻ
       </app-button>
     </div>
   </div>
@@ -44,7 +44,7 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Tìm theo tên tag..."
+              placeholder="Tìm theo tên thẻ..."
               [(ngModel)]="searchKeyword"
               (ngModelChange)="applyFilters()">
           </div>
@@ -69,7 +69,7 @@
           <thead>
             <tr>
               <th (click)="onSort('name')" class="sortable">
-                Tên tag
+                Tên thẻ
                 <i class="fa fa-sort" *ngIf="sortField !== 'name'"></i>
                 <i class="fa fa-sort-up" *ngIf="sortField === 'name' && sortDirection === 'asc'"></i>
                 <i class="fa fa-sort-down" *ngIf="sortField === 'name' && sortDirection === 'desc'"></i>
@@ -141,15 +141,15 @@
 <!-- Create Tag Modal -->
 <app-generic-modal
   [show]="showCreateModal"
-  title="Tạo tag mới"
+  title="Tạo thẻ mới"
   [maxWidth]="'600px'"
   [bodyBackground]="'white'"
   (close)="showCreateModal = false; isCreating = false">
   <div class="modal-content-wrapper">
     <div class="form-group">
       <app-input-field
-        label="Tên tag"
-        placeholder="Nhập tên tag"
+        label="Tên thẻ"
+        placeholder="Nhập tên thẻ"
         [required]="true"
         [(ngModel)]="createForm.name">
       </app-input-field>
@@ -164,7 +164,7 @@
       <app-button
         type="primary"
         size="medium"
-        (click)="onConfirmCreate($event)"
+        (click)="onConfirmCreate()"
         [disabled]="isCreating">
         Tạo
       </app-button>
@@ -175,15 +175,15 @@
 <!-- Edit Tag Modal -->
 <app-generic-modal
   [show]="showEditModal"
-  title="Sửa tag"
+  title="Sửa thẻ"
   [maxWidth]="'600px'"
   [bodyBackground]="'white'"
   (close)="showEditModal = false">
   <div class="modal-content-wrapper">
     <div class="form-group">
       <app-input-field
-        label="Tên tag"
-        placeholder="Nhập tên tag"
+        label="Tên thẻ"
+        placeholder="Nhập tên thẻ"
         [required]="true"
         [(ngModel)]="editForm.name">
       </app-input-field>
@@ -208,13 +208,13 @@
 <!-- Delete Tag Modal -->
 <app-generic-modal
   [show]="showDeleteModal"
-  title="Xóa tag"
+  title="Xóa thẻ"
   [maxWidth]="'500px'"
   [bodyBackground]="'white'"
   (close)="showDeleteModal = false">
   <div class="modal-content-wrapper">
     <p class="modal-message">
-      Bạn có chắc chắn muốn xóa tag <strong>{{ selectedTag?.name }}</strong>?
+      Bạn có chắc chắn muốn xóa thẻ <strong>{{ selectedTag?.name }}</strong>?
       Hành động này không thể hoàn tác.
     </p>
     <div class="modal-actions">

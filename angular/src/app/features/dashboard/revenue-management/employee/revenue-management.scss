@@ -1,0 +1,769 @@
+// Global styles for select options (limited browser support)
+select.filter-select {
+  option {
+    padding: 12px 14px;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    min-height: 40px;
+    border-radius: 4px;
+    margin: 2px 0;
+
+    &:hover {
+      background: #f3f4f6 !important;
+    }
+
+    &:checked,
+    &:focus {
+      background: #0F83BA !important;
+      color: white !important;
+    }
+
+    &:disabled {
+      color: #9ca3af;
+      background: #f9fafb;
+    }
+  }
+}
+
+// Style for date picker calendar popup
+input[type="date"] {
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+
+  // Style the calendar popup container
+  &::-webkit-calendar-picker-indicator:hover {
+    background-color: transparent;
+  }
+}
+
+// Custom styling for date picker calendar popup (limited browser support)
+// Note: Native date picker popup cannot be fully styled with CSS
+// These styles only work for the input field itself, not the calendar popup
+::ng-deep {
+  // Chrome/Edge date picker styling
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+
+  // Firefox date picker styling
+  input[type="date"]::-moz-calendar-picker-indicator {
+    cursor: pointer;
+  }
+
+  // Attempt to style calendar popup (very limited support)
+  // This only works in some browsers and may not apply to the popup
+  input[type="date"]:focus::-webkit-calendar-picker-indicator {
+    background-color: transparent;
+  }
+}
+
+.revenue-management-page {
+  min-height: calc(100vh - 64px);
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 20px;
+  background: #f8fafc;
+  transition: padding-left 0.3s ease;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding-left: 0 !important;
+  }
+}
+
+// Breadcrumb Box
+.breadcrumb-box {
+  background-color: white;
+  padding: 1rem 0;
+  position: fixed;
+  top: 64px;
+  z-index: 998;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s ease, width 0.3s ease;
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 56px;
+
+  @media (max-width: 768px) {
+    left: 0 !important;
+    width: 100% !important;
+    top: 56px;
+  }
+
+  .breadcrumb-container {
+    width: 100%;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 0.75rem 1rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .page-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+
+        @media (max-width: 768px) {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        gap: 8px;
+      }
+    }
+  }
+}
+
+// Main Content
+.main-content {
+  margin: 80px auto 0;
+  padding: 24px;
+  transition: max-width 0.3s ease;
+
+  @media (max-width: 768px) {
+    margin-top: 120px;
+    padding: 16px;
+    max-width: 100% !important;
+  }
+}
+
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin: 0 auto 24px;
+  max-width: 1400px;
+  justify-items: center;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 1200px;
+    gap: 16px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 100%;
+  }
+}
+
+// Revenue Table Container
+.revenue-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  // Filters Section (now inside revenue-table-container)
+  .filters-section {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+
+    @media (max-width: 768px) {
+      padding: 16px;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      width: 100%;
+      position: relative;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: flex-end;
+      height: 40px;
+
+      @media (max-width: 768px) {
+        min-width: 100%;
+        height: auto;
+      }
+
+      // Override SelectFieldComponent styles for filter context
+      ::ng-deep app-select-field {
+        width: 100%;
+        margin-bottom: 0;
+        height: 100%;
+        position: relative;
+        z-index: 1;
+
+        .select-field-wrapper {
+          margin-bottom: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: flex-end;
+        }
+
+        .select-label {
+          display: none; // Hide label in filter context
+        }
+
+        .select-dropdown-wrapper {
+          width: 100%;
+          height: 100%;
+          position: relative;
+
+          .select-dropdown {
+            padding: 10px 50px 10px 14px; // Increased right padding for clear button
+            font-size: 0.875rem;
+            height: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+
+            i.fa-chevron-down {
+              position: absolute;
+              right: 14px;
+              top: 50%;
+              transform: translateY(-50%);
+              pointer-events: none;
+              z-index: 1;
+            }
+          }
+
+          .clear-btn {
+            right: 36px; // Position clear button to the left of chevron
+            z-index: 2;
+          }
+
+          .select-dropdown-menu {
+            z-index: 1000;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+          }
+        }
+      }
+
+      // Increase z-index for each filter group to prevent overlap
+      &:nth-child(2) {
+        ::ng-deep app-select-field {
+          z-index: 2;
+        }
+      }
+
+      &:nth-child(3) {
+        ::ng-deep app-select-field {
+          z-index: 3;
+        }
+      }
+
+      &:nth-child(4) {
+        ::ng-deep app-select-field {
+          z-index: 4;
+        }
+      }
+
+      &:nth-child(5) {
+        ::ng-deep app-select-field {
+          z-index: 5;
+        }
+      }
+
+      .filter-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
+      .filter-select {
+      width: 100%;
+      padding: 10px 40px 10px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: white;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 12px;
+
+      &:hover {
+        border-color: #d1d5db;
+        background-color: #f9fafb;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #0F83BA;
+        box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+        background-color: white;
+      }
+
+      // Style for options - improved
+      option {
+        padding: 12px 14px;
+        background: white;
+        color: #374151;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        min-height: 40px;
+
+        &:hover {
+          background: #f3f4f6 !important;
+        }
+
+        &:checked,
+        &:focus {
+          background: #0F83BA !important;
+          color: white !important;
+        }
+
+        &:disabled {
+          color: #9ca3af;
+        }
+      }
+    }
+
+    &.date-range-group {
+      .date-range-inputs {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        app-date-picker {
+          flex: 1;
+          min-width: 150px;
+        }
+
+        .date-input-wrapper {
+          flex: 1;
+          position: relative;
+          min-width: 150px;
+          height: 40px;
+
+          .date-input {
+            width: 100%;
+            height: 40px;
+            padding: 10px 40px 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+
+            &::-webkit-calendar-picker-indicator {
+              opacity: 0;
+              position: absolute;
+              right: 0;
+              width: 40px;
+              height: 100%;
+              cursor: pointer;
+              z-index: 2;
+            }
+
+            // Hide the default calendar icon on the left (if any)
+            &::-webkit-inner-spin-button,
+            &::-webkit-clear-button {
+              display: none;
+              -webkit-appearance: none;
+            }
+
+            // Style the calendar popup
+            &::-webkit-datetime-edit-fields-wrapper {
+              padding: 0;
+            }
+
+            &::-webkit-datetime-edit {
+              padding: 0;
+            }
+
+            &:hover {
+              border-color: #d1d5db;
+              background-color: #f9fafb;
+            }
+
+            &:focus {
+              outline: none;
+              border-color: #0F83BA;
+              box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+              background-color: white;
+            }
+
+            &::placeholder {
+              color: #9ca3af;
+            }
+
+            &::-webkit-datetime-edit {
+              color: #374151;
+              padding: 0;
+            }
+
+            &::-webkit-datetime-edit-text {
+              color: #374151;
+              padding: 0 2px;
+            }
+
+            &::-webkit-datetime-edit-month-field,
+            &::-webkit-datetime-edit-day-field,
+            &::-webkit-datetime-edit-year-field {
+              color: #374151;
+              padding: 0 2px;
+            }
+
+            &::-webkit-datetime-edit-month-field:focus,
+            &::-webkit-datetime-edit-day-field:focus,
+            &::-webkit-datetime-edit-year-field:focus {
+              background-color: rgba(15, 131, 186, 0.1);
+              color: #0F83BA;
+              border-radius: 2px;
+            }
+
+            // Firefox styling
+            &::-moz-placeholder {
+              color: #9ca3af;
+              opacity: 1;
+            }
+
+            // Custom styling for date input
+            &[type="date"] {
+              &::-webkit-inner-spin-button,
+              &::-webkit-clear-button {
+                display: none;
+                -webkit-appearance: none;
+              }
+
+              // Style calendar popup when opened
+              &::-webkit-calendar-picker-indicator {
+                cursor: pointer;
+                
+                &:hover {
+                  opacity: 0.8;
+                }
+              }
+            }
+          }
+
+          .date-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+            font-size: 0.875rem;
+            z-index: 3;
+            transition: color 0.2s ease;
+            background: white;
+            padding: 2px;
+            border-radius: 2px;
+          }
+
+          &:hover .date-icon {
+            color: #374151;
+          }
+
+          &:focus-within .date-icon {
+            color: #0F83BA;
+          }
+        }
+
+        .date-separator {
+          color: #6b7280;
+          font-weight: 500;
+          font-size: 0.875rem;
+          flex-shrink: 0;
+
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
+      }
+    }
+
+    &.search-group {
+      flex: 2;
+      min-width: 300px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: nowrap;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 100%;
+      }
+
+      .search-box {
+        flex: 1;
+        position: relative;
+        height: 40px;
+
+        i {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          z-index: 1;
+        }
+
+        input {
+          width: 100%;
+          height: 40px;
+          padding: 10px 12px 10px 40px;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          transition: all 0.2s ease;
+          background: white;
+          color: #374151;
+          box-sizing: border-box;
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+
+          &:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #0F83BA;
+            box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.1);
+            background-color: white;
+          }
+        }
+      }
+    }
+
+      &.date-range-group {
+        flex: 1.5;
+        min-width: 300px;
+
+        @media (max-width: 768px) {
+          min-width: 100%;
+        }
+      }
+    }
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+
+    i {
+      font-size: 3rem;
+      color: #0F83BA;
+      margin-bottom: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    p {
+      font-size: 0.9375rem;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+
+    .revenue-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background: #f9fafb;
+
+        th {
+          padding: 16px;
+          text-align: left;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #6b7280;
+          border-bottom: 2px solid #e5e7eb;
+          border-right: 1px solid #e5e7eb;
+          white-space: nowrap;
+
+          &:last-child {
+            border-right: none;
+          }
+
+          @media (max-width: 768px) {
+            padding: 12px 8px;
+            font-size: 0.8125rem;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid #e5e7eb;
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background-color: #f9fafb;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          td {
+            padding: 16px;
+            font-size: 0.9375rem;
+            color: #374151;
+            vertical-align: middle;
+            border-right: 1px solid #e5e7eb;
+
+            &:last-child {
+              border-right: none;
+            }
+
+            @media (max-width: 768px) {
+              padding: 12px 8px;
+              font-size: 0.875rem;
+            }
+
+            &.empty-state-cell {
+              text-align: center;
+              padding: 60px 20px;
+            }
+
+            .status-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 12px;
+              font-size: 0.8125rem;
+              font-weight: 600;
+
+              &.completed {
+                background-color: #10b98115;
+                color: #10b981;
+              }
+
+              &.pending {
+                background-color: #f59e0b15;
+                color: #f59e0b;
+              }
+
+              &.failed {
+                background-color: #ef444415;
+                color: #ef4444;
+              }
+            }
+
+            .action-btn {
+              padding: 6px 16px;
+              border: none;
+              border-radius: 6px;
+              background: #0F83BA15;
+              color: #0F83BA;
+              font-size: 0.875rem;
+              font-weight: 500;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+
+              i {
+                font-size: 0.875rem;
+              }
+
+              &:hover {
+                background: #0F83BA;
+                color: white;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+
+    i {
+      font-size: 4rem;
+      color: #d1d5db;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+
+    p {
+      font-size: 0.9375rem;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+
+  .pagination-wrapper {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: center;
+  }
+}

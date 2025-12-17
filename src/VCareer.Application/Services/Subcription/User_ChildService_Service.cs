@@ -10,11 +10,13 @@ using VCareer.IRepositories.Subcriptions;
 using VCareer.IServices.Common;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
+using VCareer.Models.Job;
 using VCareer.Models.Subcription;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using static VCareer.Constants.JobConstant.SubcriptionContance;
 using static VCareer.Permission.VCareerPermission;
 
 namespace VCareer.Services.Subcription
@@ -28,6 +30,7 @@ namespace VCareer.Services.Subcription
         public readonly ICurrentUser _currentUser;
         public readonly ISubcriptionService _subcriptionService;
         public readonly IJobPostService _jobPostService;
+        public readonly IUser_SubcriptionServicerRepository _user_SubcriptionServicerRepository;
 
         public User_ChildService_Service(
             IJobAffectingService jobAffectingService,
@@ -36,6 +39,7 @@ namespace VCareer.Services.Subcription
             ICurrentUser currentUser,
             ISubcriptionService subcriptionService,
             IJobPostService jobPostService,
+            IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository,
             IdentityUserManager identityManager)
         {
             _jobAffectingService = jobAffectingService;
@@ -44,49 +48,67 @@ namespace VCareer.Services.Subcription
             _identityManager = identityManager;
             _jobPostService = jobPostService;
             _subcriptionService = subcriptionService;
+            _user_SubcriptionServicerRepository = user_SubcriptionServicerRepository;
             _currentUser = currentUser;
         }
 
-        public async Task ActiveServiceAsync(List<Guid> childServiceIds, Guid? jobId)
+        //hàm tổng xử lý khi kích hoạt các dịch vụ con , vứt các dịch vụ con khác vào đây mà xử lý dựa theo action haowcj target
+        public async Task ActiveServiceAsync(List<User_ChildServiceActiveDto> childServiceIdWithSubcriptionsIds, Guid? jobId)
         {
             var userId = _currentUser.GetId();
             if (userId == Guid.Empty) throw new BusinessException("User not found");
 
-            foreach (var childServiceId in childServiceIds)
+            foreach (var item in childServiceIdWithSubcriptionsIds)
             {
-                var childService = await _childServiceRepository.GetAsync(childServiceId);
-                if (childService.IsActive == false) throw new BusinessException("ChildService not active");
+                var childService = await _childServiceRepository.FindAsync(item.ChildServiceId);
                 if (childService == null) throw new BusinessException("ChildService not found");
+                if (childService.IsActive == false) throw new BusinessException("ChildService not active");
 
+
+                // nói cách khác là user mua các gói dịch vụ có chung childservice sẽ có các user childservice  có chung userid , childserviceid
+                //nên phải list ra để check cái nào có số lượng dùng thfi dùng , cái nào hết thì bỏ qua
                 var userChildService = await _userChildServiceRepository.FindAsync(
-                    x => x.ChildServiceId == childServiceId &&
-                         x.UserId == userId);
+                    x => x.ChildServiceId == item.ChildServiceId &&
+                         x.UserId == userId && x.UserSubcriptionId == item.UserSubcriptionServiceId);
 
                 // lần đầu user dùng child service → tạo mới đúng cái đang xử lý
                 if (userChildService == null)
                 {
-                    var newUserChildService = await CreateUserChildServiceAsync(userId, childServiceId);
-                    await ApplyServiceForJobAsync(childService, jobId, newUserChildService.Id);
+                    userChildService = await CreateUserChildServiceAsync(userId, item.ChildServiceId, item.UserSubcriptionServiceId);
+                    userChildService.UsedTime = 1;
+                    //check trường hợp chỉ dc dùng 1 lần
+                    if (userChildService.UsedTime >= userChildService.TotalUsageLimit)
+                        userChildService.Status = ChildServiceStatus.UsageLimitReached;
+
+                    await _userChildServiceRepository.UpdateAsync(userChildService, true);
+                    //đây chính là kích hoạt childservice kiểu đẩy job, các service loại action khác thì thêm vào 
+               if(childService.Target==SubcriptionContance.ServiceTarget.JobPost&&
+                        (childService.Action==ServiceAction.BoostScoreJob||
+                        childService.Action==ServiceAction.TopList)) await ApplyServiceForJobAsync(childService, jobId, userChildService.Id);
                     continue;
                 }
 
-                // user đang sử dụng dở
-                if (userChildService.Status == SubcriptionContance.ChildServiceStatus.Active)
+            
+                if (userChildService.Status != ChildServiceStatus.Active) continue;
+                //trường hợp hết số lần dùng 
+                if (userChildService.UsedTime >= userChildService.TotalUsageLimit)
                 {
-                    if (userChildService.UsedTime >= userChildService.TotalUsageLimit)
-                        throw new BusinessException("Used time limit");
+                    userChildService.Status = ChildServiceStatus.UsageLimitReached;
+                    await _userChildServiceRepository.UpdateAsync(userChildService, true);
+                    continue;
+                }
 
-                    userChildService.UsedTime += 1;
-                }
-                else
-                {
-                    // mua mới, reset lại
-                    userChildService.Status = SubcriptionContance.ChildServiceStatus.Active;
-                    userChildService.UsedTime = 0;
-                }
+                //vẫn còn lượt dùng
+                userChildService.UsedTime += 1;
+
+                if (userChildService.UsedTime >= userChildService.TotalUsageLimit)
+                    userChildService.Status = ChildServiceStatus.UsageLimitReached;
+
 
                 await _userChildServiceRepository.UpdateAsync(userChildService, true);
-                await ApplyServiceForJobAsync(childService, jobId, userChildService.Id);
+                if (childService.Target == SubcriptionContance.ServiceTarget.JobPost &&
+                        (childService.Action == ServiceAction.BoostScoreJob ||
+                        childService.Action == ServiceAction.TopList)) await ApplyServiceForJobAsync(childService, jobId, userChildService.Id);
             }
         }
         private async Task ApplyServiceForJobAsync(Models.Subcription.ChildService childService, Guid? jobId, Guid userChildServiceId)
@@ -111,16 +133,19 @@ namespace VCareer.Services.Subcription
             });
         }
 
-
-        private async Task<User_ChildService> CreateUserChildServiceAsync(Guid userId, Guid childServiceId)
+        private async Task<User_ChildService> CreateUserChildServiceAsync(Guid userId, Guid childServiceId, Guid userSubcriptionServiceId)
         {
             var childService = await _childServiceRepository.GetAsync(childServiceId);
             if (childService == null) throw new BusinessException("ChildService not found");
+
+            var userSubcriptionService = await _user_SubcriptionServicerRepository.FindAsync(userSubcriptionServiceId);
+            if (userSubcriptionService == null) throw new BusinessException("UserSubcriptionService not found");
 
             DateTime? endDate = null;
             if (childService.IsLifeTime == false) endDate = DateTime.Now.AddDays((double)childService.DayDuration);
             var userChildService = new User_ChildService()
             {
+                UserSubcriptionId = userSubcriptionServiceId,
                 TotalUsageLimit = childService.TimeUsedLimit,
                 IsLifeTime = childService.IsLifeTime,
                 IsLimitUsedTime = childService.IsLimitUsedTime,
@@ -134,7 +159,6 @@ namespace VCareer.Services.Subcription
             return await _userChildServiceRepository.InsertAsync(userChildService, true);
         }
 
-
         public Task<User_ChildServiceViewDto> GetUser_ChildServiceAsync(Guid userChildServiceId)
         {
             throw new NotImplementedException();
@@ -144,5 +168,5 @@ namespace VCareer.Services.Subcription
         {
             throw new NotImplementedException();
         }
-    }
+        }
 }

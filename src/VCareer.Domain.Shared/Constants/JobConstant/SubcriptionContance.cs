@@ -19,22 +19,29 @@ namespace VCareer.Constants.JobConstant
         {
             JobPost,
             Company,
-            Cv
+          //  Cv
         }
         public enum ServiceAction
         {
-            BoostScoreCv,          // Tăng điểm hiển thị
+            //BoostScoreCv,          // Tăng điểm hiển thị
             BoostScoreJob,        // Tăng điểm hiển thị
             TopList,             // Cho lên Top N
-            VerifiedBadge,       // Gắn badge
-            IncreaseQuota,       // Tăng số lượng job được đăng
-            ExtendExpiredDate,   // Kéo dài ngày hết hạn job
+            JobBadge,       // Gắn badge
+            ThemeCompany
+           // IncreaseQuota,       // Tăng số lượng job được đăng
+            //ExtendExpiredDate,   // Kéo dài ngày hết hạn job
         }
+        //cái này chỉ để check có phải action của job ko thôi- dùng trong hàm 
         public enum JobServiceAction
         {
             BoostScoreJob = 0,        // Tăng điểm hiển thị
             TopList = 1,             // Cho lên Top N
-            VerifiedBadge = 2       // Gắn badge
+            JobBadge= 2       // Gắn badge
+        }
+        //hiển thị
+        public  enum CompanyServiceAction
+        {
+            ThemeCompany = 0
         }
         public enum SubcriptionStatus
         {
@@ -48,6 +55,8 @@ namespace VCareer.Constants.JobConstant
             Inactive = 0,
             Active = 1,
             Expired = 2,
+            UsageLimitReached =3
+
         }
         public enum CurrencyType
         {

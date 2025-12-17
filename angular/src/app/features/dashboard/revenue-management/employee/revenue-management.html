@@ -1,0 +1,187 @@
+<div class="revenue-management-page" [style.padding-left]="getContentPaddingLeft()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()"
+  >
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="page-header">
+        <h1 class="page-title">Quản lý nguồn thu</h1>
+      </div>
+      <div class="action-buttons">
+        <app-button type="secondary" size="small" (click)="onExportExcel()">
+          <i class="fas fa-file-excel"></i>
+          Xuất file Excel
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <app-stat-card
+        label="Tổng doanh thu"
+        [value]="totalRevenue | number:'1.0-0'"
+        icon="fa-dollar-sign"
+        color="#0F83BA">
+      </app-stat-card>
+      
+      <app-stat-card
+        label="Doanh thu tháng này"
+        [value]="monthlyRevenue | number:'1.0-0'"
+        icon="fa-calendar-alt"
+        color="#10b981">
+      </app-stat-card>
+      
+      <app-stat-card
+        label="Tổng giao dịch"
+        [value]="totalTransactions | number:'1.0-0'"
+        icon="fa-receipt"
+        color="#f59e0b">
+      </app-stat-card>
+      
+      <app-stat-card
+        label="Thanh toán chờ xử lý"
+        [value]="pendingPayments | number:'1.0-0'"
+        icon="fa-clock"
+        color="#ef4444">
+      </app-stat-card>
+    </div>
+
+    <!-- Revenue Table -->
+    <div class="revenue-table-container">
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <div class="filters-row">
+          <!-- Search -->
+          <div class="filter-group search-group">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã giao dịch, tên công ty..."
+                [(ngModel)]="searchKeyword"
+                (keyup.enter)="onSearch()"
+              />
+            </div>
+            <app-button type="primary" size="small" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+              Tìm kiếm
+            </app-button>
+          </div>
+
+          <!-- Trạng thái -->
+          <div class="filter-group">
+            <app-select-field
+              [options]="statusOptions"
+              [(ngModel)]="selectedStatus"
+              (valueChange)="onStatusChange($event)"
+              placeholder="Tất cả">
+            </app-select-field>
+          </div>
+
+          <!-- Thời gian -->
+          <div class="filter-group date-range-group">
+            <div class="date-range-inputs">
+              <app-date-picker
+                [(ngModel)]="startDate"
+                (dateChange)="onDateRangeChange()"
+                placeholder="mm/dd/yyyy">
+              </app-date-picker>
+              <span class="date-separator">-</span>
+              <app-date-picker
+                [(ngModel)]="endDate"
+                (dateChange)="onDateRangeChange()"
+                placeholder="mm/dd/yyyy">
+              </app-date-picker>
+            </div>
+          </div>
+
+          <!-- Doanh thu theo thời gian -->
+          <div class="filter-group">
+            <app-select-field
+              [options]="revenuePeriodOptions"
+              [(ngModel)]="selectedRevenuePeriod"
+              (valueChange)="onRevenuePeriodChange($event)"
+              placeholder="Hôm nay">
+            </app-select-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="false" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper" *ngIf="true">
+        <table class="revenue-table">
+          <thead>
+            <tr>
+              <th>Mã giao dịch</th>
+              <th>Công ty</th>
+              <th>Dịch vụ</th>
+              <th>Số tiền</th>
+              <th>Ngày giao dịch</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="revenueList.length === 0">
+              <td colspan="7" class="empty-state-cell">
+                <div class="empty-state">
+                  <i class="fas fa-receipt"></i>
+                  <h3>Chưa có giao dịch nào</h3>
+                  <p>Dữ liệu giao dịch sẽ hiển thị tại đây</p>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let item of getPaginatedRevenue()">
+              <td>{{ item.transactionId || 'N/A' }}</td>
+              <td>{{ item.companyName || 'N/A' }}</td>
+              <td>{{ item.serviceName || 'N/A' }}</td>
+              <td>{{ item.amount | number:'1.0-0' }} VNĐ</td>
+              <td>{{ item.transactionDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="status-badge" [class.completed]="item.status === 'completed'"
+                      [class.pending]="item.status === 'pending'"
+                      [class.failed]="item.status === 'failed'">
+                  {{ getStatusText(item.status) }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn" (click)="viewDetail(item)">
+                  <i class="fas fa-eye"></i>
+                  Xem chi tiết
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrapper" *ngIf="totalPages > 1">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalItems"
+          [itemsPerPage]="itemsPerPage"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+    </div>
+  </div>
+</div>
+

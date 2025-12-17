@@ -11,10 +11,11 @@ export class CandidateSearchService {
   apiName = 'Default';
   
 
-  getCandidateDetail = (id: string, config?: Partial<Rest.Config>) =>
+  getCandidateDetail = (id: string, jobId?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<CandidateSearchResultDto>>({
       method: 'GET',
       url: `/api/candidate-search/${id}`,
+      params: { jobId },
     },
     { apiName: this.apiName,...config });
   

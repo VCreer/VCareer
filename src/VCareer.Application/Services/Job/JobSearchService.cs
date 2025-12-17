@@ -60,34 +60,20 @@ namespace VCareer.Services.Job
             if (!jobIds.Any())
                 return new List<JobViewDto>();
 
-            // Lấy list Id hết hạn ngay từ DB
-            var now = DateTime.Now;
-
             var jobsQuery = await _jobPostingRepository.GetQueryableAsync();
             var jobs = await jobsQuery
-                .Where(j => jobIds.Contains(j.Id) && j.ExpiresAt >= now)
+                .Where(j => jobIds.Contains(j.Id))
                 .ToListAsync();
 
-            // Nếu bị Lucene trả về job đã hết hạn → xóa khỏi Lucene
-            var validJobIds = jobs.Select(x => x.Id).ToHashSet();
-            var expiredIds = jobIds.Where(id => !validJobIds.Contains(id)).ToList();
-
-            foreach (var expiredId in expiredIds)
-            {
-                await _luceneIndexer.DeleteJobFromIndexAsync(expiredId);
-            }
-
-            // Giữ đúng thứ tự từ Lucene
-            var jobDict = jobs.ToDictionary(j => j.Id, j => j);
-
+            // Giữ thứ tự Lucene
             var orderedJobs = jobIds
-                .Where(id => jobDict.ContainsKey(id))
-                .Select(id => jobDict[id])
+                .Select(id => jobs.FirstOrDefault(j => j.Id == id))
+                .Where(j => j != null)
                 .ToList();
 
+            if (orderedJobs.Count == 0) return new List<JobViewDto>();
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
         }
-
 
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
@@ -152,6 +138,14 @@ namespace VCareer.Services.Job
             try
             {
                 await _luceneIndexer.DeleteJobFromIndexAsync(jobId);
+            }
+            catch (Exception ex) { throw new BusinessException(ex.Message); }
+        }
+        public async Task RemoveJobsFromIndexAsync(List<Guid> jobId)
+        {
+            try
+            {
+                await _luceneIndexer.DeleteJobsFromIndexAsync(jobId);
             }
             catch (Exception ex) { throw new BusinessException(ex.Message); }
         }

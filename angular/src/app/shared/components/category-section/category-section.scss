@@ -55,8 +55,8 @@
   
   .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
     margin-bottom: 3rem;
     
     @media (max-width: 768px) {
@@ -84,23 +84,6 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
     
-    .category-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f0f9ff;
-      border-radius: 12px;
-      
-      img {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-      }
-    }
-    
     .category-name {
       font-size: 1.125rem;
       font-weight: 600;
@@ -108,11 +91,5 @@
       margin-bottom: 0.5rem;
     }
     
-    .job-count {
-      font-size: 0.875rem;
-      color: #0F83BA;
-      font-weight: 500;
-      margin: 0;
-    }
   }
 }

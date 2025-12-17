@@ -1,4 +1,3 @@
-// src/app/guards/auth-redirect.guard.ts
 import { Injectable } from '@angular/core';
 import {
   CanActivate,
@@ -53,9 +52,9 @@ export class AuthRedirectGuard implements CanActivate {
 
   private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
     const map = {
-      EMPLOYEE: ['/employee/home'],
+      EMPLOYEE: ['/employee/statistical-reports'],
       RECRUITER: ['recruiter/recruitment-report'],
-      CANDIDATE: ['/home'],
+      CANDIDATE: ['candidate/home'],
     };
     this.router.navigate(map[role]);
   }

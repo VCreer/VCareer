@@ -44,7 +44,7 @@ export interface RecruiterRegisterDto {
   phoneNumber: string;
   provinceCode: number;
   districtCode: number;
-  companyName: string;
+  companyName?: string;
   taxCode: string;
 }
 

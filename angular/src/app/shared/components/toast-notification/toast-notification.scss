@@ -2,13 +2,15 @@
   position: fixed !important;
   top: 80px !important; // Position below header and breadcrumb
   right: 20px !important;
-  z-index: 10001 !important; // Highest z-index to ensure it's always visible above everything
+  z-index: 999999 !important; // Above modal overlay (9999) and all other elements - very high to ensure it's always on top
   min-width: 300px;
   max-width: 400px;
   padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideInRight 0.3s ease-out;
+  pointer-events: auto !important; // Ensure toast is clickable
+  isolation: isolate !important; // Create new stacking context
 }
 
 .toast-success {
