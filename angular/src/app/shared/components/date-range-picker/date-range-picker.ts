@@ -43,15 +43,18 @@ export class DateRangePickerComponent implements OnInit, OnChanges {
 
   toggleDropdown(event?: Event): void {
     if (this.disabled) return;
-    // Ngăn event bubbling nếu click vào clear button hoặc các element con khác
+    // Ngăn event bubbling nếu click vào clear button
     if (event) {
       const target = event.target as HTMLElement;
-      // Không toggle nếu click vào clear button hoặc các input trong dropdown
-      if (target.closest('.clear-btn') || target.closest('.date-picker-dropdown')) {
+      // Không toggle nếu click vào clear button
+      if (target.closest('.clear-btn')) {
         return;
       }
+      // Ngăn event propagation để không đóng dropdown ngay lập tức
+      event.stopPropagation();
     }
     this.showDropdown = !this.showDropdown;
+    console.log('Dropdown toggled, showDropdown:', this.showDropdown);
   }
 
   onStartDateChange(): void {
@@ -99,6 +102,7 @@ export class DateRangePickerComponent implements OnInit, OnChanges {
     
     this.internalStartDate = '';
     this.internalEndDate = '';
+    // Emit empty strings để clear filter
     this.dateRangeChange.emit({
       start: '',
       end: ''
@@ -112,9 +116,13 @@ export class DateRangePickerComponent implements OnInit, OnChanges {
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    // Chỉ đóng dropdown nếu click bên ngoài component và không phải click vào input
-    if (!this.elementRef.nativeElement.contains(target) && target.tagName !== 'INPUT') {
-      this.showDropdown = false;
+    // Chỉ đóng dropdown nếu click bên ngoài component
+    // Không đóng nếu click vào input date hoặc các element trong dropdown
+    if (!this.elementRef.nativeElement.contains(target)) {
+      // Kiểm tra xem có phải click vào input date không
+      if (target.tagName !== 'INPUT' && !target.closest('input[type="date"]')) {
+        this.showDropdown = false;
+      }
     }
   }
 }

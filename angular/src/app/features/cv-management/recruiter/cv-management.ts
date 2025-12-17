@@ -14,6 +14,7 @@ import {
 } from '../../../shared/components';
 import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
 import type { ApplicationDto,GetApplicationListDto, UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
+import { NotificationService } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';
 import * as XLSX from 'xlsx';
 import * as JSZip from 'jszip';
@@ -36,6 +37,7 @@ export interface CandidateCv {
   avatarImageUrl?: string; // URL ảnh đại diện từ CV
   avatar?: string; // Fallback initials
   candidateCode?: string; // Mã ứng viên
+  candidateId?: string; // ID của candidate để gửi notification
   notes?: string; // Ghi chú
   labels?: string[];
   rating?: number; // Đánh giá từ 1-10
@@ -141,7 +143,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   constructor(
     private translationService: TranslationService,
     private router: Router,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -278,7 +281,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         jobTitle: app.jobTitle || 'N/A',
         isViewed: !!app.viewedAt,
         candidateCode: app.candidateId || '',
-        notes: app.recruiterNotes || '',
+        candidateId: app.candidateId || '',
+           notes: app.recruiterNotes || '',
         rating: app.rating || undefined
       };
     });
@@ -882,6 +886,24 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       next: () => {
         this.showToastMessage(`Đã cập nhật trạng thái thành "${this.getStatusName(newStatus)}"`, 'success');
         this.changingStatusFor = null;
+        
+        // Send notification to candidate when status changes to 'offer'
+        if (newStatus === 'offer') {
+          console.log('[CV Management] Status changed to offer, preparing to send notification');
+          console.log('[CV Management] CV data:', { 
+            id: cv.id, 
+            candidateId: cv.candidateId, 
+            jobId: cv.jobId, 
+            position: cv.position 
+          });
+          
+          if (cv.candidateId) {
+            this.sendOfferNotification(cv);
+          } else {
+            console.warn('[CV Management] Cannot send notification: candidateId is missing for CV:', cv.id);
+          }
+        }
+        
         // Re-apply filters to ensure the CV appears/disappears based on current filter
         this.applyFilters();
       },
@@ -1209,6 +1231,76 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  private sendOfferNotification(cv: CandidateCv): void {
+    if (!cv.candidateId) {
+      console.warn('[CV Management] Cannot send notification: candidateId is missing');
+      return;
+    }
+
+    // Validate and convert candidateId to Guid
+    let candidateGuid: string;
+    try {
+      // Try to parse as Guid, if it's already a valid Guid string, use it
+      candidateGuid = cv.candidateId;
+      // Validate Guid format
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateGuid)) {
+        console.error('[CV Management] Invalid candidateId format (not a Guid):', cv.candidateId);
+        return;
+      }
+    } catch (error) {
+      console.error('[CV Management] Error parsing candidateId:', error);
+      return;
+    }
+
+    // Prepare notification metadata
+    const metadata = {
+      JobTitle: cv.position || 'Công việc',
+      CompanyName: '', // TODO: Get company name from current user context
+      JobId: cv.jobId || '',
+      ApplicationId: cv.id
+    };
+
+    // Convert jobId to Guid if provided, otherwise null
+    let relatedEntityId: string | null = null;
+    if (cv.jobId) {
+      try {
+        // Validate Guid format
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cv.jobId)) {
+          relatedEntityId = cv.jobId;
+        } else {
+          console.warn('[CV Management] Invalid jobId format (not a Guid):', cv.jobId);
+        }
+      } catch (error) {
+        console.warn('[CV Management] Error parsing jobId:', error);
+      }
+    }
+
+    const notification = {
+      userId: candidateGuid,
+      userRole: 'Candidate',
+      notificationType: 'JobOffer',
+      title: 'Đề nghị công việc',
+      // Message removed per request to avoid duplicate/verbose text
+      message: '',
+      relatedEntityType: 'JobPost',
+      relatedEntityId: relatedEntityId,
+      metadata: JSON.stringify(metadata)
+    };
+
+    console.log('[CV Management] Sending notification:', notification);
+
+    this.notificationService.createNotification(notification).subscribe({
+      next: (result) => {
+        console.log('[CV Management] Notification sent successfully to candidate:', cv.candidateId, result);
+      },
+      error: (error) => {
+        console.error('[CV Management] Error sending notification:', error);
+        console.error('[CV Management] Error details:', error.error, error.status, error.statusText);
+        // Don't show error to user as status update was successful
+      }
+    });
   }
 
   private showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {

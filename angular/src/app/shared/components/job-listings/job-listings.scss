@@ -171,7 +171,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #0F83BA;
+    color: #9ca3af; // mặc định xám nhạt
     padding: 0;
     flex-shrink: 0;
 
@@ -181,7 +181,7 @@
     }
 
     &.active {
-      color: #0F83BA;
+      color: #ef4444; // đỏ khi đã lưu
     }
 
     &:hover {

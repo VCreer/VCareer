@@ -10,9 +10,7 @@ import {
   StatCardComponent,
   PaginationComponent,
   StaffTableComponent,
-  ActivityLogTableComponent,
   HRStaff,
-  ActivityLog,
 } from '../../../../shared/components';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
 import type {
@@ -22,12 +20,6 @@ import type {
   InviteStaffDto,
 } from '../../../../proxy/dto/team-management-dto/models';
 import { NavigationService } from '../../../../core/services/navigation.service';
-import { ActivityLogService } from '../../../../proxy/services/auth/activity-log';
-import type {
-  ActivityLogDto,
-  ActivityLogFilterDto,
-  ActivityLogListDto,
-} from '../../../../proxy/dto/activity-log-dto/models';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -43,7 +35,6 @@ import * as XLSX from 'xlsx';
     StatCardComponent,
     PaginationComponent,
     StaffTableComponent,
-    ActivityLogTableComponent,
   ],
   templateUrl: './hr-staff-management.html',
   styleUrls: ['./hr-staff-management.scss'],
@@ -61,7 +52,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   showEditModal = false;
   showDeleteModal = false;
   showFilterDropdown = false;
-  showActivityLog = false;
   selectedStaff: HRStaff | null = null;
 
   // Form data
@@ -103,21 +93,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     { value: 'inactive', label: 'Ngừng hoạt động' },
   ];
 
-  // Activity Log
-  activitySearchKeyword = '';
-  activityLogs: ActivityLog[] = [];
-  filteredActivityLogs: ActivityLog[] = [];
-  paginatedActivityLogs: ActivityLog[] = [];
-  loadingActivityLogs = false;
-
-  // Activity Log Pagination
-  activityCurrentPage: number = 1;
-  activityItemsPerPage: number = 7;
-
-  get activityTotalPages(): number {
-    return Math.ceil(this.filteredActivityLogs.length / this.activityItemsPerPage);
-  }
-
   // Current Leader Info
   currentLeaderInfo: StaffListItemDto | null = null;
   loadingLeaderInfo = false;
@@ -155,7 +130,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private teamManagementService: TeamManagementService,
-    private activityLogService: ActivityLogService,
     private navigationService: NavigationService
   ) {}
 
@@ -182,17 +156,33 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
         this.currentLeaderInfo = userInfo;
         // Leader được phép thêm HR Staff chỉ khi đã xác thực tài khoản (Cấp 3/3)
         const isLeader = !!userInfo.isLead;
-        const isVerified = this.navigationService.isVerified();
+        // Kiểm tra verification status từ userInfo hoặc từ navigationService
+        const verificationStatus = (userInfo as any)?.verificationStatus;
+        let isVerified = false;
+        if (verificationStatus !== undefined) {
+          isVerified = verificationStatus;
+          // Cập nhật verification status trong navigationService
+          this.navigationService.setVerified(verificationStatus);
+        } else {
+          // Fallback: sử dụng giá trị từ navigationService
+          isVerified = this.navigationService.isVerified();
+        }
         this.canAddStaff = isLeader && isVerified;
         this.loadingLeaderInfo = false;
         console.log('Current user info:', userInfo);
         console.log('IsLead:', userInfo.isLead);
+        console.log('IsVerified:', isVerified);
         console.log('CompanyId:', userInfo.companyId);
         console.log('CompanyName:', userInfo.companyName);
       },
       error: error => {
         console.error('Error loading current user info:', error);
         this.loadingLeaderInfo = false;
+        // Nếu lỗi 401/403, có thể là vấn đề authentication
+        if (error.status === 401 || error.status === 403) {
+          console.warn('Authentication error, user may need to re-login');
+          // Không redirect tự động, để user tự xử lý
+        }
       },
     });
   }
@@ -334,150 +324,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return selected ? selected.label : 'Tất cả trạng thái';
   }
 
-  toggleActivityLog(): void {
-    this.showActivityLog = !this.showActivityLog;
-    if (this.showActivityLog) {
-      this.activitySearchKeyword = '';
-      this.loadActivityLogs();
-    }
-  }
-
-  loadActivityLogs(): void {
-    if (this.staffList.length === 0) {
-      // Nếu chưa có staff list, load lại
-      this.loadStaffList();
-      return;
-    }
-
-    this.loadingActivityLogs = true;
-    this.activityLogs = [];
-
-    // Lấy activity logs cho tất cả HR Staff
-    const SEARCH_PLACEHOLDER = '__ALL__';
-    const activityPromises = this.staffList.map(staff => {
-      if (!staff.id) return Promise.resolve(null);
-
-      const keyword = this.activitySearchKeyword?.trim();
-      const filter: ActivityLogFilterDto = {
-        skipCount: 0,
-        maxResultCount: 100, // Lấy tối đa 100 logs mỗi staff
-        sorting: 'creationTime DESC',
-        // Backend currently validates SearchKeyword, so send placeholder when empty
-        searchKeyword: keyword && keyword.length > 0 ? keyword : SEARCH_PLACEHOLDER
-      };
-
-      return this.activityLogService
-        .getStaffActivityLogs(staff.id, filter)
-        .toPromise()
-        .then((response: ActivityLogListDto | undefined) => {
-          if (response && response.activities) {
-            return response.activities.map((activity: ActivityLogDto) => ({
-              id: activity.id || '',
-              staffId: staff.id,
-              staffName: staff.name,
-              staffRole: staff.role,
-              activityType: this.mapActivityType(String(activity.activityType || '')),
-              detail: this.formatActivityDetail(activity),
-              timestamp: activity.creationTime ? new Date(activity.creationTime) : new Date(),
-            }));
-          }
-          return [];
-        })
-        .catch(error => {
-          console.error(`Error loading activity logs for staff ${staff.id}:`, error);
-          return [];
-        });
-    });
-
-    Promise.all(activityPromises)
-      .then(allLogs => {
-        // Merge tất cả logs và sort theo thời gian (mới nhất trước)
-        // Sử dụng reduce thay vì flat() để tương thích với TypeScript cũ hơn
-        this.activityLogs = allLogs
-          .reduce((acc: ActivityLog[], logs) => {
-            if (logs && Array.isArray(logs)) {
-              acc.push(...logs);
-            }
-            return acc;
-          }, [])
-          .filter(log => log !== null)
-          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        this.filterActivityLogs();
-        this.loadingActivityLogs = false;
-      })
-      .catch(error => {
-        console.error('Error loading activity logs:', error);
-        this.showToastMessage('Không thể tải nhật ký hoạt động. Vui lòng thử lại.', 'error');
-        this.loadingActivityLogs = false;
-      });
-  }
-
-  mapActivityType(activityType: string): string {
-    // Map ActivityType enum sang string dễ hiểu
-    const typeMap: { [key: string]: string } = {
-      Login: 'login',
-      Logout: 'logout',
-      JobPosted: 'create_campaign',
-      JobUpdated: 'update_campaign',
-      JobDeleted: 'delete_campaign',
-      ApplicationSubmitted: 'submit_application',
-      ApplicationApproved: 'approve',
-      ApplicationRejected: 'reject',
-      CandidateEvaluated: 'review_cv',
-      ProfileUpdated: 'update_profile',
-      EmailSent: 'send_email',
-      InterviewScheduled: 'schedule_interview',
-      InterviewCompleted: 'complete_interview',
-    };
-
-    return typeMap[activityType] || activityType.toLowerCase();
-  }
-
-  formatActivityDetail(activity: ActivityLogDto): string {
-    // Format activity detail từ action và description
-    if (activity.description) {
-      return activity.description;
-    }
-    if (activity.action) {
-      return activity.action;
-    }
-    return 'Hoạt động không có mô tả';
-  }
-
-  filterActivityLogs(): void {
-    if (!this.activitySearchKeyword || this.activitySearchKeyword.trim() === '') {
-      this.filteredActivityLogs = [...this.activityLogs];
-    } else {
-      const keyword = this.activitySearchKeyword.toLowerCase();
-      this.filteredActivityLogs = this.activityLogs.filter(
-        log =>
-          log.staffName.toLowerCase().includes(keyword) ||
-          log.detail.toLowerCase().includes(keyword) ||
-          log.activityType.toLowerCase().includes(keyword)
-      );
-    }
-    this.activityCurrentPage = 1;
-    this.updatePaginatedActivityLogs();
-  }
-
-  updatePaginatedActivityLogs(): void {
-    const startIndex = (this.activityCurrentPage - 1) * this.activityItemsPerPage;
-    const endIndex = startIndex + this.activityItemsPerPage;
-    this.paginatedActivityLogs = this.filteredActivityLogs.slice(startIndex, endIndex);
-  }
-
-  onActivityPageChange(page: number): void {
-    this.activityCurrentPage = page;
-    this.updatePaginatedActivityLogs();
-
-    // Scroll to top of table
-    const tableElement = document.querySelector('.staff-table-container');
-    if (tableElement) {
-      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
   openAddModal(): void {
     if (!this.canAddStaff) {
       this.showToastMessage(
@@ -487,22 +333,33 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Đóng dropdown khi mở modal - sử dụng setTimeout để đảm bảo đóng trước khi modal mở
-    this.showFilterDropdown = false;
-    this.cdr.detectChanges();
-    
-    // Đợi một chút để đảm bảo dropdown đã đóng
+    // Đóng tất cả modal và dropdown khác trước khi mở modal thêm
+    this.closeAllModals();
+
+    // Đợi một chút để đảm bảo các modal khác đã đóng hoàn toàn
     setTimeout(() => {
       this.staffForm = {
         email: '',
       };
       this.showAddModal = true;
       this.cdr.detectChanges();
-    }, 0);
+    }, 50);
+  }
+
+  closeAllModals(): void {
+    this.showAddModal = false;
+    this.showEditModal = false;
+    this.showDeleteModal = false;
+    this.showFilterDropdown = false;
+    this.selectedStaff = null;
+    this.cdr.detectChanges();
   }
 
   closeAddModal(): void {
     this.showAddModal = false;
+    this.staffForm = {
+      email: '',
+    };
   }
 
   openEditModal(staff: HRStaff): void {
@@ -517,6 +374,10 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   closeEditModal(): void {
     this.showEditModal = false;
     this.selectedStaff = null;
+    this.staffForm = {
+      email: '',
+    };
+    this.cdr.detectChanges();
   }
 
   openDeleteModal(staff: HRStaff): void {
@@ -571,6 +432,8 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
           'success'
         );
         this.loadStaffList(); // Reload list to show new staff
+        // Reload current user info để cập nhật verification status
+        this.loadCurrentUserInfo();
         this.closeAddModal();
         this.loading = false;
       },

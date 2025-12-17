@@ -63,13 +63,13 @@ namespace VCareer.Services.Auth
         private readonly IHttpContextAccessor _httpContextAcessor;
 
         public AuthAppService(
-            IdentityUserManager identityManager,
-            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager,
-            ITokenGenerator tokenGenerator,
+            IdentityUserManager identityManager, 
+            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
+            ITokenGenerator tokenGenerator, 
             CurrentUser currentUser,
-            IEmailSender emailSender,
-            ITemplateRenderer templateRenderer,
-            IdentityRoleManager roleManager,
+            IEmailSender emailSender, 
+            ITemplateRenderer templateRenderer, 
+            IdentityRoleManager roleManager, 
             IOptions<GoogleOptions> googleOptions,
             IConfiguration configuration,
             ICandidateProfileRepository candidateProfile,
@@ -97,6 +97,7 @@ namespace VCareer.Services.Auth
 
 
 
+        // API chung cho forgot password (có thể dùng cho recruiter hoặc các role khác)
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -118,6 +119,50 @@ namespace VCareer.Services.Auth
             var resetLink = $"{angularUrl}/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
 
             Logger.LogInformation($"ForgotPassword: Reset link = {resetLink}");
+
+            var body = await _templateRenderer.RenderAsync(
+                 "Abp.StandardEmailTemplates.Message",
+            new { message = $"Nhấn vào liên kết để đặt lại mật khẩu: <a href='{resetLink}'>Reset Password</a>" }
+                );
+
+            await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
+        }
+
+        // API riêng cho candidate forgot password
+        public async Task CandidateForgotPasswordAsync(ForgotPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // Kiểm tra user có phải là candidate không
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (candidateProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản ứng viên. Vui lòng sử dụng chức năng quên mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của candidate
+            if (!candidateProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var token = await _identityManager.GeneratePasswordResetTokenAsync(user);
+
+            // Lấy AngularUrl từ configuration với fallback
+            var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
+
+            // Đảm bảo URL không có trailing slash
+            angularUrl = angularUrl.TrimEnd('/');
+
+            // Log để debug (có thể xóa sau khi test xong)
+            Logger.LogInformation($"CandidateForgotPassword: AngularUrl from config = {angularUrl}");
+
+            // Tạo link reset password với token và email trong query string
+            // Sử dụng route candidate/reset-password cho candidate
+            var resetLink = $"{angularUrl}/candidate/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+
+            Logger.LogInformation($"CandidateForgotPassword: Reset link = {resetLink}");
 
             var body = await _templateRenderer.RenderAsync(
                  "Abp.StandardEmailTemplates.Message",
@@ -187,9 +232,9 @@ namespace VCareer.Services.Auth
                 try
                 {
                     payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
-                    {
-                        Audience = new[] { _googleOptions.ClientId }
-                    });
+            {
+                Audience = new[] { _googleOptions.ClientId }
+            });
                     Logger.LogInformation($"LoginWithGoogleAsync: Token validated successfully for email: {payload.Email}");
                 }
                 catch (Exception ex)
@@ -386,7 +431,7 @@ namespace VCareer.Services.Auth
         public async Task LogOutAllDeviceAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-
+            
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
             if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
@@ -403,7 +448,7 @@ namespace VCareer.Services.Auth
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-
+            
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
             if (userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
@@ -421,21 +466,43 @@ namespace VCareer.Services.Auth
 
         [UnitOfWork]
         public async Task CandidateRegisterAsync(CandidateRegisterDto input)
-        {
-            if (await _identityManager.FindByEmailAsync(input.Email) != null)
-                throw new UserFriendlyException("Email already exist");
+           {
+               if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                   throw new UserFriendlyException("Email already exist");
 
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            newUser.Name = input.Name;
+            // Tách tên thành name và surname
+            var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string name = string.Empty;
+            string surname = string.Empty;
+            
+            if (nameParts.Length == 0)
+            {
+                name = surname = string.Empty;
+            }
+            else if (nameParts.Length == 1)
+            {
+                name = surname = nameParts[0];
+            }
+            else
+            {
+                surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
+                name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
+            }
+
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
+            {
+                Name = name,
+                Surname = surname
+            };
             var result = await _identityManager.CreateAsync(newUser, input.Password);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
 
             //gắn role canđiate
             var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
-            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-            result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+                   if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                   result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+                   if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
             // cập nhật tạo bản ghi vào canđiate profile
             var candidateProfile = new CandidateProfile
@@ -491,10 +558,103 @@ namespace VCareer.Services.Auth
             await _recruiterRepository.InsertAsync(recruiterProfile, true);
         }
 
+        // API chung cho reset password (có thể dùng cho recruiter hoặc các role khác)
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            //SAU CẦN GHI THÊM LOG VÀO ĐÂY
+        }
+
+        // API riêng cho candidate reset password
+        public async Task CandidateResetPasswordAsync(ResetPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            // Kiểm tra user có phải là candidate không
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (candidateProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản ứng viên. Vui lòng sử dụng chức năng đặt lại mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của candidate
+            if (!candidateProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            //SAU CẦN GHI THÊM LOG VÀO ĐÂY
+        }
+
+        // API riêng cho recruiter forgot password
+        public async Task RecruiterForgotPasswordAsync(ForgotPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // Kiểm tra user có phải là recruiter không
+            var recruiterProfile = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+            if (recruiterProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản nhà tuyển dụng. Vui lòng sử dụng chức năng quên mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của recruiter
+            if (!recruiterProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var token = await _identityManager.GeneratePasswordResetTokenAsync(user);
+
+            // Lấy AngularUrl từ configuration với fallback
+            var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
+
+            // Đảm bảo URL không có trailing slash
+            angularUrl = angularUrl.TrimEnd('/');
+
+            // Log để debug (có thể xóa sau khi test xong)
+            Logger.LogInformation($"RecruiterForgotPassword: AngularUrl from config = {angularUrl}");
+
+            // Tạo link reset password với token và email trong query string
+            // Sử dụng route recruiter/reset-password cho recruiter
+            var resetLink = $"{angularUrl}/recruiter/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+
+            Logger.LogInformation($"RecruiterForgotPassword: Reset link = {resetLink}");
+
+            var body = await _templateRenderer.RenderAsync(
+                 "Abp.StandardEmailTemplates.Message",
+            new { message = $"Nhấn vào liên kết để đặt lại mật khẩu: <a href='{resetLink}'>Reset Password</a>" }
+                );
+
+            await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
+        }
+
+        // API riêng cho recruiter reset password
+        public async Task RecruiterResetPasswordAsync(ResetPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            // Kiểm tra user có phải là recruiter không
+            var recruiterProfile = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+            if (recruiterProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản nhà tuyển dụng. Vui lòng sử dụng chức năng đặt lại mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của recruiter
+            if (!recruiterProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
 
             var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));

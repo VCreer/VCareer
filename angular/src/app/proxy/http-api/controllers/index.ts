@@ -1,3 +1,4 @@
+export * from './activity-log.service';
 export * from './application.service';
 export * from './candidate-cv.service';
 export * from './cv-template.service';

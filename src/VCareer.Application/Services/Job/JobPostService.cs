@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -408,6 +409,27 @@ namespace VCareer.Services.Job
             if (dto.TagIds != null && dto.TagIds.Count > 0) await _jobTagService
                     .AddTagsToJob(new JobTagViewDto.JobTagCreateUpdateDto { JobId = job.Id, TagIds = dto.TagIds });
             await AddDefaultJobPriority(job);
+
+            // Ghi log: Thêm công việc
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        _currentUser.Id.Value,
+                        Models.ActivityLogs.ActivityType.JobCreated,
+                        "CreateJobPost",
+                        $"Thêm công việc mới: {dto.Title}",
+                        job.Id,
+                        nameof(Job_Post),
+                        null);
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning($"Failed to log activity for JobCreated: {ex.Message}");
+                }
+            }
         }
         public Task CreateJobPostByOldPost(JobPostCreateDto dto)
         {

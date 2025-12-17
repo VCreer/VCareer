@@ -64,12 +64,6 @@ export class RegisterComponent implements OnInit {
         Validators.email,
         Validators.maxLength(255)
       ]],
-      username: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(50),
-        this.usernameValidator
-      ]],
       password: ['', [
         Validators.required,
         Validators.minLength(6),
@@ -92,13 +86,6 @@ export class RegisterComponent implements OnInit {
     if (!value) return null;
     const nameRegex = /^[a-zA-ZÀÁẠẢÃĂẰẮẶẲẴÂẦẤẬẨẪÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐđ\s]+$/;
     return nameRegex.test(value) ? null : { invalidName: true };
-  }
-
-  usernameValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    if (!value) return null;
-    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-    return usernameRegex.test(value) ? null : { invalidUsername: true };
   }
 
   passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
@@ -141,7 +128,6 @@ export class RegisterComponent implements OnInit {
     if (errors['minlength']) return `${this.getFieldLabel(fieldName)} phải có ít nhất ${errors['minlength'].requiredLength} ký tự`;
     if (errors['maxlength']) return `${this.getFieldLabel(fieldName)} không được vượt quá ${errors['maxlength'].requiredLength} ký tự`;
     if (errors['invalidName']) return 'Tên chỉ được chứa chữ cái và khoảng trắng';
-    if (errors['invalidUsername']) return 'Tên đăng nhập chỉ được chứa chữ cái, số, gạch ngang và gạch dưới';
     if (errors['passwordStrength']) return 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt';
     if (errors['passwordMismatch']) return 'Mật khẩu xác nhận không khớp';
     if (errors['requiredTrue']) return 'Bạn phải đồng ý với điều khoản dịch vụ và chính sách bảo mật';
@@ -154,7 +140,6 @@ export class RegisterComponent implements OnInit {
       'firstName': 'Họ',
       'lastName': 'Tên',
       'email': 'Email',
-      'username': 'Tên đăng nhập',
       'password': 'Mật khẩu',
       'confirmPassword': 'Xác nhận mật khẩu',
       'termsAgreement': 'Điều khoản'

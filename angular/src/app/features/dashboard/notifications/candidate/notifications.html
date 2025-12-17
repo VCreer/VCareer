@@ -1,0 +1,169 @@
+<div class="notifications-page">
+  <div class="notifications-container">
+    <!-- Header -->
+    <div class="notifications-header">
+      <h1 class="page-title">Thông báo</h1>
+      <div class="header-actions">
+        <button 
+          class="btn-delete-all" 
+          *ngIf="totalCount > 0"
+          (click)="deleteAllNotifications()"
+          [disabled]="isDeletingAll">
+          <i class="fa fa-trash" *ngIf="!isDeletingAll"></i>
+          <i class="fa fa-spinner fa-spin" *ngIf="isDeletingAll"></i>
+          <span *ngIf="!isDeletingAll">Xóa tất cả</span>
+          <span *ngIf="isDeletingAll">Đang xóa...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="notifications-filter" *ngIf="!isLoading">
+      <div class="filter-group">
+        <label class="filter-label" for="statusFilter">Trạng thái:</label>
+        <select 
+          id="statusFilter"
+          class="filter-select" 
+          [value]="filterStatus"
+          (change)="onFilterChange($any($event.target).value)">
+          <option value="all">Tất cả</option>
+          <option value="unread">Chưa xem</option>
+          <option value="read">Đã xem</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="typeFilter">Loại thông báo:</label>
+        <select 
+          id="typeFilter"
+          class="filter-select" 
+          [value]="filterType"
+          (change)="onTypeFilterChange($any($event.target).value)">
+          <option value="all">Tất cả</option>
+          <option value="CvViewed">NTD đã xem</option>
+          <option value="JobOffer">Đã gửi đề nghị</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="notifications-stats" *ngIf="!isLoading">
+      <span class="stat-item">
+        Tổng: <strong>{{ totalCount }}</strong> thông báo
+      </span>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <p>Đang tải thông báo...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && notifications.length === 0">
+      <i class="fa fa-bell-slash"></i>
+      <p>Không có thông báo nào</p>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-list" *ngIf="!isLoading && notifications.length > 0">
+      <div 
+        class="notification-card" 
+        *ngFor="let notification of notifications"
+        [class.unread]="!notification.isRead"
+        [class.expired]="notification.isExpired"
+        [class.clickable]="!notification.isExpired && notification.relatedEntityType === 'JobPost' && notification.jobId"
+        (click)="onCardClick(notification)">
+        
+        <!-- Job Card Style -->
+        <div class="job-card-content">
+          <!-- Company Logo -->
+          <div class="logo-column">
+            <div class="company-logo">
+              <img [src]="notification.logo" [alt]="notification.companyName || 'Company'" 
+                   onerror="this.src='assets/images/vng.png'" />
+            </div>
+          </div>
+
+          <!-- Job Details -->
+          <div class="details-column">
+            <!-- Job Header -->
+            <div class="job-header">
+              <div class="job-title-row">
+                <h3 class="job-title">{{ notification.jobTitle || 'Công việc' }}</h3>
+                <div class="header-right">
+                  <span class="title-salary" *ngIf="notification.salaryText">{{ notification.salaryText }}</span>
+                  <span class="notification-badge" *ngIf="!notification.isRead">Mới</span>
+                  <span class="deadline-badge expired-badge" *ngIf="notification.isExpired">Đã hết hạn nộp</span>
+                  <span class="deadline-badge" *ngIf="!notification.isExpired && notification.deadline && notification.daysUntilDeadline !== undefined">
+                    {{ getDeadlineText(notification) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Company Info -->
+            <div class="company-info">
+              <h4 class="company-name">{{ notification.companyName || 'Công ty' }}</h4>
+            </div>
+
+            <!-- Job Tags (Location, Experience) -->
+            <div class="job-tags-row" *ngIf="notification.provinceName || notification.experienceText">
+              <div class="job-tags">
+                <span class="tag location" *ngIf="notification.provinceName">
+                  <i class="fa fa-map-marker"></i>
+                  {{ notification.provinceName }}
+                </span>
+                <span class="tag experience" *ngIf="notification.experienceText">
+                  <i class="fa fa-briefcase"></i>
+                  {{ notification.experienceText }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Notification Message -->
+            <div class="notification-message">
+              <p>{{ notification.message }}</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="notification-footer">
+              <span class="notification-date">
+                <i class="fa fa-clock-o"></i>
+                {{ formatDate(notification.creationTime) }}
+              </span>
+              
+              <!-- Actions -->
+              <div class="notification-actions" (click)="$event.stopPropagation()">
+                <button 
+                  class="btn-delete" 
+                  (click)="deleteNotification(notification, $event)"
+                  title="Xóa thông báo">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="!isLoading && totalCount > pageSize">
+      <app-pagination
+        [currentPage]="currentPage + 1"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event - 1)">
+      </app-pagination>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="showToast = false">
+  </app-toast-notification>
+
+</div>
+

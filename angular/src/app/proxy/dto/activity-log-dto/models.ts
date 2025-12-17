@@ -28,6 +28,19 @@ export interface ActivityLogListDto {
   totalCount: number;
 }
 
+export interface ActivityLogWithStaffDto {
+  id?: string;
+  userId?: string;
+  staffId?: string;
+  staffName?: string;
+  staffEmail?: string;
+  activityType?: ActivityType;
+  activityTypeName?: string;
+  action?: string;
+  description?: string;
+  creationTime?: string;
+}
+
 export interface ActivityStatisticsDto {
   totalActivities: number;
   jobActivities: number;
@@ -37,6 +50,11 @@ export interface ActivityStatisticsDto {
   todayActivities: number;
   thisWeekActivities: number;
   thisMonthActivities: number;
+}
+
+export interface AllStaffActivityLogsListDto {
+  activities: ActivityLogWithStaffDto[];
+  totalCount: number;
 }
 
 export interface StaffInfoDto {

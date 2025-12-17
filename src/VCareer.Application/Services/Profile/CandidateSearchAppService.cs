@@ -27,6 +27,13 @@ using System.Data.Common;
 using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp.EntityFrameworkCore;
 using VCareer.Services.Auth.ActivityLog;
+using VCareer.IServices.Notification;
+using VCareer.Dto.Notification;
+using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.Job;
+using VCareer.Models.Job;
+using VCareer.Constants.JobConstant;
+using System.Text.Json;
 
 namespace VCareer.Services.Profile
 {
@@ -40,6 +47,9 @@ namespace VCareer.Services.Profile
         private readonly IEmailSender _emailSender;
         private readonly IDbContextProvider<VCareerDbContext> _dbContextProvider;
         private readonly ILuceneCandidateIndexer _luceneIndexer;
+        private readonly INotificationAppService _notificationAppService;
+        private readonly IRecruiterRepository _recruiterRepository;
+        private readonly IJobPostRepository _jobPostRepository;
 
         public CandidateSearchAppService(
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
@@ -47,7 +57,10 @@ namespace VCareer.Services.Profile
             ICurrentUser currentUser,
             IEmailSender emailSender,
             IDbContextProvider<VCareerDbContext> dbContextProvider,
-            ILuceneCandidateIndexer luceneIndexer)
+            ILuceneCandidateIndexer luceneIndexer,
+            INotificationAppService notificationAppService,
+            IRecruiterRepository recruiterRepository,
+            IJobPostRepository jobPostRepository)
         {
             _candidateProfileRepository = candidateProfileRepository;
             _candidateCvRepository = candidateCvRepository;
@@ -55,6 +68,9 @@ namespace VCareer.Services.Profile
             _emailSender = emailSender;
             _dbContextProvider = dbContextProvider;
             _luceneIndexer = luceneIndexer;
+            _notificationAppService = notificationAppService;
+            _recruiterRepository = recruiterRepository;
+            _jobPostRepository = jobPostRepository;
         }
 
         public async Task<PagedResultDto<CandidateSearchResultDto>> SearchCandidatesAsync(SearchCandidateInputDto input)
@@ -394,7 +410,7 @@ namespace VCareer.Services.Profile
             );
         }
 
-        public async Task<CandidateSearchResultDto> GetCandidateDetailAsync(Guid candidateProfileId)
+        public async Task<CandidateSearchResultDto> GetCandidateDetailAsync(Guid candidateProfileId, Guid? jobId = null)
         {
             var queryable = await _candidateProfileRepository.GetQueryableAsync();
             var candidate = await queryable
@@ -411,6 +427,51 @@ namespace VCareer.Services.Profile
                     throw new UserFriendlyException("Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. Bạn không thể xem thông tin của ứng viên này.");
                 }
                 throw new UserFriendlyException("Không tìm thấy ứng viên");
+            }
+
+            // Tạo notification khi recruiter xem CV (nếu có jobId)
+            if (jobId.HasValue && _currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    // Verify user là recruiter
+                    var recruiter = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == _currentUser.Id.Value);
+                    if (recruiter != null && recruiter.Status)
+                    {
+                        // Lấy thông tin job
+                        var job = await _jobPostRepository.FirstOrDefaultAsync(j => j.Id == jobId.Value);
+                        if (job != null && job.Status != JobStatus.Deleted && job.ExpiresAt > DateTime.Now)
+                        {
+                            // Tạo notification cho candidate
+                            var metadata = JsonSerializer.Serialize(new
+                            {
+                                JobTitle = job.Title,
+                                CompanyName = job.CompanyName,
+                                JobId = job.Id,
+                                RecruiterId = recruiter.UserId
+                            });
+
+                            await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
+                            {
+                                UserId = candidate.UserId,
+                                UserRole = "Candidate",
+                                NotificationType = "CvViewed",
+                                Title = "Nhà tuyển dụng vừa xem CV của bạn",
+                                Message = $"Công ty {job.CompanyName} đã xem CV của bạn cho vị trí {job.Title}",
+                                RelatedEntityType = "JobPost",
+                                RelatedEntityId = jobId.Value,
+                                Metadata = metadata,
+                                CreatedBy = recruiter.UserId
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không fail toàn bộ request
+                    Logger.LogWarning(ex, "Failed to create notification when recruiter viewed CV. CandidateId: {CandidateId}, JobId: {JobId}",
+                        candidateProfileId, jobId);
+                }
             }
 
             var defaultCvLookup = await GetDefaultCvLookupAsync(

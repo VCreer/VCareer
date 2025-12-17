@@ -22,16 +22,9 @@
       <app-button
         type="secondary"
         size="medium"
-        (click)="onImport()">
-        <i class="fa fa-upload"></i>
-        Import
-      </app-button>
-      <app-button
-        type="secondary"
-        size="medium"
-        (click)="onExport()">
+        (click)="onExportExcel()">
         <i class="fa fa-download"></i>
-        Export
+        Export Excel
       </app-button>
     </div>
   </div>
@@ -150,11 +143,8 @@
       <table class="users-table">
         <thead>
           <tr>
-            <th (click)="onSort('username')" class="sortable">
-              Id
-              <i class="fa fa-sort" *ngIf="sortField !== 'username'"></i>
-              <i class="fa fa-sort-up" *ngIf="sortField === 'username' && sortDirection === 'asc'"></i>
-              <i class="fa fa-sort-down" *ngIf="sortField === 'username' && sortDirection === 'desc'"></i>
+            <th>
+              ID
             </th>
             <th (click)="onSort('fullName')" class="sortable">
               Họ tên
@@ -169,18 +159,18 @@
               <i class="fa fa-sort-down" *ngIf="sortField === 'email' && sortDirection === 'desc'"></i>
             </th>
             <th>Trạng thái</th>
-            <th (click)="onSort('lastLoginDate')" class="sortable">
-              Lần đăng nhập cuối
-              <i class="fa fa-sort" *ngIf="sortField !== 'lastLoginDate'"></i>
-              <i class="fa fa-sort-up" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'asc'"></i>
-              <i class="fa fa-sort-down" *ngIf="sortField === 'lastLoginDate' && sortDirection === 'desc'"></i>
+            <th (click)="onSort('roleDisplay')" class="sortable">
+              Vai trò
+              <i class="fa fa-sort" *ngIf="sortField !== 'roleDisplay'"></i>
+              <i class="fa fa-sort-up" *ngIf="sortField === 'roleDisplay' && sortDirection === 'asc'"></i>
+              <i class="fa fa-sort-down" *ngIf="sortField === 'roleDisplay' && sortDirection === 'desc'"></i>
             </th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let user of paginatedUsers">
-            <td class="username-cell">{{ user.username }}</td>
+            <td>{{ getShortId(user) }}</td>
             <td>{{ user.fullName }}</td>
             <td>{{ user.email }}</td>
             <td>
@@ -188,7 +178,7 @@
                 {{ getStatusLabel(user) }}
               </span>
             </td>
-            <td>{{ formatDate(user.lastLoginDate) }}</td>
+            <td>{{ user.roleDisplay || '-' }}</td>
             <td class="actions-cell">
               <div class="actions-menu-container">
                 <button class="actions-menu-btn" (click)="toggleActionsMenu(user.id, $event)">
@@ -202,18 +192,6 @@
                   <div class="menu-item" (click)="onToggleActive(user); closeActionsMenu()">
                     <i class="fa" [class.fa-toggle-on]="user.isActive" [class.fa-toggle-off]="!user.isActive"></i>
                     <span>{{ user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
-                  </div>
-                  <div class="menu-item" (click)="onToggleLock(user); closeActionsMenu()">
-                    <i class="fa" [class.fa-lock]="!user.isLocked" [class.fa-unlock]="user.isLocked"></i>
-                    <span>{{ user.isLocked ? 'Mở khóa' : 'Khóa' }}</span>
-                  </div>
-                  <div class="menu-item" (click)="onEnforcePasswordChange(user); closeActionsMenu()">
-                    <i class="fa fa-key"></i>
-                    <span>Yêu cầu đổi mật khẩu</span>
-                  </div>
-                  <div class="menu-item" (click)="onForceLogout(user); closeActionsMenu()">
-                    <i class="fa fa-sign-out-alt"></i>
-                    <span>Đăng xuất</span>
                   </div>
                 </div>
               </div>
