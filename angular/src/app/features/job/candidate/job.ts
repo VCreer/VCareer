@@ -58,7 +58,8 @@ export class JobComponent implements OnInit {
   jobs: JobViewDto[] = [];
   totalCount = 0;
   currentPage = 1;
-  pageSize = 20;
+  // Số job mỗi trang
+  pageSize = 10;
   isSearching = false;
   isLoadingData = false;
 
@@ -368,6 +369,26 @@ export class JobComponent implements OnInit {
     if (lower.includes('10 năm') || lower.includes('10 nam') || lower.includes('year10') || lower === '10') return 11;
     if (lower.includes('trên 10') || lower.includes('tren 10') || lower.includes('over10')) return 12;
     return undefined;
+  }
+
+  /**
+   * Đồng bộ trạng thái đã lưu khi user bấm tim trong quick view
+   */
+  onSaveStatusChange(event: { jobId: string; isSaved: boolean }) {
+    if (!event || !event.jobId) {
+      return;
+    }
+
+    const index = this.jobs.findIndex(j => j.id === event.jobId);
+    if (index !== -1) {
+      const current: any = this.jobs[index] as any;
+      this.jobs[index] = {
+        ...current,
+        isSaved: event.isSaved,
+      };
+      // Tạo mảng mới để JobListComponent nhận @Input thay đổi và sync lại UI
+      this.jobs = [...this.jobs];
+    }
   }
 
   translate(key: string): string {

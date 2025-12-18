@@ -73,7 +73,7 @@ export class ApplicationService {
     this.restService.request<any, PagedResultDto<ApplicationDto>>({
       method: 'GET',
       url: '/api/app/application/application-list',
-      params: { jobId: input.jobId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { jobId: input.jobId, recruitmentCampaignId: input.recruitmentCampaignId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, keyword: input.keyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -91,7 +91,7 @@ export class ApplicationService {
     this.restService.request<any, PagedResultDto<ApplicationDto>>({
       method: 'GET',
       url: '/api/app/application/company-applications',
-      params: { jobId: input.jobId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { jobId: input.jobId, recruitmentCampaignId: input.recruitmentCampaignId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, keyword: input.keyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -100,7 +100,7 @@ export class ApplicationService {
     this.restService.request<any, PagedResultDto<ApplicationDto>>({
       method: 'GET',
       url: `/api/app/application/job-applications/${input.jobId}`,
-      params: { jobId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { jobId, recruitmentCampaignId: input.recruitmentCampaignId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, keyword: input.keyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
@@ -109,7 +109,7 @@ export class ApplicationService {
     this.restService.request<any, PagedResultDto<ApplicationDto>>({
       method: 'GET',
       url: '/api/app/application/my-applications',
-      params: { jobId: input.jobId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { jobId: input.jobId, recruitmentCampaignId: input.recruitmentCampaignId, candidateId: input.candidateId, companyId: input.companyId, status: input.status, cvType: input.cvType, fromDate: input.fromDate, toDate: input.toDate, isViewed: input.isViewed, isResponded: input.isResponded, keyword: input.keyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   

@@ -28,6 +28,8 @@ using VCareer.Dto.Applications;
 using VCareer.Dto.UserDto;
 using VCareer.Dto.Subcriptions;
 using VCareer.Models.Subcription_Payment;
+using VCareer.Models.Notification;
+using VCareer.Dto.Notification;
 
 namespace VCareer;
 
@@ -87,6 +89,7 @@ public class VCareerApplicationAutoMapperProfile : Profile
         CreateMap<ChildServiceCreateDto, ChildService>();
         CreateMap<SubcriptionPrice, SubcriptionPriceViewDto>();
         CreateMap<User_SubcriptionService , User_SubcirptionViewDto>();
+        CreateMap<User_ChildService, User_ChildServiceViewDto>();
 
 
 
@@ -94,6 +97,9 @@ public class VCareerApplicationAutoMapperProfile : Profile
 
         // Subscription Service mappings
         CreateMap<Models.Subcription.SubcriptionService, Dto.Subcriptions.SubcriptionsViewDto>();
+
+        // Notification mappings
+        CreateMap<Models.Notification.UserNotification, Dto.Notification.NotificationDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

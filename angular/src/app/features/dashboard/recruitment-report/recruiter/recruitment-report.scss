@@ -618,28 +618,6 @@
       }
     }
   }
-}
-
-// Print styles
-@media print {
-  .recruitment-report-page {
-    margin-left: 0 !important;
-    width: 100% !important;
-
-    .breadcrumb-box {
-      display: none;
-    }
-
-    .main-content {
-      margin-top: 0;
-      padding: 20px;
-    }
-
-    .action-buttons {
-      display: none;
-    }
-  }
-}
 
   // HR Staff Performance Section
   .staff-performance-section {
@@ -1263,3 +1241,19 @@
       }
     }
   }
+
+  .loading-overlay {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    color: #666;
+  }
+
+  .loading-message,
+  .empty-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 14px;
+  }
+}

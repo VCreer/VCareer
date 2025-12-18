@@ -80,6 +80,15 @@ export class SubcriptionService_Service {
     { apiName: this.apiName,...config });
   
 
+  getSubscriptionServices = (target: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SubcriptionsViewDto[]>({
+      method: 'GET',
+      url: '/api/app/subcription-service_/subscription-services',
+      params: { target, isActive },
+    },
+    { apiName: this.apiName,...config });
+  
+
   removeChildService = (dto: AddChildServicesDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',

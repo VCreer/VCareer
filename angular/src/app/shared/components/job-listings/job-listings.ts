@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -8,6 +8,9 @@ import { JobViewDto } from '../../../proxy/dto/job-dto/models';
 import { EmploymentType } from '../../../proxy/constants/job-constant/employment-type.enum';
 import { PositionType } from '../../../proxy/constants/job-constant/position-type.enum';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
+import { JobSearchService } from '../../../proxy/services/job/job-search.service';
+import { NavigationService } from '../../../core/services/navigation.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-job-listings',
@@ -16,7 +19,7 @@ import { ExperienceLevel } from '../../../proxy/constants/job-constant/experienc
   templateUrl: './job-listings.html',
   styleUrls: ['./job-listings.scss']
 })
-export class JobListingsComponent {
+export class JobListingsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() jobListings: JobViewDto[] = [];  
   @Input() currentPage = 1;
   @Input() totalPages = 1;
@@ -32,22 +35,81 @@ export class JobListingsComponent {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
+  isAuthenticated = false;
+  private autoPageInterval: any;
 
   onImgError(event: Event) {
     (event.target as HTMLImageElement).src = this.defaultLogo;
   }
 
   toggleBookmark(job: any) {
-    job.isBookmarked = !job.isBookmarked;
-    if (job.isBookmarked) {
-      this.toastType = 'success';
-      this.toastMessage = 'Lưu tin thành công';
+    if (!this.isAuthenticated) {
+      this.toastType = 'warning';
+      this.toastMessage = 'Bạn cần đăng nhập để lưu công việc';
       this.showToast = true;
       setTimeout(() => (this.showToast = false), 2500);
-    } else {
-      // Không hiển thị toast khi bỏ lưu theo yêu cầu
-      this.showToast = false;
+      return;
     }
+
+    if (!job || !job.id) {
+      return;
+    }
+
+    if (job.isBookmarked) {
+      this.jobSearchService.unsaveJob(job.id, { skipHandleError: true }).subscribe({
+        next: () => {
+          job.isBookmarked = false;
+          // Không cần toast khi bỏ lưu theo yêu cầu cũ
+        },
+        error: () => {
+          this.toastType = 'error';
+          this.toastMessage = 'Không thể bỏ lưu công việc';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        }
+      });
+    } else {
+      this.jobSearchService.saveJob(job.id, { skipHandleError: true }).subscribe({
+        next: () => {
+          job.isBookmarked = true;
+          this.toastType = 'success';
+          this.toastMessage = 'Lưu tin thành công';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        },
+        error: () => {
+          this.toastType = 'error';
+          this.toastMessage = 'Không thể lưu công việc';
+          this.showToast = true;
+          setTimeout(() => (this.showToast = false), 2500);
+        }
+      });
+    }
+  }
+
+  /**
+   * Đồng bộ trạng thái đã lưu cho danh sách job trên home
+   */
+  private syncSavedStatus() {
+    if (!this.isAuthenticated || !this.jobListings?.length) {
+      this.jobListings = this.jobListings.map(j => ({ ...j, isBookmarked: false }));
+      return;
+    }
+
+    this.jobSearchService.getSavedJobs(0, 200, { skipHandleError: true }).subscribe({
+      next: res => {
+        const items = res.items || [];
+        const savedIds = new Set(items.map(x => x.jobId));
+
+        this.jobListings = this.jobListings.map(j => ({
+          ...j,
+          isBookmarked: savedIds.has(j.id as any)
+        }));
+      },
+      error: err => {
+        console.error('Error syncing saved status in JobListings:', err);
+      }
+    });
   }
 
   onPageChange(page: number) {
@@ -68,7 +130,42 @@ export class JobListingsComponent {
     this.locationSelected.emit(location);
   }
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private jobSearchService: JobSearchService,
+    private navigationService: NavigationService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.navigationService.isLoggedIn$.subscribe(isLogged => {
+      this.isAuthenticated = isLogged;
+      if (isLogged) {
+        this.syncSavedStatus();
+      }
+    });
+
+    // Tự động chuyển trang cho phần job-listings (trang chủ)
+    this.startAutoPaging();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['jobListings'] && this.isAuthenticated) {
+      this.syncSavedStatus();
+    }
+
+    // Khi tổng số trang hoặc trang hiện tại thay đổi thì khởi động lại auto paging
+    if (changes['totalPages'] || changes['currentPage']) {
+      this.startAutoPaging();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.autoPageInterval) {
+      clearInterval(this.autoPageInterval);
+      this.autoPageInterval = null;
+    }
+  }
   translate(key: string): string { return this.translationService.translate(key); }
 
   getProvinceName(provinceCode: number): string {
@@ -182,5 +279,41 @@ export class JobListingsComponent {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
+  }
+
+  /**
+   * Xử lý click "Xem tất cả" → chuyển sang trang danh sách việc làm
+   */
+  onViewAllClick(event: Event): void {
+    event.preventDefault();
+    this.router.navigate(['/job']);
+  }
+
+  /**
+   * Auto đổi trang: sau một khoảng thời gian sẽ tự động chuyển sang trang kế tiếp.
+   * Chỉ hoạt động khi totalPages > 1.
+   */
+  private startAutoPaging(): void {
+    // Clear interval cũ nếu có
+    if (this.autoPageInterval) {
+      clearInterval(this.autoPageInterval);
+      this.autoPageInterval = null;
+    }
+
+    if (!this.totalPages || this.totalPages <= 1) {
+      return;
+    }
+
+    // Mỗi 8 giây tự động nhảy sang trang tiếp theo
+    this.autoPageInterval = setInterval(() => {
+      if (!this.totalPages || this.totalPages <= 1) {
+        return;
+      }
+
+      const nextPage =
+        this.currentPage >= this.totalPages ? 1 : this.currentPage + 1;
+
+      this.onPageChange(nextPage);
+    }, 8000);
   }
 }

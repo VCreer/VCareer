@@ -255,6 +255,22 @@
     }
   }
 
+  .notification-menu-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    ::ng-deep app-notification-menu {
+      display: block;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 6px;
+      z-index: 1001;
+    }
+  }
+
   .caret-menu-wrapper {
     position: relative;
 

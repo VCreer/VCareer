@@ -55,6 +55,8 @@ namespace VCareer.Constants.JobConstant
             Inactive = 0,
             Active = 1,
             Expired = 2,
+            UsageLimitReached =3
+
         }
         public enum CurrencyType
         {

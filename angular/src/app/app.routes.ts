@@ -206,6 +206,13 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/candidate/notifications').then(
+            c => c.NotificationsComponent
+          ),
+      },
+      {
         path: 'cv-management/view/:cvId',
         loadComponent: () =>
           import('./features/dashboard/cv-management/candidate/cv-view').then(
@@ -411,6 +418,13 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/dashboard/notifications/recruiter/notifications').then(
+            c => c.RecruiterNotificationsComponent
+          ),
+      },
+      {
         path: 'cart',
         loadComponent: () => import('./features/cart/recruiter/cart').then(c => c.CartComponent),
       },
@@ -474,7 +488,7 @@ export const APP_ROUTES: Routes = [
           ).then(c => c.EmployeeJobManagementComponent),
       },
       {
-        path: 'service-price-list',
+        path: 'service-price-list/:id',
         loadComponent: () =>
           import('./features/dashboard/service-price-list/recruiter/service-price-list').then(
             c => c.ServicePriceListComponent

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
+import { JobSearchService } from '../../../proxy/services/job/job-search.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 @Component({
   selector: 'app-job-list-detail',
@@ -17,21 +19,32 @@ export class JobListDetailComponent implements OnChanges {
   @Output() closeDetail = new EventEmitter<void>();
   @Output() viewDetail = new EventEmitter<any>();
   @Output() applyJob = new EventEmitter<any>();
+  @Output() saveStatusChange = new EventEmitter<{ jobId: string; isSaved: boolean }>();
 
   private translationService = inject(TranslationService);
   isHeartActive: boolean = false;
   private previousJobId: number | null = null;
+  isAuthenticated = false;
   
   // Toast notification properties
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
+  constructor(
+    private jobSearchService: JobSearchService,
+    private navigationService: NavigationService,
+  ) {
+    this.navigationService.isLoggedIn$.subscribe(isLogged => {
+      this.isAuthenticated = isLogged;
+    });
+  }
+
   ngOnChanges() {
-    // Reset heart state when switching to a different job
+    // Khi đổi job trong quick view, đồng bộ lại trạng thái đã lưu từ backend
     if (this.selectedJob && this.selectedJob.id !== this.previousJobId) {
-      this.isHeartActive = false;
       this.previousJobId = this.selectedJob.id;
+      this.syncSavedStatus();
     }
   }
 
@@ -52,11 +65,38 @@ export class JobListDetailComponent implements OnChanges {
   }
 
   onToggleHeart() {
-    this.isHeartActive = !this.isHeartActive;
+    if (!this.isAuthenticated) {
+      this.showToastMessage('Bạn cần đăng nhập để lưu công việc', 'warning');
+      return;
+    }
+
+    const jobId = this.selectedJob?.id;
+    if (!jobId) {
+      return;
+    }
+
     if (this.isHeartActive) {
-      this.showToastMessage(this.translate('job_detail.save_success'), 'success');
+      this.jobSearchService.unsaveJob(jobId, { skipHandleError: true }).subscribe({
+        next: () => {
+          this.isHeartActive = false;
+          this.showToastMessage(this.translate('job_detail.unsave_success') || 'Đã bỏ lưu công việc', 'success');
+          this.saveStatusChange.emit({ jobId, isSaved: false });
+        },
+        error: () => {
+          this.showToastMessage('Không thể bỏ lưu công việc', 'error');
+        }
+      });
     } else {
-      this.showToastMessage(this.translate('job_detail.unsave_success'), 'success');
+      this.jobSearchService.saveJob(jobId, { skipHandleError: true }).subscribe({
+        next: () => {
+          this.isHeartActive = true;
+          this.showToastMessage(this.translate('job_detail.save_success') || 'Đã lưu công việc', 'success');
+          this.saveStatusChange.emit({ jobId, isSaved: true });
+        },
+        error: () => {
+          this.showToastMessage('Không thể lưu công việc', 'error');
+        }
+      });
     }
   }
 
@@ -68,6 +108,25 @@ export class JobListDetailComponent implements OnChanges {
 
   onToastClose() {
     this.showToast = false;
+  }
+
+  /**
+   * Đồng bộ trạng thái đã lưu của job hiện tại từ backend
+   */
+  private syncSavedStatus() {
+    if (!this.isAuthenticated || !this.selectedJob?.id) {
+      this.isHeartActive = false;
+      return;
+    }
+
+    this.jobSearchService.getSavedJobStatus(this.selectedJob.id, { skipHandleError: true }).subscribe({
+      next: status => {
+        this.isHeartActive = status.isSaved;
+      },
+      error: () => {
+        this.isHeartActive = false;
+      }
+    });
   }
 
   formatSalary(job: any): string {

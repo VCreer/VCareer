@@ -102,8 +102,13 @@ export class NavigationService {
     if (userRole !== 'recruiter') {
       this.isVerifiedSubject.next(false);
     } else {
-      // Load verification status từ backend cho recruiter
-      this.loadVerificationStatus(0);
+      // Nếu user có sẵn verificationStatus thì ưu tiên dùng, ngược lại gọi backend để lấy
+      const verificationStatus = (user as any)?.verificationStatus;
+      if (verificationStatus !== undefined) {
+        this.isVerifiedSubject.next(verificationStatus);
+      } else {
+        this.loadVerificationStatus(0);
+      }
     }
   }
 

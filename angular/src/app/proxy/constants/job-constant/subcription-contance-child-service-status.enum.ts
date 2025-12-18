@@ -4,6 +4,7 @@ export enum SubcriptionContance_ChildServiceStatus {
   Inactive = 0,
   Active = 1,
   Expired = 2,
+  UsageLimitReached = 3,
 }
 
 export const subcriptionContance_ChildServiceStatusOptions = mapEnumToOptions(SubcriptionContance_ChildServiceStatus);

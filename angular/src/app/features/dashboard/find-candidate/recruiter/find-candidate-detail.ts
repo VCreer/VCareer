@@ -40,6 +40,10 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
   isLoading = false;
   cvLoading = false;
   cvHtml: SafeHtml | null = null;
+  
+  // Access Control
+  hasAccess: boolean = true;
+  accessDenied: boolean = false;
 
   private sidebarCheckInterval?: any;
   sidebarExpanded = false;
@@ -111,6 +115,9 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
 
   loadCandidateDetail(): void {
     this.isLoading = true;
+    this.hasAccess = true;
+    this.accessDenied = false;
+    
     this.candidateSearchService.getCandidateDetail(this.candidateId).subscribe({
       next: response => {
         const result =
@@ -135,7 +142,17 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
       error: error => {
         console.error('Error loading candidate detail', error);
         this.isLoading = false;
-        this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || 
+                             error.error.message?.includes('access') ||
+                             error.error.message?.includes('ProfileVisibility')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        }
       },
     });
   }
@@ -159,7 +176,18 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
         console.error('Error loading candidate CV', error);
         this.cvLoading = false;
         this.cvHtml = null;
-        this.showToastMessage('CV của ứng viên chưa khả dụng', 'warning');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || 
+                             error.error.message?.includes('access') ||
+                             error.error.message?.includes('ProfileVisibility') ||
+                             error.error.message?.includes('tắt chế độ')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('CV của ứng viên chưa khả dụng', 'warning');
+        }
       },
     });
   }

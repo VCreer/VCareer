@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using VCareer.CV;
 using VCareer.Models.CV;
 using VCareer.Models.Users;
+using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -76,13 +77,15 @@ namespace VCareer.Services.CV
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly ICurrentUser _currentUser;
         private readonly ILogger<CandidateCvAppService> _logger;
+        private readonly CandidateIndexService _candidateIndexService;
 
         public CandidateCvAppService(
             IRepository<CandidateCv, Guid> candidateCvRepository,
             IRepository<CvTemplate, Guid> templateRepository,
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             ICurrentUser currentUser,
-            ILogger<CandidateCvAppService> logger
+            ILogger<CandidateCvAppService> logger,
+            CandidateIndexService candidateIndexService
             )
         {
             _candidateCvRepository = candidateCvRepository;
@@ -90,6 +93,7 @@ namespace VCareer.Services.CV
             _candidateProfileRepository = candidateProfileRepository;
             _currentUser = currentUser;
             _logger = logger;
+            _candidateIndexService = candidateIndexService;
         }
 
         public async Task<CandidateCvDto> CreateAsync(CreateCandidateCvDto input)
@@ -142,6 +146,16 @@ namespace VCareer.Services.CV
             }
 
             await _candidateCvRepository.InsertAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì CV content đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi tạo CV", userId);
+            }
 
             return ObjectMapper.Map<CandidateCv, CandidateCvDto>(cv);
         }
@@ -210,6 +224,16 @@ namespace VCareer.Services.CV
 
             await _candidateCvRepository.UpdateAsync(cv);
 
+            // Auto-index candidate vào Lucene (vì CV content đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi update CV", userId);
+            }
+
             return ObjectMapper.Map<CandidateCv, CandidateCvDto>(cv);
         }
 
@@ -225,7 +249,18 @@ namespace VCareer.Services.CV
                 throw new UserFriendlyException("Bạn không có quyền xóa CV này.");
             }
 
+            var candidateUserId = cv.CandidateId;
             await _candidateCvRepository.DeleteAsync(id);
+
+            // Auto-index candidate vào Lucene (vì CV đã bị xóa, cần update index)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(candidateUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi xóa CV", candidateUserId);
+            }
         }
 
         public async Task<CandidateCvDto> GetAsync(Guid id)
@@ -304,6 +339,18 @@ namespace VCareer.Services.CV
         public async Task<RenderCvDto> RenderCvAsync(Guid cvId)
         {
             var cv = await _candidateCvRepository.GetAsync(cvId);
+            var currentUserId = _currentUser.GetId();
+            
+            // Kiểm tra quyền truy cập: nếu không phải chính candidate đó, cần check ProfileVisibility
+            if (cv.CandidateId != currentUserId)
+            {
+                var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == cv.CandidateId);
+                if (candidateProfile == null || !candidateProfile.Status || !candidateProfile.ProfileVisibility)
+                {
+                    throw new UserFriendlyException("Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. Bạn không thể xem CV này.");
+                }
+            }
+            
             var template = await _templateRepository.GetAsync(cv.TemplateId);
 
             // Parse JSON data - có thể là CvDataDto hoặc dictionary
@@ -855,6 +902,61 @@ namespace VCareer.Services.CV
         /// Replace placeholder với case-insensitive matching - replace TẤT CẢ occurrences
         /// Sử dụng cách đơn giản và chắc chắn: tìm và replace từng occurrence
         /// </summary>
+        /// <summary>
+        /// Xóa toàn bộ block {{#foreach ...}}...{{/foreach}} khi không có data
+        /// </summary>
+        private string RemoveForeachBlock(string htmlContent, int startIndex, string startPattern, string endPattern)
+        {
+            if (startIndex == -1) return htmlContent;
+            
+            var actualStartIndex = startIndex + startPattern.Length;
+            
+            // Tìm end pattern, xử lý nested loops
+            var searchStart = actualStartIndex;
+            var endIndex = -1;
+            var foreachCount = 1;
+            
+            while (searchStart < htmlContent.Length && foreachCount > 0)
+            {
+                var nextForeach = htmlContent.IndexOf("{{#foreach", searchStart, StringComparison.OrdinalIgnoreCase);
+                var nextEndForeach = htmlContent.IndexOf(endPattern, searchStart, StringComparison.OrdinalIgnoreCase);
+                
+                if (nextEndForeach == -1)
+                {
+                    // Không tìm thấy end pattern, xóa từ startIndex đến cuối
+                    return htmlContent.Remove(startIndex);
+                }
+                
+                if (nextForeach != -1 && nextForeach < nextEndForeach)
+                {
+                    // Có nested foreach → tăng count
+                    foreachCount++;
+                    searchStart = nextForeach + 1;
+                }
+                else
+                {
+                    // Tìm thấy end foreach
+                    foreachCount--;
+                    if (foreachCount == 0)
+                    {
+                        endIndex = nextEndForeach;
+                        break;
+                    }
+                    searchStart = nextEndForeach + endPattern.Length;
+                }
+            }
+            
+            if (endIndex == -1)
+            {
+                // Không tìm thấy end pattern, xóa từ startIndex đến cuối
+                return htmlContent.Remove(startIndex);
+            }
+            
+            // Xóa toàn bộ block từ startIndex đến endIndex + endPattern.Length
+            var fullEndIndex = endIndex + endPattern.Length;
+            return htmlContent.Remove(startIndex, fullEndIndex - startIndex);
+        }
+
         private string ReplacePlaceholderCaseInsensitive(string htmlContent, string placeholder, string value)
         {
             if (string.IsNullOrEmpty(htmlContent) || string.IsNullOrEmpty(placeholder)) return htmlContent;
@@ -1211,6 +1313,12 @@ namespace VCareer.Services.CV
                 startIndex = htmlContent.IndexOf("{{#foreach workExperiences", StringComparison.OrdinalIgnoreCase);
             }
             
+            // Nếu không có data, xóa toàn bộ block
+            if (startIndex != -1 && (workExperiences == null || !workExperiences.Any()))
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
+            
             if (startIndex == -1)
             {
                 // Nếu không có loop pattern, vẫn replace các placeholders đơn lẻ
@@ -1360,6 +1468,12 @@ namespace VCareer.Services.CV
                 startIndex = htmlContent.IndexOf("{{#foreach educations", StringComparison.OrdinalIgnoreCase);
             }
             
+            // Nếu không có data, xóa toàn bộ block
+            if (startIndex != -1 && (educations == null || !educations.Any()))
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
+            
             if (startIndex == -1)
             {
                 // Nếu không có loop pattern, vẫn replace các placeholders đơn lẻ
@@ -1496,8 +1610,14 @@ namespace VCareer.Services.CV
             
             // Tìm pattern (case-insensitive)
             var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
-            if (startIndex == -1 || skills == null || !skills.Any())
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (skills == null || !skills.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             // Tìm end pattern từ vị trí sau start pattern
             var actualStartIndex = startIndex + startPattern.Length;
@@ -1526,9 +1646,15 @@ namespace VCareer.Services.CV
             var startPattern = "{{#foreach projects}}";
             var endPattern = "{{/foreach}}";
             
-            var startIndex = htmlContent.IndexOf(startPattern);
-            if (startIndex == -1 || projects == null || !projects.Any())
+            var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (projects == null || !projects.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             var endIndex = htmlContent.IndexOf(endPattern, startIndex);
             if (endIndex == -1) return htmlContent;
@@ -1563,8 +1689,14 @@ namespace VCareer.Services.CV
             
             // Tìm pattern (case-insensitive)
             var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
-            if (startIndex == -1 || certificates == null || !certificates.Any())
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (certificates == null || !certificates.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             // Tìm end pattern từ vị trí sau start pattern
             var actualStartIndex = startIndex + startPattern.Length;
@@ -1597,9 +1729,15 @@ namespace VCareer.Services.CV
             var startPattern = "{{#foreach languages}}";
             var endPattern = "{{/foreach}}";
             
-            var startIndex = htmlContent.IndexOf(startPattern);
-            if (startIndex == -1 || languages == null || !languages.Any())
+            var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
+            if (startIndex == -1)
                 return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (languages == null || !languages.Any())
+            {
+                return RemoveForeachBlock(htmlContent, startIndex, startPattern, endPattern);
+            }
 
             var endIndex = htmlContent.IndexOf(endPattern, startIndex);
             if (endIndex == -1) return htmlContent;
@@ -1641,6 +1779,16 @@ namespace VCareer.Services.CV
 
             cv.IsDefault = true;
             await _candidateCvRepository.UpdateAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì default CV đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi set default CV", userId);
+            }
         }
 
         public async Task PublishAsync(Guid cvId, bool isPublished)
@@ -1661,6 +1809,16 @@ namespace VCareer.Services.CV
             }
 
             await _candidateCvRepository.UpdateAsync(cv);
+
+            // Auto-index candidate vào Lucene (vì publish status đã thay đổi)
+            try
+            {
+                await _candidateIndexService.IndexCandidateAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene sau khi publish/unpublish CV", userId);
+            }
         }
 
         public async Task IncrementViewCountAsync(Guid cvId)

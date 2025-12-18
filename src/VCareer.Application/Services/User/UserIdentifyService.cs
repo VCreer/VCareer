@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using VCareer.Constants;
 using VCareer.Dto.UserDto;
 using VCareer.IRepositories.Profile;
+using VCareer.IRepositories.ICompanyRepository;
 using VCareer.IServices.User;
 using VCareer.Permission;
 using Volo.Abp;
@@ -35,6 +36,7 @@ namespace VCareer.Services.User
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly ICandidateProfileRepository _candidateProfileRepository;
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
         private readonly IIdentityRoleRepository _identityRoleRepository;
         private readonly IPermissionManager _permissionManager;
@@ -46,6 +48,7 @@ namespace VCareer.Services.User
             IRecruiterRepository recruiterRepository,
             ICandidateProfileRepository candidateProfileRepository,
             IEmployeeRepository employeeRepository,
+            ICompanyRepository companyRepository,
             IIdentityRoleRepository identityRoleRepository,
             IPermissionDefinitionManager permissionDefinitionManager,
             IPermissionManager permissionManager,
@@ -58,6 +61,7 @@ namespace VCareer.Services.User
             _recruiterRepository = recruiterRepository;
             _candidateProfileRepository = candidateProfileRepository;
             _employeeRepository = employeeRepository;
+            _companyRepository = companyRepository;
             _permissionDefinitionManager = permissionDefinitionManager;
             _stringLocalizerFactory = stringLocalizerFactory;
             _identityRoleRepository= _identityRoleRepository;
@@ -92,6 +96,7 @@ namespace VCareer.Services.User
 
             var role = (RoleType)roleType;
 
+            // Lấy danh sách userId theo từng loại role
             List<Guid> listUserId = role switch
             {
                 RoleType.Employee =>
@@ -111,9 +116,35 @@ namespace VCareer.Services.User
 
             var users = new List<IdentityUserDto>();
 
+            // Nếu là Recruiter thì lấy thêm CompanyName để FE hiển thị
+            Dictionary<Guid, string>? recruiterCompanyNames = null;
+            if (role == RoleType.Recruiter)
+            {
+                var recruiters = await _recruiterRepository.GetListAsync();
+                var recruiterWithCompany = recruiters.Where(r => r.CompanyId != 0).ToList();
+                var companyIds = recruiterWithCompany.Select(r => r.CompanyId).Distinct().ToList();
+
+                if (companyIds.Any())
+                {
+                    var companies = await _companyRepository.GetListAsync(c => companyIds.Contains(c.Id));
+                    var companyDict = companies.ToDictionary(c => c.Id, c => c.CompanyName);
+
+                    recruiterCompanyNames = recruiterWithCompany
+                        .Where(r => companyDict.ContainsKey(r.CompanyId))
+                        .ToDictionary(r => r.UserId, r => companyDict[r.CompanyId]);
+                }
+            }
+
             foreach (var id in listUserId)
             {
                 var user = await _userAppService.GetAsync(id);
+
+                // Đính kèm CompanyName vào ExtraProperties nếu là Recruiter
+                if (role == RoleType.Recruiter && recruiterCompanyNames != null && recruiterCompanyNames.TryGetValue(id, out var companyName))
+                {
+                    user.SetProperty("companyName", companyName);
+                }
+
                 users.Add(user);
             }
 
@@ -125,10 +156,20 @@ namespace VCareer.Services.User
             var user = await _userAppService.GetAsync(userId);
             if (user == null) throw new BusinessException("User not found");
 
-            await _userAppService.UpdateAsync(userId, new IdentityUserUpdateDto
+            // IdentityUserUpdateDto yêu cầu các trường bắt buộc (UserName, Email, ...) khi cập nhật
+            // nên cần map lại từ user hiện tại thay vì chỉ truyền IsActive.
+            var updateDto = new IdentityUserUpdateDto
             {
-                IsActive = isActive
-            });
+                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = isActive,
+                ConcurrencyStamp = user.ConcurrencyStamp
+            };
+
+            await _userAppService.UpdateAsync(userId, updateDto);
         }
         public async Task<List<IdentityRoleDto>> GetAllRolesAsync()
         {

@@ -158,6 +158,10 @@ export class WriteCv implements OnInit {
     duration: 3000
   };
 
+  // Validation popup
+  showValidationPopup: boolean = false;
+  validationPopupMessage: string = '';
+
   showEditPhoto: boolean = false;
   showPreviewDialog: boolean = false;
   showUpdateNameModal: boolean = false;
@@ -1290,6 +1294,10 @@ export class WriteCv implements OnInit {
       this.toast.show = false;
     }, this.toast.duration);
   }
+
+  closeValidationPopup() {
+    this.showValidationPopup = false;
+  }
   
   updateTranslations() {
     this.translations = {
@@ -1846,7 +1854,19 @@ export class WriteCv implements OnInit {
     this.emailError = !email;
 
     if (this.nameError || this.phoneError || this.emailError) {
-      this.showToast(this.translations.validationMessage || 'Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
+      const missingFields: string[] = [];
+      if (this.nameError) missingFields.push('Họ và tên');
+      if (this.phoneError) missingFields.push('Số điện thoại');
+      if (this.emailError) missingFields.push('Email');
+
+      const message =
+        missingFields.length > 0
+          ? `Vui lòng nhập: ${missingFields.join(', ')}`
+          : this.translations.validationMessage || 'Vui lòng điền đầy đủ thông tin bắt buộc';
+
+      this.validationPopupMessage = message;
+      this.showValidationPopup = true;
+      this.showToast(message, 'warning');
       return;
     }
     

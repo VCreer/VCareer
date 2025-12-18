@@ -95,12 +95,12 @@ namespace VCareer.Services.Cart
 
                 // Check if item already exists in cart
                 var existingCartItem = await _cartRepository.GetCartItemAsync(userId, input.SubscriptionServiceId);
-                var existingServiceAndWorking = await _userSubcriptionService.SubcriptionBoughtedAndActive(userId, input.SubscriptionServiceId);
+                //var existingServiceAndWorking = await _userSubcriptionService.SubcriptionBoughtedAndActive(userId, input.SubscriptionServiceId);
 
-                if (existingServiceAndWorking != null && existingServiceAndWorking.Count > 0)
-                {
-                    throw new UserFriendlyException("You have already bought this service and it still working");
-                }
+                //if (existingServiceAndWorking != null && existingServiceAndWorking.Count > 0)
+                //{
+                //    throw new UserFriendlyException("You have already bought this service and it still working");
+                //}
 
                 if (existingCartItem != null) throw new UserFriendlyException("Item already exists in cart");
 

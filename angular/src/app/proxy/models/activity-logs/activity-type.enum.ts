@@ -16,6 +16,9 @@ export enum ActivityType {
   InterviewCancelled = 32,
   ApplicationReviewed = 40,
   ApplicationUpdated = 41,
+  StaffAdded = 50,
+  CampaignCreated = 51,
+  JobCreated = 52,
 }
 
 export const activityTypeOptions = mapEnumToOptions(ActivityType);

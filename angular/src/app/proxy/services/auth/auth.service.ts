@@ -9,6 +9,15 @@ export class AuthService {
   apiName = 'Default';
   
 
+  candidateForgotPassword = (input: ForgotPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-forgot-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   candidateLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -22,6 +31,15 @@ export class AuthService {
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/candidate-register',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  candidateResetPassword = (input: ResetPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/candidate-reset-password',
       body: input,
     },
     { apiName: this.apiName,...config });
@@ -87,6 +105,15 @@ export class AuthService {
     { apiName: this.apiName,...config });
   
 
+  recruiterForgotPassword = (input: ForgotPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/recruiter-forgot-password',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
   recruiterLogin = (input: LoginDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -100,6 +127,15 @@ export class AuthService {
     this.restService.request<any, void>({
       method: 'POST',
       url: '/api/app/auth/recruiter-register',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  recruiterResetPassword = (input: ResetPasswordDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/auth/recruiter-reset-password',
       body: input,
     },
     { apiName: this.apiName,...config });

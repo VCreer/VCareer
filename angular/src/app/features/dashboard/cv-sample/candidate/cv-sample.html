@@ -33,7 +33,11 @@
           <div class="cv-template-card">
             <div class="cv-preview">
               <div class="cv-preview-image">
-                <img [src]="getTemplatePreviewImage(template)" [alt]="template.name || 'CV Template'">
+                <img 
+                  [src]="getTemplatePreviewImage(template)" 
+                  [alt]="template.name || 'CV Template'"
+                  (error)="onImageError($event)"
+                  loading="lazy">
                 <button class="btn-use-template" (click)="useTemplate(template.id || '')">
                   {{ translate('cv_sample.use_template') || 'Sử dụng mẫu' }}
                 </button>

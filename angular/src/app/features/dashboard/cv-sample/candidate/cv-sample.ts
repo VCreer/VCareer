@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { CvTemplateService } from '../../../../proxy/http-api/controllers/cv-template.service';
 import { CvTemplateDto, GetCvTemplateListDto } from '../../../../proxy/cv/models';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-cv-sample',
@@ -116,8 +117,41 @@ export class CvSampleComponent implements OnInit {
   }
 
   getTemplatePreviewImage(template: CvTemplateDto): string {
-    // Nếu có previewImageUrl thì dùng, không thì dùng placeholder
-    return template.previewImageUrl || 'assets/images/cv-management/cv-preview-placeholder.png';
+    // Nếu có previewImageUrl thì dùng (có thể là base64 hoặc URL)
+    if (template.previewImageUrl) {
+      // Nếu là base64 string (bắt đầu bằng data:image)
+      if (template.previewImageUrl.startsWith('data:image')) {
+        return template.previewImageUrl;
+      }
+      
+      // Nếu là đường dẫn tương đối (bắt đầu bằng /), thêm base URL
+      if (template.previewImageUrl.startsWith('/')) {
+        // Lấy base URL từ environment (ví dụ: http://localhost:44385)
+        const baseUrl = environment.apis?.default?.url || '';
+        // Loại bỏ trailing slash nếu có
+        const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return `${cleanBaseUrl}${template.previewImageUrl}`;
+      }
+      
+      // Nếu là URL đầy đủ (http:// hoặc https://)
+      if (template.previewImageUrl.startsWith('http://') || template.previewImageUrl.startsWith('https://')) {
+        return template.previewImageUrl;
+      }
+      
+      // Nếu là URL tương đối khác, trả về như cũ
+      return template.previewImageUrl;
+    }
+    // Fallback về placeholder (dùng file có sẵn)
+    return 'assets/images/cv-sample/not-cv-sample.png';
+  }
+
+  onImageError(event: any) {
+    // Nếu image load lỗi, fallback về placeholder (dùng file có sẵn)
+    const placeholder = 'assets/images/cv-sample/not-cv-sample.png';
+    // Tránh lặp vô hạn nếu placeholder cũng lỗi
+    if (event.target.src !== placeholder && !event.target.src.includes(placeholder)) {
+      event.target.src = placeholder;
+    }
   }
 
   getTemplateTags(template: CvTemplateDto): string[] {
