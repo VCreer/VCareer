@@ -301,6 +301,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     // Gọi API: GetUsersInfoByRoleAsync (UserIdentifyService) với RoleType Recruiter = 2
     this.userService.getUsersInfoByRole(2).subscribe({
       next: async (users) => {
+        console.log('Recruiter users loaded:', users);
         const mapped: RecruitingUser[] = (users || []).map(u => {
           const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
           const extra = (u as any).extraProperties || {};
@@ -345,10 +346,13 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
         await Promise.all(rolePromises);
 
         this.allUsers = mapped;
+        console.log('Mapped recruiter users:', this.allUsers);
         this.applyFilters();
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading recruiter users:', error);
         this.allUsers = [];
+        this.showToastMessage('Không thể tải danh sách người dùng. Vui lòng thử lại sau.', 'error');
         this.applyFilters();
       }
     });

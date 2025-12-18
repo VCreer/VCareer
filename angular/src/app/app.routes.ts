@@ -226,7 +226,15 @@ export const APP_ROUTES: Routes = [
             c => c.UploadedCvViewComponent
           ),
       },
-     
+     {
+        path: 'job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+      },
+      {
+        path: 'job-detail/:id',
+        loadComponent: () =>
+          import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
       {
         path: 'companies',
         redirectTo: 'company',

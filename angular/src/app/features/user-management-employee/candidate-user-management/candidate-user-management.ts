@@ -290,6 +290,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     // Gọi API lấy danh sách userId theo RoleType Candidate = 3
     this.userService.getUsersInfoByRole(3).subscribe({
       next: async (users) => {
+        console.log('Candidate users loaded:', users);
         const mapped: CandidateUser[] = (users || []).map(u => {
           const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
           return {
@@ -327,10 +328,13 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
         await Promise.all(rolePromises);
 
         this.allUsers = mapped;
+        console.log('Mapped candidate users:', this.allUsers);
         this.applyFilters();
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading candidate users:', error);
         this.allUsers = [];
+        this.showToastMessage('Không thể tải danh sách người dùng. Vui lòng thử lại sau.', 'error');
         this.applyFilters();
       }
     });

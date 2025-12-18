@@ -19,7 +19,7 @@ using IdentityUser = Volo.Abp.Identity.IdentityUser;
 namespace VCareer.Services.Auth.ActivityLog
 {
     [Authorize]
-    [RemoteService(IsEnabled = true)]
+    [RemoteService(IsEnabled = false)]
     public class ActivityLogAppService : ApplicationService, IActivityLogAppService
     {
         private const string SearchPlaceholder = "__ALL__";
@@ -201,8 +201,7 @@ namespace VCareer.Services.Auth.ActivityLog
             return result;
         }
 
-        public async Task<AllStaffActivityLogsListDto> GetMyActivityLogsAsync(ActivityLogFilterDto input)
-        {
+        public async Task<AllStaffActivityLogsListDto> GetMyActivityLogsAsync(ActivityLogFilterDto input)        {
             // Override validation: SearchKeyword is optional
             if (string.IsNullOrWhiteSpace(input.SearchKeyword) ||
                 string.Equals(input.SearchKeyword, SearchPlaceholder, StringComparison.Ordinal))

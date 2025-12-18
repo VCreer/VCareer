@@ -13,8 +13,17 @@ export class ActivityLogService {
   getAllStaffActivityLogs = (input: ActivityLogFilterDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, AllStaffActivityLogsListDto>({
       method: 'GET',
-      url: '/api/app/activity-log/staff-activity-logs',
-      params: { activityType: input.activityType, startDate: input.startDate, endDate: input.endDate, searchKeyword: input.searchKeyword, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      // Đồng bộ với endpoint backend thực tế: /api/app/activity-log/all-staff-activity-logs
+      url: '/api/app/activity-log/all-staff-activity-logs',
+      params: {
+        activityType: input.activityType,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        searchKeyword: input.searchKeyword,
+        sorting: input.sorting,
+        skipCount: input.skipCount,
+        maxResultCount: input.maxResultCount
+      },
     },
     { apiName: this.apiName,...config });
   

@@ -224,6 +224,7 @@ export class HistoryOfActivitiesComponent implements OnInit, OnDestroy {
       'JobPosted': 'Đăng công việc',
       'JobUpdated': 'Cập nhật công việc',
       'JobDeleted': 'Xóa công việc',
+      'CandidateEvaluated': 'Đánh giá ứng viên',
       'Login': 'Đăng nhập',
       'Logout': 'Đăng xuất'
     };
