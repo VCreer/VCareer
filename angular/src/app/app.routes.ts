@@ -213,6 +213,15 @@ export const APP_ROUTES: Routes = [
           ),
       },
       {
+        path: 'job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+      },
+      {
+        path: 'job-detail/:id',
+        loadComponent: () =>
+          import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
+      {
         path: 'candidate/cv-management/view/:cvId',
         loadComponent: () =>
           import('./features/dashboard/cv-management/candidate/cv-view').then(

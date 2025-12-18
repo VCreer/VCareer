@@ -32,6 +32,8 @@ namespace VCareer.Services.Notification
             _currentUser = currentUser;
         }
 
+
+        //taoj 1 thoong bao
         public async Task<NotificationDto> CreateNotificationAsync(NotificationCreateDto input)
         {
             if (input == null)

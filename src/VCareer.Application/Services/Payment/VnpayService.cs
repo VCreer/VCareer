@@ -91,6 +91,7 @@ namespace VCareer.Services.Payment
             }
         }
 
+        // tao\j payment urrl
         public string CreatePaymentUrl(Guid orderId, string orderCode, decimal totalAmount, string returnUrl)
         {
             // Wrapper method for backward compatibility
@@ -98,6 +99,8 @@ namespace VCareer.Services.Payment
             return paymentUrl;
         }
 
+
+        
         public bool ValidatePaymentCallback(Dictionary<string, string> vnpayData, string secureHash)
         {
             try
@@ -129,6 +132,8 @@ namespace VCareer.Services.Payment
                 return false;
             }
         }
+
+
 
         public Dictionary<string, string> ParseCallbackData(string queryString)
         {

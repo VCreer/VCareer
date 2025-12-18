@@ -60,7 +60,7 @@ namespace VCareer.Services.Order
         }
 
 
-        // đoạn code tạo order
+        // taoj 1 order
         public async Task<OrderDto> CreateOrderAsync(CreateOrderDto input)
         {
             try
@@ -170,6 +170,7 @@ namespace VCareer.Services.Order
             }
         }
 
+        
         public async Task<OrderDto> GetOrderAsync(Guid id)
         {
             var order = await _orderRepository.GetAsync(id);
@@ -199,6 +200,7 @@ namespace VCareer.Services.Order
             return orderDto;
         }
 
+        
         public async Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync(VnpayPaymentRequestDto input)
         {
             var order = await _orderRepository.GetAsync(input.OrderId);
@@ -342,6 +344,8 @@ namespace VCareer.Services.Order
             return await GetOrderAsync(order.Id);
         }
 
+        
+        // 
         public async Task<OrderListDto> GetMyOrdersAsync()
         {
             if (!_currentUser.Id.HasValue)

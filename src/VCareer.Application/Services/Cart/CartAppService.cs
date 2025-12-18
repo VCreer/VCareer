@@ -131,6 +131,8 @@ namespace VCareer.Services.Cart
                 throw;
             }
         }
+
+
         [Authorize(VCareerPermission.Cart.Update)]
         public async Task<CartDto> UpdateQuantityAsync(UpdateCartQuantityDto input)
         {
