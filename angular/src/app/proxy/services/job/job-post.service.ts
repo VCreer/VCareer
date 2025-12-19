@@ -103,10 +103,11 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  rejectJobPost = (id: string, config?: Partial<Rest.Config>) =>
+  rejectJobPost = (id: string, reason?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/job-post/${id}/reject-job-post`,
+      body: reason ? { reason } : undefined,
     },
     { apiName: this.apiName,...config });
   

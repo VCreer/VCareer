@@ -30,6 +30,8 @@ export class JobListingsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() jobClick = new EventEmitter<string>();  // ✅ Đổi thành string vì jobId là string
   @Output() categorySelected = new EventEmitter<string[]>();  // ← NEW
   @Output() locationSelected = new EventEmitter<{provinceIds: number[], districtIds: number[]}>();  // ← NEW
+  // Event riêng cho auto paging để parent xử lý mà không scroll lên đầu
+  @Output() autoPageChange = new EventEmitter<number>();
 
   defaultLogo = 'assets/images/home/company-placeholder.png';
   showToast = false;
@@ -313,7 +315,8 @@ export class JobListingsComponent implements OnInit, OnChanges, OnDestroy {
       const nextPage =
         this.currentPage >= this.totalPages ? 1 : this.currentPage + 1;
 
-      this.onPageChange(nextPage);
+      // Emit sự kiện autoPageChange để parent cập nhật data mà không scroll
+      this.autoPageChange.emit(nextPage);
     }, 8000);
   }
 }

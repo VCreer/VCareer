@@ -1,16 +1,18 @@
-<div class="notifications-page">
-  <div class="notifications-container">
-    <!-- Header -->
-    <div class="notifications-header">
+<div class="notifications-page" [style.padding-left]="getContentPaddingLeft()">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box"
+       [style.left.px]="sidebarWidth"
+       [style.width]="'calc(100% - ' + sidebarWidth + 'px)'">
+    <div class="breadcrumb-container">
       <h1 class="page-title">Thông báo</h1>
       <div class="header-actions">
-          <button 
-            class="btn-delete-all" 
-            *ngIf="totalCount > 0"
-            (click)="deleteAllNotifications()">
-            <i class="fa fa-trash"></i>
-            Xóa tất cả
-          </button>
+        <button 
+          class="btn-delete-all" 
+          *ngIf="totalCount > 0"
+          (click)="deleteAllNotifications()">
+          <i class="fa fa-trash"></i>
+          Xóa tất cả
+        </button>
         <button 
           class="btn-mark-all-read" 
           *ngIf="unreadCount > 0"
@@ -20,6 +22,9 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <div class="notifications-container" [style.max-width]="getContentMaxWidth()">
 
     <!-- Filters -->
     <div class="notifications-filter" *ngIf="!isLoading">

@@ -619,7 +619,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       error: err => {
         console.error('Lỗi khi đăng bài:', err);
         if (err.status !== 403) {
-          this.showErrorToast('Đăng bài thất bại');
+        this.showErrorToast('Đăng bài thất bại');
         }
       },
       complete: () => {
@@ -652,7 +652,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       error: err => {
         console.error('Lỗi khi xóa công việc:', err);
         if (err.status !== 403) {
-          this.showErrorToast('Xóa công việc thất bại');
+        this.showErrorToast('Xóa công việc thất bại');
         }
       },
       complete: () => {
@@ -671,7 +671,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (this.isClosingJob) return;
 
     this.isClosingJob = true;
-    this.showActionsMenu = null;
+      this.showActionsMenu = null;
     this.menuPosition = null;
 
     this.jobPostService.closeJobPostById(job.id).subscribe({
@@ -806,8 +806,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
           // Nếu đã hết lượt hoặc status không phải Active => không available
           if (remainingUsage <= 0 || status !== SubcriptionContance_ChildServiceStatus.Active) {
             isAvailable = false;
-          }
-        } else {
+      }
+    } else {
           // Không giới hạn số lần dùng
           remainingUsage = undefined;
         }
@@ -922,8 +922,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.userChildServiceService.activeService(activeDtos, jobId).subscribe({
       next: () => {
         this.showSuccessToast(`Đã kích hoạt ${selectedOptions.length} dịch vụ thành công`);
-        this.isAssigningPackage = false;
-        this.closePackageModal();
+      this.isAssigningPackage = false;
+      this.closePackageModal();
         this.loadJobs();
       },
       error: err => {

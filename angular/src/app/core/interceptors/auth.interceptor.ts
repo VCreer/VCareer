@@ -53,6 +53,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         '/employee-login',
         '/candidate-register',
         '/recruiter-register',
+        '/search-jobs', // ✅ Public API - không cần đăng nhập
+        '/job-search', // ✅ Public API - không cần đăng nhập
       ];
 
       if (skipRefreshEndpoints.some(endpoint => url.includes(endpoint))) {
@@ -60,9 +62,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       const currentUrl = router.url;
-      const publicRoutes = ['/', '/job', '/job-detail', '/terms-of-service'];
+      // Bỏ query params khi check public route
+      const urlWithoutQuery = currentUrl.split('?')[0];
+      const publicRoutes = ['/', '/job', '/job-detail', '/terms-of-service', '/company', '/about-us', '/contact'];
       const isPublicRoute = publicRoutes.some(route => 
-        currentUrl === route || currentUrl.startsWith(route + '/')
+        urlWithoutQuery === route || urlWithoutQuery.startsWith(route + '/')
       );
 
       if (isPublicRoute) {

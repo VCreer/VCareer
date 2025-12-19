@@ -51,7 +51,7 @@ export class ServicePriceListComponent implements OnInit, OnDestroy {
   paginatedPrices: SubcriptionPriceViewDto[] = [];
 
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 5;
   totalPages = 1;
 
   showActionsMenu: string | null = null;
