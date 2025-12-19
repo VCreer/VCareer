@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -159,17 +160,16 @@ namespace VCareer.Services.Job
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string id, string reasonReject = "")
+        public async Task RejectJobPostAsync(string id)
         {
 
-            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(jobId));
-            if (jobPost == null) throw new BusinessException($"Job với ID '{jobId}' không tồn tại hoặc được xóa.");
+            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
+            if (jobPost == null) throw new BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
 
             var user = await _identityUserRepository.GetAsync(jobPost.RecruiterId);
             if (user == null) throw new BusinessException("owner of this jobpost not found");
 
             jobPost.Status = JobStatus.Rejected;
-            jobPost.RejectedReason = reasonReject;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             // logic tra lai luot dung khi bi reject
@@ -206,16 +206,13 @@ namespace VCareer.Services.Job
             await _effectingJobService.DeactiveAllEffectingJobByJobID(jobPost.Id);
             await _jobAffectingRepository.DeleteManyAsync(jobEffects);
 
-            // Lấy thông tin campaign
-            var campaign = await _campaignRepository.GetAsync(jobPost.RecruitmentCampaignId);
-
             // Gửi notification cho recruiter về việc job bị từ chối
             await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
             {
                 UserId = jobPost.RecruiterId,
                 UserRole = "Recruiter",
                 Title = "Tin tuyển dụng bị từ chối",
-                Message = $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối. Lý do: {reasonReject}",
+                Message = $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối.",
                 NotificationType = "JobRejected",
                 RelatedEntityType = "JobPost",
                 RelatedEntityId = jobPost.Id,
@@ -223,10 +220,7 @@ namespace VCareer.Services.Job
                 {
                     JobId = jobPost.Id,
                     JobTitle = jobPost.Title,
-                    RejectReason = reasonReject,
-                    CompanyName = jobPost.CompanyName,
-                    RecruitmentCampaignId = jobPost.RecruitmentCampaignId,
-                    CampaignName = campaign?.Name
+                    CompanyName = jobPost.CompanyName
                 })
             });
         }

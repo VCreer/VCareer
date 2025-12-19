@@ -18,7 +18,7 @@ namespace VCareer.IServices.IJobServices
         public Task UpdateJobPost(JobPostUpdateDto dto);
         public Task DeleteJobPost(string id);
         public Task ApproveJobPostAsync(string id);
-        public Task RejectJobPostAsync(string id, string reasonReject = "");
+        public Task RejectJobPostAsync(string id);
         [RemoteService(false)]
         public Task UpDateViewCount(string id);
         [RemoteService(false)]

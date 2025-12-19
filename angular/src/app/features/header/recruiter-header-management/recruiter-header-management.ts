@@ -30,6 +30,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   private cartSubscription?: Subscription;
   private loginSubscription?: Subscription;
+  private unreadCountSubscription?: Subscription;
 
   constructor(
     private router: Router,
@@ -68,6 +69,13 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
       this.loadNotifications();
       this.loadUnreadCount();
     }
+
+    // Subscribe to unread count changes from service
+    this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(counts => {
+      if (counts['Recruiter'] !== undefined) {
+        this.notificationCount = counts['Recruiter'];
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -76,6 +84,9 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     }
     if (this.loginSubscription) {
       this.loginSubscription.unsubscribe();
+    }
+    if (this.unreadCountSubscription) {
+      this.unreadCountSubscription.unsubscribe();
     }
   }
 

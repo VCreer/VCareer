@@ -128,6 +128,8 @@ export class RecruiterNotificationsComponent implements OnInit {
       .subscribe(() => {
         this.showToastMessage('Đã đánh dấu tất cả đã đọc', 'success');
         this.loadNotifications();
+        // Reload unread count để sync với server và cập nhật header
+        this.notificationService.getUnreadCount('Recruiter').subscribe();
       });
   }
 

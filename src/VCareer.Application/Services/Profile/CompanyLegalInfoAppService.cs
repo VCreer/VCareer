@@ -14,6 +14,8 @@ using VCareer.IRepositories.Job;
 using VCareer.IRepositories.Profile;
 using VCareer.IServices.IFileServices;
 using VCareer.IServices.IProfileServices;
+using VCareer.IServices.Notification;
+using VCareer.Dto.Notification;
 using VCareer.Models.Companies;
 using VCareer.Models.FileMetadata;
 using VCareer.Permission;
@@ -37,6 +39,7 @@ namespace VCareer.Services.Profile
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IFileServices _fileServices;
         private readonly IRepository<FileDescriptor, Guid> _fileDescriptorRepository;
+        private readonly INotificationAppService _notificationAppService;
 
         public CompanyLegalInfoAppService(
             ICompanyRepository companyRepository,
@@ -44,7 +47,8 @@ namespace VCareer.Services.Profile
             IJobPostRepository jobPostRepository,
             IRecruiterRepository recruiterRepository,
             IFileServices fileServices,
-            IRepository<FileDescriptor, Guid> fileDescriptorRepository)
+            IRepository<FileDescriptor, Guid> fileDescriptorRepository,
+            INotificationAppService notificationAppService)
         {
             _companyRepository = companyRepository;
             _currentUser = currentUser;
@@ -52,6 +56,7 @@ namespace VCareer.Services.Profile
             _recruiterRepository = recruiterRepository;
             _fileServices = fileServices;
             _fileDescriptorRepository = fileDescriptorRepository;
+            _notificationAppService = notificationAppService;
         }
 
 
@@ -553,7 +558,57 @@ namespace VCareer.Services.Profile
 
             await _companyRepository.UpdateAsync(company);
 
-            // TODO: Send email to recruiter
+            // Lấy recruiter của công ty để gửi notification
+            try
+            {
+                var recruiterQueryable = await _recruiterRepository.WithDetailsAsync(r => r.User);
+                
+                // Ưu tiên lấy recruiter có IsLead = true
+                var recruiter = await recruiterQueryable
+                    .FirstOrDefaultAsync(r => r.CompanyId == company.Id && r.IsLead);
+
+                // Nếu không tìm thấy recruiter có IsLead, lấy recruiter đầu tiên của công ty
+                if (recruiter == null)
+                {
+                    recruiter = await recruiterQueryable
+                        .FirstOrDefaultAsync(r => r.CompanyId == company.Id);
+                }
+
+                if (recruiter != null && recruiter.UserId != Guid.Empty)
+                {
+                    Logger.LogInformation($"Đang gửi notification cho recruiter UserId: {recruiter.UserId}, CompanyId: {company.Id}");
+                    
+                    // Gửi notification cho recruiter về việc công ty được xác thực thành công
+                    await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
+                    {
+                        UserId = recruiter.UserId,
+                        UserRole = "Recruiter",
+                        Title = "Xác thực công ty thành công",
+                        Message = $"Công ty '{company.CompanyName}' đã được xác thực thành công.",
+                        NotificationType = "CompanyVerified",
+                        RelatedEntityType = "Company",
+                        RelatedEntityId = null, // Company.Id là int, không phải Guid
+                        Metadata = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            CompanyId = company.Id,
+                            CompanyName = company.CompanyName,
+                            CompanyCode = company.CompanyCode,
+                            VerifiedAt = company.LegalReviewedAt
+                        })
+                    });
+                    
+                    Logger.LogInformation($"Đã gửi notification thành công cho recruiter UserId: {recruiter.UserId}");
+                }
+                else
+                {
+                    Logger.LogWarning($"Không tìm thấy recruiter cho công ty ID: {company.Id}, CompanyName: {company.CompanyName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Lỗi khi gửi notification cho recruiter về việc công ty {company.Id} được xác thực: {ex.Message}");
+                // Không throw exception để không ảnh hưởng đến việc approve công ty
+            }
         }
 
         /// <summary>
@@ -584,7 +639,65 @@ namespace VCareer.Services.Profile
 
             await _companyRepository.UpdateAsync(company);
 
-            // TODO: Send email to recruiter with rejection notes
+            // Lấy recruiter của công ty để gửi notification
+            try
+            {
+                var recruiterQueryable = await _recruiterRepository.WithDetailsAsync(r => r.User);
+                
+                // Ưu tiên lấy recruiter có IsLead = true
+                var recruiter = await recruiterQueryable
+                    .FirstOrDefaultAsync(r => r.CompanyId == company.Id && r.IsLead);
+
+                // Nếu không tìm thấy recruiter có IsLead, lấy recruiter đầu tiên của công ty
+                if (recruiter == null)
+                {
+                    recruiter = await recruiterQueryable
+                        .FirstOrDefaultAsync(r => r.CompanyId == company.Id);
+                }
+
+                if (recruiter != null && recruiter.UserId != Guid.Empty)
+                {
+                    Logger.LogInformation($"Đang gửi notification cho recruiter UserId: {recruiter.UserId}, CompanyId: {company.Id}");
+                    Logger.LogInformation($"Lý do từ chối: {input?.RejectionNotes ?? "NULL"}");
+                    
+                    // Gửi notification cho recruiter về việc công ty bị từ chối
+                    var rejectionMessage = string.IsNullOrWhiteSpace(input?.RejectionNotes)
+                        ? $"Công ty '{company.CompanyName}' đã bị từ chối."
+                        : $"Công ty '{company.CompanyName}' đã bị từ chối.\nLý do: {input.RejectionNotes}";
+                    
+                    Logger.LogInformation($"Message notification: {rejectionMessage}");
+                    
+                    await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
+                    {
+                        UserId = recruiter.UserId,
+                        UserRole = "Recruiter",
+                        Title = "Xác thực công ty bị từ chối",
+                        Message = rejectionMessage,
+                        NotificationType = "CompanyRejected",
+                        RelatedEntityType = "Company",
+                        RelatedEntityId = null, // Company.Id là int, không phải Guid
+                        Metadata = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            CompanyId = company.Id,
+                            CompanyName = company.CompanyName,
+                            CompanyCode = company.CompanyCode,
+                            RejectionNotes = input?.RejectionNotes ?? string.Empty,
+                            RejectedAt = company.LegalReviewedAt
+                        })
+                    });
+                    
+                    Logger.LogInformation($"Đã gửi notification thành công cho recruiter UserId: {recruiter.UserId} với message: {rejectionMessage}");
+                }
+                else
+                {
+                    Logger.LogWarning($"Không tìm thấy recruiter cho công ty ID: {company.Id}, CompanyName: {company.CompanyName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Lỗi khi gửi notification cho recruiter về việc công ty {company.Id} bị từ chối: {ex.Message}");
+                // Không throw exception để không ảnh hưởng đến việc reject công ty
+            }
         }
 
         /// <summary>

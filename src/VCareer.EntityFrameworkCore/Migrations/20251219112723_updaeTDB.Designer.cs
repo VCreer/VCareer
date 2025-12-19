@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251217005641_updateDb")]
-    partial class updateDb
+    [Migration("20251219112723_updaeTDB")]
+    partial class updaeTDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2016,6 +2016,9 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -2028,7 +2031,7 @@ namespace VCareer.Migrations
                     b.Property<int?>("UsedTime")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("UserActiveId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserSubcriptionId")
@@ -2038,7 +2041,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("ChildServiceId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserActiveId");
 
                     b.ToTable("User_ChildServices");
                 });
@@ -4664,7 +4667,7 @@ namespace VCareer.Migrations
 
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserActiveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { AuthRedirectGuard } from './guards/auth-redirect.guard'; 
+import { AuthRedirectGuard } from './guards/auth-redirect.guard';
 import { AuthGuard } from './guards/auth.guard';
 
 export const APP_ROUTES: Routes = [
   //#region Public Routes - Không yêu cầu đăng nhập
-  
+
   // Trang mặc định khi vào app (path '')
   {
     path: '',
@@ -28,21 +28,21 @@ export const APP_ROUTES: Routes = [
         loadComponent: () =>
           import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       },
-       {
+      {
         path: 'company',
         loadComponent: () =>
           import('./features/dashboard/company/candidate/company-listing').then(
             c => c.CompanyListingComponent
           ),
       },
-       {
+      {
         path: 'about-us',
         loadComponent: () =>
           import('./features/dashboard/about-us/candidate/about-us').then(
             c => c.CandidateAboutUsComponent
           ),
       },
-        {
+      {
         path: 'contact',
         loadComponent: () =>
           import('./features/contact/candidate/contact').then(c => c.ContactComponent),
@@ -222,7 +222,7 @@ export const APP_ROUTES: Routes = [
           import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
       },
       {
-        path: 'candidate/cv-management/view/:cvId',
+        //path: 'candidate/cv-management/view/:cvId',
         path: 'cv-management/view/:cvId',
         loadComponent: () =>
           import('./features/dashboard/cv-management/candidate/cv-view').then(
@@ -236,7 +236,7 @@ export const APP_ROUTES: Routes = [
             c => c.UploadedCvViewComponent
           ),
       },
-     
+
       {
         path: 'companies',
         redirectTo: 'company',

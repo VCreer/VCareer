@@ -10,7 +10,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 import type { ProfileDto } from '../../../proxy/dto/profile/models';
 import { NotificationService, NotificationDto } from '../../../core/services/notification.service';
-import { catchError, of } from 'rxjs';
+import { catchError, of, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-candidate-header',
@@ -37,6 +37,7 @@ export class CandidateHeaderComponent implements OnInit {
     cvManagement: true,
     personalSecurity: false
   };
+  private unreadCountSubscription?: Subscription;
 
   constructor(
     private router: Router,
@@ -108,6 +109,13 @@ export class CandidateHeaderComponent implements OnInit {
       this.loadNotifications();
       this.loadUnreadCount();
     }
+
+    // Subscribe to unread count changes from service
+    this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(counts => {
+      if (counts['Candidate'] !== undefined) {
+        this.unreadCount = counts['Candidate'];
+      }
+    });
   }
   
   loadProfileData() {
