@@ -172,6 +172,7 @@ namespace VCareer.Services.Auth
             await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
         }
 
+        [IgnoreAntiforgeryToken]
         public async Task RecruiterLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -189,6 +190,7 @@ namespace VCareer.Services.Auth
             UpdateTokenToCookie(tokens);
         }
 
+        [IgnoreAntiforgeryToken]
         public async Task CandidateLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -208,6 +210,7 @@ namespace VCareer.Services.Auth
         }
 
         [UnitOfWork]
+        [IgnoreAntiforgeryToken]
         public async Task LoginWithGoogleAsync(GoogleLoginDto input)
         {
             try
@@ -464,99 +467,100 @@ namespace VCareer.Services.Auth
             response.Cookies.Delete("refresh_token");
         }
 
-        [UnitOfWork]
-        public async Task CandidateRegisterAsync(CandidateRegisterDto input)
-           {
-               if (await _identityManager.FindByEmailAsync(input.Email) != null)
-                   throw new UserFriendlyException("Email already exist");
+       [UnitOfWork]
+    public async Task CandidateRegisterAsync(CandidateRegisterDto input)
+       {
+           if (await _identityManager.FindByEmailAsync(input.Email) != null)
+               throw new UserFriendlyException("Email already exist");
 
-            // Tách tên thành name và surname
-            var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-            string name = string.Empty;
-            string surname = string.Empty;
-            
-            if (nameParts.Length == 0)
-            {
-                name = surname = string.Empty;
-            }
-            else if (nameParts.Length == 1)
-            {
-                name = surname = nameParts[0];
-            }
-            else
-            {
-                surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
-                name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
-            }
-
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
-            {
-                Name = name,
-                Surname = surname
-            };
-            var result = await _identityManager.CreateAsync(newUser, input.Password);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
-
-
-            //gắn role canđiate
-            var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
-                   if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-                   result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-                   if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
-
-            // cập nhật tạo bản ghi vào canđiate profile
-            var candidateProfile = new CandidateProfile
-            {
-                UserId = newUser.Id,
-                Email = newUser.Email,
-                Status = true
-            };
-            await _candidateProfileRepository.InsertAsync(candidateProfile);
-
-            await CurrentUnitOfWork.SaveChangesAsync();
-        }
-
-        [UnitOfWork]
-        public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+        // Tách tên thành name và surname
+        var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        string name = string.Empty;
+        string surname = string.Empty;
+        
+        if (nameParts.Length == 0)
         {
-            if (await _identityManager.FindByEmailAsync(input.Email) != null)
-                throw new UserFriendlyException("Email already exist");
-
-            //check ma so thue
-
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            newUser.Name = input.Name;
-            newUser.SetPhoneNumber(input.PhoneNumber,false);
-            var result = await _identityManager.CreateAsync(newUser, input.Password);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
-
-            //gắn role recruiter 
-            var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
-            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-            result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
-
-            //tạo công ty
-            var company = new Company
-            {
-                CompanyName = input.CompanyName,
-                TaxCode = input.TaxCode,
-            };
-            await _companyRepository.InsertAsync(company);
-            await CurrentUnitOfWork.SaveChangesAsync();  // lay id som
-
-            // cập nhật tạo bản ghi vào canđiate profile
-            var recruiterProfile = new RecruiterProfile
-            {
-                UserId = newUser.Id,
-                Status = true,
-                Email = input.Email,
-                RecruiterLevel = Constants.JobConstant.RecruiterLevel.Unverified,
-                IsLead = true,
-                CompanyId = company.Id,
-            };
-            await _recruiterRepository.InsertAsync(recruiterProfile, true);
+            name = surname = string.Empty;
         }
+        else if (nameParts.Length == 1)
+        {
+            name = surname = nameParts[0];
+        }
+        else
+        {
+            surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
+            name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
+        }
+
+        var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
+        {
+            Name = name,
+            Surname = surname
+        };
+        var result = await _identityManager.CreateAsync(newUser, input.Password);
+        if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+
+        //gắn role canđiate
+        var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
+               if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+               result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+               if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+
+        // cập nhật tạo bản ghi vào canđiate profile
+        var candidateProfile = new CandidateProfile
+        {
+            UserId = newUser.Id,
+            Email = newUser.Email,
+            Status = true
+        };
+        await _candidateProfileRepository.InsertAsync(candidateProfile);
+
+        await CurrentUnitOfWork.SaveChangesAsync();
+    }
+
+
+        [UnitOfWork]
+  public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+  {
+      if (await _identityManager.FindByEmailAsync(input.Email) != null)
+          throw new UserFriendlyException("Email already exist");
+
+      //check ma so thue
+
+      var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+      newUser.Name = input.Name;
+      newUser.SetPhoneNumber(input.PhoneNumber,false);
+      var result = await _identityManager.CreateAsync(newUser, input.Password);
+      if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+      //gắn role recruiter 
+      var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
+      if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+      result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+      if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+
+      //tạo công ty
+      var company = new Company
+      {
+          CompanyName = input.CompanyName,
+          TaxCode = input.TaxCode,
+      };
+      await _companyRepository.InsertAsync(company);
+      await CurrentUnitOfWork.SaveChangesAsync();  // lay id som
+
+      // cập nhật tạo bản ghi vào canđiate profile
+      var recruiterProfile = new RecruiterProfile
+      {
+          UserId = newUser.Id,
+          Status = true,
+          Email = input.Email,
+          RecruiterLevel = Constants.JobConstant.RecruiterLevel.Unverified,
+          IsLead = true,
+          CompanyId = company.Id,
+      };
+      await _recruiterRepository.InsertAsync(recruiterProfile, true);
+  }
 
         // API chung cho reset password (có thể dùng cho recruiter hoặc các role khác)
         public async Task ResetPasswordAsync(ResetPasswordDto input)

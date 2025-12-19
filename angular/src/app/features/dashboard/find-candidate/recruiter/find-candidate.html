@@ -1,6 +1,6 @@
-<div class="find-candidate-container">
+<div class="find-candidate-container" [class.sidebar-expanded]="sidebarExpanded">
   <!-- Breadcrumb -->
-  <div class="breadcrumb-box">
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
       <span class="breadcrumb-item active">Tìm kiếm ứng viên</span>
     </div>
@@ -76,39 +76,6 @@
             placeholder="Nhập địa điểm">
         </div>
 
-        <!-- CV Classification -->
-        <div class="filter-field">
-          <label class="filter-label">Phân loại CV</label>
-          <div class="radio-group">
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="all"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Tất cả</span>
-            </label>
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="unseen"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Chưa xem</span>
-            </label>
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="seen"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Đã xem</span>
-            </label>
-          </div>
-        </div>
       </div>
 
       <!-- Search Button -->
@@ -156,15 +123,7 @@
                 (change)="onDisplayPriorityChange()">
               <span>Có kinh nghiệm</span>
             </label>
-            <label class="priority-radio-item">
-              <input 
-                type="radio" 
-                name="displayPriority"
-                value="suitable"
-                [(ngModel)]="displayPriority"
-                (change)="onDisplayPriorityChange()">
-              <span>Ứng viên phù hợp</span>
-            </label>
+            <!-- Đã bỏ lựa chọn 'Ứng viên phù hợp' theo yêu cầu -->
           </div>
         </div>
       </div>
