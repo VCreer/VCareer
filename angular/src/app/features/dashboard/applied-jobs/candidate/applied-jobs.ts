@@ -8,11 +8,13 @@ import { TranslationService } from '../../../../core/services/translation.servic
 import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
 import type { ApplicationDto, GetApplicationListDto } from '../../../../proxy/dto/applications/models';
 import type { ProfileDto } from '../../../../proxy/dto/profile/models';
+import { ProfileService } from '../../../../proxy/profile/profile.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
 import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
+import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 
 interface AppliedJob {
   id: string;
@@ -30,7 +32,7 @@ interface AppliedJob {
 @Component({
   selector: 'app-applied-jobs',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, ToastNotificationComponent, ProfilePictureEditModal],
+  imports: [CommonModule, FormsModule, ButtonComponent, ToastNotificationComponent, ProfilePictureEditModal, EnableJobSearchModalComponent],
   templateUrl: './applied-jobs.html',
   styleUrls: ['./applied-jobs.scss']
 })
@@ -73,6 +75,7 @@ export class AppliedJobsComponent implements OnInit {
   allowRecruiterSearch: boolean = true;
   showProfilePictureModal: boolean = false;
   isLoadingProfile: boolean = false;
+  showEnableJobSearchModal: boolean = false;
 
   // Toast
   showToast: boolean = false;
@@ -85,12 +88,19 @@ export class AppliedJobsComponent implements OnInit {
     private applicationService: ApplicationService,
     private http: HttpClient,
     private authStateService: AuthStateService,
-    private authFacadeService: AuthFacadeService
+    private authFacadeService: AuthFacadeService,
+    private profileService: ProfileService
   ) {}
 
   ngOnInit(): void {
     this.loadAppliedJobs();
     this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   translate(key: string): string {
@@ -260,20 +270,66 @@ export class AppliedJobsComponent implements OnInit {
 
   onJobSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.jobSearchEnabled = target.checked;
-    const message = this.jobSearchEnabled 
-      ? 'Đã bật tìm việc thành công' 
-      : 'Đã tắt tìm việc thành công';
-    this.showToastMessage(message, 'success');
+    if (target.checked) {
+      // Hiển thị modal chọn CV trước khi bật tìm việc
+      this.showEnableJobSearchModal = true;
+      target.checked = false;
+      this.jobSearchEnabled = false;
+    } else {
+      // Tắt tìm việc trực tiếp
+      this.profileService.updateJobStatus(false).subscribe({
+        next: () => {
+          this.jobSearchEnabled = false;
+          localStorage.setItem('vcareer_job_search_enabled', 'false');
+          this.showToastMessage('Đã tắt tìm việc thành công', 'success');
+        },
+        error: () => {
+          target.checked = true;
+          this.jobSearchEnabled = true;
+          this.showToastMessage('Không thể tắt tìm việc. Vui lòng thử lại.', 'error');
+        }
+      });
+    }
   }
 
   onAllowRecruiterSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
-    const message = this.allowRecruiterSearch 
-      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
-      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
-    this.showToastMessage(message, 'success');
+    const newValue = target.checked;
+
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch 
+          ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+          : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+        this.showToastMessage(message, 'success');
+      },
+      error: (error) => {
+        console.error('Error updating profile visibility:', error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showToastMessage('Không thể cập nhật cài đặt. Vui lòng thử lại.', 'error');
+      }
+    });
+  }
+
+  onCloseEnableJobSearchModal(): void {
+    this.showEnableJobSearchModal = false;
+  }
+
+  onEnableJobSearch(selectedCvIds: string[]): void {
+    this.profileService.updateJobStatus(true).subscribe({
+      next: () => {
+        this.jobSearchEnabled = true;
+        localStorage.setItem('vcareer_job_search_enabled', 'true');
+        this.showToastMessage('Đã bật tìm việc thành công!', 'success');
+        this.showEnableJobSearchModal = false;
+      },
+      error: () => {
+        this.showToastMessage('Không thể bật tìm việc. Vui lòng thử lại.', 'error');
+      }
+    });
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
@@ -369,6 +425,12 @@ export class AppliedJobsComponent implements OnInit {
           address: response.location || response.address || '',
           location: response.location || ''
         };
+
+        // Đồng bộ trạng thái "Cho phép NTD tìm kiếm hồ sơ" từ ProfileVisibility
+        const anyResponse: any = response as any;
+        if (anyResponse.profileVisibility !== undefined && anyResponse.profileVisibility !== null) {
+          this.allowRecruiterSearch = anyResponse.profileVisibility;
+        }
 
         this.isLoadingProfile = false;
       },

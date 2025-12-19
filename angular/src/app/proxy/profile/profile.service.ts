@@ -69,6 +69,14 @@ export class ProfileService {
       body: isVisible,
     },
     { apiName: this.apiName,...config });
+
+  updateJobStatus = (isSeekingJob: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'PUT',
+      url: '/api/profile/job-status',
+      body: isSeekingJob,
+    },
+    { apiName: this.apiName,...config });
   
 
   verifyEmailNumber = (input: VerifyEmailNumberDto, config?: Partial<Rest.Config>) =>

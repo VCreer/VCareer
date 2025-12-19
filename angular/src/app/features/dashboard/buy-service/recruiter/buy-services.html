@@ -33,100 +33,7 @@
       </div>
     </div>
 
-    <!-- Section 1: TOP JOBS TRIAL -->
-    <section class="service-section">
-      <h2 class="section-title">TOP JOBS TRIAL | ĐĂNG TIN TUYỂN DỤNG</h2>
-      <p class="section-description">
-        Trải nghiệm cộng hưởng sức mạnh công nghệ tạo ra hiệu quả đột phá cho tin tuyển dụng của Doanh nghiệp với chi phí tối ưu
-      </p>
-      <p class="section-warning">
-        Nhà tuyển dụng sẽ chỉ được mua và kích hoạt duy nhất 1 gói Top Job Trial
-      </p>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="loading-container">
-        <div class="spinner"></div>
-        <p>Đang tải danh sách dịch vụ...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoading && trialPackages.length === 0 && regularPackages.length === 0" class="empty-state">
-        <i class="fa fa-inbox"></i>
-        <p>Hiện tại không có dịch vụ nào khả dụng.</p>
-      </div>
-
-      <div class="service-cards" *ngIf="!isLoading && trialPackages.length > 0">
-        <div *ngFor="let pkg of trialPackages" class="service-card" (click)="onViewDetail(pkg.id!)">
-          <div class="card-header">
-            <h3 class="card-title">{{ pkg.title }}</h3>
-            <span *ngIf="pkg.currentPrice < pkg.originalPrice" class="hot-sale-badge">
-              <i class="fa fa-fire"></i> SALE
-            </span>
-          </div>
-          <div class="card-body">
-            <div class="card-price">
-              <!-- Case 1: Giá mới THẤP HƠN giá gốc (có giảm giá) -->
-              <div *ngIf="pkg.currentPrice < pkg.originalPrice" class="price-with-discount">
-                <div class="price-row">
-                  <span class="original-price-strike">{{ formatPrice(pkg.originalPrice) }} VND</span>
-                  <span class="discount-badge-hot">
-                    -{{ getDiscountPercent(pkg.originalPrice, pkg.currentPrice) }}%
-                  </span>
-                </div>
-                <div class="current-price-main">
-                  <span class="price-amount">{{ pkg.formattedPrice }}</span>
-                  <span class="price-currency">VND*</span>
-                </div>
-              </div>
-              
-              <!-- Case 2: Giá mới BẰNG HOẶC CAO HƠN giá gốc (không giảm giá) -->
-              <div *ngIf="pkg.currentPrice >= pkg.originalPrice" class="price-normal">
-                <div class="current-price-main">
-                  <span class="price-amount">{{ pkg.formattedPrice }}</span>
-                  <span class="price-currency">VND*</span>
-                </div>
-              </div>
-            </div>
-            
-            <p class="card-description">{{ pkg.description }}</p>
-            
-            <!-- Additional Info -->
-            <div class="card-info" *ngIf="pkg.isLimited || pkg.isBuyLimited || pkg.isLifeTime || pkg.dayDuration">
-              <div class="info-badge info-duration" *ngIf="pkg.isLifeTime">
-                <i class="fa fa-infinity"></i>
-                <span>Vĩnh viễn</span>
-              </div>
-              <div class="info-badge info-duration" *ngIf="!pkg.isLifeTime && pkg.dayDuration">
-                <i class="fa fa-clock"></i>
-                <span>{{ pkg.dayDuration }} ngày</span>
-              </div>
-              <div class="info-badge info-stock" *ngIf="pkg.isLimited">
-                <i class="fa fa-box"></i>
-                <span>Còn {{ pkg.totalLimitpackage || 0 }} gói</span>
-              </div>
-              <div class="info-badge info-limit" *ngIf="pkg.isBuyLimited">
-                <i class="fa fa-user-check"></i>
-                <span>Tối đa {{ pkg.totalBuyEachUser }}/người</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-footer" (click)="$event.stopPropagation()">
-            <button class="btn-add-cart" (click)="onAddToCart(pkg.id!)" [disabled]="!pkg.isActive">
-              <i class="fa fa-shopping-cart"></i>
-              <span>Thêm vào giỏ</span>
-            </button>
-            <button class="btn-buy-now" (click)="onBuyNow(pkg.id!)" [disabled]="!pkg.isActive">
-              <span>Mua ngay</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty Trial Packages -->
-      <div *ngIf="!isLoading && trialPackages.length === 0 && regularPackages.length > 0" class="empty-section">
-        <p>Hiện không có gói Trial khả dụng</p>
-      </div>
-    </section>
+    <!-- Section 1 (TOP JOBS TRIAL) đã được yêu cầu bỏ, chỉ giữ lại TOP JOBS -->
 
     <!-- Section 2: TOP JOBS -->
     <section class="service-section">
@@ -136,7 +43,7 @@
       </p>
 
       <div class="service-cards" *ngIf="!isLoading && regularPackages.length > 0">
-        <div *ngFor="let pkg of regularPackages" class="service-card" [class.has-vip]="pkg.isVip" (click)="onViewDetail(pkg.id!)">
+        <div *ngFor="let pkg of pagedRegularPackages" class="service-card" [class.has-vip]="pkg.isVip" (click)="onViewDetail(pkg.id!)">
           <div class="card-header">
             <h3 class="card-title">{{ pkg.title }}</h3>
             <div class="header-badges">
@@ -208,8 +115,30 @@
       </div>
 
       <!-- Empty Regular Packages -->
-      <div *ngIf="!isLoading && regularPackages.length === 0 && trialPackages.length > 0" class="empty-section">
-        <p>Hiện không có gói thường khả dụng</p>
+      <div *ngIf="!isLoading && regularPackages.length === 0" class="empty-section">
+        <p>Hiện không có dịch vụ nào khả dụng.</p>
+      </div>
+
+      <!-- Pagination for TOP JOBS -->
+      <div class="pagination" *ngIf="!isLoading && regularPackages.length > regularPageSize">
+        <button
+          class="page-btn"
+          (click)="goToPreviousRegularPage()"
+          [disabled]="regularCurrentPage === 1"
+        >
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <span class="page-info">
+          <span class="current-page">{{ regularCurrentPage }}</span>
+          <span class="total-pages"> / {{ regularTotalPages }} trang</span>
+        </span>
+        <button
+          class="page-btn"
+          (click)="goToNextRegularPage()"
+          [disabled]="regularCurrentPage === regularTotalPages"
+        >
+          <i class="fa fa-chevron-right"></i>
+        </button>
       </div>
     </section>
   </div>

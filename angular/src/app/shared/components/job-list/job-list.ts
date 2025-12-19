@@ -42,7 +42,8 @@ export class JobListComponent implements OnInit, OnChanges {
 
   selectedLanguage: string = 'vi';
   currentPage = 1;
-  jobsPerPage = 8;
+  // Số job hiển thị mỗi trang trên màn /job
+  jobsPerPage = 10;
   totalPages = 1; // Will be calculated based on total jobs
 
   // Toast notification properties
@@ -79,21 +80,33 @@ export class JobListComponent implements OnInit, OnChanges {
         this.syncSavedStatus();
       }
     });
-    // Initialize filteredJobs with all jobs
-    this.updateFilteredJobs();
+    // Initialize filteredJobs với jobs hiện có
+    // Nếu provinces chưa có, sẽ remap lại khi provinces load xong qua ngOnChanges
+    if (this.jobs && this.jobs.length > 0) {
+      this.updateFilteredJobs();
+    }
   }
 
   /**
    * ✅ Update filteredJobs khi @Input() jobs thay đổi
    */
   ngOnChanges(changes: SimpleChanges) {
+    // Khi danh sách job thay đổi → remap lại filteredJobs
     if (changes['jobs'] && this.jobs) {
-      console.log('\n🔄 JobListComponent: Received new jobs from parent');
-      console.log('   📦 Jobs count:', this.jobs.length);
-      console.log('   📊 Total count:', this.totalCount);
-      console.log('   📄 Jobs data:', this.jobs);
-
       this.updateFilteredJobs();
+    }
+    
+    // Khi provinces thay đổi từ rỗng sang có dữ liệu → remap lại filteredJobs
+    if (changes['provinces']) {
+      const prevProvinces = changes['provinces'].previousValue || [];
+      const currProvinces = changes['provinces'].currentValue || [];
+      const wasEmpty = prevProvinces.length === 0;
+      const nowHasData = currProvinces.length > 0;
+      
+      // Nếu provinces chuyển từ rỗng sang có dữ liệu → remap lại
+      if (wasEmpty && nowHasData && this.jobs && this.jobs.length > 0) {
+        this.updateFilteredJobs();
+      }
     }
   }
 
@@ -101,17 +114,56 @@ export class JobListComponent implements OnInit, OnChanges {
    * ✅ Helper: Update filteredJobs và recalculate pagination
    */
   private updateFilteredJobs() {
+    // Chỉ map khi có jobs và provinces đã sẵn sàng (hoặc jobs rỗng)
+    if (!this.jobs || this.jobs.length === 0) {
+      this.filteredJobs = [];
+      this.calculateTotalPages();
+      return;
+    }
+
+    // Nếu có jobs nhưng provinces chưa load xong, đợi provinces load
+    // (provinces có thể là mảng rỗng nếu API lỗi, nhưng phải đợi ít nhất 1 lần gọi API)
+    if (this.provinces === undefined || this.provinces === null) {
+      return; // Đợi provinces load xong, ngOnChanges sẽ gọi lại
+    }
+
     // Map JobViewDto từ API sang format mà template expect
+    // Ngay cả khi provinces rỗng, vẫn map để hiển thị jobs (provinceName sẽ là '')
     this.filteredJobs = this.jobs.map(job => this.mapJobToTemplateFormat(job));
 
     // Đồng bộ trạng thái đã lưu từ backend
     this.syncSavedStatus();
 
     this.calculateTotalPages();
+    
+    // Nếu provinces rỗng nhưng có jobs, thử load lại provinces một lần nữa
+    if (this.provinces.length === 0 && this.jobs.length > 0) {
+      this.tryReloadProvinces();
+    }
+  }
 
-    console.log('✅ JobListComponent: filteredJobs updated');
-    console.log('   📄 Filtered count:', this.filteredJobs.length);
-    console.log('   📑 Total pages:', this.totalPages);
+  /**
+   * Thử load lại provinces nếu chưa có
+   */
+  private tryReloadProvinces(): void {
+    // Chỉ thử một lần để tránh loop vô hạn
+    if ((this as any)._provincesReloadAttempted) {
+      return;
+    }
+    (this as any)._provincesReloadAttempted = true;
+
+    this.geoService.getProvinces().subscribe({
+      next: (provinces) => {
+        if (provinces && provinces.length > 0) {
+          this.provinces = provinces;
+          // Remap lại jobs với provinces mới
+          this.updateFilteredJobs();
+        }
+      },
+      error: () => {
+        // Silent fail
+      }
+    });
   }
 
   /**
@@ -126,8 +178,8 @@ export class JobListComponent implements OnInit, OnChanges {
       company: job.companyName || 'N/A',
       // Map salary
       salaryText: this.formatSalary(job),
-      // Map province name (cần lookup từ provinceCode)
-      provinceName: this.getProvinceName(job.provinceCode) || 'N/A',
+      // Map province name (cần lookup từ provinceCode). Nếu không tìm được, template sẽ fallback 'N/A'.
+      provinceName: this.getProvinceName(job.provinceCode),
       // Map experience
       experienceText: this.formatExperience(job.experience) || 'N/A',
     };
@@ -151,26 +203,27 @@ export class JobListComponent implements OnInit, OnChanges {
           isSaved: savedIds.has(j.id)
         }));
       },
-      error: err => {
-        console.error('Error syncing saved status in JobList:', err);
+      error: () => {
+        // Silent fail: nếu lỗi khi đồng bộ trạng thái đã lưu thì bỏ qua
       }
     });
   }
 
   /**
    * Format salary từ JobViewDto
+   * Ưu tiên hiển thị theo salaryMin/salaryMax; chỉ trả về "Thỏa thuận" khi không có số.
    */
   private formatSalary(job: any): string {
-    if (job.salaryDeal) {
-      return 'Thỏa thuận';
-    }
     if (job.salaryMin && job.salaryMax) {
       return `${this.formatNumber(job.salaryMin)} - ${this.formatNumber(job.salaryMax)} VNĐ`;
     }
     if (job.salaryMin) {
       return `Từ ${this.formatNumber(job.salaryMin)} VNĐ`;
     }
-    return 'N/A';
+    if (job.salaryMax) {
+      return `Lên tới ${this.formatNumber(job.salaryMax)} VNĐ`;
+    }
+    return 'Thỏa thuận';
   }
 
   /**
@@ -208,16 +261,25 @@ export class JobListComponent implements OnInit, OnChanges {
    * Get province name từ provinceCode
    */
   private getProvinceName(provinceCode: number): string {
-    if (!provinceCode) return '';
-    
-    // Nếu có provinces từ input, lookup từ đó
-    if (this.provinces && this.provinces.length > 0) {
-      const province = this.provinces.find((p: any) => p.code === provinceCode);
-      if (province) return province.name || '';
+    if (provinceCode === null || provinceCode === undefined) {
+      return '';
     }
-    
-    // Fallback: return code
-    return `Mã: ${provinceCode}`;
+
+    const codeNum = Number(provinceCode);
+    if (!codeNum || isNaN(codeNum)) {
+      return '';
+    }
+
+    // Nếu có provinces từ input, lookup từ đó (so sánh theo Number để tránh lệch kiểu string/number)
+    if (this.provinces && this.provinces.length > 0) {
+      const province = this.provinces.find((p: any) => Number(p.code) === codeNum);
+      if (province) {
+        return (province.name as string) || '';
+      }
+    }
+
+    // Fallback: không hiển thị mã, chỉ để trống (template sẽ rơi vào 'N/A' khi thật sự không tìm được)
+    return '';
   }
 
   calculateTotalPages() {
@@ -434,13 +496,11 @@ export class JobListComponent implements OnInit, OnChanges {
   }
 
   onQuickView(job: any) {
-    console.log('Quick view job:', job);
     // Emit quick view event
     this.quickView.emit(job);
   }
 
   hideJob(job: any) {
-    console.log('Hide job:', job);
     // Handle hide job logic - remove job from both arrays
     const indexInJobs = this.jobs.findIndex(j => j.id === job.id);
     const indexInFiltered = this.filteredJobs.findIndex(j => j.id === job.id);

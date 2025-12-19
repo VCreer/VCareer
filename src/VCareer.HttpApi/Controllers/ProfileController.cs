@@ -151,6 +151,19 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Updates the job seeking status (Status) for the current candidate user
+        /// </summary>
+        /// <param name="isSeekingJob">true if candidate is actively seeking a job, false otherwise</param>
+        /// <returns>No content</returns>
+        [HttpPut("job-status")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> UpdateJobStatusAsync([FromBody] bool isSeekingJob)
+        {
+            await _profileAppService.UpdateJobStatusAsync(isSeekingJob);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Soft deletes the current user's account
         /// </summary>
         /// <returns>No content</returns>

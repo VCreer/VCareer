@@ -1,7 +1,9 @@
 <div class="job-listings-section">
   <div class="section-header">
     <h2>{{ translate('home.recent_jobs') }}</h2>
-    <a href="#" class="view-all-link">{{ translate('common.view_all') }}</a>
+    <a href="#" class="view-all-link" (click)="onViewAllClick($event)">
+      {{ translate('common.view_all') }}
+    </a>
   </div>
   
   <!-- Filter Bar (chỉ hiển thị nếu cần) -->

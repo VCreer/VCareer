@@ -35,31 +35,12 @@
             <span class="btn-text">{{ translate('cv_management.edit') }}</span>
           </button>
           <div class="more-menu-container">
-            <button class="action-btn more-btn" (click)="toggleMoreMenu(cv.id)">
+            <button class="action-btn more-btn" (click)="toggleMoreMenu(cv.id); $event.stopPropagation()">
               <i class="fa fa-ellipsis-h btn-icon"></i>
             </button>
             
-            <!-- More Menu Overlay -->
-            <div class="more-menu-overlay" [class.show]="showMoreMenu === cv.id" (click)="toggleMoreMenu(cv.id)"></div>
-            
             <!-- More Menu -->
             <div class="more-menu" [class.show]="showMoreMenu === cv.id" (click)="$event.stopPropagation()">
-              <div class="menu-item" (click)="onPushToTop(cv.id)">
-                <i class="fa fa-arrow-up menu-icon"></i>
-                <span>{{ translate('cv_management.push_to_top') }}</span>
-              </div>
-              <div class="menu-item" (click)="onCopyLink(cv.id)">
-                <i class="fa fa-link menu-icon"></i>
-                <span>{{ translate('cv_management.copy_link') }}</span>
-              </div>
-              <div class="menu-item" (click)="onShareFacebook(cv.id)">
-                <i class="fa fa-facebook menu-icon"></i>
-                <span>{{ translate('cv_management.share_facebook') }}</span>
-              </div>
-              <div class="menu-item" (click)="onDuplicateCv(cv.id)">
-                <i class="fa fa-copy menu-icon"></i>
-                <span>{{ translate('cv_management.create_copy') }}</span>
-              </div>
               <div class="menu-item" (click)="onRenameCv(cv.id)">
                 <i class="fa fa-edit menu-icon"></i>
                 <span>{{ translate('cv_management.rename') }}</span>

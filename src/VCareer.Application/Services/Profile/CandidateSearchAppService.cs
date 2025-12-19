@@ -85,8 +85,9 @@ namespace VCareer.Services.Profile
             // Include User để lấy thông tin Name, Email, PhoneNumber
             queryable = queryable.Include(c => c.User);
 
-            // Chỉ lấy các candidate có Status = true và ProfileVisibility = true
-            queryable = queryable.Where(c => c.Status && c.ProfileVisibility);
+            // Chỉ lấy các candidate cho phép NTD tìm kiếm hồ sơ (ProfileVisibility = true)
+            // Status sẽ được dùng để ưu tiên/sắp xếp và hiển thị badge "Đang tìm việc"
+            queryable = queryable.Where(c => c.ProfileVisibility);
             
             Logger.LogInformation("After Status && ProfileVisibility filter. Total candidates: {Count}", 
                 await AsyncExecuter.CountAsync(queryable));
@@ -347,28 +348,43 @@ namespace VCareer.Services.Profile
             // Xử lý kết quả cuối cùng
             List<CandidateProfile> candidates;
             int totalCount;
-            var sorting = !string.IsNullOrWhiteSpace(input.Sorting)
+
+            // Luôn ưu tiên ứng viên đang bật tìm việc (Status = true) lên trước
+            // Nếu FE truyền sorting riêng thì vẫn tự động thêm Status DESC vào đầu
+            var baseSorting = !string.IsNullOrWhiteSpace(input.Sorting)
                 ? input.Sorting
                 : GetDefaultSorting(input.DisplayPriority);
+
+            var sorting = baseSorting.Contains("Status", StringComparison.OrdinalIgnoreCase)
+                ? baseSorting
+                : $"Status DESC, {baseSorting}";
             
             if (candidatesInMemory != null)
             {
                 // Đã filter trong memory, chỉ cần apply sorting và pagination
-                // Sort trong memory
+                // Luôn ưu tiên Status = true (đang tìm việc) lên đầu, sau đó mới sort theo tiêu chí khác
+                IOrderedEnumerable<CandidateProfile> orderedCandidates;
+                
+                // Bước 1: Sort theo Status trước (Status = true lên đầu)
+                orderedCandidates = candidatesInMemory.OrderByDescending(c => c.Status);
+                
+                // Bước 2: Sau đó sort theo tiêu chí khác
                 if (sorting.Contains("DESC"))
                 {
                     if (sorting.Contains("LastModificationTime"))
-                        candidatesInMemory = candidatesInMemory.OrderByDescending(c => c.LastModificationTime ?? c.CreationTime).ToList();
+                        orderedCandidates = orderedCandidates.ThenByDescending(c => c.LastModificationTime ?? c.CreationTime);
                     else if (sorting.Contains("Experience"))
-                        candidatesInMemory = candidatesInMemory.OrderByDescending(c => c.Experience ?? 0).ToList();
+                        orderedCandidates = orderedCandidates.ThenByDescending(c => c.Experience ?? 0);
                 }
                 else
                 {
                     if (sorting.Contains("LastModificationTime"))
-                        candidatesInMemory = candidatesInMemory.OrderBy(c => c.LastModificationTime ?? c.CreationTime).ToList();
+                        orderedCandidates = orderedCandidates.ThenBy(c => c.LastModificationTime ?? c.CreationTime);
                     else if (sorting.Contains("Experience"))
-                        candidatesInMemory = candidatesInMemory.OrderBy(c => c.Experience ?? 0).ToList();
+                        orderedCandidates = orderedCandidates.ThenBy(c => c.Experience ?? 0);
                 }
+                
+                candidatesInMemory = orderedCandidates.ToList();
                 
                 totalCount = candidatesInMemory.Count;
                 candidates = candidatesInMemory.Skip(skipCount).Take(maxResultCount).ToList();
@@ -730,13 +746,14 @@ namespace VCareer.Services.Profile
 
         private string GetDefaultSorting(string? displayPriority)
         {
+            // Luôn ưu tiên Status = true (đang tìm việc) lên đầu, sau đó mới sort theo tiêu chí khác
             return displayPriority switch
             {
-                "newest" => "LastModificationTime DESC, CreationTime DESC",
-                "seeking" => "Status DESC, ProfileVisibility DESC, LastModificationTime DESC",
-                "experienced" => "Experience DESC, LastModificationTime DESC",
-                "suitable" => "LastModificationTime DESC, Experience DESC",
-                _ => "LastModificationTime DESC, CreationTime DESC"
+                "newest" => "Status DESC, LastModificationTime DESC, CreationTime DESC",
+                "seeking" => "Status DESC, LastModificationTime DESC",
+                "experienced" => "Status DESC, Experience DESC, LastModificationTime DESC",
+                "suitable" => "Status DESC, LastModificationTime DESC, Experience DESC",
+                _ => "Status DESC, LastModificationTime DESC, CreationTime DESC"
             };
         }
 
@@ -793,7 +810,7 @@ namespace VCareer.Services.Profile
                 Status = candidate.Status,
                 ViewCount = 0,
                 ContactOpenCount = 0,
-                IsSeekingJob = candidate.Status && candidate.ProfileVisibility,
+                IsSeekingJob = candidate.Status,
                 LastUpdatedTime = candidate.LastModificationTime ?? candidate.CreationTime,
                 ExperienceDetails = null,
                 Education = null

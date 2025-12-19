@@ -76,7 +76,7 @@
   <!-- Empty state hiển thị ở màn job-page; component không hiển thị gì khi không có job -->
 
   <!-- Pagination -->
-  <!-- <div class="pagination">
+  <div class="pagination" *ngIf="totalPages > 1">
     <button class="page-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
       <svg
         width="16"
@@ -85,8 +85,7 @@
         fill="none"
         stroke="currentColor"
         stroke-width="2"
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      >
         <polyline points="15,18 9,12 15,6"></polyline>
       </svg>
     </button>

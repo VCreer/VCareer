@@ -20,8 +20,9 @@ import { CandidateCvService } from '../../../proxy/http-api/controllers/candidat
 import type { CandidateCvDto, GetCandidateCvListDto } from '../../../proxy/cv/models';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
-import { ProfileService } from '../../../proxy/services/profile/profile.service';
+import { ProfileService } from '../../../proxy/profile/profile.service';
 import type { ProfileDto } from '../../../proxy/dto/profile/models';
+import { EnableJobSearchModalComponent } from '../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 import { catchError, of } from 'rxjs';
 
 @Component({
@@ -37,7 +38,8 @@ import { catchError, of } from 'rxjs';
     UploadCvModal,
     DownloadCvModal,
     RenameCvModal,
-    UploadedCvCard
+    UploadedCvCard,
+    EnableJobSearchModalComponent
   ],
   templateUrl: './cv-management.html',
   styleUrls: ['./cv-management.scss']
@@ -60,6 +62,7 @@ export class CvManagementComponent implements OnInit {
   // Toggle settings
   jobSearchEnabled: boolean = false;
   allowRecruiterSearch: boolean = true;
+  showEnableJobSearchModal: boolean = false;
   
   // User info
   currentUser: any = null;
@@ -123,6 +126,12 @@ export class CvManagementComponent implements OnInit {
     
     // Load user info để hiển thị tên
     this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   loadCvs() {
@@ -600,11 +609,48 @@ export class CvManagementComponent implements OnInit {
   // Toggle handlers
   onJobSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.jobSearchEnabled = target.checked;
-    const message = this.jobSearchEnabled 
-      ? 'Đã bật tìm việc thành công' 
-      : 'Đã tắt tìm việc thành công';
-    this.showToastMessage(message, 'success');
+    if (target.checked) {
+      // Hiển thị modal chọn CV trước khi bật tìm việc
+      this.showEnableJobSearchModal = true;
+      // Giữ checkbox ở trạng thái tắt cho đến khi user xác nhận trong modal
+      target.checked = false;
+      this.jobSearchEnabled = false;
+    } else {
+      // Tắt tìm việc trực tiếp
+      this.profileService.updateJobStatus(false).subscribe({
+        next: () => {
+          this.jobSearchEnabled = false;
+          localStorage.setItem('vcareer_job_search_enabled', 'false');
+          this.showToastMessage('Đã tắt tìm việc thành công', 'success');
+        },
+        error: () => {
+          // Nếu lỗi, giữ trạng thái cũ (bật) trên UI
+          target.checked = true;
+          this.jobSearchEnabled = true;
+          this.showToastMessage('Không thể tắt tìm việc. Vui lòng thử lại.', 'error');
+        }
+      });
+    }
+  }
+
+  onCloseEnableJobSearchModal() {
+    this.showEnableJobSearchModal = false;
+  }
+
+  onEnableJobSearch(selectedCvIds: string[]) {
+    // Bật trạng thái tìm việc (Status = true) để recruiter có thể tìm thấy
+    this.profileService.updateJobStatus(true).subscribe({
+      next: () => {
+        this.jobSearchEnabled = true;
+        localStorage.setItem('vcareer_job_search_enabled', 'true');
+        this.showToastMessage('Đã bật tìm việc thành công!', 'success');
+        this.showEnableJobSearchModal = false;
+      },
+      error: () => {
+        this.showToastMessage('Không thể bật tìm việc. Vui lòng thử lại.', 'error');
+        // Giữ modal mở để user có thể thử lại hoặc hủy
+      }
+    });
   }
 
   onAllowRecruiterSearchToggle(event: Event): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService, NotificationDto } from '../../../../core/services/notification.service';
@@ -14,7 +14,7 @@ import { catchError, of } from 'rxjs';
   templateUrl: './notifications.html',
   styleUrls: ['./notifications.scss']
 })
-export class RecruiterNotificationsComponent implements OnInit {
+export class RecruiterNotificationsComponent implements OnInit, OnDestroy {
   notifications: NotificationDto[] = [];
   isLoading = false;
   totalCount = 0;
@@ -31,6 +31,13 @@ export class RecruiterNotificationsComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
+  // Responsive & sidebar
+  sidebarExpanded = false;
+  sidebarWidth = 72;
+  private sidebarCheckInterval?: any;
+  private resizeListener?: () => void;
+
+ 
   constructor(
     private notificationService: NotificationService,
     private router: Router
@@ -38,6 +45,27 @@ export class RecruiterNotificationsComponent implements OnInit {
 
   ngOnInit() {
     this.loadNotifications();
+
+    // Theo dõi trạng thái sidebar để tránh đè nội dung
+    this.checkSidebarState();
+    this.sidebarCheckInterval = setInterval(() => {
+      this.checkSidebarState();
+    }, 100);
+
+    // Lắng nghe thay đổi kích thước cửa sổ
+    this.resizeListener = () => {
+      this.checkSidebarState();
+    };
+    window.addEventListener('resize', this.resizeListener);
+  }
+
+  ngOnDestroy(): void {
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
   }
 
   loadNotifications() {
@@ -78,6 +106,52 @@ export class RecruiterNotificationsComponent implements OnInit {
         this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         this.isLoading = false;
       });
+  }
+
+  // ========== Layout helpers ==========
+  /**
+   * Đo chiều rộng sidebar thực tế để tính padding-left tránh đè nội dung.
+   */
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement | null;
+    if (sidebar) {
+      const rect = sidebar.getBoundingClientRect();
+      this.sidebarWidth = rect.width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || rect.width > 100;
+    } else {
+      this.sidebarWidth = 0;
+      this.sidebarExpanded = false;
+    }
+  }
+
+  /**
+   * Padding-left động cho toàn trang, tránh bị sidebar che.
+   */
+  getContentPaddingLeft(): string {
+    if (window.innerWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  /**
+   * Tính max-width động cho container theo viewport và sidebar,
+   * đảm bảo responsive trên mọi kích thước.
+   */
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+
+    if (viewportWidth <= 768) {
+      // Mobile: full width + padding nhỏ
+      return 'calc(100vw - 32px)';
+    }
+
+    const sidePadding = 48; // 24px mỗi bên
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+
+    // Giới hạn max-width để không quá rộng
+    const maxContentWidth = Math.min(1200, Math.max(800, availableWidth));
+    return `${maxContentWidth}px`;
   }
 
   onFilterChange(filter: 'all' | 'read' | 'unread') {

@@ -16,7 +16,9 @@
           </div>
           <div class="job-detail__info-item-content">
             <div class="job-detail__info-item-title">Mức lương</div>
-            <div class="job-detail__info-item-value">{{ getSalaryLabel() }}</div>
+            <div class="job-detail__info-item-value">
+              {{ getSalaryLabel() || jobData.salary }}
+            </div>
           </div>
         </div>
         <div class="job-detail__info-item" *ngIf="jobData.location">
@@ -25,7 +27,9 @@
           </div>
           <div class="job-detail__info-item-content">
             <div class="job-detail__info-item-title">Địa điểm</div>
-            <div class="job-detail__info-item-value">{{ getLocationLabel() }}</div>
+            <div class="job-detail__info-item-value">
+              {{ getLocationLabel() || jobData.location }}
+            </div>
           </div>
         </div>
         <div class="job-detail__info-item" *ngIf="jobData.experience">
@@ -86,7 +90,13 @@
       <!-- Work Location Section -->
       <div class="job-detail__info--section" *ngIf="jobData.workLocation">
         <h3 class="section-title">Địa điểm làm việc</h3>
-        <p>{{ jobData.workLocation }}</p>
+        <div [innerHTML]="jobData.workLocation"></div>
+      </div>
+
+      <!-- Work Time Section -->
+      <div class="job-detail__info--section" *ngIf="jobData.workTime">
+        <h3 class="section-title">Thời gian làm việc</h3>
+        <div [innerHTML]="jobData.workTime"></div>
       </div>
 
       <!-- Application Method Section -->
@@ -171,7 +181,7 @@
     <div class="job-detail__body-right--item job-detail__body-right--box-category" *ngIf="jobData.location">
       <h3>Khu vực</h3>
       <div class="category-tags">
-        <span class="tag">{{ getLocationLabel() }}</span>
+        <span class="tag">{{ getLocationLabel() || jobData.location }}</span>
       </div>
     </div>
   </div>
