@@ -18,7 +18,7 @@ export class LocationSelectorComponent implements OnInit {
   constructor(private geoService: GeoService) {}
 
   ngOnInit() {
-    this.geoService.getProvinces().subscribe((data) => {
+    this.geoService.getProvinces().subscribe(data => {
       this.provinces = data || [];
     });
   }
@@ -30,7 +30,7 @@ export class LocationSelectorComponent implements OnInit {
       return;
     }
 
-    this.geoService.getDistrictsByProvince(this.selectedProvince).subscribe((data) => {
+    this.geoService.getDistrictsByProvince(this.selectedProvince).subscribe(data => {
       this.districts = data;
       this.wards = [];
       this.selectedDistrict = undefined;
@@ -44,10 +44,9 @@ export class LocationSelectorComponent implements OnInit {
       return;
     }
 
-    this.geoService.getWardsByDistrict(this.selectedDistrict).subscribe((data) => {
+    this.geoService.getWardsByDistrict(this.selectedDistrict).subscribe(data => {
       this.wards = data;
       this.selectedWard = undefined;
     });
   }
-  
 }
