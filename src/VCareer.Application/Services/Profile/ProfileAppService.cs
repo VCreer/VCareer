@@ -23,6 +23,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace VCareer.Services.Profile
 {
@@ -36,6 +37,7 @@ namespace VCareer.Services.Profile
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
         private readonly IEmailSender _emailSender;
         private readonly CandidateIndexService _candidateIndexService;
+        private readonly IRepository<Volo.Abp.Identity.IdentityUser, Guid> _identityUserRepository;
         private static readonly Dictionary<string, EmailOtpData> _emailOtpStore = new Dictionary<string, EmailOtpData>();
 
         private class EmailOtpData
@@ -52,7 +54,8 @@ namespace VCareer.Services.Profile
             IRepository<EmployeeProfile, Guid> employeeProfileRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
             IEmailSender emailSender,
-            CandidateIndexService candidateIndexService)
+            CandidateIndexService candidateIndexService,
+            IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository)
         {
             _userManager = userManager;
             _currentUser = currentUser;
@@ -61,6 +64,7 @@ namespace VCareer.Services.Profile
             _recruiterProfileRepository = recruiterProfileRepository;
             _emailSender = emailSender;
             _candidateIndexService = candidateIndexService;
+            _identityUserRepository = identityUserRepository;
         }
 
         //ádadad
@@ -97,14 +101,15 @@ namespace VCareer.Services.Profile
             // Update PhoneNumber using IdentityUserManager method
             if (!string.IsNullOrEmpty(input.PhoneNumber) && user.PhoneNumber != input.PhoneNumber)
             {
-                // Kiểm tra trùng số điện thoại với user khác
-                var existingUserWithPhone = await _userManager.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.PhoneNumber == input.PhoneNumber);
+                // Kiểm tra trùng số điện thoại với user khác qua repository (store không hỗ trợ IQueryable)
+                var userQueryable = await _identityUserRepository.GetQueryableAsync();
+                var existingUserWithPhone = await userQueryable
+                    .Where(u => u.PhoneNumber == input.PhoneNumber && u.Id != user.Id)
+                    .FirstOrDefaultAsync();
 
-                if (existingUserWithPhone != null && existingUserWithPhone.Id != user.Id)
+                if (existingUserWithPhone != null)
                 {
-                    throw new UserFriendlyException("Số điện thoại này đã được sử dụng cho một tài khoản khác.");
+                    throw new AbpValidationException("Số điện thoại này đã được sử dụng cho một tài khoản khác.");
                 }
 
                 var phoneResult = await _userManager.SetPhoneNumberAsync(user, input.PhoneNumber);
@@ -567,6 +572,39 @@ namespace VCareer.Services.Profile
             }
         }
 
+        /// <summary>
+        /// Updates the job seeking status (Status) for the current candidate user
+        /// </summary>
+        public async Task UpdateJobStatusAsync(bool isSeekingJob)
+        {
+            var userId = _currentUser.GetId();
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy thông tin candidate profile.");
+            }
+
+            candidate.Status = isSeekingJob;
+            await _candidateProfileRepository.UpdateAsync(candidate);
+
+            // Auto-index vào Lucene hoặc xóa khỏi index dựa trên Status & ProfileVisibility
+            try
+            {
+                if (candidate.Status && candidate.ProfileVisibility)
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                else
+                {
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+            }
+        }
 
     }
 }

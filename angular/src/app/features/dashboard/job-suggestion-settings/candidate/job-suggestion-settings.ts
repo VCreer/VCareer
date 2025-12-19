@@ -13,7 +13,7 @@ import { AuthStateService } from '../../../../core/services/auth-Cookiebased/aut
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 import { JobCategoryService } from '../../../../proxy/services/job/job-category.service';
 import { GeoService } from '../../../../proxy/services/geo/geo.service';
-import { ProfileService } from '../../../../proxy/services/profile/profile.service';
+import { ProfileService } from '../../../../proxy/profile/profile.service';
 import type { CategoryTreeDto } from '../../../../proxy/dto/category/models';
 import type { ProvinceDto } from '../../../../proxy/dto/geo-dto/models';
 import type { UpdatePersonalInfoDto, ProfileDto } from '../../../../proxy/dto/profile/models';
@@ -26,7 +26,7 @@ import type { UpdatePersonalInfoDto, ProfileDto } from '../../../../proxy/dto/pr
     FormsModule,
     ButtonComponent,
     ProfileCardComponent,
-     MultiSelectLocationComponent,
+    MultiSelectLocationComponent,
   ],
   templateUrl: './job-suggestion-settings.html',
   styleUrls: ['./job-suggestion-settings.scss'],
@@ -99,6 +99,12 @@ export class JobSuggestionSettingsComponent implements OnInit {
     this.loadLocations();
     // Load profile ngay, nhưng sẽ pre-fill sau khi options đã load
     this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.profileUser.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   resetPreferences(): void {
@@ -271,11 +277,41 @@ export class JobSuggestionSettingsComponent implements OnInit {
   }
 
   onJobSearchToggle(enabled: boolean): void {
-    this.profileUser = { ...this.profileUser, jobSearchEnabled: enabled };
+    // Cập nhật trạng thái tìm việc trực tiếp (không mở modal ở màn này)
+    this.profileService.updateJobStatus(enabled).subscribe({
+      next: () => {
+        this.profileUser = { ...this.profileUser, jobSearchEnabled: enabled };
+        localStorage.setItem('vcareer_job_search_enabled', String(enabled));
+        this.lastSavedMessage = enabled
+          ? 'Đã bật tìm việc thành công!'
+          : 'Đã tắt tìm việc thành công';
+      },
+      error: () => {
+        // Revert UI nếu lỗi
+        this.profileUser = { ...this.profileUser, jobSearchEnabled: !enabled };
+        this.lastSavedMessage = 'Không thể cập nhật trạng thái tìm việc. Vui lòng thử lại.';
+      }
+    });
   }
 
   onRecruiterSearchToggle(enabled: boolean): void {
     this.profileUser = { ...this.profileUser, allowRecruiterSearch: enabled };
+
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(enabled).subscribe({
+      next: () => {
+        const message = enabled
+          ? 'Đã bật cho phép NTD tìm kiếm hồ sơ'
+          : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+        this.lastSavedMessage = message;
+      },
+      error: (error) => {
+        console.error('Error updating profile visibility:', error);
+        // Revert UI nếu lỗi
+        this.profileUser = { ...this.profileUser, allowRecruiterSearch: !enabled };
+        this.lastSavedMessage = 'Không thể cập nhật cài đặt. Vui lòng thử lại.';
+      }
+    });
   }
 
   onUpgradeAccount(): void {

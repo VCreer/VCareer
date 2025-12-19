@@ -82,13 +82,13 @@ namespace VCareer.Services.Subcription
 
                     await _userChildServiceRepository.UpdateAsync(userChildService, true);
                     //đây chính là kích hoạt childservice kiểu đẩy job, các service loại action khác thì thêm vào 
-               if(childService.Target==SubcriptionContance.ServiceTarget.JobPost&&
-                        (childService.Action==ServiceAction.BoostScoreJob||
-                        childService.Action==ServiceAction.TopList)) await ApplyServiceForJobAsync(childService, jobId, userChildService.Id);
+                    if (childService.Target == SubcriptionContance.ServiceTarget.JobPost &&
+                             (childService.Action == ServiceAction.BoostScoreJob ||
+                             childService.Action == ServiceAction.TopList)) await ApplyServiceForJobAsync(childService, jobId, userChildService.Id);
                     continue;
                 }
 
-            
+
                 if (userChildService.Status != ChildServiceStatus.Active) continue;
                 //trường hợp hết số lần dùng 
                 if (userChildService.UsedTime >= userChildService.TotalUsageLimit)
@@ -163,10 +163,18 @@ namespace VCareer.Services.Subcription
         {
             throw new NotImplementedException();
         }
+        public async Task<List<User_ChildServiceViewDto>> GetUserChildServiceByUserSubcriptionIdAsync(Guid userSubcriptionId)
+        {
+            var list = await _user_SubcriptionServicerRepository.FindAsync(x => x.Id == userSubcriptionId);
+            if (list == null) throw new BusinessException("UserSubcriptionService not found");
 
+            var listUserCHildService = await _userChildServiceRepository.GetListAsync(x => x.UserSubcriptionId == userSubcriptionId);
+            if (listUserCHildService == null) return new List<User_ChildServiceViewDto>();
+            return ObjectMapper.Map<List<User_ChildService>, List<User_ChildServiceViewDto>>(listUserCHildService);
+        }
         public Task UpdateUser_ChildServiceAsync(User_ChildServiceUpdateDto dto)
         {
             throw new NotImplementedException();
         }
-        }
+    }
 }

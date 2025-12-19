@@ -13,6 +13,8 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
+import { AuthService } from '../../../../proxy/services/auth/auth.service';
+import { RecruiterRegisterDto } from '../../../../proxy/dto/auth-dto/models';
 
 @Component({
   selector: 'app-recruiter-register',
@@ -33,6 +35,7 @@ export class RecruiterRegisterComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private googleAuthService = inject(GoogleAuthService);
+  private authService = inject(AuthService);
 
   registerForm!: FormGroup;
   isLoading = false;
@@ -84,11 +87,12 @@ export class RecruiterRegisterComponent implements OnInit {
           const apiUrl = `${baseUrl}/api/app/tax-code/validate/${taxCode}`;
           return this.http.get<any>(apiUrl).pipe(
             map(response => {
-              // Nếu code !== "52", nghĩa là mã số thuế tồn tại trong hệ thống
-              if (response.code && response.code !== '52') {
-                return { taxCodeExists: true };
+              // VietQR: code === "52" => Tax invalid (MST không tồn tại)
+              // Logic mới: chỉ chặn khi mã số thuế KHÔNG tồn tại / không hợp lệ.
+              if (response.code && response.code === '52') {
+                return { taxCodeInvalid: true };
               }
-              // Code "52" = "Tax invalid" nghĩa là mã số thuế không tồn tại, cho phép
+              // Các trường hợp còn lại coi như hợp lệ, cho phép đăng ký
               return null;
             }),
             catchError((error) => {
@@ -144,8 +148,8 @@ export class RecruiterRegisterComponent implements OnInit {
       return `${this.getFieldLabel(fieldName)} không đúng định dạng`;
     }
 
-    if (errors['taxCodeExists']) {
-      return 'Mã số thuế đã tồn tại trong hệ thống';
+    if (errors['taxCodeInvalid']) {
+      return 'Mã số thuế không tồn tại hoặc không hợp lệ theo VietQR';
     }
 
     if (errors['passwordMismatch']) {
@@ -201,28 +205,38 @@ export class RecruiterRegisterComponent implements OnInit {
     if (this.registerForm.valid) {
       this.isLoading = true;
       const formData = this.registerForm.value;
-      
+
       const { confirmPassword, ...apiData } = formData;
-      
-      const registerDto = {
-        userName: apiData.username,
-        emailAddress: apiData.email,
+
+      // Map form data sang RecruiterRegisterDto (backend)
+      const registerDto: RecruiterRegisterDto = {
+        email: apiData.email?.trim(),
         password: apiData.password,
-        appName: 'VCareer'
+        name: apiData.fullName?.trim(),
+        phoneNumber: apiData.phone?.trim(),
+        provinceCode: Number(apiData.city),
+        districtCode: Number(apiData.district),
+        companyName: apiData.companyName?.trim(),
+        taxCode: apiData.taxCode?.trim(),
       };
-      
-      this.http.post('/api/account/register', registerDto).subscribe({
-        next: (response) => {
+
+      this.authService.recruiterRegister(registerDto).subscribe({
+        next: () => {
           this.isLoading = false;
-          this.showToastMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
+          this.showToastMessage('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.', 'success');
           setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
+            this.router.navigate(['/recruiter/login']);
           }, 2000);
         },
         error: (error) => {
           this.isLoading = false;
-          this.showToastMessage(error.error?.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
-        }
+          const errorMessage =
+            error.error?.error?.message ||
+            error.error?.message ||
+            error.message ||
+            'Có lỗi xảy ra. Vui lòng thử lại.';
+          this.showToastMessage(errorMessage, 'error');
+        },
       });
     }
   }

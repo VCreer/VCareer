@@ -464,12 +464,19 @@ export class CandidateHomepageComponent implements OnInit {
       next: (jobs) => {
         this.jobListings = jobs || [];
         this.isLoadingJobs = false;
-        // Update pagination
+        // Cập nhật pagination theo kiểu "biết dần" số trang
+        // - Nếu trang hiện tại đầy (== itemsPerPage) → chắc chắn còn ít nhất 1 trang nữa
+        // - Nếu trang hiện tại không đầy (< itemsPerPage) → đây là trang cuối đã biết
         if (this.jobListings.length > 0) {
-          this.totalPages = this.jobListings.length < this.itemsPerPage 
-            ? this.currentPage 
-            : this.currentPage + 1;
+          if (this.jobListings.length < this.itemsPerPage) {
+            // Trang cuối đã biết: totalPages ít nhất là currentPage
+            this.totalPages = Math.max(this.totalPages, this.currentPage);
+          } else {
+            // Trang còn đầy: giả định còn thêm 1 trang phía sau
+            this.totalPages = Math.max(this.totalPages, this.currentPage + 1);
+          }
         } else {
+          // Không có job → chỉ 1 trang
           this.totalPages = 1;
         }
       },
@@ -548,6 +555,17 @@ export class CandidateHomepageComponent implements OnInit {
     this.skipCount = (page - 1) * this.itemsPerPage;
     this.loadJobs();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /**
+   * Auto paging từ JobListings (trang chủ)
+   * Không scroll lên đầu trang, chỉ load dữ liệu trang mới.
+   */
+  onAutoPageChange(page: number) {
+    this.currentPage = page;
+    this.skipCount = (page - 1) * this.itemsPerPage;
+    this.loadJobs();
+    // Không gọi window.scrollTo ở đây
   }
 
   previousPage() {

@@ -840,10 +840,11 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       salaryValue = `${minMillion}-${maxMillion}`;
     }
 
-    // Convert enum values sang string để preview component có thể hiển thị
-    const experienceLabel = this.getEnumLabel(this.jobForm.experience, this.experienceOptions);
-    const employmentTypeLabel = this.getEnumLabel(this.jobForm.employmentType, this.employmentTypeOptions);
-    const positionLevelLabel = this.getEnumLabel(this.jobForm.positionLevel, this.positionLevelOptions);
+    // Convert enum values sang string value để JobOptionsService có thể xử lý
+    // Note: JobOptionsService expect string value (như 'employee', 'full-time'), không phải enum number hoặc label
+    const positionLevelValue = this.getEnumStringValue(this.jobForm.positionLevel, this.positionLevelOptions);
+    const employmentTypeValue = this.getEnumStringValue(this.jobForm.employmentType, this.employmentTypeOptions);
+    const experienceValue = this.getEnumStringValue(this.jobForm.experience, this.experienceOptions);
 
     // Map dữ liệu từ form
     this.previewJobData = {
@@ -860,13 +861,89 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       location: this.getLocationString(),
       // Salary format - convert sang format mà JobOptionsService hiểu
       salary: salaryValue,
-      // Convert enum values sang string format để preview component hiểu
-      // Note: JobPreviewComponent sẽ sử dụng JobOptionsService để convert lại sang label
-      // Nhưng chúng ta cần pass string value, không phải enum number
-      experience: experienceLabel || this.jobForm.experience?.toString() || '',
-      employmentType: employmentTypeLabel || this.jobForm.employmentType?.toString() || '',
-      positionLevel: positionLevelLabel || this.jobForm.positionLevel?.toString() || '',
+      // Convert enum values sang string value để JobPreviewComponent có thể dùng JobOptionsService
+      // Map enum number sang string value mà JobOptionsService hiểu
+      positionLevel: positionLevelValue || this.jobForm.positionLevel?.toString() || '',
+      employmentType: employmentTypeValue || this.jobForm.employmentType?.toString() || '',
+      experience: experienceValue || this.jobForm.experience?.toString() || '',
+      // Education - giữ nguyên value (string) từ form để JobPreviewComponent.getEducationLabel() có thể xử lý
+      // education đã là string value từ EDUCATION_OPTIONS (ví dụ: 'university'), không cần convert
     };
+  }
+
+  // Map enum number sang string value mà JobOptionsService hiểu
+  private getEnumStringValue(enumValue: any, options: { label: string; value: any }[]): string {
+    if (enumValue === undefined || enumValue === null || enumValue === '') return '';
+    
+    // Tìm option với enum value
+    const option = options.find(opt => opt.value === enumValue || opt.value === Number(enumValue));
+    if (!option) return '';
+    
+    // Map enum number sang string value mà JobOptionsService hiểu
+    // PositionType mapping
+    const positionTypeMap: { [key: number]: string } = {
+      1: 'employee',      // Employee
+      2: 'team-lead',      // TeamLead
+      3: 'manager',        // Manager
+      4: 'supervisor',     // Supervisor
+      5: 'branch-manager', // BranchManager
+      6: 'deputy-director', // DeputyDirector
+      7: 'director',       // Director
+      8: 'intern',         // Intern
+      9: 'specialist',     // Specialist
+      10: 'senior-specialist', // SeniorSpecialist
+      11: 'expert',        // Expert
+      12: 'consultant',    // Consultant
+    };
+    
+    // EmploymentType mapping
+    const employmentTypeMap: { [key: number]: string } = {
+      1: 'part-time',    // PartTime
+      2: 'full-time',    // FullTime
+      3: 'internship',   // Internship
+      4: 'contract',     // Contract
+      5: 'freelance',    // Freelance
+      6: 'other',        // Other
+    };
+    
+    // ExperienceLevel mapping
+    // Enum: None=0, Under1=1, Year1=2, Year2=3, Year3=4, Year4=5, Year5=6, Year6=7, Year7=8, Year8=9, Year9=10, Year10=11, Over10=12
+    // JobOptionsService: 'intern', '0-1', '1-2', '2-3', '3-5', '5-7', '7-10', 'over-10'
+    const experienceLevelMap: { [key: number]: string } = {
+      0: '0-1',          // None -> 'Chưa có kinh nghiệm'
+      1: '0-1',          // Under1 -> 'Chưa có kinh nghiệm'
+      2: '1-2',          // Year1 -> '1 - 2 năm'
+      3: '2-3',          // Year2 -> '2 - 3 năm'
+      4: '3-5',          // Year3 -> '3 - 5 năm'
+      5: '3-5',          // Year4 -> '3 - 5 năm'
+      6: '5-7',          // Year5 -> '5 - 7 năm'
+      7: '5-7',          // Year6 -> '5 - 7 năm'
+      8: '7-10',         // Year7 -> '7 - 10 năm'
+      9: '7-10',         // Year8 -> '7 - 10 năm'
+      10: '7-10',        // Year9 -> '7 - 10 năm'
+      11: '7-10',        // Year10 -> '7 - 10 năm'
+      12: 'over-10',     // Over10 -> 'Trên 10 năm'
+    };
+    
+    const numValue = Number(enumValue);
+    
+    // Kiểm tra xem option này thuộc loại nào dựa trên options array
+    // Nếu là positionLevelOptions
+    if (options === this.positionLevelOptions) {
+      return positionTypeMap[numValue] || '';
+    }
+    
+    // Nếu là employmentTypeOptions
+    if (options === this.employmentTypeOptions) {
+      return employmentTypeMap[numValue] || '';
+    }
+    
+    // Nếu là experienceOptions
+    if (options === this.experienceOptions) {
+      return experienceLevelMap[numValue] || '';
+    }
+    
+    return '';
   }
 
   getEnumLabel(value: any, options: { label: string; value: any }[]): string {
@@ -1008,6 +1085,31 @@ export class JobPostingComponent implements OnInit, OnDestroy {
       this.validationErrors['jobCategoryId'] = 'Vui lòng chọn lĩnh vực cụ thể';
     }
 
+    // Province validation
+    if (!this.selectedProvince) {
+      this.validationErrors['provinceCode'] = 'Vui lòng chọn tỉnh / thành phố';
+    }
+
+    // Experience validation
+    if (this.jobForm.experience === undefined || this.jobForm.experience === null || this.jobForm.experience === '') {
+      this.validationErrors['experience'] = 'Vui lòng chọn kinh nghiệm';
+    }
+
+    // Position Level validation
+    if (this.jobForm.positionLevel === undefined || this.jobForm.positionLevel === null || this.jobForm.positionLevel === '') {
+      this.validationErrors['positionLevel'] = 'Vui lòng chọn cấp bậc';
+    }
+
+    // Employment Type validation
+    if (this.jobForm.employmentType === undefined || this.jobForm.employmentType === null || this.jobForm.employmentType === '') {
+      this.validationErrors['employmentType'] = 'Vui lòng chọn hình thức làm việc';
+    }
+
+    // Benefits validation
+    if (!this.jobForm.benefits?.trim()) {
+      this.validationErrors['benefits'] = 'Vui lòng nhập quyền lợi';
+    }
+
     // Quantity - must be positive integer, no letters/negative
     const quantityStr = (this.jobForm.quantity || '').toString().trim();
     const quantityNum = Number(quantityStr);
@@ -1020,7 +1122,9 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     }
 
     // Validate application deadline - từ 7 ngày đến 2 tháng
-    if (this.jobForm.applicationDeadline) {
+    if (!this.jobForm.applicationDeadline) {
+      this.validationErrors['applicationDeadline'] = 'Vui lòng chọn hạn nộp hồ sơ';
+    } else {
       const selectedDate = new Date(this.jobForm.applicationDeadline);
       const now = new Date();
       const minDate = new Date();

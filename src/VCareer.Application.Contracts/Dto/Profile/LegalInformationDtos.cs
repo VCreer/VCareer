@@ -274,4 +274,10 @@ namespace VCareer.Dto.Profile
         [Required]
         public IFormFile File { get; set; }
     }
+
+    public class UploadCompanyLogoInputDto
+    {
+        [Required]
+        public IFormFile File { get; set; }
+    }
 }

@@ -88,8 +88,28 @@ export class EnableJobSearchModalComponent implements OnInit, OnChanges {
 
   onEnableJobSearch() {
     if (this.selectedCvIds.size > 0) {
-      this.enableJobSearch.emit(Array.from(this.selectedCvIds));
-      this.onClose();
+      const selectedIds = Array.from(this.selectedCvIds);
+
+      // Đặt CV đầu tiên được chọn làm CV mặc định cho candidate
+      const defaultCvId = selectedIds[0];
+      if (defaultCvId) {
+        this.candidateCvService.setDefault(defaultCvId).subscribe({
+          next: () => {
+            // Sau khi set default thành công, emit ra cho parent biết danh sách CV đã chọn
+            this.enableJobSearch.emit(selectedIds);
+            this.onClose();
+          },
+          error: (error) => {
+            console.error('Error setting default CV from enable-job-search-modal:', error);
+            // Vẫn emit để parent có thể xử lý bật tìm việc nếu muốn
+            this.enableJobSearch.emit(selectedIds);
+            this.onClose();
+          }
+        });
+      } else {
+        this.enableJobSearch.emit(selectedIds);
+        this.onClose();
+      }
     }
   }
 

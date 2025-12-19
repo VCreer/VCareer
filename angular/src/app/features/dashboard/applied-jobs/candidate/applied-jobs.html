@@ -244,5 +244,12 @@
     (changePicture)="onProfilePictureChange()"
     (deletePicture)="onProfilePictureDelete()">
   </app-profile-picture-edit-modal>
+
+  <!-- Enable Job Search Modal -->
+  <app-enable-job-search-modal
+    [show]="showEnableJobSearchModal"
+    (close)="onCloseEnableJobSearchModal()"
+    (enableJobSearch)="onEnableJobSearch($event)">
+  </app-enable-job-search-modal>
 </div>
 

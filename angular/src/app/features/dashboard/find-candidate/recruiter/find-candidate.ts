@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -46,7 +46,8 @@ export interface CandidateSearchResult {
   templateUrl: './find-candidate.html',
   styleUrls: ['./find-candidate.scss']
 })
-export class FindCandidateComponent implements OnInit {
+export class FindCandidateComponent implements OnInit, OnDestroy {
+  sidebarExpanded = false;
   // Search filters
   keyword: string = '';
   searchScope = {
@@ -57,10 +58,9 @@ export class FindCandidateComponent implements OnInit {
     skills: false
   };
   location: string = '';
-  cvClassification: 'all' | 'unseen' | 'seen' = 'all';
 
   // Display priority
-  displayPriority: 'newest' | 'seeking' | 'experienced' | 'suitable' = 'newest';
+  displayPriority: 'newest' | 'seeking' | 'experienced' = 'newest';
 
   // Search results
   candidates: CandidateSearchResult[] = [];
@@ -76,21 +76,41 @@ export class FindCandidateComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 10;
 
+  // Sidebar tracking
+  private sidebarCheckInterval: any;
+
   constructor(
     private router: Router,
     private candidateSearchService: CandidateSearchService
   ) {}
 
   ngOnInit() {
+    this.startSidebarCheck();
     // Không tự động search khi load, để user nhập filter trước
+  }
+
+  ngOnDestroy(): void {
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
+  }
+
+  private startSidebarCheck(): void {
+    this.checkSidebarState();
+    this.sidebarCheckInterval = setInterval(() => this.checkSidebarState(), 150);
+  }
+
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (!sidebar) {
+      this.sidebarExpanded = false;
+      return;
+    }
+    this.sidebarExpanded = sidebar.classList.contains('show') || sidebar.offsetWidth > 100;
   }
 
   onSearchScopeChange() {
     // Handle search scope checkbox changes
-  }
-
-  onCvClassificationChange() {
-    // Handle CV classification radio changes
   }
 
   onDisplayPriorityChange() {
@@ -103,16 +123,16 @@ export class FindCandidateComponent implements OnInit {
     
     const searchInput: SearchCandidateInputDto = {
       keyword: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
-      // Đẩy keyword sang jobTitle/skills để backend Lucene có thêm field match (CandidateProfile)
-      jobTitle: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
-      skills: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
+      // Các trường jobTitle / skills chỉ dùng cho filter nâng cao riêng, 
+      // không tự động gán từ keyword để tránh lọc mất những CV chỉ match trong dataJson hoặc field khác.
+      jobTitle: undefined,
+      skills: undefined,
       workLocation: this.location && this.location.trim() ? this.location.trim() : undefined,
       searchInJobTitle: false,
       searchInActivity: false,
       searchInEducation: false,
       searchInExperience: false,
       searchInSkills: false,
-      cvClassification: this.cvClassification === 'all' ? undefined : this.cvClassification,
       displayPriority: this.displayPriority,
       skipCount: (this.currentPage - 1) * this.itemsPerPage,
       maxResultCount: this.itemsPerPage,
@@ -320,11 +340,9 @@ export class FindCandidateComponent implements OnInit {
       case 'newest':
         return 'LastModificationTime DESC, CreationTime DESC';
       case 'seeking':
-        return 'Status DESC, ProfileVisibility DESC, LastModificationTime DESC';
+        return 'Status DESC, LastModificationTime DESC';
       case 'experienced':
         return 'Experience DESC, LastModificationTime DESC';
-      case 'suitable':
-        return 'LastModificationTime DESC, Experience DESC';
       default:
         return 'LastModificationTime DESC, CreationTime DESC';
     }

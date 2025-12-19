@@ -31,6 +31,7 @@
           class="main-search-input"
           placeholder="{{ translate('job_page.position_placeholder') }}"
           [(ngModel)]="searchKeyword"
+          (keyup.enter)="onMainSearch({ keyword: searchKeyword })"
         />
 
         <!-- Search Button -->

@@ -219,5 +219,12 @@
     (close)="onCloseRenameModal()"
     (rename)="onRename($event)">
   </app-rename-cv-modal>
+
+  <!-- Enable Job Search Modal -->
+  <app-enable-job-search-modal
+    [show]="showEnableJobSearchModal"
+    (close)="onCloseEnableJobSearchModal()"
+    (enableJobSearch)="onEnableJobSearch($event)">
+  </app-enable-job-search-modal>
 </div>
 
