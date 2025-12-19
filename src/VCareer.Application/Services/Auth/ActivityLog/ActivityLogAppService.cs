@@ -19,7 +19,7 @@ using IdentityUser = Volo.Abp.Identity.IdentityUser;
 namespace VCareer.Services.Auth.ActivityLog
 {
     [Authorize]
-    [RemoteService(IsEnabled = true)]
+    [RemoteService(IsEnabled = false)]
     public class ActivityLogAppService : ApplicationService, IActivityLogAppService
     {
         private const string SearchPlaceholder = "__ALL__";

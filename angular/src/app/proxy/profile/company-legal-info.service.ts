@@ -148,5 +148,14 @@ export class CompanyLegalInfoService {
     },
     { apiName: this.apiName,...config });
 
+
+  uploadCompanyLogo = (id: number, file: File, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyLegalInfoDto>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/upload-logo`,
+      body: file,
+    },
+    { apiName: this.apiName,...config });
+
   constructor(private restService: RestService) {}
 }

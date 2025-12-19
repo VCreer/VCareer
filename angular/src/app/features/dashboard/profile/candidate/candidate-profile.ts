@@ -392,3 +392,5 @@ export class CandidateProfileComponent implements OnInit {
   }
 }
 
+
+

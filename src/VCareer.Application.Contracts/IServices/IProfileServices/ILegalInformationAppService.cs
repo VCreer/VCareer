@@ -128,5 +128,20 @@ namespace VCareer.IServices.IProfileServices
         /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
         /// <returns>File stream DTO</returns>
         Task<FileStreamResultDto> GetLegalDocumentFileAsync(string storagePath);
+
+        /// <summary>
+        /// Upload logo công ty và cập nhật Company.LogoUrl
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="file">File ảnh logo</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        Task<CompanyLegalInfoDto> UploadCompanyLogoAsync(int id, IFormFile file);
+
+        /// <summary>
+        /// Lấy file logo công ty theo StoragePath
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LogoUrl</param>
+        /// <returns>File stream DTO</returns>
+        Task<FileStreamResultDto> GetCompanyLogoFileAsync(string storagePath);
     }
 }
