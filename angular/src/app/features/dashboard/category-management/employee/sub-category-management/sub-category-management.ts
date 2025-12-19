@@ -410,7 +410,12 @@ private loadTagsForCategory(categoryId: string): void {
   onManageTags(cat: SubCategory): void {
     this.closeActionsMenu();
     this.router.navigate(['/employee/tag-management'], {
-      queryParams: { categoryId: cat.id, categoryName: cat.name }
+      queryParams: { 
+        categoryId: cat.id, 
+        categoryName: cat.name,
+        parentId: this.parentCategoryId,
+        parentName: this.parentCategoryName
+      }
     });
   }
 

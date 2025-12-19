@@ -334,7 +334,7 @@ export class TagManagementComponent implements OnInit, OnDestroy {
   onBackToCategory(): void {
     const parentId = this.route.snapshot.queryParams['parentId'];
     const parentName = this.route.snapshot.queryParams['parentName'];
-    this.router.navigate(['/employee/sub-category-management'], {
+    this.router.navigate(['/employee/category-management/sub-categories'], {
       queryParams: { parentId, parentName }
     });
   }

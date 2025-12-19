@@ -94,7 +94,7 @@ export class CandidateHomepageComponent implements OnInit {
   // Category Navigation (for CategorySection with images)
   currentCategoryPage = 1;
   totalCategoryPages = 1;
-  categoriesPerPage = 8;
+  categoriesPerPage = 10;
 
   // Job listings from API
   jobListings: JobViewDto[] = [];
