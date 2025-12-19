@@ -18,6 +18,14 @@ export class User_ChildService_Service {
     { apiName: this.apiName,...config });
   
 
+  getUserChildServiceByUserSubcriptionId = (userSubcriptionId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, User_ChildServiceViewDto[]>({
+      method: 'GET',
+      url: `/api/app/user_Child-service_/user-child-service-by-user-subcription-id/${userSubcriptionId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   getUser_ChildService = (userChildServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, User_ChildServiceViewDto>({
       method: 'GET',

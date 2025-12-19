@@ -18,6 +18,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Timing;
+using Volo.Abp.Users;
 using static VCareer.Constants.JobConstant.SubcriptionContance;
 
 namespace VCareer.Services.Subcription
@@ -30,6 +31,7 @@ namespace VCareer.Services.Subcription
         private readonly IEffectingJobServiceRepository _effectingJobServiceRepository;
         private readonly IJobPriorityRepository _jobPriorityRepository;
         private readonly IClock _clock;
+        private readonly ICurrentUser _currentUser;
 
         public JobAffectingService(
             IJobPostRepository jobPostRepository,
@@ -37,17 +39,21 @@ namespace VCareer.Services.Subcription
             IClock clock,
             IEffectingJobServiceRepository effectingJobServiceRepository,
             IJobSearchService jobSearchService,
+            ICurrentUser currentUser,
             IJobPriorityRepository jobPriorityRepository)
         {
             _jobSearchService = jobSearchService;
             _jobPostRepository = jobPostRepository;
             _childServiceRepository = childServiceRepository;
             _clock = clock;
+            _currentUser = currentUser;
             _effectingJobServiceRepository = effectingJobServiceRepository;
             _jobPriorityRepository = jobPriorityRepository;
         }
         public async Task ApplyServiceToJob(EffectingJobServiceCreateDto jobAffectingDto)
         {
+            var userId = _currentUser.GetId();
+            if (userId == Guid.Empty) throw new BusinessException("User not found");
             var now = _clock.Now;
             //check job
             var job = await _jobPostRepository.FindAsync(x => x.Id == jobAffectingDto.JobPostId);
@@ -69,7 +75,7 @@ namespace VCareer.Services.Subcription
 
             //check truong hop muốn gắn vào job dang open + đã gắn dịch vụ vẫn chua het han
             if (job.Status == JobStatus.Open && await IsJobAllowToAddService(job, jobAffectingDto.ChildServiceId, childService.Action))
-                throw new BusinessException("Job is already have this type of action service, you must wait it expired or cancle it to add more service");
+                throw new UserFriendlyException("Job is already have this type of action service, you must wait it expired or cancle it to add more service");
 
             //tao 1 effectingJobService
             if (!childService.IsLifeTime) endDate = now.AddDays((double)childService.DayDuration);
@@ -88,7 +94,7 @@ namespace VCareer.Services.Subcription
             };
             await _effectingJobServiceRepository.InsertAsync(effectService, true);
 
-            if (childService.Target == ServiceTarget.JobPost)
+            if (childService.Target == ServiceTarget.JobPost && childService.Action == ServiceAction.BoostScoreJob)
                 await AddJobBoostLogic(job.Id, effectService.Id);
             //co the them logic xu ly cac job voi target =job voi action khac
         }
@@ -150,6 +156,7 @@ namespace VCareer.Services.Subcription
             {
                 jobAffecting.Status = SubcriptionContance.ChildServiceStatus.Inactive;
                 await RemoveJobBoostLogic(jobAffecting);
+                //theem cac logic remove neu con cac logic dich vu khac 
             }
             await _effectingJobServiceRepository.UpdateManyAsync(jobAffectings);
         }

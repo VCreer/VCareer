@@ -72,15 +72,6 @@ export class PaymentCallbackComponent implements OnInit {
         // Determine payment status
         if (order.paymentStatus === PaymentStatus.Paid) {
           this.paymentStatus = 'success';
-          // Clear cart after successful payment
-          this.cartService.clearCart().subscribe({
-            next: () => {
-              // Cart cleared, nothing else to do here
-            },
-            error: (err) => {
-              console.error('Error clearing cart after successful payment:', err);
-            }
-          });
         } else if (order.paymentStatus === PaymentStatus.Failed) {
           this.paymentStatus = 'failed';
           this.isLoading = false;
@@ -116,13 +107,6 @@ export class PaymentCallbackComponent implements OnInit {
         // Determine payment status based on PaymentStatus enum
         if (order.paymentStatus === PaymentStatus.Paid) {
           this.paymentStatus = 'success';
-          // Clear cart after successful payment
-          this.cartService.clearCart().subscribe({
-            next: () => {},
-            error: (err) => {
-              console.error('Error clearing cart after successful payment:', err);
-            }
-          });
         } else if (order.paymentStatus === PaymentStatus.Failed) {
           this.paymentStatus = 'failed';
           this.isLoading = false;

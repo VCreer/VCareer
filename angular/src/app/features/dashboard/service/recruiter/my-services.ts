@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, PaginationComponent, GenericModalComponent, CvEmptyStateComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
-import { UserSubcriptionService, SubcriptionService_Service } from 'src/app/proxy/services/subcription';
+import { UserSubcriptionService, SubcriptionService_Service, User_ChildService_Service } from 'src/app/proxy/services/subcription';
 import { OptionsChildServiceViewDto, User_ChildServiceViewDto, ChildServiceViewDto, User_SubcirptionViewDto, SubcriptionsViewDto } from 'src/app/proxy/dto/subcriptions';
 import { SubcriptionContance_SubcriptionStatus, SubcriptionContance_ChildServiceStatus, SubcriptionContance_ServiceAction, SubcriptionContance_ServiceTarget } from 'src/app/proxy/constants/job-constant';
 import { CurrentUserInfoDto } from 'src/app/proxy/dto/auth-dto';
 import { AuthStateService } from 'src/app/core/services/auth-Cookiebased/auth-state.service';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 export interface ServiceItem {
   id: string;
@@ -27,6 +27,11 @@ export interface ServiceItem {
 export interface ChildServiceInfo {
   childService: ChildServiceViewDto;
   userChildService: User_ChildServiceViewDto;
+}
+
+export interface UsageHistoryItem {
+  userChildService: User_ChildServiceViewDto;
+  childServiceDetail?: ChildServiceViewDto;
 }
 
 export type ServiceStatus = 'running' | 'ended' | 'expired';
@@ -78,7 +83,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   
   showUsageHistoryModal = false;
   selectedServiceForUsageHistory: ServiceItem | null = null;
-  usageHistoryData: OptionsChildServiceViewDto[] = [];
+  usageHistoryData: UsageHistoryItem[] = [];
   isLoadingUsageHistory: boolean = false;
   
   showToggleShareModal = false;
@@ -105,6 +110,7 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private userSubcriptionService: UserSubcriptionService,
     private subcriptionService: SubcriptionService_Service,
+    private userChildServiceService: User_ChildService_Service,
     private authApi: AuthStateService
   ) {}
 
@@ -432,8 +438,8 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   private loadUsageHistory(service: ServiceItem): void {
-    if (!this.currentUser || !this.currentUser.userId) {
-      console.warn('User ID not available');
+    if (!service.userSubscription?.id) {
+      console.warn('No subscription ID available');
       return;
     }
 
@@ -445,41 +451,34 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.isLoadingUsageHistory = true;
     this.usageHistoryData = [];
     
-    const status = this.getStatusFromTab(this.activeTab);
-    
-    const actions = [
-      SubcriptionContance_ServiceAction.BoostScoreJob,
-      SubcriptionContance_ServiceAction.TopList,
-      SubcriptionContance_ServiceAction.JobBadge,
-      SubcriptionContance_ServiceAction.ThemeCompany,
-    ];
-
-    const requests = actions.map(action => 
-      this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction(
-        this.currentUser!.userId,
-        status,
-        {
-          pageIndex: 0,
-          pageSize: 1000
-        },
-        action
-      ).pipe(
-        catchError(error => {
-          console.error(`Error loading usage history for action ${action}:`, error);
-          return of([]);
-        })
+    // Load User_ChildService list và ChildService details
+    forkJoin({
+      userChildServices: this.userChildServiceService.getUserChildServiceByUserSubcriptionId(
+        service.userSubscription.id
+      ),
+      childServiceDetails: this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
+        service.userSubscription.subcriptionServiceId,
+        true
       )
-    );
-
-    forkJoin(requests).subscribe({
-      next: (results: OptionsChildServiceViewDto[][]) => {
-        const allOptions = results.reduce((acc, curr) => acc.concat(curr), []);
+    }).subscribe({
+      next: ({ userChildServices, childServiceDetails }) => {
+        console.log('User child services loaded:', userChildServices);
+        console.log('Child service details loaded:', childServiceDetails);
         
-        this.usageHistoryData = allOptions.filter(opt => 
-          opt.user_subcription?.id === service.id
-        );
+        // Map userChildServices với childServiceDetails
+        this.usageHistoryData = userChildServices.map(ucs => {
+          const childDetail = childServiceDetails.find(
+            cs => cs.id === ucs.childServiceId
+          );
+          
+          return {
+            userChildService: ucs,
+            childServiceDetail: childDetail
+          };
+        });
         
-        console.log('Usage history loaded:', this.usageHistoryData);
+        console.log('Usage history mapped:', this.usageHistoryData);
+        console.log('Total usage history items:', this.usageHistoryData.length);
         
         this.isLoadingUsageHistory = false;
         this.cdr.detectChanges();
@@ -586,8 +585,8 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     return childService.id || index.toString();
   }
 
-  trackByOptionId(index: number, option: OptionsChildServiceViewDto): string {
-    return option.user_ChildServices?.childServiceId || index.toString();
+  trackByOptionId(index: number, item: UsageHistoryItem): string {
+    return item.userChildService.childServiceId || index.toString();
   }
 
   toggleActionsMenu(serviceId: string, event?: Event): void {
@@ -738,12 +737,12 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     return '-';
   }
 
-  getDurationTextForOption(option: OptionsChildServiceViewDto): string {
-    if (option.user_ChildServices?.isLifeTime) {
+  getDurationTextForUserChild(item: UsageHistoryItem): string {
+    if (item.userChildService?.isLifeTime) {
       return 'Vĩnh viễn';
     }
     
-    const dayDuration = option.childService?.dayDuration;
+    const dayDuration = item.childServiceDetail?.dayDuration;
     if (dayDuration) {
       if (dayDuration < 7) {
         return `${dayDuration} ngày`;
@@ -779,7 +778,8 @@ export class MyServicesComponent implements OnInit, OnDestroy {
       0: 'Không hoạt động',
       1: 'Đang hoạt động',
       2: 'Hết hạn',
-      3: 'Đã hủy'
+      3: 'Đã hủy',
+      4: 'Hết lượt sử dụng'
     };
     return status !== undefined ? labels[status] : '-';
   }
@@ -789,7 +789,8 @@ export class MyServicesComponent implements OnInit, OnDestroy {
       0: 'status-inactive',
       1: 'status-active',
       2: 'status-expired',
-      3: 'status-cancelled'
+      3: 'status-cancelled',
+      4: 'status-limit-reached'
     };
     return status !== undefined ? classes[status] : '';
   }

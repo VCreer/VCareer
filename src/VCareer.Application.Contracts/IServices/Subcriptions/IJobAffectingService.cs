@@ -23,5 +23,5 @@ namespace VCareer.IServices.Subcriptions
         public Task DeactiveAllEffectingJobByChildServiceId(Guid childServiceId);
         public Task UpdateExpiredEffectingJobServiceBackgroundJob();
         public Task AddJobBoostLogic(Guid jobid, Guid jobEffectingIdS);
-    }
+         }
 }

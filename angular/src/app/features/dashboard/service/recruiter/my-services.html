@@ -385,111 +385,111 @@
         <p>Đang tải lịch sử sử dụng...</p>
       </div>
 
-      <!-- Child Services Usage History -->
-      <div class="child-services-usage-list" *ngIf="!isLoadingUsageHistory && usageHistoryData.length > 0">
-        <div class="child-service-usage-card" *ngFor="let option of usageHistoryData; trackBy: trackByOptionId">
-          <!-- Child Service Header -->
-          <div class="usage-card-header">
-            <div class="service-info-section">
-              <h4 class="child-service-title">
-                <i class="fa fa-cube"></i>
-                {{ option.childService?.name || 'Dịch vụ' }}
-              </h4>
-              <span class="service-type-badge" [ngClass]="'action-' + option.childService?.action">
-                {{ getServiceActionLabel(option.childService?.action) }}
-              </span>
-            </div>
-            <div class="status-section">
-              <span class="status-badge" 
-                    [class.status-active]="option.user_ChildServices?.status === ChildServiceStatus.Active"
-                    [class.status-inactive]="option.user_ChildServices?.status === ChildServiceStatus.Inactive"
-                    [class.status-expired]="option.user_ChildServices?.status === ChildServiceStatus.Expired"
-                    [class.status-cancelled]="option.user_ChildServices?.status === ChildServiceStatus.Cancelled">
-                {{ getChildServiceStatusLabel(option.user_ChildServices?.status) }}
-              </span>
-            </div>
-          </div>
+     <!-- Child Services Usage History -->
+<div class="child-services-usage-list" *ngIf="!isLoadingUsageHistory && usageHistoryData.length > 0">
+  <div class="child-service-usage-card" *ngFor="let item of usageHistoryData; trackBy: trackByOptionId">
+    <!-- Child Service Header -->
+    <div class="usage-card-header">
+      <div class="service-info-section">
+        <h4 class="child-service-title">
+          <i class="fa fa-cube"></i>
+          {{ item.childServiceDetail?.name || 'Dịch vụ' }}
+        </h4>
+        <span class="service-type-badge" [ngClass]="'action-' + item.childServiceDetail?.action">
+          {{ getServiceActionLabel(item.childServiceDetail?.action) }}
+        </span>
+      </div>
+      <div class="status-section">
+        <span class="status-badge" 
+              [class.status-active]="item.userChildService?.status === ChildServiceStatus.Active"
+              [class.status-inactive]="item.userChildService?.status === ChildServiceStatus.Inactive"
+              [class.status-expired]="item.userChildService?.status === ChildServiceStatus.Expired"
+              [class.status-cancelled]="item.userChildService?.status === ChildServiceStatus.Cancelled">
+          {{ getChildServiceStatusLabel(item.userChildService?.status) }}
+        </span>
+      </div>
+    </div>
 
-          <p class="child-service-description" *ngIf="option.childService?.description">
-            {{ option.childService.description }}
-          </p>
+    <p class="child-service-description" *ngIf="item.childServiceDetail?.description">
+      {{ item.childServiceDetail.description }}
+    </p>
 
-          <!-- User Information -->
-          <div class="user-info-section">
-            <div class="user-info-header">
-              <i class="fa fa-user"></i>
-              <span class="section-label">Thông tin người sử dụng</span>
-            </div>
-            <div class="user-info-content">
-              <div class="user-info-item">
-                <label><i class="fa fa-id-card"></i> User ID:</label>
-                <span class="user-id">{{ option.user_ChildServices?.userId || 'N/A' }}</span>
-              </div>
-              <div class="user-info-item">
-                <label><i class="fa fa-user-tag"></i> Loại người dùng:</label>
-                <span class="user-type-badge" [class.owner]="option.user_ChildServices?.isPrimaryOwner" [class.employee]="!option.user_ChildServices?.isPrimaryOwner">
-                  <i class="fa" [ngClass]="option.user_ChildServices?.isPrimaryOwner ? 'fa-crown' : 'fa-users'"></i>
-                  {{ option.user_ChildServices?.isPrimaryOwner ? 'Chủ sở hữu (Bản thân)' : 'Nhân viên công ty' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Time Information -->
-          <div class="time-info-section">
-            <div class="time-info-header">
-              <i class="fa fa-clock"></i>
-              <span class="section-label">Thời gian sử dụng</span>
-            </div>
-            <div class="time-grid">
-              <div class="time-item">
-                <label><i class="fa fa-calendar-check"></i> Ngày bắt đầu</label>
-                <span class="time-value">{{ formatDateTime(option.user_ChildServices?.startDate) }}</span>
-              </div>
-              <div class="time-item">
-                <label><i class="fa fa-calendar-times"></i> Ngày kết thúc</label>
-                <span class="time-value">{{ formatDateTime(option.user_ChildServices?.endDate) }}</span>
-              </div>
-              <div class="time-item">
-                <label><i class="fa fa-hourglass-half"></i> Thời hạn</label>
-                <span class="time-value">
-                  <span class="badge" [class.badge-success]="option.user_ChildServices?.isLifeTime" [class.badge-info]="!option.user_ChildServices?.isLifeTime">
-                    {{ option.user_ChildServices?.isLifeTime ? 'Vĩnh viễn' : getDurationTextForOption(option) }}
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Service Details -->
-          <div class="service-details-section">
-            <div class="details-grid">
-              <div class="detail-item">
-                <label><i class="fa fa-bullseye"></i> Mục tiêu:</label>
-                <span class="detail-value">{{ getServiceTargetLabel(option.childService?.target) }}</span>
-              </div>
-              <div class="detail-item">
-                <label><i class="fa fa-cog"></i> Trạng thái:</label>
-                <span class="status-badge-inline" 
-                      [class.status-active]="option.user_ChildServices?.status === ChildServiceStatus.Active"
-                      [class.status-inactive]="option.user_ChildServices?.status === ChildServiceStatus.Inactive"
-                      [class.status-expired]="option.user_ChildServices?.status === ChildServiceStatus.Expired"
-                      [class.status-cancelled]="option.user_ChildServices?.status === ChildServiceStatus.Cancelled">
-                  {{ getChildServiceStatusLabel(option.user_ChildServices?.status) }}
-                </span>
-              </div>
-              <div class="detail-item" *ngIf="option.childService?.isAutoActive">
-                <label><i class="fa fa-bolt"></i> Tự động kích hoạt:</label>
-                <span class="detail-value">
-                  <span class="badge badge-success">
-                    <i class="fa fa-check"></i> Có
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
+    <!-- User Information -->
+    <div class="user-info-section">
+      <div class="user-info-header">
+        <i class="fa fa-user"></i>
+        <span class="section-label">Thông tin người sử dụng</span>
+      </div>
+      <div class="user-info-content">
+        <div class="user-info-item">
+          <label><i class="fa fa-id-card"></i> User ID:</label>
+          <span class="user-id">{{ item.userChildService?.userId || 'N/A' }}</span>
+        </div>
+        <div class="user-info-item">
+          <label><i class="fa fa-user-tag"></i> Loại người dùng:</label>
+          <span class="user-type-badge" [class.owner]="item.userChildService?.isPrimaryOwner" [class.employee]="!item.userChildService?.isPrimaryOwner">
+            <i class="fa" [ngClass]="item.userChildService?.isPrimaryOwner ? 'fa-crown' : 'fa-users'"></i>
+            {{ item.userChildService?.isPrimaryOwner ? 'Chủ sở hữu (Bản thân)' : 'Nhân viên công ty' }}
+          </span>
         </div>
       </div>
+    </div>
+
+    <!-- Time Information -->
+    <div class="time-info-section">
+      <div class="time-info-header">
+        <i class="fa fa-clock"></i>
+        <span class="section-label">Thời gian sử dụng</span>
+      </div>
+      <div class="time-grid">
+        <div class="time-item">
+          <label><i class="fa fa-calendar-check"></i> Ngày bắt đầu</label>
+          <span class="time-value">{{ formatDateTime(item.userChildService?.startDate) }}</span>
+        </div>
+        <div class="time-item">
+          <label><i class="fa fa-calendar-times"></i> Ngày kết thúc</label>
+          <span class="time-value">{{ formatDateTime(item.userChildService?.endDate) }}</span>
+        </div>
+        <div class="time-item">
+          <label><i class="fa fa-hourglass-half"></i> Thời hạn</label>
+          <span class="time-value">
+            <span class="badge" [class.badge-success]="item.userChildService?.isLifeTime" [class.badge-info]="!item.userChildService?.isLifeTime">
+              {{ item.userChildService?.isLifeTime ? 'Vĩnh viễn' : getDurationTextForUserChild(item) }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Details -->
+    <div class="service-details-section">
+      <div class="details-grid">
+        <div class="detail-item">
+          <label><i class="fa fa-bullseye"></i> Mục tiêu:</label>
+          <span class="detail-value">{{ getServiceTargetLabel(item.childServiceDetail?.target) }}</span>
+        </div>
+        <div class="detail-item">
+          <label><i class="fa fa-cog"></i> Trạng thái:</label>
+          <span class="status-badge-inline" 
+                [class.status-active]="item.userChildService?.status === ChildServiceStatus.Active"
+                [class.status-inactive]="item.userChildService?.status === ChildServiceStatus.Inactive"
+                [class.status-expired]="item.userChildService?.status === ChildServiceStatus.Expired"
+                [class.status-cancelled]="item.userChildService?.status === ChildServiceStatus.Cancelled">
+            {{ getChildServiceStatusLabel(item.userChildService?.status) }}
+          </span>
+        </div>
+        <div class="detail-item" *ngIf="item.childServiceDetail?.isAutoActive">
+          <label><i class="fa fa-bolt"></i> Tự động kích hoạt:</label>
+          <span class="detail-value">
+            <span class="badge badge-success">
+              <i class="fa fa-check"></i> Có
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <!-- Empty State -->
       <div class="empty-usage-history" *ngIf="!isLoadingUsageHistory && usageHistoryData.length === 0">

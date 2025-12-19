@@ -20282,6 +20282,23 @@
                     "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
                     "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto"
                   }
+                },
+                {
+                  "name": "GetUserChildServiceByUserSubcriptionIdAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "userSubcriptionId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
+                    "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
+                  }
                 }
               ]
             }
@@ -20377,6 +20394,43 @@
               "returnValue": {
                 "type": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto",
                 "typeSimple": "VCareer.Dto.Subcriptions.User_ChildServiceViewDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
+            },
+            "GetUserChildServiceByUserSubcriptionIdAsyncByUserSubcriptionId": {
+              "uniqueName": "GetUserChildServiceByUserSubcriptionIdAsyncByUserSubcriptionId",
+              "name": "GetUserChildServiceByUserSubcriptionIdAsync",
+              "httpMethod": "GET",
+              "url": "api/app/user_Child-service_/user-child-service-by-user-subcription-id/{userSubcriptionId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "userSubcriptionId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "userSubcriptionId",
+                  "name": "userSubcriptionId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.Subcriptions.User_ChildServiceViewDto>",
+                "typeSimple": "[VCareer.Dto.Subcriptions.User_ChildServiceViewDto]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IUser_ChildService"
