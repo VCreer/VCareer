@@ -572,6 +572,39 @@ namespace VCareer.Services.Profile
             }
         }
 
+        /// <summary>
+        /// Updates the job seeking status (Status) for the current candidate user
+        /// </summary>
+        public async Task UpdateJobStatusAsync(bool isSeekingJob)
+        {
+            var userId = _currentUser.GetId();
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy thông tin candidate profile.");
+            }
+
+            candidate.Status = isSeekingJob;
+            await _candidateProfileRepository.UpdateAsync(candidate);
+
+            // Auto-index vào Lucene hoặc xóa khỏi index dựa trên Status & ProfileVisibility
+            try
+            {
+                if (candidate.Status && candidate.ProfileVisibility)
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                else
+                {
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+            }
+        }
 
     }
 }

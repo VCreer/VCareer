@@ -3,7 +3,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 // Shared Components
 import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
@@ -58,7 +59,11 @@ export class JobComponent implements OnInit {
   jobs: JobViewDto[] = [];
   totalCount = 0;
   currentPage = 1;
-  pageSize = 20;
+  // Số job mỗi trang hiển thị ở UI (client-side)
+  pageSize = 10;
+
+  // Số bản ghi tối đa lấy từ API để phân trang client-side
+  private readonly apiPageSize = 1000;
   isSearching = false;
   isLoadingData = false;
 
@@ -100,45 +105,114 @@ export class JobComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadInitialData();
-
     // Check authentication status
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
     });
 
-    // Đọc query params từ URL (khi chuyển từ Homepage sang)
-    this.route.queryParams.subscribe(params => {
-      this.searchKeyword = params['keyword'] || '';
-      this.selectedCategoryIds = params['categoryIds'] ? params['categoryIds'].split(',') : [];
-      this.selectedProvinceCodes = params['provinceIds']
-        ? params['provinceIds'].split(',').map(Number)
-        : [];
-      this.selectedWardCodes = params['districtIds']
-        ? params['districtIds'].split(',').map(Number)
-        : [];
+    // Load initial data (categories + provinces) trước, sau đó mới search jobs
+    this.loadInitialData().then(() => {
+      // Đọc query params từ URL (khi chuyển từ Homepage sang)
+      this.route.queryParams.subscribe(params => {
+        this.searchKeyword = params['keyword'] || '';
+        this.selectedCategoryIds = params['categoryIds'] ? params['categoryIds'].split(',') : [];
+        this.selectedProvinceCodes = params['provinceIds']
+          ? params['provinceIds'].split(',').map(Number)
+          : [];
+        this.selectedWardCodes = params['districtIds']
+          ? params['districtIds'].split(',').map(Number)
+          : [];
 
-      // Tìm kiếm ngay khi vào trang
-      this.currentPage = 1;
-      this.performJobSearch();
+        // Tìm kiếm ngay khi vào trang (sau khi provinces đã load)
+        this.currentPage = 1;
+        this.performJobSearch();
+      });
     });
   }
 
-  // Load danh mục + tỉnh thành
-  private loadInitialData(): void {
+  // Load danh mục + tỉnh thành - trả về Promise để đợi load xong
+  private loadInitialData(): Promise<void> {
     this.isLoadingData = true;
-    forkJoin({
-      categories: this.categoryService.getCategoryTree(),
-      provinces: this.geoService.getProvinces(),
-    }).subscribe({
-      next: ({ categories, provinces }) => {
-        this.categories = categories;
-        this.provinces = provinces;
-        this.isLoadingData = false;
-      },
-      error: err => {
-        this.isLoadingData = false;
-      },
+    
+    // ✅ Load categories từ cache trước (nếu chưa đăng nhập)
+    this.loadCategoriesFromCache();
+    
+    return new Promise((resolve, reject) => {
+      forkJoin({
+        categories: this.categoryService.getCategoryTree({ skipHandleError: true }).pipe(
+          catchError(err => {
+            // Nếu lỗi 401 → API cần đăng nhập, thử load từ cache
+            if (err.status === 401) {
+              const cachedCategories = this.loadCategoriesFromCache();
+              return of(cachedCategories);
+            }
+            // Lỗi khác → trả về mảng rỗng
+            return of([]);
+          })
+        ),
+        provinces: this.geoService.getProvinces().pipe(
+          catchError(err => {
+            // Retry một lần nếu lỗi
+            return this.geoService.getProvinces().pipe(
+              catchError(retryErr => {
+                return of([]);
+              })
+            );
+          })
+        ),
+      }).subscribe({
+        next: ({ categories, provinces }) => {
+          // Nếu có categories từ API → dùng API, nếu không → giữ cache
+          if (categories && categories.length > 0) {
+            this.categories = categories;
+            // Lưu vào cache để dùng lần sau
+            this.saveCategoriesToCache(categories);
+          } else {
+            // Không có từ API, giữ nguyên từ cache (nếu có)
+            const cachedCategories = this.loadCategoriesFromCache();
+            if (cachedCategories.length > 0) {
+              this.categories = cachedCategories;
+            } else {
+              this.categories = [];
+            }
+          }
+          
+          this.provinces = provinces || []; // Đảm bảo luôn là mảng, không phải undefined
+          this.isLoadingData = false;
+          
+          // Nếu provinces vẫn rỗng, thử load lại sau 1 giây
+          if (this.provinces.length === 0) {
+            setTimeout(() => {
+              this.geoService.getProvinces().subscribe({
+                next: (retryProvinces) => {
+                  if (retryProvinces && retryProvinces.length > 0) {
+                    this.provinces = retryProvinces;
+                    // Trigger change detection để JobListComponent remap lại
+                    setTimeout(() => {
+                      if (this.jobs.length > 0) {
+                        // Force remap bằng cách trigger ngOnChanges
+                        this.jobs = [...this.jobs];
+                      }
+                    }, 100);
+                  }
+                },
+                error: () => {
+                  // Silent fail
+                }
+              });
+            }, 1000);
+          }
+          
+          resolve();
+        },
+        error: err => {
+          this.categories = [];
+          this.provinces = []; // Đảm bảo luôn là mảng
+          this.isLoadingData = false;
+          // Vẫn resolve để không block việc search jobs
+          resolve();
+        },
+      });
     });
   }
 
@@ -163,11 +237,18 @@ export class JobComponent implements OnInit {
         ? this.selectedEmploymentTypes
         : undefined,
       positionTypes: this.selectedPositionTypes.length ? this.selectedPositionTypes : undefined,
-      skipCount: (this.currentPage - 1) * this.pageSize,
-      maxResultCount: this.pageSize,
+      // Lấy nhiều job từ API, phân trang ở client bằng JobListComponent
+      skipCount: 0,
+      maxResultCount: this.apiPageSize,
     };
 
-    this.jobSearchService.searchJobs(input).subscribe({
+    this.jobSearchService.searchJobs(input, { skipHandleError: true }).pipe(
+      catchError(err => {
+        // Nếu lỗi 401 → API cần đăng nhập, nhưng vẫn hiển thị empty state (không redirect)
+        // Trả về mảng rỗng để không throw error
+        return of([]);
+      })
+    ).subscribe({
       next: (response: any) => {
         // Backend trả mảng luôn → response chính là items
         this.jobs = Array.isArray(response) ? response : response.items ?? [];
@@ -182,11 +263,44 @@ export class JobComponent implements OnInit {
         this.isSearching = false;
       },
       error: err => {
+        // Fallback error handler (không nên vào đây nếu đã catch ở pipe)
         this.jobs = [];
         this.totalCount = 0;
         this.isSearching = false;
       },
     });
+  }
+
+  /**
+   * ✅ Load categories từ cache (localStorage)
+   */
+  private loadCategoriesFromCache(): CategoryTreeDto[] {
+    try {
+      const cached = localStorage.getItem('homepage_stats');
+      if (cached) {
+        const stats = JSON.parse(cached);
+        if (stats.categories && Array.isArray(stats.categories) && stats.categories.length > 0) {
+          return stats.categories;
+        }
+      }
+    } catch (error) {
+      // Ignore cache errors
+    }
+    return [];
+  }
+
+  /**
+   * ✅ Lưu categories vào cache (localStorage)
+   */
+  private saveCategoriesToCache(categories: CategoryTreeDto[]): void {
+    try {
+      const cached = localStorage.getItem('homepage_stats');
+      const stats = cached ? JSON.parse(cached) : {};
+      stats.categories = categories;
+      localStorage.setItem('homepage_stats', JSON.stringify(stats));
+    } catch (error) {
+      // Ignore cache errors
+    }
   }
 
   // Convert salaryFilter (1-7) → min/max salary

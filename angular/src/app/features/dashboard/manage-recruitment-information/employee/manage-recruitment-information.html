@@ -124,7 +124,7 @@
           <div class="job-list" *ngIf="!isLoading && filteredPostings.length > 0; else emptyState">
             <div
               class="job-item"
-              *ngFor="let posting of filteredPostings"
+              *ngFor="let posting of pagedPostings"
               [class.selected]="selectedJob?.id === posting.id"
               (click)="onJobItemClick(posting)"
               (mouseenter)="onJobItemMouseEnter(posting.id)"
@@ -194,7 +194,7 @@
           </ng-template>
 
           <app-pagination
-            *ngIf="!isLoading && totalPages > 1"
+            *ngIf="!isLoading && filteredPostings.length > 0 && totalPages > 1"
             [currentPage]="currentPage"
             [totalPages]="totalPages"
             [totalItems]="totalItems"
@@ -236,14 +236,14 @@
 
             <div class="detail-section" *ngIf="selectedJob.workLocation">
               <h3 class="section-title">Địa điểm làm việc</h3>
-              <p class="section-content">{{ selectedJob.workLocation }}</p>
+              <div class="section-content" [innerHTML]="selectedJob.workLocation"></div>
             </div>
 
             <div class="detail-section">
               <h3 class="section-title">Thông tin khác</h3>
               <ul class="section-list">
                 <li><strong>Số lượng tuyển:</strong> {{ selectedJob.quantity }} người</li>
-                <li *ngIf="selectedJob.workTime"><strong>Thời gian làm việc:</strong> {{ selectedJob.workTime }}</li>
+                <li *ngIf="selectedJob.workTime"><strong>Thời gian làm việc:</strong> <span [innerHTML]="selectedJob.workTime"></span></li>
                 <li *ngIf="selectedJob.postedAt"><strong>Ngày đăng:</strong> {{ selectedJob.postedAt | date: 'dd/MM/yyyy' }}</li>
                 <li *ngIf="selectedJob.expiresAt"><strong>Hạn nộp:</strong> {{ selectedJob.expiresAt | date: 'dd/MM/yyyy' }}</li>
               </ul>

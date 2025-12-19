@@ -11,13 +11,9 @@
 
   <!-- Action Buttons -->
   <div class="cv-hover-actions">
-    <button class="action-btn view-btn" (click)="onView()">
-      <i class="fa fa-eye btn-icon"></i>
-      <span class="btn-text">Xem CV</span>
-    </button>
     <button class="action-btn download-btn" (click)="onDownload()">
       <i class="fa fa-download btn-icon"></i>
-      <span class="btn-text">{{ translate('cv_card.download') }}</span>
+      <span class="btn-text">{{ translate('cv_management.download') }}</span>
     </button>
     
     <div class="more-menu-container">
@@ -27,22 +23,13 @@
       
       <!-- More Menu -->
       <div class="more-menu" [class.show]="showDropdown" (click)="$event.stopPropagation()">
-        <div class="menu-item" (click)="onCopyLink()">
-          <i class="fa fa-copy menu-icon"></i>
-          <span>{{ translate('cv_card.copy_link') }}</span>
-        </div>
-        <div class="menu-item" (click)="onShareFacebook()">
-          <i class="fa fa-facebook menu-icon"></i>
-          <span>{{ translate('cv_card.share_facebook') }}</span>
-        </div>
-        <div class="menu-separator"></div>
         <div class="menu-item" (click)="onRename()">
           <i class="fa fa-edit menu-icon"></i>
-          <span>{{ translate('cv_card.rename') }}</span>
+          <span>{{ translate('cv_management.rename') }}</span>
         </div>
         <div class="menu-item delete-item" (click)="onDelete()">
           <i class="fa fa-trash menu-icon"></i>
-          <span>{{ translate('cv_card.delete') }}</span>
+          <span>{{ translate('cv_management.delete') }}</span>
         </div>
       </div>
     </div>

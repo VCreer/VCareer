@@ -30,8 +30,6 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   summaryCards: JobSummaryCard[] = [
     { label: 'Tổng số tin', value: 0, icon: 'fa fa-file-alt', borderColor: '#0F83BA' },
     { label: 'Chờ duyệt', value: 0, icon: 'fa fa-clock', borderColor: '#f59e0b' },
-    { label: 'Đã duyệt', value: 0, icon: 'fa fa-check-circle', borderColor: '#10b981' },
-    { label: 'Từ chối', value: 0, icon: 'fa fa-times-circle', borderColor: '#ef4444' },
   ];
 
   // Filter options
@@ -67,7 +65,7 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
 
   jobPostings: JobApproveViewDto[] = [];
   filteredPostings: JobApproveViewDto[] = [];
-  itemsPerPage = 7;
+  itemsPerPage = 5;
   currentPage = 1;
   totalPages = 0;
   totalItems = 0;
@@ -122,6 +120,10 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
         this.filteredPostings = data;
         this.totalItems = data.length;
         this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
+        // Reset to page 1 if current page exceeds total pages
+        if (this.currentPage > this.totalPages) {
+          this.currentPage = 1;
+        }
         this.updateSummaryCounts();
         this.isLoading = false;
       },
@@ -131,6 +133,13 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
     });
+  }
+
+  // Get paginated postings for display
+  get pagedPostings(): JobApproveViewDto[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.filteredPostings.slice(startIndex, endIndex);
   }
 
   //#endregion
@@ -281,7 +290,11 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.loadJobPostings();
+    // Scroll to top of job list when page changes
+    const jobListElement = document.querySelector('.job-list');
+    if (jobListElement) {
+      jobListElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   getStatusBadgeClass(status: JobStatus): string {
@@ -327,13 +340,35 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   private updateSummaryCounts(): void {
     const total = this.jobPostings.length;
     const pending = this.jobPostings.filter(p => p.status === JobStatus.Pending).length;
-    const approved = this.jobPostings.filter(p => p.status === JobStatus.Open).length;
-    const rejected = this.jobPostings.filter(p => p.status === JobStatus.Rejected).length;
 
     this.summaryCards[0].value = total;
     this.summaryCards[1].value = pending;
-    this.summaryCards[2].value = approved;
-    this.summaryCards[3].value = rejected;
+  }
+
+  /**
+   * Cập nhật trạng thái job tại chỗ để không mất item khỏi danh sách
+   */
+  private updateLocalStatus(jobId: string, status: JobStatus, rejectedReason?: string): void {
+    const targetId = String(jobId);
+    const updateStatus = (job: JobApproveViewDto) => {
+      if (String(job.id) === targetId) {
+        job.status = status;
+        if (rejectedReason !== undefined) {
+          job.rejectedReason = rejectedReason;
+        }
+      }
+    };
+
+    this.jobPostings.forEach(updateStatus);
+    this.filteredPostings.forEach(updateStatus);
+
+    // Đảm bảo selectedJob (nếu còn) cũng được cập nhật
+    if (this.selectedJob && String(this.selectedJob.id) === targetId) {
+      this.selectedJob.status = status;
+      if (rejectedReason !== undefined) {
+        this.selectedJob.rejectedReason = rejectedReason;
+      }
+    }
   }
 
   getCompanyLogoUrl(job: JobApproveViewDto): string {
@@ -364,24 +399,32 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   //#region Approve/Reject
 
   onApprove(): void {
-  if (!this.selectedJob) return;
+    const targetId = this.selectedJob?.id ? String(this.selectedJob.id) : '';
+    if (!targetId) return;
 
-  this.jobPostService.approveJobPost(this.selectedJob.id).subscribe({
-    next: () => {
-      this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
-      this.loadJobPostings();
-    },
-    error: () => {
-      this.showErrorToast('Duyệt tin tuyển dụng thất bại');
-    }
-  });
-}
+    this.jobPostService.approveJobPost(targetId).subscribe({
+      next: () => {
+        this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
+        // Đóng hộp chi tiết sau khi duyệt thành công
+        this.onCloseDetail();
+        // Cập nhật trạng thái tại chỗ để không mất job khỏi danh sách
+        this.updateLocalStatus(targetId, JobStatus.Open);
+        this.updateSummaryCounts();
+        // Force re-render list
+        this.filteredPostings = [...this.filteredPostings];
+        this.jobPostings = [...this.jobPostings];
+      },
+      error: () => {
+        this.showErrorToast('Duyệt tin tuyển dụng thất bại');
+      }
+    });
+  }
 
 
- onReject(): void {
-  this.showRejectModal = true;
-  this.rejectReason = this.selectedJob?.rejectedReason || '';
-}
+  onReject(): void {
+    this.showRejectModal = true;
+    this.rejectReason = this.selectedJob?.rejectedReason || '';
+  }
 
 
   onCloseRejectModal(): void {
@@ -389,23 +432,31 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
     this.rejectReason = '';
   }
 
- onSubmitReject(): void {
-  if (!this.selectedJob || !this.rejectReason.trim()) {
-    this.showErrorToast('Vui lòng nhập lý do từ chối');
-    return;
-  }
-
-  this.jobPostService.rejectJobPost(this.selectedJob.id).subscribe({
-    next: () => {
-      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
-      this.onCloseRejectModal();
-      this.loadJobPostings();
-    },
-    error: () => {
-      this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+  onSubmitReject(): void {
+    const targetId = this.selectedJob?.id ? String(this.selectedJob.id) : '';
+    if (!targetId || !this.rejectReason.trim()) {
+      this.showErrorToast('Vui lòng nhập lý do từ chối');
+      return;
     }
-  });
-}
+
+    this.jobPostService.rejectJobPost(targetId, this.rejectReason).subscribe({
+      next: () => {
+        this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+        this.onCloseRejectModal();
+        // Đóng hộp chi tiết sau khi từ chối thành công
+        this.onCloseDetail();
+        // Cập nhật trạng thái tại chỗ để không mất job khỏi danh sách
+        this.updateLocalStatus(targetId, JobStatus.Rejected, this.rejectReason);
+        this.updateSummaryCounts();
+        // Force re-render list
+        this.filteredPostings = [...this.filteredPostings];
+        this.jobPostings = [...this.jobPostings];
+      },
+      error: () => {
+        this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+      }
+    });
+  }
 
 
   onViewRejectReason(posting: JobApproveViewDto): void {

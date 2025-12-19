@@ -393,29 +393,33 @@
       <div class="form-section">
         <h3 class="section-title">Địa điểm làm việc</h3>
 
-        <app-input-field
+        <!-- Địa điểm làm việc - dùng rich-text-editor -->
+        <app-rich-text-editor
           label="Địa điểm làm việc"
-          type="text"
           placeholder="Nhập địa điểm làm việc cụ thể"
           [required]="true"
-          [error]="getFieldError('workLocation')"
           [(ngModel)]="jobForm.workLocation"
           (ngModelChange)="onFieldChange('workLocation')"
           name="workLocation"
         >
-        </app-input-field>
+        </app-rich-text-editor>
+        <div class="error-message" *ngIf="getFieldError('workLocation')">
+          {{ getFieldError('workLocation') }}
+        </div>
 
-        <app-input-field
+        <!-- Thời gian làm việc - dùng rich-text-editor -->
+        <app-rich-text-editor
           label="Thời gian làm việc"
-          type="text"
           placeholder="Nhập thời gian làm việc cụ thể"
           [required]="true"
-          [error]="getFieldError('workTime')"
           [(ngModel)]="jobForm.workTime"
           (ngModelChange)="onFieldChange('workTime')"
           name="workTime"
         >
-        </app-input-field>
+        </app-rich-text-editor>
+        <div class="error-message" *ngIf="getFieldError('workTime')">
+          {{ getFieldError('workTime') }}
+        </div>
       </div>
 
       <!-- Preview Modal -->

@@ -15,7 +15,7 @@ import { ToastNotificationComponent } from '../../../../shared/components/toast-
   template: `
     <div class="uploaded-cv-view-container">
       <!-- Header with Controls -->
-      <div class="cv-view-header">
+      <div class="header-container">
         <div class="header-left">
           <button class="btn-back" (click)="onBack()">
             <i class="fa fa-arrow-left"></i>
@@ -108,7 +108,7 @@ import { ToastNotificationComponent } from '../../../../shared/components/toast-
       overflow: hidden;
     }
 
-    .cv-view-header {
+    .header-container {
       display: flex;
       align-items: center;
       justify-content: space-between;

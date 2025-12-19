@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
-import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
@@ -58,6 +58,12 @@ export class CandidateProfileComponent implements OnInit {
 
   ngOnInit() {
     this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   loadProfileData() {
@@ -121,6 +127,12 @@ export class CandidateProfileComponent implements OnInit {
           address: response.location || response.address || '',
           location: response.location || ''
         };
+
+        // Đồng bộ trạng thái "Cho phép NTD tìm kiếm hồ sơ" từ ProfileVisibility
+        const anyResponse: any = response as any;
+        if (anyResponse.profileVisibility !== undefined && anyResponse.profileVisibility !== null) {
+          this.allowRecruiterSearch = anyResponse.profileVisibility;
+        }
 
         this.isLoading = false;
       },
@@ -362,8 +374,21 @@ export class CandidateProfileComponent implements OnInit {
   }
 
   onToggleJobSearch() {
-    if (this.jobSearchEnabled) this.jobSearchEnabled = false;
-    else this.showEnableJobSearchModal = true;
+    if (this.jobSearchEnabled) {
+      // Tắt tìm việc trực tiếp
+      this.profileService.updateJobStatus(false).subscribe({
+        next: () => {
+          this.jobSearchEnabled = false;
+          localStorage.setItem('vcareer_job_search_enabled', 'false');
+          this.showSuccessMessage('Đã tắt tìm việc thành công');
+        },
+        error: () => {
+          this.showErrorMessage('Không thể tắt tìm việc. Vui lòng thử lại.');
+        }
+      });
+    } else {
+      this.showEnableJobSearchModal = true;
+    }
   }
 
   onJobSearchToggle(event: Event) {
@@ -379,7 +404,24 @@ export class CandidateProfileComponent implements OnInit {
 
   onAllowRecruiterSearchToggle(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
+    const newValue = target.checked;
+
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch
+          ? "Đã bật cho phép NTD tìm kiếm hồ sơ"
+          : "Đã tắt cho phép NTD tìm kiếm hồ sơ";
+        this.showSuccessMessage(message);
+      },
+      error: (error) => {
+        console.error("Error updating profile visibility:", error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showErrorMessage("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+      }
+    });
   }
 
   onCloseEnableJobSearchModal() {
@@ -387,8 +429,16 @@ export class CandidateProfileComponent implements OnInit {
   }
 
   onEnableJobSearch(selectedCvIds: string[]) {
-    this.jobSearchEnabled = true;
-    this.showSuccessMessage('Đã bật tìm việc thành công!');
+    this.profileService.updateJobStatus(true).subscribe({
+      next: () => {
+        this.jobSearchEnabled = true;
+        localStorage.setItem('vcareer_job_search_enabled', 'true');
+        this.showSuccessMessage('Đã bật tìm việc thành công!');
+      },
+      error: () => {
+        this.showErrorMessage('Không thể bật tìm việc. Vui lòng thử lại.');
+      }
+    });
   }
 }
 

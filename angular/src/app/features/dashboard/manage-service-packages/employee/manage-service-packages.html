@@ -25,7 +25,7 @@
         <span class="breadcrumb-item">Quản lí các gói dịch vụ</span>
       </div>
     </div>
-
+    
     <!-- Action Buttons -->
     <div class="header-actions">
       <app-button type="primary" size="medium" (click)="onCreatePackage()">
@@ -65,25 +65,25 @@
 
         <!-- Filter Bar -->
         <div class="filter-bar">
-         <div class="filter-group">
+          <div class="filter-group">
     <app-select-field
       placeholder="Tất cả trạng thái"
-      [options]="statusOptions"
+              [options]="statusOptions"
       [(ngModel)]="filterStatus"
       (ngModelChange)="onFilterChange()"
     >
     </app-select-field>
-  </div>
+          </div>
   
-  <div class="filter-group">
-    <app-select-field
-      placeholder="Tất cả loại"
-      [options]="typeOptions"
-      [(ngModel)]="filterType"
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả loại"
+              [options]="typeOptions"
+              [(ngModel)]="filterType"
       (ngModelChange)="onFilterChange()"
     >
-    </app-select-field>
-  </div>
+            </app-select-field>
+          </div>
         </div>
       </div>
 
@@ -161,8 +161,8 @@
                   <button class="actions-menu-btn" (click)="toggleActionsMenu(pkg.id, $event)">
                     <i class="fa fa-ellipsis-h"></i>
                   </button>
-                  <div
-                    class="actions-menu"
+                  <div 
+                    class="actions-menu" 
                     [class.show]="showActionsMenu === pkg.id"
                     [attr.data-package-id]="pkg.id"
                     (click)="$event.stopPropagation()"
@@ -380,7 +380,7 @@
         <span>Kích hoạt ngay</span>
       </label>
     </div>
-
+    
     <!-- Modal Actions -->
     <div class="modal-actions">
       <app-button type="secondary" size="medium" (click)="showCreatePackageModal = false">
@@ -468,8 +468,8 @@
       <div class="form-group" *ngIf="packageForm.isLimited">
         <label class="form-label">Tổng số lượng gói</label>
         <div class="readonly-field">{{ packageForm.totalLimitpackage || '-' }}</div>
-      </div>
-      <div class="form-group" *ngIf="packageForm.isBuyLimited">
+    </div>
+    <div class="form-group" *ngIf="packageForm.isBuyLimited">
         <label class="form-label">Số lượt mua tối đa</label>
         <div class="readonly-field">{{ packageForm.totalBuyEachUser || '-' }}</div>
       </div>
@@ -512,7 +512,7 @@
         <span>Kích hoạt</span>
       </label>
     </div>
-
+    
     <!-- Modal Actions -->
     <div class="modal-actions">
       <app-button type="secondary" size="medium" (click)="showEditPackageModal = false">
@@ -577,8 +577,8 @@
               <span class="selected-badge" *ngIf="getSelectedServicesCount(group) > 0">
                 {{ getSelectedServicesCount(group) }} đã chọn
               </span>
-            </div>
-          </div>
+        </div>
+      </div>
 
           <!-- Group Content -->
           <div class="group-content" *ngIf="group.expanded">
@@ -594,7 +594,7 @@
                   [checked]="isServiceSelected(group, service.id)"
                   (click)="$event.stopPropagation()"
                 />
-              </div>
+    </div>
               <div class="service-info">
                 <div class="service-name">{{ service.name }}</div>
                 <div class="service-description">{{ service.description }}</div>
@@ -611,16 +611,16 @@
                   <span class="meta-item" *ngIf="service.value">
                     <i class="fa fa-star"></i> Giá trị: {{ service.value }}
                   </span>
-                </div>
-              </div>
+    </div>
+  </div>
               <div class="service-status">
                 <i class="fa fa-check-circle" *ngIf="isServiceSelected(group, service.id)"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+      </div>
       </div>
     </div>
+        </div>
+      </div>
+        </div>
 
     <!-- Summary -->
     <div

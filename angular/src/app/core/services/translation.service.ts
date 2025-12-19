@@ -411,6 +411,7 @@ export class TranslationService {
       // Write CV
       'write_cv.unnamed_cv': 'CV chưa đặt tên',
       'write_cv.preview': 'Xem trước',
+      'write_cv.export_pdf': 'Xuất PDF',
       'write_cv.save_cv': 'Lưu CV',
       'write_cv.edit_photo': 'Sửa ảnh',
       'write_cv.fullname_placeholder': 'Họ và tên',
@@ -956,6 +957,7 @@ export class TranslationService {
       // Write CV
       'write_cv.unnamed_cv': 'Unnamed CV',
       'write_cv.preview': 'Preview',
+      'write_cv.export_pdf': 'Export PDF',
       'write_cv.save_cv': 'Save CV',
       'write_cv.edit_photo': 'Edit Photo',
       'write_cv.fullname_placeholder': 'Full Name',
