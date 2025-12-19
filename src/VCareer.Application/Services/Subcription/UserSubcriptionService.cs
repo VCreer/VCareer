@@ -235,8 +235,7 @@ namespace VCareer.Services.Subcription
                 {
                     if (childService.IsAutoActive) continue; // chi lay cac child service khong auto active
                     var user_childServices = await _user_ChildServiceRepository.FindAsync(
-                        x => x.UserId == userId &&
-                        x.ChildServiceId == childService.Id &&
+                        x => x.ChildServiceId == childService.Id &&
                         x.UserSubcriptionId == userSubcription.Id);
 
                     var option = new OptionsChildServiceViewDto();
@@ -249,7 +248,6 @@ namespace VCareer.Services.Subcription
                             user_ChildServices = null,
                             user_subcription = userSubcriptionViewDto,
                             subcriptionsViewDto = subcriptionsViewDto
-
                         };
                     }
                     else

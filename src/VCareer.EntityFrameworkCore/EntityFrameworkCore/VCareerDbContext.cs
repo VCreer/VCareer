@@ -818,7 +818,7 @@ public class VCareerDbContext :
 
             b.HasOne(x => x.User)
              .WithMany()
-             .HasForeignKey(x => x.UserId)
+             .HasForeignKey(x => x.UserActiveId)
              .OnDelete(DeleteBehavior.Restrict);
 
 

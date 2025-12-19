@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using Castle.Core.Configuration;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ using VCareer.IServices.IGeoServices;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
+using System.Text.Json;
+using System.IO;
 
 namespace VCareer.Services.Geo
 {
@@ -20,7 +23,7 @@ namespace VCareer.Services.Geo
         private readonly IDistributedCache<List<ProvinceDto>> _cache;
         private const string KEY_PREFIX = "Geo:";
 
-        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache)
+        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
             _cache = cache;
@@ -30,12 +33,8 @@ namespace VCareer.Services.Geo
             var cached = await _cache.GetAsync(KEY_PREFIX);
             if (cached != null) return cached;
 
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync("https://provinces.open-api.vn/api/v2/?depth=2");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var provinces = JsonSerializer.Deserialize<List<ProvinceDto>>(content, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var json = await File.ReadAllTextAsync("Geo.json");
+            var provinces = JsonSerializer.Deserialize<List<ProvinceDto>>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             if (provinces == null) throw new BusinessException("Cannot get provinces data from external api");
 
             await _cache.SetAsync(
@@ -47,7 +46,7 @@ namespace VCareer.Services.Geo
             Console.WriteLine(provinces);
 
             return provinces;
-        } 
+        }
 
         public async Task<string> GetProvinceNameByCode(int provinceCode)
         {
@@ -55,22 +54,22 @@ namespace VCareer.Services.Geo
             var provinces = await GetProvincesAsync();
             if (provinces == null) throw new BusinessException("Cannot get provinces data from external api");
 
-            var provinceName =provinces.FirstOrDefault(p=>p.Code==provinceCode)?.Name;
-            if(provinceName==null) throw new BusinessException("Cannot get province name from external api");
+            var provinceName = provinces.FirstOrDefault(p => p.Code == provinceCode)?.Name;
+            if (provinceName == null) throw new BusinessException("Cannot get province name from external api");
 
             return provinceName;
         }
 
-        public async Task<string> GetWardNameByCode(int? wardCode , int provinceCode )
+        public async Task<string> GetWardNameByCode(int? wardCode, int provinceCode)
         {
-            if(wardCode==null) return string.Empty;
+            if (wardCode == null) return string.Empty;
             var provinces = await GetProvincesAsync();
             if (provinces == null) throw new BusinessException("Cannot get provinces data from external api");
-            var wards =provinces.FirstOrDefault(p=>p.Code==provinceCode)?.Ward;
-            if(wards ==null) throw new BusinessException("Cannot get wards data from external api");
+            var wards = provinces.FirstOrDefault(p => p.Code == provinceCode)?.Ward;
+            if (wards == null) throw new BusinessException("Cannot get wards data from external api");
 
-            var wardName = wards.FirstOrDefault(w=>w.Code == wardCode)?.Name;
-            if (wardName== null) throw new BusinessException("Cannot get province name from external api");
+            var wardName = wards.FirstOrDefault(w => w.Code == wardCode)?.Name;
+            if (wardName == null) throw new BusinessException("Cannot get province name from external api");
 
             return wardName;
         }

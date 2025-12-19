@@ -109,15 +109,16 @@ namespace VCareer.Services.Job
             jobPost.ApproveAt = DateTime.Now;
 
             var jobEffects = await _jobAffectingRepository.GetListAsync(x => x.JobPostId == jobPost.Id);
-            if (jobEffects != null || jobEffects.Count > 0)
+            if (jobEffects != null && jobEffects.Count > 0)
             {
                 //chay nhung cai child service ko tu auto active de tranh  bi lap logic 
-                var childServiceIds = jobEffects.Where(x => x.Status == ChildServiceStatus.Inactive).Select(x => x.ChildServiceId).ToList();
+                var childServiceIds = jobEffects.Where(x => x.Status == ChildServiceStatus.Inactive).Select(x => x.ChildServiceId).Distinct().ToList();
                 foreach (var childServiceId in childServiceIds)
                 {
                     var childService = await _childServiceRepository.GetAsync(childServiceId);
                     if (childService == null) continue;
-                    if (jobPost.Status == JobStatus.Draft && childService.Target == ServiceTarget.JobPost && childService.IsEnable) await _effectingJobService.AddJobBoostLogic(Guid.Parse(id), childServiceId);
+                    if ( childService.Target == ServiceTarget.JobPost && childService.IsEnable)
+                        await _effectingJobService.AddJobBoostLogic(jobPost.Id, childServiceId);
                 }
             }
             await _jobPostRepository.UpdateAsync(jobPost, true);
@@ -126,39 +127,56 @@ namespace VCareer.Services.Job
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string id)
+        public async Task RejectJobPostAsync(string jobId)
         {
 
-            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(jobId));
+            if (jobPost == null) throw new BusinessException($"Job với ID '{jobId}' không tồn tại hoặc được xóa.");
 
             var user = await _identityUserRepository.GetAsync(jobPost.RecruiterId);
             if (user == null) throw new BusinessException("owner of this jobpost not found");
 
             jobPost.Status = JobStatus.Rejected;
             await _jobPostRepository.UpdateAsync(jobPost, true);
-            //logic tra lai luot dung khi bi reject
-            //var jobEffects = await _jobAffectingRepository.GetListAsync(x => x.JobPostId == jobPost.Id);
-            //if (jobEffects != null || jobEffects.Count > 0)
-            //{
-            //    foreach (var jobEffect in jobEffects)
-            //    {
-            //        var user_childService = await _userChildServiceRepository.FindAsync(x => x.Id == jobEffect.User_ChildServiceId);
-            //    if(user_childService ==null) continue;
-            //    //truờng hợp thằng chủ thì trả lại lần dùng
-            //        if (user_childService.IsPrimaryOwner) user_childService.UsedTime--;
-            //        if (!user_childService.IsPrimaryOwner) { 
-            //        var ownerUserCHildService = await _userChildServiceRepository.FindAsync(x => x.== user_childService.ParentId);
 
-            //        }
-            //    }
-            //}
-            // }
-            //logic trả lại service
+            // logic tra lai luot dung khi bi reject
+            var jobEffects = await _jobAffectingRepository.GetListAsync(x => x.JobPostId == jobPost.Id);
+            if (jobEffects?.Any() == true)
+            {
+                foreach (var jobEffect in jobEffects)
+                {
+                    var user_childService = await _userChildServiceRepository.FindAsync(x => x.Id == jobEffect.User_ChildServiceId);
+                    if (user_childService == null) continue;
 
-            // TODO: send email cho recruiter với nội dung từ Reject reason 
+                    //truờng hợp user childservice chỉ mới dùng lần đầu mà bị reject thì xóa luôn
+                    if (user_childService.UsedTime <= 1)
+                    {
+                        await _userChildServiceRepository.DeleteAsync(user_childService.Id);
+                        continue;
+                    }
+
+                    //cập nhật status cho các user child serivce bị hết lượt dùng sau khi reject lần dùng service này 
+                    if (user_childService.Status == ChildServiceStatus.UsageLimitReached)
+                    {
+                        var userChildServicesLimitReached = await _userChildServiceRepository.GetListAsync(x => x.ChildServiceId == jobEffect.ChildServiceId && x.UserSubcriptionId == user_childService.UserSubcriptionId);
+                        foreach (var item in userChildServicesLimitReached) item.Status = ChildServiceStatus.Active;
+                        await _userChildServiceRepository.UpdateManyAsync(userChildServicesLimitReached);
+                    }
+
+
+                    user_childService.UsedTime -= 1;
+                    await _userChildServiceRepository.UpdateAsync(user_childService);
+                }
+            }
+
+            //cập nhật lại job priority score và xóa luôn job affecting
+            await _effectingJobService.DeactiveAllEffectingJobByJobID(jobPost.Id);
+            await _jobAffectingRepository.DeleteManyAsync(jobEffects);
+
         }
+
+
+
         [Authorize(VCareerPermission.JobPost.LoadJobNeedApprove)]
         public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
         {
@@ -348,6 +366,7 @@ namespace VCareer.Services.Job
             }
 
         }
+
         [Authorize(VCareerPermission.JobPost.CLose)]
         public async Task CloseJobPost(string id)
         {
@@ -366,6 +385,7 @@ namespace VCareer.Services.Job
             //cap nhat job effect (neu co)
             foreach (var jobId in jobIndexedExpiredId) await _effectingJobService.DeactiveAllEffectingJobByJobID(jobId);
         }
+
         [Authorize(VCareerPermission.JobPost.Create)]
         public async Task CreateJobPost(JobPostCreateDto dto)
         {
@@ -435,6 +455,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+
         [Authorize(VCareerPermission.JobPost.Delete)]
         public async Task DeleteJobPost(string id)
         {
@@ -463,6 +484,7 @@ namespace VCareer.Services.Job
 
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
         }
+
         [Authorize(VCareerPermission.JobPost.Statistics)]
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)
         {
@@ -476,6 +498,7 @@ namespace VCareer.Services.Job
         {
             throw new NotImplementedException();
         }
+
         [Authorize(VCareerPermission.JobPost.Update)]
         public async Task UpdateJobPost(JobPostUpdateDto dto)
         {
