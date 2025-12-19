@@ -36,13 +36,11 @@ export class AuthGuard implements CanActivate {
 
         // CASE 1: Route không yêu cầu role cụ thể → cho phép truy cập (public route)
         if (!requiredRole) {
-          console.log('[AuthGuard] Public route, access granted:', state.url);
           return true;
         }
 
         // CASE 2: Route yêu cầu role nhưng chưa đăng nhập → redirect to login
         if (!user) {
-          console.log('[AuthGuard] Protected route requires login:', state.url);
           this.redirectToLogin(requiredRole, state.url);
           return false;
         }
@@ -66,7 +64,6 @@ export class AuthGuard implements CanActivate {
         }
 
         // CASE 5: Đúng role → cho phép truy cập
-        console.log('[AuthGuard] Access granted for:', state.url);
         return true;
       })
     );
@@ -82,7 +79,6 @@ export class AuthGuard implements CanActivate {
       CANDIDATE: ['/candidate/login'],
     };
 
-    console.log(`[AuthGuard] Redirecting to login for role: ${requiredRole}`);
     this.router.navigate(loginMap[requiredRole], {
       queryParams: { returnUrl: attemptedUrl }
     });
@@ -98,7 +94,6 @@ export class AuthGuard implements CanActivate {
       CANDIDATE: ['candidate/home'],
     };
 
-    console.log(`[AuthGuard] Redirecting to home for role: ${role}`);
     this.router.navigate(homeMap[role]).catch(err => {
       console.error('[AuthGuard] Navigation error:', err);
     });

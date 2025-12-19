@@ -79,11 +79,6 @@ export class JobListComponent implements OnInit, OnChanges {
    */
   ngOnChanges(changes: SimpleChanges) {
     if (changes['jobs'] && this.jobs) {
-      console.log('\n🔄 JobListComponent: Received new jobs from parent');
-      console.log('   📦 Jobs count:', this.jobs.length);
-      console.log('   📊 Total count:', this.totalCount);
-      console.log('   📄 Jobs data:', this.jobs);
-
       this.updateFilteredJobs();
     }
   }
@@ -99,10 +94,6 @@ export class JobListComponent implements OnInit, OnChanges {
     this.syncSavedStatus();
 
     this.calculateTotalPages();
-
-    console.log('✅ JobListComponent: filteredJobs updated');
-    console.log('   📄 Filtered count:', this.filteredJobs.length);
-    console.log('   📑 Total pages:', this.totalPages);
   }
 
   /**
@@ -425,13 +416,11 @@ export class JobListComponent implements OnInit, OnChanges {
   }
 
   onQuickView(job: any) {
-    console.log('Quick view job:', job);
     // Emit quick view event
     this.quickView.emit(job);
   }
 
   hideJob(job: any) {
-    console.log('Hide job:', job);
     // Handle hide job logic - remove job from both arrays
     const indexInJobs = this.jobs.findIndex(j => j.id === job.id);
     const indexInFiltered = this.filteredJobs.findIndex(j => j.id === job.id);

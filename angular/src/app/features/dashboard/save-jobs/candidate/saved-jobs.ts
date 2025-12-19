@@ -147,9 +147,6 @@ export class SavedJobsComponent implements OnInit {
         return '';
       }
       
-      // Debug log
-      console.log('Original date:', savedAt, '→ Parsed UTC:', date.toISOString(), '→ Local:', date.toString());
-      
       // Lấy UTC components
       const utcYear = date.getUTCFullYear();
       const utcMonth = date.getUTCMonth();

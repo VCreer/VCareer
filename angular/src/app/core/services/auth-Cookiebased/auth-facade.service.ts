@@ -35,7 +35,6 @@ export class AuthFacadeService {
   loadCurrentUser(): Observable<CurrentUserInfoDto | null> {
     // Return cached request nếu có
     if (this.loadUserRequest$) {
-      console.log('[AuthFacade] Returning cached user request');
       return this.loadUserRequest$;
     }
 
@@ -44,7 +43,6 @@ export class AuthFacadeService {
       timeout(5000), // Timeout sau 5s
       tap(user => {
         this.state.setUser(user);
-        console.log('[AuthFacade] User loaded:', user?.email || 'unknown');
       }),
       catchError(err => {
         console.warn('[AuthFacade] Cannot load user → guest mode', err.status || err.message);
@@ -63,7 +61,6 @@ export class AuthFacadeService {
    * Dùng khi: login, logout, refresh profile
    */
   forceReloadUser(): Observable<CurrentUserInfoDto | null> {
-    console.log('[AuthFacade] Forcing user reload (cache cleared)');
     this.loadUserRequest$ = null;
     return this.loadCurrentUser();
   }
@@ -151,7 +148,6 @@ export class AuthFacadeService {
       tap(() => {
         this.state.setUser(null);
         this.loadUserRequest$ = null;
-        console.log('[AuthFacade] User logged out');
       }),
       map(() => void 0),
       catchError(err => {
@@ -173,7 +169,6 @@ export class AuthFacadeService {
       tap(() => {
         this.state.setUser(null);
         this.loadUserRequest$ = null;
-        console.log('[AuthFacade] User logged out from all devices');
       }),
       map(() => void 0),
       catchError(err => {

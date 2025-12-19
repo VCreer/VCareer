@@ -235,6 +235,11 @@ export class RecruiterRegisterComponent implements OnInit {
     this.router.navigate(['/recruiter/login']);
   }
 
+  navigateToTermsOfService(event: Event): void {
+    event.preventDefault();
+    window.open('/recruiter/terms-of-service', '_blank');
+  }
+
   async signInWithGoogle() {
     try {
       this.isLoading = true;
