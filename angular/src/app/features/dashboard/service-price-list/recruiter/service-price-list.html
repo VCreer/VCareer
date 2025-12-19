@@ -3,11 +3,12 @@
   <app-toast-notification [show]="showToast" [message]="toastMessage" [type]="toastType"
     (close)="onCloseToast()"></app-toast-notification>
 
-  <!-- Page Content -->
-  <div class="page-content" [style.max-width]="getContentMaxWidth()">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-left">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box"
+       [style.left.px]="sidebarWidth"
+       [style.width]="'calc(100% - ' + sidebarWidth + 'px)'">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
         <button class="back-button" (click)="onBack()">
           <i class="fa fa-arrow-left"></i>
           <span>Quay lại</span>
@@ -24,20 +25,25 @@
         <span>Thêm giá mới</span>
       </app-button>
     </div>
+  </div>
 
-    <!-- Current Price Card -->
-    <div class="current-price-card">
-      <div class="card-header">
-        <i class="fa fa-dollar-sign"></i>
-        <span>Giá hiện tại đang áp dụng</span>
-      </div>
-      <div class="card-body">
-        <div class="current-price" *ngIf="!isLoadingCurrentPrice">
-          {{ formatPrice(currentPrice) }}
+  <!-- Page Content -->
+  <div class="page-content" [style.max-width]="getContentMaxWidth()">
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-card-icon" style="border-color: #0f83ba; background: #e0f2fe;">
+          <i class="fa fa-dollar-sign" style="color: #0f83ba;"></i>
         </div>
-        <div class="loading-spinner" *ngIf="isLoadingCurrentPrice">
-          <i class="fa fa-spinner fa-spin"></i>
-          <span>Đang tải...</span>
+        <div class="summary-card-content">
+          <div class="summary-card-value" *ngIf="!isLoadingCurrentPrice">
+            {{ formatPrice(currentPrice) }}
+          </div>
+          <div class="summary-card-value" *ngIf="isLoadingCurrentPrice">
+            <i class="fa fa-spinner fa-spin"></i>
+          </div>
+          <div class="summary-card-label">Giá hiện tại đang áp dụng</div>
         </div>
       </div>
     </div>

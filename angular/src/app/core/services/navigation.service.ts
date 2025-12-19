@@ -74,13 +74,13 @@ export class NavigationService {
     let userRole: UserRole = null;
     
     if (roles.length > 0) {
-      const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
-      
+    const rolesLowerCase = roles.map((r: string) => r.toLowerCase());
+    
       // Priority: recruiter > candidate
-      if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
-        userRole = 'recruiter';
-      } else if (rolesLowerCase.includes('candidate')) {
-        userRole = 'candidate';
+    if (rolesLowerCase.some((r: string) => r.includes('recruiter') || r === 'hr_staff')) {
+      userRole = 'recruiter';
+    } else if (rolesLowerCase.includes('candidate')) {
+      userRole = 'candidate';
       }
     } else {
       // Fallback: determine from route
@@ -236,7 +236,7 @@ export class NavigationService {
   }
 
   // Đăng nhập candidate
-  loginAsCandidate() {  
+  loginAsCandidate() {
     // Wait for user to be set in AuthStateService by login flow
     const currentUser = this.authStateService.user;
     if (currentUser) {
@@ -250,9 +250,9 @@ export class NavigationService {
       if (userAfterDelay) {
         this.updateAuthStateFromUser(userAfterDelay);
       } else {
-        this.isLoggedInSubject.next(true);
-        this.userRoleSubject.next('candidate');
-        this.isVerifiedSubject.next(false);
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('candidate');
+          this.isVerifiedSubject.next(false);
       }
     }, 100);
   }
@@ -278,9 +278,9 @@ export class NavigationService {
         }
       } else {
         console.warn('[NavigationService] User not loaded, setting default recruiter state');
-        this.isLoggedInSubject.next(true);
-        this.userRoleSubject.next('recruiter');
-        this.isVerifiedSubject.next(false);
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('recruiter');
+          this.isVerifiedSubject.next(false);
         this.router.navigate(['/recruiter/recruiter-verify']);
       }
     }, 300);
@@ -294,9 +294,9 @@ export class NavigationService {
       if (user) {
         this.updateAuthStateFromUser(user);
       } else {
-        this.isLoggedInSubject.next(true);
-        this.userRoleSubject.next('recruiter');
-        this.isVerifiedSubject.next(false);
+          this.isLoggedInSubject.next(true);
+          this.userRoleSubject.next('recruiter');
+          this.isVerifiedSubject.next(false);
       }
       this.router.navigate(['/recruiter/recruiter-setting']);
     }, 100);
@@ -327,12 +327,12 @@ export class NavigationService {
   
   private redirectAfterLogout(role: UserRole) {
     if (role === 'candidate') {
-      this.router.navigate(['/']);
+          this.router.navigate(['/']);
     } else if (role === 'recruiter') {
-      this.router.navigate(['/recruiter/about-us']);
-    } else {
-      this.router.navigate(['/']);
-    }
+          this.router.navigate(['/recruiter/about-us']);
+        } else {
+          this.router.navigate(['/']);
+        }
   }
   
   // Xóa tất cả cookies liên quan đến authentication

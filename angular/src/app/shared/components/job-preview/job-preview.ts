@@ -40,7 +40,33 @@ export class JobPreviewComponent {
   private jobOptionsService = inject(JobOptionsService);
 
   getSalaryLabel(): string {
-    return this.jobOptionsService.getSalaryLabel(this.jobData.salary);
+    const label = this.jobOptionsService.getSalaryLabel(this.jobData.salary);
+    if (label) {
+      return label;
+    }
+    
+    // Nếu không match với JobOptionsService, format lại với mệnh giá
+    if (!this.jobData.salary || this.jobData.salary === 'negotiable') {
+      return 'Thỏa thuận';
+    }
+    
+    // Format salary range (ví dụ: "20-40" -> "20 - 40 triệu")
+    if (this.jobData.salary.includes('-')) {
+      const [min, max] = this.jobData.salary.split('-');
+      const minNum = parseInt(min, 10);
+      const maxNum = parseInt(max, 10);
+      if (!isNaN(minNum) && !isNaN(maxNum)) {
+        return `${minNum} - ${maxNum} triệu`;
+      }
+    }
+    
+    // Nếu là số đơn (ví dụ: "50" -> "50 triệu")
+    const numValue = parseInt(this.jobData.salary, 10);
+    if (!isNaN(numValue)) {
+      return `${numValue} triệu`;
+    }
+    
+    return this.jobData.salary;
   }
 
   getLocationLabel(): string {

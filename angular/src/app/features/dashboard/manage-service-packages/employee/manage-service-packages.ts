@@ -80,7 +80,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   statusOptions: SelectOption[] = [
-  { value: '', label: 'Tất cả trạng thái' },
+    { value: '', label: 'Tất cả trạng thái' },
   { value: 'true', label: 'Đang hoạt động' },
   { value: 'false', label: 'Ngừng hoạt động' }
 ];
@@ -217,7 +217,7 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
         this.applyFilters();
       }
     });
-}
+  }
 
   applyFilters(): void {
     let result = [...this.allPackages];

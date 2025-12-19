@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -10,6 +10,7 @@ import { PositionType } from '../../../proxy/constants/job-constant/position-typ
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
 import { JobSearchService } from '../../../proxy/services/job/job-search.service';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-job-listings',
@@ -18,7 +19,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
   templateUrl: './job-listings.html',
   styleUrls: ['./job-listings.scss']
 })
-export class JobListingsComponent implements OnInit, OnChanges {
+export class JobListingsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() jobListings: JobViewDto[] = [];  
   @Input() currentPage = 1;
   @Input() totalPages = 1;
@@ -29,12 +30,15 @@ export class JobListingsComponent implements OnInit, OnChanges {
   @Output() jobClick = new EventEmitter<string>();  // ✅ Đổi thành string vì jobId là string
   @Output() categorySelected = new EventEmitter<string[]>();  // ← NEW
   @Output() locationSelected = new EventEmitter<{provinceIds: number[], districtIds: number[]}>();  // ← NEW
+  // Event riêng cho auto paging để parent xử lý mà không scroll lên đầu
+  @Output() autoPageChange = new EventEmitter<number>();
 
   defaultLogo = 'assets/images/home/company-placeholder.png';
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
   isAuthenticated = false;
+  private autoPageInterval: any;
 
   onImgError(event: Event) {
     (event.target as HTMLImageElement).src = this.defaultLogo;
@@ -131,7 +135,8 @@ export class JobListingsComponent implements OnInit, OnChanges {
   constructor(
     private translationService: TranslationService,
     private jobSearchService: JobSearchService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -141,11 +146,26 @@ export class JobListingsComponent implements OnInit, OnChanges {
         this.syncSavedStatus();
       }
     });
+
+    // Tự động chuyển trang cho phần job-listings (trang chủ)
+    this.startAutoPaging();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['jobListings'] && this.isAuthenticated) {
       this.syncSavedStatus();
+    }
+
+    // Khi tổng số trang hoặc trang hiện tại thay đổi thì khởi động lại auto paging
+    if (changes['totalPages'] || changes['currentPage']) {
+      this.startAutoPaging();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.autoPageInterval) {
+      clearInterval(this.autoPageInterval);
+      this.autoPageInterval = null;
     }
   }
   translate(key: string): string { return this.translationService.translate(key); }
@@ -261,5 +281,42 @@ export class JobListingsComponent implements OnInit, OnChanges {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
+  }
+
+  /**
+   * Xử lý click "Xem tất cả" → chuyển sang trang danh sách việc làm
+   */
+  onViewAllClick(event: Event): void {
+    event.preventDefault();
+    this.router.navigate(['/job']);
+  }
+
+  /**
+   * Auto đổi trang: sau một khoảng thời gian sẽ tự động chuyển sang trang kế tiếp.
+   * Chỉ hoạt động khi totalPages > 1.
+   */
+  private startAutoPaging(): void {
+    // Clear interval cũ nếu có
+    if (this.autoPageInterval) {
+      clearInterval(this.autoPageInterval);
+      this.autoPageInterval = null;
+    }
+
+    if (!this.totalPages || this.totalPages <= 1) {
+      return;
+    }
+
+    // Mỗi 8 giây tự động nhảy sang trang tiếp theo
+    this.autoPageInterval = setInterval(() => {
+      if (!this.totalPages || this.totalPages <= 1) {
+        return;
+      }
+
+      const nextPage =
+        this.currentPage >= this.totalPages ? 1 : this.currentPage + 1;
+
+      // Emit sự kiện autoPageChange để parent cập nhật data mà không scroll
+      this.autoPageChange.emit(nextPage);
+    }, 8000);
   }
 }

@@ -37,6 +37,9 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
 
   trialPackages: ServicePackageWithPrice[] = [];
   regularPackages: ServicePackageWithPrice[] = [];
+  // Phân trang cho TOP JOBS
+  regularCurrentPage: number = 1;
+  readonly regularPageSize: number = 3;
 
   constructor(
     private translationService: TranslationService,
@@ -91,6 +94,7 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     if (!services || services.length === 0) {
       this.trialPackages = [];
       this.regularPackages = [];
+      this.regularCurrentPage = 1;
       return;
     }
 
@@ -122,6 +126,9 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
             this.regularPackages.push(packageItem);
           }
         });
+
+        // Reset về trang đầu sau khi load dữ liệu
+        this.regularCurrentPage = 1;
       },
       error: (error) => {
         console.error('Error loading prices:', error);
@@ -145,6 +152,9 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
             this.regularPackages.push(packageItem);
           }
         });
+
+        // Reset về trang đầu sau khi load dữ liệu (fallback)
+        this.regularCurrentPage = 1;
       }
     });
   }
@@ -157,6 +167,36 @@ export class BuyServicesComponent implements OnInit, OnDestroy {
     if (originalPrice <= 0 || currentPrice >= originalPrice) return '0';
     const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
     return discount.toFixed(0);
+  }
+
+  // ====== Helpers cho phân trang TOP JOBS ======
+  get regularTotalPages(): number {
+    if (!this.regularPackages || this.regularPackages.length === 0) return 1;
+    return Math.ceil(this.regularPackages.length / this.regularPageSize);
+  }
+
+  get pagedRegularPackages(): ServicePackageWithPrice[] {
+    if (!this.regularPackages || this.regularPackages.length === 0) return [];
+    const startIndex = (this.regularCurrentPage - 1) * this.regularPageSize;
+    const endIndex = startIndex + this.regularPageSize;
+    return this.regularPackages.slice(startIndex, endIndex);
+  }
+
+  goToRegularPage(page: number): void {
+    if (page < 1 || page > this.regularTotalPages) return;
+    this.regularCurrentPage = page;
+  }
+
+  goToPreviousRegularPage(): void {
+    if (this.regularCurrentPage > 1) {
+      this.regularCurrentPage--;
+    }
+  }
+
+  goToNextRegularPage(): void {
+    if (this.regularCurrentPage < this.regularTotalPages) {
+      this.regularCurrentPage++;
+    }
   }
 
   ngOnDestroy() {
