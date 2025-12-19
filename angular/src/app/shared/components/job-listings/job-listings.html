@@ -23,7 +23,7 @@
         <img 
           class="job-image" 
           loading="lazy" 
-          [src]="job.companyImageUrl || defaultLogo" 
+          [src]="getCompanyLogoUrl(job.companyImageUrl, job.companyId)" 
           [alt]="job.companyName || 'Company logo'" 
           (error)="onImgError($event)" 
         />

@@ -30,7 +30,6 @@ namespace VCareer.Models.Companies
 
         // Legal Information fields (gộp từ CompanyLegalInfo)
         public string TaxCode { get; set; }
-        public string? BusinessLicenseNumber { get; set; }
         public DateTime? BusinessLicenseIssueDate { get; set; }
         public string? BusinessLicenseIssuePlace { get; set; }
         public string? LegalRepresentative { get; set; }

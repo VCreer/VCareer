@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivityLogService } from '../../../../proxy/services/auth/activity-log/activity-log.service';
+import { ActivityLogService } from '../../../../proxy/http-api/controllers/activity-log.service';
 import type { ActivityLogWithStaffDto, ActivityLogFilterDto } from '../../../../proxy/dto/activity-log-dto/models';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
 import type { StaffListItemDto } from '../../../../proxy/dto/team-management-dto/models';

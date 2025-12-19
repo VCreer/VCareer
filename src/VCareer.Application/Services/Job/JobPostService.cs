@@ -461,7 +461,19 @@ namespace VCareer.Services.Job
                 .Take(pageSize)
                 .ToListAsync();
 
-            return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
+            var jobViewDtos = ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(jobs);
+            
+            // Load CompanyName from Companies table
+            var company = await _companyRepository.FindAsync(companyId);
+            if (company != null)
+            {
+                foreach (var jobDto in jobViewDtos)
+                {
+                    jobDto.CompanyName = company.CompanyName;
+                }
+            }
+            
+            return jobViewDtos;
         }
         [Authorize(VCareerPermission.JobPost.Statistics)]
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id)

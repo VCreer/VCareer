@@ -59,7 +59,6 @@ export interface CompanyLegalInfoDto extends EntityDto<number> {
   cultureVideoUrl?: string;
   verifyAt?: string;
   taxCode?: string;
-  businessLicenseNumber?: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace?: string;
   legalRepresentative?: string;
@@ -96,7 +95,6 @@ export interface CompanyVerificationViewDto extends EntityDto<number> {
   foundedYear?: number;
   websiteUrl?: string;
   taxCode?: string;
-  businessLicenseNumber?: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace?: string;
   legalRepresentative?: string;
@@ -199,7 +197,6 @@ export interface SubmitCompanyLegalInfoDto {
   industryId?: number;
   foundedYear?: number;
   taxCode: string;
-  businessLicenseNumber: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace: string;
   legalRepresentative: string;
@@ -221,7 +218,6 @@ export interface UpdateCompanyLegalInfoDto {
   foundedYear?: number;
   websiteUrl?: string;
   taxCode?: string;
-  businessLicenseNumber?: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace?: string;
   legalRepresentative?: string;
@@ -248,6 +244,10 @@ export interface UpdatePersonalInfoDto {
   experience?: number;
   salary?: number;
   workLocation?: string;
+}
+
+export interface UploadCompanyLogoInputDto {
+  file: IFormFile;
 }
 
 export interface UploadLegalDocumentInputDto {

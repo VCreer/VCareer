@@ -67,14 +67,6 @@ namespace VCareer.Services.Profile
                 throw new UserFriendlyException("Tax code already exists.");
             }
 
-            // Check if business license number already exists
-            var existingLicense = await _companyRepository.FirstOrDefaultAsync(
-                x => x.BusinessLicenseNumber == input.BusinessLicenseNumber);
-
-            if (existingLicense != null)
-            {
-                throw new UserFriendlyException("Business license number already exists.");
-            }
 
             var company = new Company
             {
@@ -92,7 +84,6 @@ namespace VCareer.Services.Profile
 
                 // Legal Information fields
                 TaxCode = input.TaxCode,
-                BusinessLicenseNumber = input.BusinessLicenseNumber,
                 BusinessLicenseIssueDate = input.BusinessLicenseIssueDate,
                 BusinessLicenseIssuePlace = input.BusinessLicenseIssuePlace,
                 LegalRepresentative = input.LegalRepresentative,
@@ -128,14 +119,6 @@ namespace VCareer.Services.Profile
                 throw new UserFriendlyException("Tax code already exists.");
             }
 
-            // Check if business license number already exists (excluding current record)
-            var existingLicense = await _companyRepository.FirstOrDefaultAsync(
-                x => x.BusinessLicenseNumber == input.BusinessLicenseNumber && x.Id != id);
-
-            if (existingLicense != null)
-            {
-                throw new UserFriendlyException("Business license number already exists.");
-            }
 
             // Update company information
             company.CompanyName = input.CompanyName;
@@ -151,7 +134,6 @@ namespace VCareer.Services.Profile
 
             // Update legal information
             company.TaxCode = input.TaxCode;
-            company.BusinessLicenseNumber = input.BusinessLicenseNumber;
             company.BusinessLicenseIssueDate = input.BusinessLicenseIssueDate;
             company.BusinessLicenseIssuePlace = input.BusinessLicenseIssuePlace;
             company.LegalRepresentative = input.LegalRepresentative;
@@ -229,7 +211,6 @@ namespace VCareer.Services.Profile
 
             // Clear legal information fields instead of deleting the company
             company.TaxCode = null;
-            company.BusinessLicenseNumber = null;
             company.BusinessLicenseIssueDate = null;
             company.BusinessLicenseIssuePlace = null;
             company.LegalRepresentative = null;

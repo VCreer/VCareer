@@ -41,10 +41,6 @@ namespace VCareer.Dto.Profile
         public string TaxCode { get; set; }
 
         [Required]
-        [StringLength(100)]
-        public string? BusinessLicenseNumber { get; set; }
-
-        [Required]
         public DateTime? BusinessLicenseIssueDate { get; set; }
 
         [Required]
@@ -102,9 +98,6 @@ namespace VCareer.Dto.Profile
         public string? TaxCode { get; set; }
 
         // Các trường pháp lý còn lại cho phép để trống khi chỉ cập nhật thông tin cơ bản
-        [StringLength(100)]
-        public string? BusinessLicenseNumber { get; set; }
-
         public DateTime? BusinessLicenseIssueDate { get; set; }
 
         [StringLength(255)]
@@ -150,7 +143,6 @@ namespace VCareer.Dto.Profile
         
         // Legal Information fields
         public string? TaxCode { get; set; }
-        public string? BusinessLicenseNumber { get; set; }
         public DateTime? BusinessLicenseIssueDate { get; set; }
         public string? BusinessLicenseIssuePlace { get; set; }
         public string? LegalRepresentative { get; set; }
@@ -215,7 +207,6 @@ namespace VCareer.Dto.Profile
         
         // Legal Information
         public string? TaxCode { get; set; }
-        public string? BusinessLicenseNumber { get; set; }
         public DateTime? BusinessLicenseIssueDate { get; set; }
         public string? BusinessLicenseIssuePlace { get; set; }
         public string? LegalRepresentative { get; set; }

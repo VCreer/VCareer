@@ -6811,11 +6811,105 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
+            "UploadCompanyLogoAsyncByIdAndInput": {
+              "uniqueName": "UploadCompanyLogoAsyncByIdAndInput",
+              "name": "UploadCompanyLogoAsync",
+              "httpMethod": "POST",
+              "url": "api/profile/company-legal-info/{id}/upload-logo",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "input",
+                  "typeAsString": "VCareer.Dto.Profile.UploadCompanyLogoInputDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.Profile.UploadCompanyLogoInputDto",
+                  "typeSimple": "VCareer.Dto.Profile.UploadCompanyLogoInputDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "input",
+                  "name": "File",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "FormFile",
+                  "descriptorName": "input"
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
             "GetLegalDocumentAsyncByStoragePath": {
               "uniqueName": "GetLegalDocumentAsyncByStoragePath",
               "name": "GetLegalDocumentAsync",
               "httpMethod": "GET",
               "url": "api/profile/company-legal-info/legal-document",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storagePath",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storagePath",
+                  "name": "storagePath",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Query",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
+            },
+            "GetCompanyLogoAsyncByStoragePath": {
+              "uniqueName": "GetCompanyLogoAsyncByStoragePath",
+              "name": "GetCompanyLogoAsync",
+              "httpMethod": "GET",
+              "url": "api/profile/company-legal-info/company-logo",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -7412,6 +7506,43 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.ProfileController"
             },
+            "UpdateJobStatusAsyncByIsSeekingJob": {
+              "uniqueName": "UpdateJobStatusAsyncByIsSeekingJob",
+              "name": "UpdateJobStatusAsync",
+              "httpMethod": "PUT",
+              "url": "api/profile/job-status",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isSeekingJob",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isSeekingJob",
+                  "name": "isSeekingJob",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.Profile.ProfileController"
+            },
             "DeleteAccountAsync": {
               "uniqueName": "DeleteAccountAsync",
               "name": "DeleteAccountAsync",
@@ -7426,652 +7557,6 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.Profile.ProfileController"
-            }
-          }
-        },
-        "VCareer.Services.Auth.ActivityLog.ActivityLogAppService": {
-          "controllerName": "ActivityLog",
-          "controllerGroupName": "ActivityLog",
-          "isRemoteService": true,
-          "isIntegrationService": false,
-          "apiVersion": null,
-          "type": "VCareer.Services.Auth.ActivityLog.ActivityLogAppService",
-          "interfaces": [
-            {
-              "type": "VCareer.IServices.IActivityLogService.IActivityLogAppService",
-              "name": "IActivityLogAppService",
-              "methods": [
-                {
-                  "name": "GetStaffActivityLogsAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "staffId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "input",
-                      "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.Dto.ActivityLogDto.ActivityLogListDto",
-                    "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogListDto"
-                  }
-                },
-                {
-                  "name": "GetMyActivityLogsAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto",
-                    "typeSimple": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto"
-                  }
-                },
-                {
-                  "name": "GetAllStaffActivityLogsAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "input",
-                      "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                      "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                      "isOptional": false,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto",
-                    "typeSimple": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto"
-                  }
-                },
-                {
-                  "name": "LogActivityAsync",
-                  "parametersOnMethod": [
-                    {
-                      "name": "userId",
-                      "typeAsString": "System.Guid, System.Private.CoreLib",
-                      "type": "System.Guid",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "activityType",
-                      "typeAsString": "VCareer.Models.ActivityLogs.ActivityType, VCareer.Domain.Shared",
-                      "type": "VCareer.Models.ActivityLogs.ActivityType",
-                      "typeSimple": "enum",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "action",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "description",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": false,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "entityId",
-                      "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                      "type": "System.Guid?",
-                      "typeSimple": "string?",
-                      "isOptional": true,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "entityType",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    },
-                    {
-                      "name": "metadata",
-                      "typeAsString": "System.String, System.Private.CoreLib",
-                      "type": "System.String",
-                      "typeSimple": "string",
-                      "isOptional": true,
-                      "defaultValue": null
-                    }
-                  ],
-                  "returnValue": {
-                    "type": "System.Void",
-                    "typeSimple": "System.Void"
-                  }
-                }
-              ]
-            }
-          ],
-          "actions": {
-            "GetStaffActivityLogsAsyncByStaffIdAndInput": {
-              "uniqueName": "GetStaffActivityLogsAsyncByStaffIdAndInput",
-              "name": "GetStaffActivityLogsAsync",
-              "httpMethod": "GET",
-              "url": "api/app/activity-log/staff-activity-logs/{staffId}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "staffId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "staffId",
-                  "name": "staffId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "ActivityType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "StartDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "EndDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SearchKeyword",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.ActivityLogDto.ActivityLogListDto",
-                "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogListDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.IServices.IActivityLogService.IActivityLogAppService"
-            },
-            "GetMyActivityLogsAsyncByInput": {
-              "uniqueName": "GetMyActivityLogsAsyncByInput",
-              "name": "GetMyActivityLogsAsync",
-              "httpMethod": "GET",
-              "url": "api/app/activity-log/my-activity-logs",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "ActivityType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "StartDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "EndDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SearchKeyword",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto",
-                "typeSimple": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.IServices.IActivityLogService.IActivityLogAppService"
-            },
-            "GetAllStaffActivityLogsAsyncByInput": {
-              "uniqueName": "GetAllStaffActivityLogsAsyncByInput",
-              "name": "GetAllStaffActivityLogsAsync",
-              "httpMethod": "GET",
-              "url": "api/app/activity-log/staff-activity-logs",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "input",
-                  "typeAsString": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto, VCareer.Application.Contracts",
-                  "type": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "typeSimple": "VCareer.Dto.ActivityLogDto.ActivityLogFilterDto",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "input",
-                  "name": "ActivityType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "StartDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "EndDate",
-                  "jsonName": null,
-                  "type": "System.DateTime?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SearchKeyword",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "Sorting",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "SkipCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                },
-                {
-                  "nameOnMethod": "input",
-                  "name": "MaxResultCount",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "input"
-                }
-              ],
-              "returnValue": {
-                "type": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto",
-                "typeSimple": "VCareer.Dto.ActivityLogDto.AllStaffActivityLogsListDto"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.IServices.IActivityLogService.IActivityLogAppService"
-            },
-            "LogActivityAsyncByUserIdAndActivityTypeAndActionAndDescriptionAndEntityIdAndEntityTypeAndMetadata": {
-              "uniqueName": "LogActivityAsyncByUserIdAndActivityTypeAndActionAndDescriptionAndEntityIdAndEntityTypeAndMetadata",
-              "name": "LogActivityAsync",
-              "httpMethod": "POST",
-              "url": "api/app/activity-log/log-activity",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "userId",
-                  "typeAsString": "System.Guid, System.Private.CoreLib",
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "activityType",
-                  "typeAsString": "VCareer.Models.ActivityLogs.ActivityType, VCareer.Domain.Shared",
-                  "type": "VCareer.Models.ActivityLogs.ActivityType",
-                  "typeSimple": "enum",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "action",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "description",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                },
-                {
-                  "name": "entityId",
-                  "typeAsString": "System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                  "type": "System.Guid?",
-                  "typeSimple": "string?",
-                  "isOptional": true,
-                  "defaultValue": null
-                },
-                {
-                  "name": "entityType",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                },
-                {
-                  "name": "metadata",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": true,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "userId",
-                  "name": "userId",
-                  "jsonName": null,
-                  "type": "System.Guid",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "activityType",
-                  "name": "activityType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "action",
-                  "name": "action",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "description",
-                  "name": "description",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "entityId",
-                  "name": "entityId",
-                  "jsonName": null,
-                  "type": "System.Guid?",
-                  "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "entityType",
-                  "name": "entityType",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                },
-                {
-                  "nameOnMethod": "metadata",
-                  "name": "metadata",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "System.Void",
-                "typeSimple": "System.Void"
-              },
-              "allowAnonymous": false,
-              "implementFrom": "VCareer.IServices.IActivityLogService.IActivityLogAppService"
             }
           }
         },
@@ -10756,7 +10241,7 @@
                   "type": "System.Boolean",
                   "typeSimple": "boolean",
                   "isOptional": true,
-                  "defaultValue": false
+                  "defaultValue": true
                 },
                 {
                   "name": "notes",
@@ -16115,6 +15600,48 @@
                     "type": "VCareer.Dto.FileDto.FileStreamResultDto",
                     "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
                   }
+                },
+                {
+                  "name": "UploadCompanyLogoAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "id",
+                      "typeAsString": "System.Int32, System.Private.CoreLib",
+                      "type": "System.Int32",
+                      "typeSimple": "number",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "file",
+                      "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                      "type": "Microsoft.AspNetCore.Http.IFormFile",
+                      "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                    "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+                  }
+                },
+                {
+                  "name": "GetCompanyLogoFileAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "storagePath",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "VCareer.Dto.FileDto.FileStreamResultDto",
+                    "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
+                  }
                 }
               ]
             }
@@ -16492,11 +16019,105 @@
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
             },
+            "UploadCompanyLogoAsyncByIdAndFile": {
+              "uniqueName": "UploadCompanyLogoAsyncByIdAndFile",
+              "name": "UploadCompanyLogoAsync",
+              "httpMethod": "POST",
+              "url": "api/app/company-legal-info/{id}/upload-company-logo",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Int32, System.Private.CoreLib",
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "file",
+                  "typeAsString": "Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features",
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "file",
+                  "name": "file",
+                  "jsonName": null,
+                  "type": "Microsoft.AspNetCore.Http.IFormFile",
+                  "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "FormFile",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
+                "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
+            },
             "GetLegalDocumentFileAsyncByStoragePath": {
               "uniqueName": "GetLegalDocumentFileAsyncByStoragePath",
               "name": "GetLegalDocumentFileAsync",
               "httpMethod": "GET",
               "url": "api/app/company-legal-info/legal-document-file",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "storagePath",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "storagePath",
+                  "name": "storagePath",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "VCareer.Dto.FileDto.FileStreamResultDto",
+                "typeSimple": "VCareer.Dto.FileDto.FileStreamResultDto"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.ICompanyLegalInfoAppService"
+            },
+            "GetCompanyLogoFileAsyncByStoragePath": {
+              "uniqueName": "GetCompanyLogoFileAsyncByStoragePath",
+              "name": "GetCompanyLogoFileAsync",
+              "httpMethod": "GET",
+              "url": "api/app/company-legal-info/company-logo-file",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
@@ -17136,6 +16757,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "UpdateJobStatusAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "isSeekingJob",
+                      "typeAsString": "System.Boolean, System.Private.CoreLib",
+                      "type": "System.Boolean",
+                      "typeSimple": "boolean",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Void",
+                    "typeSimple": "System.Void"
+                  }
                 }
               ]
             }
@@ -17413,6 +17051,43 @@
                 {
                   "nameOnMethod": "isVisible",
                   "name": "isVisible",
+                  "jsonName": null,
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Void",
+                "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.IProfileServices.IProfileAppService"
+            },
+            "UpdateJobStatusAsyncByIsSeekingJob": {
+              "uniqueName": "UpdateJobStatusAsyncByIsSeekingJob",
+              "name": "UpdateJobStatusAsync",
+              "httpMethod": "PUT",
+              "url": "api/app/profile/job-status",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "isSeekingJob",
+                  "typeAsString": "System.Boolean, System.Private.CoreLib",
+                  "type": "System.Boolean",
+                  "typeSimple": "boolean",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "isSeekingJob",
+                  "name": "isSeekingJob",
                   "jsonName": null,
                   "type": "System.Boolean",
                   "typeSimple": "boolean",
@@ -34134,18 +33809,6 @@
           "regex": null
         },
         {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "BusinessLicenseIssueDate",
           "jsonName": null,
           "type": "System.DateTime?",
@@ -34486,18 +34149,6 @@
         },
         {
           "name": "TaxCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -35517,18 +35168,6 @@
           "regex": null
         },
         {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "BusinessLicenseIssueDate",
           "jsonName": null,
           "type": "System.DateTime?",
@@ -35749,18 +35388,6 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 100,
           "minimum": null,
           "maximum": null,
           "regex": null
@@ -36046,6 +35673,27 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 500,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Profile.UploadCompanyLogoInputDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "File",
+          "jsonName": null,
+          "type": "Microsoft.AspNetCore.Http.IFormFile",
+          "typeSimple": "Microsoft.AspNetCore.Http.IFormFile",
+          "isRequired": true,
+          "minLength": null,
+          "maxLength": null,
           "minimum": null,
           "maximum": null,
           "regex": null

@@ -330,7 +330,6 @@ public class VCareerDbContext :
 
                // Legal Information fields configuration
                c.Property(x => x.TaxCode).HasMaxLength(50);
-               c.Property(x => x.BusinessLicenseNumber).HasMaxLength(100);
                c.Property(x => x.BusinessLicenseIssuePlace).HasMaxLength(255);
                c.Property(x => x.LegalRepresentative).HasMaxLength(255);
                c.Property(x => x.BusinessLicenseFile).HasMaxLength(500);
@@ -341,7 +340,6 @@ public class VCareerDbContext :
 
                // Unique constraints
                c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
-               c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
            });
         // ========== CV Template Configuration ==========
         builder.Entity<CvTemplate>(template =>
