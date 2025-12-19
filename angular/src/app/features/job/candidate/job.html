@@ -1,4 +1,12 @@
 <div class="job-page">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
   <!-- ============================================ -->
   <!-- ✅ TOP SEARCH BAR - Using FilterBarComponent -->
   <!-- ============================================ -->
@@ -102,7 +110,24 @@
         (closeDetail)="onCloseDetail()"
         (viewDetail)="onViewDetail($event)"
         (applyJob)="onApply($event)"
+        (saveStatusChange)="onSaveStatusChange($event)"
       ></app-job-list-detail>
     </div>
   </div>
+
+  <!-- Apply Job Modal -->
+  <app-apply-job-modal
+    [show]="showApplyModal"
+    [title]="applyJobTitle"
+    [jobId]="applyJobId"
+    (close)="onCloseApplyModal()"
+    (submit)="onSubmitApply($event)"
+  ></app-apply-job-modal>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

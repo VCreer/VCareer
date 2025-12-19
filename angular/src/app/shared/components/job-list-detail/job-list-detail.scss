@@ -111,7 +111,7 @@
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      color: #6b7280;
+      color: #9ca3af; // mặc định xám nhạt
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -120,21 +120,22 @@
 
       i {
         font-size: 1.125rem;
+        color: inherit;
       }
 
       &:hover {
         background: #e2e8f0;
-        color: #374151;
+        color: #6b7280;
       }
 
       &.active {
-        background: #0f83ba;
-        border-color: #0f83ba;
-        color: white;
+        background: transparent;
+        border-color: transparent;
+        color: #ef4444; // đỏ khi đã lưu
 
         &:hover {
-          background: #0a6a94;
-          border-color: #0a6a94;
+          background: transparent;
+          color: #dc2626;
         }
       }
     }

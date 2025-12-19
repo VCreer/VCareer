@@ -681,5 +681,66 @@
       }
     }
   }
+  .loading-state {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+
+  i {
+    font-size: 2rem;
+    color: #0F83BA;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// Modal Enhancements
+.modal-content-wrapper {
+  .field-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .validation-info {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+
+    .info-text {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #1e40af;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+
+      i {
+        color: #3b82f6;
+        font-size: 1rem;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      strong {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  app-button {
+    i.fa-spinner {
+      margin-right: 8px;
+    }
+  }
+}
 }
 

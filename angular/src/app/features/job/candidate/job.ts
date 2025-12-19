@@ -10,6 +10,10 @@ import { FilterBarComponent } from '../../../shared/components/filter-bar/filter
 import { JobFilterComponent } from '../../../shared/components/job-filter/job-filter';
 import { JobListComponent } from '../../../shared/components/job-list/job-list';
 import { JobListDetailComponent } from '../../../shared/components/job-list-detail/job-list-detail';
+import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
+import { ToastNotificationComponent } from '../../../shared/components';
+import { NavigationService } from '../../../core/services/navigation.service';
 
 // DTOs & Enums (từ ABP proxy)
 import { CategoryTreeDto } from 'src/app/proxy/dto/category/models';
@@ -37,6 +41,9 @@ import { TranslationService } from 'src/app/core/services/translation.service';
     JobFilterComponent,
     JobListComponent,
     JobListDetailComponent,
+    ApplyJobModalComponent,
+    LoginModalComponent,
+    ToastNotificationComponent,
   ],
   templateUrl: './job.html',
   styleUrls: ['./job.scss'],
@@ -70,17 +77,35 @@ export class JobComponent implements OnInit {
   // === Chi tiết việc làm (quick view) ===
   selectedJob: JobViewDto | null = null;
 
+  // Apply modal
+  showApplyModal = false;
+  applyJobId: string = '';
+  applyJobTitle: string = '';
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
+  
+  // Login modal
+  showLoginModal = false;
+  isAuthenticated = false;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private translationService: TranslationService,
     private categoryService: JobCategoryService,
     private geoService: GeoService,
-    private jobSearchService: JobSearchService // ← ĐÚNG SERVICE PROXY
+    private jobSearchService: JobSearchService, // ← ĐÚNG SERVICE PROXY
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit(): void {
     this.loadInitialData();
+
+    // Check authentication status
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isAuthenticated = isLoggedIn;
+    });
 
     // Đọc query params từ URL (khi chuyển từ Homepage sang)
     this.route.queryParams.subscribe(params => {
@@ -127,7 +152,10 @@ export class JobComponent implements OnInit {
       categoryIds: this.selectedCategoryIds.length ? this.selectedCategoryIds : undefined,
       provinceCodes: this.selectedProvinceCodes.length ? this.selectedProvinceCodes : undefined,
       wardCodes: this.selectedWardCodes.length ? this.selectedWardCodes : undefined,
-      experienceFilter: this.selectedExperienceLevel ?? undefined,
+      experienceFilter:
+        this.selectedExperienceLevel !== null && this.selectedExperienceLevel !== undefined
+          ? Number(this.selectedExperienceLevel)
+          : undefined,
       minSalary: this.getMinSalary(),
       maxSalary: this.getMaxSalary(),
       salaryDeal: this.selectedSalaryFilter === 7 ? true : undefined,
@@ -143,6 +171,13 @@ export class JobComponent implements OnInit {
       next: (response: any) => {
         // Backend trả mảng luôn → response chính là items
         this.jobs = Array.isArray(response) ? response : response.items ?? [];
+
+        // Lọc client-side theo kinh nghiệm nếu đã chọn
+        if (this.selectedExperienceLevel !== null && this.selectedExperienceLevel !== undefined) {
+          const exp = Number(this.selectedExperienceLevel);
+          this.jobs = this.jobs.filter(j => this.normalizeExperience(j.experience) === exp);
+        }
+
         this.totalCount = this.jobs.length; // hoặc response.totalCount nếu có
         this.isSearching = false;
       },
@@ -246,15 +281,113 @@ export class JobComponent implements OnInit {
   }
 
   onViewDetail(job: JobViewDto) {
-    this.router.navigate(['/candidate/job-detail', job.id]);
+    this.router.navigate(['/job-detail', job.id]);
   }
 
   onJobClick(job: JobViewDto) {
-    this.router.navigate(['/candidate/job-detail', job.id]);
+    this.router.navigate(['/job-detail', job.id]);
   }
 
   onJobHidden() {
     this.selectedJob = null;
+  }
+
+  // Apply actions
+  onApply(job: JobViewDto) {
+    if (!job || !job.id) return;
+    
+    // Check authentication
+    if (!this.isAuthenticated) {
+      this.showLoginModal = true;
+      return;
+    }
+    
+    this.applyJobId = job.id.toString();
+    this.applyJobTitle = job.title || '';
+    this.showApplyModal = true;
+  }
+
+  onCloseApplyModal() {
+    this.showApplyModal = false;
+  }
+
+  onSubmitApply(result: { success: boolean; message: string }) {
+    this.showApplyModal = false;
+    this.toastMessage = result?.message || (result?.success ? 'Ứng tuyển thành công' : 'Ứng tuyển thất bại');
+    this.toastType = result?.success ? 'success' : 'error';
+    this.showToast = true;
+  }
+
+  onToastClose() {
+    this.showToast = false;
+  }
+
+  // Login modal handlers
+  closeLoginModal() {
+    this.showLoginModal = false;
+  }
+
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
+  }
+
+  // Normalize experience value (number | string) to enum number for filtering
+  private normalizeExperience(value: any): number | undefined {
+    if (value === null || value === undefined) return undefined;
+    const mapNum: Record<number, number> = {
+      0: 0, // None
+      1: 1, // Under1 (có nơi lưu 1)
+      2: 2, // 1 năm
+      3: 3, // 2 năm
+      4: 4, // 3 năm
+      5: 5, // 4 năm
+      6: 6, // 5 năm
+      7: 7, // 6 năm
+      8: 8, // 7 năm
+      9: 9, // 8 năm
+      10: 10, // 9 năm
+      11: 11, // 10 năm
+      12: 12, // Trên 10 năm
+    };
+    const num = Number(value);
+    if (!isNaN(num) && mapNum[num] !== undefined) return mapNum[num];
+
+    const lower = String(value).toLowerCase();
+    if (lower.includes('under1') || lower.includes('dưới') || lower.includes('duoi')) return 1;
+    if (lower.includes('không yêu') || lower.includes('khong yeu') || lower.includes('none')) return 0;
+    if (lower.includes('1 năm') || lower.includes('1 nam') || lower.includes('year1') || lower === '1') return 2;
+    if (lower.includes('2 năm') || lower.includes('2 nam') || lower.includes('year2') || lower === '2') return 3;
+    if (lower.includes('3 năm') || lower.includes('3 nam') || lower.includes('year3') || lower === '3') return 4;
+    if (lower.includes('4 năm') || lower.includes('4 nam') || lower.includes('year4') || lower === '4') return 5;
+    if (lower.includes('5 năm') || lower.includes('5 nam') || lower.includes('year5') || lower === '5') return 6;
+    if (lower.includes('6 năm') || lower.includes('6 nam') || lower.includes('year6') || lower === '6') return 7;
+    if (lower.includes('7 năm') || lower.includes('7 nam') || lower.includes('year7') || lower === '7') return 8;
+    if (lower.includes('8 năm') || lower.includes('8 nam') || lower.includes('year8') || lower === '8') return 9;
+    if (lower.includes('9 năm') || lower.includes('9 nam') || lower.includes('year9') || lower === '9') return 10;
+    if (lower.includes('10 năm') || lower.includes('10 nam') || lower.includes('year10') || lower === '10') return 11;
+    if (lower.includes('trên 10') || lower.includes('tren 10') || lower.includes('over10')) return 12;
+    return undefined;
+  }
+
+  /**
+   * Đồng bộ trạng thái đã lưu khi user bấm tim trong quick view
+   */
+  onSaveStatusChange(event: { jobId: string; isSaved: boolean }) {
+    if (!event || !event.jobId) {
+      return;
+    }
+
+    const index = this.jobs.findIndex(j => j.id === event.jobId);
+    if (index !== -1) {
+      const current: any = this.jobs[index] as any;
+      this.jobs[index] = {
+        ...current,
+        isSaved: event.isSaved,
+      };
+      // Tạo mảng mới để JobListComponent nhận @Input thay đổi và sync lại UI
+      this.jobs = [...this.jobs];
+    }
   }
 
   translate(key: string): string {

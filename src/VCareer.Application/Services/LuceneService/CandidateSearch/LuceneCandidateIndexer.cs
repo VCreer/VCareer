@@ -45,12 +45,12 @@ namespace VCareer.Services.LuceneService.CandidateSearch
         {
             _candidateCvRepository = candidateCvRepository;
             _dbContextProvider = dbContextProvider;
-            
+
             // Setup index path (riêng biệt với Job index)
             _indexPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneCandidateIndex");
             if (!System.IO.Directory.Exists(_indexPath))
                 System.IO.Directory.CreateDirectory(_indexPath);
-            
+
             var emptyStopWords = new CharArraySet(AppLuceneVersion, 0, ignoreCase: false);
             _analyzer = new StandardAnalyzer(AppLuceneVersion, emptyStopWords);
             _directory = FSDirectory.Open(_indexPath);
@@ -235,7 +235,7 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             // Scope filters (nếu có scope được chọn)
             var hasAnyScopeSelected = input.SearchInJobTitle || input.SearchInActivity ||
                                       input.SearchInEducation || input.SearchInExperience || input.SearchInSkills;
-            
+
             if (hasAnyScopeSelected)
             {
                 if (input.SearchInJobTitle)
@@ -423,7 +423,7 @@ namespace VCareer.Services.LuceneService.CandidateSearch
             doc.Add(new Int32Field("Experience", candidate.Experience ?? 0, Field.Store.NO));
             doc.Add(new DoubleField("Salary", (double)(candidate.Salary ?? 0), Field.Store.NO));
             doc.Add(new Int64Field("LastModificationTime", (candidate.LastModificationTime ?? candidate.CreationTime).Ticks, Field.Store.NO));
-            
+
             // Status fields
             doc.Add(new StringField("Status", candidate.Status ? "1" : "0", Field.Store.NO));
             doc.Add(new StringField("ProfileVisibility", candidate.ProfileVisibility ? "1" : "0", Field.Store.NO));

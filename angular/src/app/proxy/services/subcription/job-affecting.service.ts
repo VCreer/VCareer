@@ -10,6 +10,15 @@ export class JobAffectingService {
   apiName = 'Default';
   
 
+  addJobBoostLogicByJobIdAndEffectingJobId = (jobId: string, effectingJobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/job-affecting/job-boost-logic',
+      params: { jobId, effectingJobId },
+    },
+    { apiName: this.apiName,...config });
+  
+
   applyServiceToJobByJobAffectingDto = (jobAffectingDto: EffectingJobServiceCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
@@ -24,6 +33,22 @@ export class JobAffectingService {
       method: 'POST',
       url: '/api/app/job-affecting/cancle-effecting-job-service',
       body: jobAffectingDto,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deactiveAllEffectingJobByChildServiceIdByChildServiceId = (childServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-child-service-id/${childServiceId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deactiveAllEffectingJobByJobIDByJobId = (JobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-job-iD/${JobId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -59,6 +84,14 @@ export class JobAffectingService {
       method: 'PUT',
       url: '/api/app/job-affecting/effecting-job-service',
       body: jobAffectingDto,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateExpiredEffectingJobServiceBackgroundJob = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/job-affecting/expired-effecting-job-service-background-job',
     },
     { apiName: this.apiName,...config });
 

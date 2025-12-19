@@ -18,11 +18,13 @@ namespace VCareer.Services.LuceneService.JobSearch
 
         //xóa job khỏi index bằng id của job  dùng khi xóa job , hoặc là is actie job đó
         Task DeleteJobFromIndexAsync(Guid jobId);
+        Task DeleteJobsFromIndexAsync(List<Guid> jobId);
 
         //xóa hết index
         Task ClearIndexAsync();
         
         //tìm kiếm job theo input , trả về list các id của job
         Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto searchInput);
+        List<Guid> GetExpiredJobIds();
     }
 }

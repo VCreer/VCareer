@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using VCareer.Constants.Authentication;
 using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.TeamManagementDto;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.ITeamManagement;
+using VCareer.Models.ActivityLogs;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using Volo.Abp;
@@ -34,6 +37,7 @@ namespace VCareer.Services.TeamManagement
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
         private readonly ITemplateRenderer _templateRenderer;
+        private readonly IActivityLogAppService _activityLogAppService;
 
         public TeamManagementAppService(
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
@@ -42,7 +46,8 @@ namespace VCareer.Services.TeamManagement
             IdentityRoleManager roleManager,
             ICurrentUser currentUser,
             IEmailSender emailSender,
-            ITemplateRenderer templateRenderer)
+            ITemplateRenderer templateRenderer,
+            IActivityLogAppService activityLogAppService)
         {
             _recruiterProfileRepository = recruiterProfileRepository;
             _employeeProfileRepository = employeeProfileRepository;
@@ -51,6 +56,7 @@ namespace VCareer.Services.TeamManagement
             _currentUser = currentUser;
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
+            _activityLogAppService = activityLogAppService;
         }
 
         /// <summary>
@@ -300,6 +306,27 @@ namespace VCareer.Services.TeamManagement
             );
 
             await _emailSender.SendAsync(input.Email, "Thông tin đăng nhập VCareer - HR Staff", emailBody);
+
+            // Ghi log: Thêm HR Staff
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        _currentUser.Id.Value,
+                        ActivityType.StaffAdded,
+                        "InviteStaff",
+                        $"Thêm HR Staff mới: {input.Email}",
+                        recruiterProfile.Id,
+                        nameof(RecruiterProfile),
+                        null);
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning($"Failed to log activity for StaffAdded: {ex.Message}");
+                }
+            }
 
             // Return created staff info
             return new StaffListItemDto

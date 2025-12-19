@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  ButtonComponent, 
+import {
+  ButtonComponent,
   ToastNotificationComponent,
   InputFieldComponent,
   SelectFieldComponent,
@@ -12,6 +12,7 @@ import {
   StatusOption
 } from '../../../shared/components';
 import { UserService } from '../../../proxy/services/user/user.service';
+import * as XLSX from 'xlsx';
 
 export interface RecruitingUser {
   id: string;
@@ -28,6 +29,8 @@ export interface RecruitingUser {
   ipAddresses: string[];
   mustChangePassword: boolean;
   securityStamp: string;
+  roles?: string[];
+  roleDisplay?: string;
 }
 
 @Component({
@@ -69,7 +72,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   filterCompany = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -295,11 +298,53 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    // Gọi API lấy danh sách userId theo RoleType Recruiter = 2
+    // Gọi API: GetUsersInfoByRoleAsync (UserIdentifyService) với RoleType Recruiter = 2
     this.userService.getUsersInfoByRole(2).subscribe({
-      next: () => {
-        // Xóa dữ liệu hardcode, chờ map dữ liệu thật từ BE
-        this.allUsers = [];
+      next: async (users) => {
+        const mapped: RecruitingUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          const extra = (u as any).extraProperties || {};
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            // Nếu name và surname đều null/empty thì để trống Họ tên
+            fullName: fullName || '',
+            phone: (u as any).phoneNumber || '',
+            // companyName được BE map từ bảng Companies (gắn trong ExtraProperties)
+            companyName: extra.companyName || '',
+            isActive: (u as any).isActive,
+            // Xem như bị khóa nếu có lockoutEnd trong tương lai
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            // API hiện tại chưa trả lastLoginDate
+            lastLoginDate: undefined,
+            // creationTime lấy từ ExtensibleFullAuditedEntityDto
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            roleDisplay: ''
+          };
+        });
+
+        // Lấy thêm roles cho từng user để hiển thị cột Role
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
         this.applyFilters();
       },
       error: () => {
@@ -365,7 +410,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -401,7 +446,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -507,18 +552,47 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     this.showToastMessage('Đã xóa địa chỉ IP', 'success');
   }
 
-  onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    // Simulate export
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+  onExportExcel(): void {
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Công ty': user.companyName || '',
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Recruiters');
+
+      worksheet['!cols'] = [
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 35 },
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 25 }
+      ];
+
+      const fileName = `Recruiter_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -532,6 +606,14 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getShortId(user: RecruitingUser): string {
+    if (!user || user.id === undefined || user.id === null) {
+      return '';
+    }
+    const idStr = String(user.id);
+    return idStr.length > 7 ? idStr.slice(-7) : idStr;
   }
 
   formatDate(dateString?: string): string {
@@ -596,6 +678,17 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     const padding = 32; // 16px mỗi bên
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
+  }
+
+  private mapRoleName(role: string): string {
+    switch (role) {
+      case 'hr_staff':
+        return 'HR Staff';
+      case 'lead_recruiter':
+        return 'Leader Recruiter';
+      default:
+        return role;
+    }
   }
 
   @HostListener('document:click', ['$event'])

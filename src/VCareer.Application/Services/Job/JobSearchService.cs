@@ -12,6 +12,7 @@ using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Companies;
 using VCareer.Models.Job;
 using VCareer.Models.Users;
+using VCareer.Repositories.Job;
 using VCareer.Services.LuceneService.JobSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -28,7 +29,7 @@ namespace VCareer.Services.Job
         private readonly IJobPostRepository _jobPostingRepository;
         private readonly ILuceneJobIndexer _luceneIndexer;
         private readonly ILogger<JobPostService> _logger;
-        //  private readonly ISavedJobRepository _savedJobRepository;
+          private readonly ISavedJobRepository _savedJobRepository;
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IdentityUserManager _userManager;
@@ -37,7 +38,7 @@ namespace VCareer.Services.Job
                 IJobPostRepository jobPostingRepository,
                 ILuceneJobIndexer luceneIndexer,
                 ILogger<JobPostService> logger,
-        //        ISavedJobRepository savedJobRepository,
+                ISavedJobRepository savedJobRepository,
                 IRepository<CandidateProfile, Guid> candidateProfileRepository,
                 ICurrentUser currentUser,
                 IdentityUserManager userManager)
@@ -48,7 +49,7 @@ namespace VCareer.Services.Job
             _candidateProfileRepository = candidateProfileRepository;
             _currentUser = currentUser;
             _userManager = userManager;
-            //  _savedJobRepository = savedJobRepository;
+              _savedJobRepository = savedJobRepository;
             //_companyRepository = companyRepository;
             //_recruiterRepository = recruiterRepository;
         }
@@ -59,34 +60,20 @@ namespace VCareer.Services.Job
             if (!jobIds.Any())
                 return new List<JobViewDto>();
 
-            // Lấy list Id hết hạn ngay từ DB
-            var now = DateTime.Now;
-
             var jobsQuery = await _jobPostingRepository.GetQueryableAsync();
             var jobs = await jobsQuery
-                .Where(j => jobIds.Contains(j.Id) && j.ExpiresAt >= now)
+                .Where(j => jobIds.Contains(j.Id))
                 .ToListAsync();
 
-            // Nếu bị Lucene trả về job đã hết hạn → xóa khỏi Lucene
-            var validJobIds = jobs.Select(x => x.Id).ToHashSet();
-            var expiredIds = jobIds.Where(id => !validJobIds.Contains(id)).ToList();
-
-            foreach (var expiredId in expiredIds)
-            {
-                await _luceneIndexer.DeleteJobFromIndexAsync(expiredId);
-            }
-
-            // Giữ đúng thứ tự từ Lucene
-            var jobDict = jobs.ToDictionary(j => j.Id, j => j);
-
+            // Giữ thứ tự Lucene
             var orderedJobs = jobIds
-                .Where(id => jobDict.ContainsKey(id))
-                .Select(id => jobDict[id])
+                .Select(id => jobs.FirstOrDefault(j => j.Id == id))
+                .Where(j => j != null)
                 .ToList();
 
+            if (orderedJobs.Count == 0) return new List<JobViewDto>();
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
         }
-
 
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
@@ -154,6 +141,14 @@ namespace VCareer.Services.Job
             }
             catch (Exception ex) { throw new BusinessException(ex.Message); }
         }
+        public async Task RemoveJobsFromIndexAsync(List<Guid> jobId)
+        {
+            try
+            {
+                await _luceneIndexer.DeleteJobsFromIndexAsync(jobId);
+            }
+            catch (Exception ex) { throw new BusinessException(ex.Message); }
+        }
         public async Task<JobViewDetail> GetJobBySlugAsync(string slug)
         {
             var job = await _jobPostingRepository.GetBySlugAsync(slug);
@@ -179,7 +174,7 @@ namespace VCareer.Services.Job
         /// </summary>
         public async Task SaveJobAsync(Guid jobId)
         {
-            /*  if (!_currentUser.IsAuthenticated)
+              if (!_currentUser.IsAuthenticated)
               {
                   throw new Volo.Abp.BusinessException("Bạn cần đăng nhập để lưu công việc.");
               }
@@ -215,8 +210,8 @@ namespace VCareer.Services.Job
                   CreationTime = DateTime.UtcNow
               };
 
-              await _savedJobRepository.InsertAsync(savedJob);*/
-            throw new NotImplementedException();
+              await _savedJobRepository.InsertAsync(savedJob);
+           
         }
 
         /// <summary>
@@ -224,129 +219,129 @@ namespace VCareer.Services.Job
         /// </summary>
         public async Task UnsaveJobAsync(Guid jobId)
         {
-            //if (!_currentUser.IsAuthenticated)
-            //{
-            //    throw new Volo.Abp.BusinessException("Bạn cần đăng nhập để bỏ lưu công việc.");
-            //}
+            if (!_currentUser.IsAuthenticated)
+                throw new BusinessException("Bạn cần đăng nhập để bỏ lưu công việc.");
 
-            //var userId = _currentUser.Id.Value;
+            var userId = _currentUser.Id!.Value;
 
-            //// Lấy CandidateProfile từ UserId
-            //var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-            //if (candidateProfile == null)
-            //{
-            //    throw new Volo.Abp.BusinessException("Không tìm thấy thông tin ứng viên.");
-            //}
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId)
+                ?? throw new BusinessException("Không tìm thấy thông tin ứng viên.");
 
-            //// Xóa SavedJob
-            //var savedJob = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidateProfile.UserId && s.JobId == jobId);
-            //if (savedJob != null)
-            //{
-            //    await _savedJobRepository.DeleteAsync(savedJob);
-            //}
-            throw new NotImplementedException();
+            var savedJob = await _savedJobRepository.FirstOrDefaultAsync(
+                s => s.CandidateId == candidateProfile.UserId && s.JobId == jobId);
+
+            if (savedJob != null)
+                await _savedJobRepository.DeleteAsync(savedJob);
         }
 
-        /// <summary>
-        /// Kiểm tra xem job đã được lưu chưa
-        /// </summary>
         public async Task<SavedJobStatusDto> GetSavedJobStatusAsync(Guid jobId)
         {
-            /*  if (!_currentUser.IsAuthenticated)
-              {
-                  return new SavedJobStatusDto { IsSaved = false, SavedAt = null };
-              }
+            if (!_currentUser.IsAuthenticated)
+                return new SavedJobStatusDto { IsSaved = false, SavedAt = null };
 
-              var userId = _currentUser.Id.Value;
+            var userId = _currentUser.Id!.Value;
 
-              // Lấy CandidateProfile từ UserId
-              var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-              if (candidateProfile == null)
-              {
-                  return new SavedJobStatusDto { IsSaved = false, SavedAt = null };
-              }
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (candidateProfile == null)
+                return new SavedJobStatusDto { IsSaved = false, SavedAt = null };
 
-              var savedJob = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidateProfile.Id && s.JobId == jobId);
+            var savedJob = await _savedJobRepository.FirstOrDefaultAsync(
+                s => s.CandidateId == candidateProfile.UserId && s.JobId == jobId);
 
-              return new SavedJobStatusDto
-              {
-                  IsSaved = savedJob != null,
-                  SavedAt = savedJob?.CreationTime
-              };*/
-            throw new NotImplementedException();
+            return new SavedJobStatusDto
+            {
+                IsSaved = savedJob != null,
+                SavedAt = savedJob?.CreationTime
+            };
         }
 
-        public Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
+
+        public async Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
         {
-            throw new NotImplementedException();
+            if (!_currentUser.IsAuthenticated)
+            {
+                return new PagedResultDto<SavedJobDto>(
+                    totalCount: 0,
+                    items: new List<SavedJobDto>()
+                );
+            }
+
+            var userId = _currentUser.Id!.Value;
+
+            // Lấy CandidateProfile từ UserId
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (candidateProfile == null)
+            {
+                return new PagedResultDto<SavedJobDto>(
+                    totalCount: 0,
+                    items: new List<SavedJobDto>()
+                );
+            }
+
+            // Lấy danh sách SavedJob với JobPosting (từ Repository)
+            var savedJobs = await _savedJobRepository.GetSavedJobsWithDetailsAsync(
+                candidateProfile.UserId,
+                skipCount,
+                maxResultCount
+            );
+
+            var totalCount = await _savedJobRepository.CountSavedJobsAsync(candidateProfile.UserId);
+
+            // Map sang DTO
+            var items = new List<SavedJobDto>();
+            foreach (var savedJob in savedJobs)
+            {
+                var job = savedJob.JobPosting;
+                if (job == null) continue;
+
+                var jobViewDto = ObjectMapper.Map<Job_Post, JobViewDto>(job);
+
+                items.Add(new SavedJobDto
+                {
+                    JobId = savedJob.JobId,
+                    JobTitle = job.Title ?? string.Empty,
+                    CompanyName = jobViewDto.CompanyName ?? "Chưa có thông tin",
+                    SalaryText = BuildSalaryText(job),
+                    Location = job.WorkLocation ?? "Chưa có thông tin",
+                    SavedAt = savedJob.CreationTime,
+                    JobDetail = jobViewDto
+                });
+            }
+
+            return new PagedResultDto<SavedJobDto>(
+                totalCount: totalCount,
+                items: items
+            );
         }
-
-        // Nếu người dùng đã đăng nhập → kiểm tra đã lưu hay chưa
-        /*   if (_currentUser.IsAuthenticated)
-           {
-               var userId = _currentUser.Id.Value;
-               var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-               if (candidate != null)
-               {
-                   // CandidateProfile sử dụng UserId làm khóa chính → so sánh theo UserId
-                   var saved = await _savedJobRepository.FirstOrDefaultAsync(s => s.CandidateId == candidate.UserId && s.JobId == job.Id);
-                   detail.IsSaved = saved != null;
-               }
-
-           }
-           else detail.IsSaved = false;
-
-           return detail;
-       }*/
-
-        /// <summary>
-        /// Lấy danh sách job đã lưu của user hiện tại
-        /// </summary>
-        /*   public async Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
-           {
-               if (!_currentUser.IsAuthenticated)
-               {
-                   return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
-               }
-               var userId = _currentUser.Id.Value;
-
-               // Lấy CandidateProfile từ UserId
-               var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
-               if (candidateProfile == null)
-               {
-                   return new PagedResultDto<SavedJobDto>(new List<SavedJobDto>(), 0);
-               }
-               // Lấy danh sách SavedJob với JobPosting (từ Repository)
-               var savedJobs = await _savedJobRepository.GetSavedJobsWithDetailsAsync(
-                   candidateProfile.UserId,
-                   skipCount,
-                   maxResultCount
-               );
-
-               var totalCount = await _savedJobRepository.CountSavedJobsAsync(candidateProfile.UserId);
-               // Map sang DTO
-               var items = new List<SavedJobDto>();
-               foreach (var savedJob in savedJobs)
-               {
-                   var job = savedJob.JobPosting;
-                   if (job == null) continue;
-                   var jobViewDto = await MapToJobViewDto(job);
-
-                   items.Add(new SavedJobDto
-                   {
-                       JobId = savedJob.JobId,
-                       JobTitle = job.Title,
-                       CompanyName = jobViewDto.CompanyName ?? "Chưa có thông tin",
-                       SalaryText = job.SalaryText,
-                       Location = jobViewDto.ProvinceName ?? "Chưa có thông tin",
-                       SavedAt = savedJob.CreationTime,
-                       JobDetail = jobViewDto
-                   });
-               }
-               return new PagedResultDto<SavedJobDto>(items, totalCount);
-           }*/
 
         #endregion
+
+        private string BuildSalaryText(Job_Post job)
+        {
+            if (job == null) return string.Empty;
+
+            if (job.SalaryDeal)
+            {
+                return "Lương thỏa thuận";
+            }
+
+            if (job.SalaryMin.HasValue && job.SalaryMax.HasValue)
+            {
+                return $"{job.SalaryMin.Value:N0} - {job.SalaryMax.Value:N0} VND";
+            }
+
+            if (job.SalaryMin.HasValue)
+            {
+                return $"{job.SalaryMin.Value:N0} VND";
+            }
+
+            if (job.SalaryMax.HasValue)
+            {
+                return $"{job.SalaryMax.Value:N0} VND";
+            }
+
+            return "Không hiển thị";
+        }
 
 
     }

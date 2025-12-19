@@ -12,14 +12,16 @@
       <div class="profile-name">{{ userName }}</div>
       <div class="profile-role">{{ userRole }}</div>
       <!-- Với HR Staff: ẩn hoàn toàn dòng Tài khoản xác thực -->
-      <div class="profile-verification" [class.not-verified]="verificationLevel !== 'Cấp 3/3'" *ngIf="!isEmployeeRoute && !isHRStaff">
+      <div class="profile-verification" 
+           [class.verified]="verificationLevel === 'Cấp 3/3'" 
+           [class.not-verified]="verificationLevel !== 'Cấp 3/3'" 
+           *ngIf="!isEmployeeRoute && !isHRStaff">
         <span>{{ translate('sidebar.verification') }}: {{ verificationLevel }}</span>
-        <i class="fa fa-question-circle verification-info-icon"></i>
         <!-- Hiển thị trạng thái theo cấp xác thực -->
-        <span class="verification-badge" *ngIf="verificationLevel === 'Cấp 3/3'">
+        <span class="verification-badge verified-badge" *ngIf="verificationLevel === 'Cấp 3/3'">
           {{ translate('sidebar.verified') }}
         </span>
-        <span class="verification-badge" *ngIf="verificationLevel !== 'Cấp 3/3'">
+        <span class="verification-badge not-verified-badge" *ngIf="verificationLevel !== 'Cấp 3/3'">
           {{ translate('sidebar.not_verified') }}
         </span>
       </div>
@@ -32,9 +34,9 @@
       <!-- Employee Menu -->
       <ng-container *ngIf="isEmployeeRoute">
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/employee/home')" class="sidebar-link" [class.active]="isActive('/employee/home')">
-            <i class="fa fa-home sidebar-icon"></i>
-            <span class="sidebar-link-text">Trang chủ</span>
+          <a (click)="navigateTo('/employee/statistical-reports')" class="sidebar-link" [class.active]="isActive('/employee/statistical-reports')">
+            <i class="fa fa-chart-bar sidebar-icon"></i>
+            <span class="sidebar-link-text">Báo cáo thống kê</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
@@ -46,23 +48,23 @@
         <li class="sidebar-nav-item sidebar-nav-item-dropdown" [class.dropdown-open]="showUserManagementDropdown">
           <a (click)="toggleUserManagementDropdown($event)" class="sidebar-link sidebar-link-has-submenu" [class.active]="isUserManagementActive()">
             <i class="fa fa-users sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí người dùng</span>
+            <span class="sidebar-link-text">Quản lý người dùng</span>
             <i class="fa fa-chevron-down sidebar-chevron" [class.rotated]="showUserManagementDropdown"></i>
           </a>
           <ul class="sidebar-submenu" [class.show]="showUserManagementDropdown">
             <li class="sidebar-submenu-item">
               <a (click)="navigateToUserManagement('/employee/user-management/recruiter', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/user-management/recruiter')">
-                <span class="sidebar-submenu-text">Quản lí tuyển dụng</span>
+                <span class="sidebar-submenu-text">Quản lý tuyển dụng</span>
               </a>
             </li>
             <li class="sidebar-submenu-item">
               <a (click)="navigateToUserManagement('/employee/user-management/candidate', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/user-management/candidate')">
-                <span class="sidebar-submenu-text">Quản lí ứng viên</span>
+                <span class="sidebar-submenu-text">Quản lý ứng viên</span>
               </a>
             </li>
             <li class="sidebar-submenu-item">
               <a (click)="navigateToUserManagement('/employee/user-management/employee', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/user-management/employee')">
-                <span class="sidebar-submenu-text">Quản lí nhân viên</span>
+                <span class="sidebar-submenu-text">Quản lý nhân viên</span>
               </a>
             </li>
           </ul>
@@ -70,18 +72,18 @@
         <li class="sidebar-nav-item sidebar-nav-item-dropdown" [class.dropdown-open]="showServicePackagesDropdown">
           <a (click)="toggleServicePackagesDropdown($event)" class="sidebar-link sidebar-link-has-submenu" [class.active]="isServicePackagesActive()">
             <i class="fa fa-box sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí gói dịch vụ</span>
+            <span class="sidebar-link-text">Quản lý gói dịch vụ</span>
             <i class="fa fa-chevron-down sidebar-chevron" [class.rotated]="showServicePackagesDropdown"></i>
           </a>
           <ul class="sidebar-submenu" [class.show]="showServicePackagesDropdown">
             <li class="sidebar-submenu-item">
               <a (click)="navigateToServicePackages('/employee/manage-service-packages', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/manage-service-packages')">
-                <span class="sidebar-submenu-text">Quản lí các gói dịch vụ</span>
+                <span class="sidebar-submenu-text">Quản lý các gói dịch vụ</span>
               </a>
         </li>
             <li class="sidebar-submenu-item">
               <a (click)="navigateToServicePackages('/employee/manage-sub-service-packages', $event)" class="sidebar-submenu-link" [class.active]="isActive('/employee/manage-sub-service-packages')">
-                <span class="sidebar-submenu-text">Quản lí dịch vụ phụ</span>
+                <span class="sidebar-submenu-text">Quản lý dịch vụ phụ</span>
               </a>
             </li>
           </ul>
@@ -95,7 +97,7 @@
         <li class="sidebar-nav-item sidebar-nav-item-dropdown log-management" [class.dropdown-open]="showLogManagementDropdown">
           <a (click)="toggleLogManagementDropdown($event)" class="sidebar-link sidebar-link-has-submenu" [class.active]="isLogManagementActive()">
             <i class="fa fa-file-alt sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí log</span>
+            <span class="sidebar-link-text">Quản lý log</span>
             <i class="fa fa-chevron-down sidebar-chevron" [class.rotated]="showLogManagementDropdown"></i>
           </a>
           <ul class="sidebar-submenu" [class.show]="showLogManagementDropdown">
@@ -114,13 +116,19 @@
         <li class="sidebar-nav-item">
           <a (click)="navigateTo('/employee/category-management')" class="sidebar-link" [class.active]="isActive('/employee/category-management')">
             <i class="fa fa-folder sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí danh mục</span>
+            <span class="sidebar-link-text">Quản lý danh mục</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
           <a (click)="navigateTo('/employee/manage-role')" class="sidebar-link" [class.active]="isActive('/employee/manage-role')">
             <i class="fa fa-user-shield sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí vai trò</span>
+            <span class="sidebar-link-text">Quản lý vai trò</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a (click)="navigateTo('/employee/revenue-management')" class="sidebar-link" [class.active]="isActive('/employee/revenue-management')">
+            <i class="fa fa-money-bill-wave sidebar-icon"></i>
+            <span class="sidebar-link-text">Quản lý nguồn thu</span>
           </a>
         </li>
       </ng-container>
@@ -135,7 +143,7 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/job-posting')" class="sidebar-link">
+          <a (click)="navigateTo('/recruiter/job-posting')" class="sidebar-link" [class.active]="isActive('/recruiter/job-posting')">
             <i class="fa fa-edit sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.insights') }}</span>
           </a>
@@ -144,26 +152,13 @@
         <li class="sidebar-nav-item" *ngIf="!isHRStaff">
           <a (click)="navigateTo('/recruiter/hr-staff-management')" class="sidebar-link" [class.active]="isActive('/recruiter/hr-staff-management')">
             <i class="fa fa-users-cog sidebar-icon"></i>
-            <span class="sidebar-link-text">Quản lí nhân sự</span>
+            <span class="sidebar-link-text">Quản lý nhân sự</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
           <a (click)="navigateTo('/recruiter/my-services')" class="sidebar-link" [class.active]="isActive('/recruiter/my-services')">
             <i class="fa-solid fa-wand-magic sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.redeem_gifts') }}</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/toppy-ai')" class="sidebar-link">
-            <i class="fa fa-robot sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.toppy_ai') }}</span>
-            <span class="sidebar-badge">1</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/suggested-cv')" class="sidebar-link">
-            <i class="fa fa-thumbs-up sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.suggested_cv') }}</span>
           </a>
         </li>
 
@@ -175,12 +170,6 @@
           <a (click)="navigateTo('/recruiter/recruitment-campaign')" class="sidebar-link" [class.active]="isActive('/recruiter/recruitment-campaign')">
             <i class="fa fa-briefcase sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.recruitment_campaigns') }}</span>
-          </a>
-        </li>
-        <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/post-job')" class="sidebar-link">
-            <i class="fa fa-file-alt sidebar-icon"></i>
-            <span class="sidebar-link-text">{{ translate('sidebar.job_postings') }}</span>
           </a>
         </li>
         <li class="sidebar-nav-item">
@@ -208,7 +197,7 @@
           </a>
         </li>
         <li class="sidebar-nav-item">
-          <a (click)="navigateTo('/recruiter/activity-history')" class="sidebar-link">
+          <a (click)="navigateTo('/recruiter/activity-history')" class="sidebar-link" [class.active]="isActive('/recruiter/activity-history')">
             <i class="fa fa-history sidebar-icon"></i>
             <span class="sidebar-link-text">{{ translate('sidebar.activity_history') }}</span>
           </a>

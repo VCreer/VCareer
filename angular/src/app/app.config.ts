@@ -16,6 +16,7 @@ import { provideAbpOAuth } from '@abp/ng.oauth';
 
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorHandlerInterceptor } from './core/interceptors/error-handler.interceptor';
 import { APP_CURRENT_USER_INITIALIZER } from './core/services/auth-Cookiebased/app-auth-initializer';
 
 import {
@@ -48,7 +49,7 @@ export const appConfig: ApplicationConfig = {
 
     // 3. HTTP Client
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      withInterceptors([errorHandlerInterceptor, authInterceptor]),
     ),
 
     // 4. Router
@@ -58,7 +59,7 @@ export const appConfig: ApplicationConfig = {
     // 5. ABP Modules
     provideAbpThemeShared(
       withHttpErrorConfig({
-        skipHandledErrorCodes: [401, 404],
+        skipHandledErrorCodes: [401, 403, 404, 500], // Skip 403 để interceptor tự xử lý
       })
     ),
     provideIdentityConfig(),
@@ -78,7 +79,7 @@ export const appConfig: ApplicationConfig = {
           console.log('[Navigation] Navigate to profile from:', currentUrl);
           
           if (currentUrl.startsWith('/employee')) {
-            router.navigate(['/employee/home']);
+            router.navigate(['/employee/statistical-reports']);
           } else if (currentUrl.startsWith('/recruiter')) {
             router.navigate(['/recruiter/recruiter-setting']);
           } else {

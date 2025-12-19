@@ -36,7 +36,6 @@ export class HeroSectionComponent {
   searchKeyword = '';
 
   onSearch() {
-    console.log('Hero search keyword:', this.searchKeyword);
     this.searchJobs.emit({ keyword: this.searchKeyword });
   }
 

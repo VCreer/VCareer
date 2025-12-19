@@ -1,62 +1,81 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, catchError, of } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { CartService } from '../../../core/services/cart.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { LogoSectionComponent } from '../../../shared/components/logo-section/logo-section';
 import { ButtonComponent } from '../../../shared/components/button/button';
 import { IconButtonBadgeComponent } from '../../../shared/components/icon-button-badge/icon-button-badge';
 import { IconActionButtonComponent } from '../../../shared/components/icon-action-button/icon-action-button';
-import { NotificationMenuComponent, NotificationItem } from '../../../shared/components/notification-menu/notification-menu';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar';
+import { NotificationMenuComponent, NotificationItem } from '../../../shared/components/notification-menu/notification-menu';
 
 @Component({
   selector: 'app-recruiter-header-management',
   standalone: true,
-  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, NotificationMenuComponent, SidebarComponent],
+  imports: [CommonModule, LogoSectionComponent, ButtonComponent, IconButtonBadgeComponent, IconActionButtonComponent, SidebarComponent, NotificationMenuComponent],
   templateUrl: './recruiter-header-management.html',
   styleUrls: ['./recruiter-header-management.scss']
 })
 export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
   showDropdownMenu = false;
-  showNotificationMenu = false;
   showSidebar = false;
   cartCount = 0;
+  showNotificationMenu = false;
+  notificationCount = 0;
+  notifications: NotificationItem[] = [];
+  isLoggedIn = false;
   private cartSubscription?: Subscription;
-  
-  notifications: NotificationItem[] = [
-    { id: '1', text: 'Bạn có tin tuyển dụng mới phù hợp', date: '15/10/2025', isRead: false },
-    { id: '2', text: 'Ứng viên đã nộp hồ sơ cho vị trí của bạn', date: '14/10/2025', isRead: false },
-    { id: '3', text: 'Tin tuyển dụng của bạn đã được duyệt', date: '13/10/2025', isRead: true },
-    { id: '4', text: 'Nhắc nhở: Tin tuyển dụng sắp hết hạn', date: '12/10/2025', isRead: false }
-  ];
-
-  get notificationCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
-  }
+  private loginSubscription?: Subscription;
 
   constructor(
     private router: Router,
     private translationService: TranslationService,
     private navigationService: NavigationService,
-    private cartService: CartService
-  ) {}
+    private cartService: CartService,
+    private notificationService: NotificationService
+  ) { }
 
   ngOnInit() {
     // Load initial cart count
     this.cartCount = this.cartService.getCartCount();
-    
+
     // Subscribe to cart changes
     this.cartSubscription = this.cartService.cartItems$.subscribe(() => {
       this.cartCount = this.cartService.getCartCount();
     });
+
+    // Initialize login state
+    this.isLoggedIn = this.navigationService.isLoggedIn();
+    
+    // Subscribe to login state changes
+    this.loginSubscription = this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isLoggedIn = isLoggedIn;
+      if (isLoggedIn) {
+        this.loadNotifications();
+        this.loadUnreadCount();
+      } else {
+        this.notifications = [];
+        this.notificationCount = 0;
+      }
+    });
+
+    // Load notifications if already logged in
+    if (this.isLoggedIn) {
+      this.loadNotifications();
+      this.loadUnreadCount();
+    }
   }
 
   ngOnDestroy() {
     if (this.cartSubscription) {
       this.cartSubscription.unsubscribe();
+    }
+    if (this.loginSubscription) {
+      this.loginSubscription.unsubscribe();
     }
   }
 
@@ -66,6 +85,7 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     if (!target.closest('.caret-menu-wrapper')) {
       this.showDropdownMenu = false;
     }
+    // Close notification menu if click outside
     if (!target.closest('.notification-menu-wrapper')) {
       this.showNotificationMenu = false;
     }
@@ -82,22 +102,13 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     this.showDropdownMenu = !this.showDropdownMenu;
   }
 
-  toggleNotificationMenu() {
-    this.showNotificationMenu = !this.showNotificationMenu;
-    if (this.showNotificationMenu) {
-      this.showDropdownMenu = false;
-      this.showSidebar = false;
-    }
-  }
-
   toggleSidebar() {
     // Always toggle based on current showSidebar state, not DOM state
     // This ensures consistent behavior
     this.showSidebar = !this.showSidebar;
-    
+
     if (this.showSidebar) {
       this.showDropdownMenu = false;
-      this.showNotificationMenu = false;
     }
   }
 
@@ -105,17 +116,9 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     this.showSidebar = false;
   }
 
-  onMarkAllRead() {
-    this.notifications.forEach(n => n.isRead = true);
-  }
-
   logout() {
     this.navigationService.logout();
     this.router.navigate(['/recruiter/about-us']);
-  }
-
-  navigateToPostJob() {
-    this.router.navigate(['/recruiter/job-posting']);
   }
 
   navigateToFindCv() {
@@ -126,16 +129,105 @@ export class RecruiterHeaderManagementComponent implements OnInit, OnDestroy {
     this.router.navigate(['/recruiter/cart']);
   }
 
-  navigateToNotifications() {
-    this.router.navigate(['/recruiter/notifications']);
-  }
-
   navigateToHome() {
     this.router.navigate(['/recruiter/home']);
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  navigateToPostJob() {
+    if (!this.navigationService.isLoggedIn()) {
+      this.router.navigate(['/recruiter/login']);
+    } else {
+      this.router.navigate(['/recruiter/recruitment-report']);
+    }
+  }
+
+  toggleNotificationMenu() {
+    this.showNotificationMenu = !this.showNotificationMenu;
+    if (this.showNotificationMenu) {
+      this.loadNotifications();
+    }
+  }
+
+  navigateToNotifications() {
+    this.showNotificationMenu = false;
+    this.router.navigate(['/recruiter/notifications']);
+  }
+
+  onMarkAllRead() {
+    if (!this.isLoggedIn) return;
+    
+    this.notificationService.markAllAsRead('Recruiter')
+      .pipe(
+        catchError(error => {
+          console.error('Error marking all as read:', error);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.loadNotifications();
+        this.loadUnreadCount();
+      });
+  }
+
+  loadNotifications() {
+    if (!this.isLoggedIn) {
+      return;
+    }
+    
+    this.notificationService.getNotifications('Recruiter', 0, 3)
+      .pipe(
+        catchError(error => {
+          console.error('[Notification] Error loading notifications:', error);
+          return of({ items: [], totalCount: 0, unreadCount: 0 });
+        })
+      )
+      .subscribe({
+        next: (result) => {
+          // Sort by creationTime DESC (newest first)
+          const sortedItems = (result.items || []).sort((a, b) => {
+            const dateA = new Date(a.creationTime).getTime();
+            const dateB = new Date(b.creationTime).getTime();
+            return dateB - dateA; // DESC: newest first
+          });
+          
+          // Convert NotificationDto to NotificationItem
+          this.notifications = sortedItems.slice(0, 3).map(item => ({
+            id: item.id,
+            text: item.message || item.title,
+            date: item.creationTime,
+            isRead: item.isRead
+          }));
+        },
+        error: (error) => {
+          console.error('[Notification] Subscription error:', error);
+        }
+      });
+  }
+
+  loadUnreadCount() {
+    if (!this.isLoggedIn) {
+      return;
+    }
+    
+    this.notificationService.getUnreadCount('Recruiter')
+      .pipe(
+        catchError(error => {
+          console.error('[Notification] Error loading unread count:', error);
+          return of(0);
+        })
+      )
+      .subscribe({
+        next: (count) => {
+          this.notificationCount = count;
+        },
+        error: (error) => {
+          console.error('[Notification] Unread count subscription error:', error);
+        }
+      });
   }
 }
 

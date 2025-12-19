@@ -4,9 +4,10 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
-import { JobApiService, SavedJobDto, JobViewDto } from '../../../../apiTest/api/job.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { take } from 'rxjs/operators';
+import { JobSearchService } from '../../../../proxy/services/job/job-search.service';
+import { SavedJobDto } from '../../../../proxy/dto/job/models';
 
 @Component({
   selector: 'app-saved-jobs',
@@ -26,8 +27,8 @@ export class SavedJobsComponent implements OnInit {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private jobApi: JobApiService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private jobSearchService: JobSearchService
   ) {}
 
   ngOnInit() {
@@ -61,7 +62,7 @@ export class SavedJobsComponent implements OnInit {
 
   loadSavedJobs() {
     this.loading = true;
-    this.jobApi.getSavedJobs(0, 100).subscribe({
+    this.jobSearchService.getSavedJobs(0, 100).subscribe({
       next: (result) => {
         this.savedJobs = result.items || [];
         this.totalCount = result.totalCount || 0;
@@ -76,6 +77,10 @@ export class SavedJobsComponent implements OnInit {
   }
 
   onApplyJob(job: SavedJobDto) {
+    if (this.isJobExpired(job)) {
+      this.showToastMessage('Công việc đã hết hạn nộp, bạn không thể ứng tuyển.', 'warning');
+      return;
+    }
     this.router.navigate(['/candidate/job-detail', job.jobId], { 
       queryParams: { openApplyModal: 'true' } 
     });
@@ -85,12 +90,20 @@ export class SavedJobsComponent implements OnInit {
    * Navigate to job detail khi click vào job title
    */
   onJobTitleClick(job: SavedJobDto) {
+    if (this.isJobExpired(job)) {
+      this.showToastMessage('Công việc đã hết hạn nộp, bạn không thể xem chi tiết.', 'warning');
+      return;
+    }
     this.router.navigate(['/candidate/job-detail', job.jobId]);
   }
 
   onUnsaveJob(job: SavedJobDto) {
     // Logic giống hệt như ở job detail
-    this.jobApi.unsaveJob(job.jobId).subscribe({
+    if (!job.jobId) {
+      return;
+    }
+
+    this.jobSearchService.unsaveJob(job.jobId).subscribe({
       next: () => {
         // Remove from list
         this.savedJobs = this.savedJobs.filter(j => j.jobId !== job.jobId);
@@ -196,7 +209,78 @@ export class SavedJobsComponent implements OnInit {
    * Get province name from jobDetail hoặc location
    */
   getProvinceName(job: SavedJobDto): string {
-    return job.jobDetail?.provinceName || job.location || 'N/A';
+    const detail: any = job.jobDetail as any;
+    return detail?.provinceName || job.location || 'N/A';
+  }
+
+  /**
+   * Text hiển thị hạn nộp cho từng job đã lưu
+   * - Nếu đã hết hạn: 'Đã hết hạn nộp'
+   * - Nếu còn ≤ 20 ngày: 'Còn X ngày' (0: Hết hạn hôm nay)
+   * - Nếu > 20 ngày: 'Ngày hết hạn: dd/MM/yyyy'
+   */
+  getDeadlineText(job: SavedJobDto): string {
+    // TS model JobViewDto hiện chưa khai báo expiresAt, nên cast any để đọc trường backend trả về
+    const expiresAt = (job.jobDetail as any)?.expiresAt;
+    if (!expiresAt) {
+      return '';
+    }
+
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    if (isNaN(expiry.getTime())) {
+      return '';
+    }
+
+    // Tính số ngày chênh lệch (lấy theo ngày, bỏ phần giờ)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfExpiry = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+    const diffMs = startOfExpiry.getTime() - startOfToday.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return 'Đã hết hạn nộp';
+    }
+
+    if (diffDays === 0) {
+      return 'Hết hạn hôm nay';
+    }
+
+    if (diffDays <= 20) {
+      if (diffDays === 1) {
+        return 'Còn 1 ngày';
+      }
+      return `Còn ${diffDays} ngày`;
+    }
+
+    // > 20 ngày: hiển thị ngày hết hạn dạng dd/MM/yyyy
+    const day = String(startOfExpiry.getDate()).padStart(2, '0');
+    const month = String(startOfExpiry.getMonth() + 1).padStart(2, '0');
+    const year = startOfExpiry.getFullYear();
+    return `Ngày hết hạn: ${day}/${month}/${year}`;
+  }
+
+  /**
+   * Kiểm tra job đã hết hạn chưa (dùng để chặn click)
+   */
+  isJobExpired(job: SavedJobDto): boolean {
+    const expiresAt = (job.jobDetail as any)?.expiresAt;
+    if (!expiresAt) {
+      return false;
+    }
+
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    if (isNaN(expiry.getTime())) {
+      return false;
+    }
+
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfExpiry = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+    const diffMs = startOfExpiry.getTime() - startOfToday.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays < 0;
   }
 
   onBrowseJobs() {

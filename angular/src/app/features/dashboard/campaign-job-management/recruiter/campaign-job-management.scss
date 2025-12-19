@@ -1,39 +1,17 @@
 .campaign-job-management-page {
   min-height: calc(100vh - 64px);
   padding-top: 0;
-  margin-left: 72px;
-  width: calc(100% - 72px);
   padding-right: 0;
   padding-bottom: 20px;
   background: #f8fafc;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
-
-  &.sidebar-expanded {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-  }
-
-  @media (max-width: 1024px) {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-
-    &.sidebar-expanded {
-      margin-left: 72px;
-      width: calc(100% - 72px);
-    }
-  }
+  // Đảm bảo breadcrumb-box không bị che bởi sidebar
+  isolation: isolate;
 
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100%;
     padding-bottom: 16px;
-
-    &.sidebar-expanded {
-      margin-left: 0;
-      width: 100%;
-    }
   }
 
   // Breadcrumb Box
@@ -42,40 +20,18 @@
     padding: 1rem 0;
     position: fixed;
     top: 64px;
-    z-index: 998;
+    z-index: 1001; // Cao hơn sidebar (z-index: 100) và header
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-bottom: 1px solid #e5e7eb;
     min-height: 56px;
-    left: 72px;
-    width: calc(100% - 72px);
-
-    &.sidebar-expanded {
-      left: 280px;
-      width: calc(100% - 280px);
-    }
-
-    @media (max-width: 1024px) {
-      left: 72px;
-      width: calc(100% - 72px);
-
-      &.sidebar-expanded {
-        left: 72px;
-        width: calc(100% - 72px);
-      }
-    }
+    // Đảm bảo breadcrumb-box luôn nằm trên sidebar
+    transform: translateZ(0); // Tạo stacking context mới
 
     @media (max-width: 768px) {
-      left: 0;
-      width: 100%;
       top: 56px;
       padding: 0.75rem 0;
       min-height: auto;
-
-      &.sidebar-expanded {
-        left: 0;
-        width: 100%;
-      }
     }
 
     .breadcrumb-container {
@@ -143,7 +99,6 @@
 
   // Main Content
   .main-content {
-    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
     margin-top: 80px;
@@ -153,10 +108,12 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     @media (max-width: 768px) {
       margin-top: 80px;
       padding: 16px;
+      max-width: calc(100% - 32px) !important;
     }
   }
 
@@ -604,14 +561,23 @@ align-items: center;
 justify-content: center;
 z-index: 1000;
 padding: 20px;
+transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+@media (max-width: 768px) {
+  padding: 20px;
+}
 .modal-content {
   background: white;
   border-radius: 12px;
-  max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 768px) {
+    max-width: calc(100% - 40px) !important;
+  }
 
   .modal-header {
     padding: 20px 24px;
@@ -659,6 +625,15 @@ padding: 20px;
       font-size: 0.875rem;
       margin-top: 8px;
     }
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
 
     .form-group {
       margin-bottom: 20px;

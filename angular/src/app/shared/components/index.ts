@@ -67,3 +67,8 @@ export { StatusItemComponent, StatusItemData } from './status-item/status-item';
 export { StaffTableComponent, HRStaff } from './staff-table/staff-table';
 export { ActivityLogTableComponent, ActivityLog } from './activity-log-table/activity-log-table';
 export { StatusDropdownComponent, StatusOption } from './status-dropdown/status-dropdown';
+export { DatePickerComponent } from './date-picker/date-picker';
+export { DateRangePickerComponent, DateRange } from './date-range-picker/date-range-picker';
+export { BarChartComponent, BarChartData } from './bar-chart/bar-chart';
+export { PieChartComponent, PieChartData } from './pie-chart/pie-chart';
+export { LoginModalComponent } from './login-modal/login-modal';

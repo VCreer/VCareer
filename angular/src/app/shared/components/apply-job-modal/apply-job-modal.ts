@@ -22,24 +22,24 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() title: string = '';
   @Input() jobId: string = ''; // Job ID để submit application
   @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<{success: boolean, message: string}>();
+  @Output() submit = new EventEmitter<{ success: boolean, message: string }>();
 
   // CV Selection
   selectedCVOption: string = 'library'; // 'library' or 'upload'
   selectedOnlineCvId: string = '';
   selectedUploadedCvId: string = '';
-  
+
   // Upload CV
   uploadedFile: File | null = null;
-  
+
   // Cover Letter
   coverLetter: string = '';
-  
+
   // CV Lists
   onlineCvs: CandidateCvDto[] = [];
   uploadedCvs: UploadedCvDto[] = [];
   loadingCvs: boolean = false;
-  
+
   // Validation errors
   cvError: string = '';
   coverLetterError: string = '';
@@ -50,7 +50,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
     private uploadedCvService: UploadedCvService,
     private applicationService: ApplicationService,
     @Inject(HttpClient) private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Load CVs when component initializes
@@ -145,7 +145,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
   validateForm(): boolean {
     let isValid = true;
     this.cvError = '';
-    
+
     if (this.selectedCVOption === 'library') {
       // Validate library CV selection
       if (!this.selectedOnlineCvId && !this.selectedUploadedCvId) {
@@ -159,7 +159,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
         isValid = false;
       }
     }
-    
+
     return isValid;
   }
 
@@ -327,7 +327,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
   onDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    
+
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
       this.processFile(file);
@@ -339,7 +339,7 @@ export class ApplyJobModalComponent implements OnInit, OnDestroy, OnChanges {
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     const allowedExtensions = ['.pdf', '.doc', '.docx'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    
+
     if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       this.cvError = 'File không hợp lệ. Chỉ hỗ trợ định dạng .pdf, .doc, .docx';
       return;

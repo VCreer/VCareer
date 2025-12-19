@@ -13,7 +13,14 @@
     <div class="breadcrumb-container">
       <div class="page-header">
         <h1 class="page-title">Đăng tin tuyển dụng</h1>
-        <span class="campaign-badge" *ngIf="campaignName"> Chiến dịch: {{ campaignName }} </span>
+        <div class="campaign-selector">
+          <app-select-field
+            placeholder="Chọn chiến dịch"
+            [options]="campaignOptions"
+            [(ngModel)]="campaignId"
+            (ngModelChange)="onCampaignChange($event)"
+          ></app-select-field>
+        </div>
       </div>
       <div class="action-buttons">
         <app-button type="secondary" size="small" (click)="openPreviewModal()">
@@ -204,12 +211,17 @@
         <!-- Quantity -->
         <app-input-field
           label="Số lượng tuyển"
-          type="number"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="off"
           placeholder="Nhập số lượng tuyển"
           [required]="true"
           [error]="getFieldError('quantity')"
           [(ngModel)]="jobForm.quantity"
-          (ngModelChange)="onFieldChange('quantity')"
+          (ngModelChange)="onQuantityChange($event)"
+          (keypress)="blockNonNumeric($event)"
+          (keydown)="preventBelowOne($event)"
+          (wheel)="preventQuantityWheel($event)"
           name="quantity"
         >
         </app-input-field>
@@ -414,7 +426,7 @@
         bodyBackground="#f8fafc"
         (close)="closePreviewModal()"
       >
-        <app-job-preview [jobData]="jobForm"></app-job-preview>
+        <app-job-preview [jobData]="previewJobData"></app-job-preview>
       </app-generic-modal>
     </div>
   </div>

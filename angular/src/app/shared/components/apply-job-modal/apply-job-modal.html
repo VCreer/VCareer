@@ -23,7 +23,7 @@
             <input type="radio" name="cvOption" value="library" [(ngModel)]="selectedCVOption" (change)="onCVOptionChange()">
             <span class="radio-text">{{ translate('apply_modal.select_other_cv') || 'Chọn CV khác trong thư viện CV của tôi' }}</span>
           </label>
-          
+
           <!-- Library CV Content (shown when selected) -->
           <div class="cv-option-content" *ngIf="selectedCVOption === 'library'">
             <!-- CV Online -->
@@ -58,19 +58,19 @@
             <input type="radio" name="cvOption" value="upload" [(ngModel)]="selectedCVOption" (change)="onCVOptionChange()">
             <span class="radio-text">{{ translate('apply_modal.upload_cv') || 'Tải lên CV từ máy tính, chọn hoặc kéo thả' }}</span>
           </label>
-          
+
           <!-- Upload CV Content (shown when selected) -->
           <div class="cv-option-content" *ngIf="selectedCVOption === 'upload'">
-            <div class="upload-area" 
+            <div class="upload-area"
                  (dragover)="$event.preventDefault()"
                  (drop)="onDrop($event)"
                  [class.has-file]="uploadedFile">
-              <input type="file" 
-                     id="cv-upload-input" 
-                     accept=".pdf,.doc,.docx" 
+              <input type="file"
+                     id="cv-upload-input"
+                     accept=".pdf,.doc,.docx"
                      style="display: none;"
                      (change)="onFileSelected($event)">
-              
+
               <!-- Default upload view (when no file is selected) -->
               <div class="upload-default" *ngIf="!uploadedFile">
                 <i class="fa fa-cloud-upload-alt upload-icon"></i>
@@ -108,11 +108,10 @@
           {{ translate('apply_modal.cover_letter_description') || 'Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.' }}
         </p>
         <div class="cover-letter-editor">
-          <textarea 
-            class="cover-letter-textarea" 
-            [(ngModel)]="coverLetter"
-            [placeholder]="translate('apply_modal.cover_letter_placeholder') || 'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'"
-            rows="6"></textarea>
+          <textarea class="cover-letter-textarea"
+                    [(ngModel)]="coverLetter"
+                    [placeholder]="translate('apply_modal.cover_letter_placeholder') || 'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.'"
+                    rows="6"></textarea>
           <i class="fa fa-pencil cover-letter-edit-icon"></i>
         </div>
         <div class="error-message" *ngIf="coverLetterError">{{ coverLetterError }}</div>

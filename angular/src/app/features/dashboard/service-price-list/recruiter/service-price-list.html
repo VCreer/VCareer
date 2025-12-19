@@ -1,108 +1,309 @@
-<div class="service-price-list-page" [style.padding-left]="getContentPaddingLeft()">
+<div class="manage-prices-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
   <!-- Toast Notification -->
-  <app-toast-notification
-    [show]="showToast"
-    [message]="toastMessage"
-    [type]="toastType"
-    (close)="onToastClose()">
-  </app-toast-notification>
+  <app-toast-notification [show]="showToast" [message]="toastMessage" [type]="toastType"
+    (close)="onCloseToast()"></app-toast-notification>
 
-  <div class="container" [style.max-width]="getContentMaxWidth()">
-    <!-- Header Section -->
+  <!-- Page Content -->
+  <div class="page-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Header -->
     <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">
-          <i class="fa fa-tags"></i>
-          Báo giá dịch vụ
-        </h1>
-        <p class="page-description">
-          Khám phá các dịch vụ hỗ trợ tuyển dụng hiệu quả với mức giá cạnh tranh
-        </p>
-      </div>
-      <button class="quote-btn" (click)="onRequestQuote()">
-        <i class="fa fa-file-invoice-dollar"></i>
-        <span>Yêu cầu báo giá</span>
-      </button>
-    </div>
-
-    <!-- Important Note Banner -->
-    <div class="important-note">
-      <div class="note-icon">
-        <i class="fa fa-info-circle"></i>
-      </div>
-      <div class="note-content">
-        <h3 class="note-title">Lưu ý quan trọng</h3>
-        <p class="note-text">
-          Nhằm tránh rủi ro mạo danh và lừa đảo, VCareer khuyến nghị Quý khách hàng không chuyển khoản vào bất cứ tài khoản cá nhân nào và chỉ thực hiện thanh toán vào các tài khoản chính thức của chúng tôi.
-        </p>
-      </div>
-    </div>
-
-    <!-- Service Sections -->
-    <div *ngFor="let section of serviceSections" class="service-section">
-      <div class="section-header">
-        <h2 class="section-title">{{ section.title }}</h2>
-        <p class="section-description">{{ section.description }}</p>
-      </div>
-      
-      <div class="packages-grid">
-        <div *ngFor="let pkg of section.packages" class="package-card"
-             [style.--header-color]="pkg.headerColor"
-             [style.--header-gradient-start]="pkg.headerGradientStart"
-             [style.--header-gradient-end]="pkg.headerGradientEnd">
-          <!-- Package Header -->
-          <div class="package-header">
-            <h3 class="package-name">{{ pkg.name }}</h3>
-            <span *ngIf="pkg.isVip" class="vip-badge">VIP</span>
-          </div>
-          
-          <!-- Package Price -->
-          <div class="package-price-section">
-            <span class="price-value">{{ pkg.price }} VNĐ</span>
-            <span class="price-note">* Giá trên chưa bao gồm VAT</span>
-          </div>
-          
-          <!-- Package Features -->
-          <div class="package-features">
-            <h4 class="features-title">Quyền lợi đặc biệt</h4>
-            <ul class="features-list">
-              <li *ngFor="let feature of pkg.features">
-                <i class="fa fa-check-circle"></i>
-                <span>{{ feature }}</span>
-              </li>
-            </ul>
-          </div>
-          
-          <!-- Package Action -->
-          <div class="package-action">
-            <button class="consult-btn" 
-                    [class.primary]="pkg.isVip"
-                    (click)="onContactUs(pkg)">
-              <span>Liên hệ tư vấn</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contact Section -->
-    <div class="contact-section">
-      <div class="contact-card">
-        <div class="contact-icon">
-          <i class="fa fa-headset"></i>
-        </div>
-        <div class="contact-content">
-          <h3 class="contact-title">Cần hỗ trợ?</h3>
-          <p class="contact-text">
-            Đội ngũ tư vấn của chúng tôi sẵn sàng hỗ trợ bạn 24/7
+      <div class="header-left">
+        <button class="back-button" (click)="onBack()">
+          <i class="fa fa-arrow-left"></i>
+          <span>Quay lại</span>
+        </button>
+        <div class="header-info">
+          <h1 class="page-title">Quản lý giá gói dịch vụ</h1>
+          <p class="page-subtitle" *ngIf="subcriptionInfo">
+            {{ subcriptionInfo.title }}
           </p>
-          <button class="contact-us-btn" (click)="onRequestQuote()">
-            <i class="fa fa-envelope"></i>
-            <span>Liên hệ ngay</span>
-          </button>
         </div>
       </div>
+      <app-button type="primary" size="medium" (click)="onCreatePrice()">
+        <i class="fa fa-plus"></i>
+        <span>Thêm giá mới</span>
+      </app-button>
+    </div>
+
+    <!-- Current Price Card -->
+    <div class="current-price-card">
+      <div class="card-header">
+        <i class="fa fa-dollar-sign"></i>
+        <span>Giá hiện tại đang áp dụng</span>
+      </div>
+      <div class="card-body">
+        <div class="current-price" *ngIf="!isLoadingCurrentPrice">
+          {{ formatPrice(currentPrice) }}
+        </div>
+        <div class="loading-spinner" *ngIf="isLoadingCurrentPrice">
+          <i class="fa fa-spinner fa-spin"></i>
+          <span>Đang tải...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prices Table -->
+    <div class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 20%">Giá gốc</th>
+              <th style="width: 20%">Giá mới</th>
+              <th style="width: 20%">Bắt đầu</th>
+              <th style="width: 20%">Kết thúc</th>
+              <th style="width: 12%">Trạng thái</th>
+              <th style="width: 8%">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoadingPrices">
+              <td colspan="6" class="loading-cell">
+                <i class="fa fa-spinner fa-spin"></i>
+                <span>Đang tải dữ liệu...</span>
+              </td>
+            </tr>
+            <tr *ngIf="!isLoadingPrices && paginatedPrices.length === 0">
+              <td colspan="6" class="empty-cell">
+                <i class="fa fa-inbox"></i>
+                <span>Chưa có giá nào được thiết lập</span>
+              </td>
+            </tr>
+            <tr *ngFor="let price of paginatedPrices">
+              <td>
+                <div class="cell-content">
+                  {{ formatPrice(price.originalPrice) }}
+                </div>
+              </td>
+              <td>
+                <div class="cell-content">
+                  <strong>{{ formatPrice(price.newPrice) }}</strong>
+                </div>
+              </td>
+              <td>
+                <div class="cell-content">
+                  {{ formatDate(price.effectiveFrom) }}
+                </div>
+              </td>
+              <td>
+                <div class="cell-content">
+                  {{ formatDate(price.effectiveTo) }}
+                </div>
+              </td>
+              <td>
+                <div class="cell-content">
+                  <span class="status-badge" [ngClass]="getPriceStatusClass(price)">
+                    {{ getPriceStatus(price) }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <div class="actions-menu-container">
+                    <button class="actions-menu-btn" (click)="toggleActionsMenu(price, $event)"
+                      [class.active]="showActionsMenu === getSubcriptionPriceId(price)">
+                      <i class="fa fa-ellipsis-v"></i>
+                    </button>
+
+                    <div class="actions-menu" *ngIf="showActionsMenu === getSubcriptionPriceId(price)"
+                      [attr.data-price-id]="getSubcriptionPriceId(price)">
+                      <button class="menu-item" (click)="onEditPrice(price)" [disabled]="price.isExpried">
+                        <i class="fa fa-edit"></i>
+                        <span>Chỉnh sửa</span>
+                      </button>
+                      <button class="menu-item" (click)="onToggleActive(price)" [disabled]="price.isExpried">
+                        <i class="fa" [ngClass]="price.isActive ? 'fa-ban' : 'fa-check-circle'"></i>
+                        <span>{{ price.isActive ? 'Vô hiệu hóa' : 'Kích hoạt' }}</span>
+                      </button>
+                      <button class="menu-item danger" (click)="onDeletePrice(price)" [disabled]="price.isExpried">
+                        <i class="fa fa-trash-alt"></i>
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination *ngIf="!isLoadingPrices && paginatedPrices.length > 0" [currentPage]="currentPage"
+        [totalPages]="totalPages" [itemsPerPage]="itemsPerPage" [totalItems]="allPrices.length"
+        (pageChange)="onPageChange($event)"></app-pagination>
     </div>
   </div>
-</div>
 
+  <!-- Create Price Modal -->
+  <app-generic-modal *ngIf="showCreatePriceModal" [show]="showCreatePriceModal" title="Thêm giá mới"
+    (close)="showCreatePriceModal = false">
+    <div class="modal-content">
+      <!-- New Price Input -->
+      <div class="form-field">
+        <label>Giá mới</label>
+        <input 
+          type="number" 
+          [(ngModel)]="priceForm.newPrice" 
+          placeholder="Nhập giá mới"
+          min="0" 
+          step="1000"
+          [class.error]="validationErrors['newPrice']"
+        >
+        <span class="error-text" *ngIf="validationErrors['newPrice']">
+          {{ validationErrors['newPrice'] }}
+        </span>
+        <span class="help-text" *ngIf="subcriptionInfo && !validationErrors['newPrice']">
+          Giá gốc: {{ formatPrice(subcriptionInfo.originalPrice) }}
+        </span>
+      </div>
+
+      <!-- Effective From Input -->
+      <div class="form-field">
+        <label>Ngày bắt đầu áp dụng</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="priceForm.effectiveFrom"
+          [class.error]="validationErrors['effectiveFrom']"
+        >
+        <span class="error-text" *ngIf="validationErrors['effectiveFrom']">
+          {{ validationErrors['effectiveFrom'] }}
+        </span>
+      </div>
+
+      <!-- Effective To Input -->
+      <div class="form-field">
+        <label>Ngày kết thúc áp dụng</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="priceForm.effectiveTo"
+          [class.error]="validationErrors['effectiveTo']"
+        >
+        <span class="error-text" *ngIf="validationErrors['effectiveTo']">
+          {{ validationErrors['effectiveTo'] }}
+        </span>
+      </div>
+
+      <!-- Existing Date Ranges Warning -->
+      <div class="existing-ranges-box" *ngIf="getExistingActiveRanges().length > 0">
+        <i class="fa fa-calendar-times"></i>
+        <div>
+          <p><strong>Khoảng thời gian đã có giá:</strong></p>
+          <ul>
+            <li *ngFor="let range of getExistingActiveRanges()">
+              {{ formatDate(range.effectiveFrom) }} → {{ formatDate(range.effectiveTo) }}
+              <span class="range-discount">({{ formatPrice(range.newPrice) }})</span>
+            </li>
+          </ul>
+          <p class="range-note">Vui lòng chọn khoảng thời gian không trùng với các khoảng trên</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <i class="fa fa-info-circle"></i>
+        <div>
+          <p><strong>Lưu ý:</strong></p>
+          <ul>
+            <li>Giá mới phải lớn hơn 0</li>
+            <li>Các khoảng thời gian không được chồng lấn</li>
+            <li>Giá chỉ có hiệu lực khi được kích hoạt</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal Footer Buttons -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showCreatePriceModal = false" [disabled]="isSavingPrice">
+          Hủy
+        </button>
+        <button class="btn-confirm" (click)="onConfirmCreatePrice()" [disabled]="isSavingPrice">
+          <i class="fa fa-spinner fa-spin" *ngIf="isSavingPrice"></i>
+          <span>{{ isSavingPrice ? 'Đang lưu...' : 'Lưu' }}</span>
+        </button>
+      </div>
+    </div>
+  </app-generic-modal>
+
+  <!-- Edit Price Modal -->
+  <app-generic-modal *ngIf="showEditPriceModal" [show]="showEditPriceModal" title="Chỉnh sửa giá"
+    (close)="showEditPriceModal = false">
+    <div class="modal-content">
+      <!-- New Price Input -->
+      <div class="form-field">
+        <label>Giá mới</label>
+        <input 
+          type="number" 
+          [(ngModel)]="priceForm.newPrice" 
+          placeholder="Nhập giá mới"
+          min="0" 
+          step="1000"
+          [class.error]="validationErrors['newPrice']"
+        >
+        <span class="error-text" *ngIf="validationErrors['newPrice']">
+          {{ validationErrors['newPrice'] }}
+        </span>
+        <span class="help-text" *ngIf="subcriptionInfo && !validationErrors['newPrice']">
+          Giá gốc: {{ formatPrice(subcriptionInfo.originalPrice) }}
+        </span>
+      </div>
+
+      <!-- Effective From Input -->
+      <div class="form-field">
+        <label>Ngày bắt đầu áp dụng</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="priceForm.effectiveFrom"
+          [class.error]="validationErrors['effectiveFrom']"
+        >
+        <span class="error-text" *ngIf="validationErrors['effectiveFrom']">
+          {{ validationErrors['effectiveFrom'] }}
+        </span>
+      </div>
+
+      <!-- Effective To Input -->
+      <div class="form-field">
+        <label>Ngày kết thúc áp dụng</label>
+        <input 
+          type="datetime-local" 
+          [(ngModel)]="priceForm.effectiveTo"
+          [class.error]="validationErrors['effectiveTo']"
+        >
+        <span class="error-text" *ngIf="validationErrors['effectiveTo']">
+          {{ validationErrors['effectiveTo'] }}
+        </span>
+      </div>
+
+      <!-- Existing Date Ranges Warning -->
+      <div class="existing-ranges-box" *ngIf="getExistingActiveRanges().length > 0">
+        <i class="fa fa-calendar-times"></i>
+        <div>
+          <p><strong>Khoảng thời gian đã có giá:</strong></p>
+          <ul>
+            <li *ngFor="let range of getExistingActiveRanges()">
+              {{ formatDate(range.effectiveFrom) }} → {{ formatDate(range.effectiveTo) }}
+              <span class="range-discount">({{ formatPrice(range.newPrice) }})</span>
+            </li>
+          </ul>
+          <p class="range-note">Vui lòng chọn khoảng thời gian không trùng với các khoảng trên</p>
+        </div>
+      </div>
+
+      <!-- Warning về giá đang active -->
+      <div class="warning-box" *ngIf="selectedPrice?.isActive">
+        <i class="fa fa-exclamation-triangle"></i>
+        <span>Giá này đang được áp dụng. Thay đổi sẽ ảnh hưởng ngay lập tức.</span>
+      </div>
+
+      <!-- Modal Footer Buttons -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="showEditPriceModal = false" [disabled]="isSavingPriceEdit">
+          Hủy
+        </button>
+        <button class="btn-confirm" (click)="onConfirmEditPrice()" [disabled]="isSavingPriceEdit">
+          <i class="fa fa-spinner fa-spin" *ngIf="isSavingPriceEdit"></i>
+          <span>{{ isSavingPriceEdit ? 'Đang lưu...' : 'Cập nhật' }}</span>
+        </button>
+      </div>
+    </div>
+  </app-generic-modal>
+</div>

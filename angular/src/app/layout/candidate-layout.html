@@ -3,5 +3,10 @@
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>
-  <app-footer *ngIf="showFooter"></app-footer>
+  <ng-container *ngIf="showFooter">
+    <app-recruiter-footer *ngIf="useRecruiterFooter; else candidateFooter"></app-recruiter-footer>
+    <ng-template #candidateFooter>
+      <app-footer></app-footer>
+    </ng-template>
+  </ng-container>
 </div>

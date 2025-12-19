@@ -168,6 +168,7 @@ namespace VCareer.Permission
             user.AddChild(VCareerPermission.User.CreateEmpLoyeeAccount, L("Permission:UserManagement.CreateEmployeeAccount"));
             user.AddChild(VCareerPermission.User.ViewByRole, L("Permission:UserManagement.ViewByRole"));
             user.AddChild(VCareerPermission.User.SetStatus, L("Permission:UserManagement.SetStatus"));
+            user.AddChild(VCareerPermission.User.ViewEmployees, L("Permission:UserManagement.ViewEmployees"));
         }
 
         private ILocalizableString L(string name)
