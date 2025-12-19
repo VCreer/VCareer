@@ -217,6 +217,12 @@ export class ForgotPasswordComponent implements OnInit {
     } else if (error?.status === 500 || error?.status === 400) {
       errorMessage = 'Tài khoản không hợp lệ. Vui lòng kiểm tra lại email.';
     }
+
+    // Trường hợp đặc biệt: backend trả về thông báo "Email này không thuộc tài khoản ứng viên..."
+    // → hiển thị thông báo chung như bạn yêu cầu
+    if (errorMessage?.includes('Email này không thuộc tài khoản ứng viên')) {
+      errorMessage = 'Đăng nhập thất bại , vui lòng thử lại!';
+    }
     
     // Hiển thị toast thay vì modal
     this.showToastMessage(errorMessage, 'error');

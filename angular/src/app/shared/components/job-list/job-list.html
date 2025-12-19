@@ -68,7 +68,7 @@
 
   <!-- Login Modal -->
   <app-login-modal
-    *ngIf="showLoginModal"
+    [show]="showLoginModal"
     (close)="onLoginClose()"
     (loginSuccess)="onLoginSuccess()"
   ></app-login-modal>

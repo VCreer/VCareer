@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject, OnChanges } from '@angu
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
+import { LoginModalComponent } from '../login-modal/login-modal';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
 import { JobSearchService } from '../../../proxy/services/job/job-search.service';
 import { NavigationService } from '../../../core/services/navigation.service';
@@ -9,7 +10,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
 @Component({
   selector: 'app-job-list-detail',
   standalone: true,
-  imports: [CommonModule, ToastNotificationComponent],
+  imports: [CommonModule, ToastNotificationComponent, LoginModalComponent],
   templateUrl: './job-list-detail.html',
   styleUrls: ['./job-list-detail.scss']
 })
@@ -25,6 +26,7 @@ export class JobListDetailComponent implements OnChanges {
   isHeartActive: boolean = false;
   private previousJobId: number | null = null;
   isAuthenticated = false;
+  showLoginModal = false;
   
   // Toast notification properties
   showToast: boolean = false;
@@ -66,7 +68,7 @@ export class JobListDetailComponent implements OnChanges {
 
   onToggleHeart() {
     if (!this.isAuthenticated) {
-      this.showToastMessage('Bạn cần đăng nhập để lưu công việc', 'warning');
+      this.showLoginModal = true;
       return;
     }
 
@@ -108,6 +110,16 @@ export class JobListDetailComponent implements OnChanges {
 
   onToastClose() {
     this.showToast = false;
+  }
+
+  closeLoginModal() {
+    this.showLoginModal = false;
+  }
+
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
+    this.syncSavedStatus();
   }
 
   /**

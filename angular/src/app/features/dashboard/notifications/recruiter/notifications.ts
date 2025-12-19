@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { NotificationService, NotificationDto } from '../../../../core/services/notification.service';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 import { ButtonComponent } from '../../../../shared/components/button/button';
@@ -30,7 +31,10 @@ export class RecruiterNotificationsComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loadNotifications();
@@ -46,15 +50,8 @@ export class RecruiterNotificationsComponent implements OnInit {
       isReadFilter = false;
     }
 
-    let notificationTypeFilter: string | undefined = undefined;
-    if (this.filterType === 'candidate') {
-      notificationTypeFilter = 'ApplicationSubmitted';
-    } else if (this.filterType === 'system') {
-      notificationTypeFilter = 'System';
-    }
-
     this.notificationService
-      .getNotifications('Recruiter', this.currentPage, this.pageSize, notificationTypeFilter, isReadFilter)
+      .getNotifications('Recruiter', this.currentPage, this.pageSize, undefined, isReadFilter)
       .pipe(
         catchError(error => {
           console.error('[Recruiter Notifications] Error loading notifications:', error);
@@ -64,8 +61,19 @@ export class RecruiterNotificationsComponent implements OnInit {
         })
       )
       .subscribe(result => {
-        this.notifications = result.items || [];
-        this.totalCount = result.totalCount || 0;
+        let items = result.items || [];
+
+        // Lọc theo loại thông báo trên frontend:
+        // - Ứng viên: chỉ lấy thông báo ApplicationSubmitted
+        // - Hệ thống: lấy tất cả trừ ApplicationSubmitted
+        if (this.filterType === 'candidate') {
+          items = items.filter(n => n.notificationType === 'ApplicationSubmitted');
+        } else if (this.filterType === 'system') {
+          items = items.filter(n => n.notificationType !== 'ApplicationSubmitted');
+        }
+
+        this.notifications = items;
+        this.totalCount = items.length;
         this.unreadCount = result.unreadCount || 0;
         this.totalPages = Math.ceil(this.totalCount / this.pageSize);
         this.isLoading = false;
@@ -90,27 +98,21 @@ export class RecruiterNotificationsComponent implements OnInit {
   }
 
   openCvManagement(notification: NotificationDto) {
-    // Mark as read then navigate
-    const nav = () => {
-      window.location.href = '/recruiter/cv-management';
-    };
-
-    if (notification.isRead) {
-      nav();
-      return;
+    // Mark as read first
+    if (!notification.isRead) {
+      this.notificationService
+        .markAsRead(notification.id)
+        .pipe(
+          catchError(error => {
+            console.error('[Recruiter Notifications] Error marking as read:', error);
+            return of(null);
+          })
+        )
+        .subscribe();
     }
 
-    this.notificationService
-      .markAsRead(notification.id)
-      .pipe(
-        catchError(error => {
-          console.error('[Recruiter Notifications] Error marking as read:', error);
-          return of(null);
-        })
-      )
-      .subscribe(() => {
-        nav();
-      });
+    // Navigate to CV management
+    this.router.navigate(['/recruiter/cv-management']);
   }
 
   markAllAsRead() {

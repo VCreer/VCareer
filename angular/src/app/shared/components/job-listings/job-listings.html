@@ -68,6 +68,13 @@
     [type]="toastType"
     (close)="showToast = false"
   ></app-toast-notification>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
   
   <div class="pagination">
     <button 

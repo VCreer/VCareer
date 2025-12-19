@@ -4,12 +4,10 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { GoogleAuthService } from '../../../core/services/google-auth.service';
-import { 
-  InputFieldComponent, 
-  PasswordFieldComponent, 
-  ButtonComponent, 
-  ToastNotificationComponent 
-} from '../index';
+import { InputFieldComponent } from '../input-field/input-field';
+import { PasswordFieldComponent } from '../password-field/password-field';
+import { ButtonComponent } from '../button/button';
+import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { finalize } from 'rxjs/operators';
 import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
 

@@ -385,19 +385,103 @@ namespace VCareer.Application.Applications
 
             await _applicationRepository.UpdateAsync(application);
 
-            // Gửi email thông báo khi chuyển sang trạng thái "offer" (Gửi đề nghị)
             var applicationDto = await MapToDtoAsync(application);
+
+            // Load thêm thông tin job & candidate để dùng cho các loại thông báo khác nhau
+            var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
+            var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
+
+            // Gửi email + notification khi chuyển sang trạng thái "offer" (Gửi đề nghị)
             if (input.Status == "offer" && oldStatus != "offer")
             {
                 await SendOfferEmailAsync(application, applicationDto);
-
-                // Tạo notification cho candidate kèm hạn job
-                var job = await _jobPostingRepository.FirstOrDefaultAsync(j => j.Id == application.JobId);
-                var candidate = await _candidateRepository.FirstOrDefaultAsync(c => c.UserId == application.CandidateId);
                 await NotifyCandidateOfferAsync(job, candidate, application);
             }
 
+            // Gửi notification khi recruiter đánh dấu "phù hợp" hoặc "chưa phù hợp"
+            if ((input.Status == "suitable" || input.Status == "not-suitable") && oldStatus != input.Status)
+            {
+                await NotifyCandidateStatusChangedAsync(job, candidate, application, input.Status);
+            }
+
             return applicationDto;
+        }
+
+        private async Task NotifyCandidateStatusChangedAsync(
+            Job_Post job,
+            CandidateProfile candidate,
+            JobApplication application,
+            string newStatus)
+        {
+            if (candidate == null)
+            {
+                Logger.LogWarning("NotifyCandidateStatusChangedAsync: Candidate not found for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var candidateUserId = candidate.UserId;
+            if (candidateUserId == Guid.Empty)
+            {
+                Logger.LogWarning("NotifyCandidateStatusChangedAsync: Candidate UserId missing for application {ApplicationId}", application.Id);
+                return;
+            }
+
+            var company = job?.CompanyName ?? "Nhà tuyển dụng";
+            var jobTitle = job?.Title ?? "Công việc";
+
+            string statusText;
+            string title;
+            string message;
+
+            if (newStatus == "suitable")
+            {
+                statusText = "phù hợp";
+                title = "Hồ sơ của bạn được đánh giá phù hợp";
+                message = $"Nhà tuyển dụng đánh giá hồ sơ của bạn PHÙ HỢP cho vị trí {jobTitle} tại {company}.";
+            }
+            else // not-suitable
+            {
+                statusText = "chưa phù hợp";
+                title = "Hồ sơ của bạn chưa phù hợp";
+                message = $"Nhà tuyển dụng đánh giá hồ sơ của bạn CHƯA PHÙ HỢP cho vị trí {jobTitle} tại {company}.";
+            }
+
+            var metadata = JsonSerializer.Serialize(new
+            {
+                JobTitle = jobTitle,
+                CompanyName = company,
+                JobId = job?.Id,
+                ApplicationId = application.Id,
+                NewStatus = newStatus,
+                NewStatusText = statusText
+            });
+
+            var notificationDto = new NotificationCreateDto
+            {
+                UserId = candidateUserId,
+                UserRole = "Candidate",
+                NotificationType = "ApplicationStatusChanged",
+                Title = title,
+                Message = message,
+                RelatedEntityType = "JobPost",
+                RelatedEntityId = application.JobId,
+                Metadata = metadata,
+                CreatedBy = application.RespondedBy
+            };
+
+            try
+            {
+                await _notificationAppService.CreateNotificationAsync(notificationDto);
+                Logger.LogInformation(
+                    "NotifyCandidateStatusChangedAsync: Notification sent to candidate {CandidateUserId} for application {ApplicationId} with status {Status}",
+                    candidateUserId, application.Id, newStatus);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex,
+                    "NotifyCandidateStatusChangedAsync: Failed to send notification for application {ApplicationId} with status {Status}",
+                    application.Id, newStatus);
+            }
         }
 
         private async Task SendOfferEmailAsync(JobApplication application, ApplicationDto applicationDto)

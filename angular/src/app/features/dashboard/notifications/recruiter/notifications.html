@@ -78,7 +78,12 @@
               {{ formatDate(notification.creationTime) }}
             </span>
             <div class="notification-actions">
-              <button class="btn-open" (click)="openCvManagement(notification)">Mở quản lý CV</button>
+              <button 
+                class="btn-open"
+                *ngIf="notification.notificationType === 'ApplicationSubmitted'"
+                (click)="openCvManagement(notification)">
+                Mở quản lý CV
+              </button>
               <button class="btn-delete" (click)="deleteNotification(notification)">
                 <i class="fa fa-trash"></i>
               </button>

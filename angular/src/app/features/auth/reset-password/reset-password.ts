@@ -245,22 +245,34 @@ export class ResetPasswordComponent implements OnInit {
     } else if (error?.error?.message) {
       errorMessage = error.error.message;
     } else if (error?.message) {
-      // Xử lý lỗi "An internal error occurred" từ ABP
-      if (error.message.includes('internal error') || error.message.includes('Internal error')) {
-        errorMessage = 'Token không khớp với email. Vui lòng sử dụng link đặt lại mật khẩu từ email của bạn.';
-      } else {
-        errorMessage = error.message;
-      }
+      errorMessage = error.message;
     } else if (error?.status === 500 || error?.status === 400) {
-      errorMessage = 'Token không khớp với email. Vui lòng sử dụng link đặt lại mật khẩu từ email của bạn.';
+      errorMessage = 'Không thành công !';
     }
     
     // Xử lý lỗi "11" hoặc các error code khác
     if (error?.error?.error?.code) {
       const errorCode = error.error.error.code;
       if (errorCode === '11' || errorCode === 11) {
-        errorMessage = 'Có lỗi xảy ra khi đặt lại mật khẩu. Vui lòng thử lại.';
+        // Backend trả về mã lỗi 11 (ví dụ: email/token không hợp lệ hoặc đã dùng)
+        // → hiển thị thông báo chung như yêu cầu
+        errorMessage = 'Không thành công !';
       }
+    }
+
+    // Bất kỳ trường hợp nào message chứa "An internal error occurred during your request!"
+    // thì ép về thông điệp thân thiện hơn
+    if (
+      errorMessage &&
+      (errorMessage.includes('An internal error occurred during your request') ||
+       errorMessage.toLowerCase().includes('internal error'))
+    ) {
+      errorMessage = 'Không thành công !';
+    }
+
+    // Nếu sau cùng message vẫn là "11" (hoặc chỉ chứa số 11) thì cũng ép về thông báo chung
+    if (String(errorMessage).trim() === '11') {
+      errorMessage = 'Không thành công !';
     }
     
     // Hiển thị toast thay vì modal

@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
+import { LoginModalComponent } from '../login-modal/login-modal';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { Router } from '@angular/router';
 import { GeoService } from '../../../core/services/Geo.service';
@@ -21,7 +22,7 @@ import { JobSearchService } from '../../../proxy/services/job/job-search.service
 @Component({
   selector: 'app-job-list',
   standalone: true,
-  imports: [CommonModule, ToastNotificationComponent],
+  imports: [CommonModule, ToastNotificationComponent, LoginModalComponent],
   templateUrl: './job-list.html',
   styleUrls: ['./job-list.scss'],
 })
@@ -69,6 +70,14 @@ export class JobListComponent implements OnInit, OnChanges {
     });
     this.navigationService.isLoggedIn$.subscribe(isLogged => {
       this.isAuthenticated = isLogged;
+
+      // Khi đăng xuất: xóa toàn bộ trạng thái tim đã lưu trên UI
+      if (!isLogged) {
+        this.filteredJobs = this.filteredJobs.map(j => ({ ...j, isSaved: false }));
+      } else {
+        // Khi đăng nhập lại: đồng bộ trạng thái đã lưu từ backend
+        this.syncSavedStatus();
+      }
     });
     // Initialize filteredJobs with all jobs
     this.updateFilteredJobs();

@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
+import { LoginModalComponent } from '../login-modal/login-modal';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CategoryTreeDto } from '../../../apiTest/api/category.service';
 import { ProvinceDto } from '../../../proxy/dto/geo-dto';
@@ -14,7 +15,7 @@ import { NavigationService } from '../../../core/services/navigation.service';
 @Component({
   selector: 'app-job-listings',
   standalone: true,
-  imports: [CommonModule, ToastNotificationComponent], 
+  imports: [CommonModule, ToastNotificationComponent, LoginModalComponent], 
   templateUrl: './job-listings.html',
   styleUrls: ['./job-listings.scss']
 })
@@ -35,6 +36,7 @@ export class JobListingsComponent implements OnInit, OnChanges {
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
   isAuthenticated = false;
+  showLoginModal = false;
 
   onImgError(event: Event) {
     (event.target as HTMLImageElement).src = this.defaultLogo;
@@ -42,10 +44,7 @@ export class JobListingsComponent implements OnInit, OnChanges {
 
   toggleBookmark(job: any) {
     if (!this.isAuthenticated) {
-      this.toastType = 'warning';
-      this.toastMessage = 'Bạn cần đăng nhập để lưu công việc';
-      this.showToast = true;
-      setTimeout(() => (this.showToast = false), 2500);
+      this.showLoginModal = true;
       return;
     }
 
@@ -128,6 +127,16 @@ export class JobListingsComponent implements OnInit, OnChanges {
     this.locationSelected.emit(location);
   }
 
+  closeLoginModal() {
+    this.showLoginModal = false;
+  }
+
+  onLoginSuccess() {
+    this.showLoginModal = false;
+    this.isAuthenticated = true;
+    this.syncSavedStatus();
+  }
+
   constructor(
     private translationService: TranslationService,
     private jobSearchService: JobSearchService,
@@ -137,8 +146,13 @@ export class JobListingsComponent implements OnInit, OnChanges {
   ngOnInit() {
     this.navigationService.isLoggedIn$.subscribe(isLogged => {
       this.isAuthenticated = isLogged;
+
+      // Đăng nhập: đồng bộ lại danh sách đã lưu từ backend
       if (isLogged) {
         this.syncSavedStatus();
+      } else {
+        // Đăng xuất: clear toàn bộ trạng thái tim trên UI
+        this.jobListings = this.jobListings.map(j => ({ ...j, isBookmarked: false }));
       }
     });
   }

@@ -19,6 +19,8 @@ using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.IGeoServices;
 using VCareer.IServices.IJobServices;
 using VCareer.IServices.Subcriptions;
+using VCareer.IServices.Notification;
+using VCareer.Dto.Notification;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Job;
 using VCareer.Models.Subcription;
@@ -56,6 +58,8 @@ namespace VCareer.Services.Job
         private readonly IActivityLogAppService _activityLogAppService;
         private readonly ILuceneJobIndexer _luceneJobIndexer;
         private readonly IEffectingJobServiceRepository _jobAffectingRepository;
+        private readonly INotificationAppService _notificationAppService;
+        private readonly IRecruitmentCampainRepository _campaignRepository;
 
 
         public JobPostService(
@@ -74,7 +78,9 @@ namespace VCareer.Services.Job
             IEffectingJobServiceRepository jobAffectingRepository,
             IJobTagService jobTagService,
             ILuceneJobIndexer luceneJobIndexer,
-            IActivityLogAppService activityLogAppService)
+            IActivityLogAppService activityLogAppService,
+            INotificationAppService notificationAppService,
+            IRecruitmentCampainRepository campaignRepository)
         {
             _jobPostRepository = repository;
             _jobSearchService = jobSearchService;
@@ -92,6 +98,8 @@ namespace VCareer.Services.Job
             _activityLogAppService = activityLogAppService;
             _luceneJobIndexer = luceneJobIndexer;
             _jobAffectingRepository= jobAffectingRepository;
+            _notificationAppService = notificationAppService;
+            _campaignRepository = campaignRepository;
         }
 
         [Authorize(VCareerPermission.JobPost.Approve)]
@@ -125,18 +133,42 @@ namespace VCareer.Services.Job
             }
 
             await _jobPostRepository.UpdateAsync(jobPost, true);
-            await _jobSearchService.IndexJobAsync(jobPost.Id);           
-            // TODO: send email cho recruiter báo đăng bài thành công
+            await _jobSearchService.IndexJobAsync(jobPost.Id);
+            
+            // Lấy thông tin campaign
+            var campaign = await _campaignRepository.GetAsync(jobPost.RecruitmentCampaignId);
+            
+            // Gửi notification cho recruiter về việc job được duyệt
+            await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
+            {
+                UserId = jobPost.RecruiterId,
+                UserRole = "Recruiter",
+                Title = "Tin tuyển dụng được duyệt",
+                Message = $"Tin tuyển dụng '{jobPost.Title}' đã được duyệt và đăng tải thành công.",
+                NotificationType = "JobApproved",
+                RelatedEntityType = "JobPost",
+                RelatedEntityId = jobPost.Id,
+                Metadata = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    JobId = jobPost.Id,
+                    JobTitle = jobPost.Title,
+                    CompanyName = jobPost.CompanyName,
+                    ApprovedAt = jobPost.ApproveAt,
+                    RecruitmentCampaignId = jobPost.RecruitmentCampaignId,
+                    CampaignName = campaign?.Name
+                })
+            });
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string id)
+        public async Task RejectJobPostAsync(string id, string reasonReject = "")
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
             if (jobPost == null)
                 throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
 
             jobPost.Status = JobStatus.Rejected;
+            jobPost.RejectedReason = reasonReject;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             // Ghi log: từ chối job
@@ -153,7 +185,29 @@ namespace VCareer.Services.Job
             }
             //logic trả lại service
 
-            // TODO: send email cho recruiter với nội dung từ Reject reason 
+            // Lấy thông tin campaign
+            var campaign = await _campaignRepository.GetAsync(jobPost.RecruitmentCampaignId);
+
+            // Gửi notification cho recruiter về việc job bị từ chối
+            await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
+            {
+                UserId = jobPost.RecruiterId,
+                UserRole = "Recruiter",
+                Title = "Tin tuyển dụng bị từ chối",
+                Message = $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối. Lý do: {reasonReject}",
+                NotificationType = "JobRejected",
+                RelatedEntityType = "JobPost",
+                RelatedEntityId = jobPost.Id,
+                Metadata = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    JobId = jobPost.Id,
+                    JobTitle = jobPost.Title,
+                    RejectReason = reasonReject,
+                    CompanyName = jobPost.CompanyName,
+                    RecruitmentCampaignId = jobPost.RecruitmentCampaignId,
+                    CampaignName = campaign?.Name
+                })
+            });
         }
         [Authorize(VCareerPermission.JobPost.LoadJobNeedApprove)]
         public async Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto)
