@@ -64,6 +64,11 @@ namespace VCareer.CV
         /// Cập nhật preview image của CV
         /// </summary>
         Task UpdatePreviewImageAsync(Guid cvId, string previewImageUrl);
+
+        /// <summary>
+        /// Download CV dưới dạng PDF
+        /// </summary>
+        Task<byte[]> DownloadCvAsync(Guid cvId);
     }
 }
 

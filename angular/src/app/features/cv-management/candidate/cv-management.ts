@@ -524,9 +524,35 @@ export class CvManagementComponent implements OnInit {
     const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
     if (uploadedCv && (uploadedCv as any).id) {
       const cvId = (uploadedCv as any).id;
-      // Download file với inline=false
       const downloadUrl = `${environment.apis.default.url}/api/cv/uploaded/${cvId}/download?inline=false`;
-      window.open(downloadUrl, '_blank');
+      
+      // Fetch file as blob để download về máy
+      this.http.get(downloadUrl, { 
+        responseType: 'blob',
+        withCredentials: true 
+      }).subscribe({
+        next: (blob: Blob) => {
+          // Tạo blob URL từ file PDF
+          const blobUrl = URL.createObjectURL(blob);
+          
+          // Tạo link tạm để download
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `${cv.name || 'CV'}.pdf`; // Tên file khi download
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+          
+          this.showToastMessage('Đã tải CV thành công!', 'success');
+        },
+        error: (error) => {
+          console.error('Error downloading CV:', error);
+          this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+        }
+      });
     } else {
       this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
     }

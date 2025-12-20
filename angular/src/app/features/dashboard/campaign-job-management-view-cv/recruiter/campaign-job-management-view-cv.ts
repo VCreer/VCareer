@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -31,6 +31,12 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
   jobId: string | null = null;
   campaignName: string = '';
   jobTitle: string = '';
+  
+  // Sidebar state
+  sidebarExpanded: boolean = false;
+  sidebarWidth = 72;
+  private sidebarObserver?: ResizeObserver;
+  private resizeListener?: () => void;
   
   // CV list
   cvs: CandidateCV[] = [];
@@ -91,7 +97,8 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private sidebarSync: SidebarSyncService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +108,9 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
       '.breadcrumb-box',
       this.componentId
     );
+
+    // Setup sidebar width tracking
+    this.setupSidebarTracking();
 
     // Get campaign ID, job ID from query params rồi load data thực từ API
     this.route.queryParams.subscribe(params => {
@@ -115,6 +125,101 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
+    this.cleanupSidebarTracking();
+  }
+
+  // ==================== SIDEBAR METHODS ====================
+  
+  setupSidebarTracking(): void {
+    const trySetup = (attempts = 0) => {
+      const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
+      
+      if (sidebar) {
+        this.checkSidebarState(sidebar);
+        
+        this.sidebarObserver = new ResizeObserver(() => {
+          this.checkSidebarState(sidebar);
+        });
+        
+        this.sidebarObserver.observe(sidebar);
+        
+        this.resizeListener = () => {
+          this.checkSidebarState(sidebar);
+          this.cdr.markForCheck();
+        };
+        window.addEventListener('resize', this.resizeListener);
+      } else if (attempts < 10) {
+        setTimeout(() => trySetup(attempts + 1), 100);
+      }
+    };
+    
+    trySetup();
+  }
+
+  cleanupSidebarTracking(): void {
+    if (this.sidebarObserver) {
+      this.sidebarObserver.disconnect();
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+  }
+
+  checkSidebarState(sidebar: HTMLElement): void {
+    const rect = sidebar.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    if (this.sidebarWidth !== width) {
+      this.sidebarWidth = width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+      this.cdr.markForCheck();
+    }
+  }
+
+  getContentPaddingLeft(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getContentWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100vw - 32px)';
+    }
+    const sidePadding = 48;
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    const maxContentWidth = Math.min(1400, Math.max(900, availableWidth));
+    return `${maxContentWidth}px`;
+  }
+
+  getBreadcrumbLeft(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getWindowWidth(): number {
+    return window.innerWidth;
   }
 
   loadCVs(): void {

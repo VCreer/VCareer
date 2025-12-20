@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-cv-view',
@@ -31,7 +33,8 @@ export class CvViewComponent implements OnInit {
     private router: Router,
     private candidateCvService: CandidateCvService,
     private translationService: TranslationService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -183,8 +186,41 @@ export class CvViewComponent implements OnInit {
   }
 
   onDownloadCv() {
-    // TODO: Implement download CV as PDF
-    this.showToastMessage('Tính năng tải CV sẽ được triển khai sớm.', 'info');
+    if (!this.cvId) {
+      this.showToastMessage('Không tìm thấy CV. Vui lòng thử lại.', 'error');
+      return;
+    }
+
+    const downloadUrl = `${environment.apis.default.url}/api/cv/candidates/${this.cvId}/download`;
+    
+    // Fetch file as blob để download về máy
+    this.http.get(downloadUrl, { 
+      responseType: 'blob',
+      withCredentials: true 
+    }).subscribe({
+      next: (blob: Blob) => {
+        // Tạo blob URL từ file PDF
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Tạo link tạm để download
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${this.cvName || 'CV'}.pdf`; // Tên file khi download
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        
+        this.showToastMessage('Đã tải CV thành công!', 'success');
+      },
+      error: (error) => {
+        console.error('Error downloading CV:', error);
+        const errorMessage = error?.error?.error?.message || error?.message || 'Không thể tải CV. Vui lòng thử lại.';
+        this.showToastMessage(errorMessage, 'error');
+      }
+    });
   }
 
   onCopyCv() {

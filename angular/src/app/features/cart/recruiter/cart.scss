@@ -349,29 +349,6 @@
             font-weight: 500;
           }
         }
-
-        .discount-row {
-          margin-top: 1rem;
-          padding-top: 1rem;
-          border-top: 1px solid #e5e7eb;
-
-          .discount-btn {
-            width: 100%;
-            padding: 0.625rem 1rem;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            color: #374151;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-              border-color: #0F83BA;
-              color: #0F83BA;
-            }
-          }
-        }
       }
 
       .total-payment {

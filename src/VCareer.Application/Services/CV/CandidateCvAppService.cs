@@ -14,6 +14,8 @@ using Volo.Abp.Users;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 
 namespace VCareer.Services.CV
 {
@@ -1857,6 +1859,82 @@ namespace VCareer.Services.CV
 
             cv.PreviewImageUrl = previewImageUrl;
             await _candidateCvRepository.UpdateAsync(cv);
+        }
+
+        public async Task<byte[]> DownloadCvAsync(Guid cvId)
+        {
+            var userId = _currentUser.GetId();
+            var cv = await _candidateCvRepository.GetAsync(cvId);
+
+            // Kiểm tra quyền: chỉ có thể download CV của chính mình
+            if (cv.CandidateId != userId)
+            {
+                throw new UserFriendlyException("Bạn không có quyền download CV này.");
+            }
+
+            // Render CV thành HTML
+            var renderResult = await RenderCvAsync(cvId);
+            var htmlContent = renderResult.HtmlContent;
+
+            if (string.IsNullOrEmpty(htmlContent))
+            {
+                throw new UserFriendlyException("Không thể render CV online");
+            }
+
+            // Convert HTML sang PDF sử dụng PuppeteerSharp (headless Chrome)
+            try
+            {
+                // Tải Chromium nếu chưa có (chỉ lần đầu tiên)
+                var browserFetcher = new BrowserFetcher();
+                await browserFetcher.DownloadAsync();
+
+                // Launch browser
+                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                {
+                    Headless = true,
+                    Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" } // Cần cho Linux/Docker
+                });
+
+                // Tạo page mới
+                using var page = await browser.NewPageAsync();
+                
+                // Set content HTML
+                await page.SetContentAsync(htmlContent, new NavigationOptions
+                {
+                    WaitUntil = new[] { WaitUntilNavigation.Networkidle0 }
+                });
+
+                // Generate PDF
+                var pdfBytes = await page.PdfDataAsync(new PdfOptions
+                {
+                    Format = PaperFormat.A4,
+                    PrintBackground = true,
+                    MarginOptions = new MarginOptions
+                    {
+                        Top = "10mm",
+                        Bottom = "10mm",
+                        Left = "10mm",
+                        Right = "10mm"
+                    }
+                });
+
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    _logger.LogWarning("PDF conversion returned empty result for CV {CvId}", cvId);
+                    throw new UserFriendlyException("Không thể tạo file PDF. Kết quả trống.");
+                }
+
+                return pdfBytes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error converting HTML to PDF for CV {CvId}. Exception type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                    cvId, 
+                    ex.GetType().Name, 
+                    ex.Message, 
+                    ex.StackTrace);
+                throw new UserFriendlyException($"Không thể chuyển đổi CV sang PDF: {ex.Message}");
+            }
         }
     }
 }

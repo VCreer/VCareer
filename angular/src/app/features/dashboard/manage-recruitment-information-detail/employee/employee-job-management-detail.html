@@ -22,14 +22,21 @@
   </div>
 
   <div class="detail-content" [style.max-width]="getContentMaxWidth()">
-    <div class="job-detail-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
+
+    <!-- Job Detail Content -->
+    <div *ngIf="!isLoading && job" class="job-detail-container">
       <!-- Left Column -->
       <div class="job-detail__box--left">
         <!-- Job Info Section -->
         <div class="job-detail__info">
           <!-- Job Title -->
           <div class="job-detail__info--title">
-            <h1>FullStack Developer (NodeJS, ReactJS, Vue JS) - Sign On Bonus</h1>
+            <h1>{{ job.title || 'Chưa có tiêu đề' }}</h1>
           </div>
 
           <!-- Job Details Section -->
@@ -40,7 +47,7 @@
               </div>
               <div class="job-detail__info-item-content">
                 <div class="job-detail__info-item-title">Mức lương</div>
-                <div class="job-detail__info-item-value">Thoả thuận</div>
+                <div class="job-detail__info-item-value">{{ getSalaryText() }}</div>
               </div>
             </div>
             <div class="job-detail__info-item">
@@ -49,24 +56,24 @@
               </div>
               <div class="job-detail__info-item-content">
                 <div class="job-detail__info-item-title">Địa điểm</div>
-                <div class="job-detail__info-item-value">Hà Nội</div>
+                <div class="job-detail__info-item-value">{{ getLocationText() || 'Chưa có thông tin' }}</div>
               </div>
             </div>
-            <div class="job-detail__info-item">
+            <div class="job-detail__info-item" *ngIf="getExperienceText()">
               <div class="job-detail__info-item-icon">
                 <i class="fa fa-infinity"></i>
               </div>
               <div class="job-detail__info-item-content">
                 <div class="job-detail__info-item-title">Kinh nghiệm</div>
-                <div class="job-detail__info-item-value">4 năm</div>
+                <div class="job-detail__info-item-value">{{ getExperienceText() }}</div>
               </div>
             </div>
           </div>
 
           <!-- Deadline -->
-          <div class="job-deadline">
+          <div class="job-deadline" *ngIf="job.expiresAt">
             <i class="fa fa-clock"></i>
-            <span>Hạn nộp hồ sơ: 14/11/2025</span>
+            <span>Hạn nộp hồ sơ: {{ formatDate(job.expiresAt) }}</span>
           </div>
         </div>
 
@@ -77,19 +84,19 @@
             <h2 class="section-title">Chi tiết tuyển dụng</h2>
           </div>
 
-          <div class="job-detail__info--section">
+          <div class="job-detail__info--section" *ngIf="job.description">
             <h3 class="section-title">Mô tả công việc</h3>
-            <p>Nội dung mô tả công việc sẽ được hiển thị ở đây...</p>
+            <div [innerHTML]="job.description"></div>
           </div>
 
-          <div class="job-detail__info--section">
+          <div class="job-detail__info--section" *ngIf="job.requirements">
             <h3 class="section-title">Yêu cầu ứng viên</h3>
-            <p>Nội dung yêu cầu ứng viên sẽ được hiển thị ở đây...</p>
+            <div [innerHTML]="job.requirements"></div>
           </div>
 
-          <div class="job-detail__info--section">
+          <div class="job-detail__info--section" *ngIf="job.benefits">
             <h3 class="section-title">Quyền lợi</h3>
-            <p>Nội dung quyền lợi sẽ được hiển thị ở đây...</p>
+            <div [innerHTML]="job.benefits"></div>
           </div>
         </div>
       </div>
@@ -97,61 +104,55 @@
       <!-- Right Column -->
       <div class="job-detail__box--right">
         <!-- Company Info -->
-        <div class="job-detail__company">
+        <div class="job-detail__company" *ngIf="job.companyName">
           <div class="company-header">
             <div class="company-logo">
-              <img [src]="getCompanyLogoUrl('CÔNG TY TNHH AIRCLOSET ENGINEERING')" alt="Company Logo" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiByeD0iOCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiI+QUM8L3RleHQ+Cjwvc3ZnPg==';" />
+              <img 
+                [src]="getCompanyLogoUrl(job.companyName)" 
+                [alt]="job.companyName"
+                onerror="this.onerror=null; this.src=this.getAttribute('data-fallback') || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiByeD0iOCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiI+QzwvdGV4dD4KPC9zdmc+';" />
             </div>
-            <h3 class="company-name">CÔNG TY TNHH AIRCLOSET ENGINEERING</h3>
+            <h3 class="company-name">{{ job.companyName }}</h3>
           </div>
           <div class="company-details">
-            <div class="company-detail-item">
-              <i class="fa fa-users"></i>
-              <span class="label">Quy mô:</span>
-              <span>25-99 nhân viên</span>
-            </div>
-            <div class="company-detail-item">
-              <i class="fa fa-briefcase"></i>
-              <span class="label">Lĩnh vực:</span>
-              <span>IT - Phần mềm</span>
-            </div>
-            <div class="company-detail-item">
+            <div class="company-detail-item" *ngIf="getLocationText()">
               <i class="fa fa-map-marker-alt"></i>
               <span class="label">Địa điểm:</span>
-              <span>Hà Nội</span>
+              <span>{{ getLocationText() }}</span>
             </div>
           </div>
-          <a href="#" class="company-link">
-            Xem trang công ty
-            <i class="fa fa-external-link-alt"></i>
-          </a>
         </div>
 
         <!-- General Information -->
         <div class="job-detail__body-right--item job-detail__body-right--box-general">
           <h3>Thông tin chung</h3>
-          <div class="info-item">
+          <div class="info-item" *ngIf="getPositionTypeText()">
             <i class="fa fa-user"></i>
             <span class="label">Cấp bậc:</span>
-            <span>Nhân viên</span>
+            <span>{{ getPositionTypeText() }}</span>
           </div>
-          <div class="info-item">
-            <i class="fa fa-graduation-cap"></i>
-            <span class="label">Học vấn:</span>
-            <span>Cao Đẳng trở lên</span>
-          </div>
-          <div class="info-item">
+          <div class="info-item" *ngIf="job.quantity">
             <i class="fa fa-users"></i>
             <span class="label">Số lượng tuyển:</span>
-            <span>4 người</span>
+            <span>{{ job.quantity }} người</span>
           </div>
-          <div class="info-item">
+          <div class="info-item" *ngIf="getEmploymentTypeText()">
             <i class="fa fa-briefcase"></i>
             <span class="label">Hình thức làm việc:</span>
-            <span>Toàn thời gian</span>
+            <span>{{ getEmploymentTypeText() }}</span>
+          </div>
+          <div class="info-item" *ngIf="job.workTime">
+            <i class="fa fa-clock"></i>
+            <span class="label">Thời gian làm việc:</span>
+            <span>{{ job.workTime }}</span>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- No Job Found -->
+    <div *ngIf="!isLoading && !job" class="no-job-found">
+      <p>Không tìm thấy thông tin công việc</p>
     </div>
   </div>
 

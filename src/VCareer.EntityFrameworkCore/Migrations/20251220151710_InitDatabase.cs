@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class updateDB : Migration
+    public partial class InitDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -562,7 +562,7 @@ namespace VCareer.Migrations
                     CultureVideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VerifyAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TaxCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    BusinessLicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    BusinessLicenseNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BusinessLicenseIssueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BusinessLicenseIssuePlace = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     LegalRepresentative = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -2340,13 +2340,6 @@ namespace VCareer.Migrations
                 name: "IX_ChildService_SubcriptionServices_SubcriptionServiceId",
                 table: "ChildService_SubcriptionServices",
                 column: "SubcriptionServiceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Companies_BusinessLicenseNumber",
-                table: "Companies",
-                column: "BusinessLicenseNumber",
-                unique: true,
-                filter: "[BusinessLicenseNumber] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Companies_TaxCode",

@@ -251,12 +251,6 @@ export class CartComponent implements OnInit, OnDestroy {
     return item.subscriptionServicePrice * item.quantity;
   }
 
-  // Actions
-  onSelectDiscountCode(): void {
-    // TODO: Implement discount code selection
-    this.showToastMessage('info', 'Tính năng chọn mã ưu đãi đang được phát triển');
-  }
-
   /**
    * Clear selected items from cart after successful order creation
    * This removes all selected items from the cart before redirecting to payment

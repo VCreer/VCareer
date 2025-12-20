@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251219185220_RemoveBusinessLicenseNumber")]
-    partial class RemoveBusinessLicenseNumber
+    [Migration("20251220151710_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -672,6 +672,9 @@ namespace VCareer.Migrations
                     b.Property<string>("BusinessLicenseIssuePlace")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("BusinessLicenseNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyCode")
                         .HasColumnType("nvarchar(max)");
@@ -2008,6 +2011,9 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -2020,7 +2026,7 @@ namespace VCareer.Migrations
                     b.Property<int?>("UsedTime")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("UserActiveId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserSubcriptionId")
@@ -2030,7 +2036,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("ChildServiceId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserActiveId");
 
                     b.ToTable("User_ChildServices");
                 });
@@ -2464,7 +2470,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ApplicationName")
@@ -2586,7 +2591,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AuditLogId")
@@ -2636,7 +2640,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogExcelFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
@@ -2664,7 +2667,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("Volo.Abp.AuditLogging.EntityChange", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AuditLogId")
@@ -2713,7 +2715,6 @@ namespace VCareer.Migrations
             modelBuilder.Entity("Volo.Abp.AuditLogging.EntityPropertyChange", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EntityChangeId")
@@ -4656,7 +4657,7 @@ namespace VCareer.Migrations
 
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserActiveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

@@ -137,6 +137,19 @@ namespace VCareer.HttpApi.Controllers
             await _candidateCvAppService.UpdatePreviewImageAsync(id, dto.PreviewImageUrl);
             return NoContent();
         }
+
+        /// <summary>
+        /// Download CV dưới dạng PDF
+        /// </summary>
+        [HttpGet("{id}/download")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> DownloadCvAsync(Guid id)
+        {
+            var fileBytes = await _candidateCvAppService.DownloadCvAsync(id);
+            var cv = await _candidateCvAppService.GetAsync(id);
+            var fileName = $"{cv.CvName ?? "CV"}.pdf";
+            return File(fileBytes, "application/pdf", fileName);
+        }
     }
 
     /// <summary>

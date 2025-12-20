@@ -670,6 +670,9 @@ namespace VCareer.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("BusinessLicenseNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CompanyCode")
                         .HasColumnType("nvarchar(max)");
 
