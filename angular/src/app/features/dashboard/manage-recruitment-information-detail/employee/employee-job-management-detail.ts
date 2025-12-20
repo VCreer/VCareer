@@ -17,16 +17,16 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
   sidebarWidth = 72; // Default collapsed sidebar width
   private sidebarCheckInterval?: any;
   private resizeObserver?: ResizeObserver;
-  
+
   // Reject modal properties
   showRejectModal = false;
   rejectReason = '';
-  
+
   // Toast notification properties
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-  
+
   jobId: string | null = null;
 
   constructor(
@@ -38,7 +38,7 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Initial check
     this.checkSidebarState();
-    
+
     // Use ResizeObserver to detect sidebar width changes (including hover)
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
     if (sidebar) {
@@ -47,18 +47,18 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
       });
       this.resizeObserver.observe(sidebar);
     }
-    
+
     // Also listen to mouse events on sidebar to catch hover state changes
     if (sidebar) {
       sidebar.addEventListener('mouseenter', () => this.checkSidebarState());
       sidebar.addEventListener('mouseleave', () => this.checkSidebarState());
     }
-    
+
     // Periodic check as fallback (more frequent for hover detection)
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 50);
-    
+
     // Get job ID from query params
     this.route.queryParams.subscribe(params => {
       this.jobId = params['id'] || null;
@@ -83,7 +83,7 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
       this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
       // Always use the actual width from DOM (includes hover state)
       const newWidth = Math.round(width); // Round to avoid floating point issues
-      
+
       // Always update to trigger change detection (needed for inline styles)
       if (this.sidebarWidth !== newWidth) {
         this.sidebarWidth = newWidth;
@@ -168,10 +168,10 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
           this.router.navigate(['/employee/manage-recruitment-information']);
         }, 1500);
       },
-      error: (error) => {
+      error: error => {
         console.error('Error approving job:', error);
         this.showErrorToast('Không thể duyệt tin tuyển dụng. Vui lòng thử lại.');
-      }
+      },
     });
   }
 
@@ -196,7 +196,7 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.jobPostService.rejectJobPost(this.jobId, this.rejectReason.trim()).subscribe({
+    this.jobPostService.rejectJobPost(this.jobId).subscribe({
       next: () => {
         this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
         this.onCloseRejectModal();
@@ -205,10 +205,10 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
           this.router.navigate(['/employee/manage-recruitment-information']);
         }, 1500);
       },
-      error: (error) => {
+      error: error => {
         console.error('Error rejecting job:', error);
         this.showErrorToast('Không thể từ chối tin tuyển dụng. Vui lòng thử lại.');
-      }
+      },
     });
   }
 
@@ -235,23 +235,22 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
   getCompanyLogoUrl(companyName: string): string {
     // Try to get logo image, fallback to placeholder
     const logoMap: { [key: string]: string } = {
-      'airCloset': 'assets/images/companies/aircloset.png',
-      'FOXAi': 'assets/images/companies/foxai.png',
-      'LIFESTYLE': 'assets/images/companies/lifestyle.png',
-      'Jarvis': 'assets/images/companies/jarvis.png',
+      airCloset: 'assets/images/companies/aircloset.png',
+      FOXAi: 'assets/images/companies/foxai.png',
+      LIFESTYLE: 'assets/images/companies/lifestyle.png',
+      Jarvis: 'assets/images/companies/jarvis.png',
     };
-    
+
     // Check if company name contains any logo key
     for (const [key, url] of Object.entries(logoMap)) {
       if (companyName.toUpperCase().includes(key.toUpperCase())) {
         return url;
       }
     }
-    
+
     // Generate SVG with first letter as fallback
     const firstLetter = companyName.charAt(0).toUpperCase();
     const svg = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="#F3F4F6" rx="8"/><text x="50%" y="50%" font-size="24" font-weight="700" fill="#6B7280" text-anchor="middle" dy=".3em" font-family="Arial, sans-serif">${firstLetter}</text></svg>`;
     return `data:image/svg+xml;base64,${btoa(svg)}`;
   }
 }
-
