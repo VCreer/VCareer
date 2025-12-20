@@ -52,7 +52,7 @@ namespace VCareer.EntityFrameworkCore;
     typeof(AbpOpenIddictEntityFrameworkCoreModule),
     typeof(AbpTenantManagementEntityFrameworkCoreModule),
     typeof(BlobStoringDatabaseEntityFrameworkCoreModule)
-    )]
+       )]
 public class VCareerEntityFrameworkCoreModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -86,7 +86,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<User_ChildService, User_ChildServiceRepository>();
             options.AddRepository<SubcriptionPrice, SubcriptionPriceRepository>();
             options.AddRepository<EffectingJobService, EffectingJobServiceRepository>();
-                
+
             options.AddRepository<CartEntity, CartRepository>();
 
             options.AddRepository<Models.Notification.UserNotification, NotificationRepository>();

@@ -152,7 +152,7 @@ namespace VCareer.Services.Subcription
             return boughtedServiceAndStillActive.Select(x => x.Id).ToList();
         }
         //cai nay dung de show len cac childservice voi target laf job post ma nguoi dung co quyen dung sau khi mua goi
-        public async Task<List<OptionsChildServiceViewDto>> GetJobChildServiceAllowForUserAsync(int? serviceAction)
+        public async Task<List<OptionsChildServiceViewDto>> GetJobChildServiceAllowForUserAsync(int? serviceAction=null)
         {
             var userId = _currentUser.GetId();
             if (userId == Guid.Empty) throw new UserFriendlyException("User not found");

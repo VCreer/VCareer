@@ -1,8 +1,9 @@
 const BACKEND_TO_ROUTING_ROLE: Record<string, 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'> = {
 
   // EMPLOYEE 
-  system_employee: 'EMPLOYEE',
-  employee: 'EMPLOYEE',
+
+ system_employee: 'EMPLOYEE',
+  account_employee: 'EMPLOYEE',
   finance_employee: 'EMPLOYEE',
 
   // RECRUITER

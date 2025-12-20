@@ -27,6 +27,7 @@ using VCareer.Models.Users;
 using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Auditing;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
@@ -63,13 +64,13 @@ namespace VCareer.Services.Auth
         private readonly IHttpContextAccessor _httpContextAcessor;
 
         public AuthAppService(
-            IdentityUserManager identityManager, 
-            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager, 
-            ITokenGenerator tokenGenerator, 
+            IdentityUserManager identityManager,
+            SignInManager<Volo.Abp.Identity.IdentityUser> signInManager,
+            ITokenGenerator tokenGenerator,
             CurrentUser currentUser,
-            IEmailSender emailSender, 
-            ITemplateRenderer templateRenderer, 
-            IdentityRoleManager roleManager, 
+            IEmailSender emailSender,
+            ITemplateRenderer templateRenderer,
+            IdentityRoleManager roleManager,
             IOptions<GoogleOptions> googleOptions,
             IConfiguration configuration,
             ICandidateProfileRepository candidateProfile,
@@ -127,7 +128,7 @@ namespace VCareer.Services.Auth
 
             await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
         }
-
+        [DisableAuditing]
         // API riêng cho candidate forgot password
         public async Task CandidateForgotPasswordAsync(ForgotPasswordDto input)
         {
@@ -172,7 +173,6 @@ namespace VCareer.Services.Auth
             await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
         }
 
-        [IgnoreAntiforgeryToken]
         public async Task RecruiterLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -189,8 +189,7 @@ namespace VCareer.Services.Auth
             var tokens = await _tokenGenerator.CreateTokenAsync(user);
             UpdateTokenToCookie(tokens);
         }
-
-        [IgnoreAntiforgeryToken]
+        [DisableAuditing]
         public async Task CandidateLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -210,7 +209,6 @@ namespace VCareer.Services.Auth
         }
 
         [UnitOfWork]
-        [IgnoreAntiforgeryToken]
         public async Task LoginWithGoogleAsync(GoogleLoginDto input)
         {
             try
@@ -235,9 +233,9 @@ namespace VCareer.Services.Auth
                 try
                 {
                     payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
-            {
-                Audience = new[] { _googleOptions.ClientId }
-            });
+                    {
+                        Audience = new[] { _googleOptions.ClientId }
+                    });
                     Logger.LogInformation($"LoginWithGoogleAsync: Token validated successfully for email: {payload.Email}");
                 }
                 catch (Exception ex)
@@ -430,11 +428,11 @@ namespace VCareer.Services.Auth
                 throw new UserFriendlyException($"Lỗi đăng nhập Google: {ex.Message}");
             }
         }
-
+        [DisableAuditing]
         public async Task LogOutAllDeviceAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-            
+
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
             if (userId == null || userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
@@ -447,11 +445,12 @@ namespace VCareer.Services.Auth
         }
 
         [Authorize]
+        [DisableAuditing]
         [IgnoreAntiforgeryToken]
         public async Task LogOutAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
-            
+
             // Sử dụng TokenClaimsHelper để lấy UserId an toàn
             var userId = _currentUser.GetId();
             if (userId == Guid.Empty) throw new UserFriendlyException("Không thể lấy UserId từ token. Vui lòng đăng nhập lại.");
@@ -467,30 +466,31 @@ namespace VCareer.Services.Auth
             response.Cookies.Delete("refresh_token");
         }
 
-       [UnitOfWork]
-    public async Task CandidateRegisterAsync(CandidateRegisterDto input)
-       {
-           if (await _identityManager.FindByEmailAsync(input.Email) != null)
-               throw new UserFriendlyException("Email already exist");
+        [UnitOfWork]
+        [DisableAuditing]
+        public async Task CandidateRegisterAsync(CandidateRegisterDto input)
+        {
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
 
-        // Tách tên thành name và surname
-        var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-        string name = string.Empty;
-        string surname = string.Empty;
-        
-        if (nameParts.Length == 0)
-        {
-            name = surname = string.Empty;
-        }
-        else if (nameParts.Length == 1)
-        {
-            name = surname = nameParts[0];
-        }
-        else
-        {
-            surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
-            name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
-        }
+            // Tách tên thành name và surname
+            var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string name = string.Empty;
+            string surname = string.Empty;
+
+            if (nameParts.Length == 0)
+            {
+                name = surname = string.Empty;
+            }
+            else if (nameParts.Length == 1)
+            {
+                name = surname = nameParts[0];
+            }
+            else
+            {
+                surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
+                name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
+            }
 
         var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
         {
@@ -501,11 +501,11 @@ namespace VCareer.Services.Auth
         if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
 
-        //gắn role canđiate
-        var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
-               if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-               result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-               if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            //gắn role canđiate
+            var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
+            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+            result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
         // cập nhật tạo bản ghi vào canđiate profile
         var candidateProfile = new CandidateProfile
@@ -521,20 +521,21 @@ namespace VCareer.Services.Auth
 
 
         [UnitOfWork]
-  public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
-  {
-      if (await _identityManager.FindByEmailAsync(input.Email) != null)
-          throw new UserFriendlyException("Email already exist");
+        [DisableAuditing]
+        public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
+        {
+            if (await _identityManager.FindByEmailAsync(input.Email) != null)
+                throw new UserFriendlyException("Email already exist");
 
             // TODO: validate tax code format / external VietQR service if needed.
             // Logic: allow multiple recruiters to share the same company by TaxCode.
             // If a company with the given TaxCode already exists, reuse it instead of creating a new one.
 
-      var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-      newUser.Name = input.Name;
-      newUser.SetPhoneNumber(input.PhoneNumber,false);
-      var result = await _identityManager.CreateAsync(newUser, input.Password);
-      if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+            newUser.Name = input.Name;
+            newUser.SetPhoneNumber(input.PhoneNumber, false);
+            var result = await _identityManager.CreateAsync(newUser, input.Password);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
       //gắn role recruiter 
       var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
@@ -578,7 +579,7 @@ namespace VCareer.Services.Auth
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
             //SAU CẦN GHI THÊM LOG VÀO ĐÂY
         }
-
+        [DisableAuditing]
         // API riêng cho candidate reset password
         public async Task CandidateResetPasswordAsync(ResetPasswordDto input)
         {
@@ -717,6 +718,7 @@ namespace VCareer.Services.Auth
             UpdateTokenToCookie(tokens);
         }
 
+        [DisableAuditing]
         public async Task RefeshTokenAsync()
         {
             var request = _httpContextAcessor.HttpContext!.Request;
@@ -734,7 +736,7 @@ namespace VCareer.Services.Auth
             UpdateTokenToCookie(tokens);
         }
 
-
+        [DisableAuditing]
         private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
         {
             var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
@@ -772,6 +774,7 @@ namespace VCareer.Services.Auth
         //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
         //còn mục đích của token là để phục vụ auth backend , tạo current user
         //thực ra có khi vẫn dùng curent user bình thường , cái này ko b có tác dụng j ko 
+        [DisableAuditing]
         public async Task<CurrentUserInfoDto> GetCurrentUserAsync()
         {
             var email = _currentUser.Email;

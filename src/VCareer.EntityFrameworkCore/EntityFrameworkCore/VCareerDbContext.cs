@@ -1,4 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using VCareer.Models;
+using VCareer.Models.ActivityLogs;
+using VCareer.Models.Applications;
+using VCareer.Models.Cart;
+using VCareer.Models.Companies;
+using VCareer.Models.Companies;
+using VCareer.Models.CV;
+using VCareer.Models.FileMetadata;
+using VCareer.Models.IpAddress;
+using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
+using VCareer.Models.Order;
+using VCareer.Models.Subcription;
+using VCareer.Models.Subcription_Payment;
+using VCareer.Models.Token;
+using VCareer.Models.Users;
+using VCareer.Models.Users;
+using Volo.Abp.AuditLogging;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
@@ -14,34 +32,19 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using VCareer.Models.Users;
-using VCareer.Models.Companies;
-using VCareer.Models.IpAddress;
-using VCareer.Models;
-using VCareer.Models.Token;
-using VCareer.Models.Users;
-using VCareer.Models.Companies;
-using VCareer.Models.ActivityLogs;
-using VCareer.Models.Job;
-using VCareer.Models.FileMetadata;
-using VCareer.Models.CV;
-using VCareer.Models.Applications;
-using VCareer.Models.JobCategory;
-using VCareer.Models.Subcription;
-using VCareer.Models.Subcription_Payment;
-using VCareer.Models.Order;
-using VCareer.Models.Cart;
 using CartEntity = VCareer.Models.Cart.Cart;
 
 namespace VCareer.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
+[ReplaceDbContext(typeof(IAuditLoggingDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName("Default")]
 public class VCareerDbContext :
-    AbpDbContext<VCareerDbContext>,
+   AbpDbContext<VCareerDbContext>,
+    IIdentityDbContext,
     ITenantManagementDbContext,
-    IIdentityDbContext
+    IAuditLoggingDbContext
 {
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
@@ -106,6 +109,9 @@ public class VCareerDbContext :
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
 
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<AuditLogAction> AuditLogActions { get; set; }
+
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
     public DbSet<IdentityRole> Roles { get; set; }
@@ -119,6 +125,8 @@ public class VCareerDbContext :
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
+
+    public DbSet<AuditLogExcelFile> AuditLogExcelFiles => throw new System.NotImplementedException();
 
     #endregion
 
@@ -269,7 +277,7 @@ public class VCareerDbContext :
 
             r.HasOne(rc => rc.Recruiter)
                 .WithMany(rp => rp.RecruitmentCampaigns)
-                .HasForeignKey(rc => rc.RecruiterId)  
+                .HasForeignKey(rc => rc.RecruiterId)
                 .HasPrincipalKey(rp => rp.UserId);
 
         });
@@ -282,67 +290,67 @@ public class VCareerDbContext :
             b.Property(x => x.Name).IsRequired().HasMaxLength(128);
         });
 
-          builder.Entity<SavedJob>(e =>
-      {
-          e.ToTable(VCareerConsts.DbTablePrefix + "SavedJobs", VCareerConsts.DbSchema);
-          e.ConfigureByConvention();
+        builder.Entity<SavedJob>(e =>
+    {
+        e.ToTable(VCareerConsts.DbTablePrefix + "SavedJobs", VCareerConsts.DbSchema);
+        e.ConfigureByConvention();
 
-          // Composite primary key: CandidateId + JobId
-          e.HasKey(x => new { x.CandidateId, x.JobId });
+        // Composite primary key: CandidateId + JobId
+        e.HasKey(x => new { x.CandidateId, x.JobId });
 
-          // Relationship với CandidateProfile
-          e.HasOne(x => x.CandidateProfile)
-              .WithMany()
-              .HasForeignKey(x => x.CandidateId);
-           //   .OnDelete(DeleteBehavior.Cascade); // Xóa SavedJob khi Candidate bị xóa
+        // Relationship với CandidateProfile
+        e.HasOne(x => x.CandidateProfile)
+            .WithMany()
+            .HasForeignKey(x => x.CandidateId);
+        //   .OnDelete(DeleteBehavior.Cascade); // Xóa SavedJob khi Candidate bị xóa
 
-          // Relationship với JobPosting
-          // Dùng Restrict để tránh multiple cascade paths
-          // (JobPosting đã có cascade đến RecruiterProfile, nên không thể cascade từ SavedJob)
-          e.HasOne(x => x.JobPosting)
-              .WithMany()
-              .HasForeignKey(x => x.JobId);
-            //  .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Job nếu còn SavedJob
+        // Relationship với JobPosting
+        // Dùng Restrict để tránh multiple cascade paths
+        // (JobPosting đã có cascade đến RecruiterProfile, nên không thể cascade từ SavedJob)
+        e.HasOne(x => x.JobPosting)
+            .WithMany()
+            .HasForeignKey(x => x.JobId);
+        //  .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Job nếu còn SavedJob
 
-          // Index để tìm kiếm nhanh
-          e.HasIndex(x => x.CandidateId);
-          e.HasIndex(x => x.JobId);
-          e.HasIndex(x => new { x.CandidateId, x.JobId }).IsUnique();
-      });
+        // Index để tìm kiếm nhanh
+        e.HasIndex(x => x.CandidateId);
+        e.HasIndex(x => x.JobId);
+        e.HasIndex(x => new { x.CandidateId, x.JobId }).IsUnique();
+    });
 
-           builder.Entity<Company>(c =>
-           {
-               c.ToTable("Companies");
-               c.ConfigureByConvention();
-               c.HasMany(x => x.CompanyIndustries)
-               .WithOne()
-               .HasForeignKey(x => x.CompanyId)
-               .IsRequired();
-               c.HasKey(x => x.Id);
-               c.Property(x => x.Id)
-                 .ValueGeneratedOnAdd()
-                 .UseIdentityColumn();
+        builder.Entity<Company>(c =>
+        {
+            c.ToTable("Companies");
+            c.ConfigureByConvention();
+            c.HasMany(x => x.CompanyIndustries)
+            .WithOne()
+            .HasForeignKey(x => x.CompanyId)
+            .IsRequired();
+            c.HasKey(x => x.Id);
+            c.Property(x => x.Id)
+              .ValueGeneratedOnAdd()
+              .UseIdentityColumn();
 
-               c.HasMany(x => x.RecruiterProfiles)
-               .WithOne()
-               .HasForeignKey(x => x.CompanyId)
-               .IsRequired();
+            c.HasMany(x => x.RecruiterProfiles)
+            .WithOne()
+            .HasForeignKey(x => x.CompanyId)
+            .IsRequired();
 
-               // Legal Information fields configuration
-               c.Property(x => x.TaxCode).HasMaxLength(50);
-               c.Property(x => x.BusinessLicenseNumber).HasMaxLength(100);
-               c.Property(x => x.BusinessLicenseIssuePlace).HasMaxLength(255);
-               c.Property(x => x.LegalRepresentative).HasMaxLength(255);
-               c.Property(x => x.BusinessLicenseFile).HasMaxLength(500);
-               c.Property(x => x.TaxCertificateFile).HasMaxLength(500);
-               c.Property(x => x.RepresentativeIdCardFile).HasMaxLength(500);
-               c.Property(x => x.OtherSupportFile).HasMaxLength(500);
-               c.Property(x => x.LegalVerificationStatus).HasMaxLength(50);
+            // Legal Information fields configuration
+            c.Property(x => x.TaxCode).HasMaxLength(50);
+            c.Property(x => x.BusinessLicenseNumber).HasMaxLength(100);
+            c.Property(x => x.BusinessLicenseIssuePlace).HasMaxLength(255);
+            c.Property(x => x.LegalRepresentative).HasMaxLength(255);
+            c.Property(x => x.BusinessLicenseFile).HasMaxLength(500);
+            c.Property(x => x.TaxCertificateFile).HasMaxLength(500);
+            c.Property(x => x.RepresentativeIdCardFile).HasMaxLength(500);
+            c.Property(x => x.OtherSupportFile).HasMaxLength(500);
+            c.Property(x => x.LegalVerificationStatus).HasMaxLength(50);
 
-               // Unique constraints
-               c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
-               c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
-           });
+            // Unique constraints
+            c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
+            c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
+        });
         // ========== CV Template Configuration ==========
         builder.Entity<CvTemplate>(template =>
         {

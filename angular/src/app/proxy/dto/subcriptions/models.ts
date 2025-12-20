@@ -169,7 +169,8 @@ export interface User_ChildServiceUpdateDto {
 }
 
 export interface User_ChildServiceViewDto {
-  userId?: string;
+  ownerId?: string;
+  userActiveId?: string;
   userSubcriptionId?: string;
   childServiceId?: string;
   status?: SubcriptionContance_ChildServiceStatus;

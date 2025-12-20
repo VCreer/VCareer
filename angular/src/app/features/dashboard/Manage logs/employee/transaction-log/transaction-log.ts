@@ -10,17 +10,21 @@ import {
   PaginationComponent,
   SelectOption
 } from '../../../../../shared/components';
+import { LogService } from 'src/app/proxy/services/logs';
+import { AuditLogDto, AuditLogActionDto, AuditLogRequestDto } from 'src/app/proxy/dto/log-dto';
 
-export interface TransactionLog {
+export interface RecruiterActivityLog {
   id: string;
-  recruiterId: string;
-  recruiterName: string;
-  transactionType: string;
-  serviceName: string;
-  amount: number;
-  status: string;
+  userId: string;
+  userName: string;
+  roleName: string;
+  httpMethod: string;
+  url: string;
+  httpStatusCode?: number;
+  executionDuration: number;
   timestamp: Date;
-  description?: string;
+  browserInfo?: string;
+  exception?: string;
 }
 
 @Component({
@@ -51,17 +55,16 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
   // Logs data
-  allLogs: TransactionLog[] = [];
-  filteredLogs: TransactionLog[] = [];
-  paginatedLogs: TransactionLog[] = [];
+  allLogs: RecruiterActivityLog[] = [];
+  filteredLogs: RecruiterActivityLog[] = [];
+  paginatedLogs: RecruiterActivityLog[] = [];
 
   // Search & Filter
   searchKeyword = '';
-  filterType = '';
-  filterStatus = '';
+  filterHttpMethod = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'timestamp' | 'amount' | 'recruiterName' = 'timestamp';
+  sortField: 'timestamp' | 'userName' | 'executionDuration' = 'timestamp';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Pagination
@@ -69,22 +72,26 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
   itemsPerPage = 10;
   totalPages = 1;
 
+  // Loading state
+  isLoading = false;
+
+  // Detail Modal
+  showDetailModal = false;
+  selectedLog: RecruiterActivityLog | null = null;
+  logActions: AuditLogActionDto[] = [];
+  isLoadingActions = false;
+
   // Filter options
-  transactionTypeOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả loại' },
-    { value: 'purchase', label: 'Mua dịch vụ' },
-    { value: 'refund', label: 'Hoàn tiền' },
-    { value: 'renewal', label: 'Gia hạn' }
+  httpMethodOptions: SelectOption[] = [
+    { value: '', label: 'Tất cả phương thức' },
+    { value: 'GET', label: 'GET' },
+    { value: 'POST', label: 'POST' },
+    { value: 'PUT', label: 'PUT' },
+    { value: 'DELETE', label: 'DELETE' },
+    { value: 'PATCH', label: 'PATCH' }
   ];
 
-  statusOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả trạng thái' },
-    { value: 'success', label: 'Thành công' },
-    { value: 'pending', label: 'Đang xử lý' },
-    { value: 'failed', label: 'Thất bại' }
-  ];
-
-  constructor() {}
+  constructor(private logService: LogService) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -137,32 +144,42 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
   }
 
   loadLogs(): void {
-    // Mock data - replace with API call
-    this.allLogs = [
-      {
-        id: '1',
-        recruiterId: 'r1',
-        recruiterName: 'Công ty ABC',
-        transactionType: 'purchase',
-        serviceName: 'Gói Premium',
-        amount: 5000000,
-        status: 'success',
-        timestamp: new Date('2024-01-15T10:30:00'),
-        description: 'Mua gói dịch vụ Premium'
+    this.isLoading = true;
+    
+    const request: AuditLogRequestDto = {
+      userId: undefined, // Load all recruiters, or set specific userId if needed
+      startDate: this.filterDateFrom || undefined,
+      endDate: this.filterDateTo || undefined
+    };
+
+    this.logService.getRecruiterAuditLogs(request).subscribe({
+      next: (response: AuditLogDto[]) => {
+        this.allLogs = this.mapAuditLogDtoToRecruiterActivityLog(response);
+        this.applyFilters();
+        this.isLoading = false;
       },
-      {
-        id: '2',
-        recruiterId: 'r2',
-        recruiterName: 'Công ty XYZ',
-        transactionType: 'renewal',
-        serviceName: 'Gói Basic',
-        amount: 2000000,
-        status: 'pending',
-        timestamp: new Date('2024-01-14T14:20:00'),
-        description: 'Gia hạn gói Basic'
+      error: (error) => {
+        console.error('Error loading logs:', error);
+        this.showToastMessage('Không thể tải dữ liệu log. Vui lòng thử lại!', 'error');
+        this.isLoading = false;
       }
-    ];
-    this.applyFilters();
+    });
+  }
+
+  private mapAuditLogDtoToRecruiterActivityLog(dtos: AuditLogDto[]): RecruiterActivityLog[] {
+    return dtos.map(dto => ({
+      id: dto.id || '',
+      userId: dto.userId || '',
+      userName: dto.userName || 'N/A',
+      roleName: dto.roleName || 'N/A',
+      httpMethod: dto.httpMethod || 'N/A',
+      url: dto.url || '',
+      httpStatusCode: dto.httpStatusCode,
+      executionDuration: dto.executionDuration,
+      timestamp: dto.executionTime ? new Date(dto.executionTime) : new Date(),
+      browserInfo: dto.browserInfo,
+      exception: dto.exception
+    }));
   }
 
   applyFilters(): void {
@@ -172,25 +189,21 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
     if (this.searchKeyword.trim()) {
       const keyword = this.searchKeyword.toLowerCase();
       filtered = filtered.filter(log =>
-        log.recruiterName.toLowerCase().includes(keyword) ||
-        log.serviceName.toLowerCase().includes(keyword) ||
-        log.description?.toLowerCase().includes(keyword)
+        log.userName.toLowerCase().includes(keyword) ||
+        log.url.toLowerCase().includes(keyword) ||
+        (log.browserInfo && log.browserInfo.toLowerCase().includes(keyword))
       );
     }
 
-    // Type filter
-    if (this.filterType) {
-      filtered = filtered.filter(log => log.transactionType === this.filterType);
-    }
-
-    // Status filter
-    if (this.filterStatus) {
-      filtered = filtered.filter(log => log.status === this.filterStatus);
+    // HTTP Method filter
+    if (this.filterHttpMethod) {
+      filtered = filtered.filter(log => log.httpMethod === this.filterHttpMethod);
     }
 
     // Date filters
     if (this.filterDateFrom) {
       const fromDate = new Date(this.filterDateFrom);
+      fromDate.setHours(0, 0, 0, 0);
       filtered = filtered.filter(log => log.timestamp >= fromDate);
     }
     if (this.filterDateTo) {
@@ -205,12 +218,12 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
       if (this.sortField === 'timestamp') {
         aVal = a.timestamp.getTime();
         bVal = b.timestamp.getTime();
-      } else if (this.sortField === 'amount') {
-        aVal = a.amount;
-        bVal = b.amount;
+      } else if (this.sortField === 'executionDuration') {
+        aVal = a.executionDuration;
+        bVal = b.executionDuration;
       } else {
-        aVal = a.recruiterName;
-        bVal = b.recruiterName;
+        aVal = a.userName;
+        bVal = b.userName;
       }
 
       if (this.sortDirection === 'asc') {
@@ -237,7 +250,7 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
     this.updatePaginatedLogs();
   }
 
-  onSort(field: 'timestamp' | 'amount' | 'recruiterName'): void {
+  onSort(field: 'timestamp' | 'userName' | 'executionDuration'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -245,52 +258,6 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
       this.sortDirection = 'desc';
     }
     this.applyFilters();
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'success':
-        return 'status-success';
-      case 'pending':
-        return 'status-pending';
-      case 'failed':
-        return 'status-failed';
-      default:
-        return '';
-    }
-  }
-
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'success':
-        return 'Thành công';
-      case 'pending':
-        return 'Đang xử lý';
-      case 'failed':
-        return 'Thất bại';
-      default:
-        return status;
-    }
-  }
-
-  getTypeLabel(type: string): string {
-    switch (type) {
-      case 'purchase':
-        return 'Mua dịch vụ';
-      case 'refund':
-        return 'Hoàn tiền';
-      case 'renewal':
-        return 'Gia hạn';
-      default:
-        return type;
-    }
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
   }
 
   formatDate(date: Date): string {
@@ -301,6 +268,13 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
+  }
+
+  formatDuration(ms: number): string {
+    if (ms < 1000) {
+      return `${ms}ms`;
+    }
+    return `${(ms / 1000).toFixed(2)}s`;
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {
@@ -316,11 +290,74 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
-  exportLogs(): void {
-    // TODO: Implement export functionality
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
+  // Detail Modal Methods
+  onViewDetails(log: RecruiterActivityLog): void {
+    this.selectedLog = log;
+    this.showDetailModal = true;
+    this.loadLogActions(log.id);
   }
 
+  loadLogActions(auditLogId: string): void {
+    if (!auditLogId) {
+      this.logActions = [];
+      return;
+    }
+
+    this.isLoadingActions = true;
+    this.logService.getAuditLogActions(auditLogId).subscribe({
+      next: (actions: AuditLogActionDto[]) => {
+        this.logActions = actions;
+        this.isLoadingActions = false;
+      },
+      error: (error) => {
+        console.error('Error loading log actions:', error);
+        this.showToastMessage('Không thể tải chi tiết actions', 'error');
+        this.logActions = [];
+        this.isLoadingActions = false;
+      }
+    });
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedLog = null;
+    this.logActions = [];
+  }
+
+  formatActionExecutionTime(executionTime: string | undefined): string {
+    if (!executionTime) return 'N/A';
+    try {
+      return this.formatDate(new Date(executionTime));
+    } catch {
+      return 'N/A';
+    }
+  }
+
+  formatParameters(params: string | undefined): string {
+    if (!params) return 'N/A';
+    try {
+      const parsed = JSON.parse(params);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      return params;
+    }
+  }
+
+  getStatusColorClass(statusCode: number | undefined): string {
+    if (!statusCode) return 'status-default';
+    if (statusCode >= 200 && statusCode < 300) return 'status-success';
+    if (statusCode >= 300 && statusCode < 400) return 'status-info';
+    if (statusCode >= 400 && statusCode < 500) return 'status-warning';
+    if (statusCode >= 500) return 'status-error';
+    return 'status-default';
+  }
+
+  getHttpMethodClass(method: string): string {
+    const methodLower = method.toLowerCase();
+    return `method-${methodLower}`;
+  }
+
+  // Responsive methods
   getPageMarginLeft(): string {
     if (window.innerWidth <= 768) {
       return '0';
@@ -354,9 +391,8 @@ export class TransactionLogComponent implements OnInit, OnDestroy {
     if (viewportWidth <= 768) {
       return '100%';
     }
-    const padding = 32; // 16px mỗi bên
+    const padding = 32;
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
   }
 }
-

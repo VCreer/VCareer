@@ -12,6 +12,8 @@ import {
   ActivityLog,
   SelectOption
 } from '../../../../../shared/components';
+import { LogService } from 'src/app/proxy/services/logs';
+import { AuditLogDto, AuditLogActionDto, AuditLogRequestDto } from 'src/app/proxy/dto/log-dto';
 
 @Component({
   selector: 'app-activity-log',
@@ -48,7 +50,6 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
 
   // Search & Filter
   searchKeyword = '';
-  filterRole = '';
   filterActivityType = '';
   filterDateFrom = '';
   filterDateTo = '';
@@ -60,24 +61,26 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
   itemsPerPage = 10;
   totalPages = 1;
 
-  // Filter options
-  roleOptions: SelectOption[] = [
-    { value: '', label: 'Tất cả vai trò' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'employee', label: 'Employee' }
-  ];
+  // Loading state
+  isLoading = false;
 
+  // Detail Modal
+  showDetailModal = false;
+  selectedLog: ActivityLog | null = null;
+  logActions: AuditLogActionDto[] = [];
+  isLoadingActions = false;
+
+  // Filter options
   activityTypeOptions: SelectOption[] = [
     { value: '', label: 'Tất cả loại' },
-    { value: 'create', label: 'Tạo mới' },
-    { value: 'update', label: 'Cập nhật' },
-    { value: 'delete', label: 'Xóa' },
-    { value: 'login', label: 'Đăng nhập' },
-    { value: 'logout', label: 'Đăng xuất' }
+    { value: 'GET', label: 'GET' },
+    { value: 'POST', label: 'POST' },
+    { value: 'PUT', label: 'PUT' },
+    { value: 'DELETE', label: 'DELETE' },
+    { value: 'PATCH', label: 'PATCH' }
   ];
 
-  constructor() {}
+  constructor(private logService: LogService) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -130,28 +133,61 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
   }
 
   loadLogs(): void {
-    // Mock data - replace with API call
-    this.allLogs = [
-      {
-        id: '1',
-        staffId: 's1',
-        staffName: 'Nguyễn Văn A',
-        staffRole: 'admin',
-        activityType: 'create',
-        detail: 'Tạo mới người dùng',
-        timestamp: new Date('2024-01-15T10:30:00')
+    this.isLoading = true;
+    
+    const request: AuditLogRequestDto = {
+      userId: undefined,
+      startDate: this.filterDateFrom || undefined,
+      endDate: this.filterDateTo || undefined
+    };
+
+    this.logService.geEmployeetAuditLogs(request).subscribe({
+      next: (response: AuditLogDto[]) => {
+        this.allLogs = this.mapAuditLogDtoToActivityLog(response);
+        this.applyFilters();
+        this.isLoading = false;
       },
-      {
-        id: '2',
-        staffId: 's2',
-        staffName: 'Trần Thị B',
-        staffRole: 'manager',
-        activityType: 'update',
-        detail: 'Cập nhật thông tin công ty',
-        timestamp: new Date('2024-01-14T14:20:00')
+      error: (error) => {
+        console.error('Error loading logs:', error);
+        this.showToastMessage('Không thể tải dữ liệu log. Vui lòng thử lại!', 'error');
+        this.isLoading = false;
       }
-    ];
-    this.applyFilters();
+    });
+  }
+
+  private mapAuditLogDtoToActivityLog(dtos: AuditLogDto[]): ActivityLog[] {
+    return dtos.map(dto => ({
+      id: dto.id || '',
+      staffId: dto.userId || '',
+      staffName: dto.userName || 'N/A',
+      staffRole: dto.roleName || 'N/A',
+      activityType: dto.httpMethod || 'N/A',
+      detail: this.formatLogDetail(dto),
+      timestamp: dto.executionTime ? new Date(dto.executionTime) : new Date(),
+      httpStatusCode: dto.httpStatusCode,
+      url: dto.url,
+      browserInfo: dto.browserInfo,
+      executionDuration: dto.executionDuration,
+      exception: dto.exception
+    }));
+  }
+
+  private formatLogDetail(dto: AuditLogDto): string {
+    const parts: string[] = [];
+    
+    if (dto.httpMethod) {
+      parts.push(dto.httpMethod);
+    }
+    
+    if (dto.url) {
+      parts.push(dto.url);
+    }
+    
+    if (dto.httpStatusCode) {
+      parts.push(`(${dto.httpStatusCode})`);
+    }
+    
+    return parts.join(' ') || 'Không có chi tiết';
   }
 
   applyFilters(): void {
@@ -162,13 +198,8 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
       const keyword = this.searchKeyword.toLowerCase();
       filtered = filtered.filter(log =>
         log.staffName.toLowerCase().includes(keyword) ||
-        log.detail.toLowerCase().includes(keyword)
+        log.detail.toLowerCase().includes(keyword) 
       );
-    }
-
-    // Role filter
-    if (this.filterRole) {
-      filtered = filtered.filter(log => log.staffRole === this.filterRole);
     }
 
     // Activity type filter
@@ -179,6 +210,7 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
     // Date filters
     if (this.filterDateFrom) {
       const fromDate = new Date(this.filterDateFrom);
+      fromDate.setHours(0, 0, 0, 0);
       filtered = filtered.filter(log => log.timestamp >= fromDate);
     }
     if (this.filterDateTo) {
@@ -245,11 +277,76 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
-  exportLogs(): void {
-    // TODO: Implement export functionality
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
+  // Detail Modal Methods
+  onViewDetails(log: ActivityLog): void {
+    this.selectedLog = log;
+    this.showDetailModal = true;
+    this.loadLogActions(log.id);
   }
 
+  loadLogActions(auditLogId: string): void {
+    if (!auditLogId) {
+      this.logActions = [];
+      return;
+    }
+
+    this.isLoadingActions = true;
+    this.logService.getAuditLogActions(auditLogId).subscribe({
+      next: (actions: AuditLogActionDto[]) => {
+        this.logActions = actions;
+        this.isLoadingActions = false;
+      },
+      error: (error) => {
+        console.error('Error loading log actions:', error);
+        this.showToastMessage('Không thể tải chi tiết actions', 'error');
+        this.logActions = [];
+        this.isLoadingActions = false;
+      }
+    });
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedLog = null;
+    this.logActions = [];
+  }
+
+  formatDuration(ms: number): string {
+    if (ms < 1000) {
+      return `${ms}ms`;
+    }
+    return `${(ms / 1000).toFixed(2)}s`;
+  }
+
+  formatActionExecutionTime(executionTime: string | undefined): string {
+    if (!executionTime) return 'N/A';
+    try {
+      return this.formatDate(new Date(executionTime));
+    } catch {
+      return 'N/A';
+    }
+  }
+
+  formatParameters(params: string | undefined): string {
+    if (!params) return 'N/A';
+    try {
+      const parsed = JSON.parse(params);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      return params;
+    }
+  }
+
+  getStatusColorClass(statusCode: number | undefined): string {
+    if (!statusCode) return 'status-default';
+    if (statusCode >= 200 && statusCode < 300) return 'status-success';
+    if (statusCode >= 300 && statusCode < 400) return 'status-info';
+    if (statusCode >= 400 && statusCode < 500) return 'status-warning';
+    if (statusCode >= 500) return 'status-error';
+    return 'status-default';
+  }
+
+  // Responsive methods
   getPageMarginLeft(): string {
     if (window.innerWidth <= 768) {
       return '0';
@@ -283,9 +380,8 @@ export class ActivityLogComponent implements OnInit, OnDestroy {
     if (viewportWidth <= 768) {
       return '100%';
     }
-    const padding = 32; // 16px mỗi bên
+    const padding = 32;
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
   }
 }
-

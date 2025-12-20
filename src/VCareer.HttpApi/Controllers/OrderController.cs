@@ -26,13 +26,13 @@ namespace VCareer.Controllers
         }
 
         [HttpPost]
-        public async Task<OrderDto> CreateOrderAsync([FromBody] CreateOrderDto input)
+        public async Task<OrderViewDto> CreateOrderAsync([FromBody] CreateOrderDto input)
         {
             return await _orderAppService.CreateOrderAsync(input);
         }
 
         [HttpGet("{id}")]
-        public async Task<OrderDto> GetOrderAsync(Guid id)
+        public async Task<OrderViewDto> GetOrderAsync(Guid id)
         {
             return await _orderAppService.GetOrderAsync(id);
         }

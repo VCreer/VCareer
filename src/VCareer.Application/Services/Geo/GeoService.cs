@@ -2,18 +2,19 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using VCareer.Dto.GeoDto;
 using VCareer.IServices.IGeoServices;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Auditing;
 using Volo.Abp.Caching;
-using System.Text.Json;
-using System.IO;
 
 namespace VCareer.Services.Geo
 {
@@ -23,11 +24,12 @@ namespace VCareer.Services.Geo
         private readonly IDistributedCache<List<ProvinceDto>> _cache;
         private const string KEY_PREFIX = "Geo:";
 
-        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache, IConfiguration configuration)
+        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache)
         {
             _httpClientFactory = httpClientFactory;
             _cache = cache;
         }
+        [DisableAuditing]
         public async Task<ICollection<ProvinceDto>> GetProvincesAsync()
         {
             var cached = await _cache.GetAsync(KEY_PREFIX);
@@ -47,7 +49,7 @@ namespace VCareer.Services.Geo
 
             return provinces;
         }
-
+        [DisableAuditing]
         public async Task<string> GetProvinceNameByCode(int provinceCode)
         {
 
@@ -59,7 +61,7 @@ namespace VCareer.Services.Geo
 
             return provinceName;
         }
-
+        [DisableAuditing]
         public async Task<string> GetWardNameByCode(int? wardCode, int provinceCode)
         {
             if (wardCode == null) return string.Empty;

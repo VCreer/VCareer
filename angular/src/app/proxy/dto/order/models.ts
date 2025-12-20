@@ -2,7 +2,6 @@ import type { FullAuditedEntityDto, PagedResultDto } from '@abp/ng.core';
 import type { OrderStatus } from '../../constants/payment-vnpay/order-status.enum';
 import type { PaymentStatus } from '../../constants/payment-vnpay/payment-status.enum';
 import type { PaymentMethod } from '../../constants/payment-vnpay/payment-method.enum';
-import type { OrderDto } from './models';
 
 export interface CreateOrderDetailDto {
   subcriptionServiceId?: string;
@@ -26,7 +25,10 @@ export interface OrderDetailDto extends FullAuditedEntityDto<string> {
   notes?: string;
 }
 
-export interface OrderDto extends FullAuditedEntityDto<string> {
+export interface OrderListDto extends PagedResultDto<OrderViewDto> {
+}
+
+export interface OrderViewDto extends FullAuditedEntityDto<string> {
   userId?: string;
   orderCode?: string;
   subTotal: number;
@@ -44,9 +46,6 @@ export interface OrderDto extends FullAuditedEntityDto<string> {
   orderDetails: OrderDetailDto[];
 }
 
-export interface OrderListDto extends PagedResultDto<OrderDto> {
-}
-
 export interface VnpayPaymentRequestDto {
   orderId?: string;
 }
@@ -54,6 +53,35 @@ export interface VnpayPaymentRequestDto {
 export interface VnpayPaymentResponseDto {
   paymentUrl?: string;
   orderCode?: string;
+}
+
+export interface OrderDashBoardRequestDto {
+  searchField?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface OrderDashboardViewDto {
+  id?: string;
+  companyName?: string;
+  companyId: number;
+  userId?: string;
+  orderCode?: string;
+  totalAmount: number;
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  paymentMethod?: PaymentMethod;
+  paidAt?: string;
+}
+
+export interface OrderDetailDashBoardViewDto {
+  id?: string;
+  subcriptionServiceId?: string;
+  subcriptionServiceTitle?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  notes?: string;
 }
 
 export interface VnpayCallbackDto {

@@ -240,7 +240,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getTotal(): number {
-    return this.getSubtotal() + this.getVAT();
+    return this.getSubtotal() ;
   }
 
   formatCurrency(amount: number): string {

@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CreateOrderDto, OrderDto, OrderListDto, VnpayPaymentRequestDto, VnpayPaymentResponseDto } from '../dto/order/models';
+import type { CreateOrderDto, OrderListDto, OrderViewDto, VnpayPaymentRequestDto, VnpayPaymentResponseDto } from '../dto/order/models';
 import type { IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -11,7 +11,7 @@ export class OrderService {
   
 
   createOrder = (input: CreateOrderDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OrderDto>({
+    this.restService.request<any, OrderViewDto>({
       method: 'POST',
       url: '/api/orders',
       body: input,
@@ -37,7 +37,7 @@ export class OrderService {
   
 
   getOrder = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OrderDto>({
+    this.restService.request<any, OrderViewDto>({
       method: 'GET',
       url: `/api/orders/${id}`,
     },

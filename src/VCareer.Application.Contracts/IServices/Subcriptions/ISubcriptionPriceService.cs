@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VCareer.Dto.Order;
 using VCareer.Dto.Subcriptions;
 using VCareer.IServices.Common;
 using Volo.Abp;
@@ -25,6 +26,10 @@ namespace VCareer.IServices.Subcriptions
         //deactive thi thoai mai
         // nhung ko cho active price da het han hoac bi trung thoi diem effect cua price khac
         public Task SetStatusSubcriptionPriceAsync(Guid subcriptionPriceId, bool isActive);
-      
+        public Task<List<OrderDashboardViewDto>> GetOrderDashboard(OrderDashBoardRequestDto dto);
+        public Task<decimal> GetTotalAmount(DateTime? startTime, DateTime? endTime);
+        public Task<List<OrderDetailDashBoardViewDto>> GetOrderDetail(Guid orderId);
+
+
     }
 }
