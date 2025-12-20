@@ -31,7 +31,10 @@ using VCareer.IServices.Notification;
 using VCareer.Dto.Notification;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Notification;
+using VCareer.IRepositories.ICompanyRepository;
 using VCareer.Models.Job;
+using VCareer.Models.Notification;
 using VCareer.Constants.JobConstant;
 using System.Text.Json;
 
@@ -48,8 +51,10 @@ namespace VCareer.Services.Profile
         private readonly IDbContextProvider<VCareerDbContext> _dbContextProvider;
         private readonly ILuceneCandidateIndexer _luceneIndexer;
         private readonly INotificationAppService _notificationAppService;
+        private readonly INotificationRepository _notificationRepository;
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IJobPostRepository _jobPostRepository;
+        private readonly ICompanyRepository _companyRepository;
 
         public CandidateSearchAppService(
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
@@ -59,8 +64,10 @@ namespace VCareer.Services.Profile
             IDbContextProvider<VCareerDbContext> dbContextProvider,
             ILuceneCandidateIndexer luceneIndexer,
             INotificationAppService notificationAppService,
+            INotificationRepository notificationRepository,
             IRecruiterRepository recruiterRepository,
-            IJobPostRepository jobPostRepository)
+            IJobPostRepository jobPostRepository,
+            ICompanyRepository companyRepository)
         {
             _candidateProfileRepository = candidateProfileRepository;
             _candidateCvRepository = candidateCvRepository;
@@ -69,8 +76,10 @@ namespace VCareer.Services.Profile
             _dbContextProvider = dbContextProvider;
             _luceneIndexer = luceneIndexer;
             _notificationAppService = notificationAppService;
+            _notificationRepository = notificationRepository;
             _recruiterRepository = recruiterRepository;
             _jobPostRepository = jobPostRepository;
+            _companyRepository = companyRepository;
         }
 
         public async Task<PagedResultDto<CandidateSearchResultDto>> SearchCandidatesAsync(SearchCandidateInputDto input)
@@ -741,7 +750,113 @@ namespace VCareer.Services.Profile
                 true
             );
 
-            
+            // Tạo notification cho candidate khi recruiter gửi yêu cầu kết nối
+            try
+            {
+                Logger.LogInformation("SendConnectionRequestAsync: Starting notification creation. CandidateId: {CandidateId}, CurrentUser.Id: {CurrentUserId}, IsAuthenticated: {IsAuthenticated}",
+                    input.CandidateProfileId, _currentUser.Id, _currentUser.IsAuthenticated);
+
+                Guid? recruiterUserId = null;
+                string companyName = input.CompanyName;
+                string companyLogoUrl = null;
+                
+                // Lấy recruiter ID và thông tin công ty nếu có
+                if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+                {
+                    var recruiter = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == _currentUser.Id.Value);
+                    if (recruiter != null)
+                    {
+                        recruiterUserId = recruiter.UserId;
+                        Logger.LogInformation("SendConnectionRequestAsync: Found recruiter. RecruiterId: {RecruiterId}, Status: {Status}, CompanyId: {CompanyId}",
+                            recruiter.UserId, recruiter.Status, recruiter.CompanyId);
+
+                        // Lấy thông tin công ty để lấy logo
+                        if (recruiter.CompanyId > 0)
+                        {
+                            try
+                            {
+                                var company = await _companyRepository.FirstOrDefaultAsync(c => c.Id == recruiter.CompanyId);
+                                if (company != null)
+                                {
+                                    // Ưu tiên dùng tên công ty từ database, nếu không có thì dùng từ input
+                                    if (!string.IsNullOrWhiteSpace(company.CompanyName))
+                                    {
+                                        companyName = company.CompanyName;
+                                    }
+                                    companyLogoUrl = company.LogoUrl;
+                                    Logger.LogInformation("SendConnectionRequestAsync: Found company. CompanyName: {CompanyName}, LogoUrl: {LogoUrl}",
+                                        companyName, companyLogoUrl);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogWarning(ex, "SendConnectionRequestAsync: Failed to get company info. CompanyId: {CompanyId}",
+                                    recruiter.CompanyId);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Nếu không tìm thấy recruiter record, vẫn dùng current user ID
+                        recruiterUserId = _currentUser.Id.Value;
+                        Logger.LogInformation("SendConnectionRequestAsync: Recruiter record not found, using CurrentUser.Id: {UserId}",
+                            _currentUser.Id.Value);
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning("SendConnectionRequestAsync: User not authenticated or no UserId. IsAuthenticated: {IsAuthenticated}, HasId: {HasId}",
+                        _currentUser.IsAuthenticated, _currentUser.Id.HasValue);
+                }
+
+                // Tạo notification cho candidate (không cần check recruiter status vì API này chỉ dành cho recruiter)
+                if (recruiterUserId.HasValue && candidate.UserId != Guid.Empty)
+                {
+                    var metadata = JsonSerializer.Serialize(new
+                    {
+                        CompanyName = companyName,
+                        CandidateProfileId = input.CandidateProfileId,
+                        RecruiterId = recruiterUserId.Value,
+                        LogoUrl = companyLogoUrl
+                    });
+
+                    // Tiêu đề: "Nhà tuyển dụng [Tên công ty] muốn kết nối tới bạn"
+                    var notificationTitle = $"Nhà tuyển dụng {companyName} muốn kết nối tới bạn";
+
+                    Logger.LogInformation("SendConnectionRequestAsync: Creating notification. CandidateUserId: {CandidateUserId}, RecruiterId: {RecruiterId}, CompanyName: {CompanyName}",
+                        candidate.UserId, recruiterUserId.Value, companyName);
+
+                    // Tạo notification trực tiếp bằng repository để tránh vấn đề authorization
+                    var notification = new UserNotification(
+                        GuidGenerator.Create(),
+                        candidate.UserId,
+                        "Candidate",
+                        "ConnectionRequest",
+                        notificationTitle,
+                        "NTD vừa muốn kết nối tới bạn, hãy mở gmail ra để check nhé",
+                        "ConnectionRequest",
+                        input.CandidateProfileId,
+                        metadata,
+                        recruiterUserId.Value
+                    );
+
+                    await _notificationRepository.InsertAsync(notification);
+
+                    Logger.LogInformation("SendConnectionRequestAsync: Notification created successfully. NotificationId: {NotificationId}",
+                        notification.Id);
+                }
+                else
+                {
+                    Logger.LogWarning("SendConnectionRequestAsync: Cannot create notification. RecruiterUserId: {RecruiterUserId}, CandidateUserId: {CandidateUserId}",
+                        recruiterUserId, candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error nhưng không fail toàn bộ request
+                Logger.LogError(ex, "Failed to create notification when recruiter sent connection request. CandidateId: {CandidateId}, Error: {ErrorMessage}",
+                    input.CandidateProfileId, ex.Message);
+            }
         }
 
         private string GetDefaultSorting(string? displayPriority)

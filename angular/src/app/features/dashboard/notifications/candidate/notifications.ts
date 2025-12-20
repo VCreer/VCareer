@@ -46,7 +46,7 @@ export class NotificationsComponent implements OnInit {
   pageSize = 5; // 5 thông báo trong 1  trang
   totalPages = 0;
   filterStatus: 'all' | 'read' | 'unread' = 'all';
-  filterType: 'all' | 'CvViewed' | 'JobOffer' = 'all';
+  filterType: 'all' | 'CvViewed' | 'JobOffer' | 'ConnectionRequest' = 'all';
 
   // Delete state
   isDeletingAll = false;
@@ -86,6 +86,8 @@ export class NotificationsComponent implements OnInit {
       notificationTypeFilter = 'CvViewed';
     } else if (this.filterType === 'JobOffer') {
       notificationTypeFilter = 'JobOffer';
+    } else if (this.filterType === 'ConnectionRequest') {
+      notificationTypeFilter = 'ConnectionRequest';
     }
 
     // lấy thông báo
@@ -131,13 +133,19 @@ export class NotificationsComponent implements OnInit {
     const enriched = notifications.map((notification, index) => {
       const result: NotificationWithJobInfo = { ...notification };
 
-      // Parse metadata để lấy thông tin job
+      // Parse metadata để lấy thông tin job hoặc connection request
       if (notification.metadata) {
         try {
           const metadata = JSON.parse(notification.metadata);
           result.jobTitle = metadata.JobTitle || metadata.jobTitle;
           result.companyName = metadata.CompanyName || metadata.companyName;
           result.jobId = metadata.JobId || metadata.jobId || notification.relatedEntityId;
+          
+          // Lấy logo từ metadata (cho ConnectionRequest)
+          if (metadata.LogoUrl || metadata.logoUrl) {
+            result.logo = metadata.LogoUrl || metadata.logoUrl;
+          }
+          
           console.log('[Notifications] Parsed metadata', {
             notificationId: notification.id,
             metadata,
@@ -205,14 +213,17 @@ export class NotificationsComponent implements OnInit {
         });
       }
 
-      // Default logo
-      result.logo = 'assets/images/vng.png';
+      // Default logo (chỉ set nếu chưa có từ metadata)
+      if (!result.logo) {
+        result.logo = 'assets/images/vng.png';
+      }
 
       return result;
     });
 
-    // Load job details for notifications with jobId
-    this.loadJobDetailsForNotifications(enriched);
+    // Load job details chỉ cho JobPost, không load cho ConnectionRequest
+    const jobNotifications = enriched.filter(n => n.notificationType !== 'ConnectionRequest');
+    this.loadJobDetailsForNotifications(jobNotifications);
 
     return enriched;
   }
@@ -494,7 +505,7 @@ export class NotificationsComponent implements OnInit {
     this.loadNotifications();
   }
 
-  onTypeFilterChange(filter: 'all' | 'CvViewed' | 'JobOffer') {
+  onTypeFilterChange(filter: 'all' | 'CvViewed' | 'JobOffer' | 'ConnectionRequest') {
     this.filterType = filter;
     this.currentPage = 0;
     this.loadNotifications();
@@ -532,6 +543,13 @@ export class NotificationsComponent implements OnInit {
   }
 
   onCardClick(notification: NotificationWithJobInfo) {
+    // ConnectionRequest không có job để navigate
+    if (notification.notificationType === 'ConnectionRequest') {
+      // Chỉ đánh dấu đã đọc khi click
+      this.markAsRead(notification);
+      return;
+    }
+    
     if (notification.isExpired) {
       console.log('[Notifications] Click blocked because job expired', {
         notificationId: notification.id,

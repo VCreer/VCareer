@@ -42,6 +42,7 @@
           <option value="all">Tất cả</option>
           <option value="CvViewed">NTD đã xem</option>
           <option value="JobOffer">Đã gửi đề nghị</option>
+          <option value="ConnectionRequest">Yêu cầu kết nối</option>
         </select>
       </div>
     </div>
@@ -86,15 +87,18 @@
 
           <!-- Job Details -->
           <div class="details-column">
-            <!-- Job Header -->
+            <!-- Header: Title cho ConnectionRequest, JobTitle cho JobPost -->
             <div class="job-header">
               <div class="job-title-row">
-                <h3 class="job-title">{{ notification.jobTitle || 'Công việc' }}</h3>
+                <h3 class="job-title">
+                  <span *ngIf="notification.notificationType === 'ConnectionRequest'">{{ notification.title }}</span>
+                  <span *ngIf="notification.notificationType !== 'ConnectionRequest'">{{ notification.jobTitle || 'Công việc' }}</span>
+                </h3>
                 <div class="header-right">
-                  <span class="title-salary" *ngIf="notification.salaryText">{{ notification.salaryText }}</span>
+                  <span class="title-salary" *ngIf="notification.salaryText && notification.notificationType !== 'ConnectionRequest'">{{ notification.salaryText }}</span>
                   <span class="notification-badge" *ngIf="!notification.isRead">Mới</span>
-                  <span class="deadline-badge expired-badge" *ngIf="notification.isExpired">Đã hết hạn nộp</span>
-                  <span class="deadline-badge" *ngIf="!notification.isExpired && notification.deadline && notification.daysUntilDeadline !== undefined">
+                  <span class="deadline-badge expired-badge" *ngIf="notification.isExpired && notification.notificationType !== 'ConnectionRequest'">Đã hết hạn nộp</span>
+                  <span class="deadline-badge" *ngIf="!notification.isExpired && notification.deadline && notification.daysUntilDeadline !== undefined && notification.notificationType !== 'ConnectionRequest'">
                     {{ getDeadlineText(notification) }}
                   </span>
                 </div>
@@ -102,12 +106,17 @@
             </div>
 
             <!-- Company Info -->
-            <div class="company-info">
+            <div class="company-info" *ngIf="notification.notificationType === 'ConnectionRequest'">
               <h4 class="company-name">{{ notification.companyName || 'Công ty' }}</h4>
             </div>
 
-            <!-- Job Tags (Location, Experience) -->
-            <div class="job-tags-row" *ngIf="notification.provinceName || notification.experienceText">
+            <!-- Company Info cho JobPost (giữ nguyên) -->
+            <div class="company-info" *ngIf="notification.notificationType !== 'ConnectionRequest'">
+              <h4 class="company-name">{{ notification.companyName || 'Công ty' }}</h4>
+            </div>
+
+            <!-- Job Tags (Location, Experience) - Chỉ hiển thị cho JobPost -->
+            <div class="job-tags-row" *ngIf="(notification.provinceName || notification.experienceText) && notification.notificationType !== 'ConnectionRequest'">
               <div class="job-tags">
                 <span class="tag location" *ngIf="notification.provinceName">
                   <i class="fa fa-map-marker"></i>
