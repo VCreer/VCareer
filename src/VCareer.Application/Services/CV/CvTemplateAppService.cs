@@ -153,7 +153,8 @@ namespace VCareer.Services.CV
                     ProfileImageUrl = "",
                     LinkedIn = "",
                     GitHub = "",
-                    Website = ""
+                    Website = "",
+                    Position = "[Nhập vị trí ứng tuyển]" // Vị trí ứng tuyển
                 },
                 CareerObjective = "[Nhập mục tiêu nghề nghiệp]",
                 WorkExperiences = new List<WorkExperienceDto>
@@ -222,6 +223,7 @@ namespace VCareer.Services.CV
                 htmlContent = htmlContent.Replace("{{personalInfo.linkedIn}}", cvData.PersonalInfo.LinkedIn ?? "");
                 htmlContent = htmlContent.Replace("{{personalInfo.gitHub}}", cvData.PersonalInfo.GitHub ?? "");
                 htmlContent = htmlContent.Replace("{{personalInfo.website}}", cvData.PersonalInfo.Website ?? "");
+                htmlContent = htmlContent.Replace("{{personalInfo.position}}", EscapeHtml(cvData.PersonalInfo.Position ?? "")); // Vị trí ứng tuyển
                 
                 if (cvData.PersonalInfo.DateOfBirth.HasValue)
                 {

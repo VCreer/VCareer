@@ -186,6 +186,7 @@ namespace VCareer.CV
         public string? LinkedIn { get; set; }
         public string? GitHub { get; set; }
         public string? Website { get; set; }
+        public string? Position { get; set; } // Vị trí ứng tuyển
     }
 
     public class WorkExperienceDto
