@@ -44,6 +44,15 @@ export class CompanyLegalInfoService {
     { apiName: this.apiName,...config });
   
 
+  getCompanyLogoFile = (storagePath: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, FileStreamResultDto>({
+      method: 'GET',
+      url: '/api/app/company-legal-info/company-logo-file',
+      params: { storagePath },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getCurrentUserCompanyLegalInfo = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, CompanyLegalInfoDto>({
       method: 'GET',
@@ -137,6 +146,15 @@ export class CompanyLegalInfoService {
       method: 'PUT',
       url: `/api/app/company-legal-info/${id}/file-urls`,
       params: { businessLicenseFile, taxCertificateFile, representativeIdCardFile, otherSupportFile },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  uploadCompanyLogo = (id: number, file: IFormFile, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyLegalInfoDto>({
+      method: 'POST',
+      url: `/api/app/company-legal-info/${id}/upload-company-logo`,
+      body: file,
     },
     { apiName: this.apiName,...config });
   

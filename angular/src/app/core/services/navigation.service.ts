@@ -5,7 +5,7 @@ import { filter, catchError } from 'rxjs/operators';
 import { AuthStateService } from './auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from './auth-Cookiebased/auth-facade.service';
 import { TeamManagementService } from '../../proxy/services/team-management';
-import { ProfileService } from '../../proxy/profile/profile.service';
+import { ProfileService } from '../../proxy/services/profile/profile.service';
 import { CompanyLegalInfoService } from '../../proxy/profile/company-legal-info.service';
 
 export type UserRole = 'candidate' | 'recruiter' | null;

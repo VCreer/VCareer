@@ -1,37 +1,6 @@
 import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
 import type { IFormFile } from '../../microsoft/asp-net-core/http/models';
 
-export interface CandidateSearchResultDto extends EntityDto<string> {
-  name?: string;
-  candidateUserId?: string;
-  defaultCvId?: string;
-  email?: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-  jobTitle?: string;
-  skills?: string;
-  experience?: number;
-  salary?: number;
-  workLocation?: string;
-  location?: string;
-  gender?: boolean;
-  dateOfBirth?: string;
-  profileVisibility: boolean;
-  status: boolean;
-  viewCount: number;
-  contactOpenCount: number;
-  isSeekingJob: boolean;
-  lastUpdatedTime?: string;
-  experienceDetails: ExperienceDetailDto[];
-  education?: string;
-}
-
-export interface ChangePasswordDto {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
 export interface CompanyInfoForJobDetailDto extends EntityDto<number> {
   companyName?: string;
   logoUrl?: string;
@@ -115,77 +84,8 @@ export interface CompanyVerificationViewDto extends EntityDto<number> {
   recruiterEmail?: string;
 }
 
-export interface ExperienceDetailDto {
-  company?: string;
-  position?: string;
-  duration?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface ProfileDto extends EntityDto<string> {
-  name?: string;
-  surname?: string;
-  email?: string;
-  phoneNumber?: string;
-  bio?: string;
-  dateOfBirth?: string;
-  gender?: boolean;
-  location?: string;
-  address?: string;
-  nationality?: string;
-  maritalStatus?: string;
-  userName?: string;
-  emailConfirmed: boolean;
-  phoneNumberConfirmed: boolean;
-  creationTime?: string;
-  lastModificationTime?: string;
-  userType?: string;
-  companyId?: number;
-  jobTitle?: string;
-  skills?: string;
-  experience?: number;
-  salary?: number;
-  workLocation?: string;
-  profileVisibility?: boolean;
-}
-
 export interface RejectCompanyDto {
   rejectionNotes: string;
-}
-
-export interface SearchCandidateInputDto extends PagedAndSortedResultRequestDto {
-  keyword?: string;
-  jobTitle?: string;
-  skills?: string;
-  minExperience?: number;
-  maxExperience?: number;
-  minSalary?: number;
-  maxSalary?: number;
-  workLocation?: string;
-  searchInJobTitle: boolean;
-  searchInActivity: boolean;
-  searchInEducation: boolean;
-  searchInExperience: boolean;
-  searchInSkills: boolean;
-  cvClassification?: string;
-  displayPriority?: string;
-}
-
-export interface SelectCompanyDto {
-  companyId: number;
-}
-
-export interface SendConnectionRequestDto {
-  candidateProfileId?: string;
-  companyName?: string;
-  jobTitle?: string;
-  message?: string;
-  emails: string[];
-}
-
-export interface SendEmailOtpDto {
-  email: string;
 }
 
 export interface SubmitCompanyLegalInfoDto {
@@ -231,6 +131,55 @@ export interface UpdateCompanyLegalInfoDto {
   otherSupportFile?: string;
 }
 
+export interface UploadCompanyLogoInputDto {
+  file: IFormFile;
+}
+
+export interface UploadLegalDocumentInputDto {
+  file: IFormFile;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ProfileDto extends EntityDto<string> {
+  name?: string;
+  surname?: string;
+  email?: string;
+  phoneNumber?: string;
+  bio?: string;
+  dateOfBirth?: string;
+  gender?: boolean;
+  location?: string;
+  address?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  userName?: string;
+  emailConfirmed: boolean;
+  phoneNumberConfirmed: boolean;
+  creationTime?: string;
+  lastModificationTime?: string;
+  userType?: string;
+  companyId?: number;
+  jobTitle?: string;
+  skills?: string;
+  experience?: number;
+  salary?: number;
+  workLocation?: string;
+  profileVisibility?: boolean;
+}
+
+export interface SelectCompanyDto {
+  companyId: number;
+}
+
+export interface SendEmailOtpDto {
+  email: string;
+}
+
 export interface UpdatePersonalInfoDto {
   name: string;
   surname?: string;
@@ -250,10 +199,6 @@ export interface UpdatePersonalInfoDto {
   workLocation?: string;
 }
 
-export interface UploadLegalDocumentInputDto {
-  file: IFormFile;
-}
-
 export interface VerifyEmailNumberDto {
   email: string;
   otpCode?: string;
@@ -262,4 +207,61 @@ export interface VerifyEmailNumberDto {
 export interface VerifyPhoneNumberDto {
   phoneNumber: string;
   otpCode?: string;
+}
+
+export interface SearchCandidateInputDto extends PagedAndSortedResultRequestDto {
+  keyword?: string;
+  jobTitle?: string;
+  skills?: string;
+  minExperience?: number;
+  maxExperience?: number;
+  minSalary?: number;
+  maxSalary?: number;
+  workLocation?: string;
+  searchInJobTitle?: boolean;
+  searchInActivity?: boolean;
+  searchInEducation?: boolean;
+  searchInExperience?: boolean;
+  searchInSkills?: boolean;
+  cvClassification?: string;
+  displayPriority?: string;
+}
+
+export interface ExperienceDetailDto {
+  company?: string;
+  position?: string;
+  duration?: string;
+}
+
+export interface CandidateSearchResultDto extends EntityDto<string> {
+  name?: string;
+  candidateUserId?: string;
+  defaultCvId?: string;
+  email?: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+  jobTitle?: string;
+  skills?: string;
+  experience?: number;
+  salary?: number;
+  workLocation?: string;
+  location?: string;
+  gender?: boolean;
+  dateOfBirth?: string;
+  profileVisibility?: boolean;
+  status?: boolean;
+  viewCount?: number;
+  contactOpenCount?: number;
+  isSeekingJob?: boolean;
+  lastUpdatedTime?: string;
+  experienceDetails?: ExperienceDetailDto[];
+  education?: string;
+}
+
+export interface SendConnectionRequestDto {
+  candidateProfileId: string;
+  companyName: string;
+  jobTitle: string;
+  message: string;
+  emails: string[];
 }

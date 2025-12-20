@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
-import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
 import { combineLatest, firstValueFrom, timeout, of } from 'rxjs';
 import { filter, take, catchError } from 'rxjs/operators';

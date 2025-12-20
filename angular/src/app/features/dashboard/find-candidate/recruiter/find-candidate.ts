@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CandidateSearchService } from '../../../../proxy/profile/candidate-search.service';
-import { SearchCandidateInputDto, CandidateSearchResultDto } from '../../../../proxy/dto/profile/models';
+import type { SearchCandidateInputDto, CandidateSearchResultDto } from '../../../../proxy/dto/profile/models';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 
@@ -123,9 +123,10 @@ export class FindCandidateComponent implements OnInit, OnDestroy {
     
     const searchInput: SearchCandidateInputDto = {
       keyword: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
-      // Đẩy keyword sang jobTitle/skills để backend Lucene có thêm field match (CandidateProfile)
-      jobTitle: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
-      skills: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
+      // Các trường jobTitle / skills chỉ dùng cho filter nâng cao riêng, 
+      // không tự động gán từ keyword để tránh lọc mất những CV chỉ match trong dataJson hoặc field khác.
+      jobTitle: undefined,
+      skills: undefined,
       workLocation: this.location && this.location.trim() ? this.location.trim() : undefined,
       searchInJobTitle: false,
       searchInActivity: false,

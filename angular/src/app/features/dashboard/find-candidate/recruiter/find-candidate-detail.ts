@@ -7,8 +7,8 @@ import {
   ButtonComponent,
   ToastNotificationComponent,
 } from '../../../../shared/components';
-import { CandidateSearchService } from '../../../../proxy/profile/candidate-search.service';
-import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
+import { CandidateSearchService } from '../../../../proxy/profile';
+import { CandidateCvService } from '../../../../proxy/services/cv/candidate-cv.service';
 import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
 import type { CandidateSearchResultDto } from '../../../../proxy/dto/profile/models';
 
@@ -118,7 +118,7 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
     this.hasAccess = true;
     this.accessDenied = false;
     
-    this.candidateSearchService.getCandidateDetail(this.candidateId).subscribe({
+    this.candidateSearchService.getCandidateById(this.candidateId).subscribe({
       next: response => {
         const result =
           ((response as any)?.value ?? response) as CandidateSearchResultDto | null;
@@ -253,7 +253,7 @@ export class FindCandidateDetailComponent implements OnInit, OnDestroy {
     };
 
     this.candidateSearchService
-      .sendConnectionRequest(this.candidate.id!, payload)
+      .sendConnectionRequest(payload)
       .subscribe({
         next: () => {
           this.sendingRequest = false;

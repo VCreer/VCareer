@@ -8,8 +8,8 @@ import { ToastNotificationComponent } from '../../../../shared/components/toast-
 import { PdfViewerComponent } from '../../../../shared/components/pdf-viewer/pdf-viewer';
 import { ModalUpdateNameCvComponent } from '../../../../shared/components/modal-update-name-cv/modal-update-name-cv';
 import { ModalUpdatePhotoComponent } from '../../../../shared/components/modal-update-photo/modal-update-photo';
-import { CvTemplateService } from '../../../../proxy/http-api/controllers/cv-template.service';
-import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
+import { CvTemplateService } from '../../../../proxy/services/cv/cv-template.service';
+import { CandidateCvService } from '../../../../proxy/services/cv/candidate-cv.service';
 import { CvTemplateDto } from '../../../../proxy/cv/models';
 import { CvBlockEditorComponent } from '../../../../shared/components/cv-block-editor/cv-block-editor';
 import { CvFormPreviewComponent } from '../../../../shared/components/cv-form-preview/cv-form-preview';
@@ -2877,7 +2877,7 @@ export class WriteCv implements OnInit {
 
       // Gọi API để lưu preview image
       return new Promise<void>((resolve, reject) => {
-        this.candidateCvService.updatePreviewImage(cvId, { previewImageUrl }).subscribe({
+        this.candidateCvService.updatePreviewImage(cvId, previewImageUrl).subscribe({
           next: () => {
             console.log('Preview image saved successfully for CV:', cvId);
             resolve();

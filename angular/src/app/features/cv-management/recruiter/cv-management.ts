@@ -12,7 +12,7 @@ import {
   PaginationComponent,
   GenericModalComponent
 } from '../../../shared/components';
-import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
+import { ApplicationService } from '../../../proxy/application/applications/application.service';
 import type { ApplicationDto,GetApplicationListDto, UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
 import { NotificationService } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';

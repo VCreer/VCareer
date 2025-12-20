@@ -12,7 +12,7 @@ import { LoginModalComponent } from '../../../shared/components/login-modal/logi
 import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api/company.service';
 import { environment } from '../../../../environments/environment';
 import { NavigationService } from '../../../core/services/navigation.service';
-import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
+import { ApplicationService } from '../../../proxy/application/applications/application.service';
 import { JobViewDetail } from 'src/app/proxy/dto/job';
 import { JobSearchService } from 'src/app/proxy/services/job';
 import { JobViewDto } from 'src/app/proxy/dto/job-dto';

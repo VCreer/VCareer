@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
-import { CvTemplateService } from '../../../../proxy/http-api/controllers/cv-template.service';
+import { CvTemplateService } from '../../../../proxy/services/cv/cv-template.service';
 import { CvTemplateDto, GetCvTemplateListDto } from '../../../../proxy/cv/models';
 import { environment } from '../../../../../environments/environment';
 

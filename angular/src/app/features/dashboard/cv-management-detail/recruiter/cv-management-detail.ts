@@ -7,9 +7,9 @@ import {
   ButtonComponent,
   ToastNotificationComponent
 } from '../../../../shared/components';
-import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
-import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
-import { UploadedCvService } from '../../../../proxy/http-api/controllers/uploaded-cv.service';
+import { ApplicationService } from '../../../../proxy/application/applications/application.service';
+import { CandidateCvService } from '../../../../proxy/services/cv/candidate-cv.service';
+import { UploadedCvService } from '../../../../proxy/services/cv/uploaded-cv.service';
 import type { ApplicationDto,UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
 import { environment } from '../../../../../environments/environment';
 

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, GenericModalComponent, PaginationComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
-import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
+import { ApplicationService } from '../../../../proxy/application/applications/application.service';
 import type { ApplicationDto, GetApplicationListDto } from '../../../../proxy/dto/applications/models';
 
 export interface CandidateCV {

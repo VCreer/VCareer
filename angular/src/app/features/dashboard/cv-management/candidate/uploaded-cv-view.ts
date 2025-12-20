@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslationService } from '../../../../core/services/translation.service';
-import { UploadedCvService } from '../../../../proxy/http-api/controllers/uploaded-cv.service';
+import { UploadedCvService } from '../../../../proxy/services/cv/uploaded-cv.service';
 import { UploadedCvDto } from '../../../../proxy/application/contracts/cv/models';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 

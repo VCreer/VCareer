@@ -7,7 +7,7 @@ import {
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
-import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 import { ChangePasswordDto, ProfileDto } from '../../../../proxy/dto/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 

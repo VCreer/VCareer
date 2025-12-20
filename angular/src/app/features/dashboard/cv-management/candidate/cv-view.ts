@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
+import { CandidateCvService } from '../../../../proxy/services/cv/candidate-cv.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
 

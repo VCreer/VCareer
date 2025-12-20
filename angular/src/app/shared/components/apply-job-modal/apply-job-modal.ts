@@ -2,9 +2,9 @@ import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, OnChanges, S
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
-import { CandidateCvService } from '../../../proxy/http-api/controllers/candidate-cv.service';
-import { UploadedCvService } from '../../../proxy/http-api/controllers/uploaded-cv.service';
-import { ApplicationService } from '../../../proxy/http-api/controllers/application.service';
+import { CandidateCvService } from '../../../proxy/services/cv/candidate-cv.service';
+import { UploadedCvService } from '../../../proxy/services/cv/uploaded-cv.service';
+import { ApplicationService } from '../../../proxy/application/applications/application.service';
 import { HttpClient } from '@angular/common/http';
 import { Inject } from '@angular/core';
 import type { CandidateCvDto } from '../../../proxy/cv/models';

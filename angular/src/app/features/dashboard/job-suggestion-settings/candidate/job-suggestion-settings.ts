@@ -13,7 +13,7 @@ import { AuthStateService } from '../../../../core/services/auth-Cookiebased/aut
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 import { JobCategoryService } from '../../../../proxy/services/job/job-category.service';
 import { GeoService } from '../../../../proxy/services/geo/geo.service';
-import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 import type { CategoryTreeDto } from '../../../../proxy/dto/category/models';
 import type { ProvinceDto } from '../../../../proxy/dto/geo-dto/models';
 import type { UpdatePersonalInfoDto, ProfileDto } from '../../../../proxy/dto/profile/models';

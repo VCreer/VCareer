@@ -1,5 +1,4 @@
 import type { EntityDto, PagedAndSortedResultRequestDto } from '@abp/ng.core';
-import type { IFormFile } from '../../../microsoft/asp-net-core/http/models';
 import type { FileDescriptorDto } from '../../../dto/file-dto/models';
 
 export interface GetUploadedCvListDto extends PagedAndSortedResultRequestDto {
@@ -13,14 +12,6 @@ export interface UpdateUploadedCvDto {
   cvName?: string;
   isDefault?: boolean;
   isPublic?: boolean;
-  notes?: string;
-}
-
-export interface UploadCvRequestDto {
-  file: IFormFile;
-  cvName: string;
-  isDefault: boolean;
-  isPublic: boolean;
   notes?: string;
 }
 

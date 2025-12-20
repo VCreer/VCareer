@@ -1,8 +1,20 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivityLogService } from '../../../../proxy/services/auth/activity-log/activity-log.service';
-import type { ActivityLogWithStaffDto, ActivityLogFilterDto } from '../../../../proxy/dto/activity-log-dto/models';
+import { of } from 'rxjs';
+// TODO: ActivityLogService and DTOs need to be generated from backend
+// import { ActivityLogService } from '../../../../proxy/services/auth/activity-log/activity-log.service';
+// import type { ActivityLogWithStaffDto, ActivityLogFilterDto } from '../../../../proxy/dto/activity-log-dto/models';
+
+// Temporary interfaces until proxy is generated
+interface ActivityLogWithStaffDto {
+  id?: string;
+  [key: string]: any;
+}
+
+interface ActivityLogFilterDto {
+  [key: string]: any;
+}
 import { TeamManagementService } from '../../../../proxy/services/team-management';
 import type { StaffListItemDto } from '../../../../proxy/dto/team-management-dto/models';
 import { DateRangePickerComponent, DateRange } from '../../../../shared/components/date-range-picker/date-range-picker';
@@ -33,7 +45,7 @@ export class HistoryOfActivitiesComponent implements OnInit, OnDestroy {
   endDate = '';
 
   constructor(
-    private activityLogService: ActivityLogService,
+    // private activityLogService: ActivityLogService, // TODO: Uncomment when proxy is generated
     private teamManagementService: TeamManagementService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -110,9 +122,13 @@ export class HistoryOfActivitiesComponent implements OnInit, OnDestroy {
     console.log('Loading activities, isTeamLeader:', this.isTeamLeader);
     console.log('Filter:', JSON.stringify(filter, null, 2));
 
-    const request = this.isTeamLeader
-      ? this.activityLogService.getAllStaffActivityLogs(filter)
-      : this.activityLogService.getMyActivityLogs(filter);
+    // TODO: Uncomment when ActivityLogService is generated
+    // const request = this.isTeamLeader
+    //   ? this.activityLogService.getAllStaffActivityLogs(filter)
+    //   : this.activityLogService.getMyActivityLogs(filter);
+
+    // Temporary: return empty array until service is available
+    const request = of({ items: [], totalCount: 0 });
 
     request.subscribe({
       next: (response) => {
@@ -126,10 +142,14 @@ export class HistoryOfActivitiesComponent implements OnInit, OnDestroy {
             // Nếu response là array trực tiếp
             this.activities = response;
             this.totalCount = response.length;
-          } else if (response.activities) {
-            // Nếu response có property activities
-            this.activities = response.activities || [];
-            this.totalCount = response.totalCount || response.activities.length || 0;
+          } else if (response.items) {
+            // Nếu response có property items (PagedResultDto)
+            this.activities = response.items || [];
+            this.totalCount = response.totalCount || response.items.length || 0;
+          } else if ((response as any).activities) {
+            // Nếu response có property activities (legacy format)
+            this.activities = (response as any).activities || [];
+            this.totalCount = response.totalCount || (response as any).activities.length || 0;
           } else {
             // Fallback
             this.activities = [];

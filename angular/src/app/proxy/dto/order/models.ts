@@ -47,6 +47,14 @@ export interface OrderDto extends FullAuditedEntityDto<string> {
 export interface OrderListDto extends PagedResultDto<OrderDto> {
 }
 
+export interface VnpayCallbackDto {
+  vnp_TxnRef?: string;
+  vnp_ResponseCode?: string;
+  vnp_TransactionNo?: string;
+  vnp_Amount?: string;
+  vnp_SecureHash?: string;
+}
+
 export interface VnpayPaymentRequestDto {
   orderId?: string;
 }
@@ -54,12 +62,4 @@ export interface VnpayPaymentRequestDto {
 export interface VnpayPaymentResponseDto {
   paymentUrl?: string;
   orderCode?: string;
-}
-
-export interface VnpayCallbackDto {
-  vnp_TxnRef?: string;
-  vnp_ResponseCode?: string;
-  vnp_TransactionNo?: string;
-  vnp_Amount?: string;
-  vnp_SecureHash?: string;
 }

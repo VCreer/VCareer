@@ -1,7 +1,7 @@
 import { Component, OnInit, OnChanges, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CandidateCvService } from '../../../proxy/http-api/controllers/candidate-cv.service';
+import { CandidateCvService } from '../../../proxy/services/cv/candidate-cv.service';
 import type { CandidateCvDto, GetCandidateCvListDto } from '../../../proxy/cv/models';
 
 @Component({
