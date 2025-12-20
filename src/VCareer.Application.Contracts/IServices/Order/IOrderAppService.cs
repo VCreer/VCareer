@@ -8,10 +8,10 @@ namespace VCareer.IServices.Order
 {
     public interface IOrderAppService : IApplicationService
     {
-        Task<OrderDto> CreateOrderAsync(CreateOrderDto input);
-        Task<OrderDto> GetOrderAsync(Guid id);
+        Task<OrderViewDto> CreateOrderAsync(CreateOrderDto input);
+        Task<OrderViewDto> GetOrderAsync(Guid id);
         Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync(VnpayPaymentRequestDto input);
-        Task<OrderDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null);
+        Task<OrderViewDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null);
         Task<OrderListDto> GetMyOrdersAsync();
     }
 }

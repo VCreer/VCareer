@@ -46,7 +46,7 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
-  getJobChildServiceAllowForUser = (serviceAction: number, config?: Partial<Rest.Config>) =>
+  getJobChildServiceAllowForUser = (serviceAction?: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, OptionsChildServiceViewDto[]>({
       method: 'GET',
       url: '/api/app/user-subcription/job-child-service-allow-for-user',

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using VCareer.Constants.PaymentVNPay;
 using Volo.Abp.Application.Dtos;
+using static VCareer.Permission.VCareerPermission;
 
 namespace VCareer.Dto.Order
 {
-    public class OrderDto : FullAuditedEntityDto<Guid>
+    public class OrderViewDto : FullAuditedEntityDto<Guid>
     {
         public Guid UserId { get; set; }
         public string OrderCode { get; set; }
@@ -49,7 +50,7 @@ namespace VCareer.Dto.Order
         public decimal? UnitPrice { get; set; } // Optional, backend will use price from subscription service if not provided
     }
 
-    public class OrderListDto : PagedResultDto<OrderDto>
+    public class OrderListDto : PagedResultDto<OrderViewDto>
     {
     }
 
@@ -73,6 +74,40 @@ namespace VCareer.Dto.Order
         public string vnp_TransactionNo { get; set; }
         public string vnp_Amount { get; set; }
         public string vnp_SecureHash { get; set; }
+    }
+
+    public class OrderDashboardViewDto
+    {
+        public Guid Id { get; set; }
+        public string CompanyName { get; set; }
+        public int CompanyId { get; set; }
+        public Guid UserId { get; set; } // UserId của người mua (có thể là recruiter hoặc candidate)
+        public string OrderCode { get; set; } // Mã đơn hàng (VD: ORD-20241225123456)
+        public decimal TotalAmount { get; set; } // Tổng tiền thanh toán (đã bao gồm VAT)
+        public OrderStatus Status { get; set; } // Trạng thái đơn hàng
+        public PaymentStatus PaymentStatus { get; set; } // Trạng thái thanh toán
+        public PaymentMethod PaymentMethod { get; set; } // Phương thức thanh toán
+        public DateTime? PaidAt { get; set; } // Thời gian thanh toán
+    }
+
+    public class OrderDashBoardRequestDto
+    {
+        public string? SearchField { get; set; }
+        public DateTime? StartDate { get; set; } = null;
+        public DateTime? EndDate { get; set; } = null;
+        public OrderStatus? Status { get; set; }
+    }
+
+    public class OrderDetailDashBoardViewDto
+    {
+        public Guid Id { get; set; }
+        public Guid SubcriptionServiceId { get; set; }
+        public string SubcriptionServiceTitle { get; set; }
+        public int Quantity { get; set; } // Số lượng
+        public decimal UnitPrice { get; set; } // Đơn giá
+        public decimal TotalPrice { get; set; } // Tổng tiền (UnitPrice * Quantity)
+        public string? Notes { get; set; } // Ghi chú
+
     }
 }
 

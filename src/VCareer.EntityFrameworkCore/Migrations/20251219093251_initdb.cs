@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabaseVcareer : Migration
+    public partial class initdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1208,7 +1208,8 @@ namespace VCareer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserActiveId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserSubcriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChildServiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
@@ -1233,8 +1234,8 @@ namespace VCareer.Migrations
                 {
                     table.PrimaryKey("PK_User_ChildServices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_User_ChildServices_AbpUsers_UserId",
-                        column: x => x.UserId,
+                        name: "FK_User_ChildServices_AbpUsers_UserActiveId",
+                        column: x => x.UserActiveId,
                         principalTable: "AbpUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -2644,9 +2645,9 @@ namespace VCareer.Migrations
                 column: "ChildServiceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_ChildServices_UserId",
+                name: "IX_User_ChildServices_UserActiveId",
                 table: "User_ChildServices",
-                column: "UserId");
+                column: "UserActiveId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_SubcriptionServices_SubcriptionServiceId",

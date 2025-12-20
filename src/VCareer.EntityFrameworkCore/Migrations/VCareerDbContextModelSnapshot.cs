@@ -2013,6 +2013,9 @@ namespace VCareer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -2025,7 +2028,7 @@ namespace VCareer.Migrations
                     b.Property<int?>("UsedTime")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("UserActiveId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserSubcriptionId")
@@ -2035,7 +2038,7 @@ namespace VCareer.Migrations
 
                     b.HasIndex("ChildServiceId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserActiveId");
 
                     b.ToTable("User_ChildServices");
                 });
@@ -4661,7 +4664,7 @@ namespace VCareer.Migrations
 
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserActiveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

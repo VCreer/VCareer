@@ -23,7 +23,7 @@ namespace VCareer.Services.Geo
         private readonly IDistributedCache<List<ProvinceDto>> _cache;
         private const string KEY_PREFIX = "Geo:";
 
-        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache, IConfiguration configuration)
+        public GeoService(IHttpClientFactory httpClientFactory, IDistributedCache<List<ProvinceDto>> cache)
         {
             _httpClientFactory = httpClientFactory;
             _cache = cache;

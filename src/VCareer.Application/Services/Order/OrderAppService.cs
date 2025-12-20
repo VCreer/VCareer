@@ -61,7 +61,7 @@ namespace VCareer.Services.Order
 
 
         // đoạn code tạo order
-        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto input)
+        public async Task<OrderViewDto> CreateOrderAsync(CreateOrderDto input)
         {
             try
             {
@@ -105,9 +105,9 @@ namespace VCareer.Services.Order
                 }
 
                 // Calculate VAT and total
-                var vatAmount = subTotal * VAT_RATE;
-                decimal? discountAmount = input.DiscountCode != null ? 0 : null; // TODO: Implement discount logic
-                var totalAmount = subTotal + vatAmount - (discountAmount ?? 0);
+                //var vatAmount = subTotal * VAT_RATE;
+                //decimal? discountAmount = input.DiscountCode != null ? 0 : null; // TODO: Implement discount logic
+                //var totalAmount = subTotal + vatAmount - (discountAmount ?? 0);
 
                 // Generate order code
                 var orderCode = $"ORD-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
@@ -118,14 +118,15 @@ namespace VCareer.Services.Order
                     UserId = userId,
                     OrderCode = orderCode,
                     SubTotal = subTotal,
-                    VATAmount = vatAmount,
-                    TotalAmount = totalAmount,
+                    VATAmount = 0,
+                    TotalAmount = subTotal,
                     DiscountCode = input.DiscountCode,
-                    DiscountAmount = discountAmount,
+                    DiscountAmount = 0,
                     Status = OrderStatus.Pending,
                     PaymentStatus = PaymentStatus.Pending,
                     PaymentMethod = PaymentMethod.VNPay,
-                    Notes = input.Notes
+                    Notes = input.Notes,
+                    PaidAt = DateTime.UtcNow
                 };
 
                 await _orderRepository.InsertAsync(order);
@@ -138,7 +139,7 @@ namespace VCareer.Services.Order
                 }
 
                 // Map to DTO
-                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
+                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
                 orderDto.OrderDetails = orderDetails.Select(d => new OrderDetailDto
                 {
                     Id = d.Id,
@@ -170,7 +171,7 @@ namespace VCareer.Services.Order
             }
         }
 
-        public async Task<OrderDto> GetOrderAsync(Guid id)
+        public async Task<OrderViewDto> GetOrderAsync(Guid id)
         {
             var order = await _orderRepository.GetAsync(id);
 
@@ -179,7 +180,7 @@ namespace VCareer.Services.Order
                 throw new UserFriendlyException("You don't have permission to view this order");
             }
 
-            var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
+            var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
 
             // Load order details
             var details = await _orderDetailRepository.GetListAsync(d => d.OrderId == id);
@@ -239,7 +240,7 @@ namespace VCareer.Services.Order
 
 
         //xử li handle
-        public async Task<OrderDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
+        public async Task<OrderViewDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
         {
             if (input == null || string.IsNullOrEmpty(input.vnp_TxnRef))
             {
@@ -314,7 +315,7 @@ namespace VCareer.Services.Order
             if (input.vnp_ResponseCode == "00") // Success
             {
                 order.PaymentStatus = PaymentStatus.Paid;
-                order.Status = OrderStatus.Processing;
+                order.Status = OrderStatus.Completed;
                 order.VnpayTransactionId = input.vnp_TransactionNo;
                 order.VnpayResponseCode = input.vnp_ResponseCode;
                 order.PaidAt = DateTime.Now;
@@ -352,10 +353,10 @@ namespace VCareer.Services.Order
             var userId = _currentUser.Id.Value;
             var orders = await _orderRepository.GetListAsync(o => o.UserId == userId);
 
-            var orderDtos = new List<OrderDto>();
+            var orderDtos = new List<OrderViewDto>();
             foreach (var order in orders.OrderByDescending(o => o.CreationTime))
             {
-                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
+                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
 
                 // Load order details
                 var details = await _orderDetailRepository.GetListAsync(d => d.OrderId == order.Id);

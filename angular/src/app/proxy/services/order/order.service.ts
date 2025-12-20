@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CreateOrderDto, OrderDto, OrderListDto, VnpayCallbackDto, VnpayPaymentRequestDto, VnpayPaymentResponseDto } from '../../dto/order/models';
+import type { CreateOrderDto, OrderListDto, OrderViewDto, VnpayCallbackDto, VnpayPaymentRequestDto, VnpayPaymentResponseDto } from '../../dto/order/models';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +10,7 @@ export class OrderService {
   
 
   createOrder = (input: CreateOrderDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OrderDto>({
+    this.restService.request<any, OrderViewDto>({
       method: 'POST',
       url: '/api/app/order/order',
       body: input,
@@ -36,7 +36,7 @@ export class OrderService {
   
 
   getOrder = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OrderDto>({
+    this.restService.request<any, OrderViewDto>({
       method: 'GET',
       url: `/api/app/order/${id}/order`,
     },
@@ -44,7 +44,7 @@ export class OrderService {
   
 
   handleVnpayCallback = (input: VnpayCallbackDto, vnpayParams?: Record<string, string>, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, OrderDto>({
+    this.restService.request<any, OrderViewDto>({
       method: 'POST',
       url: '/api/app/order/handle-vnpay-callback',
       body: vnpayParams,

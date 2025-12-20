@@ -76,7 +76,7 @@ public class VCareerApplicationAutoMapperProfile : Profile
         CreateMap<JobApplication, ApplicationDto>();
 
         // Order mappings
-        CreateMap<Order, OrderDto>();
+        CreateMap<Order, OrderViewDto>();
         CreateMap<OrderDetail, OrderDetailDto>();
 
         CreateMap<Job_Post, JobViewDto>();
