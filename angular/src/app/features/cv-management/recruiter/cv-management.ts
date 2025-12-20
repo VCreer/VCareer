@@ -48,9 +48,7 @@ export interface CandidateCv {
 export enum ApplicationDisplayStatus {
   RECEIVED = 'received',        // CV tiếp nhận
   SUITABLE = 'suitable',        // Phù hợp
-  INTERVIEW = 'interview',      // Hẹn phỏng vấn
   OFFER = 'offer',              // Gửi đề nghị
-  HIRED = 'hired',              // Nhận việc
   NOT_SUITABLE = 'not-suitable' // Chưa phù hợp
 }
 
@@ -88,9 +86,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   statuses: { id: string; name: string }[] = [
     { id: ApplicationDisplayStatus.RECEIVED, name: 'CV tiếp nhận' },  // Trạng thái mặc định
     { id: ApplicationDisplayStatus.SUITABLE, name: 'Phù hợp' },
-    { id: ApplicationDisplayStatus.INTERVIEW, name: 'Hẹn phỏng vấn' },
     { id: ApplicationDisplayStatus.OFFER, name: 'Gửi đề nghị' },
-    { id: ApplicationDisplayStatus.HIRED, name: 'Nhận việc' },
     { id: ApplicationDisplayStatus.NOT_SUITABLE, name: 'Chưa phù hợp' }
   ];
 
@@ -310,7 +306,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
   /**
    * Normalize backend status values to frontend status values
    * Backend: "Pending", "Reviewed", "Shortlisted", "Interviewed", "Accepted", "Rejected", "Withdrawn"
-   * Frontend: 'received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable'
+   * Frontend: 'received', 'suitable', 'offer', 'not-suitable'
    */
   private normalizeStatus(backendStatus?: string | null): string {
     // Handle null, undefined, or empty string
@@ -331,8 +327,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
       'pending': ApplicationDisplayStatus.RECEIVED,           // CV tiếp nhận
       'reviewed': ApplicationDisplayStatus.SUITABLE,          // Phù hợp
       'shortlisted': ApplicationDisplayStatus.SUITABLE,       // Phù hợp
-      'interviewed': ApplicationDisplayStatus.INTERVIEW,      // Hẹn phỏng vấn
-      'accepted': ApplicationDisplayStatus.HIRED,             // Nhận việc
+      'interviewed': ApplicationDisplayStatus.SUITABLE,      // Hẹn phỏng vấn -> Phù hợp (đã xóa trạng thái interview)
+      'accepted': ApplicationDisplayStatus.OFFER,             // Nhận việc -> Gửi đề nghị (đã xóa trạng thái hired)
       'rejected': ApplicationDisplayStatus.NOT_SUITABLE,      // Chưa phù hợp
       'withdrawn': ApplicationDisplayStatus.NOT_SUITABLE,     // Chưa phù hợp
       'offer': ApplicationDisplayStatus.OFFER,                // Gửi đề nghị
@@ -436,7 +432,7 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
     for (let i = 5; i <= 747; i++) {
       const names = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Thị D', 'Hoàng Văn E'];
       const positions = ['Developer', 'Designer', 'Marketing', 'HR', 'Tester'];
-      const statuses = ['received', 'suitable', 'interview', 'offer', 'hired', 'not-suitable']; // Các trạng thái mới
+      const statuses = ['received', 'suitable', 'offer', 'not-suitable']; // Các trạng thái mới
       const sources = ['find-cv', 'topcv-support'];
       const campaigns = [
         { id: '#407764', name: 'Tuyển Nhân viên Tester' },
@@ -838,12 +834,8 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
         return 'status-received'; // Gray - CV tiếp nhận (mặc định)
       case 'suitable':
         return 'status-suitable'; // Orange - Phù hợp
-      case 'interview':
-        return 'status-interview'; // Purple - Hẹn phỏng vấn
       case 'offer':
         return 'status-offer'; // Blue - Gửi đề nghị
-      case 'hired':
-        return 'status-hired'; // Green - Nhận việc
       case 'not-suitable':
         return 'status-not-suitable'; // Red - Chưa phù hợp
       default:

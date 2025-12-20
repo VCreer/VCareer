@@ -107,10 +107,8 @@ namespace VCareer.Constants.JobConstant
     {
         Received = 0,      // CV tiếp nhận
         Suitable = 1,      // Phù hợp
-        Interview = 2,     // Hẹn phỏng vấn
-        Offer = 3,         // Gửi đề nghị
-        Hired = 4,         // Nhận việc
-        NotSuitable = 5    // Chưa phù hợp / Từ chối
+        Offer = 2,         // Gửi đề nghị
+        NotSuitable = 3    // Chưa phù hợp / Từ chối
     }
 
     public enum SortByField
