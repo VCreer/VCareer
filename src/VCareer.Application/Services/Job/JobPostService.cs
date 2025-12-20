@@ -128,23 +128,24 @@ namespace VCareer.Services.Job
                 var childServiceInfos = jobEffects
                  .Where(x => x.Status == ChildServiceStatus.Inactive)
                    .Select(x => new
-                    {
+                   {
                        x.ChildServiceId,
-                        x.User_ChildServiceId
-                    })
+                       x.User_ChildServiceId
+                   })
                    .Distinct()
                    .ToList();
-    
+
                 foreach (var childServiceInfo in childServiceInfos)
                 {
                     var childService = await _childServiceRepository.GetAsync(childServiceInfo.ChildServiceId);
                     if (childService == null) continue;
                     if (childService.Target == ServiceTarget.JobPost && childService.IsEnable)
                         await _effectingJobService.ApplyServiceToJob(
-                            new EffectingJobServiceCreateDto() {
-                            User_ChildServiceId = childServiceInfo.User_ChildServiceId,
-                            ChildServiceId = childServiceInfo.ChildServiceId,
-                            JobPostId = jobPost.Id
+                            new EffectingJobServiceCreateDto()
+                            {
+                                User_ChildServiceId = childServiceInfo.User_ChildServiceId,
+                                ChildServiceId = childServiceInfo.ChildServiceId,
+                                JobPostId = jobPost.Id
                             }
                           );
                 }
@@ -178,7 +179,7 @@ namespace VCareer.Services.Job
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string jobId,string reasonReject)
+        public async Task RejectJobPostAsync(string jobId, string reasonReject)
         {
 
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(jobId));
@@ -540,24 +541,35 @@ namespace VCareer.Services.Job
             var query = await _jobPostRepository.GetQueryableAsync();
             if (dto.EndTime != null) query = query.Where(x => x.ExpiresAt <= dto.EndTime);
             if (dto.StartTime != null) query = query.Where(x => x.ExpiresAt >= dto.StartTime);
-            if (dto.Status != null) query = query.Where(x => x.Status >= dto.Status);
-            if (!string.IsNullOrEmpty(dto.SearchField) &&
-                Guid.TryParse(dto.SearchField, out Guid id))
+            if (dto.Status != null) query = query.Where(x => x.Status == dto.Status);
+            if (!string.IsNullOrEmpty(dto.SearchField))
             {
-                var job = await _jobPostRepository.FindAsync(id);
-                if (job != null)
+                if (Guid.TryParse(dto.SearchField, out Guid id))
                 {
-                    query = query.Where(x => x.Id == id);
+                    var job = await _jobPostRepository.FindAsync(id);
+                    if (job != null)
+                    {
+                        query = query.Where(x => x.Id == id);
+                    }
+                    else
+                    {
+                        var employeeProfile = await _employeeRepository.FindAsync(id);
+                        if (employeeProfile != null)
+                            query = query.Where(x => x.RecruiterId == employeeProfile.Id);
+                    }
                 }
                 else
                 {
-                    var employeeProfile = await _employeeRepository.FindAsync(id);
-                    if (employeeProfile != null)
-                        query = query.Where(x => x.RecruiterId == employeeProfile.Id);
+                    query = query.Where(x => x.Title.Contains(dto.SearchField) || x.CompanyName == dto.SearchField);
                 }
             }
+            var result = await query
+                .OrderByDescending(x => x.ApproveAt)
+                .Skip(dto.Page)
+                .Take(dto.PageSize)
+                .ToListAsync();
 
-            return ObjectMapper.Map<List<Job_Post>, List<JobViewManageDetailDto>>(await query.ToListAsync());
+            return ObjectMapper.Map<List<Job_Post>, List<JobViewManageDetailDto>>(result);
 
 
         }
