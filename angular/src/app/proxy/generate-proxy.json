@@ -3218,43 +3218,6 @@
               },
               "allowAnonymous": true,
               "implementFrom": "VCareer.Controllers.TaxCodeValidationController"
-            },
-            "GetCompanyInfoByTaxCode": {
-              "uniqueName": "GetCompanyInfoByTaxCode",
-              "name": "GetCompanyInfo",
-              "httpMethod": "GET",
-              "url": "api/app/tax-code/company-info/{taxCode}",
-              "supportedVersions": [],
-              "parametersOnMethod": [
-                {
-                  "name": "taxCode",
-                  "typeAsString": "System.String, System.Private.CoreLib",
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null
-                }
-              ],
-              "parameters": [
-                {
-                  "nameOnMethod": "taxCode",
-                  "name": "taxCode",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": [],
-                  "bindingSourceId": "Path",
-                  "descriptorName": ""
-                }
-              ],
-              "returnValue": {
-                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
-                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
-              },
-              "allowAnonymous": true,
-              "implementFrom": "VCareer.Controllers.TaxCodeValidationController"
             }
           }
         },
@@ -5386,6 +5349,43 @@
               },
               "allowAnonymous": false,
               "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
+            },
+            "DownloadCvAsyncById": {
+              "uniqueName": "DownloadCvAsyncById",
+              "name": "DownloadCvAsync",
+              "httpMethod": "GET",
+              "url": "api/cv/candidates/{id}/download",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "id",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "id",
+                  "name": "id",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "Microsoft.AspNetCore.Mvc.IActionResult",
+                "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
+              },
+              "allowAnonymous": false,
+              "implementFrom": "VCareer.HttpApi.Controllers.CandidateCvController"
             }
           }
         },
@@ -6641,7 +6641,7 @@
                 "type": "VCareer.Dto.Profile.CompanyLegalInfoDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyLegalInfoDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "GetCurrentUserCompanyLegalInfoAsync": {
@@ -6976,7 +6976,7 @@
                 "type": "Microsoft.AspNetCore.Mvc.IActionResult",
                 "typeSimple": "Microsoft.AspNetCore.Mvc.IActionResult"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "DeleteCompanyLegalInfoAsyncById": {
@@ -7050,7 +7050,7 @@
                 "type": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto",
                 "typeSimple": "VCareer.Dto.Profile.CompanyInfoForJobDetailDto"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": true,
               "implementFrom": "VCareer.Profile.CompanyLegalInfoController"
             },
             "GetPendingCompaniesAsyncByInput": {
@@ -8962,6 +8962,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "DownloadCvAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "cvId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Byte[]",
+                    "typeSimple": "[number]"
+                  }
                 }
               ]
             }
@@ -9492,6 +9509,43 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.CV.ICandidateCvAppService"
+            },
+            "DownloadCvAsyncByCvId": {
+              "uniqueName": "DownloadCvAsyncByCvId",
+              "name": "DownloadCvAsync",
+              "httpMethod": "POST",
+              "url": "api/app/candidate-cv/download-cv/{cvId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "cvId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "cvId",
+                  "name": "cvId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Byte[]",
+                "typeSimple": "[number]"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.CV.ICandidateCvAppService"

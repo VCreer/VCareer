@@ -28,6 +28,14 @@ export class CandidateCvService {
     { apiName: this.apiName,...config });
   
 
+  downloadCv = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'GET',
+      url: `/api/cv/candidates/${id}/download`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ActionResult<CandidateCvDto>>({
       method: 'GET',

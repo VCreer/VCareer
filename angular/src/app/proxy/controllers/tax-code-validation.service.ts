@@ -9,14 +9,6 @@ export class TaxCodeValidationService {
   apiName = 'Default';
   
 
-  getCompanyInfoByTaxCode = (taxCode: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
-      method: 'GET',
-      url: `/api/app/tax-code/company-info/${taxCode}`,
-    },
-    { apiName: this.apiName,...config });
-  
-
   validateTaxCodeByTaxCode = (taxCode: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, IActionResult>({
       method: 'GET',

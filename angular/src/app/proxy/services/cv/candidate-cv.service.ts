@@ -27,6 +27,14 @@ export class CandidateCvService {
     { apiName: this.apiName,...config });
   
 
+  downloadCv = (cvId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'POST',
+      url: `/api/app/candidate-cv/download-cv/${cvId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CandidateCvDto>({
       method: 'GET',

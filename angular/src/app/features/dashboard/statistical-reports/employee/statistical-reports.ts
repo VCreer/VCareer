@@ -16,7 +16,15 @@ import { JobPostService } from '../../../../proxy/services/job';
 import { JobStatus } from '../../../../proxy/constants/job-constant/job-status.enum';
 import { UserService } from '../../../../proxy/services/user/user.service';
 import { SubcriptionPriceService } from '../../../../proxy/services/subcription';
-import { JobRequestViewDto, JobViewManageDetailDto } from '../../../../proxy/dto/job-dto';
+import { JobRequestViewDto, JobViewManageDetailDto, JobApproveViewDto, JobFilterDto } from '../../../../proxy/dto/job-dto';
+
+// Interface chung để xử lý cả 3 loại job
+interface UnifiedJob {
+  id?: string;
+  status?: JobStatus;
+  approveAt?: string;
+  postedAt?: string;
+}
 
 @Component({
   selector: 'app-statistical-reports',
@@ -225,46 +233,198 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
         break;
     }
 
-    // Lấy TẤT CẢ job đã duyệt (Open) - không filter thời gian ở API
-    // Sẽ filter theo approveAt ở frontend
-    const requestDto: JobRequestViewDto = {
-      status: JobStatus.Open,
-      // Không truyền startTime và endTime để lấy tất cả
-      page: 1,
-      pageSize: 10000, // Lấy tất cả dữ liệu
-    };
+    // Lấy TẤT CẢ job: Pending, Open, và Rejected
+    let pendingJobs: JobApproveViewDto[] = [];
+    let openJobs: JobViewManageDetailDto[] = [];
+    let rejectedJobs: JobViewManageDetailDto[] = [];
+    let completedRequests = 0;
 
-    this.jobPostService.getJobPostManageByDto(requestDto).subscribe({
-      next: (jobs: JobViewManageDetailDto[]) => {
-        console.log('Total jobs loaded from API:', jobs?.length || 0);
+    const processAllJobs = () => {
+      completedRequests++;
+      if (completedRequests === 3) {
+        // Merge tất cả job lại
+        const allJobs = this.mergeAllJobs(pendingJobs, openJobs, rejectedJobs);
+        console.log('Total jobs loaded:', {
+          pending: pendingJobs.length,
+          open: openJobs.length,
+          rejected: rejectedJobs.length,
+          total: allJobs.length
+        });
+        console.log('Selected period:', this.selectedPeriod);
+        console.log('Date range:', { 
+          start: startDate.toISOString(), 
+          end: endDate.toISOString(),
+          startLocal: startDate.toLocaleString('vi-VN'),
+          endLocal: endDate.toLocaleString('vi-VN')
+        });
         
-        // Filter theo khoảng thời gian dựa trên approveAt ở frontend
-        const filteredJobs = this.filterJobsByPeriod(jobs || [], startDate, endDate);
+        // Filter theo khoảng thời gian
+        const filteredJobs = this.filterJobsByPeriod(allJobs, startDate, endDate);
         console.log('Filtered jobs by period:', filteredJobs.length);
         
         // Group dữ liệu theo khoảng thời gian
         this.chartData = this.groupJobsByPeriod(filteredJobs, this.selectedPeriod);
+        console.log('Chart data:', this.chartData);
+        
+        // Tính tổng số job trong biểu đồ để so sánh
+        const totalInChart = this.chartData.reduce((sum, item) => sum + item.value, 0);
+        console.log('Total jobs in chart:', totalInChart);
+        console.log('Expected total (from filtered):', filteredJobs.length);
+      }
+    };
+
+    // Lấy job Pending
+    const pendingFilter: JobFilterDto = {
+      page: 1,
+      pageSize: 10000
+    };
+    this.jobPostService.showJobPostNeedApproveByDto(pendingFilter).subscribe({
+      next: (jobs: JobApproveViewDto[]) => {
+        pendingJobs = jobs || [];
+        processAllJobs();
       },
       error: (error) => {
-        console.error('Error loading chart data:', error);
-        // Fallback về empty data
-        this.chartData = [];
+        console.error('Error loading pending jobs:', error);
+        processAllJobs();
+      }
+    });
+
+    // Lấy job Open (đã duyệt)
+    const openRequest: JobRequestViewDto = {
+      status: JobStatus.Open,
+      page: 1,
+      pageSize: 10000
+    };
+    this.jobPostService.getJobPostManageByDto(openRequest).subscribe({
+      next: (jobs: JobViewManageDetailDto[]) => {
+        openJobs = jobs || [];
+        processAllJobs();
+      },
+      error: (error) => {
+        console.error('Error loading open jobs:', error);
+        processAllJobs();
+      }
+    });
+
+    // Lấy job Rejected
+    const rejectedRequest: JobRequestViewDto = {
+      status: JobStatus.Rejected,
+      page: 1,
+      pageSize: 10000
+    };
+    this.jobPostService.getJobPostManageByDto(rejectedRequest).subscribe({
+      next: (jobs: JobViewManageDetailDto[]) => {
+        rejectedJobs = jobs || [];
+        processAllJobs();
+      },
+      error: (error) => {
+        console.error('Error loading rejected jobs:', error);
+        processAllJobs();
       }
     });
   }
 
-  private filterJobsByPeriod(jobs: JobViewManageDetailDto[], startDate: Date, endDate: Date): JobViewManageDetailDto[] {
-    return jobs.filter(job => {
-      // Chỉ lấy job có approveAt và nằm trong khoảng thời gian
-      if (!job.approveAt) {
+  private mergeAllJobs(
+    pendingJobs: JobApproveViewDto[], 
+    openJobs: JobViewManageDetailDto[], 
+    rejectedJobs: JobViewManageDetailDto[]
+  ): UnifiedJob[] {
+    const allJobs: UnifiedJob[] = [];
+    
+    // Thêm Pending jobs (dùng postedAt)
+    pendingJobs.forEach(job => {
+      allJobs.push({
+        id: job.id,
+        status: JobStatus.Pending,
+        postedAt: job.postedAt
+      });
+    });
+    
+    // Thêm Open jobs (dùng approveAt)
+    openJobs.forEach(job => {
+      allJobs.push({
+        id: job.id,
+        status: JobStatus.Open,
+        approveAt: job.approveAt,
+        postedAt: job.postedAt
+      });
+    });
+    
+    // Thêm Rejected jobs (dùng approveAt)
+    rejectedJobs.forEach(job => {
+      allJobs.push({
+        id: job.id,
+        status: JobStatus.Rejected,
+        approveAt: job.approveAt,
+        postedAt: job.postedAt
+      });
+    });
+    
+    return allJobs;
+  }
+
+  private filterJobsByPeriod(jobs: UnifiedJob[], startDate: Date, endDate: Date): UnifiedJob[] {
+    const filtered = jobs.filter(job => {
+      // Xác định trường thời gian dựa trên status
+      // Pending: dùng postedAt
+      // Open/Rejected: dùng approveAt (nếu có), nếu không thì dùng postedAt
+      let dateStr: string | undefined;
+      
+      if (job.status === JobStatus.Pending) {
+        dateStr = job.postedAt;
+      } else {
+        // Open hoặc Rejected: ưu tiên approveAt, nếu không có thì dùng postedAt
+        dateStr = job.approveAt || job.postedAt;
+      }
+      
+      if (!dateStr) {
+        console.log('Job has no date field:', { id: job.id, status: job.status });
         return false;
       }
-      const approveDate = new Date(job.approveAt);
-      return approveDate >= startDate && approveDate <= endDate;
+      
+      const jobDate = new Date(dateStr);
+      const jobTime = jobDate.getTime();
+      const startTime = startDate.getTime();
+      const endTime = endDate.getTime();
+      
+      const isInRange = jobTime >= startTime && jobTime <= endTime;
+      
+      if (!isInRange) {
+        console.log('Job filtered out:', {
+          id: job.id,
+          status: job.status,
+          dateField: job.status === JobStatus.Pending ? 'postedAt' : (job.approveAt ? 'approveAt' : 'postedAt'),
+          dateValue: dateStr,
+          dateTime: jobTime,
+          startTime: startTime,
+          endTime: endTime,
+          isBefore: jobTime < startTime,
+          isAfter: jobTime > endTime
+        });
+      } else {
+        console.log('Job included:', {
+          id: job.id,
+          status: job.status,
+          dateField: job.status === JobStatus.Pending ? 'postedAt' : (job.approveAt ? 'approveAt' : 'postedAt'),
+          dateValue: dateStr
+        });
+      }
+      
+      return isInRange;
     });
+    
+    console.log(`Filtered ${filtered.length} jobs from ${jobs.length} total jobs`);
+    console.log('Date range for filter:', {
+      start: startDate.toISOString(),
+      end: endDate.toISOString(),
+      startLocal: startDate.toLocaleString('vi-VN'),
+      endLocal: endDate.toLocaleString('vi-VN')
+    });
+    
+    return filtered;
   }
 
-  private groupJobsByPeriod(jobs: JobViewManageDetailDto[], period: 'today' | 'week' | 'month' | 'year'): BarChartData[] {
+  private groupJobsByPeriod(jobs: UnifiedJob[], period: 'today' | 'week' | 'month' | 'year'): BarChartData[] {
     if (!jobs || jobs.length === 0) {
       return this.getEmptyChartData(period);
     }
@@ -283,34 +443,49 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private groupByHours(jobs: JobViewManageDetailDto[]): BarChartData[] {
+  private groupByHours(jobs: UnifiedJob[]): BarChartData[] {
     const hourGroups: { [key: number]: number } = {};
-    const hours = [0, 4, 8, 12, 16, 20];
+    // Group theo khoảng giờ: 0-3h, 4-7h, 8-11h, 12-15h, 16-19h, 20-23h
+    const hourRanges = [
+      { start: 0, end: 3, label: '0-3h' },
+      { start: 4, end: 7, label: '4-7h' },
+      { start: 8, end: 11, label: '8-11h' },
+      { start: 12, end: 15, label: '12-15h' },
+      { start: 16, end: 19, label: '16-19h' },
+      { start: 20, end: 23, label: '20-23h' }
+    ];
     
-    // Khởi tạo tất cả giờ với giá trị 0
-    hours.forEach(h => hourGroups[h] = 0);
+    // Khởi tạo tất cả khoảng giờ với giá trị 0
+    hourRanges.forEach((range, index) => {
+      hourGroups[index] = 0;
+    });
 
     jobs.forEach(job => {
-      // Chỉ sử dụng approveAt từ bảng JobPost
-      if (job.approveAt) {
-        const date = new Date(job.approveAt);
+      // Xác định trường thời gian dựa trên status
+      const dateStr = job.status === JobStatus.Pending 
+        ? job.postedAt 
+        : (job.approveAt || job.postedAt);
+      
+      if (dateStr) {
+        const date = new Date(dateStr);
         const hour = date.getHours();
-        // Tìm giờ gần nhất trong mảng hours
-        const nearestHour = hours.reduce((prev, curr) => 
-          Math.abs(curr - hour) < Math.abs(prev - hour) ? curr : prev
-        );
-        hourGroups[nearestHour] = (hourGroups[nearestHour] || 0) + 1;
+        
+        // Tìm khoảng giờ phù hợp
+        const rangeIndex = hourRanges.findIndex(range => hour >= range.start && hour <= range.end);
+        if (rangeIndex !== -1) {
+          hourGroups[rangeIndex] = (hourGroups[rangeIndex] || 0) + 1;
+        }
       }
     });
 
-    return hours.map(h => ({
-      label: `${h}h`,
-      value: hourGroups[h] || 0,
+    return hourRanges.map((range, index) => ({
+      label: range.label,
+      value: hourGroups[index] || 0,
       color: '#0F83BA'
     }));
   }
 
-  private groupByDaysOfWeek(jobs: JobViewManageDetailDto[]): BarChartData[] {
+  private groupByDaysOfWeek(jobs: UnifiedJob[]): BarChartData[] {
     const dayGroups: { [key: number]: number } = {};
     const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     
@@ -320,9 +495,13 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     }
 
     jobs.forEach(job => {
-      // Chỉ sử dụng approveAt từ bảng JobPost
-      if (job.approveAt) {
-        const date = new Date(job.approveAt);
+      // Xác định trường thời gian dựa trên status
+      const dateStr = job.status === JobStatus.Pending 
+        ? job.postedAt 
+        : (job.approveAt || job.postedAt);
+      
+      if (dateStr) {
+        const date = new Date(dateStr);
         const dayOfWeek = date.getDay(); // 0 = CN, 1 = T2, ...
         dayGroups[dayOfWeek] = (dayGroups[dayOfWeek] || 0) + 1;
       }
@@ -335,33 +514,44 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     }));
   }
 
-  private groupByWeeksOfMonth(jobs: JobViewManageDetailDto[]): BarChartData[] {
+  private groupByWeeksOfMonth(jobs: UnifiedJob[]): BarChartData[] {
     const weekGroups: { [key: number]: number } = {};
     
-    // Khởi tạo 4 tuần
-    for (let i = 1; i <= 4; i++) {
+    // Khởi tạo 5 tuần (tháng có thể có 5 tuần)
+    for (let i = 1; i <= 5; i++) {
       weekGroups[i] = 0;
     }
 
     jobs.forEach(job => {
-      // Chỉ sử dụng approveAt từ bảng JobPost
-      if (job.approveAt) {
-        const date = new Date(job.approveAt);
+      // Xác định trường thời gian dựa trên status
+      const dateStr = job.status === JobStatus.Pending 
+        ? job.postedAt 
+        : (job.approveAt || job.postedAt);
+      
+      if (dateStr) {
+        const date = new Date(dateStr);
         const dayOfMonth = date.getDate();
+        
+        // Tính tuần dựa trên số ngày từ đầu tháng
+        // Tuần 1: ngày 1-7, Tuần 2: ngày 8-14, Tuần 3: ngày 15-21, Tuần 4: ngày 22-28, Tuần 5: ngày 29-31
         const weekNumber = Math.ceil(dayOfMonth / 7);
-        const week = Math.min(weekNumber, 4); // Tối đa 4 tuần
+        const week = Math.min(weekNumber, 5); // Tối đa 5 tuần
         weekGroups[week] = (weekGroups[week] || 0) + 1;
       }
     });
 
-    return [1, 2, 3, 4].map(week => ({
+    // Chỉ hiển thị các tuần có dữ liệu hoặc ít nhất 4 tuần
+    const weeksWithData = Object.keys(weekGroups).filter(w => weekGroups[parseInt(w)] > 0).map(w => parseInt(w));
+    const maxWeek = Math.max(...weeksWithData, 4);
+    
+    return Array.from({ length: maxWeek }, (_, i) => i + 1).map(week => ({
       label: `Tuần ${week}`,
       value: weekGroups[week] || 0,
       color: '#0F83BA'
     }));
   }
 
-  private groupByMonthsOfYear(jobs: JobViewManageDetailDto[]): BarChartData[] {
+  private groupByMonthsOfYear(jobs: UnifiedJob[]): BarChartData[] {
     const monthGroups: { [key: number]: number } = {};
     
     // Khởi tạo 12 tháng
@@ -370,9 +560,13 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     }
 
     jobs.forEach(job => {
-      // Chỉ sử dụng approveAt từ bảng JobPost
-      if (job.approveAt) {
-        const date = new Date(job.approveAt);
+      // Xác định trường thời gian dựa trên status
+      const dateStr = job.status === JobStatus.Pending 
+        ? job.postedAt 
+        : (job.approveAt || job.postedAt);
+      
+      if (dateStr) {
+        const date = new Date(dateStr);
         const month = date.getMonth() + 1; // 1-12
         monthGroups[month] = (monthGroups[month] || 0) + 1;
       }
@@ -388,7 +582,14 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
   private getEmptyChartData(period: 'today' | 'week' | 'month' | 'year'): BarChartData[] {
     switch (period) {
       case 'today':
-        return [0, 4, 8, 12, 16, 20].map(h => ({ label: `${h}h`, value: 0, color: '#0F83BA' }));
+        return [
+          { label: '0-3h', value: 0, color: '#0F83BA' },
+          { label: '4-7h', value: 0, color: '#0F83BA' },
+          { label: '8-11h', value: 0, color: '#0F83BA' },
+          { label: '12-15h', value: 0, color: '#0F83BA' },
+          { label: '16-19h', value: 0, color: '#0F83BA' },
+          { label: '20-23h', value: 0, color: '#0F83BA' }
+        ];
       case 'week':
         return ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(day => ({ label: day, value: 0, color: '#0F83BA' }));
       case 'month':
