@@ -115,13 +115,28 @@ namespace VCareer.Services.Job
             if (jobEffects != null && jobEffects.Count > 0)
             {
                 //chay nhung cai child service ko tu auto active de tranh  bi lap logic 
-                var childServiceIds = jobEffects.Where(x => x.Status == ChildServiceStatus.Inactive).Select(x => x.ChildServiceId).Distinct().ToList();
-                foreach (var childServiceId in childServiceIds)
+                var childServiceInfos = jobEffects
+                 .Where(x => x.Status == ChildServiceStatus.Inactive)
+                   .Select(x => new
+                    {
+                       x.ChildServiceId,
+                        x.User_ChildServiceId
+                    })
+                   .Distinct()
+                   .ToList();
+    
+                foreach (var childServiceInfo in childServiceInfos)
                 {
-                    var childService = await _childServiceRepository.GetAsync(childServiceId);
+                    var childService = await _childServiceRepository.GetAsync(childServiceInfo.ChildServiceId);
                     if (childService == null) continue;
                     if (childService.Target == ServiceTarget.JobPost && childService.IsEnable)
-                        await _effectingJobService.AddJobBoostLogic(jobPost.Id, childServiceId);
+                        await _effectingJobService.ApplyServiceToJob(
+                            new EffectingJobServiceCreateDto() {
+                            User_ChildServiceId = childServiceInfo.User_ChildServiceId,
+                            ChildServiceId = childServiceInfo.ChildServiceId,
+                            JobPostId = jobPost.Id
+                            }
+                          );
                 }
             }
             await _jobPostRepository.UpdateAsync(jobPost, true);
@@ -130,7 +145,7 @@ namespace VCareer.Services.Job
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string jobId)
+        public async Task RejectJobPostAsync(string jobId,string reasonReject)
         {
 
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(jobId));
@@ -140,6 +155,7 @@ namespace VCareer.Services.Job
             if (user == null) throw new BusinessException("owner of this jobpost not found");
 
             jobPost.Status = JobStatus.Rejected;
+            jobPost.RejectedReason = reasonReject;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             // logic tra lai luot dung khi bi reject

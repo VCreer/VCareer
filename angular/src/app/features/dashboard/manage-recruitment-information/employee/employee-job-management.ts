@@ -580,27 +580,28 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   }
 
   onSubmitReject(): void {
-    if (!this.selectedJob || !this.isPendingJob(this.selectedJob)) return;
-    
-    const targetId = this.selectedJob.id ? String(this.selectedJob.id) : '';
-    if (!targetId || !this.rejectReason.trim()) {
-      this.showErrorToast('Vui lòng nhập lý do từ chối');
-      return;
-    }
-
-    this.jobPostService.rejectJobPost(targetId).subscribe({
-      next: () => {
-        this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
-        this.onCloseRejectModal();
-        this.onCloseDetail();
-        this.updateSummaryCounts();
-        this.loadJobPostings();
-      },
-      error: () => {
-        this.showErrorToast('Từ chối tin tuyển dụng thất bại');
-      }
-    });
+  if (!this.selectedJob || !this.isPendingJob(this.selectedJob)) return;
+  
+  const targetId = this.selectedJob.id ? String(this.selectedJob.id) : '';
+  if (!targetId || !this.rejectReason.trim()) {
+    this.showErrorToast('Vui lòng nhập lý do từ chối');
+    return;
   }
+
+  // Thêm rejectReason vào API call
+  this.jobPostService.rejectJobPost(targetId, this.rejectReason).subscribe({
+    next: () => {
+      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+      this.onCloseRejectModal();
+      this.onCloseDetail();
+      this.updateSummaryCounts();
+      this.loadJobPostings();
+    },
+    error: () => {
+      this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+    }
+  });
+}
 
   onViewRejectReason(posting: JobApproveViewDto | JobViewManageDetailDto): void {
     this.viewingRejectReasonJob = posting;

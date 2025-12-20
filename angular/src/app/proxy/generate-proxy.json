@@ -11594,7 +11594,15 @@
                   "name": "RejectJobPostAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "jobId",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reasonReject",
                       "typeAsString": "System.String, System.Private.CoreLib",
                       "type": "System.String",
                       "typeSimple": "string",
@@ -11816,8 +11824,8 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
-            "RejectJobPostAsyncByJobId": {
-              "uniqueName": "RejectJobPostAsyncByJobId",
+            "RejectJobPostAsyncByJobIdAndReasonReject": {
+              "uniqueName": "RejectJobPostAsyncByJobIdAndReasonReject",
               "name": "RejectJobPostAsync",
               "httpMethod": "POST",
               "url": "api/app/job-post/reject-job-post/{jobId}",
@@ -11825,6 +11833,14 @@
               "parametersOnMethod": [
                 {
                   "name": "jobId",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reasonReject",
                   "typeAsString": "System.String, System.Private.CoreLib",
                   "type": "System.String",
                   "typeSimple": "string",
@@ -11843,6 +11859,18 @@
                   "defaultValue": null,
                   "constraintTypes": [],
                   "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reasonReject",
+                  "name": "reasonReject",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
