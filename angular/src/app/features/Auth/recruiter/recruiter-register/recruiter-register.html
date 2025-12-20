@@ -66,6 +66,16 @@
             formControlName="fullName"
           ></app-input-field>
 
+          <!-- Giới tính -->
+          <app-select-field
+            label="Giới tính"
+            placeholder="Chọn giới tính"
+            [options]="genderOptions"
+            [error]="getFieldError('gender')"
+            [required]="true"
+            formControlName="gender"
+          ></app-select-field>
+
           <!-- Số điện thoại cá nhân -->
           <app-input-field
             label="Số điện thoại cá nhân"
@@ -96,6 +106,26 @@
             [required]="true"
             formControlName="taxCode"
           ></app-input-field>
+
+          <!-- Tỉnh/Thành phố -->
+          <app-select-field
+            label="Tỉnh/Thành phố"
+            placeholder="Chọn tỉnh/thành phố"
+            [options]="cityOptions"
+            [error]="getFieldError('city')"
+            [required]="true"
+            formControlName="city"
+          ></app-select-field>
+
+          <!-- Quận/Huyện -->
+          <app-select-field
+            label="Quận/Huyện"
+            placeholder="Chọn quận/huyện"
+            [options]="districtOptions"
+            [error]="getFieldError('district')"
+            [required]="true"
+            formControlName="district"
+          ></app-select-field>
 
           <!-- Đồng ý điều khoản -->
           <div class="form-group">

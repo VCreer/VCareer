@@ -250,6 +250,10 @@ export interface UpdatePersonalInfoDto {
   workLocation?: string;
 }
 
+export interface UploadCompanyLogoInputDto {
+  file: IFormFile;
+}
+
 export interface UploadLegalDocumentInputDto {
   file: IFormFile;
 }

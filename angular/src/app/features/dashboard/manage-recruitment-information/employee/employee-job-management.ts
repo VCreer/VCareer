@@ -439,7 +439,7 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.jobPostService.rejectJobPost(targetId, this.rejectReason).subscribe({
+    this.jobPostService.rejectJobPost(targetId).subscribe({
       next: () => {
         this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
         this.onCloseRejectModal();

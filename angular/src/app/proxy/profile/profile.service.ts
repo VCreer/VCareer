@@ -53,6 +53,15 @@ export class ProfileService {
     { apiName: this.apiName,...config });
   
 
+  updateJobStatus = (isSeekingJob: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'PUT',
+      url: '/api/profile/job-status',
+      body: isSeekingJob,
+    },
+    { apiName: this.apiName,...config });
+  
+
   updatePersonalInfo = (input: UpdatePersonalInfoDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, IActionResult>({
       method: 'PUT',
@@ -67,14 +76,6 @@ export class ProfileService {
       method: 'PUT',
       url: '/api/profile/profile-visibility',
       body: isVisible,
-    },
-    { apiName: this.apiName,...config });
-
-  updateJobStatus = (isSeekingJob: boolean, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, IActionResult>({
-      method: 'PUT',
-      url: '/api/profile/job-status',
-      body: isSeekingJob,
     },
     { apiName: this.apiName,...config });
   

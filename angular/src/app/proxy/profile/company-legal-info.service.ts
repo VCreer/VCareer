@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, CompanyVerificationFilterDto, CompanyVerificationViewDto, RejectCompanyDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, UploadLegalDocumentInputDto } from '../dto/profile/models';
+import type { CompanyInfoForJobDetailDto, CompanyLegalInfoDto, CompanySearchInputDto, CompanyVerificationFilterDto, CompanyVerificationViewDto, RejectCompanyDto, SubmitCompanyLegalInfoDto, UpdateCompanyLegalInfoDto, UploadCompanyLogoInputDto, UploadLegalDocumentInputDto } from '../dto/profile/models';
 import type { ActionResult, IActionResult } from '../microsoft/asp-net-core/mvc/models';
 
 @Injectable({
@@ -39,6 +39,15 @@ export class CompanyLegalInfoService {
     this.restService.request<any, CompanyLegalInfoDto>({
       method: 'GET',
       url: `/api/profile/company-legal-info/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getCompanyLogo = (storagePath: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, IActionResult>({
+      method: 'GET',
+      url: '/api/profile/company-legal-info/company-logo',
+      params: { storagePath },
     },
     { apiName: this.apiName,...config });
   
@@ -140,20 +149,20 @@ export class CompanyLegalInfoService {
     { apiName: this.apiName,...config });
   
 
+  uploadCompanyLogo = (id: number, input: UploadCompanyLogoInputDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CompanyLegalInfoDto>({
+      method: 'POST',
+      url: `/api/profile/company-legal-info/${id}/upload-logo`,
+      body: input.file,
+    },
+    { apiName: this.apiName,...config });
+  
+
   uploadLegalDocument = (id: number, input: UploadLegalDocumentInputDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CompanyLegalInfoDto>({
       method: 'POST',
       url: `/api/profile/company-legal-info/${id}/upload-legal-document`,
       body: input.file,
-    },
-    { apiName: this.apiName,...config });
-
-
-  uploadCompanyLogo = (id: number, file: File, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, CompanyLegalInfoDto>({
-      method: 'POST',
-      url: `/api/profile/company-legal-info/${id}/upload-logo`,
-      body: file,
     },
     { apiName: this.apiName,...config });
 
