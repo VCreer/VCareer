@@ -3,6 +3,7 @@ export { InputFieldComponent } from './input-field/input-field';
 export { PasswordFieldComponent } from './password-field/password-field';
 export { ButtonComponent } from './button/button';
 export { ToastNotificationComponent } from './toast-notification/toast-notification';
+export { ToastContainerComponent } from './toast-container/toast-container';
 export { LogoSectionComponent } from './logo-section/logo-section';
 export { ProfileHeaderComponent } from './profile-header/profile-header';
 export { ProfileAvatarComponent } from './profile-avatar/profile-avatar';

@@ -670,10 +670,6 @@ namespace VCareer.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("BusinessLicenseNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("CompanyCode")
                         .HasColumnType("nvarchar(max)");
 
@@ -802,10 +798,6 @@ namespace VCareer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BusinessLicenseNumber")
-                        .IsUnique()
-                        .HasFilter("[BusinessLicenseNumber] IS NOT NULL");
 
                     b.HasIndex("TaxCode")
                         .IsUnique()

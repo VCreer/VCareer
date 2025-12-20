@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthRedirectGuard } from './guards/auth-redirect.guard';
 import { AuthGuard } from './guards/auth.guard';
+import { LeaderRecruiterVerifiedGuard } from './guards/leader-recruiter-verified.guard';
 
 export const APP_ROUTES: Routes = [
   //#region Public Routes - Không yêu cầu đăng nhập
@@ -236,7 +237,15 @@ export const APP_ROUTES: Routes = [
             c => c.UploadedCvViewComponent
           ),
       },
-
+     {
+        path: 'job',
+        loadComponent: () => import('./features/job/candidate/job').then(c => c.JobComponent),
+      },
+      {
+        path: 'job-detail/:id',
+        loadComponent: () =>
+          import('./features/job-detail/candidate/job-detail').then(c => c.JobDetailComponent),
+      },
       {
         path: 'companies',
         redirectTo: 'company',
@@ -338,6 +347,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'job-posting',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/job-posting/recruiter/job-posting').then(
             c => c.JobPostingComponent
@@ -359,6 +369,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'recruitment-report',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/recruitment-report/recruiter/recruitment-report').then(
             c => c.RecruitmentReportComponent
@@ -373,6 +384,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'cv-management',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/cv-management/recruiter/cv-management').then(
             c => c.RecruiterCvManagementComponent
@@ -387,6 +399,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'recruitment-campaign',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/recruitment-campaign/recruiter/recruitment-campaign').then(
             c => c.RecruitmentCampaignComponent
@@ -415,6 +428,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'buy-services',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/buy-service/recruiter/buy-services').then(
             c => c.BuyServicesComponent
@@ -447,6 +461,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'my-services',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/service/recruiter/my-services').then(
             c => c.MyServicesComponent
@@ -468,6 +483,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'activity-history',
+        canActivate: [LeaderRecruiterVerifiedGuard],
         loadComponent: () =>
           import('./features/dashboard/history-of-activities/recruiter/history-of-activities').then(
             c => c.HistoryOfActivitiesComponent

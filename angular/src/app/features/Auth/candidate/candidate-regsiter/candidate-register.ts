@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CustomAuthService } from '../../../../core/services/custom-auth.service';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
@@ -21,6 +21,7 @@ import { finalize } from 'rxjs/operators';
   imports: [
     ReactiveFormsModule, 
     CommonModule,
+    RouterLink,
     InputFieldComponent,
     PasswordFieldComponent,
     ButtonComponent,
@@ -198,6 +199,11 @@ export class RegisterComponent implements OnInit {
 
   navigateToLogin() {
     this.router.navigate(['/candidate/login']);
+  }
+
+  navigateToTermsOfService(event: Event) {
+    event.preventDefault();
+    window.open('/candidate/terms-of-service', '_blank');
   }
 
   async signUpWithGoogle() {

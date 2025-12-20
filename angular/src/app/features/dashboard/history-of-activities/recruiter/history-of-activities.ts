@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivityLogService } from 'src/app/proxy/http-api/controllers'; 
+import { ActivityLogService } from '../../../../proxy/http-api/controllers/activity-log.service';
 import type { ActivityLogWithStaffDto, ActivityLogFilterDto } from '../../../../proxy/dto/activity-log-dto/models';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
 import type { StaffListItemDto } from '../../../../proxy/dto/team-management-dto/models';
@@ -224,6 +224,7 @@ export class HistoryOfActivitiesComponent implements OnInit, OnDestroy {
       'JobPosted': 'Đăng công việc',
       'JobUpdated': 'Cập nhật công việc',
       'JobDeleted': 'Xóa công việc',
+      'CandidateEvaluated': 'Đánh giá ứng viên',
       'Login': 'Đăng nhập',
       'Logout': 'Đăng xuất'
     };

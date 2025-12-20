@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VCareer.Constants.JobConstant;
 using VCareer.Dto.Category;
 using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Category;
+using VCareer.IRepositories.Job;
 using VCareer.IServices.IJobServices;
+using VCareer.Models.Job;
 using VCareer.Models.JobCategory;
 using VCareer.Permission;
 using Volo.Abp.Application.Services;
@@ -17,10 +21,14 @@ namespace VCareer.Services.Job
     public class JobCategoryAppService : ApplicationService, IJobCategoryAppService
     {
         private readonly IJobCategoryRepository _categoryRepository;
+        private readonly IJobPostRepository _jobPostRepository;
 
-        public JobCategoryAppService(IJobCategoryRepository categoryRepository)
+        public JobCategoryAppService(
+            IJobCategoryRepository categoryRepository,
+            IJobPostRepository jobPostRepository)
         {
             _categoryRepository = categoryRepository;
+            _jobPostRepository = jobPostRepository;
         }
         [Authorize(VCareerPermission.JobCategory.Create)]
         public async Task CreateCategoryAsync(CategoryUpdateCreateDto dto)
@@ -106,6 +114,9 @@ namespace VCareer.Services.Job
                 {
                     // Get path từ root đến leaf
                     var fullPath = await _categoryRepository.GetStringPath(leafCategory.Id);
+                    
+                    // Tính job count từ số lượng job thực tế
+                    var actualJobCount = await CalculateActualJobCountAsync(leafCategory.Id);
 
                     var dto = new CategoryTreeDto
                     {
@@ -114,7 +125,7 @@ namespace VCareer.Services.Job
                         Slug = leafCategory.Slug,
                         Description = leafCategory.Description,
                         FullPath = fullPath,
-                        JobCount = leafCategory.JobCount,
+                        JobCount = actualJobCount,
                         IsLeaf = true,
                         Children = new List<CategoryTreeDto>() // Leaf không có children
                     };
@@ -151,14 +162,7 @@ namespace VCareer.Services.Job
             Job_Category entity,
             string currentPath)
         {
-            // Tính job count bao gồm cả children
-            var totalJobCount = entity.JobCount;
-            if (entity.Children != null && entity.Children.Any())
-            {
-                totalJobCount += entity.Children.Sum(c => CalculateTotalJobCount(c));
-            }
-
-            // Tạo DTO
+            // Tạo DTO trước
             var dto = new CategoryTreeDto
             {
                 CategoryId = entity.Id,
@@ -166,12 +170,12 @@ namespace VCareer.Services.Job
                 Slug = entity.Slug,
                 Description = entity.Description,
                 FullPath = currentPath,
-                JobCount = totalJobCount,
+                JobCount = 0, // Sẽ được tính sau
                 IsLeaf = entity.Children == null || !entity.Children.Any(),
                 Children = new List<CategoryTreeDto>()
             };
 
-            // Nếu có children → recursive build
+            // Nếu có children → recursive build trước
             if (entity.Children != null && entity.Children.Any())
             {
                 foreach (var child in entity.Children)
@@ -186,19 +190,35 @@ namespace VCareer.Services.Job
                 }
             }
 
+            // Tính job count: job của chính category này + tổng job count từ tất cả children
+            var ownJobCount = await CalculateActualJobCountAsync(entity.Id);
+            var childrenJobCount = dto.Children.Sum(c => c.JobCount);
+            dto.JobCount = ownJobCount + childrenJobCount;
+
             return dto;
         }
-        /// Tính tổng số job bao gồm cả children (đệ quy)
-        private int CalculateTotalJobCount(Job_Category category)
+        
+        /// Tính số lượng job thực tế từ bảng Job_Post cho một category
+        /// Chỉ đếm các job có Status = Open và không bị xóa
+        private async Task<int> CalculateActualJobCountAsync(Guid categoryId)
         {
-            var total = category.JobCount;
-
-            if (category.Children != null && category.Children.Any())
+            try
             {
-                total += category.Children.Sum(c => CalculateTotalJobCount(c));
+                var query = await _jobPostRepository.GetQueryableAsync();
+                var count = await query
+                    .Where(j => j.JobCategoryId == categoryId 
+                        && j.Status == JobStatus.Open 
+                        && !j.IsDeleted
+                        && (j.ExpiresAt == null || j.ExpiresAt > DateTime.UtcNow))
+                    .CountAsync();
+                return count;
             }
-
-            return total;
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Error calculating job count for category {CategoryId}", categoryId);
+                return 0;
+            }
         }
+        
     }
 }

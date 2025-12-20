@@ -219,6 +219,7 @@
                 [totalCount]="relatedJobs.length"
                 [isLoading]="false"
                 [provinces]="provinces"
+                [hideQuickView]="true"
                 (jobClick)="navigateToJob($event)"
               ></app-job-list>
             </div>
@@ -237,13 +238,13 @@
         <div class="job-detail__company" *ngIf="companyInfo && !isLoadingCompany && !companyError">
           <div class="company-logo">
             <img
-              *ngIf="companyInfo.logoUrl && companyInfo.logoUrl.trim() && getLogoUrl(companyInfo.logoUrl)"
+              *ngIf="companyInfo.logoUrl && companyInfo.logoUrl.trim()"
               [src]="getLogoUrl(companyInfo.logoUrl)"
               [alt]="companyInfo.companyName || 'Company Logo'"
               class="company-logo-img"
-              (error)="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex';"
+              (error)="$event.target.src='assets/images/home/company-placeholder.png'; $event.target.onerror=null;"
             />
-            <div class="logo-box" [style.display]="(!companyInfo.logoUrl || !companyInfo.logoUrl.trim() || !getLogoUrl(companyInfo.logoUrl)) ? 'flex' : 'none'">
+            <div class="logo-box" [style.display]="(!companyInfo.logoUrl || !companyInfo.logoUrl.trim()) ? 'flex' : 'none'">
               {{ getCompanyInitials(companyInfo.companyName) }}
             </div>
           </div>
@@ -307,6 +308,16 @@
             <i class="fa fa-briefcase"></i>
             <span class="label">{{ translate('job_detail.work_type') }}:</span>
             <span>{{ getEmploymentTypeVi(jobDetail.employmentType) }}</span>
+          </div>
+          <div class="info-item" *ngIf="getFullLocation() && getFullLocation() !== 'Không xác định'">
+            <i class="fa fa-map-marker-alt"></i>
+            <span class="label">Địa điểm làm việc:</span>
+            <span>{{ getFullLocation() }}</span>
+          </div>
+          <div class="info-item" *ngIf="jobDetail.workLocation && jobDetail.workLocation.trim()">
+            <i class="fa fa-building"></i>
+            <span class="label">Địa chỉ cụ thể:</span>
+            <span [innerHTML]="jobDetail.workLocation"></span>
           </div>
         </div>
 

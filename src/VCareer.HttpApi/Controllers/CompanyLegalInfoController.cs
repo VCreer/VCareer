@@ -93,10 +93,12 @@ namespace VCareer.Profile
 
         /// <summary>
         /// Gets company legal information by ID
+        /// Public endpoint - không yêu cầu authentication để hiển thị thông tin công ty
         /// </summary>
         /// <param name="id">Company ID</param>
         /// <returns>Company legal information</returns>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             return await _companyLegalInfoAppService.GetCompanyLegalInfoAsync(id);
@@ -189,10 +191,12 @@ namespace VCareer.Profile
 
         /// <summary>
         /// Download/Xem file logo công ty theo storagePath
+        /// Public endpoint - không yêu cầu authentication
         /// </summary>
         /// <param name="storagePath">Giá trị lưu trong Company.LogoUrl</param>
         /// <returns>File stream</returns>
         [HttpGet("company-logo")]
+        [AllowAnonymous]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> GetCompanyLogoAsync([FromQuery] string storagePath)
         {
@@ -216,8 +220,14 @@ namespace VCareer.Profile
             return NoContent();
         }
 
-        ///lấy công ty
+        /// <summary>
+        /// Lấy thông tin công ty theo Job ID
+        /// Public endpoint - không yêu cầu authentication
+        /// </summary>
+        /// <param name="jobId">Job ID</param>
+        /// <returns>Thông tin công ty</returns>
         [HttpGet("by-job/{jobId}")]
+        [AllowAnonymous]
         public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
         {
             return await _companyLegalInfoAppService.GetCompanyByJobIdAsync(jobId);

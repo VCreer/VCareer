@@ -69,27 +69,21 @@ export class CandidateHeaderComponent implements OnInit {
     const hasValidUser = this.isValidUser(this.currentUser);
     this.isLoggedIn = serviceLoggedIn && hasValidUser;
     
-    console.log('[CandidateHeader] OnInit - serviceLoggedIn:', serviceLoggedIn, 'hasValidUser:', hasValidUser, 'isLoggedIn:', this.isLoggedIn);
-    
     // Subscribe to authentication state changes
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
-      console.log('[CandidateHeader] isLoggedIn changed to:', isLoggedIn);
       // Only update if we also have a valid user, otherwise force to false
       const currentUser = this.authStateService.user;
       const hasValidUser = this.isValidUser(currentUser);
       this.isLoggedIn = isLoggedIn && hasValidUser;
-      console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
     });
 
     // Subscribe to current user changes
     this.authStateService.user$.subscribe(user => {
-      console.log('[CandidateHeader] user changed:', user);
       this.currentUser = user;
       // Update isLoggedIn based on both user validity and service state
       const serviceLoggedIn = this.navigationService.isLoggedIn();
       const hasValidUser = this.isValidUser(user);
       this.isLoggedIn = serviceLoggedIn && hasValidUser;
-      console.log('[CandidateHeader] Updated isLoggedIn to:', this.isLoggedIn, 'hasValidUser:', hasValidUser);
       
       if (this.isLoggedIn && hasValidUser) {
         this.loadProfileData();
@@ -255,27 +249,20 @@ export class CandidateHeaderComponent implements OnInit {
 
   loadNotifications() {
     if (!this.isLoggedIn) {
-      console.log('[Notification] User not logged in, skipping load');
       return;
     }
     
-    console.log('[Notification] Loading notifications for Candidate role');
     this.isLoadingNotifications = true;
     // Load only 3 notifications for popup, sorted by creationTime DESC (newest first)
     this.notificationService.getNotifications('Candidate', 0, 3)
       .pipe(
         catchError(error => {
           console.error('[Notification] Error loading notifications:', error);
-          console.error('[Notification] Error details:', error.error, error.status, error.statusText);
           return of({ items: [], totalCount: 0, unreadCount: 0 });
         })
       )
       .subscribe({
         next: (result) => {
-          console.log('[Notification] Received notifications:', result);
-          console.log('[Notification] Items count:', result.items?.length || 0);
-          console.log('[Notification] Total count:', result.totalCount);
-          console.log('[Notification] Unread count:', result.unreadCount);
           
           // Sort by creationTime DESC (newest first) to ensure newest notifications appear at top
           const sortedItems = (result.items || []).sort((a, b) => {
@@ -298,22 +285,18 @@ export class CandidateHeaderComponent implements OnInit {
 
   loadUnreadCount() {
     if (!this.isLoggedIn) {
-      console.log('[Notification] User not logged in, skipping unread count');
       return;
     }
     
-    console.log('[Notification] Loading unread count for Candidate role');
     this.notificationService.getUnreadCount('Candidate')
       .pipe(
         catchError(error => {
           console.error('[Notification] Error loading unread count:', error);
-          console.error('[Notification] Error details:', error.error, error.status, error.statusText);
           return of(0);
         })
       )
       .subscribe({
         next: (count) => {
-          console.log('[Notification] Unread count:', count);
           this.unreadCount = count;
         },
         error: (error) => {

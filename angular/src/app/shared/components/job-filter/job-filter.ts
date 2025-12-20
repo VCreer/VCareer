@@ -185,7 +185,6 @@ export class JobFilterComponent implements OnInit {
       salaryFilter: selectedSalary && selectedSalary.value !== null ? selectedSalary.value : null,
     };
     
-    console.log('🔧 JobFilter emitting:', filters);
     this.filterChange.emit(filters);
   }
 }

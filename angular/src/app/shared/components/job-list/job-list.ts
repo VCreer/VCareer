@@ -6,6 +6,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -16,6 +17,8 @@ import { Router } from '@angular/router';
 import { GeoService } from '../../../core/services/Geo.service';
 import { ExperienceLevel } from '../../../proxy/constants/job-constant/experience-level.enum';
 import { JobSearchService } from '../../../proxy/services/job/job-search.service';
+import { CompanyService } from '../../../apiTest/api/company.service';
+import { environment } from '../../../../environments/environment';
 // Import trực tiếp để tránh circular dependency
 //import { LoginModalComponent } from '../../services/login-modal/login-modal';
 
@@ -33,6 +36,7 @@ export class JobListComponent implements OnInit, OnChanges {
   @Input() isLoading: boolean = false; // ✅ Loading state
   @Input() selectedJobId: number | null = null;
   @Input() provinces: any[] = []; // ✅ Provinces để lookup province name
+  @Input() hideQuickView: boolean = false; // ✅ Ẩn quick-view button khi ở trang job-detail
 
   @Output() searchJobs = new EventEmitter<any>();
   @Output() pageChange = new EventEmitter<number>();
@@ -57,12 +61,20 @@ export class JobListComponent implements OnInit, OnChanges {
   filteredJobs: any[] = [];
   searchParams: any = {};
 
+  // Logo handling
+  defaultLogo = 'assets/images/home/company-placeholder.png';
+  private companyLogoCache: Map<number, string> = new Map();
+  private companyNameCache: Map<number, string> = new Map(); // Cache company name
+  private loadingCompanyIds: Set<number> = new Set();
+
   constructor(
     private translationService: TranslationService,
     private navigationService: NavigationService,
     private router: Router,
     private geoService: GeoService,
-    private jobSearchService: JobSearchService
+    private jobSearchService: JobSearchService,
+    private companyService: CompanyService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -93,7 +105,25 @@ export class JobListComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     // Khi danh sách job thay đổi → remap lại filteredJobs
     if (changes['jobs'] && this.jobs) {
+      // Clear cache cũ để đảm bảo load logo mới cho mỗi lần danh sách thay đổi
+      this.companyLogoCache.clear();
+      this.companyNameCache.clear(); // Clear company name cache
+      this.loadingCompanyIds.clear();
+      
       this.updateFilteredJobs();
+      
+      // Load logo cho các job không có companyImageUrl
+      const companyIdsToLoad = new Set<number>();
+      this.jobs.forEach((job: any) => {
+        if (!job.companyImageUrl && job.companyId) {
+          companyIdsToLoad.add(job.companyId);
+        }
+      });
+      
+      // Load logo cho tất cả các companyId cần thiết
+      companyIdsToLoad.forEach(companyId => {
+        this.loadCompanyLogo(companyId);
+      });
     }
     
     // Khi provinces thay đổi từ rỗng sang có dữ liệu → remap lại filteredJobs
@@ -172,10 +202,10 @@ export class JobListComponent implements OnInit, OnChanges {
   private mapJobToTemplateFormat(job: any): any {
     return {
       ...job,
-      // Map logo
-      logo: job.companyImageUrl || 'assets/images/vng.png',
-      // Map company name (bỏ "Tập đoàn" prefix vì template đã có)
-      company: job.companyName || 'N/A',
+      // Map logo - sử dụng hàm getCompanyLogoUrl để xử lý đúng
+      logo: this.getCompanyLogoUrl(job.companyImageUrl, job.companyId),
+      // Map company name - ưu tiên từ cache, nếu không có thì dùng từ job.companyName
+      company: this.getCompanyName(job.companyName, job.companyId) || 'N/A',
       // Map salary
       salaryText: this.formatSalary(job),
       // Map province name (cần lookup từ provinceCode). Nếu không tìm được, template sẽ fallback 'N/A'.
@@ -183,6 +213,159 @@ export class JobListComponent implements OnInit, OnChanges {
       // Map experience
       experienceText: this.formatExperience(job.experience) || 'N/A',
     };
+  }
+
+  /**
+   * Build full URL cho logo công ty
+   * Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+   * Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
+   */
+  getCompanyLogoUrl(logoUrl: string | undefined | null, companyId?: number): string {
+    // Nếu có logoUrl, sử dụng nó
+    if (logoUrl && logoUrl.trim() !== '') {
+      let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+      
+      if (cleanUrl !== '') {
+        // Nếu đã là full URL (http/https), return as is
+        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+          return cleanUrl;
+        }
+
+        // Build URL từ storage path
+        const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+        const normalizedBase = baseUrl.replace(/\/$/, '');
+        const encodedStoragePath = encodeURIComponent(cleanUrl);
+        return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
+      }
+    }
+
+    // Nếu không có logoUrl nhưng có companyId
+    if (companyId) {
+      // Nếu đã cache, dùng cache
+      if (this.companyLogoCache.has(companyId)) {
+        return this.companyLogoCache.get(companyId)!;
+      }
+
+      // Nếu chưa cache và chưa đang load, load logo async
+      if (!this.loadingCompanyIds.has(companyId)) {
+        this.loadCompanyLogo(companyId);
+      }
+    }
+
+    return this.defaultLogo;
+  }
+
+  /**
+   * Load logo từ companyId và cache lại
+   */
+  private loadCompanyLogo(companyId: number): void {
+    // Tránh gọi API nhiều lần cho cùng một companyId
+    if (this.companyLogoCache.has(companyId) || this.loadingCompanyIds.has(companyId)) {
+      return;
+    }
+
+    // Đánh dấu đang load
+    this.loadingCompanyIds.add(companyId);
+    // Tạm thời set default logo để hiển thị ngay
+    this.companyLogoCache.set(companyId, this.defaultLogo);
+
+    this.companyService.getCompanyById(companyId).subscribe({
+      next: (company) => {
+        // Cache logo
+        if (company.logoUrl && company.logoUrl.trim() !== '') {
+          const logoUrl = this.buildLogoUrlFromStoragePath(company.logoUrl);
+          this.companyLogoCache.set(companyId, logoUrl);
+        } else {
+          this.companyLogoCache.set(companyId, this.defaultLogo);
+        }
+        
+        // Cache company name - ưu tiên từ API để đảm bảo đồng bộ
+        if (company.companyName && company.companyName.trim() !== '') {
+          let cleanName = company.companyName.trim();
+          // Remove single quotes if present
+          if (cleanName.startsWith("'") && cleanName.endsWith("'")) {
+            cleanName = cleanName.slice(1, -1);
+          }
+          this.companyNameCache.set(companyId, cleanName);
+        }
+        
+        // Force update view để hiển thị logo và company name mới
+        this.filteredJobs = this.filteredJobs.map(job => {
+          if (job.companyId === companyId) {
+            const updatedJob: any = { ...job };
+            // Update logo
+            if (this.companyLogoCache.has(companyId)) {
+              updatedJob.logo = this.companyLogoCache.get(companyId);
+            }
+            // Update company name
+            if (this.companyNameCache.has(companyId)) {
+              updatedJob.company = this.companyNameCache.get(companyId);
+            }
+            return updatedJob;
+          }
+          return job;
+        });
+        this.cdr.detectChanges();
+        
+        // Remove khỏi loading set
+        this.loadingCompanyIds.delete(companyId);
+      },
+      error: (error) => {
+        console.warn(`[JobList] Failed to load logo for company ${companyId}:`, error);
+        // Đảm bảo dùng placeholder khi load logo thất bại
+        this.companyLogoCache.set(companyId, this.defaultLogo);
+        this.cdr.detectChanges();
+        this.loadingCompanyIds.delete(companyId);
+      }
+    });
+  }
+
+  /**
+   * Get company name - ưu tiên từ cache, nếu không có thì dùng từ job.companyName
+   */
+  private getCompanyName(companyName: string | undefined | null, companyId?: number): string | null {
+    // Nếu có companyId và đã có trong cache, dùng cache
+    if (companyId && this.companyNameCache.has(companyId)) {
+      return this.companyNameCache.get(companyId) || null;
+    }
+    
+    // Nếu không có cache, dùng companyName từ job (có thể cũ)
+    if (companyName && companyName.trim() !== '') {
+      let cleanName = companyName.trim();
+      // Remove single quotes if present
+      if (cleanName.startsWith("'") && cleanName.endsWith("'")) {
+        cleanName = cleanName.slice(1, -1);
+      }
+      return cleanName;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Build URL từ storage path
+   */
+  private buildLogoUrlFromStoragePath(storagePath: string): string {
+    if (!storagePath || storagePath.trim() === '') {
+      return this.defaultLogo;
+    }
+
+    let cleanUrl = storagePath.trim().replace(/^'|'$/g, '');
+    
+    if (cleanUrl === '') {
+      return this.defaultLogo;
+    }
+
+    // Nếu đã là full URL, return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Build URL từ storage path
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   /**
@@ -550,6 +733,10 @@ export class JobListComponent implements OnInit, OnChanges {
   }
 
   showQuickViewButton(): boolean {
+    // Ẩn quick-view button nếu hideQuickView = true (trang job-detail)
+    if (this.hideQuickView) {
+      return false;
+    }
     return this.selectedJobId === null;
   }
 }

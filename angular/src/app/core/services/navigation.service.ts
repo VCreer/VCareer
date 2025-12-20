@@ -35,7 +35,6 @@ export class NavigationService {
     // CRITICAL: Subscribe vào user changes từ AuthStateService
     // APP_INITIALIZER đã load user rồi, chỉ cần lắng nghe thay đổi
     this.authStateService.user$.subscribe(user => {
-      console.log('[NavigationService] User changed in authStateService:', user);
       this.updateAuthStateFromUser(user);
       
       // Reload verification status khi user data được update (sau khi đăng nhập lại)

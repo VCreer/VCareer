@@ -86,11 +86,16 @@ export class CompanyDetailComponent implements OnInit {
     const idForApi = this.companyId;
     this.companyApi.getCompanyById(idForApi).subscribe({
       next: (dto: CompanyLegalInfoDto) => {
+        console.log('Company DTO received:', dto);
+        console.log('LogoUrl from API:', dto.logoUrl);
+        const processedLogoUrl = this.getLogoUrl(dto.logoUrl);
+        console.log('Processed LogoUrl:', processedLogoUrl);
+        
         this.company = {
           id: String(dto.id),
           name: dto.companyName || '',
           fullName: dto.companyName || '',
-          logoUrl: this.getLogoUrl(dto.logoUrl),
+          logoUrl: processedLogoUrl,
           bannerImage: dto.coverImageUrl ? this.buildLogoUrl(dto.coverImageUrl) : undefined,
           website: dto.websiteUrl || undefined,
           employees: dto.companySize || 0,
@@ -100,9 +105,11 @@ export class CompanyDetailComponent implements OnInit {
           isProCompany: true,
           isFollowing: false,
         };
+        console.log('Final company object:', this.company);
         this.isLoading = false;
       },
-      error: _ => {
+      error: (error) => {
+        console.error('Error loading company detail:', error);
         this.isLoading = false;
       },
     });
@@ -113,31 +120,37 @@ export class CompanyDetailComponent implements OnInit {
     return backendUrl.replace(/\/$/, '');
   }
 
-  getLogoUrl(logoUrl: string | undefined): string {
-    if (!logoUrl) {
-      return '/assets/images/default-company-logo.png';
+  getLogoUrl(logoUrl: string | undefined | null): string {
+    // Kiểm tra null, undefined, hoặc empty string
+    if (!logoUrl || logoUrl.trim() === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
     // Remove single quotes if present
-    let cleanUrl = logoUrl.trim();
-    if (cleanUrl.startsWith("'") && cleanUrl.endsWith("'")) {
-      cleanUrl = cleanUrl.slice(1, -1);
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    // Nếu sau khi clean vẫn empty, return default
+    if (cleanUrl === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
-    // Nếu đã là full URL, return as is
+    // Nếu đã là full URL (http/https), return as is
     if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
       return cleanUrl;
     }
 
-    // Nếu bắt đầu bằng /, đó là relative path từ wwwroot
-    if (cleanUrl.startsWith('/')) {
-      const backendBaseUrl = this.getBackendBaseUrl();
-      return `${backendBaseUrl}${cleanUrl}`;
-    }
+    // Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+    // Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+
+    // Encode storagePath để tránh lỗi URL
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   private buildLogoUrl(path?: string): string {
-    if (!path) return 'assets/images/default-company.png';
+    if (!path) return 'assets/images/home/company-placeholder.png';
     const trimmed = path.trim().replace(/^'|'$/g, '');
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
     const base = (window as any).environment?.apis?.default?.url || '';

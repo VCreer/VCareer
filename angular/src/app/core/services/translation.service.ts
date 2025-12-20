@@ -556,7 +556,13 @@ export class TranslationService {
       'saved_jobs.no_jobs_title': 'Chưa có việc làm đã lưu',
       'saved_jobs.no_jobs_description': 'Bạn chưa lưu việc làm nào. Hãy duyệt và lưu những việc làm phù hợp với bạn.',
       'saved_jobs.browse_jobs': 'Duyệt việc làm',
-      'saved_jobs.loading': 'Đang tải...'
+      'saved_jobs.loading': 'Đang tải...',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Xác nhận xóa',
+      'confirm_delete.message': 'Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.',
+      'confirm_delete.cancel': 'Hủy',
+      'confirm_delete.delete': 'Xóa'
     },
     en: {
       // Breadcrumb
@@ -1102,7 +1108,13 @@ export class TranslationService {
       'saved_jobs.no_jobs_title': 'No saved jobs yet',
       'saved_jobs.no_jobs_description': 'You haven\'t saved any jobs yet. Browse and save jobs that match your interests.',
       'saved_jobs.browse_jobs': 'Browse Jobs',
-      'saved_jobs.loading': 'Loading...'
+      'saved_jobs.loading': 'Loading...',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Confirm Delete',
+      'confirm_delete.message': 'Are you sure you want to delete this item? This action cannot be undone.',
+      'confirm_delete.cancel': 'Cancel',
+      'confirm_delete.delete': 'Delete'
       ,
       // Category names (extra pages)
       'Sản xuất': 'Manufacturing',

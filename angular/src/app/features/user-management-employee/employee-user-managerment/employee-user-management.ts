@@ -387,6 +387,7 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
     // Gọi API lấy danh sách userId theo RoleType Employee = 1
     this.userService.getUsersInfoByRole(1).subscribe({
       next: async (users) => {
+        console.log('Employee users loaded:', users);
         const mapped: EmployeeUser[] = (users || []).map(u => {
           const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
           const extra = (u as any).extraProperties || {};
@@ -427,10 +428,13 @@ export class EmployeeUserManagementComponent implements OnInit, OnDestroy {
         await Promise.all(rolePromises);
 
         this.allUsers = mapped;
+        console.log('Mapped employee users:', this.allUsers);
         this.applyFilters();
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading employee users:', error);
         this.allUsers = [];
+        this.showToastMessage('Không thể tải danh sách người dùng. Vui lòng thử lại sau.', 'error');
         this.applyFilters();
       }
     });

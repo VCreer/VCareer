@@ -62,9 +62,6 @@ export class NotificationService {
     if (isRead !== undefined) {
       params = params.set('isRead', isRead.toString());
     }
-
-    console.log('[NotificationService] Calling API:', this.apiUrl);
-    console.log('[NotificationService] Params:', params.toString());
     
     return this.http.get<NotificationListDto>(this.apiUrl, { 
       params,
@@ -74,8 +71,6 @@ export class NotificationService {
 
   getUnreadCount(userRole: string): Observable<number> {
     const params = new HttpParams().set('userRole', userRole);
-    console.log('[NotificationService] Calling unread count API:', `${this.apiUrl}/unread-count`);
-    console.log('[NotificationService] Params:', params.toString());
     return this.http.get<number>(`${this.apiUrl}/unread-count`, { 
       params,
       withCredentials: true // Đảm bảo gửi cookies để authenticate
@@ -129,8 +124,6 @@ export class NotificationService {
 
   deleteAllNotifications(userRole: string): Observable<void> {
     const params = new HttpParams().set('userRole', userRole);
-    console.log('[NotificationService] Deleting all notifications for role:', userRole);
-    console.log('[NotificationService] API URL:', `${this.apiUrl}/all`);
     return this.http.delete<void>(`${this.apiUrl}/all`, { 
       params,
       withCredentials: true
@@ -147,9 +140,6 @@ export class NotificationService {
     relatedEntityId?: string;
     metadata?: string;
   }): Observable<NotificationDto> {
-    console.log('[NotificationService] Creating notification:', notification);
-    console.log('[NotificationService] API URL:', this.apiUrl);
-    
     return this.http.post<NotificationDto>(this.apiUrl, notification, {
       withCredentials: true
     });

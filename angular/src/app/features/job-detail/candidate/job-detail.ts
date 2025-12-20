@@ -631,34 +631,30 @@ export class JobDetailComponent implements OnInit {
   }
 
   /**
-   * Get full logo URL từ backend wwwroot
+   * Get full logo URL từ backend API endpoint
+   * Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+   * Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
    */
-  getLogoUrl(logoUrl: string | undefined): string {
-    if (!logoUrl) {
-      return '/assets/images/default-company-logo.png';
+  getLogoUrl(logoUrl: string | undefined | null): string {
+    if (!logoUrl || logoUrl.trim() === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
-    let cleanUrl = logoUrl.trim();
-    if (cleanUrl.startsWith("'") && cleanUrl.endsWith("'")) {
-      cleanUrl = cleanUrl.slice(1, -1);
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    if (cleanUrl === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
+    // Nếu đã là full URL (http/https), return as is
     if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
       return cleanUrl;
     }
 
-    if (cleanUrl.startsWith('/')) {
-      const backendBaseUrl = this.getBackendBaseUrl();
-      return `${backendBaseUrl}${cleanUrl}`;
-    }
-
-    const backendBaseUrl = this.getBackendBaseUrl();
-    return `${backendBaseUrl}/${cleanUrl}`;
-  }
-
-  private getBackendBaseUrl(): string {
-    const backendUrl = environment.apis?.default?.url || 'https://localhost:44385';
-    return backendUrl.replace(/\/$/, '');
+    // Sử dụng API endpoint để lấy logo từ blob storage
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   /**

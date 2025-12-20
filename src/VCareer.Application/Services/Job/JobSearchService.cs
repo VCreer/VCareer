@@ -8,6 +8,7 @@ using VCareer.Constants.JobConstant;
 using VCareer.Dto.Job;
 using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
+using VCareer.IRepositories.ICompanyRepository;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Companies;
 using VCareer.Models.Job;
@@ -34,6 +35,7 @@ namespace VCareer.Services.Job
         private readonly IRepository<CandidateProfile, Guid> _candidateProfileRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IdentityUserManager _userManager;
+        private readonly ICompanyRepository _companyRepository;
 
         public JobSearchService(
                 IJobPostRepository jobPostingRepository,
@@ -42,7 +44,8 @@ namespace VCareer.Services.Job
                 ISavedJobRepository savedJobRepository,
                 IRepository<CandidateProfile, Guid> candidateProfileRepository,
                 ICurrentUser currentUser,
-                IdentityUserManager userManager)
+                IdentityUserManager userManager,
+                ICompanyRepository companyRepository)
         {
             _jobPostingRepository = jobPostingRepository;
             _luceneIndexer = luceneIndexer;
@@ -51,8 +54,7 @@ namespace VCareer.Services.Job
             _currentUser = currentUser;
             _userManager = userManager;
               _savedJobRepository = savedJobRepository;
-            //_companyRepository = companyRepository;
-            //_recruiterRepository = recruiterRepository;
+            _companyRepository = companyRepository;
         }
         [DisableAuditing]
         public async Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
@@ -73,7 +75,25 @@ namespace VCareer.Services.Job
                 .ToList();
 
             if (orderedJobs.Count == 0) return new List<JobViewDto>();
-            return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
+            
+            // Map jobs to DTOs
+            var jobViewDtos = ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
+            
+            // Load Company names from Companies table
+            var companyIds = jobViewDtos.Select(j => j.CompanyId).Distinct().ToList();
+            var companies = await _companyRepository.GetListAsync(c => companyIds.Contains(c.Id));
+            var companyDict = companies.ToDictionary(c => c.Id, c => c.CompanyName);
+            
+            // Update CompanyName from Companies table
+            foreach (var jobDto in jobViewDtos)
+            {
+                if (companyDict.TryGetValue(jobDto.CompanyId, out var companyName))
+                {
+                    jobDto.CompanyName = companyName;
+                }
+            }
+            
+            return jobViewDtos;
         }
         [DisableAuditing]
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
@@ -94,6 +114,7 @@ namespace VCareer.Services.Job
 
             var jobs = await SearchJobsAsync(jobSearchInput);
             jobs = jobs.Where(x => x.Id != jobId).Take(maxCount).ToList();
+            // CompanyName đã được load từ Companies trong SearchJobsAsync
             return jobs;
         }
         public async Task ReindexAllJobsAsync()
@@ -156,14 +177,32 @@ namespace VCareer.Services.Job
             if (job == null) throw new Volo.Abp.BusinessException($"Job với slug '{slug}' không tồn tại hoặc đã bị xóa.");
             await _jobPostingRepository.IncrementViewCountAsync(job.Id);
 
-            return ObjectMapper.Map<Job_Post, JobViewDetail>(job);
+            var jobViewDetail = ObjectMapper.Map<Job_Post, JobViewDetail>(job);
+            
+            // Load CompanyName from Companies table
+            var company = await _companyRepository.FindAsync(job.CompanyId);
+            if (company != null)
+            {
+                jobViewDetail.CompanyName = company.CompanyName;
+            }
+            
+            return jobViewDetail;
         }
         public async Task<JobViewDetail> GetJobByIdAsync(Guid jobId)
         {
             var job = await _jobPostingRepository.FindAsync(jobId);
             if (job == null) throw new Volo.Abp.BusinessException($"Job với ID '{jobId}' không tồn tại hoặc đã bị xóa.");
 
-            return ObjectMapper.Map<Job_Post, JobViewDetail>(job);
+            var jobViewDetail = ObjectMapper.Map<Job_Post, JobViewDetail>(job);
+            
+            // Load CompanyName from Companies table
+            var company = await _companyRepository.FindAsync(job.CompanyId);
+            if (company != null)
+            {
+                jobViewDetail.CompanyName = company.CompanyName;
+            }
+            
+            return jobViewDetail;
         }
 
 
@@ -292,12 +331,28 @@ namespace VCareer.Services.Job
 
             // Map sang DTO
             var items = new List<SavedJobDto>();
+            
+            // Load Company names from Companies table
+            var companyIds = savedJobs
+                .Where(s => s.JobPosting != null)
+                .Select(s => s.JobPosting.CompanyId)
+                .Distinct()
+                .ToList();
+            var companies = await _companyRepository.GetListAsync(c => companyIds.Contains(c.Id));
+            var companyDict = companies.ToDictionary(c => c.Id, c => c.CompanyName);
+            
             foreach (var savedJob in savedJobs)
             {
                 var job = savedJob.JobPosting;
                 if (job == null) continue;
 
                 var jobViewDto = ObjectMapper.Map<Job_Post, JobViewDto>(job);
+                
+                // Update CompanyName from Companies table
+                if (companyDict.TryGetValue(job.CompanyId, out var companyName))
+                {
+                    jobViewDto.CompanyName = companyName;
+                }
 
                 items.Add(new SavedJobDto
                 {

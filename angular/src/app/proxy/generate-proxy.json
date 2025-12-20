@@ -34798,18 +34798,6 @@
           "regex": null
         },
         {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "BusinessLicenseIssueDate",
           "jsonName": null,
           "type": "System.DateTime?",
@@ -35150,18 +35138,6 @@
         },
         {
           "name": "TaxCode",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -36181,18 +36157,6 @@
           "regex": null
         },
         {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": true,
-          "minLength": 0,
-          "maxLength": 100,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
           "name": "BusinessLicenseIssueDate",
           "jsonName": null,
           "type": "System.DateTime?",
@@ -36413,18 +36377,6 @@
           "isRequired": false,
           "minLength": 0,
           "maxLength": 50,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "BusinessLicenseNumber",
-          "jsonName": null,
-          "type": "System.String",
-          "typeSimple": "string",
-          "isRequired": false,
-          "minLength": 0,
-          "maxLength": 100,
           "minimum": null,
           "maximum": null,
           "regex": null

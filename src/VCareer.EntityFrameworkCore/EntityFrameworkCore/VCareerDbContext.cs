@@ -336,21 +336,19 @@ public class VCareerDbContext :
             .HasForeignKey(x => x.CompanyId)
             .IsRequired();
 
-            // Legal Information fields configuration
-            c.Property(x => x.TaxCode).HasMaxLength(50);
-            c.Property(x => x.BusinessLicenseNumber).HasMaxLength(100);
-            c.Property(x => x.BusinessLicenseIssuePlace).HasMaxLength(255);
-            c.Property(x => x.LegalRepresentative).HasMaxLength(255);
-            c.Property(x => x.BusinessLicenseFile).HasMaxLength(500);
-            c.Property(x => x.TaxCertificateFile).HasMaxLength(500);
-            c.Property(x => x.RepresentativeIdCardFile).HasMaxLength(500);
-            c.Property(x => x.OtherSupportFile).HasMaxLength(500);
-            c.Property(x => x.LegalVerificationStatus).HasMaxLength(50);
+               // Legal Information fields configuration
+               c.Property(x => x.TaxCode).HasMaxLength(50);
+               c.Property(x => x.BusinessLicenseIssuePlace).HasMaxLength(255);
+               c.Property(x => x.LegalRepresentative).HasMaxLength(255);
+               c.Property(x => x.BusinessLicenseFile).HasMaxLength(500);
+               c.Property(x => x.TaxCertificateFile).HasMaxLength(500);
+               c.Property(x => x.RepresentativeIdCardFile).HasMaxLength(500);
+               c.Property(x => x.OtherSupportFile).HasMaxLength(500);
+               c.Property(x => x.LegalVerificationStatus).HasMaxLength(50);
 
-            // Unique constraints
-            c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
-            c.HasIndex(x => x.BusinessLicenseNumber).IsUnique().HasFilter("[BusinessLicenseNumber] IS NOT NULL");
-        });
+               // Unique constraints
+               c.HasIndex(x => x.TaxCode).IsUnique().HasFilter("[TaxCode] IS NOT NULL");
+           });
         // ========== CV Template Configuration ==========
         builder.Entity<CvTemplate>(template =>
         {

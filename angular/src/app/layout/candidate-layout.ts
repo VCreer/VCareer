@@ -6,6 +6,7 @@ import { HeaderWrapperComponent } from '../features/header/header-wrapper';
 import { FooterComponent } from '../features/footer/candidate/footer';
 import { RecruiterFooterComponent } from '../features/footer/recruiter/footer';
 import { NavigationService } from '../core/services/navigation.service';
+import { ToastContainerComponent } from '../shared/components/toast-container/toast-container';
 
 @Component({
   selector: 'app-candidate-layout',
@@ -16,6 +17,7 @@ import { NavigationService } from '../core/services/navigation.service';
     HeaderWrapperComponent,
     FooterComponent,
     RecruiterFooterComponent,
+    ToastContainerComponent,
   ],
   templateUrl: './candidate-layout.html',
   styleUrls: ['./candidate-layout.scss']
