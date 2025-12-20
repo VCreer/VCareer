@@ -74,6 +74,12 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
   isLoadingPermissions = false;
   isSaving = false;
 
+  // ✅ THÊM: Debounce timer và flag để ngăn multiple requests
+  private saveDebounceTimer?: any;
+  private lastSaveTimestamp = 0;
+  private readonly DEBOUNCE_TIME = 300; // 300ms debounce
+  private readonly MIN_SAVE_INTERVAL = 1000; // 1 giây giữa các lần save
+
   constructor(
     private readonly userService: UserService,
   ) {}
@@ -90,6 +96,10 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.sidebarCheckInterval) {
       clearInterval(this.sidebarCheckInterval);
+    }
+    // ✅ THÊM: Clear debounce timer
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
     }
   }
 
@@ -176,6 +186,10 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
   onSelectRole(role: RoleViewModel): void {
     if (this.selectedRole && this.selectedRole.id === role.id) {
       return;
+    }
+    // ✅ THÊM: Cancel any pending save when switching roles
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
     }
     this.selectedRole = role;
     this.loadPermissionsForRole(role);
@@ -353,26 +367,68 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
     return this.expandedPermissionGroups.has(groupId);
   }
 
+  // ✅ SỬA: Thêm debounce và check time interval
   onSavePermissions(): void {
+    // Validate role
     if (!this.selectedRole || !this.selectedRole.name) {
       this.showToastMessage('Vui lòng chọn một vai trò', 'error');
       return;
     }
-    
+
+    // ✅ Check if already saving
+    if (this.isSaving) {
+      console.warn('Save already in progress, ignoring duplicate request');
+      return;
+    }
+
+    // ✅ Check time interval to prevent rapid clicks
+    const now = Date.now();
+    const timeSinceLastSave = now - this.lastSaveTimestamp;
+    if (timeSinceLastSave < this.MIN_SAVE_INTERVAL) {
+      console.warn(`Save too soon after last save (${timeSinceLastSave}ms), ignoring`);
+      this.showToastMessage('Vui lòng đợi một chút trước khi lưu lại', 'warning');
+      return;
+    }
+
+    // ✅ Clear any existing debounce timer
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
+    }
+
+    // ✅ Set debounce timer
+    this.saveDebounceTimer = setTimeout(() => {
+      this.executeSave();
+    }, this.DEBOUNCE_TIME);
+  }
+
+  // ✅ THÊM: Separate method for actual save execution
+  private executeSave(): void {
+    if (!this.selectedRole || !this.selectedRole.name) {
+      return;
+    }
+
+    // ✅ Double check - if already saving, abort
+    if (this.isSaving) {
+      console.warn('Already saving, aborting duplicate request');
+      return;
+    }
+
     this.isSaving = true;
+    this.lastSaveTimestamp = Date.now();
+    
     const currentRole = { ...this.selectedRole };
     const permissions = Array.from(this.selectedPermissions);
     
-    // Debug: Log để xem permissions gửi đi
     console.log('Saving permissions for role:', currentRole.name);
     console.log('Permissions to save:', permissions);
+    console.log('Save timestamp:', this.lastSaveTimestamp);
 
     this.userService.updateRolePermissions(currentRole.name, permissions).subscribe({
       next: () => {
         this.isSaving = false;
         this.showToastMessage('Cập nhật quyền cho vai trò thành công', 'success');
         
-        // QUAN TRỌNG: Reload ngay lập tức để cập nhật ConcurrencyStamp
+        // Reload to sync ConcurrencyStamp
         if (this.selectedRole && this.selectedRole.id === currentRole.id) {
           this.loadPermissionsForRole(this.selectedRole);
         }
@@ -383,7 +439,7 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
         
         let errorMessage = 'Cập nhật quyền cho vai trò thất bại';
         
-        // Xử lý error response từ ABP
+        // Handle ABP error response
         if (error?.error?.error) {
           if (error.error.error.message) {
             errorMessage = error.error.error.message;
@@ -396,7 +452,7 @@ export class ManageRoleComponent implements OnInit, OnDestroy {
         
         this.showToastMessage(errorMessage, 'error');
         
-        // Reload để đồng bộ lại state
+        // Reload to sync state
         if (this.selectedRole && this.selectedRole.id === currentRole.id) {
           this.loadPermissionsForRole(this.selectedRole);
         }
