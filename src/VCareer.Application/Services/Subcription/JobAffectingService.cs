@@ -92,10 +92,10 @@ namespace VCareer.Services.Subcription
                 PriorityLevel = childService.Priority,
                 EndDate = endDate,
             };
-            await _effectingJobServiceRepository.InsertAsync(effectService, true);
+            var insertedEffectService = await _effectingJobServiceRepository.InsertAsync(effectService, autoSave: true);
 
             if (childService.Target == ServiceTarget.JobPost && childService.Action == ServiceAction.BoostScoreJob)
-                await AddJobBoostLogic(job.Id, effectService.Id);
+                await AddJobBoostLogic(job.Id, insertedEffectService.Id);
             //co the them logic xu ly cac job voi target =job voi action khac
         }
         private async Task<bool> IsJobAllowToAddService(Job_Post job, Guid childServiceId, ServiceAction serviceAction)
@@ -112,7 +112,7 @@ namespace VCareer.Services.Subcription
         public async Task AddJobBoostLogic(Guid jobId, Guid effectingJobId)
         {
             var job = await _jobPostRepository.FindAsync(x => x.Id == jobId);
-            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == effectingJobId);
+            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id== effectingJobId);
             if (job == null || effectService == null) throw new BusinessException("Job or EffectingJobService not found");
 
             var priority = await _jobPriorityRepository.FirstAsync(x => x.JobId == job.Id);

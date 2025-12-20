@@ -62,6 +62,7 @@ namespace VCareer.Services.Job
         private readonly INotificationAppService _notificationAppService;
         private readonly IRecruitmentCampainRepository _campaignRepository;
         private readonly IUser_ChildServiceRepository _userChildServiceRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
 
         public JobPostService(
@@ -79,6 +80,7 @@ namespace VCareer.Services.Job
             IChildServiceRepository childServiceRepository,
             ITagService tagService,
             IEffectingJobServiceRepository jobAffectingRepository,
+            IEmployeeRepository employeeRepository,
             IJobTagService jobTagService,
             ILuceneJobIndexer luceneJobIndexer,
             IActivityLogAppService activityLogAppService,
@@ -90,6 +92,7 @@ namespace VCareer.Services.Job
             _jobPriorityRepository = jobPriorityRepository;
             _companyRepository = companyRepository;
             _currentUser = currentUser;
+            _employeeRepository = employeeRepository;
             _identityUserRepository = identityUserRepository;
             _recruiterRepository = recruiterRepository;
             _geoService = geoService;
@@ -122,13 +125,28 @@ namespace VCareer.Services.Job
             if (jobEffects != null && jobEffects.Count > 0)
             {
                 //chay nhung cai child service ko tu auto active de tranh  bi lap logic 
-                var childServiceIds = jobEffects.Where(x => x.Status == ChildServiceStatus.Inactive).Select(x => x.ChildServiceId).Distinct().ToList();
-                foreach (var childServiceId in childServiceIds)
+                var childServiceInfos = jobEffects
+                 .Where(x => x.Status == ChildServiceStatus.Inactive)
+                   .Select(x => new
+                    {
+                       x.ChildServiceId,
+                        x.User_ChildServiceId
+                    })
+                   .Distinct()
+                   .ToList();
+    
+                foreach (var childServiceInfo in childServiceInfos)
                 {
-                    var childService = await _childServiceRepository.GetAsync(childServiceId);
+                    var childService = await _childServiceRepository.GetAsync(childServiceInfo.ChildServiceId);
                     if (childService == null) continue;
-                    if ( childService.Target == ServiceTarget.JobPost && childService.IsEnable)
-                        await _effectingJobService.AddJobBoostLogic(jobPost.Id, childServiceId);
+                    if (childService.Target == ServiceTarget.JobPost && childService.IsEnable)
+                        await _effectingJobService.ApplyServiceToJob(
+                            new EffectingJobServiceCreateDto() {
+                            User_ChildServiceId = childServiceInfo.User_ChildServiceId,
+                            ChildServiceId = childServiceInfo.ChildServiceId,
+                            JobPostId = jobPost.Id
+                            }
+                          );
                 }
             }
             await _jobPostRepository.UpdateAsync(jobPost, true);
@@ -160,7 +178,7 @@ namespace VCareer.Services.Job
         }
 
         [Authorize(VCareerPermission.JobPost.Reject)]
-        public async Task RejectJobPostAsync(string id)
+        public async Task RejectJobPostAsync(string jobId,string reasonReject)
         {
 
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
@@ -170,6 +188,7 @@ namespace VCareer.Services.Job
             if (user == null) throw new BusinessException("owner of this jobpost not found");
 
             jobPost.Status = JobStatus.Rejected;
+            jobPost.RejectedReason = reasonReject;
             await _jobPostRepository.UpdateAsync(jobPost, true);
 
             // logic tra lai luot dung khi bi reject
@@ -516,9 +535,31 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(job, true);
             await _jobSearchService.RemoveJobFromIndexAsync(job.Id);
         }
-        public async Task<List<JobViewDto>> GetJobPostBySatus(int? status, int maxCount = 10) // check been job search cos chuaw
+        public async Task<List<JobViewManageDetailDto>> GetJobPostManage(JobRequestViewDto dto)
         {
-            throw new NotImplementedException();
+            var query = await _jobPostRepository.GetQueryableAsync();
+            if (dto.EndTime != null) query = query.Where(x => x.ExpiresAt <= dto.EndTime);
+            if (dto.StartTime != null) query = query.Where(x => x.ExpiresAt >= dto.StartTime);
+            if (dto.Status != null) query = query.Where(x => x.Status >= dto.Status);
+            if (!string.IsNullOrEmpty(dto.SearchField) &&
+                Guid.TryParse(dto.SearchField, out Guid id))
+            {
+                var job = await _jobPostRepository.FindAsync(id);
+                if (job != null)
+                {
+                    query = query.Where(x => x.Id == id);
+                }
+                else
+                {
+                    var employeeProfile = await _employeeRepository.FindAsync(id);
+                    if (employeeProfile != null)
+                        query = query.Where(x => x.RecruiterId == employeeProfile.Id);
+                }
+            }
+
+            return ObjectMapper.Map<List<Job_Post>, List<JobViewManageDetailDto>>(await query.ToListAsync());
+
+
         }
         [Authorize(VCareerPermission.JobPost.LoadJobByCompanyId)]
         public async Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10)
@@ -596,6 +637,18 @@ namespace VCareer.Services.Job
         public Task UpDateViewCount(string id)
         {
             throw new NotImplementedException();
+        }
+        public async Task<int> CountJobByStatus(int? status)
+        {
+            var query = await _jobPostRepository.GetQueryableAsync();
+
+            if (status.HasValue && Enum.IsDefined(typeof(JobStatus), status.Value))
+            {
+                var jobStatus = (JobStatus)status.Value;
+                query = query.Where(x => x.Status == jobStatus);
+            }
+
+            return await query.CountAsync();
         }
 
         #region helper

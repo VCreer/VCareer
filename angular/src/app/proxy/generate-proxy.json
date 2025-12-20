@@ -11762,7 +11762,15 @@
                   "name": "RejectJobPostAsync",
                   "parametersOnMethod": [
                     {
-                      "name": "id",
+                      "name": "jobId",
+                      "typeAsString": "System.String, System.Private.CoreLib",
+                      "type": "System.String",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    },
+                    {
+                      "name": "reasonReject",
                       "typeAsString": "System.String, System.Private.CoreLib",
                       "type": "System.String",
                       "typeSimple": "string",
@@ -11925,6 +11933,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "GetJobPostManage",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.JobDto.JobRequestViewDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.JobDto.JobRequestViewDto",
+                      "typeSimple": "VCareer.Dto.JobDto.JobRequestViewDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobViewManageDetailDto>",
+                    "typeSimple": "[VCareer.Dto.JobDto.JobViewManageDetailDto]"
+                  }
                 }
               ]
             }
@@ -11967,8 +11992,8 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
-            "RejectJobPostAsyncByJobId": {
-              "uniqueName": "RejectJobPostAsyncByJobId",
+            "RejectJobPostAsyncByJobIdAndReasonReject": {
+              "uniqueName": "RejectJobPostAsyncByJobIdAndReasonReject",
               "name": "RejectJobPostAsync",
               "httpMethod": "POST",
               "url": "api/app/job-post/reject-job-post/{jobId}",
@@ -11976,6 +12001,14 @@
               "parametersOnMethod": [
                 {
                   "name": "jobId",
+                  "typeAsString": "System.String, System.Private.CoreLib",
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                },
+                {
+                  "name": "reasonReject",
                   "typeAsString": "System.String, System.Private.CoreLib",
                   "type": "System.String",
                   "typeSimple": "string",
@@ -11994,6 +12027,18 @@
                   "defaultValue": null,
                   "constraintTypes": [],
                   "bindingSourceId": "Path",
+                  "descriptorName": ""
+                },
+                {
+                  "nameOnMethod": "reasonReject",
+                  "name": "reasonReject",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
                   "descriptorName": ""
                 }
               ],
@@ -12241,46 +12286,74 @@
               "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
-            "GetJobPostBySatusByStatusAndMaxCount": {
-              "uniqueName": "GetJobPostBySatusByStatusAndMaxCount",
-              "name": "GetJobPostBySatus",
+            "GetJobPostManageByDto": {
+              "uniqueName": "GetJobPostManageByDto",
+              "name": "GetJobPostManage",
               "httpMethod": "GET",
-              "url": "api/app/job-post/job-post-by-satus",
+              "url": "api/app/job-post/job-post-manage",
               "supportedVersions": [],
               "parametersOnMethod": [
                 {
-                  "name": "status",
-                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.JobDto.JobRequestViewDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.JobDto.JobRequestViewDto",
+                  "typeSimple": "VCareer.Dto.JobDto.JobRequestViewDto",
                   "isOptional": false,
                   "defaultValue": null
-                },
-                {
-                  "name": "maxCount",
-                  "typeAsString": "System.Int32, System.Private.CoreLib",
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": true,
-                  "defaultValue": 10
                 }
               ],
               "parameters": [
                 {
-                  "nameOnMethod": "status",
-                  "name": "status",
+                  "nameOnMethod": "dto",
+                  "name": "SearchField",
                   "jsonName": null,
-                  "type": "System.Int32?",
-                  "typeSimple": "number?",
+                  "type": "System.String",
+                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
+                  "descriptorName": "dto"
                 },
                 {
-                  "nameOnMethod": "maxCount",
-                  "name": "maxCount",
+                  "nameOnMethod": "dto",
+                  "name": "Status",
+                  "jsonName": null,
+                  "type": "System.String",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "StartTime",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "EndTime",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "Page",
                   "jsonName": null,
                   "type": "System.Int32",
                   "typeSimple": "number",
@@ -12288,15 +12361,27 @@
                   "defaultValue": null,
                   "constraintTypes": null,
                   "bindingSourceId": "ModelBinding",
-                  "descriptorName": ""
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "PageSize",
+                  "jsonName": null,
+                  "type": "System.Int32",
+                  "typeSimple": "number",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
                 }
               ],
               "returnValue": {
-                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobViewDto>",
-                "typeSimple": "[VCareer.Dto.JobDto.JobViewDto]"
+                "type": "System.Collections.Generic.List<VCareer.Dto.JobDto.JobViewManageDetailDto>",
+                "typeSimple": "[VCareer.Dto.JobDto.JobViewManageDetailDto]"
               },
               "allowAnonymous": null,
-              "implementFrom": "VCareer.Services.Job.JobPostService"
+              "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
             },
             "GetJobByCompanyIdByCompanyIdAndPageAndPageSize": {
               "uniqueName": "GetJobByCompanyIdByCompanyIdAndPageAndPageSize",
@@ -12559,6 +12644,43 @@
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobPostService"
+            },
+            "CountJobByStatusByStatus": {
+              "uniqueName": "CountJobByStatusByStatus",
+              "name": "CountJobByStatus",
+              "httpMethod": "POST",
+              "url": "api/app/job-post/count-job-by-status",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "status",
+                  "typeAsString": "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "status",
+                  "name": "status",
+                  "jsonName": null,
+                  "type": "System.Int32?",
+                  "typeSimple": "number?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Int32",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.Services.Job.JobPostService"
             },
             "GetJobByRecruiterIdByIdAndMaxCount": {
               "uniqueName": "GetJobByRecruiterIdByIdAndMaxCount",
@@ -14413,7 +14535,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
                 "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ILogService.ILogService"
             },
             "GetRecruiterAuditLogsAsyncByDto": {
@@ -14474,7 +14596,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
                 "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ILogService.ILogService"
             },
             "GetAuditLogActionsAsyncByAuditLogId": {
@@ -14511,7 +14633,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogActionDto>",
                 "typeSimple": "[VCareer.Dto.LogDto.AuditLogActionDto]"
               },
-              "allowAnonymous": null,
+              "allowAnonymous": false,
               "implementFrom": "VCareer.IServices.ILogService.ILogService"
             }
           }
@@ -32131,6 +32253,87 @@
         }
       ]
     },
+    "VCareer.Dto.JobDto.JobRequestViewDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "SearchField",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobStatus?",
+          "typeSimple": "enum?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndTime",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Page",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PageSize",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.JobDto.JobSearchInputDto": {
       "baseType": null,
       "isEnum": false,
@@ -32530,6 +32733,339 @@
           "jsonName": null,
           "type": "VCareer.Constants.JobConstant.ExperienceLevel",
           "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "JobCategoryId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.JobDto.JobViewManageDetailDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyImageUrl",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyId",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "CompanyName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Title",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Description",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Requirements",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Benefits",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryMin",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryMax",
+          "jsonName": null,
+          "type": "System.Decimal?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SalaryDeal",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EmploymentType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.EmploymentType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PositionType",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.PositionType",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Experience",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.ExperienceLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkTime",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ProvinceCode",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WardCode",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RiskJobLevel",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.RiskJobLevel",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectedReason",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApprovedBy",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ApproveAt",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PostedAt",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RecruiterId",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

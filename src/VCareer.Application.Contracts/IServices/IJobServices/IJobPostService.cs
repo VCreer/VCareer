@@ -18,7 +18,7 @@ namespace VCareer.IServices.IJobServices
         public Task UpdateJobPost(JobPostUpdateDto dto);
         public Task DeleteJobPost(string id);
         public Task ApproveJobPostAsync(string id);
-        public Task RejectJobPostAsync(string id);
+        public Task RejectJobPostAsync(string jobId, string reasonReject);
         [RemoteService(false)]
         public Task UpDateViewCount(string id);
         [RemoteService(false)]
@@ -30,6 +30,7 @@ namespace VCareer.IServices.IJobServices
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id); //view ,aapply count
         public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto);
         public Task ExecuteExpiredJobPostBackgoundWorker();
+        public Task<List<JobViewManageDetailDto>> GetJobPostManage(JobRequestViewDto dto);
 
 
     }
