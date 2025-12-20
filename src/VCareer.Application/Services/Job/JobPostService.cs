@@ -181,8 +181,8 @@ namespace VCareer.Services.Job
         public async Task RejectJobPostAsync(string jobId,string reasonReject)
         {
 
-            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
-            if (jobPost == null) throw new BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+            var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(jobId));
+            if (jobPost == null) throw new BusinessException($"Job với ID '{jobId}' không tồn tại hoặc được xóa.");
 
             var user = await _identityUserRepository.GetAsync(jobPost.RecruiterId);
             if (user == null) throw new BusinessException("owner of this jobpost not found");

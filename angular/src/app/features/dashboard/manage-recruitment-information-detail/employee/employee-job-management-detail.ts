@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent } from '../../../../shared/components';
-import { JobPostService } from '../../../../proxy/services/job/job-post.service';
 
 @Component({
   selector: 'app-employee-job-management-detail',
@@ -29,11 +28,7 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
 
   jobId: string | null = null;
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private jobPostService: JobPostService
-  ) {}
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     // Initial check
@@ -155,24 +150,12 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   onApprove(): void {
-    if (!this.jobId) {
-      this.showErrorToast('Không tìm thấy ID công việc');
-      return;
-    }
-
-    this.jobPostService.approveJobPost(this.jobId).subscribe({
-      next: () => {
-        this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
-        // Navigate back after a short delay
-        setTimeout(() => {
-          this.router.navigate(['/employee/manage-recruitment-information']);
-        }, 1500);
-      },
-      error: error => {
-        console.error('Error approving job:', error);
-        this.showErrorToast('Không thể duyệt tin tuyển dụng. Vui lòng thử lại.');
-      },
-    });
+    // TODO: Implement approve logic with API call
+    this.showSuccessToast('Đã duyệt tin tuyển dụng thành công');
+    // Navigate back after a short delay
+    setTimeout(() => {
+      this.router.navigate(['/employee/manage-recruitment-information']);
+    }, 1500);
   }
 
   onReject(): void {
@@ -186,30 +169,17 @@ export class EmployeeJobManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   onSubmitReject(): void {
-    if (!this.rejectReason.trim()) {
+    if (this.rejectReason.trim()) {
+      // TODO: Implement reject logic with API call
+      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+      this.onCloseRejectModal();
+      // Navigate back after a short delay
+      setTimeout(() => {
+        this.router.navigate(['/employee/manage-recruitment-information']);
+      }, 1500);
+    } else {
       this.showErrorToast('Vui lòng nhập lý do từ chối');
-      return;
     }
-
-    if (!this.jobId) {
-      this.showErrorToast('Không tìm thấy ID công việc');
-      return;
-    }
-
-    this.jobPostService.rejectJobPost(this.jobId).subscribe({
-      next: () => {
-        this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
-        this.onCloseRejectModal();
-        // Navigate back after a short delay
-        setTimeout(() => {
-          this.router.navigate(['/employee/manage-recruitment-information']);
-        }, 1500);
-      },
-      error: error => {
-        console.error('Error rejecting job:', error);
-        this.showErrorToast('Không thể từ chối tin tuyển dụng. Vui lòng thử lại.');
-      },
-    });
   }
 
   showSuccessToast(message: string): void {
