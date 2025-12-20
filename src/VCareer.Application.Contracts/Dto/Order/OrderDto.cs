@@ -95,8 +95,7 @@ namespace VCareer.Dto.Order
         public string? SearchField { get; set; }
         public DateTime? StartDate { get; set; } = null;
         public DateTime? EndDate { get; set; } = null;
-        public OrderStatus? Status { get; set; }
-    }
+         }
 
     public class OrderDetailDashBoardViewDto
     {

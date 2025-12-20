@@ -183,8 +183,10 @@ namespace VCareer.Permission
         public static class Logging
         {
             public const string Default = GroupName + ".Logging";
+            public const string ViewEmployeeLog = GroupName + ".ViewEmployeeLog";
+            public const string ViewRecruiterLog = GroupName + ".ViewRecruiterLog";
+            public const string ViewActionLog = GroupName + ".ViewActionLog";
         }
-
 
         /// <summary>
         /// Quyền cho Team Management (ITeamManagementAppService)
@@ -207,7 +209,7 @@ namespace VCareer.Permission
         {
             public const string Default = GroupName + ".CompanyVerification";
             public const string ViewPendingCompanies = Default + ".ViewPendingCompanies";
-            public const string View= Default + ".View";
+            public const string View = Default + ".View";
             public const string ApproveCompany = Default + ".ApproveCompany";
             public const string RejectCompany = Default + ".RejectCompany";
             public const string ViewVerifiedCompanies = Default + ".ViewVerifiedCompanies";

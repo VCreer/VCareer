@@ -39,7 +39,7 @@ export class SubcriptionPriceService {
     this.restService.request<any, OrderDashboardViewDto[]>({
       method: 'GET',
       url: '/api/app/subcription-price/order-dashboard',
-      params: { searchField: dto.searchField, startDate: dto.startDate, endDate: dto.endDate, status: dto.status },
+      params: { searchField: dto.searchField, startDate: dto.startDate, endDate: dto.endDate },
     },
     { apiName: this.apiName,...config });
   

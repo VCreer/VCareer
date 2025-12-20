@@ -14144,6 +14144,210 @@
             }
           }
         },
+        "VCareer.Services.Logs.LogService": {
+          "controllerName": "Log",
+          "controllerGroupName": "Log",
+          "isRemoteService": true,
+          "isIntegrationService": false,
+          "apiVersion": null,
+          "type": "VCareer.Services.Logs.LogService",
+          "interfaces": [
+            {
+              "type": "VCareer.IServices.ILogService.ILogService",
+              "name": "ILogService",
+              "methods": [
+                {
+                  "name": "GeEmployeetAuditLogsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.LogDto.AuditLogRequestDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                      "typeSimple": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
+                    "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
+                  }
+                },
+                {
+                  "name": "GetRecruiterAuditLogsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "dto",
+                      "typeAsString": "VCareer.Dto.LogDto.AuditLogRequestDto, VCareer.Application.Contracts",
+                      "type": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                      "typeSimple": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
+                    "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
+                  }
+                },
+                {
+                  "name": "GetAuditLogActionsAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "auditLogId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogActionDto>",
+                    "typeSimple": "[VCareer.Dto.LogDto.AuditLogActionDto]"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": {
+            "GeEmployeetAuditLogsAsyncByDto": {
+              "uniqueName": "GeEmployeetAuditLogsAsyncByDto",
+              "name": "GeEmployeetAuditLogsAsync",
+              "httpMethod": "POST",
+              "url": "api/app/log/ge-employeet-audit-logs",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.LogDto.AuditLogRequestDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "typeSimple": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "dto",
+                  "jsonName": null,
+                  "type": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "typeSimple": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
+                "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.ILogService.ILogService"
+            },
+            "GetRecruiterAuditLogsAsyncByDto": {
+              "uniqueName": "GetRecruiterAuditLogsAsyncByDto",
+              "name": "GetRecruiterAuditLogsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/log/recruiter-audit-logs",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "dto",
+                  "typeAsString": "VCareer.Dto.LogDto.AuditLogRequestDto, VCareer.Application.Contracts",
+                  "type": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "typeSimple": "VCareer.Dto.LogDto.AuditLogRequestDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "dto",
+                  "name": "UserId",
+                  "jsonName": null,
+                  "type": "System.Guid?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "StartDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                },
+                {
+                  "nameOnMethod": "dto",
+                  "name": "EndDate",
+                  "jsonName": null,
+                  "type": "System.DateTime?",
+                  "typeSimple": "string?",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": "dto"
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogDto>",
+                "typeSimple": "[VCareer.Dto.LogDto.AuditLogDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.ILogService.ILogService"
+            },
+            "GetAuditLogActionsAsyncByAuditLogId": {
+              "uniqueName": "GetAuditLogActionsAsyncByAuditLogId",
+              "name": "GetAuditLogActionsAsync",
+              "httpMethod": "GET",
+              "url": "api/app/log/audit-log-actions/{auditLogId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "auditLogId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "auditLogId",
+                  "name": "auditLogId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.List<VCareer.Dto.LogDto.AuditLogActionDto>",
+                "typeSimple": "[VCareer.Dto.LogDto.AuditLogActionDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.ILogService.ILogService"
+            }
+          }
+        },
         "VCareer.Services.LuceneService.CandidateSearch.CandidateIndexService": {
           "controllerName": "CandidateIndex",
           "controllerGroupName": "CandidateIndex",
@@ -18765,18 +18969,6 @@
                   "jsonName": null,
                   "type": "System.DateTime?",
                   "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "dto"
-                },
-                {
-                  "nameOnMethod": "dto",
-                  "name": "Status",
-                  "jsonName": null,
-                  "type": "System.String",
-                  "typeSimple": "string",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -32276,6 +32468,273 @@
         }
       ]
     },
+    "VCareer.Dto.LogDto.AuditLogActionDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ServiceName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "MethodName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Parameters",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExecutionTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExecutionDuration",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.LogDto.AuditLogDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "UserName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RoleName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HttpStatusCode",
+          "jsonName": null,
+          "type": "System.Int32?",
+          "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Exception",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Url",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "HttpMethod",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "BrowserInfo",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExecutionTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "ExecutionDuration",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.LogDto.AuditLogRequestDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "UserId",
+          "jsonName": null,
+          "type": "System.Guid?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "StartDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "EndDate",
+          "jsonName": null,
+          "type": "System.DateTime?",
+          "typeSimple": "string?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "VCareer.Dto.Notification.NotificationCreateDto": {
       "baseType": null,
       "isEnum": false,
@@ -32726,18 +33185,6 @@
           "jsonName": null,
           "type": "System.DateTime?",
           "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Status",
-          "jsonName": null,
-          "type": "VCareer.Constants.PaymentVNPay.OrderStatus?",
-          "typeSimple": "enum?",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

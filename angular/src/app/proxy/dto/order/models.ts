@@ -59,7 +59,6 @@ export interface OrderDashBoardRequestDto {
   searchField?: string;
   startDate?: string;
   endDate?: string;
-  status?: OrderStatus;
 }
 
 export interface OrderDashboardViewDto {

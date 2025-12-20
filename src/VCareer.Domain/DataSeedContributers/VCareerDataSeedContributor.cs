@@ -147,6 +147,7 @@ namespace VCareer.DataSeedContributers
             .Concat(Employee_JobPostPermissions)
             .Concat(Employee_JobCategoryPermissions)
             .Concat(Employee_TagPermissions)
+            .Concat(LoggingPermissions)
             .ToArray()
     },
     
@@ -347,11 +348,6 @@ namespace VCareer.DataSeedContributers
     VCareerPermission.User.SetStatus
 };
 
-        private static string[] LoggingPermissions = new[]
-        {
-    VCareerPermission.Logging.Default
-};
-
         private static string[] TeamManagementPermissions = new[]
         {
       VCareerPermission.TeamManagement.GetAllStaff,
@@ -376,6 +372,13 @@ namespace VCareer.DataSeedContributers
     VCareerPermission.CompanyVerification.ViewVerifiedCompanies,
     VCareerPermission.CompanyVerification.ViewRejectedCompanies,
     VCareerPermission.CompanyVerification.DownloadLegalDocument
+};
+
+        private static string[] LoggingPermissions = new[]
+       {
+    VCareerPermission.Logging.ViewEmployeeLog,
+    VCareerPermission.Logging.ViewRecruiterLog,
+    VCareerPermission.Logging.ViewActionLog,
 };
 
         #endregion

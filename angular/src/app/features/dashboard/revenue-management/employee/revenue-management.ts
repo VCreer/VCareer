@@ -62,27 +62,24 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
   selectedOrder: OrderDashboardViewDto | null = null;
   orderDetails: OrderDetailDashBoardViewDto[] = [];
 
-  // Statistics
+  // Statistics - BỎ failedPayments
   totalRevenue = 0;
   monthlyRevenue = 0;
   totalTransactions = 0;
-  failedPayments = 0;
 
-  // Filters
+  // Filters - BỎ selectedStatus
   searchKeyword = '';
   startDate: string = '';
   endDate: string = '';
-  selectedStatus: string = 'all';
   selectedRevenuePeriod: string = 'all';
 
-  // Dropdown options - Based on ACTUAL BACKEND LOGIC
-  statusOptions: SelectOption[] = [
-    { value: 'all', label: 'Tất cả' },
-    { value: String(OrderStatus.Pending), label: 'Chờ xử lý' },
-    { value: String(OrderStatus.Completed), label: 'Đã hoàn thành' },
-    { value: String(OrderStatus.Failed), label: 'Thất bại' },
-  ];
+  // Debounce for Excel export
+  private exportDebounceTimer?: any;
+  private lastExportTimestamp = 0;
+  private readonly EXPORT_DEBOUNCE_TIME = 500;
+  private readonly MIN_EXPORT_INTERVAL = 2000;
 
+  // BỎ statusOptions
   revenuePeriodOptions: SelectOption[] = [
     { value: 'all', label: 'Tất cả thời gian' },
     { value: 'today', label: 'Hôm nay' },
@@ -114,7 +111,6 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
     };
     window.addEventListener('resize', this.resizeListener);
 
-    // Initial data load
     this.loadRevenueData();
     this.loadTotalRevenue();
   }
@@ -125,6 +121,9 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
     }
     if (this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
+    }
+    if (this.exportDebounceTimer) {
+      clearTimeout(this.exportDebounceTimer);
     }
   }
 
@@ -270,6 +269,7 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
   loadRevenueData(): void {
     this.isLoading = true;
 
+    // BỎ status filter
     const dto: OrderDashBoardRequestDto = {
       searchField: this.searchKeyword || undefined,
       startDate: this.startDate ? this.formatDateForAPI(this.startDate) : undefined,
@@ -278,7 +278,7 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
         date.setHours(23, 59, 59, 999);
         return date.toISOString();
       })() : undefined,
-      status: this.selectedStatus !== 'all' ? parseInt(this.selectedStatus) as OrderStatus : undefined,
+      // status: REMOVED
     };
 
     this.subcriptionPriceService.getOrderDashboardByDto(dto).subscribe({
@@ -304,12 +304,9 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
 
   // ==================== STATISTICS & PAGINATION ====================
 
+  // BỎ tính toán failedPayments
   updateStatistics(): void {
     this.totalTransactions = this.revenueList.length;
-    this.failedPayments = this.revenueList.filter(item => 
-      item.status === OrderStatus.Failed ||
-      item.status === OrderStatus.Cancelled
-    ).length;
   }
 
   updatePagination(): void {
@@ -418,11 +415,7 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
     this.loadRevenueData();
   }
 
-  onStatusChange(status: string): void {
-    this.selectedStatus = status;
-    this.currentPage = 1;
-    this.loadRevenueData();
-  }
+  // BỎ onStatusChange()
 
   onSearch(): void {
     this.currentPage = 1;
@@ -472,16 +465,51 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
 
   // ==================== EXPORT EXCEL ====================
 
-  async onExportExcel(): Promise<void> {
+  onExportExcel(): void {
     if (this.revenueList.length === 0) {
       this.showToastMessage('warning', 'Không có dữ liệu để xuất');
       return;
     }
 
+    if (this.isExporting) {
+      console.warn('Export already in progress, ignoring duplicate request');
+      return;
+    }
+
+    const now = Date.now();
+    const timeSinceLastExport = now - this.lastExportTimestamp;
+    if (timeSinceLastExport < this.MIN_EXPORT_INTERVAL) {
+      console.warn(`Export too soon after last export (${timeSinceLastExport}ms), ignoring`);
+      this.showToastMessage('warning', 'Vui lòng đợi một chút trước khi xuất lại');
+      return;
+    }
+
+    if (this.exportDebounceTimer) {
+      clearTimeout(this.exportDebounceTimer);
+    }
+
+    this.exportDebounceTimer = setTimeout(() => {
+      this.executeExport();
+    }, this.EXPORT_DEBOUNCE_TIME);
+  }
+
+  private async executeExport(): Promise<void> {
+    if (this.isExporting) {
+      console.warn('Already exporting, aborting duplicate request');
+      return;
+    }
+
+    if (this.revenueList.length === 0) {
+      return;
+    }
+
     this.isExporting = true;
+    this.lastExportTimestamp = Date.now();
+    
+    console.log('Starting Excel export...');
+    console.log('Export timestamp:', this.lastExportTimestamp);
 
     try {
-      // Prepare data for Excel
       const excelData = this.revenueList.map((item, index) => ({
         'STT': index + 1,
         'Mã đơn hàng': item.orderCode || 'N/A',
@@ -493,7 +521,6 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
         'Phương thức thanh toán': this.getPaymentMethodText(item.paymentMethod),
       }));
 
-      // Create summary row
       const summaryData = [
         {},
         {},
@@ -502,58 +529,39 @@ export class RevenueManagementComponent implements OnInit, OnDestroy {
           'Mã đơn hàng': '',
           'Tên công ty': `Tổng số giao dịch: ${this.totalTransactions}`,
           'Số tiền (VNĐ)': this.revenueList.reduce((sum, item) => sum + item.totalAmount, 0),
-          'Ngày thanh toán': `Thất bại: ${this.failedPayments}`,
+          'Ngày thanh toán': '',
           'Trạng thái': '',
           'Trạng thái thanh toán': '',
           'Phương thức thanh toán': '',
         }
       ];
 
-      // Combine data
       const fullData = [...excelData, ...summaryData];
-
-      // Create workbook
       const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(fullData);
 
-      // Set column widths
       const colWidths = [
-        { wch: 5 },   // STT
-        { wch: 25 },  // Mã đơn hàng
-        { wch: 30 },  // Tên công ty
-        { wch: 15 },  // Số tiền
-        { wch: 20 },  // Ngày thanh toán
-        { wch: 15 },  // Trạng thái
-        { wch: 20 },  // Trạng thái thanh toán
-        { wch: 20 },  // Phương thức
+        { wch: 5 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 20 },
       ];
       ws['!cols'] = colWidths;
 
-      // Style the summary row (make it bold)
-      const summaryRowIndex = excelData.length + 3; // +1 for header, +2 for empty rows
-      const summaryRange = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-      for (let col = summaryRange.s.c; col <= summaryRange.e.c; col++) {
-        const cellAddress = XLSX.utils.encode_cell({ r: summaryRowIndex, c: col });
-        if (ws[cellAddress]) {
-          ws[cellAddress].s = {
-            font: { bold: true },
-            fill: { fgColor: { rgb: "FFFF00" } }
-          };
-        }
-      }
-
-      // Create workbook
       const wb: XLSX.WorkBook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo doanh thu');
 
-      // Generate filename with timestamp
       const now = new Date();
       const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
       const filename = `BaoCao_DoanhThu_${dateStr}_${timeStr}.xlsx`;
 
-      // Save file
       XLSX.writeFile(wb, filename);
 
+      console.log('Excel export completed successfully');
       this.showToastMessage('success', 'Xuất Excel thành công!');
     } catch (error) {
       console.error('Error exporting Excel:', error);

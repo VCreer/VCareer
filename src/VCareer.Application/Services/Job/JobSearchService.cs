@@ -16,6 +16,7 @@ using VCareer.Repositories.Job;
 using VCareer.Services.LuceneService.JobSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Auditing;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.ObjectMapping;
@@ -53,7 +54,7 @@ namespace VCareer.Services.Job
             //_companyRepository = companyRepository;
             //_recruiterRepository = recruiterRepository;
         }
-
+        [DisableAuditing]
         public async Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
         {
             var jobIds = await _luceneIndexer.SearchJobIdsAsync(input);
@@ -74,7 +75,7 @@ namespace VCareer.Services.Job
             if (orderedJobs.Count == 0) return new List<JobViewDto>();
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDto>>(orderedJobs);
         }
-
+        [DisableAuditing]
         public async Task<List<JobViewDto>> GetRelatedJobsAsync(Guid jobId, int maxCount = 10)
         {
             var job = await _jobPostingRepository.GetForIndexingAsync(jobId);
@@ -172,6 +173,7 @@ namespace VCareer.Services.Job
         /// <summary>
         /// Lưu job vào danh sách yêu thích
         /// </summary>
+        [DisableAuditing]
         public async Task SaveJobAsync(Guid jobId)
         {
               if (!_currentUser.IsAuthenticated)
@@ -217,6 +219,7 @@ namespace VCareer.Services.Job
         /// <summary>
         /// Bỏ lưu job khỏi danh sách yêu thích
         /// </summary>
+        [DisableAuditing]
         public async Task UnsaveJobAsync(Guid jobId)
         {
             if (!_currentUser.IsAuthenticated)
@@ -233,7 +236,7 @@ namespace VCareer.Services.Job
             if (savedJob != null)
                 await _savedJobRepository.DeleteAsync(savedJob);
         }
-
+        [DisableAuditing]
         public async Task<SavedJobStatusDto> GetSavedJobStatusAsync(Guid jobId)
         {
             if (!_currentUser.IsAuthenticated)
@@ -255,7 +258,7 @@ namespace VCareer.Services.Job
             };
         }
 
-
+        [DisableAuditing]
         public async Task<PagedResultDto<SavedJobDto>> GetSavedJobsAsync(int skipCount = 0, int maxResultCount = 20)
         {
             if (!_currentUser.IsAuthenticated)
@@ -315,7 +318,7 @@ namespace VCareer.Services.Job
         }
 
         #endregion
-
+        [DisableAuditing]
         private string BuildSalaryText(Job_Post job)
         {
             if (job == null) return string.Empty;

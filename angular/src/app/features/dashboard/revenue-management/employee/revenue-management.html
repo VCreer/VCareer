@@ -151,7 +151,7 @@
 
   <!-- Main Content -->
   <div class="main-content" [style.max-width]="getContentMaxWidth()">
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards - BỎ "Thanh toán thất bại" -->
     <div class="stats-grid">
       <app-stat-card
         label="Tổng doanh thu"
@@ -176,19 +176,11 @@
         color="#f59e0b"
       >
       </app-stat-card>
-
-      <app-stat-card
-        label="Thanh toán thất bại"
-        [value]="failedPayments | number:'1.0-0'"
-        icon="fa-times-circle"
-        color="#ef4444"
-      >
-      </app-stat-card>
     </div>
 
     <!-- Revenue Table -->
     <div class="revenue-table-container">
-      <!-- Filters Section - CORRECT ORDER -->
+      <!-- Filters Section - BỎ STATUS FILTER -->
       <div class="filters-section">
         <div class="filters-row">
           <!-- 1. Search -->
@@ -208,18 +200,7 @@
             </app-button>
           </div>
 
-          <!-- 2. Status Filter -->
-          <div class="filter-group status-group">
-            <app-select-field
-              [options]="statusOptions"
-              [(ngModel)]="selectedStatus"
-              (valueChange)="onStatusChange($event)"
-              placeholder="Tất cả"
-            >
-            </app-select-field>
-          </div>
-
-          <!-- 3. Date Range (Start Date - End Date) -->
+          <!-- 2. Date Range (Start Date - End Date) -->
           <div class="filter-group date-range-group">
             <div class="date-range-inputs">
               <app-date-picker
@@ -238,7 +219,7 @@
             </div>
           </div>
 
-          <!-- 4. Period Filter (Hôm nay, Tuần này, Tháng này...) -->
+          <!-- 3. Period Filter (Hôm nay, Tuần này, Tháng này...) -->
           <div class="filter-group period-group">
             <app-select-field
               [options]="revenuePeriodOptions"

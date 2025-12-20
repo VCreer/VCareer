@@ -147,7 +147,7 @@ namespace VCareer.Permission
 
             // ===================== TEAM MANAGEMENT =====================
             var team = group.AddPermission(VCareerPermission.TeamManagement.Default, L("Permission:TeamManagement"));
-                     team.AddChild(VCareerPermission.TeamManagement.GetAllStaff, L("Permission:TeamManagement.GetAllStaff"));
+            team.AddChild(VCareerPermission.TeamManagement.GetAllStaff, L("Permission:TeamManagement.GetAllStaff"));
             team.AddChild(VCareerPermission.TeamManagement.DeactivateStaff, L("Permission:TeamManagement.DeactivateStaff"));
             team.AddChild(VCareerPermission.TeamManagement.ActivateStaff, L("Permission:TeamManagement.ActivateStaff"));
             team.AddChild(VCareerPermission.TeamManagement.InviteStaff, L("Permission:TeamManagement.InviteStaff"));
@@ -169,6 +169,12 @@ namespace VCareer.Permission
             user.AddChild(VCareerPermission.User.ViewByRole, L("Permission:UserManagement.ViewByRole"));
             user.AddChild(VCareerPermission.User.SetStatus, L("Permission:UserManagement.SetStatus"));
             user.AddChild(VCareerPermission.User.ViewEmployees, L("Permission:UserManagement.ViewEmployees"));
+
+            //=====================log=====================================
+            var log = group.AddPermission(VCareerPermission.Logging.Default, L("Permission:Logging"));
+            log.AddChild(VCareerPermission.Logging.ViewEmployeeLog, L("Permission:Logging.ViewEmployeeLog"));
+            log.AddChild(VCareerPermission.Logging.ViewRecruiterLog, L("Permission:Logging.ViewRecruiterLog"));
+            log.AddChild(VCareerPermission.Logging.ViewActionLog, L("Permission:Logging.ViewActionLog"));
         }
 
         private ILocalizableString L(string name)

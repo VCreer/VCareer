@@ -113,8 +113,8 @@ namespace VCareer.Services.Subcription
             var query = await _orderRepository.GetQueryableAsync();
 
             // Filter cơ bản
-            if (dto.Status.HasValue)
-                query = query.Where(x => x.Status == dto.Status.Value);
+            query = query.Where(x => x.Status == OrderStatus.Completed);
+            query = query.Where(x => x.PaymentStatus== PaymentStatus.Paid);
 
             if (dto.StartDate.HasValue)
                 query = query.Where(x => x.PaidAt >= dto.StartDate.Value);
@@ -197,7 +197,7 @@ namespace VCareer.Services.Subcription
             var query = await _orderRepository.GetQueryableAsync();
 
             query = query.Where(x =>
-                x.PaymentStatus == PaymentStatus.Paid&&
+                x.PaymentStatus == PaymentStatus.Paid &&
                 x.Status == OrderStatus.Completed &&
                 x.PaidAt.HasValue);
 
