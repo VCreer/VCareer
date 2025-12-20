@@ -270,7 +270,7 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
       const status = (app.status || '').toLowerCase().trim();
       let mappedStatus: CandidateCV['status'] = 'reviewing';
 
-      if (['accepted', 'hired'].includes(status)) {
+      if (['accepted'].includes(status)) {
         mappedStatus = 'suitable';
       } else if (['rejected', 'withdrawn', 'not-suitable'].includes(status)) {
         mappedStatus = 'rejected';

@@ -49,6 +49,7 @@ export interface PersonalInfoBlockData {
   linkedIn?: string;
   gitHub?: string;
   website?: string;
+  position?: string; // Vị trí ứng tuyển
 }
 
 export interface WorkExperienceItem {
@@ -469,7 +470,8 @@ export class WriteCv implements OnInit {
         gender: null,
         profileImageUrl: '',
         linkedIn: '',
-        website: ''
+        website: '',
+        position: '' // Vị trí ứng tuyển
       },
       careerObjective: '',
       workExperiences: [],
@@ -492,7 +494,8 @@ export class WriteCv implements OnInit {
         gender: pi.Gender !== null && pi.Gender !== undefined ? pi.Gender : null,
         profileImageUrl: pi.ProfileImageUrl || '',
         linkedIn: pi.LinkedIn || '',
-        website: pi.Website || ''
+        website: pi.Website || '',
+        position: pi.Position || '' // Vị trí ứng tuyển
       };
     }
     
@@ -626,6 +629,14 @@ export class WriteCv implements OnInit {
       
       // Expose methods to window for onclick handlers
       this.exposeMethodsToWindow();
+      
+      // Set position vào input .position-input (fallback form)
+      setTimeout(() => {
+        const positionInput = document.querySelector('.position-input') as HTMLInputElement;
+        if (positionInput && this.cvData?.personalInfo?.position) {
+          positionInput.value = this.cvData.personalInfo.position;
+        }
+      }, 100);
     }
   }
 
@@ -2173,7 +2184,8 @@ export class WriteCv implements OnInit {
         profileImageUrl: '',
         linkedIn: '',
         gitHub: '',
-        website: ''
+        website: '',
+        position: ''
       },
       careerObjective: '',
       workExperiences: [],
@@ -2185,6 +2197,12 @@ export class WriteCv implements OnInit {
       additionalInfo: this.cvData?.additionalInfo || ''
     };
 
+    // Lấy position từ input .position-input (nếu có)
+    const positionInput = document.querySelector('.position-input') as HTMLInputElement;
+    if (positionInput) {
+      cvData.personalInfo.position = positionInput.value || '';
+    }
+
     for (const block of blocks) {
       switch (block.type) {
         case 'personal-info':
@@ -2192,6 +2210,10 @@ export class WriteCv implements OnInit {
             ...cvData.personalInfo,
             ...(block.data as PersonalInfoBlockData)
           };
+          // Nếu block có position, ưu tiên dùng position từ block
+          if ((block.data as PersonalInfoBlockData).position) {
+            cvData.personalInfo.position = (block.data as PersonalInfoBlockData).position;
+          }
           break;
         case 'custom-text':
           // Nếu có nhiều custom-text blocks, merge chúng lại (thường chỉ có 1 cho careerObjective)
@@ -2258,7 +2280,8 @@ export class WriteCv implements OnInit {
         ProfileImageUrl: frontendData.personalInfo.profileImageUrl || null,
         LinkedIn: frontendData.personalInfo.linkedIn || null,
         GitHub: frontendData.personalInfo.gitHub || null,
-        Website: frontendData.personalInfo.website || null
+        Website: frontendData.personalInfo.website || null,
+        Position: frontendData.personalInfo.position || null // Vị trí ứng tuyển
       };
     }
     

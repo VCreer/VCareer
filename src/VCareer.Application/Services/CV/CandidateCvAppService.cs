@@ -548,6 +548,7 @@ namespace VCareer.Services.CV
                     var linkedInValue = EscapeHtml(personalInfo?.LinkedIn ?? "");
                     var gitHubValue = EscapeHtml(personalInfo?.GitHub ?? "");
                     var profileImageValue = personalInfo?.ProfileImageUrl ?? "";
+                    var positionValue = EscapeHtml(personalInfo?.Position ?? ""); // Vị trí ứng tuyển
                     
                     _logger.LogInformation("Replacing placeholders - FullName: '{FullName}', Email: '{Email}', Phone: '{Phone}', Address: '{Address}', ProfileImage: '{ProfileImage}'", 
                         fullNameValue, emailValue, phoneValue, addressValue, string.IsNullOrEmpty(profileImageValue) ? "(empty)" : "(has image)");
@@ -563,6 +564,7 @@ namespace VCareer.Services.CV
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.website}}", websiteValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.linkedIn}}", linkedInValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.gitHub}}", gitHubValue);
+                    htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalInfo.position}}", positionValue); // Vị trí ứng tuyển
                     
                     // Xử lý profile image đặc biệt: nếu có ảnh thì hiển thị img, nếu không thì ẩn img và hiển thị placeholder
                     if (!string.IsNullOrEmpty(profileImageValue))
@@ -610,6 +612,7 @@ namespace VCareer.Services.CV
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalinfo.linkedin}}", linkedInValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalinfo.github}}", gitHubValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalinfo.profileimageurl}}", profileImageValue);
+                    htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{personalinfo.position}}", positionValue); // Vị trí ứng tuyển
                     
                     // Format 3: {{PERSONALINFO.FIELDNAME}} (UPPERCASE)
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{PERSONALINFO.FULLNAME}}", fullNameValue);
@@ -620,6 +623,7 @@ namespace VCareer.Services.CV
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{PERSONALINFO.LINKEDIN}}", linkedInValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{PERSONALINFO.GITHUB}}", gitHubValue);
                     htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{PERSONALINFO.PROFILEIMAGEURL}}", profileImageValue);
+                    htmlContent = ReplacePlaceholderCaseInsensitive(htmlContent, "{{PERSONALINFO.POSITION}}", positionValue); // Vị trí ứng tuyển
                     
                     _logger.LogInformation("After personalInfo replace - HTML contains {{personalInfo.fullName}}: {Contains}", 
                         htmlContent.Contains("{{personalInfo.fullName}}", StringComparison.OrdinalIgnoreCase));
@@ -1045,6 +1049,8 @@ namespace VCareer.Services.CV
             var personalInfo = cvData.PersonalInfo;
             html.AppendLine("<div class='cv-header'>");
             html.AppendLine($"<h1>{EscapeHtml(personalInfo?.FullName ?? "")}</h1>");
+            if (!string.IsNullOrEmpty(personalInfo?.Position))
+                html.AppendLine($"<h2>{EscapeHtml(personalInfo.Position)}</h2>");
             html.AppendLine("<div class='contact-info'>");
             
             if (!string.IsNullOrEmpty(personalInfo?.Email))

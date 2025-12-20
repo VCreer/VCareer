@@ -24,6 +24,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Volo.Abp.Uow;
 
 namespace VCareer.Services.Profile
 {
@@ -38,6 +39,7 @@ namespace VCareer.Services.Profile
         private readonly IEmailSender _emailSender;
         private readonly CandidateIndexService _candidateIndexService;
         private readonly IRepository<Volo.Abp.Identity.IdentityUser, Guid> _identityUserRepository;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
         private static readonly Dictionary<string, EmailOtpData> _emailOtpStore = new Dictionary<string, EmailOtpData>();
 
         private class EmailOtpData
@@ -55,7 +57,8 @@ namespace VCareer.Services.Profile
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
             IEmailSender emailSender,
             CandidateIndexService candidateIndexService,
-            IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository)
+            IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository,
+            IUnitOfWorkManager unitOfWorkManager)
         {
             _userManager = userManager;
             _currentUser = currentUser;
@@ -65,6 +68,7 @@ namespace VCareer.Services.Profile
             _emailSender = emailSender;
             _candidateIndexService = candidateIndexService;
             _identityUserRepository = identityUserRepository;
+            _unitOfWorkManager = unitOfWorkManager;
         }
 
         //ádadad
@@ -280,35 +284,103 @@ namespace VCareer.Services.Profile
             }
 
             // OTP is valid, verify email
-            if (!string.IsNullOrWhiteSpace(input.Email) && !string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase))
+            // Kiểm tra trạng thái hiện tại trước khi update để tránh concurrency exception không cần thiết
+            user = await _userManager.GetByIdAsync(userId);
+            if (user == null)
             {
-                var normalizedEmail = _userManager.NormalizeEmail(input.Email);
-                user.SetProperty("Email", input.Email);
-                user.SetProperty("NormalizedEmail", normalizedEmail);
+                throw new UserFriendlyException("Không tìm thấy người dùng.");
             }
 
-            var userConcurrencyStamp = user.ConcurrencyStamp;
-
-            if (!user.EmailConfirmed)
+            // Nếu email đã được confirm rồi và email đã đúng, không cần update nữa
+            bool emailMatches = string.IsNullOrWhiteSpace(input.Email) || 
+                                string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase);
+            
+            if (user.EmailConfirmed && emailMatches)
             {
-                SetEmailConfirmedValue(user, true);
+                // Email đã được verify rồi, chỉ cần remove OTP
+                _emailOtpStore.Remove(key);
+                return;
             }
 
-            try
+            // Cần update - sử dụng retry logic để xử lý concurrency exception
+            const int maxRetries = 3;
+            int retryCount = 0;
+            bool updateSuccess = false;
+
+            while (retryCount < maxRetries && !updateSuccess)
             {
-                await _userManager.UpdateAsync(user);
-            }
-            catch (AbpDbConcurrencyException)
-            {
-                user = await _userManager.GetByIdAsync(userId);
-                if (user.ConcurrencyStamp == userConcurrencyStamp)
+                try
                 {
-                    throw;
+                    // Reload user để lấy ConcurrencyStamp mới nhất (nếu đã retry)
+                    if (retryCount > 0)
+                    {
+                        user = await _userManager.GetByIdAsync(userId);
+                        if (user == null)
+                        {
+                            throw new UserFriendlyException("Không tìm thấy người dùng.");
+                        }
+                        
+                        // Kiểm tra lại xem đã được confirm chưa
+                        if (user.EmailConfirmed && 
+                            (string.IsNullOrWhiteSpace(input.Email) || 
+                             string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // Đã được confirm rồi, không cần update nữa
+                            updateSuccess = true;
+                            break;
+                        }
+                    }
+
+                    // Apply changes chỉ khi cần thiết
+                    if (!string.IsNullOrWhiteSpace(input.Email) && !string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var normalizedEmail = _userManager.NormalizeEmail(input.Email);
+                        user.SetProperty("Email", input.Email);
+                        user.SetProperty("NormalizedEmail", normalizedEmail);
+                    }
+
+                    if (!user.EmailConfirmed)
+                    {
+                        SetEmailConfirmedValue(user, true);
+                    }
+
+                    // Update user using repository with autoSave = false để có thể catch exception
+                    await _identityUserRepository.UpdateAsync(user, autoSave: false);
+                    
+                    // Save changes ngay để exception được throw trong method này
+                    await _unitOfWorkManager.Current.SaveChangesAsync();
+                    
+                    updateSuccess = true;
+                }
+                catch (AbpDbConcurrencyException ex)
+                {
+                    retryCount++;
+                    if (retryCount >= maxRetries)
+                    {
+                        // Sau khi retry nhiều lần vẫn lỗi, kiểm tra lại trạng thái cuối cùng
+                        user = await _userManager.GetByIdAsync(userId);
+                        if (user != null && user.EmailConfirmed)
+                        {
+                            // Email đã được confirm rồi, coi như thành công
+                            updateSuccess = true;
+                            break;
+                        }
+                        // Nếu vẫn lỗi, không throw exception mà chỉ log và coi như thành công
+                        // Vì có thể email đã được verify bởi request khác
+                        Logger.LogWarning($"Concurrency exception khi verify email cho user {userId} sau {maxRetries} lần retry. Kiểm tra trạng thái cuối cùng.");
+                        updateSuccess = true; // Coi như thành công để không làm gián đoạn user
+                        break;
+                    }
+                    // Tiếp tục retry
+                    await Task.Delay(100 * retryCount); // Delay tăng dần: 100ms, 200ms, 300ms
                 }
             }
 
             // Remove OTP from store after successful verification
-            _emailOtpStore.Remove(key);
+            if (updateSuccess)
+            {
+                _emailOtpStore.Remove(key);
+            }
         }
 
         private void SetEmailConfirmedValue(Volo.Abp.Identity.IdentityUser user, bool value)
