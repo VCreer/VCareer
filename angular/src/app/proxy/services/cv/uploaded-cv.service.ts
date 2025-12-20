@@ -61,7 +61,7 @@ export class UploadedCvService {
     { apiName: this.apiName,...config });
   
 
-  uploadCv = (file: IFormFile, cvName: string, isDefault?: boolean, isPublic?: boolean, notes?: string, config?: Partial<Rest.Config>) =>
+  uploadCv = (file: IFormFile, cvName: string, isDefault?: boolean, isPublic: boolean = true, notes?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, UploadedCvDto>({
       method: 'POST',
       url: '/api/app/uploaded-cv/upload-cv',

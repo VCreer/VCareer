@@ -158,6 +158,20 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Upload logo công ty và cập nhật Company.LogoUrl
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="input">File ảnh logo</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        [HttpPost("{id}/upload-logo")]
+        [Consumes("multipart/form-data")]
+        [IgnoreAntiforgeryToken]
+        public async Task<CompanyLegalInfoDto> UploadCompanyLogoAsync(int id, [FromForm] UploadCompanyLogoInputDto input)
+        {
+            return await _companyLegalInfoAppService.UploadCompanyLogoAsync(id, input.File);
+        }
+
+        /// <summary>
         /// Download/Xem file Giấy đăng ký doanh nghiệp theo storagePath
         /// </summary>
         /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
@@ -169,6 +183,22 @@ namespace VCareer.Profile
             var fileResult = await _companyLegalInfoAppService.GetLegalDocumentFileAsync(storagePath);
 
             // Hiển thị trực tiếp trên tab mới (inline), không bắt tải về
+            Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileResult.FileName}\"";
+            return File(fileResult.Data, fileResult.MimeType);
+        }
+
+        /// <summary>
+        /// Download/Xem file logo công ty theo storagePath
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LogoUrl</param>
+        /// <returns>File stream</returns>
+        [HttpGet("company-logo")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> GetCompanyLogoAsync([FromQuery] string storagePath)
+        {
+            var fileResult = await _companyLegalInfoAppService.GetCompanyLogoFileAsync(storagePath);
+
+            // Hiển thị trực tiếp (inline), không bắt tải về
             Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileResult.FileName}\"";
             return File(fileResult.Data, fileResult.MimeType);
         }

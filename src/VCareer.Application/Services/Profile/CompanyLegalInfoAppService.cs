@@ -345,6 +345,53 @@ namespace VCareer.Services.Profile
             return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
         }
 
+        public async Task<CompanyLegalInfoDto> UploadCompanyLogoAsync(int id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new UserFriendlyException("File logo không hợp lệ.");
+            }
+
+            // Giới hạn dung lượng logo (ví dụ 2MB)
+            const long maxSizeBytes = 2 * 1024 * 1024;
+            if (file.Length > maxSizeBytes)
+            {
+                throw new UserFriendlyException("Dung lượng logo tối đa là 2MB.");
+            }
+
+            // Chỉ cho phép jpeg, jpg, png
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                throw new UserFriendlyException("Định dạng logo không hợp lệ. Chỉ chấp nhận: jpeg, jpg, png.");
+            }
+
+            var userId = _currentUser.GetId();
+            if (userId == Guid.Empty)
+            {
+                throw new UserFriendlyException("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
+            }
+
+            // Upload file vào container CompanyLogos của Recruiter
+            var uploadDto = new UploadFileDto
+            {
+                File = file,
+                ContainerType = RecruiterContainerType.CompanyLogos.ToString(),
+                UserId = userId.ToString()
+            };
+
+            var fileDescriptorId = await _fileServices.UploadAsync(uploadDto);
+            var fileDescriptor = await _fileDescriptorRepository.GetAsync(fileDescriptorId);
+
+            var company = await _companyRepository.GetAsync(id);
+            company.LogoUrl = fileDescriptor.StoragePath;
+
+            await _companyRepository.UpdateAsync(company);
+
+            return ObjectMapper.Map<Company, CompanyLegalInfoDto>(company);
+        }
+
         //[Authorize(VCareerPermission.CompanyVerification.DownloadLegalDocument)]
         public async Task<FileStreamResultDto> GetLegalDocumentFileAsync(string storagePath)
         {
@@ -354,6 +401,18 @@ namespace VCareer.Services.Profile
             }
 
             // storagePath lưu cả đường dẫn thư mục, ví dụ: recruiter/documents/filename.jpg
+            var result = await _fileServices.DownloadByStoragePathAsync(storagePath);
+            return result;
+        }
+
+        public async Task<FileStreamResultDto> GetCompanyLogoFileAsync(string storagePath)
+        {
+            if (string.IsNullOrWhiteSpace(storagePath))
+            {
+                throw new UserFriendlyException("Đường dẫn file logo không hợp lệ.");
+            }
+
+            // storagePath lưu cả đường dẫn thư mục, ví dụ: recruiter/logos/filename.jpg
             var result = await _fileServices.DownloadByStoragePathAsync(storagePath);
             return result;
         }

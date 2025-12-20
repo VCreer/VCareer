@@ -52,7 +52,7 @@ namespace VCareer.Services.CV
             _currentUser = currentUser;
         }
 
-        public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = false, string? notes = null)
+        public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = true, string? notes = null)
         {
             Guid userId;
             try
