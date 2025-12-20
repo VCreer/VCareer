@@ -57,6 +57,7 @@ namespace VCareer.Services.Job
         private readonly ILuceneJobIndexer _luceneJobIndexer;
         private readonly IEffectingJobServiceRepository _jobAffectingRepository;
         private readonly IUser_ChildServiceRepository _userChildServiceRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
 
         public JobPostService(
@@ -74,6 +75,7 @@ namespace VCareer.Services.Job
             IChildServiceRepository childServiceRepository,
             ITagService tagService,
             IEffectingJobServiceRepository jobAffectingRepository,
+            IEmployeeRepository employeeRepository,
             IJobTagService jobTagService,
             ILuceneJobIndexer luceneJobIndexer,
             IActivityLogAppService activityLogAppService)
@@ -83,6 +85,7 @@ namespace VCareer.Services.Job
             _jobPriorityRepository = jobPriorityRepository;
             _companyRepository = companyRepository;
             _currentUser = currentUser;
+            _employeeRepository = employeeRepository;
             _identityUserRepository = identityUserRepository;
             _recruiterRepository = recruiterRepository;
             _geoService = geoService;
@@ -117,7 +120,7 @@ namespace VCareer.Services.Job
                 {
                     var childService = await _childServiceRepository.GetAsync(childServiceId);
                     if (childService == null) continue;
-                    if ( childService.Target == ServiceTarget.JobPost && childService.IsEnable)
+                    if (childService.Target == ServiceTarget.JobPost && childService.IsEnable)
                         await _effectingJobService.AddJobBoostLogic(jobPost.Id, childServiceId);
                 }
             }
@@ -466,9 +469,31 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(job, true);
             await _jobSearchService.RemoveJobFromIndexAsync(job.Id);
         }
-        public async Task<List<JobViewDto>> GetJobPostBySatus(int? status, int maxCount = 10) // check been job search cos chuaw
+        public async Task<List<JobViewManageDetailDto>> GetJobPostManage(JobRequestViewDto dto)
         {
-            throw new NotImplementedException();
+            var query = await _jobPostRepository.GetQueryableAsync();
+            if (dto.EndTime != null) query = query.Where(x => x.ExpiresAt <= dto.EndTime);
+            if (dto.StartTime != null) query = query.Where(x => x.ExpiresAt >= dto.StartTime);
+            if (dto.Status != null) query = query.Where(x => x.Status >= dto.Status);
+            if (!string.IsNullOrEmpty(dto.SearchField) &&
+                Guid.TryParse(dto.SearchField, out Guid id))
+            {
+                var job = await _jobPostRepository.FindAsync(id);
+                if (job != null)
+                {
+                    query = query.Where(x => x.Id == id);
+                }
+                else
+                {
+                    var employeeProfile = await _employeeRepository.FindAsync(id);
+                    if (employeeProfile != null)
+                        query = query.Where(x => x.RecruiterId == employeeProfile.Id);
+                }
+            }
+
+            return ObjectMapper.Map<List<Job_Post>, List<JobViewManageDetailDto>>(await query.ToListAsync());
+
+
         }
         [Authorize(VCareerPermission.JobPost.LoadJobByCompanyId)]
         public async Task<List<JobViewDto>> GetJobByCompanyId(int companyId, int page = 0, int pageSize = 10)
@@ -534,6 +559,18 @@ namespace VCareer.Services.Job
         public Task UpDateViewCount(string id)
         {
             throw new NotImplementedException();
+        }
+        public async Task<int> CountJobByStatus(int? status)
+        {
+            var query = await _jobPostRepository.GetQueryableAsync();
+
+            if (status.HasValue && Enum.IsDefined(typeof(JobStatus), status.Value))
+            {
+                var jobStatus = (JobStatus)status.Value;
+                query = query.Where(x => x.Status == jobStatus);
+            }
+
+            return await query.CountAsync();
         }
 
         #region helper

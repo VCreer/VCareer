@@ -30,6 +30,7 @@ namespace VCareer.IServices.IJobServices
         public Task<JobPostStatisticDto> GetJobPostStatistic(string id); //view ,aapply count
         public Task<List<JobApproveViewDto>> ShowJobPostNeedApprove(JobFilterDto dto);
         public Task ExecuteExpiredJobPostBackgoundWorker();
+        public Task<List<JobViewManageDetailDto>> GetJobPostManage(JobRequestViewDto dto);
 
 
     }
