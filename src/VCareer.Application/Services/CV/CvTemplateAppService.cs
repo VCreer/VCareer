@@ -338,7 +338,18 @@ namespace VCareer.Services.CV
                 html += $"<h3>{exp.CompanyName ?? ""} - {exp.Position ?? ""}</h3>";
                 if (exp.StartDate.HasValue && exp.EndDate.HasValue)
                 {
-                    html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - {(exp.IsCurrentJob == true ? "Hiện tại" : exp.EndDate.Value.ToString("MM/yyyy"))}</p>";
+                    if (exp.IsCurrentJob == true)
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - đến nay</p>";
+                    }
+                    else if (exp.EndDate.HasValue)
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - {exp.EndDate.Value:MM/yyyy}</p>";
+                    }
+                    else
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy}</p>";
+                    }
                 }
                 if (!string.IsNullOrEmpty(exp.Description))
                 {
@@ -369,7 +380,18 @@ namespace VCareer.Services.CV
                 html += $"<p>{edu.Degree ?? ""} - {edu.Major ?? ""}</p>";
                 if (edu.StartDate.HasValue && edu.EndDate.HasValue)
                 {
-                    html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - {(edu.IsCurrent == true ? "Hiện tại" : edu.EndDate.Value.ToString("MM/yyyy"))}</p>";
+                    if (edu.IsCurrent == true)
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - đến nay</p>";
+                    }
+                    else if (edu.EndDate.HasValue)
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - {edu.EndDate.Value:MM/yyyy}</p>";
+                    }
+                    else
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy}</p>";
+                    }
                 }
                 if (!string.IsNullOrEmpty(edu.Gpa))
                 {
@@ -449,7 +471,9 @@ namespace VCareer.Services.CV
                 if (exp.StartDate.HasValue && exp.EndDate.HasValue)
                 {
                     itemHtml = itemHtml.Replace("{{workExperience.dateRange}}", 
-                        $"{exp.StartDate.Value:MM/yyyy} - {(exp.IsCurrentJob == true ? "Hiện tại" : exp.EndDate.Value.ToString("MM/yyyy"))}");
+                        exp.IsCurrentJob == true 
+                            ? $"{exp.StartDate.Value:MM/yyyy} - đến nay"
+                            : $"{exp.StartDate.Value:MM/yyyy} - {exp.EndDate.Value:MM/yyyy}");
                 }
                 result.Append(itemHtml);
             }
