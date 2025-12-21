@@ -77,7 +77,8 @@ namespace VCareer.Services.Job
                 if (companyId == null) throw new BusinessException("Company not found");
                 return await GetCompainByCompanyId(companyId, isActive);
             }
-            return await GetCompainsByRecruiterId(recruiter.Id, isActive);
+            // ✅ FIX: RecruitmentCampaign.RecruiterId lưu UserId, không phải RecruiterProfile.Id
+            return await GetCompainsByRecruiterId(recruiter.UserId, isActive);
         }
         [Authorize(VCareerPermission.RecruimentCampaign.Create)]
         public async Task CreateRecruitmentCompain(RecruimentCampainCreateDto input)
