@@ -103,11 +103,7 @@ export class JobDetailComponent implements OnInit {
       this.selectedLanguage = lang;
     });
 
-    // Load category tree and provinces once
-    this.loadCategoryTree();
-    this.loadProvinces();
-
-    // Check authentication status
+    // Check authentication status first
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
       if (isLoggedIn && this.jobId) {
@@ -117,6 +113,10 @@ export class JobDetailComponent implements OnInit {
         this.isHeartActive = false;
       }
     });
+
+    // Load category tree and provinces once (should work without authentication)
+    this.loadCategoryTree();
+    this.loadProvinces();
 
     // Get job ID from route params
     this.route.params.subscribe(params => {
@@ -141,10 +141,40 @@ export class JobDetailComponent implements OnInit {
   loadCategoryTree() {
     this.jobCategoryService.getCategoryTree().subscribe({
       next: (tree: CategoryTreeDto[]) => {
-        this.categoryTree = tree;
+        this.categoryTree = tree || [];
+        console.log('Category tree loaded successfully:', this.categoryTree.length, 'categories');
+        // Reload job categories if job detail is already loaded
+        if (this.jobDetail && this.jobDetail.jobCategoryId) {
+          this.loadJobCategories();
+        }
       },
       error: error => {
-        // Error loading category tree
+        // Error loading category tree - log but don't give up
+        console.error('Error loading category tree:', error);
+        this.categoryTree = [];
+        // Retry loading category tree after a delay (might be network issue or auth issue)
+        setTimeout(() => {
+          if (this.categoryTree.length === 0) {
+            console.log('Retrying to load category tree...');
+            this.jobCategoryService.getCategoryTree().subscribe({
+              next: (tree: CategoryTreeDto[]) => {
+                this.categoryTree = tree || [];
+                console.log('Category tree loaded on retry:', this.categoryTree.length, 'categories');
+                if (this.jobDetail && this.jobDetail.jobCategoryId) {
+                  this.loadJobCategories();
+                }
+              },
+              error: retryError => {
+                console.error('Retry failed to load category tree:', retryError);
+                // Even if retry fails, try to load categories if we have job detail
+                // Maybe the category info is available elsewhere
+                if (this.jobDetail && this.jobDetail.jobCategoryId) {
+                  this.loadJobCategories();
+                }
+              },
+            });
+          }
+        }, 1000);
       },
     });
   }
@@ -268,7 +298,26 @@ export class JobDetailComponent implements OnInit {
    * Load job categories from jobCategoryId
    */
   loadJobCategories() {
-    if (!this.jobDetail?.jobCategoryId || this.categoryTree.length === 0) {
+    if (!this.jobDetail?.jobCategoryId) {
+      this.jobCategories = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // If category tree is not loaded yet, wait for it with retry mechanism
+    if (this.categoryTree.length === 0) {
+      // Retry loading category tree if it failed before
+      // This handles the case when API call failed due to authentication or network issues
+      setTimeout(() => {
+        if (this.categoryTree.length === 0 && this.jobDetail?.jobCategoryId) {
+          // Try to reload category tree one more time
+          this.loadCategoryTree();
+          // Also retry loading categories after a delay
+          setTimeout(() => {
+            this.loadJobCategories();
+          }, 1000);
+        }
+      }, 500);
       return;
     }
 
@@ -276,17 +325,30 @@ export class JobDetailComponent implements OnInit {
     const category = this.findCategoryById(this.categoryTree, this.jobDetail.jobCategoryId);
     if (category) {
       // Build category path (from root to current)
-      this.jobCategories = this.buildCategoryPath(this.categoryTree, this.jobDetail.jobCategoryId);
-      this.cdr.detectChanges();
+      const categoryPath = this.buildCategoryPath(this.categoryTree, this.jobDetail.jobCategoryId);
+      this.jobCategories = categoryPath;
+      console.log('Job categories loaded:', this.jobCategories);
+    } else {
+      // If category not found, log for debugging
+      console.warn('Category not found for jobCategoryId:', this.jobDetail.jobCategoryId, 'Available categories:', this.categoryTree.length);
+      this.jobCategories = [];
     }
+    this.cdr.detectChanges();
   }
 
   /**
    * Find category by ID in tree
    */
   findCategoryById(tree: CategoryTreeDto[], id: string): CategoryTreeDto | null {
+    if (!id) return null;
+    
+    // Convert both to string for comparison to handle type mismatches
+    const idStr = String(id).trim();
+    
     for (const node of tree) {
-      if (node.categoryId === id) return node;
+      const nodeIdStr = node.categoryId ? String(node.categoryId).trim() : '';
+      if (nodeIdStr === idStr) return node;
+      
       if (node.children && node.children.length > 0) {
         const found = this.findCategoryById(node.children, id);
         if (found) return found;
@@ -299,8 +361,14 @@ export class JobDetailComponent implements OnInit {
    * Build category path from root to target category
    */
   buildCategoryPath(tree: CategoryTreeDto[], targetId: string): CategoryTreeDto[] {
+    if (!targetId) return [];
+    
+    // Convert both to string for comparison
+    const targetIdStr = String(targetId).trim();
+    
     for (const node of tree) {
-      if (node.categoryId === targetId) {
+      const nodeIdStr = node.categoryId ? String(node.categoryId).trim() : '';
+      if (nodeIdStr === targetIdStr) {
         return [node];
       }
       if (node.children && node.children.length > 0) {

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import {
   ButtonComponent,
   ToastNotificationComponent,
@@ -55,6 +56,10 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' | 'warning' = 'info';
 
+  // Excel export
+  isExporting = false;
+  private exportTimer?: any;
+
   // Time period filter
   selectedPeriod: 'today' | 'week' | 'month' | 'year' = 'today';
   periodOptions: SelectOption[] = [
@@ -81,14 +86,6 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
   ];
   pieChartSize: number = 300;
   pieChartSectionHeight: number = 400;
-
-  // Recent activities data
-  recentActivities: Array<{
-    time: string;
-    activityType: string;
-    user: string;
-    company: string;
-  }> = [];
 
   // Donut chart data for service packages
   donutChartData: PieChartData[] = [];
@@ -126,7 +123,6 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
 
     this.loadChartData();
     this.loadPieChartData();
-    this.loadRecentActivities();
     this.loadDonutChartData();
     this.loadStats();
   }
@@ -143,6 +139,9 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     }
     if (this.visibilityChangeListener) {
       document.removeEventListener('visibilitychange', this.visibilityChangeListener);
+    }
+    if (this.exportTimer) {
+      clearTimeout(this.exportTimer);
     }
   }
 
@@ -622,72 +621,6 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     this.showToast = false;
   }
 
-  loadRecentActivities(): void {
-    // Hard-coded data for "Hoạt động gần đây"
-    this.recentActivities = [
-      {
-        time: '10:30 - 15/01/2025',
-        activityType: 'Đăng tin tuyển dụng',
-        user: 'Nguyễn Văn A',
-        company: 'Công ty ABC'
-      },
-      {
-        time: '09:15 - 15/01/2025',
-        activityType: 'Cập nhật hồ sơ',
-        user: 'Trần Thị B',
-        company: 'Công ty XYZ'
-      },
-      {
-        time: '14:20 - 14/01/2025',
-        activityType: 'Ứng tuyển',
-        user: 'Lê Văn C',
-        company: 'Công ty DEF'
-      },
-      {
-        time: '16:45 - 14/01/2025',
-        activityType: 'Xem hồ sơ',
-        user: 'Phạm Thị D',
-        company: 'Công ty GHI'
-      },
-      {
-        time: '11:00 - 14/01/2025',
-        activityType: 'Đăng tin tuyển dụng',
-        user: 'Hoàng Văn E',
-        company: 'Công ty JKL'
-      },
-      {
-        time: '08:30 - 14/01/2025',
-        activityType: 'Cập nhật hồ sơ',
-        user: 'Vũ Thị F',
-        company: 'Công ty MNO'
-      },
-      {
-        time: '13:15 - 13/01/2025',
-        activityType: 'Ứng tuyển',
-        user: 'Đặng Văn G',
-        company: 'Công ty PQR'
-      },
-      {
-        time: '15:50 - 13/01/2025',
-        activityType: 'Xem hồ sơ',
-        user: 'Bùi Thị H',
-        company: 'Công ty STU'
-      },
-      {
-        time: '10:00 - 13/01/2025',
-        activityType: 'Đăng tin tuyển dụng',
-        user: 'Đỗ Văn I',
-        company: 'Công ty VWX'
-      },
-      {
-        time: '12:30 - 12/01/2025',
-        activityType: 'Cập nhật hồ sơ',
-        user: 'Ngô Thị K',
-        company: 'Công ty YZ'
-      }
-    ];
-  }
-
   loadDonutChartData(): void {
     // Hard-coded data for "Quản lý gói dịch vụ" - Donut Chart
     this.donutChartData = [
@@ -820,6 +753,140 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
         this.totalRevenue = 0;
       }
     });
+  }
+
+  // ==================== EXPORT EXCEL ====================
+  onExportExcel(event?: Event): void {
+    // Ngăn chặn event propagation và default behavior
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    // Ngăn chặn click nhiều lần
+    if (this.isExporting) {
+      return;
+    }
+
+    // Clear timer nếu có
+    if (this.exportTimer) {
+      clearTimeout(this.exportTimer);
+    }
+
+    // Debounce: chỉ thực thi sau 100ms để tránh double click
+    this.exportTimer = setTimeout(() => {
+      this.executeExport();
+    }, 100);
+  }
+
+  private executeExport(): void {
+    if (this.isExporting) {
+      return;
+    }
+
+    this.isExporting = true;
+    this.showToastMessage('info', 'Đang xuất file Excel...');
+
+    try {
+      const workbook = XLSX.utils.book_new();
+
+      // Sheet 1: Tổng quan thống kê
+      const summaryData: any[][] = [
+        ['BÁO CÁO THỐNG KÊ TỔNG QUAN'],
+        [],
+        ['Chỉ số', 'Giá trị'],
+        ['Tổng tin tuyển dụng', this.totalJobs],
+        ['Tổng người dùng', this.totalUsers],
+        ['Tổng doanh thu (VNĐ)', this.totalRevenue],
+        [],
+        ['Thời gian xuất báo cáo', new Date().toLocaleString('vi-VN')],
+        ['Khoảng thời gian', this.getPeriodLabel(this.selectedPeriod)],
+      ];
+
+      const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+      summaryWs['!cols'] = [
+        { wch: 30 },
+        { wch: 20 },
+      ];
+      XLSX.utils.book_append_sheet(workbook, summaryWs, 'Tổng quan');
+
+      // Sheet 2: Quản lý tin tuyển dụng
+      const jobData: any[][] = [
+        ['QUẢN LÝ TIN TUYỂN DỤNG'],
+        ['Khoảng thời gian: ' + this.getPeriodLabel(this.selectedPeriod)],
+        [],
+        ['Khoảng thời gian', 'Số lượng'],
+      ];
+
+      this.chartData.forEach(item => {
+        jobData.push([item.label, item.value]);
+      });
+
+      // Thêm tổng
+      const totalJobsInPeriod = this.chartData.reduce((sum, item) => sum + item.value, 0);
+      jobData.push([]);
+      jobData.push(['TỔNG CỘNG', totalJobsInPeriod]);
+
+      const jobWs = XLSX.utils.aoa_to_sheet(jobData);
+      jobWs['!cols'] = [
+        { wch: 20 },
+        { wch: 15 },
+      ];
+      XLSX.utils.book_append_sheet(workbook, jobWs, 'Tin tuyển dụng');
+
+      // Sheet 3: Quản lý người dùng
+      const userData: any[][] = [
+        ['QUẢN LÝ NGƯỜI DÙNG'],
+        [],
+        ['Loại người dùng', 'Số lượng'],
+      ];
+
+      this.pieChartData.forEach(item => {
+        userData.push([item.label, item.value]);
+      });
+
+      // Thêm tổng
+      const totalUsersInChart = this.pieChartData.reduce((sum, item) => sum + item.value, 0);
+      userData.push([]);
+      userData.push(['TỔNG CỘNG', totalUsersInChart]);
+
+      const userWs = XLSX.utils.aoa_to_sheet(userData);
+      userWs['!cols'] = [
+        { wch: 20 },
+        { wch: 15 },
+      ];
+      XLSX.utils.book_append_sheet(workbook, userWs, 'Người dùng');
+
+      // Tạo tên file
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+      const filename = `BaoCao_ThongKe_${dateStr}_${timeStr}.xlsx`;
+
+      // Xuất file
+      XLSX.writeFile(workbook, filename);
+
+      this.showToastMessage('success', 'Xuất file Excel thành công!');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('error', 'Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.');
+    } finally {
+      this.isExporting = false;
+      if (this.exportTimer) {
+        clearTimeout(this.exportTimer);
+        this.exportTimer = undefined;
+      }
+    }
+  }
+
+  private getPeriodLabel(period: 'today' | 'week' | 'month' | 'year'): string {
+    const periodMap: { [key: string]: string } = {
+      'today': 'Hôm nay',
+      'week': 'Tuần này',
+      'month': 'Tháng này',
+      'year': 'Năm nay',
+    };
+    return periodMap[period] || period;
   }
 }
 

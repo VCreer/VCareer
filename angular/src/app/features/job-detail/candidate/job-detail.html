@@ -174,6 +174,12 @@
         <div [innerHTML]="jobDetail.workLocation"></div>
           </div>
 
+          <!-- Work Time Section -->
+          <div class="job-detail__info--section" *ngIf="jobDetail.workTime && jobDetail.workTime.trim()">
+            <h3 class="section-title">Thời gian làm việc</h3>
+            <div [innerHTML]="jobDetail.workTime"></div>
+          </div>
+
           <!-- Application Method Section -->
           <div class="job-detail__info--section">
             <h3 class="section-title">{{ translate('job_detail.application_method') }}</h3>
@@ -308,16 +314,6 @@
             <i class="fa fa-briefcase"></i>
             <span class="label">{{ translate('job_detail.work_type') }}:</span>
             <span>{{ getEmploymentTypeVi(jobDetail.employmentType) }}</span>
-          </div>
-          <div class="info-item" *ngIf="getFullLocation() && getFullLocation() !== 'Không xác định'">
-            <i class="fa fa-map-marker-alt"></i>
-            <span class="label">Địa điểm làm việc:</span>
-            <span>{{ getFullLocation() }}</span>
-          </div>
-          <div class="info-item" *ngIf="jobDetail.workLocation && jobDetail.workLocation.trim()">
-            <i class="fa fa-building"></i>
-            <span class="label">Địa chỉ cụ thể:</span>
-            <span [innerHTML]="jobDetail.workLocation"></span>
           </div>
         </div>
 

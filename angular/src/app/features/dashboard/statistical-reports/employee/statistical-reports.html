@@ -15,9 +15,9 @@
         <h1 class="page-title">Báo cáo thống kê</h1>
       </div>
       <div class="action-buttons">
-        <app-button type="secondary" size="small" (click)="showToastMessage('info', 'Tính năng xuất file đang được phát triển')">
-          <i class="fas fa-file-excel"></i>
-          Xuất file Excel
+        <app-button type="secondary" size="small" (click)="onExportExcel($event)" [disabled]="isExporting">
+          <i class="fas" [ngClass]="isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'"></i>
+          {{ isExporting ? 'Đang xuất...' : 'Xuất file Excel' }}
         </app-button>
       </div>
     </div>
@@ -70,33 +70,6 @@
               [height]="chartHeight"
               [showValues]="true">
             </app-bar-chart>
-          </div>
-        </div>
-
-        <!-- Recent Activities Table Section -->
-        <div class="chart-section recent-activities-section">
-          <div class="chart-header">
-            <h2 class="chart-title">Hoạt động gần đây</h2>
-          </div>
-          <div class="table-container">
-            <table class="recent-activities-table">
-              <thead>
-                <tr>
-                  <th>Thời gian</th>
-                  <th>Loại hoạt động</th>
-                  <th>Người dùng</th>
-                  <th>Công ty</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let activity of recentActivities">
-                  <td>{{ activity.time }}</td>
-                  <td>{{ activity.activityType }}</td>
-                  <td>{{ activity.user }}</td>
-                  <td>{{ activity.company }}</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
