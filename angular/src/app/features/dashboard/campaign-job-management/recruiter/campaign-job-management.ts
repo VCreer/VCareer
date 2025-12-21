@@ -20,11 +20,16 @@ import {
 import { JobPostService } from 'src/app/proxy/services/job';
 import { PostJobDto } from 'src/app/proxy/dto/job-dto';
 import { UserSubcriptionService } from 'src/app/proxy/services/subcription';
-import { OptionsChildServiceViewDto, ChildServiceViewDto, User_ChildServiceViewDto, User_SubcirptionViewDto, User_ChildServiceActiveDto } from 'src/app/proxy/dto/subcriptions/models';
+import { OptionsChildServiceViewDto, ChildServiceViewDto, User_ChildServiceViewDto, User_SubcirptionViewDto, User_ChildServiceActiveDto, ChildServiceViewJobDto } from 'src/app/proxy/dto/subcriptions/models';
 import { SubcriptionContance_ServiceAction } from 'src/app/proxy/constants/job-constant/subcription-contance-service-action.enum';
 import { SubcriptionContance_ServiceTarget } from 'src/app/proxy/constants/job-constant/subcription-contance-service-target.enum';
 import { SubcriptionContance_ChildServiceStatus } from 'src/app/proxy/constants/job-constant/subcription-contance-child-service-status.enum';
 import { User_ChildService_Service } from 'src/app/proxy/services/subcription';
+import { JobAffectingService } from 'src/app/proxy/services/subcription';
+import { GeoService } from 'src/app/proxy/services/geo'; 
+import { JobStatus } from 'src/app/proxy/constants/job-constant';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 // Enhanced interface để chứa đầy đủ thông tin
 export interface EnhancedPackageOption {
@@ -69,14 +74,16 @@ export interface CampaignJob {
   title: string;
   position: string;
   location: string;
-  status: 'active' | 'inactive' | 'draft' | 'closed';
-  isPublic: boolean;
+  status: JobStatus;
   packageTypes: string[];
   packageOptions?: { [packageType: string]: string[] };
   createdAt: string;
   updatedAt: string;
   appliedCount: number;
   viewCount: number;
+  rejectionReason?: string;
+  // NEW: Child services attached to this job
+  childServices?: ChildServiceViewJobDto[];
 }
 
 @Component({
@@ -121,6 +128,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   jobToDelete: CampaignJob | null = null;
   showPackageModal = false;
   jobToAssignPackage: CampaignJob | null = null;
+  showRejectionModal = false;
+  jobToViewRejection: CampaignJob | null = null;
 
   // Khóa để ngăn double request
   private isPostingJob = false;
@@ -129,13 +138,15 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   private isRecreatingJob = false;
   private isAssigningPackage = false;
 
-  // Status options
+  // Status options - updated to use JobStatus enum
   statusOptions: StatusOption[] = [
     { value: 'all', label: 'Tất cả trạng thái' },
-    { value: 'active', label: 'Đang tuyển' },
-    { value: 'inactive', label: 'Tạm dừng' },
-    { value: 'draft', label: 'Bản nháp' },
-    { value: 'closed', label: 'Đã đóng' },
+    { value: JobStatus.Draft.toString(), label: 'Bản nháp' },
+    { value: JobStatus.Pending.toString(), label: 'Chờ duyệt' },
+    { value: JobStatus.Open.toString(), label: 'Đang tuyển' },
+    { value: JobStatus.Closed.toString(), label: 'Đã đóng' },
+    { value: JobStatus.Expired.toString(), label: 'Hết hạn' },
+    { value: JobStatus.Rejected.toString(), label: 'Bị từ chối' },
   ];
 
   // Toast notification
@@ -158,6 +169,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
   // Enums for template
   ChildServiceStatus = SubcriptionContance_ChildServiceStatus;
+  JobStatus = JobStatus;
 
   constructor(
     private router: Router,
@@ -166,7 +178,9 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     private recruitmentCampaignService: RecruitmentCompainService,
     private jobPostService: JobPostService,
     private userSubcriptionService: UserSubcriptionService,
-    private userChildServiceService: User_ChildService_Service
+    private userChildServiceService: User_ChildService_Service,
+    private geoService: GeoService,
+    private jobAffectingService: JobAffectingService
   ) {}
 
   ngOnInit(): void {
@@ -214,11 +228,38 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
 
     this.recruitmentCampaignService.getJobsByCompainIdByCompainId(this.campaignId).subscribe({
       next: (jobDetails: JobViewDetail[]) => {
-        // Map JobViewDetail to CampaignJob format
-        this.jobs = jobDetails.map(job => this.mapJobViewDetailToCampaignJob(job));
-        this.filteredJobs = [...this.jobs];
-        this.updatePagination();
-        this.isLoading = false;
+        // Get all job IDs
+        const jobIds = jobDetails.map(job => job.id || '').filter(id => id);
+
+        // Process each job with location name only (applyCount is now in JobViewDetail)
+        const jobProcessingObservables = jobDetails.map(job => {
+          return forkJoin({
+            job: of(job),
+            locationName: this.getLocationName(job.provinceCode, job.wardCode)
+          });
+        });
+
+        forkJoin(jobProcessingObservables).subscribe({
+          next: (results) => {
+            this.jobs = results.map(result => 
+              this.mapJobViewDetailToCampaignJob(result.job, result.locationName)
+            );
+
+            // Load child services for all jobs
+            if (jobIds.length > 0) {
+              this.loadChildServicesForJobs(jobIds);
+            } else {
+              this.filteredJobs = [...this.jobs];
+              this.updatePagination();
+              this.isLoading = false;
+            }
+          },
+          error: (err) => {
+            console.error('Lỗi khi xử lý danh sách công việc:', err);
+            this.showErrorToast('Không thể xử lý danh sách công việc');
+            this.isLoading = false;
+          }
+        });
       },
       error: err => {
         console.error('Lỗi khi tải danh sách công việc:', err);
@@ -228,30 +269,89 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // NEW: Load child services for multiple jobs
+  private loadChildServicesForJobs(jobIds: string[]): void {
+    this.jobAffectingService.getChildServiceByJobIdsByJobIds(jobIds).subscribe({
+      next: (childServicesMap: Record<string, ChildServiceViewJobDto[]>) => {
+        // Map child services to jobs
+        this.jobs.forEach(job => {
+          if (childServicesMap[job.id]) {
+            job.childServices = childServicesMap[job.id];
+          } else {
+            job.childServices = [];
+          }
+        });
+
+        this.filteredJobs = [...this.jobs];
+        this.updatePagination();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Lỗi khi tải child services:', err);
+        // Don't show error toast, just log and continue
+        this.filteredJobs = [...this.jobs];
+        this.updatePagination();
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Get location name from province and ward code
+  private getLocationName(provinceCode?: number, wardCode?: number) {
+    if (!provinceCode) {
+      return of('N/A');
+    }
+
+    if (wardCode) {
+      // Get both province and ward name
+      return forkJoin({
+        province: this.geoService.getProvinceNameByCodeByProvinceCode(provinceCode).pipe(
+          catchError(() => of(''))
+        ),
+        ward: this.geoService.getWardNameByCodeByWardCodeAndProvinceCode(wardCode, provinceCode).pipe(
+          catchError(() => of(''))
+        )
+      }).pipe(
+        catchError(() => of({ province: '', ward: '' })),
+        // Format: "Ward, Province" or just "Province" if no ward
+      );
+    } else {
+      // Get only province name
+      return this.geoService.getProvinceNameByCodeByProvinceCode(provinceCode).pipe(
+        catchError(() => of('N/A'))
+      );
+    }
+  }
+
   // Map JobViewDetail từ API sang CampaignJob format cho UI
-  private mapJobViewDetailToCampaignJob(job: JobViewDetail): CampaignJob {
+  private mapJobViewDetailToCampaignJob(
+    job: JobViewDetail, 
+    location: string | { province: string, ward: string }
+  ): CampaignJob {
+    let locationText = 'N/A';
+    if (typeof location === 'string') {
+      locationText = location;
+    } else if (location.ward && location.province) {
+      locationText = `${location.ward}, ${location.province}`;
+    } else if (location.province) {
+      locationText = location.province;
+    }
+
     return {
       id: job.id || '',
       title: job.title || '',
       position: this.getPositionLabel(job.positionType),
-      location: this.getLocationText(job.provinceCode, job.wardCode),
-      status: this.determineJobStatus(job),
-      isPublic: true,
+      location: locationText,
+      status: job.status || JobStatus.Draft,
       packageTypes: [],
       packageOptions: {},
       createdAt: job.postedAt || new Date().toISOString(),
       updatedAt: job.postedAt || new Date().toISOString(),
-      appliedCount: job.applyCount || 0,
+      appliedCount: job.applyCount || 0, // Use applyCount from DTO
       viewCount: job.viewCount || 0,
+      rejectionReason: job.rejectedReason || undefined,
+      childServices: [], // Will be populated later
     };
-  }
-
-  private determineJobStatus(job: JobViewDetail): 'active' | 'inactive' | 'draft' | 'closed' {
-    if (!job.expiresAt) return 'draft';
-    const expiresDate = new Date(job.expiresAt);
-    const now = new Date();
-    if (expiresDate < now) return 'closed';
-    return 'active';
   }
 
   private getPositionLabel(positionType?: PositionType): string {
@@ -271,10 +371,6 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       [PositionType.Consultant]: 'Tư vấn',
     };
     return positionLabels[positionType] || 'N/A';
-  }
-
-  private getLocationText(provinceCode?: number, wardCode?: number): string {
-    return provinceCode ? `Mã tỉnh: ${provinceCode}` : 'N/A';
   }
 
   onSearchChange(query: string): void {
@@ -297,7 +393,7 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
         job.position.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         job.location.toLowerCase().includes(this.searchQuery.toLowerCase());
 
-      const matchesStatus = this.selectedStatus === 'all' || job.status === this.selectedStatus;
+      const matchesStatus = this.selectedStatus === 'all' || job.status.toString() === this.selectedStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -576,6 +672,18 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
   }
 
   onEditJob(job: CampaignJob): void {
+    // Check if job can be edited
+    if (!this.canEditJob(job)) {
+      if (job.status === JobStatus.Open) {
+        this.showErrorToast('Không thể sửa bài đăng đang tuyển. Vui lòng đóng bài đăng trước khi chỉnh sửa.');
+      } else if (job.status === JobStatus.Pending) {
+        this.showErrorToast('Không thể sửa bài đăng đang chờ duyệt.');
+      }
+      this.showActionsMenu = null;
+      this.menuPosition = null;
+      return;
+    }
+
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: {
         jobId: job.id,
@@ -615,16 +723,18 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
       next: () => {
         this.showSuccessToast('Đăng bài thành công!');
         this.loadJobs();
+        this.isPostingJob = false;
       },
       error: err => {
         console.error('Lỗi khi đăng bài:', err);
-        if (err.status !== 403) {
-        this.showErrorToast('Đăng bài thất bại');
+        // Handle UserFriendlyException
+        if (err.error && err.error.error && err.error.error.message) {
+          this.showErrorToast(err.error.error.message);
+        } else if (err.status !== 403) {
+          this.showErrorToast('Đăng bài thất bại');
         }
-      },
-      complete: () => {
         this.isPostingJob = false;
-      },
+      }
     });
   }
 
@@ -648,17 +758,20 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
           this.filterJobs();
         }
         this.showSuccessToast('Đã xóa công việc thành công');
-      },
-      error: err => {
-        console.error('Lỗi khi xóa công việc:', err);
-        if (err.status !== 403) {
-        this.showErrorToast('Xóa công việc thất bại');
-        }
-      },
-      complete: () => {
         this.isDeletingJob = false;
         this.closeDeleteModal();
       },
+      error: err => {
+        console.error('Lỗi khi xóa công việc:', err);
+        // Handle UserFriendlyException
+        if (err.error && err.error.error && err.error.error.message) {
+          this.showErrorToast(err.error.error.message);
+        } else if (err.status !== 403) {
+          this.showErrorToast('Xóa công việc thất bại');
+        }
+        this.isDeletingJob = false;
+        this.closeDeleteModal();
+      }
     });
   }
 
@@ -671,27 +784,29 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     if (this.isClosingJob) return;
 
     this.isClosingJob = true;
-      this.showActionsMenu = null;
+    this.showActionsMenu = null;
     this.menuPosition = null;
 
     this.jobPostService.closeJobPostById(job.id).subscribe({
       next: () => {
         const index = this.jobs.findIndex(j => j.id === job.id);
         if (index > -1) {
-          this.jobs[index].status = 'closed';
+          this.jobs[index].status = JobStatus.Closed;
           this.filterJobs();
         }
         this.showSuccessToast('Đã đóng công việc thành công');
+        this.isClosingJob = false;
       },
       error: err => {
         console.error('Lỗi khi đóng công việc:', err);
-        if (err.status !== 403) {
+        // Handle UserFriendlyException
+        if (err.error && err.error.error && err.error.error.message) {
+          this.showErrorToast(err.error.error.message);
+        } else if (err.status !== 403) {
           this.showErrorToast('Đóng công việc thất bại');
         }
-      },
-      complete: () => {
         this.isClosingJob = false;
-      },
+      }
     });
   }
 
@@ -722,6 +837,33 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.menuPosition = null;
 
     this.loadChildServicesForJob(job.id);
+  }
+
+  // Check if assign package button should be disabled
+  canAssignPackage(job: CampaignJob): boolean {
+    return !(job.status === JobStatus.Expired || 
+             job.status === JobStatus.Closed || 
+             job.status === JobStatus.Rejected);
+  }
+
+  // Check if job can be edited
+  canEditJob(job: CampaignJob): boolean {
+    // Cannot edit if job is Open (published) or Pending (waiting for approval)
+    return !(job.status === JobStatus.Open || 
+             job.status === JobStatus.Pending);
+  }
+
+  // View rejection reason
+  onViewRejection(job: CampaignJob): void {
+    this.jobToViewRejection = job;
+    this.showRejectionModal = true;
+    this.showActionsMenu = null;
+    this.menuPosition = null;
+  }
+
+  closeRejectionModal(): void {
+    this.showRejectionModal = false;
+    this.jobToViewRejection = null;
   }
 
   loadChildServicesForJob(jobId: string): void {
@@ -806,8 +948,8 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
           // Nếu đã hết lượt hoặc status không phải Active => không available
           if (remainingUsage <= 0 || status !== SubcriptionContance_ChildServiceStatus.Active) {
             isAvailable = false;
-      }
-    } else {
+          }
+        } else {
           // Không giới hạn số lần dùng
           remainingUsage = undefined;
         }
@@ -922,17 +1064,20 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.userChildServiceService.activeService(activeDtos, jobId).subscribe({
       next: () => {
         this.showSuccessToast(`Đã kích hoạt ${selectedOptions.length} dịch vụ thành công`);
-      this.isAssigningPackage = false;
-      this.closePackageModal();
+        this.isAssigningPackage = false;
+        this.closePackageModal();
         this.loadJobs();
       },
       error: err => {
         console.error('Lỗi khi kích hoạt dịch vụ:', err);
-        if (err.status !== 403) {
+        // Handle UserFriendlyException
+        if (err.error && err.error.error && err.error.error.message) {
+          this.showErrorToast(err.error.error.message);
+        } else if (err.status !== 403) {
           this.showErrorToast('Kích hoạt dịch vụ thất bại');
         }
         this.isAssigningPackage = false;
-      },
+      }
     });
   }
 
@@ -944,34 +1089,59 @@ export class CampaignJobManagementComponent implements OnInit, OnDestroy {
     this.isLoadingServices = false;
   }
 
-  getStatusLabel(status: CampaignJob['status']): string {
+  getStatusLabel(status: JobStatus): string {
     switch (status) {
-      case 'active':
-        return 'Đang tuyển';
-      case 'inactive':
-        return 'Tạm dừng';
-      case 'draft':
+      case JobStatus.Draft:
         return 'Bản nháp';
-      case 'closed':
+      case JobStatus.Pending:
+        return 'Chờ duyệt';
+      case JobStatus.Open:
+        return 'Đang tuyển';
+      case JobStatus.Closed:
         return 'Đã đóng';
+      case JobStatus.Expired:
+        return 'Hết hạn';
+      case JobStatus.Rejected:
+        return 'Bị từ chối';
+      case JobStatus.Deleted:
+        return 'Đã xóa';
       default:
-        return status;
+        return 'Không xác định';
     }
   }
 
-  getStatusClass(status: CampaignJob['status']): string {
+  getStatusClass(status: JobStatus): string {
     switch (status) {
-      case 'active':
+      case JobStatus.Open:
         return 'status-active';
-      case 'inactive':
-        return 'status-inactive';
-      case 'draft':
+      case JobStatus.Draft:
         return 'status-draft';
-      case 'closed':
+      case JobStatus.Pending:
+        return 'status-pending';
+      case JobStatus.Closed:
         return 'status-closed';
+      case JobStatus.Expired:
+        return 'status-expired';
+      case JobStatus.Rejected:
+        return 'status-rejected';
+      case JobStatus.Deleted:
+        return 'status-deleted';
       default:
         return '';
     }
+  }
+
+  // NEW: Get child service badge class based on status
+  getChildServiceClass(childService: ChildServiceViewJobDto): string {
+    if (!childService.isActive || !childService.isEnable) {
+      return 'child-service-inactive';
+    }
+    return 'child-service-active';
+  }
+
+  // NEW: Check if child service is inactive
+  isChildServiceInactive(childService: ChildServiceViewJobDto): boolean {
+    return !childService.isActive || !childService.isEnable;
   }
 
   getPackageLabel(packageType: string): string {

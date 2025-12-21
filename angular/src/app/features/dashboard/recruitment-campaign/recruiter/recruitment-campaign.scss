@@ -767,8 +767,32 @@
       color: #374151;
     }
   }
+
+  // Job Count Cell
+  .job-count-cell {
+    .job-count-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background-color: #e0f2fe;
+      color: #0c4a6e;
+    }
+  }
+
   // Applied CVs Cell
   .applied-cvs-cell {
+    .cv-count-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background-color: #dcfce7;
+      color: #065f46;
+    }
+
     .applied-cvs-link {
       font-size: 14px;
       font-weight: 500;
@@ -792,6 +816,27 @@
       color: #6b7280;
     }
   }
+
+  // Creator Cell
+  .creator-cell {
+    .creator-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .creator-email {
+        font-size: 14px;
+        color: #374151;
+        font-weight: 500;
+      }
+
+      .creator-id {
+        font-size: 12px;
+        color: #6b7280;
+      }
+    }
+  }
+
   // Date Cells
   .start-date-cell,
   .end-date-cell {
@@ -811,11 +856,11 @@
       white-space: nowrap;
 
       &.active {
-        background-color: #e0f2fe;
-        color: #0c4a6e;
+        background-color: #dcfce7;
+        color: #065f46;
       }
 
-      &.inactive {
+      &:not(.active) {
         background-color: #f3f4f6;
         color: #6b7280;
       }

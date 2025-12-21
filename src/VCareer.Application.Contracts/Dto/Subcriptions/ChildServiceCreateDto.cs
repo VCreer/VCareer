@@ -50,6 +50,12 @@ namespace VCareer.Dto.Subcriptions
         public int? DayDuration { get; set; }
         public int? Value { get; set; }
     }
+    public class ChildServiceViewJobDto {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } //có được phép hiển thị không
+        public bool IsEnable { get; set; } // có được phép chạy logic không
+    }
 
     public class ChildServiceGetDto
     {

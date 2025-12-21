@@ -17,6 +17,7 @@ using VCareer.IRepositories.Profile;
 using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.IJobServices;
 using VCareer.Models.ActivityLogs;
+using VCareer.Models.Applications;
 using VCareer.Models.Job;
 using VCareer.Permission;
 using Volo.Abp;
@@ -25,6 +26,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Users;
+using static Lucene.Net.Util.Fst.Util;
 
 namespace VCareer.Services.Job
 {
@@ -37,15 +39,17 @@ namespace VCareer.Services.Job
         private readonly IRecruiterRepository _recruiterRepository;
         private readonly IdentityUserManager _userManager;
         private readonly IActivityLogAppService _activityLogAppService;
+        private readonly IRepository<JobApplication, Guid> _applicationRepository;
 
         public RecruitmentCompainService(
-            IRecruitmentCampainRepository repository, 
-            IJobPostRepository jobPostRepository, 
-            ICompanyRepository companyRepository, 
-            ICurrentUser currentUser, 
-            IRecruiterRepository recruiterRepository, 
+            IRecruitmentCampainRepository repository,
+            IJobPostRepository jobPostRepository,
+            ICompanyRepository companyRepository,
+            ICurrentUser currentUser,
+            IRecruiterRepository recruiterRepository,
             IdentityUserManager uesrManager,
-            IActivityLogAppService activityLogAppService)
+            IRepository<JobApplication, Guid> applicationRepository,
+        IActivityLogAppService activityLogAppService)
         {
             _recuirementRepository = repository;
             _jobRepository = jobPostRepository;
@@ -53,6 +57,7 @@ namespace VCareer.Services.Job
             _currentUser = currentUser;
             _recruiterRepository = recruiterRepository;
             _userManager = uesrManager;
+            _applicationRepository = applicationRepository;
             _activityLogAppService = activityLogAppService;
         }
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
@@ -144,38 +149,119 @@ namespace VCareer.Services.Job
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> GetCompainByCompanyId(int companyId, bool? isActive)
         {
+            var result = new List<RecruimentCampainViewDto>();
             var company = await _companyRepository.GetAsync(companyId);
             if (company == null) throw new BusinessException("Company not found");
             var campains = await _recuirementRepository.GetListAsync(x => x.CompanyId == companyId);
             if (campains == null) return new List<RecruimentCampainViewDto> { };
-            if (isActive != null) campains = campains.Where(x => x.IsActive == isActive).ToList();
-            return ObjectMapper.Map<List<RecruitmentCampaign>, List<RecruimentCampainViewDto>>(campains);
+            if (isActive != null) campains = campains.Where(x => x.IsActive == isActive).OrderByDescending(x => x.CreationTime).ToList();
+            foreach (var campaign in campains)
+            {
+                var recruiterInfo = await _recruiterRepository.GetAsync(x => x.UserId == campaign.RecruiterId);
+                var recruiterEmail = recruiterInfo.Email;
+                result.Add(new RecruimentCampainViewDto
+                {
+                    CompanyId = campaign.CompanyId,
+                    CreationTime = campaign.CreationTime,
+                    CreatorEmail = recruiterEmail,
+                    CreatorId = campaign.RecruiterId,
+                    Description = campaign.Description,
+                    IsActive = await GetSatusCompain(campaign.Id),
+                    Name = campaign.Name,
+                    Id = campaign.Id,
+                    NumberOfCv = await CountCVInByCompainId(campaign.Id),
+                    NumberOfJob = await CountJobInCompain(campaign.Id)
+                });
+            }
+            return result;
         }
+
         [Authorize(VCareerPermission.RecruimentCampaign.LoadJobOfRecruiment)]
         public async Task<List<JobViewDetail>> GetJobsByCompainId(Guid compainId)
         {
             var campain = await _recuirementRepository.GetAsync(x => x.Id == compainId);
             if (campain == null) throw new BusinessException("Compain not found");
             var jobs = await _jobRepository.GetListAsync(x => x.RecruitmentCampaignId == compainId);
+            jobs = jobs.OrderByDescending(x => x.CreationTime).ToList();
             if (jobs == null) return new List<JobViewDetail>();
             return ObjectMapper.Map<List<Job_Post>, List<JobViewDetail>>(jobs);
         }
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<List<RecruimentCampainViewDto>> GetCompainsByRecruiterId(Guid recruiterId, bool? isActive)
         {
+            var result = new List<RecruimentCampainViewDto>();
             var query = await _recuirementRepository.GetQueryableAsync();
             query = query.Where(x => x.RecruiterId == recruiterId);
             if (isActive != null) query = query.Where(x => x.IsActive == isActive);
             var compains = await query.ToListAsync();
-            return ObjectMapper.Map<List<RecruitmentCampaign>, List<RecruimentCampainViewDto>>(compains);
+            compains = compains.OrderByDescending(x => x.CreationTime).ToList();
+            foreach (var campaign in compains)
+            {
+                var recruiterInfo = await _recruiterRepository.GetAsync(x => x.UserId == campaign.RecruiterId);
+                var recruiterEmail = recruiterInfo.Email;
+                result.Add(new RecruimentCampainViewDto
+                {
+                    CompanyId = campaign.CompanyId,
+                    CreationTime = campaign.CreationTime,
+                    CreatorEmail = recruiterEmail,
+                    CreatorId = campaign.RecruiterId,
+                    Description = campaign.Description,
+                    IsActive = await GetSatusCompain(campaign.Id),
+                    Name = campaign.Name,
+                    Id = campaign.Id,
+                    NumberOfCv = await CountCVInByCompainId(campaign.Id),
+                    NumberOfJob = await CountJobInCompain(campaign.Id)
+                });
+            }
+            return result;
         }
+
         [Authorize(VCareerPermission.RecruimentCampaign.LoadRecruiment)]
         public async Task<RecruimentCampainViewDto?> GetCompainById(Guid recruimentId)
         {
-            var campain = await _recuirementRepository.GetAsync(x => x.Id == recruimentId);
-            if (campain == null) return null;
-            return ObjectMapper.Map<RecruitmentCampaign, RecruimentCampainViewDto>(campain);
+            var campaign = await _recuirementRepository.GetAsync(x => x.Id == recruimentId);
+            if (campaign == null) return null;
+            var recruiterInfo = await _recruiterRepository.GetAsync(x => x.UserId == campaign.RecruiterId);
+            var recruiterEmail = recruiterInfo.Email;
+            return (new RecruimentCampainViewDto
+            {
+                CompanyId = campaign.CompanyId,
+                CreationTime = campaign.CreationTime,
+                CreatorEmail = recruiterEmail,
+                CreatorId = campaign.RecruiterId,
+                Description = campaign.Description,
+                IsActive = await GetSatusCompain(campaign.Id),
+                Name = campaign.Name,
+                Id = campaign.Id,
+                NumberOfCv = await CountCVInByCompainId(campaign.Id),
+                NumberOfJob = await CountJobInCompain(campaign.Id)
+            });
         }
+
+        //hiển thịview
+        public async Task<int> CountJobInCompain(Guid compainId)
+        {
+            var count = await _jobRepository.CountAsync(x => x.RecruitmentCampaignId == compainId);
+            return count;
+        }
+
+        private async Task<int> CountCVInByCompainId(Guid compainId)
+        {
+            int total = 0;
+            var listJob = await _jobRepository.GetListAsync(x => x.RecruitmentCampaignId == compainId);
+            foreach (var job in listJob)
+            {
+                await CountCvInJob(job.Id);
+                total += await CountCvInJob(job.Id);
+            }
+            return total;
+        }
+        private async Task<bool> GetSatusCompain(Guid campaignId)
+        {
+            var listJobActive = await _jobRepository.GetListAsync(x => x.RecruitmentCampaignId == campaignId && x.Status == JobStatus.Open);
+            return listJobActive.Count > 0;
+        }
+        private async Task<int> CountCvInJob(Guid jobId) => await _applicationRepository.CountAsync(x => x.JobId == jobId);
 
     }
 

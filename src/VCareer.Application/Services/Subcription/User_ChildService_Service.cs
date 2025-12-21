@@ -93,7 +93,8 @@ namespace VCareer.Services.Subcription
                     continue;
                 }
 
-                //trường hợp kích hoạt rồi vẫn còn lượt dùng
+       //trường hợp kích hoạt rồi vẫn còn lượt dùng
+
                 // lần đầu kích hoạt child service hoặc  lần đầu thằng user này dùng
                 if (userChildServices.Count == 0 || userChildServiceNeedActive == null)
                 {
@@ -113,7 +114,6 @@ namespace VCareer.Services.Subcription
                 if (timeUsed >= childService.TimeUsedLimit)
                 {
                     await SetUsageLimitReach(userChildServices);
-                    break;
                 }
                 await _userChildServiceRepository.UpdateAsync(userChildServiceNeedActive, true);
                 //trường hợp nếu dịch vụ là job thì nhảy vào đây chạy logic 

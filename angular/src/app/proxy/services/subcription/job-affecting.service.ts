@@ -1,6 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { EffectingJobServiceCreateDto, EffectingJobServiceUpdateDto, EffectingJobServiceViewDto } from '../../dto/subcriptions/models';
+import type { ChildServiceViewJobDto, EffectingJobServiceCreateDto, EffectingJobServiceUpdateDto, EffectingJobServiceViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
 @Injectable({
@@ -49,6 +49,15 @@ export class JobAffectingService {
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/job-affecting/deactive-all-effecting-job-by-job-iD/${JobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getChildServiceByJobIdsByJobIds = (jobIds: string[], config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Record<string, ChildServiceViewJobDto[]>>({
+      method: 'GET',
+      url: '/api/app/job-affecting/child-service-by-job-ids',
+      params: { jobIds },
     },
     { apiName: this.apiName,...config });
   

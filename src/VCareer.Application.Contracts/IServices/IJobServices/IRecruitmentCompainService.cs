@@ -23,5 +23,6 @@ namespace VCareer.IServices.IJobServices
         public Task<List<JobViewDetail>> GetJobsByCompainId(Guid compainId);
         public Task<List<RecruimentCampainViewDto>> GetCompainsByRecruiterId(Guid recruiterId, bool? isActive);
         public Task<RecruimentCampainViewDto?> GetCompainById(Guid recruimentId);
+        public Task<int> CountJobInCompain(Guid compainId);
     }
 }

@@ -50,6 +50,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Security;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.BackgroundWorkers.Quartz;
 using Volo.Abp.BlobStoring;
@@ -144,6 +145,12 @@ public class VCareerHttpApiHostModule : AbpModule
 
         // Register HttpClientFactory cho các API external (ví dụ VietQR API)
         context.Services.AddHttpClient();
+
+        Configure<AbpBackgroundJobOptions>(options =>
+        {
+            options.IsJobExecutionEnabled = false;
+        });
+
     }
 
     private void ConfigureVnpay(ServiceConfigurationContext context, IConfiguration configuration)

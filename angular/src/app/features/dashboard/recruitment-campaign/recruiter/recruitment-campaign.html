@@ -106,7 +106,9 @@
             <tr>
               <th>ID</th>
               <th>Chiến dịch</th>
+              <th>Số công việc</th>
               <th>CV ứng tuyển</th>
+              <th>Người tạo</th>
               <th>Ngày tạo</th>
               <th>Trạng thái</th>
               <th>Hoạt động</th>
@@ -118,23 +120,26 @@
               <td class="campaign-info-cell">
                 <div class="campaign-name">{{ campaign.name }}</div>
               </td>
+              <td class="job-count-cell">
+                <span class="job-count-badge">{{ campaign.numberOfJob || 0 }}</span>
+              </td>
               <td class="applied-cvs-cell">
-                <span class="applied-cvs-empty">Chưa có CV</span>
+                <span class="cv-count-badge" *ngIf="campaign.numberOfCv > 0">{{ campaign.numberOfCv }}</span>
+                <span class="applied-cvs-empty" *ngIf="campaign.numberOfCv === 0">Chưa có CV</span>
+              </td>
+              <td class="creator-cell">
+                <div class="creator-info">
+                  <div class="creator-email">{{ campaign.creatorEmail || 'N/A' }}</div>
+                </div>
               </td>
               <td>{{ formatDate(campaign.creationTime) }}</td>
-              <td class="status-cell">
-                <span class="status-badge" [class.active]="campaign.isActive">
-                  {{ campaign.isActive ? 'Đang hoạt động' : 'Đã tắt' }}
-                </span>
-              </td>
+             <td class="status-cell">
+  <span class="status-badge" [class.active]="campaign.isActive">
+    {{ campaign.isActive ? 'Đang hoạt động' : 'Không hoạt động' }}
+  </span>
+</td>
               <td class="actions-cell">
                 <div class="actions-container">
-                  <app-toggle-switch
-                    [checked]="campaign.isActive"
-                    (checkedChange)="onToggleCampaign(campaign, $event)"
-                  >
-                  </app-toggle-switch>
-
                   <div class="actions-menu-container" [attr.data-campaign-id]="campaign.id">
                     <button class="actions-btn" (click)="toggleActionsMenu(campaign.id, $event)">
                       <i class="fa fa-ellipsis-h"></i>

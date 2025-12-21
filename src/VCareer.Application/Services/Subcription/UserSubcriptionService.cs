@@ -152,7 +152,7 @@ namespace VCareer.Services.Subcription
             return boughtedServiceAndStillActive.Select(x => x.Id).ToList();
         }
         //cai nay dung de show len cac childservice voi target laf job post ma nguoi dung co quyen dung sau khi mua goi
-        public async Task<List<OptionsChildServiceViewDto>> GetJobChildServiceAllowForUserAsync(int? serviceAction=null)
+        public async Task<List<OptionsChildServiceViewDto>> GetJobChildServiceAllowForUserAsync(int? serviceAction = null)
         {
             var userId = _currentUser.GetId();
             if (userId == Guid.Empty) throw new UserFriendlyException("User not found");
@@ -215,57 +215,95 @@ namespace VCareer.Services.Subcription
 
             return await GetOptionsChildService(listUserSubcription, userId, serviceAction);
         }
-        private async Task<List<OptionsChildServiceViewDto>> GetOptionsChildService(List<User_SubcriptionService> listUserSubcription, Guid userId, ServiceAction? serviceAction)
+        private async Task<List<OptionsChildServiceViewDto>> GetOptionsChildService(
+        List<User_SubcriptionService> listUserSubcription,
+        Guid userId,
+        ServiceAction? serviceAction)
         {
-            // lấy ra list đầy đủ các thông tin để hiển thị cho người dùng bao gồm các gói con, số lượng lần đã dùng , được dùng
-            //và handle cả trường hợp  các childservice chưa được dùng hoặc đã được dùng
-            var listOptionChildService = new List<OptionsChildServiceViewDto>();
+            var result = new List<OptionsChildServiceViewDto>();
+
+            if (listUserSubcription == null || listUserSubcription.Count == 0)
+                return result;
+
+            // ===== chuẩn bị dữ liệu =====
+            var subcriptionIds = listUserSubcription.Select(x => x.Id).ToList();
+            var subcriptionServiceIds = listUserSubcription
+                .Select(x => x.SubcriptionServiceId)
+                .Distinct()
+                .ToList();
+
+            // LẤY TẤT CẢ user child service (kể cả trùng)
+            var userChildServices = await _user_ChildServiceRepository.GetListAsync(
+                x => subcriptionIds.Contains(x.UserSubcriptionId)
+            );
+
+            // Group để lookup nhanh
+            var userChildServiceLookup = userChildServices
+                .GroupBy(x => new { x.ChildServiceId, x.UserSubcriptionId })
+                .ToDictionary(
+                    g => (g.Key.ChildServiceId, g.Key.UserSubcriptionId),
+                    g => g
+                        .OrderByDescending(x => x.CreationTime) // hoặc Id
+                        .First()
+                );
+
+            var subcriptionServices = await _subcriptionServiceRepository.GetListAsync(
+                x => subcriptionServiceIds.Contains(x.Id)
+            );
+
+            var subcriptionServiceDict = subcriptionServices.ToDictionary(x => x.Id);
+
+            // ===== xử lý chính =====
             foreach (var userSubcription in listUserSubcription)
             {
-                var userSubcriptionViewDto = ObjectMapper.Map<User_SubcriptionService, User_SubcirptionViewDto>(userSubcription);
+                var userSubcriptionDto =
+                    ObjectMapper.Map<User_SubcriptionService, User_SubcirptionViewDto>(userSubcription);
 
-                var subcriptionService = await _subcriptionServiceRepository.GetAsync(userSubcription.SubcriptionServiceId);
-                var subcriptionsViewDto = ObjectMapper.Map<SubcriptionService, SubcriptionsViewDto>(subcriptionService);
+                if (!subcriptionServiceDict.TryGetValue(userSubcription.SubcriptionServiceId, out var subcriptionService))
+                    continue;
 
-                var listChildService = await _subcriptionService.GetChildServices(userSubcription.SubcriptionServiceId, true);
-                if (listChildService == null || listChildService.Count == 0) continue;
-                if (serviceAction != null) listChildService.Where(x => x.Action == serviceAction).ToList();
+                var subcriptionsViewDto =
+                    ObjectMapper.Map<SubcriptionService, SubcriptionsViewDto>(subcriptionService);
 
-                foreach (var childService in listChildService)
+                var childServices =
+                    await _subcriptionService.GetChildServices(userSubcription.SubcriptionServiceId, true);
+
+                if (childServices == null || childServices.Count == 0)
+                    continue;
+
+                if (serviceAction.HasValue)
                 {
-                    if (childService.IsAutoActive) continue; // chi lay cac child service khong auto active
-                    var user_childServices = await _user_ChildServiceRepository.FindAsync(
-                        x => x.ChildServiceId == childService.Id &&
-                        x.UserSubcriptionId == userSubcription.Id);
+                    childServices = childServices
+                        .Where(x => x.Action == serviceAction)
+                        .ToList();
+                }
 
-                    var option = new OptionsChildServiceViewDto();
-                    //trường hợp chưa dùng dịch vụ con nên uerchildservice null
-                    if (user_childServices == null)
+                foreach (var childService in childServices)
+                {
+                    if (childService.IsAutoActive)
+                        continue;
+
+                    userChildServiceLookup.TryGetValue(
+                        (childService.Id, userSubcription.Id),
+                        out var latestUserChildService
+                    );
+
+                    result.Add(new OptionsChildServiceViewDto
                     {
-                        option = new OptionsChildServiceViewDto
-                        {
-                            childService = childService,
-                            user_ChildServices = null,
-                            user_subcription = userSubcriptionViewDto,
-                            subcriptionsViewDto = subcriptionsViewDto
-                        };
-                    }
-                    else
-                    //trường hợp đã dùng dịch vụ con nên có uerchildservice  
-                    {
-                        option = new OptionsChildServiceViewDto
-                        {
-                            childService = childService,
-                            user_ChildServices = ObjectMapper.Map<User_ChildService, User_ChildServiceViewDto>(user_childServices),
-                            user_subcription = userSubcriptionViewDto,
-                            subcriptionsViewDto = subcriptionsViewDto
-                        };
-                    }
-                    listOptionChildService.Add(option);
+                        childService = childService,
+                        user_ChildServices = latestUserChildService == null
+                            ? null
+                            : ObjectMapper.Map<User_ChildService, User_ChildServiceViewDto>(latestUserChildService),
+                        user_subcription = userSubcriptionDto,
+                        subcriptionsViewDto = subcriptionsViewDto
+                    });
                 }
             }
-            return listOptionChildService;
+
+            return result;
         }
+
+
         private async Task UpdateExpireSatusUserSubcriptionOfUser(Guid userId)
         {
             var userSubcriptionServices = await _user_SubcriptionServicerRepository.GetListAsync(x => x.UserId == userId && x.status == SubcriptionStatus.Active);
@@ -283,11 +321,11 @@ namespace VCareer.Services.Subcription
         public async Task SetStatusShareSuubcriptionService(Guid user_subcriptionServiceId, bool isShare)
         {
             var userSubcription = await _user_SubcriptionServicerRepository.GetAsync(x => x.Id == user_subcriptionServiceId);
-            if(userSubcription==null) throw new BusinessException("UserSubcriptionService not found");
+            if (userSubcription == null) throw new BusinessException("UserSubcriptionService not found");
 
-            var subcriptionService =await _subcriptionServiceRepository.GetAsync(x => x.Id == userSubcription.SubcriptionServiceId);
-            if(subcriptionService==null) throw new BusinessException("SubcriptionService not found");
-            if(!subcriptionService.IShareable) throw new UserFriendlyException("This subcription service is not allow to share");
+            var subcriptionService = await _subcriptionServiceRepository.GetAsync(x => x.Id == userSubcription.SubcriptionServiceId);
+            if (subcriptionService == null) throw new BusinessException("SubcriptionService not found");
+            if (!subcriptionService.IShareable) throw new UserFriendlyException("This subcription service is not allow to share");
             userSubcription.IsShared = isShare;
             await _user_SubcriptionServicerRepository.UpdateAsync(userSubcription);
         }

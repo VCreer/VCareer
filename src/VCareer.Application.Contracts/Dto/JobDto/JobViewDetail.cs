@@ -24,10 +24,12 @@ namespace VCareer.Dto.Job
         public EmploymentType EmploymentType { get; set; }// (Full-time, Part-time, Intern, etc.)
         public PositionType PositionType { get; set; }    /// Cấp bậc vị trí
         public ExperienceLevel Experience { get; set; } = ExperienceLevel.None;
+        public JobStatus Status { get; set; }
         public string? WorkTime { get; set; }
         public int ProvinceCode { get; set; } // code thanh pho
         public int? WardCode { get; set; } // code xa phuong
         public string? WorkLocation { get; set; } // Địa chỉ cụ thể nơi làm việc
+        public string? RejectedReason { get; set; }
         public int Quantity { get; set; }
         #endregion
 

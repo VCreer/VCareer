@@ -208,6 +208,7 @@ export interface RecruimentCampainViewDto {
   companyId: number;
   creationTime?: string;
   creatorId?: string;
-  lastModificationTime?: string;
-  lastModifierId?: string;
+  creatorEmail?: string;
+  numberOfJob: number;
+  numberOfCv: number;
 }

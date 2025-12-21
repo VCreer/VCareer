@@ -112,7 +112,7 @@ namespace VCareer.Services.Subcription
         public async Task AddJobBoostLogic(Guid jobId, Guid effectingJobId)
         {
             var job = await _jobPostRepository.FindAsync(x => x.Id == jobId);
-            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id== effectingJobId);
+            var effectService = await _effectingJobServiceRepository.FindAsync(x => x.Id == effectingJobId);
             if (job == null || effectService == null) throw new BusinessException("Job or EffectingJobService not found");
 
             var priority = await _jobPriorityRepository.FirstAsync(x => x.JobId == job.Id);
@@ -236,5 +236,44 @@ namespace VCareer.Services.Subcription
             await _effectingJobServiceRepository.UpdateAsync(effectService);
 
         }
+        //public async Task<List<ChildServiceViewJobDto>> GetChildServiceByJobId(Guid jobId)
+        //{
+        //    var queryable = await _effectingJobServiceRepository.GetQueryableAsync();
+
+        //    var childServices = await queryable
+        //        .Where(x => x.JobPostId == jobId)
+        //        .Select(x => x.ChildService)
+        //        .Distinct()
+        //        .ToListAsync();
+
+        //    return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewJobDto>>(childServices);
+        //}
+        public async Task<Dictionary<Guid, List<ChildServiceViewJobDto>>>GetChildServiceByJobIds(List<Guid> jobIds)
+        {
+            var queryable = await _effectingJobServiceRepository.GetQueryableAsync();
+
+            var data = await queryable
+                .Where(x => jobIds.Contains(x.JobPostId))
+                .GroupBy(x => x.JobPostId)
+                .Select(g => new
+                {
+                    JobId = g.Key,
+                    ChildServices = g
+                        .GroupBy(x => x.ChildService.Id)
+                        .Select(cs => new ChildServiceViewJobDto
+                        {
+                            Id = cs.Key,
+                            Name = cs.First().ChildService.Name,
+                            IsActive = cs.First().ChildService.IsActive,
+                            IsEnable = cs.First().ChildService.IsEnable
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return data.ToDictionary(x => x.JobId, x => x.ChildServices);
+        }
+
+
     }
 }
