@@ -111,4 +111,3 @@ export class JobSearchService {
 
   constructor(private restService: RestService) {}
 }
-
