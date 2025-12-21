@@ -1231,11 +1231,66 @@ export class RecruiterCvManagementComponent implements OnInit, OnDestroy {
 
   onDownloadCv(cv: CandidateCv): void {
     this.showActionsMenu = null;
-    // TODO: Implement download CV functionality
     this.showToastMessage('Đang tải CV...', 'info');
-    setTimeout(() => {
-      this.showToastMessage('Tải CV thành công!', 'success');
-    }, 1000);
+    
+    // Sử dụng fetch trực tiếp để download file PDF
+    fetch(`${environment.apis.default.url}/api/applications/${cv.id}/download-cv`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/pdf, application/octet-stream, */*',
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage = 'Không thể tải CV. Vui lòng thử lại.';
+          
+          try {
+            const error = JSON.parse(errorText);
+            errorMessage = error.error?.message || error.message || errorMessage;
+          } catch {
+            errorMessage = `Lỗi ${response.status}: ${errorText || 'Không thể tải CV'}`;
+          }
+          
+          this.showToastMessage(errorMessage, 'error');
+          return;
+        }
+        
+        // Kiểm tra content-type để đảm bảo là PDF
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorText = await response.text();
+          try {
+            const error = JSON.parse(errorText);
+            this.showToastMessage(error.error?.message || error.message || 'Không thể tải CV.', 'error');
+          } catch {
+            this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+          }
+          return;
+        }
+        
+        // Lấy blob từ response
+        const blob = await response.blob();
+        
+        // Tạo URL từ blob và trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        // Tạo tên file an toàn (loại bỏ ký tự đặc biệt)
+        const safeName = cv.name.replace(/[^a-zA-Z0-9\s]/g, '_').trim();
+        link.download = `CV_${safeName}_${cv.id.substring(0, 8)}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        this.showToastMessage(`Đã tải CV của ${cv.name} thành công!`, 'success');
+      })
+      .catch((error) => {
+        console.error('Error downloading CV:', error);
+        this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+      });
   }
 
   onCopyCandidateCode(cv: CandidateCv): void {

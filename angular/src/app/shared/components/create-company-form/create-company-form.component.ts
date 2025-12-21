@@ -18,7 +18,6 @@ export class CreateCompanyFormComponent {
     scale: '',
     email: '',
     companyName: '',
-    industry: '',
     address: '',
     phone: '',
     description: ''

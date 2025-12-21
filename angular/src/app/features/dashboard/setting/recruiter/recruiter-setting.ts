@@ -116,7 +116,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     scale: '',
     email: '',
     companyName: '',
-    industry: '',
     address: '',
     phone: '',
     description: ''
@@ -1287,7 +1286,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   private buildUpdateCompanyDtoFromForm(detail: CompanyLegalInfoDto): UpdateCompanyLegalInfoDto {
     const companySize = this.getCompanySizeFromScale(this.companyFormData.scale) ?? detail.companySize ?? 10;
-    const industryId = this.getIndustryIdFromSelection(this.companyFormData.industry, detail.industryId);
+    const industryId = detail.industryId; // Giữ nguyên industryId từ detail, không yêu cầu từ form
     const issueDate = detail.businessLicenseIssueDate || new Date().toISOString();
 
     return {
@@ -1314,7 +1313,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   private buildSubmitCompanyDtoFromForm(): SubmitCompanyLegalInfoDto {
     const companySize = this.getCompanySizeFromScale(this.companyFormData.scale) ?? 10;
-    const industryId = this.getIndustryIdFromSelection(this.companyFormData.industry);
+    const industryId = undefined; // Không yêu cầu industry khi tạo mới
 
     const now = new Date();
     const defaultIssueDate = now.toISOString();
@@ -1397,8 +1396,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       email: this.selectedCompanyDetail.contactEmail || '',
       description: this.selectedCompanyDetail.description || '',
       website: this.selectedCompanyDetail.websiteUrl || '',
-      scale: this.getScaleSelectionFromSize(this.selectedCompanyDetail.companySize),
-      industry: this.getIndustrySelectionFromId(this.selectedCompanyDetail.industryId)
+      scale: this.getScaleSelectionFromSize(this.selectedCompanyDetail.companySize)
     };
     // Ưu tiên dùng logoImage đã render trên card (đã resolve URL đầy đủ)
     this.companyLogoPreview = this.selectedCompanyCard?.logoImage || this.resolveLogoUrl(this.selectedCompanyDetail.logoUrl);
@@ -1479,12 +1477,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
         }
         break;
 
-      case 'industry':
-        if (!value || value === '') {
-          this.companyFormErrors.industry = 'Vui lòng chọn lĩnh vực hoạt động';
-        }
-        break;
-
       case 'website':
         if (value && (value as string).trim() !== '') {
           const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
@@ -1497,7 +1489,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   }
 
   validateAllFields(): boolean {
-    const requiredFields = ['taxId', 'companyName', 'email', 'phone', 'address', 'scale', 'industry'];
+    const requiredFields = ['taxId', 'companyName', 'email', 'phone', 'address', 'scale'];
     let isValid = true;
 
     requiredFields.forEach(field => {

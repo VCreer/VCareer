@@ -386,22 +386,6 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
               icon: 'fa-users',
               color: '#10b981',
               trend: { value: 0, isPositive: true }
-            },
-            {
-              label: 'Tổng đơn đã duyệt',
-              // Sẽ được cập nhật lại bằng số đơn ứng tuyển (acceptedApplications) ở loadApplicationStatistics
-              value: dashboard.totalCandidatesApproved || 0,
-              icon: 'fa-check-circle',
-              color: '#10b981',
-              trend: { value: 0, isPositive: true }
-            },
-            {
-              label: 'Tổng đơn chưa duyệt',
-              // Sẽ được cập nhật lại bằng số đơn ứng tuyển (pendingApplications) ở loadApplicationStatistics
-              value: dashboard.totalCandidatesRejected || 0,
-              icon: 'fa-times-circle',
-              color: '#ef4444',
-              trend: { value: 0, isPositive: false }
             }
           ];
         }
@@ -488,20 +472,6 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
             icon: 'fa-users',
             color: '#10b981',
             trend: { value: 0, isPositive: true }
-          },
-          {
-            label: 'Tổng đơn đã duyệt',
-            value: approved,
-            icon: 'fa-check-circle',
-            color: '#10b981',
-            trend: { value: 0, isPositive: true }
-          },
-          {
-            label: 'Tổng đơn chưa duyệt',
-            value: pending,
-            icon: 'fa-times-circle',
-            color: '#ef4444',
-            trend: { value: 0, isPositive: false }
           }
         ];
 
@@ -671,25 +641,13 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
           ]
         };
 
-        // Đồng bộ lại hai ô metric đã duyệt/chưa duyệt
-        if (!this.metrics || this.metrics.length < 4) {
+        // Đảm bảo metrics có đủ 2 items (Tổng chiến dịch và Tổng ứng viên)
+        if (!this.metrics || this.metrics.length < 2) {
           this.metrics = [
             { label: 'Tổng chiến dịch', value: 0, icon: 'fa-briefcase', color: '#0F83BA' },
-            { label: 'Tổng ứng viên', value: 0, icon: 'fa-users', color: '#10b981' },
-            { label: 'Tổng đơn đã duyệt', value: 0, icon: 'fa-check-circle', color: '#10b981' },
-            { label: 'Tổng đơn chưa duyệt', value: 0, icon: 'fa-times-circle', color: '#ef4444' }
+            { label: 'Tổng ứng viên', value: 0, icon: 'fa-users', color: '#10b981' }
           ];
         }
-        this.metrics[2] = {
-          ...this.metrics[2],
-          label: 'Tổng đơn đã duyệt',
-          value: hiredCount
-        };
-        this.metrics[3] = {
-          ...this.metrics[3],
-          label: 'Tổng đơn chưa duyệt',
-          value: receivedCount + interviewCount + offerCount // các đơn chưa có kết quả cuối
-        };
 
         this.isLoadingApplications = false;
       },
