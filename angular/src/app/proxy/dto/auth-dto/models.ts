@@ -42,10 +42,7 @@ export interface RecruiterRegisterDto {
   password: string;
   name: string;
   phoneNumber: string;
-  provinceCode: number;
-  districtCode: number;
-  companyName?: string;
-  taxCode: string;
+  companyName: string;
 }
 
 export interface ResetPasswordDto {

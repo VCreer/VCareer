@@ -7,14 +7,14 @@ import { Observable, of, timer } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
+import { AuthService } from '../../../../proxy/services/auth/auth.service';
+import { RecruiterRegisterDto } from '../../../../proxy/dto/auth-dto/models';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
   ButtonComponent, 
   ToastNotificationComponent 
 } from '../../../../shared/components';
-import { AuthService } from '../../../../proxy/services/auth/auth.service';
-import { RecruiterRegisterDto } from '../../../../proxy/dto/auth-dto/models';
 
 @Component({
   selector: 'app-recruiter-register',
@@ -55,56 +55,10 @@ export class RecruiterRegisterComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(25)]],
       confirmPassword: ['', [Validators.required]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
-      gender: ['', [Validators.required]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       companyName: ['', [Validators.required, Validators.minLength(2)]],
-      taxCode: ['', [Validators.required, Validators.pattern(/^\d{10}$|^\d{13}$/)], [this.taxCodeValidator()]],
-      city: ['', [Validators.required]],
-      district: ['', [Validators.required]],
       agreeTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
-  }
-
-  /**
-   * Async validator để kiểm tra mã số thuế qua API VietQR
-   * Gọi qua backend proxy endpoint để tránh CORS issue
-   * Nếu mã số thuế tồn tại (code !== "52"), tức là đã có trong hệ thống
-   */
-  private taxCodeValidator(): AsyncValidatorFn {
-    return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      const taxCode = control.value?.trim();
-      
-      // Nếu chưa nhập hoặc không hợp lệ format, không validate
-      if (!taxCode || !/^\d{10}$|^\d{13}$/.test(taxCode)) {
-        return of(null);
-      }
-
-      // Debounce 500ms để tránh gọi API quá nhiều khi user đang gõ
-      return timer(500).pipe(
-        switchMap(() => {
-          // Gọi backend proxy endpoint thay vì gọi trực tiếp VietQR API
-          const baseUrl = environment.apis?.default?.url || 'https://localhost:44385';
-          const apiUrl = `${baseUrl}/api/app/tax-code/validate/${taxCode}`;
-          return this.http.get<any>(apiUrl).pipe(
-            map(response => {
-              // VietQR: code === "52" => Tax invalid (MST không tồn tại)
-              // Logic mới: chỉ chặn khi mã số thuế KHÔNG tồn tại / không hợp lệ.
-              if (response.code && response.code === '52') {
-                return { taxCodeInvalid: true };
-              }
-              // Các trường hợp còn lại coi như hợp lệ, cho phép đăng ký
-              return null;
-            }),
-            catchError((error) => {
-              // Nếu API lỗi, log và không block user
-              console.warn('Cannot validate tax code. Allowing form submission.', error);
-              // Return null để không block form submission
-              return of(null);
-            })
-          );
-        })
-      );
-    };
   }
 
   passwordMatchValidator(form: FormGroup) {
@@ -142,14 +96,7 @@ export class RecruiterRegisterComponent implements OnInit {
     }
 
     if (errors['pattern']) {
-      if (fieldName === 'taxCode') {
-        return 'Mã số thuế phải có 10 hoặc 13 chữ số';
-      }
       return `${this.getFieldLabel(fieldName)} không đúng định dạng`;
-    }
-
-    if (errors['taxCodeInvalid']) {
-      return 'Mã số thuế không tồn tại hoặc không hợp lệ theo VietQR';
     }
 
     if (errors['passwordMismatch']) {
@@ -169,12 +116,8 @@ export class RecruiterRegisterComponent implements OnInit {
       password: 'Mật khẩu',
       confirmPassword: 'Xác nhận mật khẩu',
       fullName: 'Họ và tên',
-      gender: 'Giới tính',
       phone: 'Số điện thoại cá nhân',
       companyName: 'Tên công ty',
-      taxCode: 'Mã số thuế',
-      city: 'Tỉnh/thành phố',
-      district: 'Quận/huyện',
       agreeTerms: 'Đồng ý điều khoản'
     };
     return labels[fieldName] || fieldName;
@@ -206,37 +149,31 @@ export class RecruiterRegisterComponent implements OnInit {
       this.isLoading = true;
       const formData = this.registerForm.value;
       
-      const { confirmPassword, ...apiData } = formData;
-      
       // Map form data sang RecruiterRegisterDto (backend)
       const registerDto: RecruiterRegisterDto = {
-        email: apiData.email?.trim(),
-        password: apiData.password,
-        name: apiData.fullName?.trim(),
-        phoneNumber: apiData.phone?.trim(),
-        provinceCode: Number(apiData.city),
-        districtCode: Number(apiData.district),
-        companyName: apiData.companyName?.trim(),
-        taxCode: apiData.taxCode?.trim(),
+        email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
+        phoneNumber: formData.phone,
+        companyName: formData.companyName
       };
       
       this.authService.recruiterRegister(registerDto).subscribe({
         next: () => {
           this.isLoading = false;
-          this.showToastMessage('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.', 'success');
+          this.showToastMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
           setTimeout(() => {
             this.router.navigate(['/recruiter/login']);
           }, 2000);
         },
         error: (error) => {
           this.isLoading = false;
-          const errorMessage =
-            error.error?.error?.message ||
-            error.error?.message ||
-            error.message ||
-            'Có lỗi xảy ra. Vui lòng thử lại.';
+          const errorMessage = error.error?.error?.message || 
+                             error.error?.message || 
+                             'Có lỗi xảy ra. Vui lòng thử lại.';
           this.showToastMessage(errorMessage, 'error');
-        },
+          console.error('Registration error:', error);
+        }
       });
     }
   }

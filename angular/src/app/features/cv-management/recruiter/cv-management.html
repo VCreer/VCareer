@@ -31,13 +31,6 @@
             <i class="fa fa-file-excel-o"></i>
             <span>{{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}</span>
           </button>
-          <button
-            class="action-btn ai-btn"
-            type="button"
-            (click)="onAiAnalyze()">
-            <i class="fa fa-magic"></i>
-            <span>AI phân tích</span>
-          </button>
         </div>
       </div>
 
@@ -194,17 +187,9 @@
                       <i class="fa fa-sticky-note menu-icon"></i>
                       <span>Ghi chú</span>
                     </div>
-                    <div class="menu-item" (click)="onAiAnalyzeCandidate(cv)">
-                      <i class="fa fa-magic menu-icon"></i>
-                      <span>AI phân tích</span>
-                    </div>
                     <div class="menu-item" (click)="onDownloadCv(cv)">
                       <i class="fa fa-download menu-icon"></i>
                       <span>Tải CV</span>
-                    </div>
-                    <div class="menu-item" (click)="onCopyCandidateCode(cv)">
-                      <i class="fa fa-copy menu-icon"></i>
-                      <span>Sao chép mã ứng viên</span>
                     </div>
                     <div class="menu-separator"></div>
                     <div class="menu-item" (click)="viewCv(cv.id)">

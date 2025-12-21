@@ -33,12 +33,8 @@ namespace VCareer.Dto.AuthDto
         [Required]
         [StringLength(12, MinimumLength = 10, ErrorMessage = "Phone number must be greater than 10 digits and less than 12 digits")]
         public string PhoneNumber { get; set; }
-        public int ProvinceCode { get; set; }
-        public int DistrictCode { get; set; }
-        public string CompanyName { get; set; }
         [Required]
-        public string TaxCode { get; set; }
-
+        public string CompanyName { get; set; }
     }
 
 }

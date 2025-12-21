@@ -527,34 +527,26 @@ namespace VCareer.Services.Auth
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            // TODO: validate tax code format / external VietQR service if needed.
-            // Logic: allow multiple recruiters to share the same company by TaxCode.
-            // If a company with the given TaxCode already exists, reuse it instead of creating a new one.
-
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
             newUser.Name = input.Name;
             newUser.SetPhoneNumber(input.PhoneNumber, false);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
-      //gắn role recruiter 
-      var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
-      if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
-      result = await _identityManager.AddToRoleAsync(newUser, role.Name);
-      if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+            // Gắn role recruiter 
+            var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
+            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+            result = await _identityManager.AddToRoleAsync(newUser, role.Name);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            // Tạo hoặc tái sử dụng công ty theo mã số thuế
-            Company company = await _companyRepository.FirstOrDefaultAsync(c => c.TaxCode == input.TaxCode);
-            if (company == null)
+            // Tạo công ty mới cho recruiter
+            var company = new Company
             {
-                company = new Company
-                {
-                    CompanyName = input.CompanyName,
-                    TaxCode = input.TaxCode,
-                };
-                await _companyRepository.InsertAsync(company);
-                await CurrentUnitOfWork.SaveChangesAsync();  // Lấy Id sớm cho recruiter profile
-            }
+                CompanyName = input.CompanyName,
+                TaxCode = string.Empty // TaxCode không nullable, để empty string
+            };
+            await _companyRepository.InsertAsync(company);
+            await CurrentUnitOfWork.SaveChangesAsync();  // Lấy Id sớm cho recruiter profile
 
             // Tạo RecruiterProfile và gắn với CompanyId ở trên
             var recruiterProfile = new RecruiterProfile
