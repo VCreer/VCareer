@@ -618,15 +618,15 @@ export class JobDetailComponent implements OnInit {
     const experienceMap: { [key: number]: string } = {
       0: 'Không yêu cầu',      // None
       1: 'Dưới 1 năm',         // Under1
-      2: '1-2 năm',            // Year1
-      3: '2-3 năm',             // Year2
-      4: '3-4 năm',             // Year3
-      5: '4-5 năm',             // Year4
-      6: '5-6 năm',             // Year5
-      7: '6-7 năm',             // Year6
-      8: '7-8 năm',             // Year7
-      9: '8-9 năm',             // Year8
-      10: '9-10 năm',           // Year9
+      2: '1 năm',            // Year1
+      3: '2 năm',             // Year2
+      4: '3 năm',             // Year3
+      5: '4 năm',             // Year4
+      6: '5 năm',             // Year5
+      7: '6 năm',             // Year6
+      8: '7 năm',             // Year7
+      9: '8 năm',             // Year8
+      10: '9 năm',           // Year9
       11: '10 năm',              // Year10
       12: 'Trên 10 năm',        // Over10
     };
