@@ -1,298 +1,650 @@
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Reflection;
-//using System.Threading.Tasks;
-//using System.Security.Claims;
-//using NSubstitute;
-//using Shouldly;
-//using VCareer.Application.Applications;
-//using VCareer.Dto.Applications;
-//using VCareer.Models.Applications;
-//using VCareer.Models.Users;
-//using VCareer.CV;
-//using VCareer.Application.Contracts.CV;
-//using VCareer.Models.CV;
-//using VCareer.Models.Job;
-//using VCareer.Models.Companies;
-//using Volo.Abp;
-//using Volo.Abp.Application.Services;
-//using Volo.Abp.Domain.Repositories;
-//using Volo.Abp.ObjectMapping;
-//using Volo.Abp.Users;
-//using Volo.Abp.Emailing;
-//using Volo.Abp.DependencyInjection;
-//using Xunit;
-//using VCareer.IServices.IActivityLogService;
+using NSubstitute;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using VCareer.Application.Applications;
+using VCareer.Dto.Applications;
+using VCareer.IServices.Application;
+using VCareer.IServices.IActivityLogService;
+using VCareer.CV;
+using VCareer.Application.Contracts.CV;
+using VCareer.IServices.Notification;
+using VCareer.IRepositories.Job;
+using VCareer.IRepositories.Profile;
+using VCareer.Models.Applications;
+using VCareer.Models.CV;
+using VCareer.Models.Job;
+using VCareer.Models.Users;
+using VCareer.Models.Companies;
+using Volo.Abp;
+using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Emailing;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
+using Xunit;
+using IdentityUser = Volo.Abp.Identity.IdentityUser;
+using Microsoft.Extensions.Configuration;
 
-//namespace VCareer.Applications;
+namespace VCareer.Applications;
 
-//public class ApplicationAppServiceTests
-//{
-//    [Fact]
-//    public async Task MarkAsViewedAsync_sets_fields_and_logs_for_recruiter()
-//    {
-//        var appId = Guid.NewGuid();
-//        var userId = Guid.NewGuid();
-//        var app = CreateApplication(appId, status: "Pending");
+public class ApplicationAppServiceTests
+{
+    /// Test ứng tuyển với CV online thành công
+    [Fact]
+    public async Task ApplyWithOnlineCVAsync_creates_application_successfully()
+    {
+        // Arrange: Tạo dữ liệu test
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var jobId = Guid.NewGuid();
+        var cvId = Guid.NewGuid();
+        var companyId = 1;
 
-//        var (service, appRepo, activityLog) = BuildService(userId, app);
+        var candidate = CreateCandidateProfile(candidateId, userId);
+        var job = CreateJobPost(jobId, companyId);
+        var cv = CreateCandidateCv(cvId, userId);
+        var recruiter = CreateRecruiterProfile(Guid.NewGuid(), Guid.NewGuid(), companyId);
 
-//        var result = await service.MarkAsViewedAsync(appId);
+        var dto = new ApplyWithOnlineCVDto
+        {
+            JobId = jobId,
+            CandidateCvId = cvId,
+            CoverLetter = "Test cover letter"
+        };
 
-//        app.ViewedAt.ShouldNotBeNull();
-//        app.ViewedBy.ShouldBe(userId);
-//        await appRepo.Received(1).UpdateAsync(app, default);
-//        await activityLog.Received(1).LogActivityAsync(
-//            userId,
-//            Arg.Any<VCareer.Models.ActivityLogs.ActivityType>(),
-//            "ViewApplication",
-//            Arg.Any<string>(),
-//            app.Id,
-//            nameof(JobApplication),
-//            "{}");
-//        result.ShouldNotBeNull();
-//        result.Id.ShouldBe(appId);
-//    }
+        var (service, applicationRepo) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post> { job },
+            new List<CandidateCv> { cv },
+            new List<RecruiterProfile> { recruiter },
+            new List<JobApplication>());
 
-//    [Fact]
-//    public async Task UpdateApplicationStatusAsync_sets_rating_for_recruiter()
-//    {
-//        var appId = Guid.NewGuid();
-//        var userId = Guid.NewGuid();
-//        var app = CreateApplication(appId, status: "Pending");
+        // Act: Gọi hàm ứng tuyển
+        var result = await service.ApplyWithOnlineCVAsync(dto);
 
-//        var (service, appRepo, _) = BuildService(userId, app);
+        // Assert: Kiểm tra application đã được tạo
+        result.ShouldNotBeNull();
+        result.JobId.ShouldBe(jobId);
+        result.CVType.ShouldBe("Online");
+        await applicationRepo.Received(1).InsertAsync(Arg.Is<JobApplication>(a => a.JobId == jobId && a.CandidateId == userId));
+    }
 
-//        var input = new UpdateApplicationStatusDto
-//        {
-//            Status = "Reviewed",
-//            Rating = 4
-//        };
+    /// Test ứng tuyển với CV online thất bại khi candidate không tồn tại
+    [Fact]
+    public async Task ApplyWithOnlineCVAsync_throws_when_candidate_not_found()
+    {
+        // Arrange: Tạo service không có candidate
+        var userId = Guid.NewGuid();
+        var dto = new ApplyWithOnlineCVDto { JobId = Guid.NewGuid(), CandidateCvId = Guid.NewGuid() };
 
-//        var dto = await service.UpdateApplicationStatusAsync(appId, input);
+        var (service, _) = BuildService(
+            userId,
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
 
-//        app.Rating.ShouldBe(4);
-//        app.Status.ShouldBe("Reviewed");
-//        app.RespondedAt.ShouldNotBeNull();
-//        app.RespondedBy.ShouldBe(userId);
-//        await appRepo.Received(1).UpdateAsync(app, default);
-//        dto.Status.ShouldBe("Reviewed");
-//    }
+        // Act & Assert: Kiểm tra ném exception
+        var ex = await Should.ThrowAsync<UserFriendlyException>(() =>
+            service.ApplyWithOnlineCVAsync(dto));
 
-//    [Fact]
-//    public async Task UpdateApplicationStatusAsync_sets_rating_and_notes_for_recruiter()
-//    {
-//        var appId = Guid.NewGuid();
-//        var userId = Guid.NewGuid();
-//        var app = CreateApplication(appId, status: "Pending");
+        ex.Message.ShouldContain("Không tìm thấy thông tin ứng viên");
+    }
 
-//        var (service, appRepo, _) = BuildService(userId, app);
+    /// Test ứng tuyển với CV online thất bại khi CV không tồn tại
+    [Fact]
+    public async Task ApplyWithOnlineCVAsync_throws_when_cv_not_found()
+    {
+        // Arrange: Tạo candidate nhưng không có CV
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var candidate = CreateCandidateProfile(candidateId, userId);
+        var dto = new ApplyWithOnlineCVDto { JobId = Guid.NewGuid(), CandidateCvId = Guid.NewGuid() };
 
-//        var input = new UpdateApplicationStatusDto
-//        {
-//            Status = "Reviewed",
-//            Rating = 2,
-//            RecruiterNotes = "Needs follow-up"
-//        };
+        var (service, _) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
 
-//        var dto = await service.UpdateApplicationStatusAsync(appId, input);
+        // Act & Assert: Kiểm tra ném exception
+        var ex = await Should.ThrowAsync<UserFriendlyException>(() =>
+            service.ApplyWithOnlineCVAsync(dto));
 
-//        app.Rating.ShouldBe(2);
-//        app.RecruiterNotes.ShouldBe("Needs follow-up");
-//        app.Status.ShouldBe("Reviewed");
-//        app.RespondedAt.ShouldNotBeNull();
-//        app.RespondedBy.ShouldBe(userId);
-//        await appRepo.Received(1).UpdateAsync(app, default);
-//        dto.Status.ShouldBe("Reviewed");
-//    }
+        ex.Message.ShouldContain("CV không tồn tại");
+    }
 
-//    [Fact]
-//    public async Task UpdateApplicationStatusAsync_sets_recruiter_notes_without_rating()
-//    {
-//        var appId = Guid.NewGuid();
-//        var userId = Guid.NewGuid();
-//        var app = CreateApplication(appId, status: "Pending");
+    /// Test ứng tuyển với CV online thất bại khi job không tồn tại
+    [Fact]
+    public async Task ApplyWithOnlineCVAsync_throws_when_job_not_found()
+    {
+        // Arrange: Tạo candidate và CV nhưng không có job
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var cvId = Guid.NewGuid();
+        var candidate = CreateCandidateProfile(candidateId, userId);
+        var cv = CreateCandidateCv(cvId, userId);
+        var dto = new ApplyWithOnlineCVDto { JobId = Guid.NewGuid(), CandidateCvId = cvId };
 
-//        var (service, appRepo, _) = BuildService(userId, app);
+        var (service, _) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post>(),
+            new List<CandidateCv> { cv },
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
 
-//        var input = new UpdateApplicationStatusDto
-//        {
-//            Status = "Reviewed",
-//            RecruiterNotes = "Good CV, schedule interview"
-//        };
+        // Act & Assert: Kiểm tra ném exception
+        var ex = await Should.ThrowAsync<UserFriendlyException>(() =>
+            service.ApplyWithOnlineCVAsync(dto));
 
-//        var dto = await service.UpdateApplicationStatusAsync(appId, input);
+        ex.Message.ShouldContain("Công việc không tồn tại");
+    }
 
-//        app.Rating.ShouldBeNull();
-//        app.RecruiterNotes.ShouldBe("Good CV, schedule interview");
-//        app.Status.ShouldBe("Reviewed");
-//        app.RespondedAt.ShouldNotBeNull();
-//        app.RespondedBy.ShouldBe(userId);
-//        await appRepo.Received(1).UpdateAsync(app, default);
-//        dto.Status.ShouldBe("Reviewed");
-//    }
+    /// Test cập nhật trạng thái application thành công
+    [Fact]
+    public async Task UpdateApplicationStatusAsync_updates_status_successfully()
+    {
+        // Arrange: Tạo application và dto
+        var applicationId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), Guid.NewGuid(), 1);
+        var dto = new UpdateApplicationStatusDto
+        {
+            Status = "Reviewed",
+            RecruiterNotes = "Test notes",
+            Rating = 4
+        };
 
-//    private static JobApplication CreateApplication(Guid id, string status)
-//    {
-//        var app = new JobApplication
-//        {
-//            Status = status
-//        };
+        var (service, applicationRepo) = BuildService(
+            Guid.NewGuid(),
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
 
-//        typeof(JobApplication)
-//            .GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-//            ?.SetValue(app, id);
+        // Act: Gọi hàm cập nhật trạng thái
+        var result = await service.UpdateApplicationStatusAsync(applicationId, dto);
 
-//        return app;
-//    }
+        // Assert: Kiểm tra application đã được cập nhật
+        result.ShouldNotBeNull();
+        result.Status.ShouldBe(dto.Status);
+        await applicationRepo.Received(1).UpdateAsync(Arg.Is<JobApplication>(a => a.Status == dto.Status));
+    }
 
-//    private static (ApplicationAppService service,
-//        IRepository<JobApplication, Guid> appRepo,
-//        IActivityLogAppService activityLog) BuildService(Guid currentUserId, JobApplication application)
-//    {
-//        var appRepo = Substitute.For<IRepository<JobApplication, Guid>>();
-//        appRepo.GetAsync(Arg.Any<Guid>(), Arg.Any<bool>())
-//            .Returns(application);
-//        appRepo.UpdateAsync(Arg.Any<JobApplication>(), Arg.Any<bool>())
-//            .Returns(ci => Task.FromResult(ci.Arg<JobApplication>()));
+    /// Test cập nhật trạng thái application thất bại khi application không tồn tại
+    [Fact]
+    public async Task UpdateApplicationStatusAsync_throws_when_application_not_found()
+    {
+        // Arrange: Tạo service không có application
+        var nonExistentId = Guid.NewGuid();
+        var dto = new UpdateApplicationStatusDto { Status = "Reviewed" };
 
-//        var candidateRepo = Substitute.For<IRepository<CandidateProfile, Guid>>();
-//        var jobRepo = Substitute.For<IRepository<Job_Post, Guid>>();
-//        var candidateCvRepo = Substitute.For<IRepository<CandidateCv, Guid>>();
-//        var uploadedCvRepo = Substitute.For<IRepository<UploadedCv, Guid>>();
-//        var recruiterRepo = Substitute.For<IRepository<RecruiterProfile, Guid>>();
-//        var companyRepo = Substitute.For<IRepository<Company, int>>();
-//        var identityUserRepo = Substitute.For<IRepository<Volo.Abp.Identity.IdentityUser, Guid>>();
-//        var candidateCvSvc = Substitute.For<ICandidateCvAppService>();
-//        var uploadedCvSvc = Substitute.For<IUploadedCvAppService>();
-//        var emailSender = Substitute.For<Volo.Abp.Emailing.IEmailSender>();
-//        var configuration = Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>();
-//        var activityLog = Substitute.For<IActivityLogAppService>();
+        var (service, _) = BuildService(
+            Guid.NewGuid(),
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
 
-//        var currentUser = new FakeCurrentUser(currentUserId);
+        // Act & Assert: Kiểm tra ném exception
+        await Should.ThrowAsync<EntityNotFoundException>(() =>
+            service.UpdateApplicationStatusAsync(nonExistentId, dto));
+    }
 
-//        var objectMapper = Substitute.For<IObjectMapper>();
-//        objectMapper.Map<JobApplication, ApplicationDto>(Arg.Any<JobApplication>())
-//            .Returns(ci => new ApplicationDto
-//            {
-//                Id = ci.Arg<JobApplication>().Id,
-//                Status = ci.Arg<JobApplication>().Status
-//            });
+    /// Test hủy application thành công
+    [Fact]
+    public async Task WithdrawApplicationAsync_withdraws_application_successfully()
+    {
+        // Arrange: Tạo application và candidate
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), userId, 1);
+        var candidate = CreateCandidateProfile(candidateId, userId);
+        var dto = new WithdrawApplicationDto { WithdrawalReason = "Test reason" };
 
-//        var service = new ApplicationAppService(
-//            appRepo,
-//            candidateRepo,
-//            jobRepo,
-//            candidateCvRepo,
-//            uploadedCvRepo,
-//            recruiterRepo,
-//            companyRepo,
-//            identityUserRepo,
-//            candidateCvSvc,
-//            uploadedCvSvc,
-//            currentUser,
-//            emailSender,
-//            configuration,
-//            activityLog);
+        var (service, applicationRepo) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
 
-//        // Provide ObjectMapper via LazyServiceProvider because ObjectMapper has no setter
-//        var lazy = new FakeLazyServiceProvider(objectMapper);
-//        typeof(AbpServiceBase)
-//            .GetProperty("LazyServiceProvider", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-//            ?.SetValue(service, lazy);
+        // Act: Gọi hàm hủy application
+        var result = await service.WithdrawApplicationAsync(applicationId, dto);
 
-//        return (service, appRepo, activityLog);
-//    }
+        // Assert: Kiểm tra application đã được cập nhật
+        result.ShouldNotBeNull();
+        result.Status.ShouldBe("Withdrawn");
+        await applicationRepo.Received(1).UpdateAsync(Arg.Is<JobApplication>(a => a.Status == "Withdrawn"));
+    }
 
-//    private class FakeLazyServiceProvider : IAbpLazyServiceProvider, ICachedServiceProviderBase, IKeyedServiceProvider, IServiceProvider
-//    {
-//        private readonly IObjectMapper _objectMapper;
+    /// Test hủy application thất bại khi không có quyền
+    [Fact]
+    public async Task WithdrawApplicationAsync_throws_when_user_not_authorized()
+    {
+        // Arrange: Tạo application với candidate khác
+        var applicationId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), Guid.NewGuid(), 1);
+        var differentUserId = Guid.NewGuid();
+        var dto = new WithdrawApplicationDto { WithdrawalReason = "Test reason" };
 
-//        public FakeLazyServiceProvider(IObjectMapper objectMapper)
-//        {
-//            _objectMapper = objectMapper;
-//            ServiceProvider = Substitute.For<IServiceProvider>();
-//        }
+        var (service, _) = BuildService(
+            differentUserId,
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
 
-//        public IServiceProvider ServiceProvider { get; }
+        // Act & Assert: Kiểm tra ném exception
+        var ex = await Should.ThrowAsync<UserFriendlyException>(() =>
+            service.WithdrawApplicationAsync(applicationId, dto));
 
-//        public T LazyGetService<T>() => (T?)GetService(typeof(T))!;
-//        public T LazyGetService<T>(Func<IServiceProvider, object> factory) => (T)(GetService(typeof(T)) ?? factory(ServiceProvider));
-//        public T LazyGetRequiredService<T>() where T : notnull => (T)(GetService(typeof(T)) ?? throw new AbpException($"{typeof(T).Name} not registered"));
-//        public object? LazyGetService(Type serviceType) => GetService(serviceType);
-//        public object LazyGetRequiredService(Type serviceType) => GetService(serviceType) ?? throw new AbpException($"{serviceType.Name} not registered");
-//        public object LazyGetService(Type serviceType, Func<IServiceProvider, object> factory) => GetService(serviceType) ?? factory(ServiceProvider);
+        ex.Message.ShouldContain("không có quyền");
+    }
 
-//        public object? GetService(Type serviceType)
-//        {
-//            if (serviceType == typeof(IObjectMapper)) return _objectMapper;
-//            return null;
-//        }
+    /// Test đánh dấu đã xem application thành công
+    [Fact]
+    public async Task MarkAsViewedAsync_marks_as_viewed_successfully()
+    {
+        // Arrange: Tạo application chưa được xem
+        var applicationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), Guid.NewGuid(), 1);
+        application.ViewedAt = null;
 
-//        public object? GetService(Type serviceType, object? serviceKey)
-//        {
-//            if (serviceType == typeof(IObjectMapper)) return _objectMapper;
-//            return null;
-//        }
+        var (service, applicationRepo) = BuildService(
+            userId,
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
 
-//        public T? GetService<T>(object? serviceKey = null)
-//        {
-//            return (T?)GetService(typeof(T), serviceKey);
-//        }
+        // Act: Gọi hàm đánh dấu đã xem
+        var result = await service.MarkAsViewedAsync(applicationId);
 
-//        public object? GetKeyedService(Type serviceType, object? serviceKey)
-//        {
-//            return GetService(serviceType, serviceKey);
-//        }
+        // Assert: Kiểm tra application đã được cập nhật
+        result.ShouldNotBeNull();
+        await applicationRepo.Received(1).UpdateAsync(Arg.Is<JobApplication>(a => a.ViewedAt.HasValue));
+    }
 
-//        public T? GetKeyedService<T>(object? serviceKey = null)
-//        {
-//            return (T?)GetService(typeof(T), serviceKey);
-//        }
+    /// Test kiểm tra trạng thái application khi đã ứng tuyển
+    [Fact]
+    public async Task CheckApplicationStatusAsync_returns_status_when_applied()
+    {
+        // Arrange: Tạo candidate và application
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var jobId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var candidate = CreateCandidateProfile(candidateId, userId);
+        var application = CreateJobApplication(applicationId, jobId, userId, 1);
+        application.Status = "Pending";
 
-//        public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
-//        {
-//            return GetService(serviceType, serviceKey) ?? throw new AbpException($"{serviceType.Name} not registered");
-//        }
+        var (service, _) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
 
-//        public T GetRequiredKeyedService<T>(object? serviceKey = null) where T : notnull
-//        {
-//            return (T)(GetService(typeof(T), serviceKey) ?? throw new AbpException($"{typeof(T).Name} not registered"));
-//        }
-//    }
+        // Act: Gọi hàm kiểm tra trạng thái
+        var result = await service.CheckApplicationStatusAsync(jobId);
 
-//    private class FakeCurrentUser : ICurrentUser
-//    {
-//        public FakeCurrentUser(Guid id)
-//        {
-//            Id = id;
-//        }
+        // Assert: Kiểm tra kết quả
+        result.ShouldNotBeNull();
+        result.HasApplied.ShouldBeTrue();
+        result.ApplicationId.ShouldBe(applicationId);
+        result.Status.ShouldBe("Pending");
+    }
 
-//        public Guid? Id { get; }
-//        public Guid? TenantId => null;
-//        public string? TenantName => null;
-//        public string? UserName => "recruiter";
-//        public string? Name => "Recruiter";
-//        public string? SurName => string.Empty;
-//        public string? PhoneNumber => string.Empty;
-//        public string? Email => "recruiter@test.com";
-//        public bool EmailConfirmed => true;
-//        public bool PhoneNumberConfirmed => true;
-//        public bool EmailVerified => true;
-//        public bool PhoneNumberVerified => true;
-//        public Claim[] Claims => Array.Empty<Claim>();
-//        public string[] Roles => Array.Empty<string>();
-//        public bool IsAuthenticated => true;
-//        public string? FindClaimValue(string claimType) => Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
-//        public Claim? FindClaim(string claimType) => Claims.FirstOrDefault(c => c.Type == claimType);
-//        public Claim[] FindClaims(string claimType) => Claims.Where(c => c.Type == claimType).ToArray();
-//        public Claim[] GetAllClaims() => Claims.ToArray();
-//        public Claim[] FindClaims(string claimType, string claimValue) => Claims.Where(c => c.Type == claimType && c.Value == claimValue).ToArray();
-//        public Claim[] GetAllClaims(string claimType) => Claims.Where(c => c.Type == claimType).ToArray();
-//        public Claim[] GetAllClaims(string claimType, string claimValue) => Claims.Where(c => c.Type == claimType && c.Value == claimValue).ToArray();
-//        public bool IsInRole(string roleName) => Roles.Any(r => string.Equals(r, roleName, StringComparison.OrdinalIgnoreCase));
-//        public string? TenantRoleName => null;
-//    }
-//}
+    /// Test kiểm tra trạng thái application khi chưa ứng tuyển
+    [Fact]
+    public async Task CheckApplicationStatusAsync_returns_not_applied_when_no_application()
+    {
+        // Arrange: Tạo candidate nhưng không có application
+        var userId = Guid.NewGuid();
+        var candidateId = Guid.NewGuid();
+        var jobId = Guid.NewGuid();
+        var candidate = CreateCandidateProfile(candidateId, userId);
 
+        var (service, _) = BuildService(
+            userId,
+            new List<CandidateProfile> { candidate },
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
+
+        // Act: Gọi hàm kiểm tra trạng thái
+        var result = await service.CheckApplicationStatusAsync(jobId);
+
+        // Assert: Kiểm tra kết quả
+        result.ShouldNotBeNull();
+        result.HasApplied.ShouldBeFalse();
+    }
+
+    /// Test lấy application theo ID thành công
+    [Fact]
+    public async Task GetApplicationAsync_returns_application_successfully()
+    {
+        // Arrange: Tạo application
+        var applicationId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), Guid.NewGuid(), 1);
+
+        var (service, _) = BuildService(
+            Guid.NewGuid(),
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
+
+        // Act: Gọi hàm lấy application
+        var result = await service.GetApplicationAsync(applicationId);
+
+        // Assert: Kiểm tra kết quả
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(applicationId);
+    }
+
+    /// Test lấy application thất bại khi không tồn tại
+    [Fact]
+    public async Task GetApplicationAsync_throws_when_application_not_found()
+    {
+        // Arrange: Tạo service không có application
+        var nonExistentId = Guid.NewGuid();
+
+        var (service, _) = BuildService(
+            Guid.NewGuid(),
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication>());
+
+        // Act & Assert: Kiểm tra ném exception
+        await Should.ThrowAsync<EntityNotFoundException>(() =>
+            service.GetApplicationAsync(nonExistentId));
+    }
+
+    /// Test xóa application thành công
+    [Fact]
+    public async Task DeleteApplicationAsync_deletes_application_successfully()
+    {
+        // Arrange: Tạo application
+        var applicationId = Guid.NewGuid();
+        var application = CreateJobApplication(applicationId, Guid.NewGuid(), Guid.NewGuid(), 1);
+
+        var (service, applicationRepo) = BuildService(
+            Guid.NewGuid(),
+            new List<CandidateProfile>(),
+            new List<Job_Post>(),
+            new List<CandidateCv>(),
+            new List<RecruiterProfile>(),
+            new List<JobApplication> { application });
+
+        // Act: Gọi hàm xóa application
+        await service.DeleteApplicationAsync(applicationId);
+
+        // Assert: Kiểm tra application đã được xóa
+        await applicationRepo.Received(1).DeleteAsync(Arg.Is<JobApplication>(a => a.Id == applicationId));
+    }
+
+    // ========== Helper Methods ==========
+
+    /// Tạo dữ liệu test cho CandidateProfile
+    private static CandidateProfile CreateCandidateProfile(Guid id, Guid userId)
+    {
+        var profile = new CandidateProfile
+        {
+            UserId = userId
+        };
+
+        typeof(CandidateProfile)
+            .GetProperty("Id")?
+            .SetValue(profile, id);
+
+        return profile;
+    }
+
+    /// Tạo dữ liệu test cho Job_Post
+    private static Job_Post CreateJobPost(Guid id, int companyId)
+    {
+        var job = new Job_Post
+        {
+            Title = "Test Job",
+            CompanyId = companyId
+        };
+
+        typeof(Job_Post)
+            .GetProperty("Id")?
+            .SetValue(job, id);
+
+        return job;
+    }
+
+    /// Tạo dữ liệu test cho CandidateCv
+    private static CandidateCv CreateCandidateCv(Guid id, Guid candidateId)
+    {
+        var cv = new CandidateCv
+        {
+            CandidateId = candidateId
+        };
+
+        typeof(CandidateCv)
+            .GetProperty("Id")?
+            .SetValue(cv, id);
+
+        return cv;
+    }
+
+    /// Tạo dữ liệu test cho RecruiterProfile
+    private static RecruiterProfile CreateRecruiterProfile(Guid id, Guid userId, int companyId)
+    {
+        var profile = new RecruiterProfile
+        {
+            UserId = userId,
+            CompanyId = companyId
+        };
+
+        typeof(RecruiterProfile)
+            .GetProperty("Id")?
+            .SetValue(profile, id);
+
+        return profile;
+    }
+
+    /// Tạo dữ liệu test cho JobApplication
+    private static JobApplication CreateJobApplication(Guid id, Guid jobId, Guid candidateId, int companyId)
+    {
+        var application = new JobApplication
+        {
+            JobId = jobId,
+            CandidateId = candidateId,
+            CompanyId = companyId,
+            Status = "Pending",
+            CVType = "Online"
+        };
+
+        typeof(JobApplication)
+            .GetProperty("Id")?
+            .SetValue(application, id);
+
+        return application;
+    }
+
+    /// Tạo service test với các dependency giả (mock)
+    private static (ApplicationAppService service, IRepository<JobApplication, Guid> applicationRepo) BuildService(
+        Guid currentUserId,
+        List<CandidateProfile> candidateData,
+        List<Job_Post> jobData,
+        List<CandidateCv> cvData,
+        List<RecruiterProfile> recruiterData,
+        List<JobApplication> applicationData)
+    {
+        // Tạo mock repository cho JobApplication
+        var applicationRepo = Substitute.For<IRepository<JobApplication, Guid>>();
+        applicationRepo.GetQueryableAsync()
+            .Returns(Task.FromResult(applicationData.AsQueryable()));
+        applicationRepo.GetAsync(Arg.Any<Guid>())
+            .Returns(ci =>
+            {
+                var id = ci.Arg<Guid>();
+                var application = applicationData.FirstOrDefault(a => a.Id == id);
+                if (application == null)
+                    throw new EntityNotFoundException();
+                return Task.FromResult(application);
+            });
+        applicationRepo.FirstOrDefaultAsync(Arg.Any<System.Linq.Expressions.Expression<Func<JobApplication, bool>>>())
+            .Returns(ci =>
+            {
+                var predicate = ci.Arg<System.Linq.Expressions.Expression<Func<JobApplication, bool>>>();
+                var compiled = predicate.Compile();
+                return Task.FromResult(applicationData.FirstOrDefault(compiled));
+            });
+        applicationRepo.InsertAsync(Arg.Any<JobApplication>())
+            .Returns(ci =>
+            {
+                var application = ci.Arg<JobApplication>();
+                applicationData.Add(application);
+                return Task.FromResult(application);
+            });
+        applicationRepo.UpdateAsync(Arg.Any<JobApplication>())
+            .Returns(ci =>
+            {
+                var application = ci.Arg<JobApplication>();
+                var existing = applicationData.FirstOrDefault(a => a.Id == application.Id);
+                if (existing != null)
+                {
+                    var index = applicationData.IndexOf(existing);
+                    applicationData[index] = application;
+                }
+                return Task.FromResult(application);
+            });
+        applicationRepo.DeleteAsync(Arg.Any<JobApplication>())
+            .Returns(ci =>
+            {
+                var application = ci.Arg<JobApplication>();
+                applicationData.RemoveAll(a => a.Id == application.Id);
+                return Task.CompletedTask;
+            });
+
+        // Tạo mock repository cho CandidateProfile
+        var candidateRepo = Substitute.For<IRepository<CandidateProfile, Guid>>();
+        candidateRepo.FirstOrDefaultAsync(Arg.Any<System.Linq.Expressions.Expression<Func<CandidateProfile, bool>>>())
+            .Returns(ci =>
+            {
+                var predicate = ci.Arg<System.Linq.Expressions.Expression<Func<CandidateProfile, bool>>>();
+                var compiled = predicate.Compile();
+                return Task.FromResult(candidateData.FirstOrDefault(compiled));
+            });
+
+        // Tạo mock repository cho Job_Post
+        var jobRepo = Substitute.For<IRepository<Job_Post, Guid>>();
+        jobRepo.GetQueryableAsync()
+            .Returns(Task.FromResult(jobData.AsQueryable()));
+        jobRepo.GetAsync(Arg.Any<Guid>())
+            .Returns(ci =>
+            {
+                var id = ci.Arg<Guid>();
+                var job = jobData.FirstOrDefault(j => j.Id == id);
+                if (job == null)
+                    throw new EntityNotFoundException();
+                return Task.FromResult(job);
+            });
+        jobRepo.FirstOrDefaultAsync(Arg.Any<System.Linq.Expressions.Expression<Func<Job_Post, bool>>>())
+            .Returns(ci =>
+            {
+                var predicate = ci.Arg<System.Linq.Expressions.Expression<Func<Job_Post, bool>>>();
+                var compiled = predicate.Compile();
+                return Task.FromResult(jobData.FirstOrDefault(compiled));
+            });
+        jobRepo.UpdateAsync(Arg.Any<Job_Post>())
+            .Returns(ci => Task.FromResult(ci.Arg<Job_Post>()));
+
+        // Tạo mock repository cho CandidateCv
+        var cvRepo = Substitute.For<IRepository<CandidateCv, Guid>>();
+        cvRepo.FirstOrDefaultAsync(Arg.Any<System.Linq.Expressions.Expression<Func<CandidateCv, bool>>>())
+            .Returns(ci =>
+            {
+                var predicate = ci.Arg<System.Linq.Expressions.Expression<Func<CandidateCv, bool>>>();
+                var compiled = predicate.Compile();
+                return Task.FromResult(cvData.FirstOrDefault(compiled));
+            });
+
+        // Tạo mock repository cho UploadedCv
+        var uploadedCvRepo = Substitute.For<IRepository<UploadedCv, Guid>>();
+
+        // Tạo mock repository cho RecruiterProfile
+        var recruiterRepo = Substitute.For<IRepository<RecruiterProfile, Guid>>();
+        recruiterRepo.FirstOrDefaultAsync(Arg.Any<System.Linq.Expressions.Expression<Func<RecruiterProfile, bool>>>())
+            .Returns(ci =>
+            {
+                var predicate = ci.Arg<System.Linq.Expressions.Expression<Func<RecruiterProfile, bool>>>();
+                var compiled = predicate.Compile();
+                return Task.FromResult(recruiterData.FirstOrDefault(compiled));
+            });
+
+        // Tạo mock repository cho Company
+        var companyRepo = Substitute.For<IRepository<Company, int>>();
+
+        // Tạo mock repository cho RecruitmentCampaign
+        var campaignRepo = Substitute.For<IRepository<RecruitmentCampaign, Guid>>();
+
+        // Tạo mock repository cho IdentityUser
+        var identityUserRepo = Substitute.For<IRepository<IdentityUser, Guid>>();
+
+        // Tạo mock ICurrentUser
+        var currentUser = Substitute.For<ICurrentUser>();
+        currentUser.IsAuthenticated.Returns(true);
+        currentUser.Id.Returns((Guid?)currentUserId);
+        currentUser.GetId().Returns(currentUserId);
+
+        // Tạo mock các service
+        var candidateCvService = Substitute.For<ICandidateCvAppService>();
+        var uploadedCvService = Substitute.For<IUploadedCvAppService>();
+        var emailSender = Substitute.For<IEmailSender>();
+        var notificationService = Substitute.For<INotificationAppService>();
+        var recruiterRepository = Substitute.For<IRecruiterRepository>();
+        var jobPostRepository = Substitute.For<IJobPostRepository>();
+        var activityLogService = Substitute.For<IActivityLogAppService>();
+        var configuration = Substitute.For<IConfiguration>();
+
+        // Tạo service với các dependency giả
+        var service = new ApplicationAppService(
+            applicationRepo,
+            candidateRepo,
+            jobRepo,
+            campaignRepo,
+            cvRepo,
+            uploadedCvRepo,
+            recruiterRepo,
+            companyRepo,
+            identityUserRepo,
+            candidateCvService,
+            uploadedCvService,
+            currentUser,
+            emailSender,
+            configuration,
+            activityLogService,
+            notificationService,
+            recruiterRepository,
+            jobPostRepository);
+
+        return (service, applicationRepo);
+    }
+}

@@ -7,6 +7,12 @@ import { ButtonComponent } from '../../../../shared/components/button/button';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { catchError, of } from 'rxjs';
 
+interface NotificationWithMetadata extends NotificationDto {
+  rejectedReason?: string;
+  jobTitle?: string;
+  companyName?: string;
+}
+
 @Component({
   selector: 'app-recruiter-notifications',
   standalone: true,
@@ -15,7 +21,7 @@ import { catchError, of } from 'rxjs';
   styleUrls: ['./notifications.scss']
 })
 export class RecruiterNotificationsComponent implements OnInit, OnDestroy {
-  notifications: NotificationDto[] = [];
+  notifications: NotificationWithMetadata[] = [];
   isLoading = false;
   totalCount = 0;
   unreadCount = 0;
@@ -90,6 +96,22 @@ export class RecruiterNotificationsComponent implements OnInit, OnDestroy {
       )
       .subscribe(result => {
         let items = result.items || [];
+
+        // Parse metadata để lấy thông tin bổ sung
+        items = items.map(item => {
+          const notification: NotificationWithMetadata = { ...item };
+          if (item.metadata) {
+            try {
+              const metadata = JSON.parse(item.metadata);
+              notification.rejectedReason = metadata.RejectedReason || metadata.rejectedReason;
+              notification.jobTitle = metadata.JobTitle || metadata.jobTitle;
+              notification.companyName = metadata.CompanyName || metadata.companyName;
+            } catch (e) {
+              console.error('[Recruiter Notifications] Error parsing metadata:', e);
+            }
+          }
+          return notification;
+        });
 
         // Lọc theo loại thông báo trên frontend:
         // - Ứng viên: chỉ lấy thông báo ApplicationSubmitted
@@ -259,6 +281,17 @@ export class RecruiterNotificationsComponent implements OnInit, OnDestroy {
       return 'Ứng viên';
     }
     return 'Hệ thống';
+  }
+
+  getRejectedReason(notification: NotificationWithMetadata): string {
+    if (notification.notificationType === 'JobRejected' && notification.rejectedReason) {
+      return notification.rejectedReason;
+    }
+    return '';
+  }
+
+  hasRejectedReason(notification: NotificationWithMetadata): boolean {
+    return notification.notificationType === 'JobRejected' && !!notification.rejectedReason;
   }
 
   showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {

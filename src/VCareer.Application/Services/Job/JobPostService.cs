@@ -152,9 +152,6 @@ namespace VCareer.Services.Job
             await _jobPostRepository.UpdateAsync(jobPost, true);
             await _jobSearchService.IndexJobAsync(jobPost.Id);
             
-            // Lấy thông tin campaign
-            var campaign = await _campaignRepository.GetAsync(jobPost.RecruitmentCampaignId);
-            
             // Gửi notification cho recruiter về việc job được duyệt
             await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
             {
@@ -170,9 +167,7 @@ namespace VCareer.Services.Job
                     JobId = jobPost.Id,
                     JobTitle = jobPost.Title,
                     CompanyName = jobPost.CompanyName,
-                    ApprovedAt = jobPost.ApproveAt,
-                    RecruitmentCampaignId = jobPost.RecruitmentCampaignId,
-                    CampaignName = campaign?.Name
+                    ApprovedAt = jobPost.ApproveAt
                 })
             });
         }
@@ -226,12 +221,16 @@ namespace VCareer.Services.Job
             await _jobAffectingRepository.DeleteManyAsync(jobEffects);
 
             // Gửi notification cho recruiter về việc job bị từ chối
+            var rejectionMessage = string.IsNullOrWhiteSpace(reasonReject)
+                ? $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối."
+                : $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối. Lý do: {reasonReject}";
+            
             await _notificationAppService.CreateNotificationAsync(new NotificationCreateDto
             {
                 UserId = jobPost.RecruiterId,
                 UserRole = "Recruiter",
                 Title = "Tin tuyển dụng bị từ chối",
-                Message = $"Tin tuyển dụng '{jobPost.Title}' đã bị từ chối.",
+                Message = rejectionMessage,
                 NotificationType = "JobRejected",
                 RelatedEntityType = "JobPost",
                 RelatedEntityId = jobPost.Id,
@@ -239,7 +238,8 @@ namespace VCareer.Services.Job
                 {
                     JobId = jobPost.Id,
                     JobTitle = jobPost.Title,
-                    CompanyName = jobPost.CompanyName
+                    CompanyName = jobPost.CompanyName,
+                    RejectedReason = reasonReject ?? string.Empty
                 })
             });
         }
