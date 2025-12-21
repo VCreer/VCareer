@@ -22,9 +22,10 @@ namespace VCareer.Dto.JobDto
         public int CompanyId { get; set; }
         public DateTime CreationTime { get; set; }
         public Guid? CreatorId { get; set; }
-        public DateTime? LastModificationTime { get; set; }
-        public Guid? LastModifierId { get; set; }
-    }
+        public string? CreatorEmail { get; set; }
+        public int NumberOfJob { get; set; }
+        public int NumberOfCv{ get; set; }
+     }
 
 
 

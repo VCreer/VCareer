@@ -8,7 +8,6 @@ import {
   GenericModalComponent,
   ToastNotificationComponent,
   MultiSelectLocationComponent,
-  ToggleSwitchComponent,
   PaginationComponent,
   SelectFieldComponent,
   SelectOption,
@@ -24,8 +23,6 @@ import { GeoService} from 'src/app/proxy/services/geo';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 
 interface Campaign extends RecruimentCampainViewDto {
-  appliedCvs?: number;
-  jobCount?: number;
   startDate?: string;
   endDate?: string;
 }
@@ -41,7 +38,6 @@ interface Campaign extends RecruimentCampainViewDto {
     GenericModalComponent,
     ToastNotificationComponent,
     MultiSelectLocationComponent,
-    ToggleSwitchComponent,
     PaginationComponent,
     SelectFieldComponent,
   ],
@@ -72,7 +68,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   filterOptions: SelectOption[] = [
     { value: 'all', label: 'Tất cả chiến dịch' },
     { value: 'active', label: 'Đang hoạt động' },
-    { value: 'inactive', label: 'Đã tắt' },
+    { value: 'inactive', label: 'Không hoạt động' },
   ];
   currentPage = 1;
   itemsPerPage = 10;
@@ -95,7 +91,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
 
   // Khóa để ngăn double request
-  private isTogglingCampaign = false;
   private isSavingEdit = false;
   private isDeletingCampaign = false;
 
@@ -210,10 +205,8 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     return dtos.map(dto => ({
       ...dto,
       id: dto.id.toString(),
-      appliedCvs: 0,
-      jobCount: 0,
       startDate: this.formatDate(dto.creationTime),
-      endDate: this.formatDate(dto.lastModificationTime || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)),
+    
     }));
   }
 
@@ -264,30 +257,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: { campaignName: this.campaignForm.campaignName },
     });
-  }
-
-  // Bật/tắt chiến dịch
-  onToggleCampaign(campaign: Campaign, checked: boolean) {
-    // Ngăn double request
-    if (this.isTogglingCampaign) return;
-    
-    this.isTogglingCampaign = true;
-
-    this.campaignService
-      .setRecruitmentCompainStatusByCompainIdAndIsActive(campaign.id!, checked)
-      .subscribe({
-        next: () => {
-          campaign.isActive = checked;
-          this.showToastMessage(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch', 'success');
-        },
-        error: () => {
-          campaign.isActive = !checked;
-          this.showToastMessage('Cập nhật trạng thái thất bại', 'error');
-        },
-        complete: () => {
-          this.isTogglingCampaign = false;
-        }
-      });
   }
 
   // Sửa tên chiến dịch

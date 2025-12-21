@@ -13891,6 +13891,23 @@
                     "type": "VCareer.Dto.JobDto.RecruimentCampainViewDto",
                     "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainViewDto"
                   }
+                },
+                {
+                  "name": "CountJobInCompain",
+                  "parametersOnMethod": [
+                    {
+                      "name": "compainId",
+                      "typeAsString": "System.Guid, System.Private.CoreLib",
+                      "type": "System.Guid",
+                      "typeSimple": "string",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Int32",
+                    "typeSimple": "number"
+                  }
                 }
               ]
             }
@@ -14250,6 +14267,43 @@
                 "typeSimple": "VCareer.Dto.JobDto.RecruimentCampainViewDto"
               },
               "allowAnonymous": false,
+              "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
+            },
+            "CountJobInCompainByCompainId": {
+              "uniqueName": "CountJobInCompainByCompainId",
+              "name": "CountJobInCompain",
+              "httpMethod": "POST",
+              "url": "api/app/recruitment-compain/count-job-in-compain/{compainId}",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "compainId",
+                  "typeAsString": "System.Guid, System.Private.CoreLib",
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "compainId",
+                  "name": "compainId",
+                  "jsonName": null,
+                  "type": "System.Guid",
+                  "typeSimple": "string",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": [],
+                  "bindingSourceId": "Path",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Int32",
+                "typeSimple": "number"
+              },
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IRecruitmentCompainService"
             }
           }
@@ -18685,6 +18739,23 @@
                     "type": "System.Void",
                     "typeSimple": "System.Void"
                   }
+                },
+                {
+                  "name": "GetChildServiceByJobIds",
+                  "parametersOnMethod": [
+                    {
+                      "name": "jobIds",
+                      "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                      "type": "System.Collections.Generic.List<System.Guid>",
+                      "typeSimple": "[string]",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "System.Collections.Generic.Dictionary<System.Guid,System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewJobDto>>",
+                    "typeSimple": "{string:[VCareer.Dto.Subcriptions.ChildServiceViewJobDto]}"
+                  }
                 }
               ]
             }
@@ -19126,6 +19197,43 @@
               "returnValue": {
                 "type": "System.Void",
                 "typeSimple": "System.Void"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
+            },
+            "GetChildServiceByJobIdsByJobIds": {
+              "uniqueName": "GetChildServiceByJobIdsByJobIds",
+              "name": "GetChildServiceByJobIds",
+              "httpMethod": "GET",
+              "url": "api/app/job-affecting/child-service-by-job-ids",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "jobIds",
+                  "typeAsString": "System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib",
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "jobIds",
+                  "name": "jobIds",
+                  "jsonName": null,
+                  "type": "System.Collections.Generic.List<System.Guid>",
+                  "typeSimple": "[string]",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "ModelBinding",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "System.Collections.Generic.Dictionary<System.Guid,System.Collections.Generic.List<VCareer.Dto.Subcriptions.ChildServiceViewJobDto>>",
+                "typeSimple": "{string:[VCareer.Dto.Subcriptions.ChildServiceViewJobDto]}"
               },
               "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.Subcriptions.IJobAffectingService"
@@ -31128,6 +31236,18 @@
           "regex": null
         },
         {
+          "name": "Status",
+          "jsonName": null,
+          "type": "VCareer.Constants.JobConstant.JobStatus",
+          "typeSimple": "enum",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
           "name": "WorkTime",
           "jsonName": null,
           "type": "System.String",
@@ -31165,6 +31285,18 @@
         },
         {
           "name": "WorkLocation",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "RejectedReason",
           "jsonName": null,
           "type": "System.String",
           "typeSimple": "string",
@@ -33391,10 +33523,10 @@
           "regex": null
         },
         {
-          "name": "LastModificationTime",
+          "name": "CreatorEmail",
           "jsonName": null,
-          "type": "System.DateTime?",
-          "typeSimple": "string?",
+          "type": "System.String",
+          "typeSimple": "string",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -33403,10 +33535,22 @@
           "regex": null
         },
         {
-          "name": "LastModifierId",
+          "name": "NumberOfJob",
           "jsonName": null,
-          "type": "System.Guid?",
-          "typeSimple": "string?",
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "NumberOfCv",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,
@@ -37846,6 +37990,63 @@
           "jsonName": null,
           "type": "System.Int32?",
           "typeSimple": "number?",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "VCareer.Dto.Subcriptions.ChildServiceViewJobDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Id",
+          "jsonName": null,
+          "type": "System.Guid",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Name",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsActive",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "IsEnable",
+          "jsonName": null,
+          "type": "System.Boolean",
+          "typeSimple": "boolean",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

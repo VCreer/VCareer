@@ -1148,14 +1148,28 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     return Object.keys(this.validationErrors).length === 0;
   }
 
-  enumToOptions(enumType: any) {
-    return Object.keys(enumType)
-      .filter(key => isNaN(Number(key)))
-      .map(key => ({
-        label: key.replace(/([A-Z])/g, ' $1').trim(),
-        value: enumType[key],
-      }));
+ enumToOptions(enumType: any) {
+  let labelMapper: (key: string, value: number) => string;
+  
+  // Xác định mapper dựa trên enum type
+  if (enumType === EmploymentType) {
+    labelMapper = (key, value) => this.getEmploymentTypeLabel(value);
+  } else if (enumType === ExperienceLevel) {
+    labelMapper = (key, value) => this.getExperienceLevelLabel(value);
+  } else if (enumType === PositionType) {
+    labelMapper = (key, value) => this.getPositionTypeLabel(value);
+  } else {
+    // Fallback cho các enum khác
+    labelMapper = (key) => key.replace(/([A-Z])/g, ' $1').trim();
   }
+
+  return Object.keys(enumType)
+    .filter(key => isNaN(Number(key)))
+    .map(key => ({
+      label: labelMapper(key, enumType[key]),
+      value: enumType[key],
+    }));
+}
 
   // Lấy ngày tối thiểu (hôm nay + 7 ngày)
   getMinApplicationDeadline(): string {
@@ -1215,4 +1229,54 @@ export class JobPostingComponent implements OnInit, OnDestroy {
     return `calc(100% - ${this.sidebarWidth}px)`;
   }
   //#endregion
+  //#region Enum Vietnamese Mapping
+private getEmploymentTypeLabel(value: number): string {
+  const map: { [key: number]: string } = {
+    1: 'Bán thời gian',
+    2: 'Toàn thời gian',
+    3: 'Thực tập',
+    4: 'Hợp đồng',
+    5: 'Tự do',
+    6: 'Khác',
+  };
+  return map[value] || '';
+}
+
+private getExperienceLevelLabel(value: number): string {
+  const map: { [key: number]: string } = {
+    0: 'Chưa có kinh nghiệm',
+    1: 'Dưới 1 năm',
+    2: '1 năm',
+    3: '2 năm',
+    4: '3 năm',
+    5: '4 năm',
+    6: '5 năm',
+    7: '6 năm',
+    8: '7 năm',
+    9: '8 năm',
+    10: '9 năm',
+    11: '10 năm',
+    12: 'Trên 10 năm',
+  };
+  return map[value] || '';
+}
+
+private getPositionTypeLabel(value: number): string {
+  const map: { [key: number]: string } = {
+    1: 'Nhân viên',
+    2: 'Trưởng nhóm',
+    3: 'Quản lý',
+    4: 'Giám sát',
+    5: 'Quản lý chi nhánh',
+    6: 'Phó giám đốc',
+    7: 'Giám đốc',
+    8: 'Thực tập sinh',
+    9: 'Chuyên viên',
+    10: 'Chuyên viên cao cấp',
+    11: 'Chuyên gia',
+    12: 'Tư vấn viên',
+  };
+  return map[value] || '';
+}
+//#endregion
 }

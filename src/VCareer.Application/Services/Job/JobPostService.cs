@@ -400,9 +400,9 @@ namespace VCareer.Services.Job
             //chir cho phep job o status Draft duoc post
             var job = await _jobPostRepository.GetAsync(dto.JobId);
             if (job == null || job.Status == JobStatus.Deleted) throw new Volo.Abp.BusinessException($"This job doesn't exist or deleted.");
-            if (job.Status == JobStatus.Closed || job.Status == JobStatus.Rejected || job.Status == JobStatus.Expired) throw new Volo.Abp.UserFriendlyException($"This job is expired or rejected , you have to update to post!");
-            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open) throw new Volo.Abp.BusinessException($"This job is already open or waiting for approval.");
-
+            if (job.Status == JobStatus.Closed || job.Status == JobStatus.Expired) throw new UserFriendlyException($"Không thể đăng công việc đã đóng hoặc đã hết hạn");
+            if (job.Status == JobStatus.Rejected) throw new UserFriendlyException($"Công việc này đã bị từ chối bởi quản trị viên với ly	do: {job.RejectedReason}, hãy cập nhật và đăng lại.");
+            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open) throw new UserFriendlyException($"Công việc đã được đăng hoặc đang hoạt động");
 
             //chay cac child service duoc gan vao job
             if (dto.ChildServiceIds != null && dto.ChildServiceIds.Count > 0)
@@ -410,7 +410,7 @@ namespace VCareer.Services.Job
                 foreach (var childServiceId in dto.ChildServiceIds)
                 {
                     var childService = await _childServiceRepository.GetAsync(childServiceId);
-                    if (childService == null || childService.IsDeleted == true || childService.IsActive == false) throw new Volo.Abp.BusinessException($"This child service doesn't exist or deleted.");
+                    if (childService == null || childService.IsDeleted == true || childService.IsActive == false) throw new BusinessException($"This child service doesn't exist or deleted.");
                     await _effectingJobService.ApplyServiceToJob(new EffectingJobServiceCreateDto()
                     {
                         ChildServiceId = childServiceId,
@@ -442,7 +442,9 @@ namespace VCareer.Services.Job
         {
             var jobPost = await _jobPostRepository.GetAsync(Guid.Parse(id));
             if (jobPost == null)
-                throw new Volo.Abp.BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+                throw new BusinessException($"Job với ID '{id}' không tồn tại hoặc được xóa.");
+
+            if (jobPost.Status != JobStatus.Open) throw new UserFriendlyException($"Công việc chỉ có thể đóng khi đang mở");
 
             jobPost.Status = JobStatus.Closed;
             await _jobPostRepository.UpdateAsync(jobPost, true);
@@ -530,11 +532,11 @@ namespace VCareer.Services.Job
         public async Task DeleteJobPost(string id)
         {
             var job = await _jobPostRepository.FindAsync(Guid.Parse(id));
-            if (job == null || job.Status == JobStatus.Deleted) throw new BusinessException($"Job không tồn tại hoặc được xóa.");
-            job.Status = JobStatus.Deleted;
-            if (job.Status == JobStatus.Open) throw new BusinessException($"Job trong trang thai Open khong the xóa.");
-            await _jobPostRepository.UpdateAsync(job, true);
+            if (job == null) throw new BusinessException($"Công việc không tồn tại hoặc được xóa.");
+            if (job.Status == JobStatus.Open) throw new UserFriendlyException($"Công việc đang mở không thể xóa ");
+            if (job.Status == JobStatus.Pending) throw new UserFriendlyException($"Công việc đang chờ duyệt không thể xóa ");
             await _jobSearchService.RemoveJobFromIndexAsync(job.Id);
+            await _jobPostRepository.DeleteAsync(job, true);
         }
         public async Task<List<JobViewManageDetailDto>> GetJobPostManage(JobRequestViewDto dto)
         {
@@ -565,7 +567,7 @@ namespace VCareer.Services.Job
             }
             var result = await query
                 .OrderByDescending(x => x.ApproveAt)
-                .Skip(dto.Page)
+                .Skip((dto.Page - 1) * dto.PageSize)
                 .Take(dto.PageSize)
                 .ToListAsync();
 
@@ -618,8 +620,8 @@ namespace VCareer.Services.Job
         public async Task UpdateJobPost(JobPostUpdateDto dto)
         {
             var job = await _jobPostRepository.GetAsync(dto.Id);
-            if (job == null) throw new Volo.Abp.BusinessException($"job not found");
-            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open || job.Status == JobStatus.Deleted) throw new Volo.Abp.UserFriendlyException($"This job is running or pending or deleted , you can't update now !");
+            if (job == null) throw new BusinessException($"job not found");
+            if (job.Status == JobStatus.Pending || job.Status == JobStatus.Open || job.Status == JobStatus.Deleted) throw new UserFriendlyException($"Công việc đã đăng hoặc đang hoạt động không thể sửa.");
 
             job.PositionType = dto.PositionType;
             job.ProvinceCode = dto.ProvinceCode;

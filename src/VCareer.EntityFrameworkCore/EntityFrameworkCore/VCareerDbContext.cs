@@ -814,6 +814,7 @@ public class VCareerDbContext :
                 .WithMany(x => x.user_SubcriptionServices)
                 .HasForeignKey(x => x.SubcriptionServiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         });
 
 
@@ -832,6 +833,9 @@ public class VCareerDbContext :
                 .WithMany(x => x.user_ChildServices)
                 .HasForeignKey(x => x.ChildServiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(x => new { x.ChildServiceId, x.UserSubcriptionId })
+  .HasDatabaseName("IX_UserChildService_Child_Sub");
         });
 
 

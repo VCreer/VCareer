@@ -48,7 +48,6 @@
             <th>Địa điểm</th>
             <th>Số CV</th>
             <th>Trạng thái</th>
-            <th>Public/Private</th>
             <th>Gói tuyển dụng</th>
             <th>Thao tác</th>
           </tr>
@@ -80,22 +79,18 @@
               </span>
             </td>
 
-            <td class="public-cell">
-              <span class="public-badge" [class.public]="job.isPublic" [class.private]="!job.isPublic">
-                {{ job.isPublic ? 'Public' : 'Private' }}
-              </span>
-            </td>
-
             <td class="package-cell">
-              <div class="package-badges-container" *ngIf="job.packageTypes && job.packageTypes.length > 0">
+              <div class="package-badges-container" *ngIf="job.childServices && job.childServices.length > 0">
                 <span 
-                  *ngFor="let pkgType of job.packageTypes" 
+                  *ngFor="let service of job.childServices" 
                   class="package-badge" 
-                  [class]="getPackageClass(pkgType)">
-                  {{ getPackageLabel(pkgType) }}
+                  [class]="getChildServiceClass(service)"
+                  [title]="isChildServiceInactive(service) ? 'Dịch vụ không hoạt động' : service.name">
+                  {{ service.name }}
+                  <i *ngIf="isChildServiceInactive(service)" class="fa fa-exclamation-circle inactive-icon"></i>
                 </span>
               </div>
-              <span class="package-badge package-empty" *ngIf="!job.packageTypes || job.packageTypes.length === 0">
+              <span class="package-badge package-empty" *ngIf="!job.childServices || job.childServices.length === 0">
                 Chưa gắn gói
               </span>
             </td>
@@ -122,7 +117,10 @@
                     <span>Đăng bài</span>
                   </div>
                   <div class="menu-separator"></div>
-                  <div class="menu-item" (click)="onEditJob(job)">
+                  <div class="menu-item" 
+                       [class.disabled]="!canEditJob(job)"
+                       [title]="!canEditJob(job) ? (job.status === JobStatus.Open ? 'Không thể sửa bài đăng đang tuyển' : 'Không thể sửa bài đăng đang chờ duyệt') : ''"
+                       (click)="onEditJob(job)">
                     <i class="fa fa-edit menu-icon"></i>
                     <span>Sửa</span>
                   </div>

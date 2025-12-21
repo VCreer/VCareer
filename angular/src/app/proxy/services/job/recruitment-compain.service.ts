@@ -10,6 +10,14 @@ export class RecruitmentCompainService {
   apiName = 'Default';
   
 
+  countJobInCompainByCompainId = (compainId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: `/api/app/recruitment-compain/count-job-in-compain/${compainId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   createRecruitmentCompainByInput = (input: RecruimentCampainCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

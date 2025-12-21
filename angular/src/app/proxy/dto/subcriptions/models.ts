@@ -59,6 +59,13 @@ export interface ChildServiceViewDto {
   value?: number;
 }
 
+export interface ChildServiceViewJobDto {
+  id?: string;
+  name?: string;
+  isActive: boolean;
+  isEnable: boolean;
+}
+
 export interface EffectingJobServiceCreateDto {
   user_ChildServiceId?: string;
   jobPostId?: string;

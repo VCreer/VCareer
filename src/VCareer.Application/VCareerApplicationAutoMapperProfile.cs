@@ -1,35 +1,37 @@
 using AutoMapper;
-using VCareer.Books;
+using AutoMapper.Internal.Mappers;
 using VCareer.Application;
 using VCareer.Application.Contracts.CV;
-using VCareer.Models.Users;
+using VCareer.Books;
+using VCareer.CV;
+using VCareer.Dto;
+using VCareer.Dto.ActivityLogDto;
+using VCareer.Dto.Applications;
+using VCareer.Dto.Category;
+using VCareer.Dto.FileDto;
+using VCareer.Dto.Job;
+using VCareer.Dto.JobDto;
+using VCareer.Dto.Notification;
+using VCareer.Dto.Order;
+using VCareer.Dto.Profile;
+using VCareer.Dto.Subcriptions;
+using VCareer.Dto.UserDto;
+using VCareer.IServices.Books;
+using VCareer.Models;
+using VCareer.Models.Applications;
 using VCareer.Models.Companies;
 using VCareer.Models.CV;
 using VCareer.Models.FileMetadata;
-using VCareer.Models.Applications;
-using Volo.Abp.Data;
-using Volo.Abp.Identity;
-using VCareer.Dto;
-using VCareer.Dto.FileDto;
-using VCareer.Dto.ActivityLogDto;
-using VCareer.IServices.Books;
-using VCareer.Models;
-using VCareer.CV;
-using VCareer.Dto.Profile;
-using VCareer.Dto.Order;
+using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
+using VCareer.Models.Notification;
 using VCareer.Models.Order;
 using VCareer.Models.Subcription;
-using VCareer.Models.Job;
-using VCareer.Dto.JobDto;
-using VCareer.Dto.Job;
-using VCareer.Models.JobCategory;
-using VCareer.Dto.Category;
-using VCareer.Dto.Applications;
-using VCareer.Dto.UserDto;
-using VCareer.Dto.Subcriptions;
 using VCareer.Models.Subcription_Payment;
-using VCareer.Models.Notification;
-using VCareer.Dto.Notification;
+using VCareer.Models.Users;
+using Volo.Abp.Data;
+using Volo.Abp.Identity;
+using static Lucene.Net.Util.Fst.Util;
 
 namespace VCareer;
 
@@ -91,7 +93,8 @@ public class VCareerApplicationAutoMapperProfile : Profile
         CreateMap<User_SubcriptionService , User_SubcirptionViewDto>();
         CreateMap<User_ChildService, User_ChildServiceViewDto>();
         CreateMap<Job_Post, JobViewManageDetailDto>();
-
+        CreateMap<ChildService, ChildServiceViewJobDto>();
+      
 
 
 
