@@ -11599,7 +11599,7 @@
                 "type": "System.Collections.Generic.List<VCareer.Dto.Category.CategoryTreeDto>",
                 "typeSimple": "[VCareer.Dto.Category.CategoryTreeDto]"
               },
-              "allowAnonymous": false,
+              "allowAnonymous": null,
               "implementFrom": "VCareer.IServices.IJobServices.IJobCategoryAppService"
             },
             "SearchCategoriesAsyncByKeyword": {
@@ -12399,30 +12399,6 @@
                   "jsonName": null,
                   "type": "System.DateTime?",
                   "typeSimple": "string?",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "dto"
-                },
-                {
-                  "nameOnMethod": "dto",
-                  "name": "Page",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
-                  "isOptional": false,
-                  "defaultValue": null,
-                  "constraintTypes": null,
-                  "bindingSourceId": "ModelBinding",
-                  "descriptorName": "dto"
-                },
-                {
-                  "nameOnMethod": "dto",
-                  "name": "PageSize",
-                  "jsonName": null,
-                  "type": "System.Int32",
-                  "typeSimple": "number",
                   "isOptional": false,
                   "defaultValue": null,
                   "constraintTypes": null,
@@ -32487,30 +32463,6 @@
           "jsonName": null,
           "type": "System.DateTime?",
           "typeSimple": "string?",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "Page",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
-          "isRequired": false,
-          "minLength": null,
-          "maxLength": null,
-          "minimum": null,
-          "maximum": null,
-          "regex": null
-        },
-        {
-          "name": "PageSize",
-          "jsonName": null,
-          "type": "System.Int32",
-          "typeSimple": "number",
           "isRequired": false,
           "minLength": null,
           "maxLength": null,

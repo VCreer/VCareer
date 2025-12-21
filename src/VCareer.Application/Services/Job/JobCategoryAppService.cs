@@ -54,6 +54,7 @@ namespace VCareer.Services.Job
         }
         /// Lấy toàn bộ cây phân cấp category với số lượng job
        // [Authorize(VCareerPermission.JobCategory.View)]
+      //  [Authorize(VCareerPermission.JobCategory.View)]
         public async Task<List<CategoryTreeDto>> GetCategoryTreeAsync()
         {
             try

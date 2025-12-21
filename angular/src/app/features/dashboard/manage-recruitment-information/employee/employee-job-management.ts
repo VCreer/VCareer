@@ -167,12 +167,25 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       next: (data: JobApproveViewDto[]) => {
         this.pendingJobs = data;
         this.filteredPostings = data;
-        this.totalItems = data.length;
-        this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = 1;
-        }
-        this.isLoading = false;
+        
+        // Get total count for pending jobs
+        this.jobPostService.countJobByStatusByStatus(JobStatus.Pending).subscribe({
+          next: (totalCount) => {
+            this.totalItems = totalCount;
+            this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
+            if (this.currentPage > this.totalPages && this.totalPages > 0) {
+              this.currentPage = this.totalPages;
+              this.loadPendingJobs();
+            }
+            this.isLoading = false;
+          },
+          error: () => {
+            // Fallback
+            this.totalItems = data.length;
+            this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
+            this.isLoading = false;
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading pending jobs:', error);
@@ -190,19 +203,23 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       status: status,
       startTime: this.startTime || undefined,
       endTime: this.endTime || undefined,
-      page: this.currentPage,
-      pageSize: this.itemsPerPage,
     };
 
     this.jobPostService.getJobPostManageByDto(requestDto).subscribe({
       next: (data: JobViewManageDetailDto[]) => {
+        // Store all data for client-side pagination
         this.managedJobs = data;
         this.filteredPostings = data;
+        
+        // Calculate pagination based on total data
         this.totalItems = data.length;
         this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.itemsPerPage));
-        if (this.currentPage > this.totalPages) {
+        
+        // If current page exceeds total pages, reset to page 1
+        if (this.currentPage > this.totalPages && this.totalPages > 0) {
           this.currentPage = 1;
         }
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -214,6 +231,7 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   }
 
   get pagedPostings(): (JobApproveViewDto | JobViewManageDetailDto)[] {
+    // Client-side pagination: slice the filtered data
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     return this.filteredPostings.slice(startIndex, endIndex);
@@ -580,28 +598,28 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
   }
 
   onSubmitReject(): void {
-  if (!this.selectedJob || !this.isPendingJob(this.selectedJob)) return;
-  
-  const targetId = this.selectedJob.id ? String(this.selectedJob.id) : '';
-  if (!targetId || !this.rejectReason.trim()) {
-    this.showErrorToast('Vui lòng nhập lý do từ chối');
-    return;
-  }
-
-  // Thêm rejectReason vào API call
-  this.jobPostService.rejectJobPost(targetId, this.rejectReason).subscribe({
-    next: () => {
-      this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
-      this.onCloseRejectModal();
-      this.onCloseDetail();
-      this.updateSummaryCounts();
-      this.loadJobPostings();
-    },
-    error: () => {
-      this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+    if (!this.selectedJob || !this.isPendingJob(this.selectedJob)) return;
+    
+    const targetId = this.selectedJob.id ? String(this.selectedJob.id) : '';
+    if (!targetId || !this.rejectReason.trim()) {
+      this.showErrorToast('Vui lòng nhập lý do từ chối');
+      return;
     }
-  });
-}
+
+    // Thêm rejectReason vào API call
+    this.jobPostService.rejectJobPost(targetId, this.rejectReason).subscribe({
+      next: () => {
+        this.showSuccessToast('Đã từ chối tin tuyển dụng thành công');
+        this.onCloseRejectModal();
+        this.onCloseDetail();
+        this.updateSummaryCounts();
+        this.loadJobPostings();
+      },
+      error: () => {
+        this.showErrorToast('Từ chối tin tuyển dụng thất bại');
+      }
+    });
+  }
 
   onViewRejectReason(posting: JobApproveViewDto | JobViewManageDetailDto): void {
     this.viewingRejectReasonJob = posting;
