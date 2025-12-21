@@ -77,6 +77,9 @@
             <span class="type-badge">{{ getTypeLabel(notification) }}</span>
           </div>
           <p class="notification-message">{{ notification.message }}</p>
+          <div class="rejected-reason" *ngIf="hasRejectedReason(notification)">
+            <strong>Lý do từ chối:</strong> {{ getRejectedReason(notification) }}
+          </div>
           <div class="notification-footer">
             <span class="notification-date">
               <i class="fa fa-clock-o"></i>

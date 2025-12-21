@@ -12,6 +12,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { JobSearchService } from '../../../../proxy/services/job/job-search.service';
 import { GeoService as ProxyGeoService } from '../../../../proxy/services/geo/geo.service';
 import { catchError, of, forkJoin } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 
 interface NotificationWithJobInfo extends NotificationDto {
   jobTitle?: string;
@@ -293,6 +294,12 @@ export class NotificationsComponent implements OnInit {
           notification.jobData = job;
           notification.jobTitle = job.title || notification.jobTitle;
           notification.companyName = job.companyName || notification.companyName;
+          
+          // Lấy logo công ty từ job data (ưu tiên các trường có thể có)
+          const companyLogo = job.companyImageUrl || job.companyLogoUrl || job.logoUrl || job.company?.logoUrl;
+          if (companyLogo) {
+            notification.logo = this.formatCompanyLogoUrl(companyLogo);
+          }
           // If backend marks a job as inactive/closed, treat as expired
           if (
             job.isActive === false ||
@@ -694,5 +701,38 @@ export class NotificationsComponent implements OnInit {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  /**
+   * Format logo URL của công ty
+   * Nếu là storage path thì chuyển thành API endpoint, nếu đã là full URL thì giữ nguyên
+   */
+  formatCompanyLogoUrl(logoUrl: string | undefined | null): string {
+    // Kiểm tra null, undefined, hoặc empty string
+    if (!logoUrl || logoUrl.trim() === '') {
+      return 'assets/images/vng.png';
+    }
+
+    // Remove single quotes if present
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    // Nếu sau khi clean vẫn empty, return default
+    if (cleanUrl === '') {
+      return 'assets/images/vng.png';
+    }
+
+    // Nếu đã là full URL (http/https), return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+    // Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+
+    // Encode storagePath để tránh lỗi URL
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +25,8 @@ namespace VCareer.Controllers
             _configuration = configuration;
         }
 
+
+        //tạo order
         [HttpPost]
         public async Task<OrderViewDto> CreateOrderAsync([FromBody] CreateOrderDto input)
         {
@@ -43,11 +45,13 @@ namespace VCareer.Controllers
             return await _orderAppService.GetMyOrdersAsync();
         }
 
+
         [HttpPost("vnpay/create-payment-url")]
         public async Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync([FromBody] VnpayPaymentRequestDto input)
         {
             return await _orderAppService.CreateVnpayPaymentUrlAsync(input);
         }
+
 
         [HttpGet("vnpay/callback")]
         [HttpPost("vnpay/callback")]

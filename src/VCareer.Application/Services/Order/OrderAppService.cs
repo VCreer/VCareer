@@ -60,7 +60,19 @@ namespace VCareer.Services.Order
         }
 
 
-        // đoạn code tạo order
+
+        /*
+         
+            public class CreateOrderDto
+    {
+        public List<CreateOrderDetailDto> OrderDetails { get; set; } = new List<CreateOrderDetailDto>();
+        public string? DiscountCode { get; set; }
+        public string? Notes { get; set; }
+    }
+         
+         
+         */
+        //tạo order
         public async Task<OrderViewDto> CreateOrderAsync(CreateOrderDto input)
         {
             try
@@ -112,7 +124,7 @@ namespace VCareer.Services.Order
                 // Generate order code
                 var orderCode = $"ORD-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
-                // Create order
+                // tạo order
                 var order = new Models.Order.Order
                 {
                     UserId = userId,
@@ -171,6 +183,8 @@ namespace VCareer.Services.Order
             }
         }
 
+
+
         public async Task<OrderViewDto> GetOrderAsync(Guid id)
         {
             var order = await _orderRepository.GetAsync(id);
@@ -200,7 +214,14 @@ namespace VCareer.Services.Order
             return orderDto;
         }
 
-        
+
+        /*
+         public class VnpayPaymentRequestDto
+  {
+      public Guid OrderId { get; set; }
+  }*/
+        //tạo đường dẫn url
+
         public async Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync(VnpayPaymentRequestDto input)
         {
             var order = await _orderRepository.GetAsync(input.OrderId);
@@ -240,7 +261,7 @@ namespace VCareer.Services.Order
         }
 
 
-        //xử li handle
+        //xử li thanh toán call back
         public async Task<OrderViewDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
         {
             if (input == null || string.IsNullOrEmpty(input.vnp_TxnRef))
@@ -344,7 +365,7 @@ namespace VCareer.Services.Order
             return await GetOrderAsync(order.Id);
         }
 
-        
+
         // 
         public async Task<OrderListDto> GetMyOrdersAsync()
         {

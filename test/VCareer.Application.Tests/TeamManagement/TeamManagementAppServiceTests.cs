@@ -119,7 +119,8 @@ public class TeamManagementAppServiceTests
         ex.Message.ShouldContain("Leader Recruiter");
     }
 
-    // test chức
+
+    // Kiểm tra khi Leader cố vô hiệu hóa nhân viên công ty khác.
     [Fact]
     public async Task DeactivateStaffAsync_throws_when_staff_not_same_company()
     {
