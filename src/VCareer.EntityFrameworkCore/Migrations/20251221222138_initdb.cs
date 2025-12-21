@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VCareer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabase : Migration
+    public partial class initdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -2633,14 +2633,14 @@ namespace VCareer.Migrations
                 column: "IsPublic");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_ChildServices_ChildServiceId",
-                table: "User_ChildServices",
-                column: "ChildServiceId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_User_ChildServices_UserActiveId",
                 table: "User_ChildServices",
                 column: "UserActiveId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChildService_Child_Sub",
+                table: "User_ChildServices",
+                columns: new[] { "ChildServiceId", "UserSubcriptionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_SubcriptionServices_SubcriptionServiceId",

@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace VCareer.Migrations
 {
     [DbContext(typeof(VCareerDbContext))]
-    [Migration("20251221070441_InitDatabase")]
-    partial class InitDatabase
+    [Migration("20251221222138_initdb")]
+    partial class initdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2034,9 +2034,10 @@ namespace VCareer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChildServiceId");
-
                     b.HasIndex("UserActiveId");
+
+                    b.HasIndex("ChildServiceId", "UserSubcriptionId")
+                        .HasDatabaseName("IX_UserChildService_Child_Sub");
 
                     b.ToTable("User_ChildServices");
                 });
