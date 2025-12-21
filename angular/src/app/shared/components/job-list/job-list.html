@@ -7,7 +7,7 @@
         <!-- Column 1: Company Logo -->
         <div class="logo-column">
           <div class="company-logo">
-            <img [src]="job.logo" [alt]="job.company" onerror="this.src='assets/images/vng.png'" />
+            <img [src]="job.logo" [alt]="job.company" onerror="this.src='assets/images/home/company-placeholder.png'" />
           </div>
         </div>
 
@@ -23,7 +23,7 @@
 
           <!-- Company Info -->
           <div class="company-info">
-            <h4 class="company-name">Tập đoàn {{ job.companyName || 'N/A' }}</h4>
+            <h4 class="company-name">{{ job.companyName || job.company || 'N/A' }}</h4>
           </div>
 
           <!-- Job Tags (Location, Experience) -->
@@ -51,8 +51,6 @@
 
             <!-- Action Icons -->
             <div class="action-icons">
-              <i class="fa fa-eye-slash hide-icon" (click)="hideJob(job); $event.stopPropagation()">
-              </i>
               <button 
                 class="save-btn"
                 [class.saved]="job.isSaved"
@@ -70,19 +68,15 @@
 
   <!-- Login Modal -->
   <app-login-modal
-    *ngIf="showLoginModal"
+    [show]="showLoginModal"
     (close)="onLoginClose()"
     (loginSuccess)="onLoginSuccess()"
   ></app-login-modal>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="getPaginatedJobs().length === 0">
-    <img src="assets/images/job/no-job.png" alt="No jobs found" class="empty-state-image" />
-    <p class="empty-state-text">{{ translate('job_list.no_jobs_found') }}</p>
-  </div>
+  <!-- Empty state hiển thị ở màn job-page; component không hiển thị gì khi không có job -->
 
   <!-- Pagination -->
-  <!-- <div class="pagination">
+  <div class="pagination" *ngIf="totalPages > 1">
     <button class="page-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
       <svg
         width="16"
@@ -91,8 +85,7 @@
         fill="none"
         stroke="currentColor"
         stroke-width="2"
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      >
         <polyline points="15,18 9,12 15,6"></polyline>
       </svg>
     </button>
@@ -126,4 +119,3 @@
     (close)="onToastClose()"
   ></app-toast-notification>
 </div>
--->

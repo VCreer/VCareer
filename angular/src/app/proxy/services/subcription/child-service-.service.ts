@@ -1,9 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
-import type { SubcriptionContance_ServiceTarget } from '../../constants/job-constant/subcription-contance-service-target.enum';
-import type { ChildServiceCreateDto, ChildServiceUpdateDto, ChildServiceViewDto } from '../../dto/subcriptions/models';
-import type { PagingDto } from '../../iservices/common/models';
+import type { ChildServiceCreateDto, ChildServiceGetDto, ChildServiceUpdateDto, ChildServiceViewDto } from '../../dto/subcriptions/models';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +12,7 @@ export class ChildService_Service {
   createChildService = (dto: ChildServiceCreateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: '/api/app/child-service_/child-service',
+      url: '/api/app/childservice-service/create-childservice',
       body: dto,
     },
     { apiName: this.apiName,...config });
@@ -24,24 +21,35 @@ export class ChildService_Service {
   deleteChildService = (childServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'DELETE',
-      url: `/api/app/child-service_/child-service/${childServiceId}`,
+      url: '/api/app/childservice-service/delete-childservice',
+      params: { childServiceId },
     },
     { apiName: this.apiName,...config });
   
 
-  getChildServices = (action: enum, target: enum, paging: PagingDto, config?: Partial<Rest.Config>) =>
+  getChildServices = (dto: ChildServiceGetDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ChildServiceViewDto[]>({
-      method: 'GET',
-      url: '/api/app/child-service_/child-services',
-      params: { action, target, pageSize: paging.pageSize, pageIndex: paging.pageIndex },
+      method: 'POST',
+      url: '/api/app/childservice-service/GetChildServices',
+      body: dto,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setStatusChildService = (childServiceId: string, status: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/childservice-service/set-status-childservice',
+      params: { childServiceId, status },
     },
     { apiName: this.apiName,...config });
   
 
   stopAgentCHildService = (childServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
-      method: 'POST',
-      url: `/api/app/child-service_/stop-agent-cHild-service/${childServiceId}`,
+      method: 'PUT',
+      url: '/api/app/childservice-service/stop-agent-childservice',
+      params: { childServiceId },
     },
     { apiName: this.apiName,...config });
   
@@ -49,7 +57,7 @@ export class ChildService_Service {
   updateChildService = (dto: ChildServiceUpdateDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'PUT',
-      url: '/api/app/child-service_/child-service',
+      url: '/api/app/childservice-service/update-childservice',
       body: dto,
     },
     { apiName: this.apiName,...config });

@@ -10,6 +10,8 @@ export interface CvFilterData {
   displayAll: boolean;
   labelId: string;
   timeRange: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
 }
 
 @Component({
@@ -181,7 +183,11 @@ export class CvFilterBarComponent {
   selectTimeRange(timeRangeId: string): void {
     this.selectedTimeRange = timeRangeId;
     
-    // Set temp date range based on preset (chưa apply, chỉ set temp)
+    // Clear custom date range when selecting preset
+    this.dateRange.startDate = null;
+    this.dateRange.endDate = null;
+    
+    // Set temp date range based on preset
     const today = new Date();
     let startDate: Date | null = null;
     let endDate: Date | null = null;
@@ -211,9 +217,11 @@ export class CvFilterBarComponent {
         break;
     }
     
-    // Chỉ set temp dates, chưa apply vào dateRange
-    this.tempStartDate = startDate ? new Date(startDate) : null;
-    this.tempEndDate = endDate ? new Date(endDate) : null;
+    // Apply preset dates immediately
+    this.dateRange.startDate = startDate ? new Date(startDate) : null;
+    this.dateRange.endDate = endDate ? new Date(endDate) : null;
+    this.tempStartDate = this.dateRange.startDate;
+    this.tempEndDate = this.dateRange.endDate;
     
     // Update calendar month to show start date
     if (startDate) {
@@ -230,9 +238,11 @@ export class CvFilterBarComponent {
       }
     }
     
-    // Không đóng dropdown và không emit change, chỉ update calendar
+    // Update calendar and emit filter change immediately
     this.generateCalendar();
     this.generateNextCalendar();
+    this.showTimeRangeDropdown = false;
+    this.emitFilterChange();
   }
   
   generateCalendar(): void {
@@ -372,6 +382,12 @@ export class CvFilterBarComponent {
       } else {
         this.tempEndDate = day.fullDate;
       }
+      
+      // Auto-apply when both dates are selected
+      if (this.tempStartDate && this.tempEndDate) {
+        this.applyDateRange();
+        return;
+      }
     }
     this.generateCalendar();
     this.generateNextCalendar();
@@ -411,10 +427,9 @@ export class CvFilterBarComponent {
     this.dateRange.startDate = this.tempStartDate;
     this.dateRange.endDate = this.tempEndDate;
     
-    // Nếu có selectedTimeRange preset, giữ nguyên
-    // Nếu không có preset nhưng có temp dates, clear preset
-    if (!this.selectedTimeRange && (this.tempStartDate || this.tempEndDate)) {
-      // Custom date range selected
+    // Clear preset time range when applying custom date range
+    if (this.tempStartDate || this.tempEndDate) {
+      this.selectedTimeRange = '';
     }
     
     this.showTimeRangeDropdown = false;
@@ -447,10 +462,10 @@ export class CvFilterBarComponent {
         this.selectedTimeRange = '';
         this.dateRange.startDate = null;
         this.dateRange.endDate = null;
-    this.tempStartDate = null;
-    this.tempEndDate = null;
-    this.generateCalendar();
-    this.generateNextCalendar();
+        this.tempStartDate = null;
+        this.tempEndDate = null;
+        this.generateCalendar();
+        this.generateNextCalendar();
         break;
       case 'search':
         this.searchKeyword = '';
@@ -546,7 +561,9 @@ export class CvFilterBarComponent {
       sourceId: this.selectedSource,
       displayAll: this.displayAll,
       labelId: this.selectedLabel,
-      timeRange: this.selectedTimeRange
+      timeRange: this.selectedTimeRange,
+      startDate: this.dateRange.startDate,
+      endDate: this.dateRange.endDate
     };
     this.filterChange.emit(filterData);
   }

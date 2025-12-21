@@ -21,7 +21,16 @@
     <div class="content-section">
       <div class="content-header">
         <div class="candidate-count">
-          <span>Tìm thấy <strong>{{ totalCount }}</strong> ứng viên</span>
+          <span>Tìm thấy <strong>{{ filteredCandidateCount || 0 }}</strong> ứng viên</span>
+        </div>
+        <div class="header-actions">
+          <button
+            class="action-btn export-btn"
+            (click)="onExportCvList()"
+            [disabled]="exporting || filteredCvs.length === 0">
+            <i class="fa fa-file-excel-o"></i>
+            <span>{{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}</span>
+          </button>
         </div>
       </div>
 
@@ -45,7 +54,7 @@
               <th>Ứng viên</th>
               <th>Chiến dịch</th>
               <th>Thông tin liên hệ</th>
-              <th>Nguồn CV</th>
+              <th>Công việc</th>
               <th>Ngày ứng tuyển</th>
               <th>Trạng thái</th>
               <th>Đánh giá</th>
@@ -78,7 +87,7 @@
               <!-- Chiến dịch Column -->
               <td class="campaign-cell">
                 <div class="campaign-info">
-                  <div class="campaign-name">{{ cv.campaignName }}</div>
+                  <div class="campaign-name">{{ cv.campaignName || '—' }}</div>
                   <div class="campaign-id">{{ cv.campaignId }}</div>
                 </div>
               </td>
@@ -101,9 +110,10 @@
               <td class="source-cell">
                 <div class="source-info">
                   <div class="source-type">
-                    <i class="fa" [class]="getSourceIcon(cv.source)"></i>
-                    <span>{{ getSourceName(cv.source) }}</span>
+                    <i class="fa fa-briefcase"></i>
+                    <span>{{ cv.jobTitle || cv.campaignName || 'Không rõ công việc' }}</span>
                   </div>
+                  <div class="source-date" *ngIf="cv.jobId">Mã công việc: {{ cv.jobId }}</div>
                   <div class="source-date">{{ formatDateTime(cv.addedDate) }}</div>
                 </div>
               </td>
@@ -118,9 +128,9 @@
                 <select 
                   class="status-dropdown" 
                   [class]="getStatusBadgeClass(cv.status)"
-                  [value]="cv.status"
+                  [ngModel]="cv.status"
                   [disabled]="changingStatusFor === cv.id"
-                  (change)="onChangeStatus(cv, $event)"
+                  (ngModelChange)="onChangeStatus(cv, $event)"
                   (click)="$event.stopPropagation()">
                   <option *ngFor="let status of statuses" [value]="status.id">
                     {{ status.name }}
@@ -180,10 +190,6 @@
                     <div class="menu-item" (click)="onDownloadCv(cv)">
                       <i class="fa fa-download menu-icon"></i>
                       <span>Tải CV</span>
-                    </div>
-                    <div class="menu-item" (click)="onCopyCandidateCode(cv)">
-                      <i class="fa fa-copy menu-icon"></i>
-                      <span>Sao chép mã ứng viên</span>
                     </div>
                     <div class="menu-separator"></div>
                     <div class="menu-item" (click)="viewCv(cv.id)">

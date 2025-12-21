@@ -16,7 +16,10 @@ public enum ActivityType
     InterviewCompleted = 31,
     InterviewCancelled = 32,
     ApplicationReviewed = 40,
-    ApplicationUpdated = 41
+    ApplicationUpdated = 41,
+    StaffAdded = 50,
+    CampaignCreated = 51,
+    JobCreated = 52
 }
 
 

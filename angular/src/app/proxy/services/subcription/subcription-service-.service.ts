@@ -1,6 +1,5 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_SubcriptorTarget } from '../../constants/job-constant/subcription-contance-subcriptor-target.enum';
 import type { AddChildServicesDto, ChildServiceViewDto, SubcriptionPriceViewDto, SubcriptionsCreateDto, SubcriptionsUpdateDto, SubcriptionsViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
@@ -37,7 +36,7 @@ export class SubcriptionService_Service {
     { apiName: this.apiName,...config });
   
 
-  getActiveSubscriptionServices = (target?: enum, config?: Partial<Rest.Config>) =>
+  getActiveSubscriptionServices = (target?: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SubcriptionsViewDto[]>({
       method: 'GET',
       url: '/api/app/subcription-service_/active-subscription-services',
@@ -77,6 +76,15 @@ export class SubcriptionService_Service {
       method: 'GET',
       url: `/api/app/subcription-service_/subcriptions-price/${subcriptionId}`,
       params: { isExpired, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getSubscriptionServices = (target: string, isActive: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SubcriptionsViewDto[]>({
+      method: 'GET',
+      url: '/api/app/subcription-service_/subscription-services',
+      params: { target, isActive },
     },
     { apiName: this.apiName,...config });
   

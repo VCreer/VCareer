@@ -10,10 +10,8 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace VCareer.Repositories.Job
 {
-    /// <summary>
-    /// Repository implementation cho SavedJob
-    /// </summary>
- /*   public class SavedJobRepository : EfCoreRepository<VCareerDbContext, SavedJob>, ISavedJobRepository
+   
+   public class SavedJobRepository : EfCoreRepository<VCareerDbContext, SavedJob>, ISavedJobRepository
     {
         public SavedJobRepository(
             IDbContextProvider<VCareerDbContext> dbContextProvider) : base(dbContextProvider)
@@ -32,8 +30,6 @@ namespace VCareer.Repositories.Job
                 .Include(s => s.JobPosting)
                     .ThenInclude(j => j.RecruiterProfile)
                         .ThenInclude(r => r.Company)
-                .Include(s => s.JobPosting)
-                    .ThenInclude(j => j.ProvinceCode)
                 .OrderByDescending(s => s.CreationTime)
                 .Skip(skipCount)
                 .Take(maxResultCount)
@@ -51,6 +47,6 @@ namespace VCareer.Repositories.Job
                 .Where(s => s.CandidateId == candidateId)
                 .CountAsync();
         }
-    }*/
+    }
 }
 

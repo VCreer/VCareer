@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { UploadedCvService } from '../../../../core/services/uploaded-cv.service';
-import { ProfileService } from '../../../../proxy/profile/profile.service';
+import { ProfileService } from '../../../../proxy/services/profile/profile.service';
 import type { ProfileDto } from '../../../../proxy/dto/profile/models';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
 import { ProfilePictureEditModal } from '../../../../shared/components/profile-picture-edit-modal/profile-picture-edit-modal';
@@ -58,6 +58,12 @@ export class CandidateProfileComponent implements OnInit {
 
   ngOnInit() {
     this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   loadProfileData() {
@@ -121,6 +127,12 @@ export class CandidateProfileComponent implements OnInit {
           address: response.location || response.address || '',
           location: response.location || ''
         };
+
+        // Đồng bộ trạng thái "Cho phép NTD tìm kiếm hồ sơ" từ ProfileVisibility
+        const anyResponse: any = response as any;
+        if (anyResponse.profileVisibility !== undefined && anyResponse.profileVisibility !== null) {
+          this.allowRecruiterSearch = anyResponse.profileVisibility;
+        }
 
         this.isLoading = false;
       },
@@ -207,8 +219,6 @@ export class CandidateProfileComponent implements OnInit {
       updateDto.address = profileData.address.trim();
     } else if (profileData.location?.trim()) updateDto.location = profileData.location.trim();
     if (formattedDateOfBirth) updateDto.dateOfBirth = formattedDateOfBirth;
-    if (profileData.gender === 'male' || profileData.gender === 'female')
-      updateDto.gender = profileData.gender === 'male';
 
     const apiUrl = `${environment.apis.default.url}/api/profile/personal-info`;
     this.http.put(apiUrl, updateDto, {
@@ -235,21 +245,39 @@ export class CandidateProfileComponent implements OnInit {
         }
 
         let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
-        if (error.status === 400 && error.error) {
-          if (error.error.errors) {
+        
+        // ABP Framework error structure can be:
+        // { error: { message: "...", details: "...", code: "..." } }
+        // or { message: "...", details: "..." } (top level)
+        if (error.error) {
+          // Check nested error structure first
+          if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          } 
+          // Check direct error.message (most common for UserFriendlyException)
+          else if (error.error.message) {
+            errorMessage = error.error.message;
+          } 
+          // Check error.details as fallback
+          else if (error.error.details) {
+            errorMessage = error.error.details;
+          } 
+          // Check validation errors
+          else if (error.error.errors) {
             const messages: string[] = [];
             Object.keys(error.error.errors).forEach(k => {
               const errs = error.error.errors[k];
-              if (Array.isArray(errs)) errs.forEach(e => messages.push(`${k}: ${e}`));
-              else messages.push(`${k}: ${errs}`);
+              if (Array.isArray(errs)) errs.forEach(e => messages.push(e));
+              else messages.push(errs);
             });
-            if (messages.length > 0) errorMessage = 'Lỗi validation:\n' + messages.join('\n');
-          } else if (error.error.error?.message) {
-            errorMessage = error.error.error.message;
-          } else if (error.error.message) {
-            errorMessage = error.error.message;
+            if (messages.length > 0) errorMessage = messages.join('\n');
           }
         }
+        // Fallback: check top-level message
+        else if (error.message) {
+          errorMessage = error.message;
+        }
+        
         this.showErrorMessage(errorMessage);
       }
     });
@@ -269,10 +297,6 @@ export class CandidateProfileComponent implements OnInit {
     }
     if (!this.profileData.dateOfBirth) {
       this.errors.dateOfBirth = 'Ngày sinh là bắt buộc';
-      valid = false;
-    }
-    if (!this.profileData.gender) {
-      this.errors.gender = 'Giới tính là bắt buộc';
       valid = false;
     }
     if (!this.profileData.phone?.trim()) {
@@ -350,8 +374,21 @@ export class CandidateProfileComponent implements OnInit {
   }
 
   onToggleJobSearch() {
-    if (this.jobSearchEnabled) this.jobSearchEnabled = false;
-    else this.showEnableJobSearchModal = true;
+    if (this.jobSearchEnabled) {
+      // Tắt tìm việc trực tiếp
+      this.profileService.updateJobStatus(false).subscribe({
+        next: () => {
+          this.jobSearchEnabled = false;
+          localStorage.setItem('vcareer_job_search_enabled', 'false');
+          this.showSuccessMessage('Đã tắt tìm việc thành công');
+        },
+        error: () => {
+          this.showErrorMessage('Không thể tắt tìm việc. Vui lòng thử lại.');
+        }
+      });
+    } else {
+      this.showEnableJobSearchModal = true;
+    }
   }
 
   onJobSearchToggle(event: Event) {
@@ -367,7 +404,24 @@ export class CandidateProfileComponent implements OnInit {
 
   onAllowRecruiterSearchToggle(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
+    const newValue = target.checked;
+
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch
+          ? "Đã bật cho phép NTD tìm kiếm hồ sơ"
+          : "Đã tắt cho phép NTD tìm kiếm hồ sơ";
+        this.showSuccessMessage(message);
+      },
+      error: (error) => {
+        console.error("Error updating profile visibility:", error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showErrorMessage("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+      }
+    });
   }
 
   onCloseEnableJobSearchModal() {
@@ -375,7 +429,19 @@ export class CandidateProfileComponent implements OnInit {
   }
 
   onEnableJobSearch(selectedCvIds: string[]) {
-    this.jobSearchEnabled = true;
-    this.showSuccessMessage('Đã bật tìm việc thành công!');
+    this.profileService.updateJobStatus(true).subscribe({
+      next: () => {
+        this.jobSearchEnabled = true;
+        localStorage.setItem('vcareer_job_search_enabled', 'true');
+        this.showSuccessMessage('Đã bật tìm việc thành công!');
+      },
+      error: () => {
+        this.showErrorMessage('Không thể bật tìm việc. Vui lòng thử lại.');
+      }
+    });
   }
 }
+
+
+
+

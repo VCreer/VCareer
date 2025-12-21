@@ -43,6 +43,7 @@ export class LoginComponent {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'error';
+  private rememberCookieKey = 'candidate_remember';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -63,6 +64,10 @@ export class LoginComponent {
 
   ngOnInit(): void {
     this.googleAuthService.initialize();
+    // Đợi form được khởi tạo xong rồi mới prefill
+    setTimeout(() => {
+      this.prefillRememberedUser();
+    }, 0);
   }
 
   emailOrUsernameValidator(control: AbstractControl): ValidationErrors | null {
@@ -129,7 +134,7 @@ export class LoginComponent {
     return !!(field && field.invalid && (field.touched || this.submitAttempted));
   }
 
- onSubmit() {
+  onSubmit() {
     this.submitAttempted = true;
 
     Object.keys(this.loginForm.controls).forEach(k =>
@@ -139,7 +144,7 @@ export class LoginComponent {
     if (this.loginForm.invalid) return;
 
     this.isLoading = true;
-    const { username, password } = this.loginForm.value;
+    const { username, password, rememberMe } = this.loginForm.value;
 
     const payload = { email: username, password };
 
@@ -149,51 +154,197 @@ export class LoginComponent {
         next: () => {
           // Lưu trạng thái đăng nhập vào navigation service
           this.navigationService.loginAsCandidate();
+          // Handle remember me via cookie - lưu cả username và password
+          this.setRememberCookie(rememberMe, username, password);
           this.showToastMessage('Đăng nhập thành công!', 'success');
-          setTimeout(() => this.router.navigate(['/']), 800);
+          // Redirect đến /home thay vì / để tránh vấn đề với route root
+          setTimeout(() => this.router.navigate(['candidate/home']), 800);
         },
         error: (err) => {
-          const msg =
-            err?.error?.message ||
-            err?.error?.error_description ||
-            err?.error?.error ||
-            'Đăng nhập thất bại. Vui lòng thử lại.';
+          console.error('Candidate login error:', err);
+          console.error('Error details:', {
+            status: err?.status,
+            statusText: err?.statusText,
+            error: err?.error,
+            message: err?.message,
+            url: err?.url
+          });
+          
+          let msg = 'Đăng nhập thất bại. Vui lòng thử lại.';
+          
+          if (err?.error?.message) {
+            msg = err.error.message;
+          } else if (err?.error?.error_description) {
+            msg = err.error.error_description;
+          } else if (err?.error?.error) {
+            msg = typeof err.error.error === 'string' ? err.error.error : 'Đăng nhập thất bại. Vui lòng thử lại.';
+          } else if (err?.message) {
+            msg = err.message;
+          } else if (err?.status === 0) {
+            msg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+          } else if (err?.status === 401) {
+            msg = 'Email hoặc mật khẩu không đúng.';
+          } else if (err?.status === 404) {
+            msg = 'Tài khoản không tồn tại.';
+          } else if (err?.status === 500) {
+            msg = 'Lỗi server. Vui lòng thử lại sau.';
+          }
+          
           this.showToastMessage(msg, 'error');
         }
       });
   }
 
-
-
   navigateToSignUp() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/candidate/register']);
   }
 
   forgotPassword() {
-    this.router.navigate(['/forgot-password']);
+    this.router.navigate(['/candidate/forget-password']);
   }
 
   async signInWithGoogle() {
     try {
       this.isLoading = true;
+      console.log('Starting Google sign in...');
       
-      // Sign in with Google
-      const user = await this.googleAuthService.signInWithGoogle();
+      // Sign in with Google to get idToken
+      const googleUser = await this.googleAuthService.signInWithGoogle();
+      console.log('Google user received:', { 
+        id: googleUser.id, 
+        email: googleUser.email, 
+        name: googleUser.name,
+        hasIdToken: !!googleUser.idToken 
+      });
       
-      console.log('Google user:', user);
+      if (!googleUser.idToken) {
+        throw new Error('Không thể lấy token từ Google. Vui lòng thử lại.');
+      }
+
+      // Call backend API with Google idToken
+      this.authFacade.loginWithGoogle({ idToken: googleUser.idToken })
+        .pipe(finalize(() => {
+          this.isLoading = false;
+        }))
+        .subscribe({
+          next: () => {
+            this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
+            this.navigationService.loginAsCandidate();
+            // Redirect đến /home thay vì / để tránh vấn đề với route root
+            setTimeout(() => {
+              this.router.navigate(['/home']);
+            }, 800);
+          },
+          error: (err) => {
+            console.error('Google login API error:', err);
+            console.error('Error details:', {
+              status: err?.status,
+              statusText: err?.statusText,
+              error: err?.error,
+              message: err?.message,
+              url: err?.url
+            });
+            
+            let msg = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
+            
+            if (err?.error?.message) {
+              msg = err.error.message;
+            } else if (err?.error?.error_description) {
+              msg = err.error.error_description;
+            } else if (err?.error?.error) {
+              msg = err.error.error;
+            } else if (err?.message) {
+              msg = err.message;
+            } else if (err?.status === 0) {
+              msg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else if (err?.status === 401) {
+              msg = 'Xác thực Google thất bại. Vui lòng thử lại.';
+            } else if (err?.status === 500) {
+              msg = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            
+            this.showToastMessage(msg, 'error');
+          }
+        });
       
-      this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thành công!', 'success');
-      this.navigationService.loginAsCandidate();
-      
-      setTimeout(() => {
-        this.router.navigate(['/']);
-      }, 2000);
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google sign in error:', error);
+      console.error('Error details:', {
+        name: error?.name,
+        message: error?.message,
+        stack: error?.stack
+      });
+      
       this.isLoading = false;
-      this.showToastMessage('Đăng nhập bằng Google thất bại. Vui lòng thử lại.', 'error');
+      
+      let errorMsg = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
+      
+      if (error?.message) {
+        errorMsg = error.message;
+      } else if (error?.error) {
+        errorMsg = error.error;
+      } else if (typeof error === 'string') {
+        errorMsg = error;
+      }
+      
+      // Xử lý các lỗi phổ biến của Google OAuth
+      if (errorMsg.includes('popup_closed_by_user') || errorMsg.includes('popup closed')) {
+        errorMsg = 'Bạn đã đóng cửa sổ đăng nhập Google. Vui lòng thử lại.';
+      } else if (errorMsg.includes('access_denied')) {
+        errorMsg = 'Bạn đã từ chối quyền truy cập Google. Vui lòng thử lại và cấp quyền.';
+      } else if (errorMsg.includes('idpiframe_initialization_failed')) {
+        errorMsg = 'Không thể khởi tạo Google OAuth. Vui lòng kiểm tra kết nối mạng và thử lại.';
+      }
+      
+      this.showToastMessage(errorMsg, 'error');
     }
+  }
+
+  private prefillRememberedUser(): void {
+    const cookie = this.getCookie(this.rememberCookieKey);
+    if (!cookie) return;
+
+    try {
+      const parsed = JSON.parse(cookie) as { remember: boolean; username: string; password?: string };
+      if (parsed.remember && parsed.username) {
+        // Điền username và password vào form
+        // Sử dụng setValue thay vì patchValue để đảm bảo tất cả giá trị được set
+        this.loginForm.setValue({
+          username: parsed.username,
+          password: parsed.password || '', // Điền password nếu có
+          rememberMe: true,
+        }, { emitEvent: false }); // Không emit event để tránh trigger validation
+      }
+    } catch (error) {
+      // If cookie is malformed, clear it
+      console.error('Error parsing remember cookie:', error);
+      this.clearRememberCookie();
+    }
+  }
+
+  private setRememberCookie(remember: boolean, username: string, password?: string): void {
+    if (remember) {
+      // Lưu cả username và password vào cookie
+      const payload = JSON.stringify({ remember: true, username, password: password || '' });
+      // Set 30-day expiry, path root
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 30);
+      document.cookie = `${this.rememberCookieKey}=${encodeURIComponent(payload)};expires=${expires.toUTCString()};path=/`;
+    } else {
+      this.clearRememberCookie();
+    }
+  }
+
+  private clearRememberCookie(): void {
+    document.cookie = `${this.rememberCookieKey}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  }
+
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return decodeURIComponent(parts.pop()!.split(';').shift() || '');
+    }
+    return null;
   }
 }

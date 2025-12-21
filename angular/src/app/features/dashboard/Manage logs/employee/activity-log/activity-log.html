@@ -1,0 +1,248 @@
+<div class="activity-log-page" [style.margin-left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onCloseToast()">
+  </app-toast-notification>
+
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí log</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí log hoạt động của nhân viên</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <!-- Search and Filter Bar -->
+      <div class="search-filter-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="search-input-wrapper">
+            <i class="fa fa-search search-icon"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm theo tên nhân viên, chi tiết..."
+              [(ngModel)]="searchKeyword"
+              (ngModelChange)="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <app-select-field
+              placeholder="Tất cả loại hoạt động"
+              [options]="activityTypeOptions"
+              [(ngModel)]="filterActivityType"
+              (ngModelChange)="applyFilters()">
+            </app-select-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Từ ngày"
+              type="date"
+              [(ngModel)]="filterDateFrom"
+              (ngModelChange)="loadLogs()">
+            </app-input-field>
+          </div>
+          <div class="filter-group">
+            <app-input-field
+              placeholder="Đến ngày"
+              type="date"
+              [(ngModel)]="filterDateTo"
+              (ngModelChange)="loadLogs()">
+            </app-input-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span>Đang tải dữ liệu...</span>
+      </div>
+
+      <!-- Table Section -->
+      <div *ngIf="!isLoading" class="table-section">
+        <!-- Custom Table -->
+        <div class="activity-log-table">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Tên nhân viên</th>
+                <th>Vai trò</th>
+                <th>Loại hoạt động</th>
+                <th>Chi tiết</th>
+                <th>Thời gian</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of paginatedLogs; let i = index">
+                <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+                <td>{{ log.staffName }}</td>
+                <td>
+                  <span class="role-badge">{{ log.staffRole }}</span>
+                </td>
+                <td>
+                  <span class="activity-badge" [ngClass]="'activity-' + log.activityType?.toLowerCase()">
+                    {{ log.activityType }}
+                  </span>
+                </td>
+                <td class="detail-cell" [title]="log.detail">{{ log.detail }}</td>
+                <td>{{ formatDate(log.timestamp) }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusColorClass(log.httpStatusCode)">
+                    {{ log.httpStatusCode || 'N/A' }}
+                  </span>
+                </td>
+                <td>
+                  <button class="action-btn" (click)="onViewDetails(log)" title="Xem chi tiết">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="paginatedLogs.length === 0">
+                <td colspan="8" class="no-data">
+                  <i class="fa fa-inbox"></i>
+                  <p>Không có dữ liệu</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <app-pagination
+          *ngIf="totalPages > 1"
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Chi tiết Log Hoạt động</h3>
+        <button class="close-btn" (click)="closeDetailModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedLog">
+        <!-- Log Information -->
+        <div class="log-info-section">
+          <h4>Thông tin chung</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nhân viên:</label>
+              <span>{{ selectedLog.staffName }}</span>
+            </div>
+            <div class="info-item">
+              <label>Vai trò:</label>
+              <span class="role-badge">{{ selectedLog.staffRole }}</span>
+            </div>
+            <div class="info-item">
+              <label>Loại hoạt động:</label>
+              <span class="activity-badge" [ngClass]="'activity-' + selectedLog.activityType?.toLowerCase()">
+                {{ selectedLog.activityType }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Trạng thái:</label>
+              <span class="status-badge" [ngClass]="getStatusColorClass(selectedLog.httpStatusCode)">
+                {{ selectedLog.httpStatusCode || 'N/A' }}
+              </span>
+            </div>
+            <div class="info-item full-width">
+              <label>URL:</label>
+              <span class="url-text">{{ selectedLog.url || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Thời gian thực hiện:</label>
+              <span>{{ formatDate(selectedLog.timestamp) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Thời lượng:</label>
+              <span>{{ formatDuration(selectedLog.executionDuration || 0) }}</span>
+            </div>
+            <div class="info-item full-width" *ngIf="selectedLog.browserInfo">
+              <label>Trình duyệt:</label>
+              <span>{{ selectedLog.browserInfo }}</span>
+            </div>
+            <div class="info-item full-width error-box" *ngIf="selectedLog.exception">
+              <label>Lỗi:</label>
+              <pre>{{ selectedLog.exception }}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="actions-section">
+          <h4>
+            Chi tiết Actions
+            <span class="action-count" *ngIf="!isLoadingActions">({{ logActions.length }})</span>
+          </h4>
+          
+          <div *ngIf="isLoadingActions" class="loading-actions">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>Đang tải actions...</span>
+          </div>
+
+          <div *ngIf="!isLoadingActions && logActions.length === 0" class="no-actions">
+            <i class="fa fa-inbox"></i>
+            <p>Không có actions nào</p>
+          </div>
+
+          <div *ngIf="!isLoadingActions && logActions.length > 0" class="actions-list">
+            <div class="action-item" *ngFor="let action of logActions; let i = index">
+              <div class="action-header">
+                <span class="action-number">#{{ i + 1 }}</span>
+                <span class="action-method">{{ action.methodName }}</span>
+                <span class="action-duration">{{ formatDuration(action.executionDuration) }}</span>
+              </div>
+              
+              <div class="action-details">
+                <div class="action-detail-row">
+                  <label>Service:</label>
+                  <span>{{ action.serviceName || 'N/A' }}</span>
+                </div>
+                
+                <div class="action-detail-row">
+                  <label>Thời gian thực hiện:</label>
+                  <span>{{ formatActionExecutionTime(action.executionTime) }}</span>
+                </div>
+                
+                <div class="action-detail-row full-width" *ngIf="action.parameters">
+                  <label>Parameters:</label>
+                  <pre class="parameters-box">{{ formatParameters(action.parameters) }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <app-button type="secondary" size="medium" (click)="closeDetailModal()">
+          Đóng
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>

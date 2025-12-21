@@ -9,7 +9,8 @@
         <app-button
           type="primary"
           size="small"
-          (click)="openAddModal()">
+          (click)="openAddModal()"
+          [disabled]="!canAddStaff">
           <i class="fas fa-plus"></i>
           Thêm HR Staff
         </app-button>
@@ -28,51 +29,38 @@
   <div class="main-content">
     <!-- Dashboard Statistics -->
     <div class="stats-grid">
-      <div class="stat-card" style="border-left-color: #0F83BA;">
-        <div class="stat-icon" style="background-color: #0F83BA;">
-          <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng nhân viên</div>
-          <div class="stat-value">{{ totalStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Tổng nhân viên"
+        [value]="totalStaff"
+        icon="fa-users"
+        color="#0F83BA">
+      </app-stat-card>
       
-      <div class="stat-card" style="border-left-color: #10b981;">
-        <div class="stat-icon" style="background-color: #10b981;">
-          <i class="fas fa-user-check"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Đang hoạt động</div>
-          <div class="stat-value">{{ activeStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Đang hoạt động"
+        [value]="activeStaff"
+        icon="fa-user-check"
+        color="#10b981">
+      </app-stat-card>
       
-      <div class="stat-card" style="border-left-color: #f59e0b;">
-        <div class="stat-icon" style="background-color: #f59e0b;">
-          <i class="fas fa-user-clock"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Chờ duyệt</div>
-          <div class="stat-value">{{ pendingStaff }}</div>
-        </div>
-      </div>
-      
-      <div class="stat-card" style="border-left-color: #ef4444;">
-        <div class="stat-icon" style="background-color: #ef4444;">
-          <i class="fas fa-user-times"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Ngừng hoạt động</div>
-          <div class="stat-value">{{ inactiveStaff }}</div>
-        </div>
-      </div>
+      <app-stat-card
+        label="Ngừng hoạt động"
+        [value]="inactiveStaff"
+        icon="fa-user-times"
+        color="#ef4444">
+      </app-stat-card>
+    </div>
+
+    <!-- Important Note -->
+    <div class="important-note" *ngIf="!canAddStaff">
+      <i class="fa fa-info-circle"></i>
+      <span>Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.</span>
     </div>
 
     <!-- Staff Table with Filter -->
     <div class="staff-table-container">
       <div class="table-header">
-        <div class="search-box" *ngIf="!showActivityLog">
+        <div class="search-box">
           <i class="fas fa-search"></i>
           <input 
             type="text" 
@@ -80,16 +68,8 @@
             [(ngModel)]="searchKeyword"
             (ngModelChange)="applyFilters()">
         </div>
-        <div class="search-box" *ngIf="showActivityLog">
-          <i class="fas fa-search"></i>
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm nhân viên..."
-            [(ngModel)]="activitySearchKeyword"
-            (ngModelChange)="filterActivityLogs()">
-        </div>
         <div class="header-actions">
-          <div class="filter-dropdown" [class.open]="showFilterDropdown" *ngIf="!showActivityLog">
+          <div class="filter-dropdown" [class.open]="showFilterDropdown">
             <button class="filter-select" (click)="toggleFilterDropdown($event)" type="button">
               {{ getSelectedStatusLabel() }}
               <i class="fas fa-chevron-down"></i>
@@ -106,10 +86,6 @@
               </div>
             </div>
           </div>
-          <button class="activity-log-btn" [class.active]="showActivityLog" (click)="toggleActivityLog()">
-            <i [class]="showActivityLog ? 'fas fa-users' : 'fas fa-history'"></i>
-            {{ showActivityLog ? 'Danh sách nhân viên' : 'Nhật kí hoạt động' }}
-          </button>
         </div>
       </div>
 
@@ -121,58 +97,30 @@
 
       <!-- Staff Table -->
       <app-staff-table 
-        *ngIf="!showActivityLog && !loading"
+        *ngIf="!loading"
         [staffList]="paginatedStaffList"
         (viewStaff)="openEditModal($event)">
       </app-staff-table>
-
-      <!-- Loading State for Activity Log -->
-      <div *ngIf="showActivityLog && loadingActivityLogs" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i>
-        <p>Đang tải nhật ký hoạt động...</p>
-      </div>
-
-      <!-- Activity Log Table -->
-      <app-activity-log-table 
-        *ngIf="showActivityLog && !loadingActivityLogs"
-        [activityLogs]="paginatedActivityLogs">
-      </app-activity-log-table>
     </div>
 
     <!-- Pagination for Staff -->
     <app-pagination
-      *ngIf="!showActivityLog && !loading"
+      *ngIf="!loading"
       [currentPage]="currentPage"
       [totalPages]="totalPages"
       (pageChange)="onPageChange($event)">
     </app-pagination>
 
-    <!-- Pagination for Activity Log -->
-    <app-pagination
-      *ngIf="showActivityLog && !loadingActivityLogs"
-      [currentPage]="activityCurrentPage"
-      [totalPages]="activityTotalPages"
-      (pageChange)="onActivityPageChange($event)">
-    </app-pagination>
-
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!showActivityLog && !loading && filteredStaffList.length === 0">
+    <div class="empty-state" *ngIf="!loading && filteredStaffList.length === 0">
       <i class="fas fa-users"></i>
       <h3>Không tìm thấy HR Staff</h3>
       <p>Thử thay đổi bộ lọc hoặc liên hệ quản trị viên</p>
     </div>
-
-    <!-- Empty State for Activity Log -->
-    <div class="empty-state" *ngIf="showActivityLog && !loadingActivityLogs && filteredActivityLogs.length === 0">
-      <i class="fas fa-history"></i>
-      <h3>Không có hoạt động nào</h3>
-      <p *ngIf="activitySearchKeyword">Không tìm thấy hoạt động phù hợp với từ khóa tìm kiếm</p>
-      <p *ngIf="!activitySearchKeyword">Chưa có nhật ký hoạt động được ghi nhận</p>
-    </div>
   </div>
 
   <!-- Add Modal -->
-  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="modal-overlay" *ngIf="showAddModal && !showEditModal && !showDeleteModal" (click)="closeAddModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Thêm nhân sự mới</h2>
@@ -202,7 +150,7 @@
   </div>
 
   <!-- Edit Modal -->
-  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-overlay" *ngIf="showEditModal && !showAddModal && !showDeleteModal" (click)="closeEditModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Chỉnh sửa thông tin nhân sự</h2>
@@ -252,7 +200,7 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-overlay" *ngIf="showDeleteModal && !showAddModal && !showEditModal" (click)="closeDeleteModal()">
     <div class="modal-content small" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Xác nhận xóa</h2>

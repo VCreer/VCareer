@@ -1,0 +1,298 @@
+<div class="revenue-management-page" [style.padding-left]="getContentPaddingLeft()">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()"
+  >
+  </app-toast-notification>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <i class="fas fa-file-invoice"></i>
+          <h2>Chi tiết đơn hàng</h2>
+        </div>
+        <button class="modal-close-btn" (click)="closeDetailModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Order Info -->
+        <div class="order-info-section">
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Mã đơn hàng:</label>
+              <span class="info-value">{{ selectedOrder?.orderCode || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Công ty:</label>
+              <span class="info-value">{{ selectedOrder?.companyName || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Ngày thanh toán:</label>
+              <span class="info-value"
+                >{{ selectedOrder?.paidAt ? (selectedOrder.paidAt | date:'dd/MM/yyyy HH:mm') : 'N/A'
+                }}</span
+              >
+            </div>
+            <div class="info-item">
+              <label>Trạng thái:</label>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder?.status)">
+                {{ getStatusText(selectedOrder?.status) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Trạng thái thanh toán:</label>
+              <span class="info-value"
+                >{{ getPaymentStatusText(selectedOrder?.paymentStatus) }}</span
+              >
+            </div>
+            <div class="info-item">
+              <label>Phương thức:</label>
+              <span class="info-value"
+                >{{ getPaymentMethodText(selectedOrder?.paymentMethod) }}</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Details -->
+        <div class="order-details-section">
+          <h3 class="section-title">
+            <i class="fas fa-list"></i>
+            Danh sách dịch vụ
+          </h3>
+
+          <div *ngIf="isLoadingDetail" class="loading-detail">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Đang tải chi tiết...</p>
+          </div>
+
+          <div *ngIf="!isLoadingDetail && orderDetails.length === 0" class="empty-detail">
+            <i class="fas fa-inbox"></i>
+            <p>Không có chi tiết đơn hàng</p>
+          </div>
+
+          <div *ngIf="!isLoadingDetail && orderDetails.length > 0" class="details-table-wrapper">
+            <table class="details-table">
+              <thead>
+                <tr>
+                  <th>Tên dịch vụ</th>
+                  <th class="text-center">Số lượng</th>
+                  <th class="text-right">Đơn giá</th>
+                  <th class="text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let detail of orderDetails">
+                  <td>
+                    <div class="service-name">
+                      <i class="fas fa-tag"></i>
+                      {{ detail.subcriptionServiceTitle || 'N/A' }}
+                    </div>
+                  </td>
+                  <td class="text-center">{{ detail.quantity || 0 }}</td>
+                  <td class="text-right">{{ detail.unitPrice | number:'1.0-0' }} VNĐ</td>
+                  <td class="text-right amount-cell">
+                    {{ detail.totalPrice | number:'1.0-0' }} VNĐ
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td colspan="3" class="text-right"><strong>Tổng cộng:</strong></td>
+                  <td class="text-right total-amount">
+                    {{ getTotalOrderAmount() | number:'1.0-0' }} VNĐ
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <app-button type="secondary" size="medium" (click)="closeDetailModal()">
+          <i class="fas fa-times"></i>
+          Đóng
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Breadcrumb Box -->
+  <div
+    class="breadcrumb-box"
+    [style.left]="getBreadcrumbLeft()"
+    [style.width]="getBreadcrumbWidth()"
+  >
+    <div class="breadcrumb-container">
+      <div class="page-header">
+        <h1 class="page-title">Quản lý nguồn thu</h1>
+      </div>
+      <div class="action-buttons">
+        <app-button 
+          type="secondary" 
+          size="small" 
+          (click)="onExportExcel()"
+          [disabled]="isExporting || revenueList.length === 0"
+        >
+          <i class="fas" [ngClass]="isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'"></i>
+          {{ isExporting ? 'Đang xuất...' : 'Xuất Excel' }}
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
+    <!-- Statistics Cards - BỎ "Thanh toán thất bại" -->
+    <div class="stats-grid">
+      <app-stat-card
+        label="Tổng doanh thu"
+        [value]="totalRevenue | number:'1.0-0'"
+        icon="fa-dollar-sign"
+        color="#0F83BA"
+      >
+      </app-stat-card>
+
+      <app-stat-card
+        label="Doanh thu theo kỳ"
+        [value]="monthlyRevenue | number:'1.0-0'"
+        icon="fa-calendar-alt"
+        color="#10b981"
+      >
+      </app-stat-card>
+
+      <app-stat-card
+        label="Tổng giao dịch"
+        [value]="totalTransactions | number:'1.0-0'"
+        icon="fa-receipt"
+        color="#f59e0b"
+      >
+      </app-stat-card>
+    </div>
+
+    <!-- Revenue Table -->
+    <div class="revenue-table-container">
+      <!-- Filters Section - BỎ STATUS FILTER -->
+      <div class="filters-section">
+        <div class="filters-row">
+          <!-- 1. Search -->
+          <div class="filter-group search-group">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn hàng, tên công ty..."
+                [(ngModel)]="searchKeyword"
+                (keyup.enter)="onSearch()"
+              />
+            </div>
+            <app-button type="primary" size="small" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+              Tìm kiếm
+            </app-button>
+          </div>
+
+          <!-- 2. Date Range (Start Date - End Date) -->
+          <div class="filter-group date-range-group">
+            <div class="date-range-inputs">
+              <app-date-picker
+                [(ngModel)]="startDate"
+                (dateChange)="onDateRangeChange()"
+                placeholder="Từ ngày"
+              >
+              </app-date-picker>
+              <span class="date-separator">-</span>
+              <app-date-picker
+                [(ngModel)]="endDate"
+                (dateChange)="onDateRangeChange()"
+                placeholder="Đến ngày"
+              >
+              </app-date-picker>
+            </div>
+          </div>
+
+          <!-- 3. Period Filter (Hôm nay, Tuần này, Tháng này...) -->
+          <div class="filter-group period-group">
+            <app-select-field
+              [options]="revenuePeriodOptions"
+              [(ngModel)]="selectedRevenuePeriod"
+              (valueChange)="onRevenuePeriodChange($event)"
+              placeholder="Tất cả"
+            >
+            </app-select-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper" *ngIf="!isLoading">
+        <table class="revenue-table">
+          <thead>
+            <tr>
+              <th>Mã đơn hàng</th>
+              <th>Công ty</th>
+              <th>Số tiền</th>
+              <th>Ngày thanh toán</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredRevenueList.length === 0">
+              <td colspan="6" class="empty-state-cell">
+                <div class="empty-state">
+                  <i class="fas fa-receipt"></i>
+                  <h3>Chưa có giao dịch nào</h3>
+                  <p>Dữ liệu giao dịch sẽ hiển thị tại đây</p>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let item of getPaginatedRevenue()">
+              <td>{{ item.orderCode || 'N/A' }}</td>
+              <td>{{ item.companyName || 'N/A' }}</td>
+              <td>{{ item.totalAmount | number:'1.0-0' }} VNĐ</td>
+              <td>{{ item.paidAt ? (item.paidAt | date:'dd/MM/yyyy HH:mm') : 'N/A' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(item.status)">
+                  {{ getStatusText(item.status) }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn" (click)="viewDetail(item)">
+                  <i class="fas fa-eye"></i>
+                  Xem chi tiết
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrapper" *ngIf="totalPages > 1 && !isLoading">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalItems"
+          [itemsPerPage]="itemsPerPage"
+          (pageChange)="onPageChange($event)"
+        >
+        </app-pagination>
+      </div>
+    </div>
+  </div>
+</div>

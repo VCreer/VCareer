@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CartService, CartItem } from '../../../core/services/cart.service';
 import { OrderService, CreateOrderDto } from '../../../core/services/order.service';
@@ -240,7 +240,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getTotal(): number {
-    return this.getSubtotal() + this.getVAT();
+    return this.getSubtotal() ;
   }
 
   formatCurrency(amount: number): string {
@@ -251,10 +251,37 @@ export class CartComponent implements OnInit, OnDestroy {
     return item.subscriptionServicePrice * item.quantity;
   }
 
-  // Actions
-  onSelectDiscountCode(): void {
-    // TODO: Implement discount code selection
-    this.showToastMessage('info', 'Tính năng chọn mã ưu đãi đang được phát triển');
+  /**
+   * Clear selected items from cart after successful order creation
+   * This removes all selected items from the cart before redirecting to payment
+   */
+  private clearSelectedItemsFromCart(): void {
+    const selectedItems = this.getSelectedItems();
+    
+    if (selectedItems.length === 0) {
+      return;
+    }
+
+    console.log('Clearing selected items from cart:', selectedItems.length);
+
+    // Create array of remove observables for all selected items
+    const removeObservables = selectedItems.map(item => 
+      this.cartService.removeFromCart(item.id)
+    );
+
+    // Execute all remove operations in parallel
+    forkJoin(removeObservables).subscribe({
+      next: () => {
+        console.log('Successfully cleared selected items from cart');
+        // Clear selected items set
+        this.selectedItems.clear();
+      },
+      error: (error) => {
+        console.error('Error clearing cart items:', error);
+        // Even if clearing fails, we've already redirected to payment
+        // So we'll just log the error
+      }
+    });
   }
 
   onCreateOrder(): void {
@@ -287,10 +314,15 @@ export class CartComponent implements OnInit, OnDestroy {
     // Create order
     this.orderService.createOrder(createOrderDto).subscribe({
       next: (order) => {
+        console.log('Order created successfully:', order);
+        
         // Create VNPay payment URL
         this.orderService.createVnpayPaymentUrl({ orderId: order.id }).subscribe({
           next: (paymentResponse) => {
+            console.log('Payment URL created:', paymentResponse.paymentUrl);
+         
             this.isProcessing = false;
+            
             // Redirect to VNPay payment page
             window.location.href = paymentResponse.paymentUrl;
           },
@@ -332,4 +364,3 @@ export class CartComponent implements OnInit, OnDestroy {
     this.router.navigate(['/recruiter/buy-services']);
   }
 }
-

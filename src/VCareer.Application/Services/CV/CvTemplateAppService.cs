@@ -153,7 +153,8 @@ namespace VCareer.Services.CV
                     ProfileImageUrl = "",
                     LinkedIn = "",
                     GitHub = "",
-                    Website = ""
+                    Website = "",
+                    Position = "[Nhập vị trí ứng tuyển]" // Vị trí ứng tuyển
                 },
                 CareerObjective = "[Nhập mục tiêu nghề nghiệp]",
                 WorkExperiences = new List<WorkExperienceDto>
@@ -222,6 +223,7 @@ namespace VCareer.Services.CV
                 htmlContent = htmlContent.Replace("{{personalInfo.linkedIn}}", cvData.PersonalInfo.LinkedIn ?? "");
                 htmlContent = htmlContent.Replace("{{personalInfo.gitHub}}", cvData.PersonalInfo.GitHub ?? "");
                 htmlContent = htmlContent.Replace("{{personalInfo.website}}", cvData.PersonalInfo.Website ?? "");
+                htmlContent = htmlContent.Replace("{{personalInfo.position}}", EscapeHtml(cvData.PersonalInfo.Position ?? "")); // Vị trí ứng tuyển
                 
                 if (cvData.PersonalInfo.DateOfBirth.HasValue)
                 {
@@ -325,6 +327,28 @@ namespace VCareer.Services.CV
             return System.Net.WebUtility.HtmlEncode(input);
         }
 
+        /// <summary>
+        /// Replace placeholder với case-insensitive matching - replace TẤT CẢ occurrences
+        /// </summary>
+        private string ReplacePlaceholderCaseInsensitive(string htmlContent, string placeholder, string value)
+        {
+            if (string.IsNullOrEmpty(htmlContent) || string.IsNullOrEmpty(placeholder)) return htmlContent;
+            
+            // Escape special regex characters trong placeholder để tránh regex injection
+            var escapedPlaceholder = System.Text.RegularExpressions.Regex.Escape(placeholder);
+            
+            // Replace với case-insensitive regex để replace TẤT CẢ occurrences
+            // Không escape value vì nó đã được EscapeHtml rồi và chúng ta muốn raw HTML/text
+            var result = System.Text.RegularExpressions.Regex.Replace(
+                htmlContent,
+                escapedPlaceholder,
+                value, // Value đã được EscapeHtml rồi, không cần escape thêm
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+            
+            return result;
+        }
+
         // Reuse rendering methods from CandidateCvAppService
         // (Copy các methods này hoặc tạo shared helper class)
         private string RenderWorkExperiences(List<WorkExperienceDto> workExperiences)
@@ -336,7 +360,18 @@ namespace VCareer.Services.CV
                 html += $"<h3>{exp.CompanyName ?? ""} - {exp.Position ?? ""}</h3>";
                 if (exp.StartDate.HasValue && exp.EndDate.HasValue)
                 {
-                    html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - {(exp.IsCurrentJob == true ? "Hiện tại" : exp.EndDate.Value.ToString("MM/yyyy"))}</p>";
+                    if (exp.IsCurrentJob == true)
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - đến nay</p>";
+                    }
+                    else if (exp.EndDate.HasValue)
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy} - {exp.EndDate.Value:MM/yyyy}</p>";
+                    }
+                    else
+                    {
+                        html += $"<p class='date-range'>{exp.StartDate.Value:MM/yyyy}</p>";
+                    }
                 }
                 if (!string.IsNullOrEmpty(exp.Description))
                 {
@@ -367,7 +402,18 @@ namespace VCareer.Services.CV
                 html += $"<p>{edu.Degree ?? ""} - {edu.Major ?? ""}</p>";
                 if (edu.StartDate.HasValue && edu.EndDate.HasValue)
                 {
-                    html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - {(edu.IsCurrent == true ? "Hiện tại" : edu.EndDate.Value.ToString("MM/yyyy"))}</p>";
+                    if (edu.IsCurrent == true)
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - đến nay</p>";
+                    }
+                    else if (edu.EndDate.HasValue)
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy} - {edu.EndDate.Value:MM/yyyy}</p>";
+                    }
+                    else
+                    {
+                        html += $"<p class='date-range'>{edu.StartDate.Value:MM/yyyy}</p>";
+                    }
                 }
                 if (!string.IsNullOrEmpty(edu.Gpa))
                 {
@@ -447,7 +493,9 @@ namespace VCareer.Services.CV
                 if (exp.StartDate.HasValue && exp.EndDate.HasValue)
                 {
                     itemHtml = itemHtml.Replace("{{workExperience.dateRange}}", 
-                        $"{exp.StartDate.Value:MM/yyyy} - {(exp.IsCurrentJob == true ? "Hiện tại" : exp.EndDate.Value.ToString("MM/yyyy"))}");
+                        exp.IsCurrentJob == true 
+                            ? $"{exp.StartDate.Value:MM/yyyy} - đến nay"
+                            : $"{exp.StartDate.Value:MM/yyyy} - {exp.EndDate.Value:MM/yyyy}");
                 }
                 result.Append(itemHtml);
             }
@@ -513,12 +561,20 @@ namespace VCareer.Services.CV
         {
             var startPattern = "{{#foreach projects}}";
             var endPattern = "{{/foreach}}";
-            var startIndex = htmlContent.IndexOf(startPattern);
-            if (startIndex == -1 || projects == null || !projects.Any())
+            var startIndex = htmlContent.IndexOf(startPattern, StringComparison.OrdinalIgnoreCase);
+            if (startIndex == -1)
                 return htmlContent;
-
-            var endIndex = htmlContent.IndexOf(endPattern, startIndex);
+            
+            // Tìm end pattern
+            var endIndex = htmlContent.IndexOf(endPattern, startIndex, StringComparison.OrdinalIgnoreCase);
             if (endIndex == -1) return htmlContent;
+            
+            // Nếu không có data, xóa toàn bộ block
+            if (projects == null || !projects.Any())
+            {
+                var fullBlockToRemove = htmlContent.Substring(startIndex, endIndex + endPattern.Length - startIndex);
+                return htmlContent.Replace(fullBlockToRemove, "");
+            }
 
             var templateBlock = htmlContent.Substring(startIndex + startPattern.Length, endIndex - startIndex - startPattern.Length);
             var result = new System.Text.StringBuilder();
@@ -526,7 +582,18 @@ namespace VCareer.Services.CV
             foreach (var project in projects)
             {
                 var itemHtml = templateBlock;
-                itemHtml = itemHtml.Replace("{{project.projectName}}", EscapeHtml(project.ProjectName ?? ""));
+                // Dùng case-insensitive replace để handle mọi format
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.projectName}}", EscapeHtml(project.ProjectName ?? ""));
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.description}}", EscapeHtml(project.Description ?? ""));
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.technologies}}", EscapeHtml(project.Technologies ?? ""));
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.projectUrl}}", project.ProjectUrl ?? "");
+                
+                var startDateStr = project.StartDate.HasValue ? project.StartDate.Value.ToString("MM/yyyy") : "";
+                var endDateStr = project.EndDate.HasValue ? project.EndDate.Value.ToString("MM/yyyy") : "";
+                
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.startDate}}", startDateStr);
+                itemHtml = ReplacePlaceholderCaseInsensitive(itemHtml, "{{project.endDate}}", endDateStr);
+
                 result.Append(itemHtml);
             }
 

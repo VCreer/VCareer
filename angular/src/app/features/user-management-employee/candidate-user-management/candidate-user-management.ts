@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
+import {
   ButtonComponent, 
   ToastNotificationComponent,
   InputFieldComponent,
@@ -11,6 +11,8 @@ import {
   StatusDropdownComponent,
   StatusOption
 } from '../../../shared/components';
+import { UserService } from '../../../proxy/services/user/user.service';
+import * as XLSX from 'xlsx';
 
 export interface CandidateUser {
   id: string;
@@ -26,6 +28,8 @@ export interface CandidateUser {
   ipAddresses: string[];
   mustChangePassword: boolean;
   securityStamp: string;
+  roles?: string[];
+  roleDisplay?: string;
 }
 
 @Component({
@@ -65,7 +69,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   filterStatus = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -107,7 +111,10 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   // IP Restrict Form
   ipAddress = '';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -280,55 +287,57 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    // Mock data - replace with API call
-    this.allUsers = [
-      {
-        id: '1',
-        username: 'candidate1',
-        email: 'candidate1@example.com',
-        fullName: 'Nguyễn Văn A',
-        phone: '0901234567',
-        isActive: true,
-        isLocked: false,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-15T10:30:00',
-        createdDate: '2023-01-01T00:00:00',
-        ipAddresses: ['192.168.1.1', '192.168.1.2'],
-        mustChangePassword: false,
-        securityStamp: 'stamp1'
-      },
-      {
-        id: '2',
-        username: 'candidate2',
-        email: 'candidate2@example.com',
-        fullName: 'Trần Thị B',
-        phone: '0907654321',
-        isActive: true,
-        isLocked: true,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-14T15:20:00',
-        createdDate: '2023-02-01T00:00:00',
-        ipAddresses: ['192.168.1.3'],
-        mustChangePassword: true,
-        securityStamp: 'stamp2'
-      },
-      {
-        id: '3',
-        username: 'candidate3',
-        email: 'candidate3@example.com',
-        fullName: 'Lê Văn C',
-        phone: '0912345678',
-        isActive: false,
-        isLocked: false,
-        lockoutEnabled: true,
-        createdDate: '2023-03-01T00:00:00',
-        ipAddresses: [],
-        mustChangePassword: false,
-        securityStamp: 'stamp3'
-      }
-    ];
+    // Gọi API lấy danh sách userId theo RoleType Candidate = 3
+    this.userService.getUsersInfoByRole(3).subscribe({
+      next: async (users) => {
+        console.log('Candidate users loaded:', users);
+        const mapped: CandidateUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            // Nếu name và surname đều null/empty thì để trống Họ tên
+            fullName: fullName || '',
+            phone: (u as any).phoneNumber || '',
+            isActive: (u as any).isActive,
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            lastLoginDate: undefined,
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            roleDisplay: ''
+          };
+        });
 
-    this.applyFilters();
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
+        console.log('Mapped candidate users:', this.allUsers);
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading candidate users:', error);
+        this.allUsers = [];
+        this.showToastMessage('Không thể tải danh sách người dùng. Vui lòng thử lại sau.', 'error');
+        this.applyFilters();
+      }
+    });
   }
 
   applyFilters(): void {
@@ -381,7 +390,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -417,7 +426,7 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -448,13 +457,20 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onToggleActive(user: CandidateUser): void {
-    // TODO: Call API to activate/deactivate
-    user.isActive = !user.isActive;
+    const newStatus = !user.isActive;
+    this.userService.setUserActiveStatus(user.id, newStatus).subscribe({
+      next: () => {
+        user.isActive = newStatus;
     this.showToastMessage(
       user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
       'success'
     );
     this.applyFilters();
+      },
+      error: () => {
+        this.showToastMessage('Thay đổi trạng thái hoạt động thất bại', 'error');
+      }
+    });
   }
 
   onToggleLock(user: CandidateUser): void {
@@ -516,18 +532,45 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     this.showToastMessage('Đã xóa địa chỉ IP', 'success');
   }
 
-  onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    // Simulate export
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+  onExportExcel(): void {
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidates');
+
+      worksheet['!cols'] = [
+        { wch: 25 }, // Id
+        { wch: 30 }, // Họ tên
+        { wch: 35 }, // Email
+        { wch: 20 }, // Trạng thái
+        { wch: 25 }, // Vai trò
+      ];
+
+      const fileName = `Candidate_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -541,6 +584,14 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getShortId(user: CandidateUser): string {
+    if (!user || user.id === undefined || user.id === null) {
+      return '';
+    }
+    const idStr = String(user.id);
+    return idStr.length > 7 ? idStr.slice(-7) : idStr;
   }
 
   formatDate(dateString?: string): string {
@@ -802,5 +853,14 @@ export class CandidateUserManagementComponent implements OnInit, OnDestroy {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private mapRoleName(role: string): string {
+    switch (role) {
+      case 'candidate':
+        return 'Candidate';
+      default:
+        return role;
+    }
   }
 }

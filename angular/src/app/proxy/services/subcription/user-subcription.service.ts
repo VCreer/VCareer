@@ -1,7 +1,7 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_SubcriptionStatus } from '../../constants/job-constant/subcription-contance-subcription-status.enum';
-import type { SubcriptionsViewDto, User_SubcirptionCreateDto, User_SubcirptionUpdateDto, User_SubcirptionViewDto } from '../../dto/subcriptions/models';
+import type { SubcriptionContance_ServiceAction } from '../../constants/job-constant/subcription-contance-service-action.enum';
+import type { OptionsChildServiceViewDto, User_SubcirptionCreateDto, User_SubcirptionUpdateDto, User_SubcirptionViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
 @Injectable({
@@ -20,10 +20,10 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
-  cancleUserSubcriptionByUserSubcriptionId = (UserSubcriptionId: string, config?: Partial<Rest.Config>) =>
+  cancleUserSubcriptionBySubcriptionServiceId = (subcriptionServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/user-subcription/cancle-user-subcription/${UserSubcriptionId}`,
+      url: `/api/app/user-subcription/cancle-user-subcription/${subcriptionServiceId}`,
     },
     { apiName: this.apiName,...config });
   
@@ -37,11 +37,20 @@ export class UserSubcriptionService {
     { apiName: this.apiName,...config });
   
 
-  getAllSubcriptionsByUserByUserIdAndStatusAndPagingDto = (userId: string, status: enum, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, SubcriptionsViewDto[]>({
+  getAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction = (userId: string, status: number, pagingDto: PagingDto, serviceAction: SubcriptionContance_ServiceAction, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, OptionsChildServiceViewDto[]>({
       method: 'GET',
       url: `/api/app/user-subcription/subcriptions-by-user/${userId}`,
-      params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
+      params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex, serviceAction },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getJobChildServiceAllowForUser = (serviceAction?: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, OptionsChildServiceViewDto[]>({
+      method: 'GET',
+      url: '/api/app/user-subcription/job-child-service-allow-for-user',
+      params: { serviceAction },
     },
     { apiName: this.apiName,...config });
   
@@ -50,6 +59,24 @@ export class UserSubcriptionService {
     this.restService.request<any, User_SubcirptionViewDto>({
       method: 'GET',
       url: `/api/app/user-subcription/user-subcription-service/${UserSubcriptionServiceId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  setStatusShareSuubcriptionServiceByUser_subcriptionServiceIdAndIsShare = (user_subcriptionServiceId: string, isShare: boolean, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/user-subcription/set-status-share-suubcription-service/${user_subcriptionServiceId}`,
+      params: { isShare },
+    },
+    { apiName: this.apiName,...config });
+  
+
+  subcriptionBoughtedAndActiveByUserIdAndSubcriptionServiceId = (UserId: string, SubcriptionServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, string[]>({
+      method: 'POST',
+      url: '/api/app/user-subcription/subcription-boughted-and-active',
+      params: { userId: UserId, subcriptionServiceId: SubcriptionServiceId },
     },
     { apiName: this.apiName,...config });
   

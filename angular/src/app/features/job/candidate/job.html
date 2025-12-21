@@ -1,4 +1,12 @@
 <div class="job-page">
+  <!-- Toast Notification -->
+  <app-toast-notification
+    [show]="showToast"
+    [message]="toastMessage"
+    [type]="toastType"
+    (close)="onToastClose()">
+  </app-toast-notification>
+
   <!-- ============================================ -->
   <!-- ✅ TOP SEARCH BAR - Using FilterBarComponent -->
   <!-- ============================================ -->
@@ -23,6 +31,7 @@
           class="main-search-input"
           placeholder="{{ translate('job_page.position_placeholder') }}"
           [(ngModel)]="searchKeyword"
+          (keyup.enter)="onMainSearch({ keyword: searchKeyword })"
         />
 
         <!-- Search Button -->
@@ -31,7 +40,7 @@
           class="main-search-btn"
           (click)="onMainSearch({ keyword: searchKeyword })"
         >
-          <i class="search-icon">🔍</i>
+          <i class="fa fa-search search-icon"></i>
           {{ translate('job_page.search_button') }}
         </button>
       </app-filter-bar>
@@ -68,7 +77,16 @@
 
         <!-- No Results -->
         <div class="no-results" *ngIf="totalCount === 0">
-          <p>Không tìm thấy việc làm phù hợp</p>
+          <div class="empty-state">
+            <img
+              src="assets/images/job/no-job.png"
+              alt="Không tìm thấy việc làm phù hợp"
+              class="empty-state-image"
+            />
+            <p class="empty-state-text">
+              {{ translate('job_list.no_jobs_found') }}
+            </p>
+          </div>
         </div>
 
         <!-- ✅ JobListComponent with API data -->
@@ -77,6 +95,7 @@
           [totalCount]="totalCount"
           [isLoading]="isSearching"
           [selectedJobId]="selectedJob?.id"
+          [provinces]="provinces"
           (quickView)="onQuickView($event)"
           (jobClick)="onJobClick($event)"
           (jobHidden)="onJobHidden()"
@@ -88,10 +107,28 @@
     <div class="job-detail-column" *ngIf="selectedJob">
       <app-job-list-detail
         [selectedJob]="selectedJob"
+        [provinces]="provinces"
         (closeDetail)="onCloseDetail()"
         (viewDetail)="onViewDetail($event)"
         (applyJob)="onApply($event)"
+        (saveStatusChange)="onSaveStatusChange($event)"
       ></app-job-list-detail>
     </div>
   </div>
+
+  <!-- Apply Job Modal -->
+  <app-apply-job-modal
+    [show]="showApplyModal"
+    [title]="applyJobTitle"
+    [jobId]="applyJobId"
+    (close)="onCloseApplyModal()"
+    (submit)="onSubmitApply($event)"
+  ></app-apply-job-modal>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
 </div>

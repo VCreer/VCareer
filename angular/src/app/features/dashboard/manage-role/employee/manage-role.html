@@ -1,0 +1,223 @@
+<div
+  class="manage-role-page"
+  [style.margin-left]="getPageMarginLeft()"
+  [style.width]="getPageWidth()">
+
+  <app-toast-notification
+    *ngIf="showToast"
+    [message]="toastMessage"
+    [type]="toastType">
+  </app-toast-notification>
+
+  <div class="breadcrumb-box" [style.left]="getPageMarginLeft()" [style.width]="getPageWidth()">
+    <div class="breadcrumb-container">
+      <div class="breadcrumb-left">
+        <span class="breadcrumb-item active">Quản lí người dùng</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item">Quản lí vai trò</span>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="main-content"
+    [style.max-width]="getContentMaxWidth()">
+    <div class="content-card">
+      <div class="header-row">
+        <div class="title-area">
+          <h2 class="page-title">
+            <span>Quản lí vai trò</span>
+          </h2>
+          <p class="page-subtitle">
+            Xem và cấu hình quyền theo từng vai trò hệ thống.
+          </p>
+        </div>
+      </div>
+
+      <div class="role-permission-layout">
+        <!-- Left: Role list -->
+        <div class="role-panel">
+          <div class="panel-header">
+            <h3>Danh sách vai trò</h3>
+          </div>
+          <div class="search-box">
+            <div class="search-input-wrapper">
+              <i class="fa fa-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Tìm theo tên vai trò"
+                [(ngModel)]="searchKeyword"
+                (ngModelChange)="onSearchChange()">
+            </div>
+          </div>
+
+          <div class="role-list" *ngIf="!isLoadingRoles; else loadingRolesTpl">
+            <button
+              type="button"
+              class="role-item"
+              *ngFor="let role of filteredRoles"
+              [class.active]="selectedRole?.id === role.id"
+              (click)="onSelectRole(role)">
+              <div class="role-name">
+                <i class="fa fa-user-tag"></i>
+                <span>{{ role.name }}</span>
+              </div>
+              <div class="role-badges">
+                <span class="badge badge-default" *ngIf="role.isDefault">Default</span>
+                <span class="badge badge-public" *ngIf="role.isPublic">Public</span>
+                <span class="badge badge-static" *ngIf="role.isStatic">Static</span>
+              </div>
+            </button>
+
+            <div class="empty-roles" *ngIf="!filteredRoles.length">
+              <i class="fa fa-info-circle"></i>
+              <p>Không có vai trò nào.</p>
+            </div>
+          </div>
+
+          <ng-template #loadingRolesTpl>
+            <div class="loading-panel">
+              <i class="fa fa-spinner fa-spin"></i>
+              <span>Đang tải danh sách vai trò...</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Right: Permissions -->
+        <div class="permission-panel">
+          <div class="panel-header">
+            <h3>Quyền theo vai trò</h3>
+            <div class="selected-role-label" *ngIf="selectedRole">
+              <span>Vai trò đang chọn:</span>
+              <strong>{{ selectedRole.name }}</strong>
+            </div>
+          </div>
+
+          <div class="permission-content" *ngIf="selectedRole; else noRoleSelectedTpl">
+            <div class="permission-toolbar">
+              <button
+                type="button"
+                class="btn-refresh"
+                (click)="onSelectRole(selectedRole!)"
+                [disabled]="isLoadingPermissions">
+                <i class="fa fa-sync-alt" [class.fa-spin]="isLoadingPermissions"></i>
+                <span>Làm mới</span>
+              </button>
+            </div>
+
+            <div class="permission-groups" *ngIf="!isLoadingPermissions; else loadingPermsTpl">
+              <div
+                class="permission-group"
+                *ngFor="let group of permissionGroups"
+                [class.expanded]="isPermissionGroupExpanded(group.id)">
+                <div
+                  class="permission-group-header"
+                  (click)="togglePermissionGroupExpand(group.id)">
+                  <div class="group-header-left">
+                    <input
+                      type="checkbox"
+                      [checked]="isPermissionGroupFullySelected(group)"
+                      [indeterminate]="isPermissionGroupPartiallySelected(group)"
+                      (click)="$event.stopPropagation()"
+                      (change)="onTogglePermissionGroup(group)">
+                    <span class="group-name">{{ group.name }}</span>
+                  </div>
+                  <i
+                    class="fa fa-chevron-down group-chevron"
+                    [class.rotated]="isPermissionGroupExpanded(group.id)"></i>
+                </div>
+
+                <div class="permission-group-content" *ngIf="isPermissionGroupExpanded(group.id)">
+                  <!-- Sub-groups -->
+                  <div
+                    class="permission-sub-group"
+                    *ngFor="let subGroup of group.subGroups"
+                    [class.expanded]="isSubGroupExpanded(subGroup.id)">
+                    <div
+                      class="permission-sub-group-header"
+                      (click)="toggleSubGroupExpand(subGroup.id)">
+                      <div class="sub-group-header-left">
+                        <input
+                          type="checkbox"
+                          [checked]="isSubGroupFullySelected(subGroup)"
+                          [indeterminate]="isSubGroupPartiallySelected(subGroup)"
+                          (click)="$event.stopPropagation()"
+                          (change)="onToggleSubGroup(subGroup)">
+                        <span class="sub-group-name">{{ subGroup.name }}</span>
+                      </div>
+                      <i
+                        class="fa fa-chevron-down sub-group-chevron"
+                        [class.rotated]="isSubGroupExpanded(subGroup.id)"></i>
+                    </div>
+
+                    <div class="permission-list" *ngIf="isSubGroupExpanded(subGroup.id)">
+                      <label
+                        class="permission-item"
+                        *ngFor="let permission of subGroup.permissions">
+                        <input
+                          type="checkbox"
+                          [checked]="isPermissionSelected(permission.id)"
+                          (change)="onTogglePermission(permission.id)">
+                        <div class="permission-info">
+                          <span class="permission-name">{{ permission.name }}</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Direct permissions (không có sub-group) -->
+                  <div class="permission-list" *ngIf="group.permissions.length > 0">
+                    <label
+                      class="permission-item"
+                      *ngFor="let permission of group.permissions">
+                      <input
+                        type="checkbox"
+                        [checked]="isPermissionSelected(permission.id)"
+                        (change)="onTogglePermission(permission.id)">
+                      <div class="permission-info">
+                        <span class="permission-name">{{ permission.name }}</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="empty-permissions" *ngIf="!permissionGroups.length">
+                <i class="fa fa-info-circle"></i>
+                <p>Không có nhóm quyền nào cho vai trò này.</p>
+              </div>
+            </div>
+
+            <ng-template #loadingPermsTpl>
+              <div class="loading-panel">
+                <i class="fa fa-spinner fa-spin"></i>
+                <span>Đang tải quyền cho vai trò...</span>
+              </div>
+            </ng-template>
+
+            <div class="permission-actions">
+              <app-button
+                type="primary"
+                size="medium"
+                [disabled]="isSaving || !selectedRole"
+                (click)="onSavePermissions()">
+                <i class="fa fa-save"></i>
+                <span>Lưu cấu hình quyền</span>
+              </app-button>
+            </div>
+          </div>
+
+          <ng-template #noRoleSelectedTpl>
+            <div class="empty-state">
+              <i class="fa fa-shield-alt"></i>
+              <p>Chọn một vai trò ở bên trái để xem và cập nhật quyền.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

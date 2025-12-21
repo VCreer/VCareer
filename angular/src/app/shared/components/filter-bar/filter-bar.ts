@@ -16,8 +16,8 @@ import { ProvinceDto, WardDto } from '../../../proxy/dto/geo-dto/models';
 import { JobCategoryService } from '../../../proxy/services/job/job-category.service';
 import { GeoService } from '../../../core/services/Geo.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-filter-bar',
@@ -70,6 +70,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   private categorySearchSubject = new Subject<string>();
   private locationSearchSubject = new Subject<string>();
 
+  // Internal flags để tránh load trùng
+  private hasLoadedCategoriesFromApi = false;
+  private hasLoadedProvincesFromApi = false;
+
   constructor(
     private translationService: TranslationService,
     private category: JobCategoryService,
@@ -96,17 +100,22 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    // ✅ Load FULL category tree và provinces ngay khi component init
+    // ✅ Khởi tạo dữ liệu category từ @Input() nếu có
     if (this.categories && this.categories.length > 0) {
       this.filteredCategories = [...this.categories];
     } else {
       this.filteredCategories = [];
+      // Nếu parent chưa truyền category → tự load từ API
+      this.loadCategoriesFromApi();
     }
     
+    // ✅ Khởi tạo dữ liệu provinces từ @Input() nếu có
     if (this.provinces && this.provinces.length > 0) {
       this.filteredProvinces = [...this.provinces];
     } else {
       this.filteredProvinces = [];
+      // Nếu parent chưa truyền provinces → tự load từ API
+      this.loadProvincesFromApi();
     }
 
     // ✅ Clear search keywords
@@ -118,7 +127,7 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     // ✅ Update khi parent truyền data mới
     if (changes['categories'] && this.categories) {
       this.filteredCategories = [...this.categories];
-      console.log('✅ FilterBar received categories:', this.categories.length);
+      this.hasLoadedCategoriesFromApi = true;
 
       // ✅ When category tree arrives (after navigation from Home),
       // ensure parent checkboxes reflect currently selected leaf nodes.
@@ -136,12 +145,11 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     }
     if (changes['provinces'] && this.provinces) {
       this.filteredProvinces = [...this.provinces];
-      console.log('✅ FilterBar received provinces:', this.provinces.length);
+      this.hasLoadedProvincesFromApi = true;
     }
 
     // ✅ Restore selected filters (from query params)
     if (changes['selectedCategoryIds'] && this.selectedCategoryIds) {
-      console.log('✅ Restoring selected categories:', this.selectedCategoryIds);
       // Restore selected leaf nodes
       this.internalSelectedCategoryIds = new Set(this.selectedCategoryIds);
       // ✅ Ensure parent levels (level 1, level 2) are also marked as selected
@@ -152,14 +160,105 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (changes['selectedProvinceCodes'] && this.selectedProvinceCodes) {
-      console.log('✅ Restoring selected provinces:', this.selectedProvinceCodes);
       this.internalSelectedProvinceCodes = new Set(this.selectedProvinceCodes);
     }
 
     if (changes['selectedWardCodes'] && this.selectedWardCodes) {
-      console.log('✅ Restoring selected wards:', this.selectedWardCodes);
       this.internalSelectedWardCodes = new Set(this.selectedWardCodes);
     }
+  }
+
+  /**
+   * ✅ Tự load category tree từ API nếu parent không truyền vào
+   */
+  private loadCategoriesFromApi(forceRetry: boolean = false) {
+    // Nếu đã load rồi và có data → không load lại (trừ khi force retry)
+    if (this.hasLoadedCategoriesFromApi && !forceRetry) {
+      if (this.categories && this.categories.length > 0) {
+        this.filteredCategories = [...this.categories];
+        return;
+      } else {
+        // Nếu đã load nhưng rỗng → reset flag để retry
+        this.hasLoadedCategoriesFromApi = false;
+      }
+    }
+    
+    this.hasLoadedCategoriesFromApi = true;
+
+    this.category.getCategoryTree({ skipHandleError: true }).pipe(
+      catchError((err) => {
+        // Nếu lỗi 401 (Unauthorized) → API cần đăng nhập, thử load từ cache
+        if (err.status === 401) {
+          const cachedCategories = this.loadCategoriesFromCache();
+          if (cachedCategories.length > 0) {
+            this.categories = cachedCategories;
+            this.filteredCategories = [...this.categories];
+            this.hasLoadedCategoriesFromApi = true; // Đánh dấu đã load (từ cache)
+            return of(cachedCategories); // Return categories từ cache
+          }
+        }
+        
+        // Silent fail, giữ empty state "Không có dữ liệu danh mục"
+        this.categories = [];
+        this.filteredCategories = [];
+        this.hasLoadedCategoriesFromApi = false; // Cho phép retry
+        
+        // Return empty array để không throw error, nhưng đánh dấu là lỗi
+        return of(null); // Return null để phân biệt với thành công nhưng rỗng
+      })
+    ).subscribe({
+      next: categories => {
+        if (categories === null) {
+          // Đây là trường hợp đã catch error ở trên và không có cache
+          return;
+        }
+        
+        this.categories = categories || [];
+        this.filteredCategories = [...this.categories];
+        
+        // Lưu vào cache để dùng lần sau
+        if (categories && categories.length > 0) {
+          this.saveCategoriesToCache(categories);
+        }
+      },
+      error: (err) => {
+        // Fallback error handler (không nên vào đây nếu đã catch ở pipe)
+        this.categories = [];
+        this.filteredCategories = [];
+        this.hasLoadedCategoriesFromApi = false;
+      },
+    });
+  }
+
+  /**
+   * ✅ Tự load provinces từ API nếu parent không truyền vào
+   */
+  private loadProvincesFromApi(forceRetry: boolean = false) {
+    // Nếu đã load rồi và có data → không load lại (trừ khi force retry)
+    if (this.hasLoadedProvincesFromApi && !forceRetry) {
+      if (this.provinces && this.provinces.length > 0) {
+        this.filteredProvinces = [...this.provinces];
+        return;
+      } else {
+        // Nếu đã load nhưng rỗng → reset flag để retry
+        this.hasLoadedProvincesFromApi = false;
+      }
+    }
+    
+    this.hasLoadedProvincesFromApi = true;
+
+    this.location.getProvinces().subscribe({
+      next: provinces => {
+        this.provinces = provinces || [];
+        this.filteredProvinces = [...this.provinces];
+      },
+      error: (err) => {
+        // Silent fail, giữ empty state "Không có địa điểm"
+        this.provinces = [];
+        this.filteredProvinces = [];
+        this.hasLoadedProvincesFromApi = false; // Cho phép retry
+      },
+    });
   }
 
   // ============================================
@@ -172,14 +271,17 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     if (this.showCategoryDropdown) {
       this.showLocationDropdown = false; // Close location dropdown
       
+      // ✅ Nếu chưa có categories → load từ API (force retry nếu đã load nhưng rỗng)
+      if (!this.categories || this.categories.length === 0) {
+        this.loadCategoriesFromApi(true); // Force retry khi mở dropdown
+      }
+      
       // ✅ ALWAYS reload data khi mở dropdown để đảm bảo có data mới nhất
       // Ngay cả khi categories rỗng, vẫn cần clear search để show empty state
       if (this.categories && this.categories.length > 0) {
         this.filteredCategories = [...this.categories];
-        console.log('   ✅ Reloaded categories:', this.filteredCategories.length);
       } else {
         this.filteredCategories = [];
-        console.warn('   ⚠️ No categories available! Categories array:', this.categories);
       }
       
       // ✅ Clear search to show tree (luôn clear để hiển thị tree view)
@@ -229,7 +331,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
         this.hasSearchResults = results.length > 0;
       },
       error: error => {
-        console.error('❌ Category search error:', error);
         this.searchResults = [];
         this.hasSearchResults = false;
       },
@@ -397,20 +498,10 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * ✅ Chỉ emit leaf node IDs
    */
   applyCategoryFilter() {
-    console.log(
-      '🔵 Apply Category Filter - selectedCategoryIds:',
-      Array.from(this.internalSelectedCategoryIds)
-    );
-
     const leafIds = Array.from(this.internalSelectedCategoryIds).filter(id => {
       const category = this.findCategoryById(id);
-      console.log(
-        `   - Checking ${id}: isLeaf=${category?.isLeaf}, name=${category?.categoryName}`
-      );
       return category?.isLeaf === true;
     });
-
-    console.log('✅ Emitting leaf IDs:', leafIds);
     this.categorySelected.emit(leafIds);
     this.showCategoryDropdown = false;
   }
@@ -428,9 +519,17 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
     if (this.showLocationDropdown) {
       this.showCategoryDropdown = false; // Đóng category dropdown
 
+      // ✅ Nếu chưa có provinces → load từ API (force retry nếu đã load nhưng rỗng)
+      if (!this.provinces || this.provinces.length === 0) {
+        this.loadProvincesFromApi(true); // Force retry khi mở dropdown
+      }
+
       // Load full province list khi mở dropdown
-      if (this.provinces.length > 0) {
+      if (this.provinces && this.provinces.length > 0) {
         this.filteredProvinces = [...this.provinces];
+        this.locationSearchKeyword = '';
+      } else {
+        this.filteredProvinces = [];
         this.locationSearchKeyword = '';
       }
     }
@@ -466,8 +565,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
    * Vì ProvinceDto từ geo-dto có cấu trúc khác, ta sẽ filter trong danh sách đã có
    */
   private performLocationSearch(keyword: string) {
-    console.log('🔍 Filtering provinces with keyword:', keyword);
-
     if (!this.provinces || this.provinces.length === 0) {
       this.filteredProvinces = [];
       this.hasLocationResults = false;
@@ -491,7 +588,6 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
 
     this.filteredProvinces = filtered;
     this.hasLocationResults = filtered.length > 0;
-    console.log('✅ Location search results:', filtered.length);
   }
 
   /**
@@ -633,5 +729,37 @@ export class FilterBarComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     this.categorySearchSubject.complete();
     this.locationSearchSubject.complete();
+  }
+
+  /**
+   * ✅ Load categories từ cache (localStorage)
+   */
+  private loadCategoriesFromCache(): CategoryTreeDto[] {
+    try {
+      const cached = localStorage.getItem('homepage_stats');
+      if (cached) {
+        const stats = JSON.parse(cached);
+        if (stats.categories && Array.isArray(stats.categories) && stats.categories.length > 0) {
+          return stats.categories;
+        }
+      }
+    } catch (error) {
+      // Ignore cache errors
+    }
+    return [];
+  }
+
+  /**
+   * ✅ Lưu categories vào cache (localStorage)
+   */
+  private saveCategoriesToCache(categories: CategoryTreeDto[]): void {
+    try {
+      const cached = localStorage.getItem('homepage_stats');
+      const stats = cached ? JSON.parse(cached) : {};
+      stats.categories = categories;
+      localStorage.setItem('homepage_stats', JSON.stringify(stats));
+    } catch (error) {
+      // Ignore cache errors
+    }
   }
 }

@@ -59,7 +59,6 @@ export interface CompanyLegalInfoDto extends EntityDto<number> {
   cultureVideoUrl?: string;
   verifyAt?: string;
   taxCode?: string;
-  businessLicenseNumber?: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace?: string;
   legalRepresentative?: string;
@@ -77,6 +76,41 @@ export interface CompanyLegalInfoDto extends EntityDto<number> {
 export interface CompanySearchInputDto extends PagedAndSortedResultRequestDto {
   keyword?: string;
   status?: boolean;
+}
+
+export interface CompanyVerificationFilterDto extends PagedAndSortedResultRequestDto {
+  keyword?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}
+
+export interface CompanyVerificationViewDto extends EntityDto<number> {
+  companyName?: string;
+  companyCode?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  headquartersAddress?: string;
+  description?: string;
+  companySize?: number;
+  foundedYear?: number;
+  websiteUrl?: string;
+  taxCode?: string;
+  businessLicenseIssueDate?: string;
+  businessLicenseIssuePlace?: string;
+  legalRepresentative?: string;
+  businessLicenseFile?: string;
+  taxCertificateFile?: string;
+  representativeIdCardFile?: string;
+  otherSupportFile?: string;
+  legalDocumentUrl?: string;
+  verificationStatus?: boolean;
+  legalVerificationStatus?: string;
+  legalReviewedBy?: number;
+  legalReviewedAt?: string;
+  rejectionNotes?: string;
+  creationTime?: string;
+  recruiterName?: string;
+  recruiterEmail?: string;
 }
 
 export interface ExperienceDetailDto {
@@ -111,6 +145,11 @@ export interface ProfileDto extends EntityDto<string> {
   experience?: number;
   salary?: number;
   workLocation?: string;
+  profileVisibility?: boolean;
+}
+
+export interface RejectCompanyDto {
+  rejectionNotes: string;
 }
 
 export interface SearchCandidateInputDto extends PagedAndSortedResultRequestDto {
@@ -158,7 +197,6 @@ export interface SubmitCompanyLegalInfoDto {
   industryId?: number;
   foundedYear?: number;
   taxCode: string;
-  businessLicenseNumber: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace: string;
   legalRepresentative: string;
@@ -178,8 +216,8 @@ export interface UpdateCompanyLegalInfoDto {
   companySize?: number;
   industryId?: number;
   foundedYear?: number;
+  websiteUrl?: string;
   taxCode?: string;
-  businessLicenseNumber?: string;
   businessLicenseIssueDate?: string;
   businessLicenseIssuePlace?: string;
   legalRepresentative?: string;
@@ -191,7 +229,7 @@ export interface UpdateCompanyLegalInfoDto {
 
 export interface UpdatePersonalInfoDto {
   name: string;
-  surname: string;
+  surname?: string;
   email?: string;
   phoneNumber?: string;
   bio?: string;
@@ -206,6 +244,10 @@ export interface UpdatePersonalInfoDto {
   experience?: number;
   salary?: number;
   workLocation?: string;
+}
+
+export interface UploadCompanyLogoInputDto {
+  file: IFormFile;
 }
 
 export interface UploadLegalDocumentInputDto {

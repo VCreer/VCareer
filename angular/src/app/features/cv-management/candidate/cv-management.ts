@@ -20,8 +20,10 @@ import { CandidateCvService } from '../../../proxy/http-api/controllers/candidat
 import type { CandidateCvDto, GetCandidateCvListDto } from '../../../proxy/cv/models';
 import { AuthStateService } from '../../../core/services/auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from '../../../core/services/auth-Cookiebased/auth-facade.service';
-import { ProfileService } from '../../../proxy/services/profile/profile.service';
+import { ProfileService } from '../../../proxy/profile/profile.service';
 import type { ProfileDto } from '../../../proxy/dto/profile/models';
+import { EnableJobSearchModalComponent } from '../../../shared/components/enable-job-search-modal/enable-job-search-modal';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-cv-management',
@@ -36,7 +38,8 @@ import type { ProfileDto } from '../../../proxy/dto/profile/models';
     UploadCvModal,
     DownloadCvModal,
     RenameCvModal,
-    UploadedCvCard
+    UploadedCvCard,
+    EnableJobSearchModalComponent
   ],
   templateUrl: './cv-management.html',
   styleUrls: ['./cv-management.scss']
@@ -59,10 +62,21 @@ export class CvManagementComponent implements OnInit {
   // Toggle settings
   jobSearchEnabled: boolean = false;
   allowRecruiterSearch: boolean = true;
+  showEnableJobSearchModal: boolean = false;
   
   // User info
   currentUser: any = null;
   userName: string = '';
+  profileData = {
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    location: ''
+  };
+  isLoadingProfile: boolean = false;
 
   constructor(
     private router: Router,
@@ -99,8 +113,8 @@ export class CvManagementComponent implements OnInit {
     
     // Load uploaded CVs từ API
     this.loadUploadedCvs();
-    // Load CV mặc định
-    this.loadDefaultCv();
+    // Load CV mặc định - không hiển thị error nếu không có
+    this.loadDefaultCvSilently();
     
     // Subscribe to uploaded CVs service (local state)
     this.localUploadedCvService.uploadedCvs$.subscribe(cvs => {
@@ -111,7 +125,13 @@ export class CvManagementComponent implements OnInit {
     });
     
     // Load user info để hiển thị tên
-    this.loadUserInfo();
+    this.loadProfileData();
+
+    // Đồng bộ trạng thái "Đang bật/tắt tìm việc" từ localStorage (FE-only)
+    const savedJobSearch = localStorage.getItem('vcareer_job_search_enabled');
+    if (savedJobSearch !== null) {
+      this.jobSearchEnabled = savedJobSearch === 'true';
+    }
   }
 
   loadCvs() {
@@ -165,7 +185,7 @@ export class CvManagementComponent implements OnInit {
           return {
             id: cv.id || '',
             title: cv.cvName || 'Untitled CV',
-            preview: cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
+            preview: cv.previewImageUrl || cv.template?.previewImageUrl || 'assets/images/cv-management/no-cv.png',
             version: cv.template?.version || '1.0',
             updatedAt: this.formatDate(updateDate),
             isDefault: cv.isDefault || false,
@@ -385,6 +405,51 @@ export class CvManagementComponent implements OnInit {
     });
   }
 
+  // Load CV mặc định mà không hiển thị error modal
+  // Sử dụng HttpClient trực tiếp để bypass ABP error handler
+  loadDefaultCvSilently() {
+    const apiUrl = `${environment.apis.default.url}/api/cv/candidates/default`;
+    
+    this.http.get<any>(apiUrl, {
+      withCredentials: true
+    }).pipe(
+      catchError((error) => {
+        // Ẩn error hoàn toàn - không hiển thị dialog
+        this.defaultCv = null;
+        // Không log error để không làm phiền user
+        return of(null);
+      })
+    ).subscribe({
+      next: (response: any) => {
+        if (!response) {
+          this.defaultCv = null;
+          return;
+        }
+        
+        let defaultCv: CandidateCvDto | null = null;
+        
+        // Parse response tương tự như loadCvs
+        if (response && response.result) {
+          if (Array.isArray(response.result)) {
+            defaultCv = response.result.length > 0 ? response.result[0] : null;
+          } else {
+            defaultCv = response.result;
+          }
+        } else if (response && response.value) {
+          if (Array.isArray(response.value)) {
+            defaultCv = response.value.length > 0 ? response.value[0] : null;
+          } else {
+            defaultCv = response.value;
+          }
+        } else if (response && !response.result && !response.value) {
+          defaultCv = response;
+        }
+        
+        this.defaultCv = defaultCv;
+      }
+    });
+  }
+
   private showToastMessage(message: string, type: 'success' | 'error' | 'info' | 'warning') {
     this.toastMessage = message;
     this.toastType = type;
@@ -459,16 +524,90 @@ export class CvManagementComponent implements OnInit {
     const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
     if (uploadedCv && (uploadedCv as any).id) {
       const cvId = (uploadedCv as any).id;
-      // Download file với inline=false
       const downloadUrl = `${environment.apis.default.url}/api/cv/uploaded/${cvId}/download?inline=false`;
-      window.open(downloadUrl, '_blank');
+      
+      // Fetch file as blob để download về máy
+      this.http.get(downloadUrl, { 
+        responseType: 'blob',
+        withCredentials: true 
+      }).subscribe({
+        next: (blob: Blob) => {
+          // Tạo blob URL từ file PDF
+          const blobUrl = URL.createObjectURL(blob);
+          
+          // Tạo link tạm để download
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `${cv.name || 'CV'}.pdf`; // Tên file khi download
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+          
+          this.showToastMessage('Đã tải CV thành công!', 'success');
+        },
+        error: (error) => {
+          console.error('Error downloading CV:', error);
+          this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+        }
+      });
     } else {
       this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
     }
   }
 
   onCvToggleStar(cv: any) {
-    cv.isStarred = !cv.isStarred;
+    // Tìm CV trong uploadedCvs để lấy ID
+    const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
+    if (!uploadedCv || !(uploadedCv as any).id) {
+      this.showToastMessage('Không thể đặt CV mặc định. Vui lòng thử lại.', 'error');
+      return;
+    }
+
+    const cvId = (uploadedCv as any).id;
+    const currentIsDefault = cv.isStarred;
+    const newIsDefault = !currentIsDefault;
+
+    // Nếu đang bỏ default (từ true -> false), không làm gì vì backend không hỗ trợ bỏ default
+    // Chỉ cho phép set default khi toggle từ false -> true
+    if (currentIsDefault && !newIsDefault) {
+      // Đang cố bỏ default - không hỗ trợ, revert lại
+      cv.isStarred = true;
+      this.showToastMessage('Không thể bỏ đặt CV mặc định. Vui lòng đặt CV khác làm mặc định.', 'info');
+      return;
+    }
+
+    // Chỉ set default khi toggle từ false -> true
+    if (!currentIsDefault && newIsDefault) {
+      // Optimistic update
+      cv.isStarred = true;
+      uploadedCv.isStarred = true;
+
+      // Gọi API để set default
+      this.uploadedCvService.setDefault(cvId).subscribe({
+        next: () => {
+          this.showToastMessage('Đã đặt CV làm mặc định thành công!', 'success');
+          // Reload danh sách để đồng bộ với backend và cập nhật trạng thái các CV khác
+          this.loadUploadedCvs();
+        },
+        error: (error) => {
+          console.error('Error setting default uploaded CV:', error);
+          // Revert optimistic update
+          cv.isStarred = false;
+          uploadedCv.isStarred = false;
+          
+          let errorMessage = 'Không thể đặt CV mặc định. Vui lòng thử lại.';
+          if (error.error?.error?.message) {
+            errorMessage = error.error.error.message;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          }
+          this.showToastMessage(errorMessage, 'error');
+        }
+      });
+    }
   }
 
   onCvCopyLink() {
@@ -544,20 +683,70 @@ export class CvManagementComponent implements OnInit {
   // Toggle handlers
   onJobSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.jobSearchEnabled = target.checked;
-    const message = this.jobSearchEnabled 
-      ? 'Đã bật tìm việc thành công' 
-      : 'Đã tắt tìm việc thành công';
-    this.showToastMessage(message, 'success');
+    if (target.checked) {
+      // Hiển thị modal chọn CV trước khi bật tìm việc
+      this.showEnableJobSearchModal = true;
+      // Giữ checkbox ở trạng thái tắt cho đến khi user xác nhận trong modal
+      target.checked = false;
+      this.jobSearchEnabled = false;
+    } else {
+      // Tắt tìm việc trực tiếp
+      this.profileService.updateJobStatus(false).subscribe({
+        next: () => {
+          this.jobSearchEnabled = false;
+          localStorage.setItem('vcareer_job_search_enabled', 'false');
+          this.showToastMessage('Đã tắt tìm việc thành công', 'success');
+        },
+        error: () => {
+          // Nếu lỗi, giữ trạng thái cũ (bật) trên UI
+          target.checked = true;
+          this.jobSearchEnabled = true;
+          this.showToastMessage('Không thể tắt tìm việc. Vui lòng thử lại.', 'error');
+        }
+      });
+    }
+  }
+
+  onCloseEnableJobSearchModal() {
+    this.showEnableJobSearchModal = false;
+  }
+
+  onEnableJobSearch(selectedCvIds: string[]) {
+    // Bật trạng thái tìm việc (Status = true) để recruiter có thể tìm thấy
+    this.profileService.updateJobStatus(true).subscribe({
+      next: () => {
+        this.jobSearchEnabled = true;
+        localStorage.setItem('vcareer_job_search_enabled', 'true');
+        this.showToastMessage('Đã bật tìm việc thành công!', 'success');
+        this.showEnableJobSearchModal = false;
+      },
+      error: () => {
+        this.showToastMessage('Không thể bật tìm việc. Vui lòng thử lại.', 'error');
+        // Giữ modal mở để user có thể thử lại hoặc hủy
+      }
+    });
   }
 
   onAllowRecruiterSearchToggle(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.allowRecruiterSearch = target.checked;
-    const message = this.allowRecruiterSearch 
-      ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
-      : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
-    this.showToastMessage(message, 'success');
+    const newValue = target.checked;
+    
+    // Gọi API để update ProfileVisibility
+    this.profileService.updateProfileVisibility(newValue).subscribe({
+      next: () => {
+        this.allowRecruiterSearch = newValue;
+        const message = this.allowRecruiterSearch 
+          ? 'Đã bật cho phép NTD tìm kiếm hồ sơ' 
+          : 'Đã tắt cho phép NTD tìm kiếm hồ sơ';
+        this.showToastMessage(message, 'success');
+      },
+      error: (error) => {
+        console.error('Error updating profile visibility:', error);
+        // Revert toggle nếu có lỗi
+        target.checked = !newValue;
+        this.showToastMessage('Không thể cập nhật cài đặt. Vui lòng thử lại.', 'error');
+      }
+    });
   }
 
   private formatDate(dateString?: string): string {
@@ -574,58 +763,89 @@ export class CvManagementComponent implements OnInit {
     }
   }
 
-  loadUserInfo() {
-    // Load profile từ API để lấy name và surname
-    this.profileService.getCurrentUserProfile().subscribe({
-      next: (profile: ProfileDto) => {
-        // Kết hợp name và surname để tạo tên đầy đủ
-        if (profile.name || profile.surname) {
-          const nameParts: string[] = [];
-          if (profile.name) nameParts.push(profile.name);
-          if (profile.surname) nameParts.push(profile.surname);
-          this.userName = nameParts.join(' ').trim();
-        } else {
-          // Nếu không có name/surname, dùng email hoặc fallback
-          this.userName = profile.email?.split('@')[0] || 'Người dùng';
-        }
-      },
-      error: (err) => {
-        console.error('Error loading profile:', err);
-        // Fallback: lấy từ CurrentUserInfoDto
-        this.currentUser = this.authStateService.user;
-        if (this.currentUser) {
-          this.userName = this.currentUser.fullName || 
-                         this.currentUser.email?.split('@')[0] || 
-                         this.currentUser.userId || 
-                         'Người dùng';
-        } else {
-          // Nếu chưa có user, thử load từ API
-          this.authFacadeService.loadCurrentUser().subscribe({
-            next: (user) => {
-              this.currentUser = user;
-              this.userName = user?.fullName || 
-                             user?.email?.split('@')[0] || 
-                             user?.userId || 
-                             'Người dùng';
-            },
-            error: (loadErr) => {
-              console.error('Error loading user info:', loadErr);
-              this.userName = 'Người dùng';
-            }
-          });
-        }
-      }
-    });
+  loadProfileData(): void {
+    this.isLoadingProfile = true;
     
-    // Subscribe để cập nhật khi user thay đổi (fallback)
-    this.authStateService.user$.subscribe(user => {
-      this.currentUser = user;
-      // Chỉ update nếu chưa có userName từ profile
-      if (user && !this.userName) {
-        this.userName = user.fullName || 
-                       user.email?.split('@')[0] || 
-                       user.userId || 
-                       'Người dùng';
+    // Với cookies, kiểm tra user từ AuthStateService
+    if (!this.authStateService.user) {
+      this.authFacadeService.loadCurrentUser().subscribe({
+        next: (user) => {
+          // Đã có user, tiếp tục load profile
+          this.loadProfileDataInternal();
+        },
+        error: (err) => {
+          // Không có cookies hợp lệ, không load profile
+          this.isLoadingProfile = false;
+        }
+      });
+      return;
+    }
+
+    // Đã có user, load profile
+    this.loadProfileDataInternal();
+  }
+
+  private loadProfileDataInternal(): void {
+    this.isLoadingProfile = true;
+    
+    const apiUrl = `${environment.apis.default.url}/api/profile`;
+    this.http.get<ProfileDto>(apiUrl, {
+      withCredentials: true,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }).subscribe({
+      next: (response) => {
+        if (!response) {
+          this.profileData = {
+            fullName: '',
+            email: '',
+            phone: '',
+            dateOfBirth: '',
+            gender: '',
+            address: '',
+            location: ''
+          };
+          this.userName = '';
+          this.isLoadingProfile = false;
+          return;
+        }
+
+        const fullName = `${response.name || ''} ${response.surname || ''}`.trim() || 'User';
+        this.profileData = {
+          fullName: fullName,
+          email: response.email || '',
+          phone: response.phoneNumber || '',
+          dateOfBirth: response.dateOfBirth ? response.dateOfBirth.split('T')[0] : '',
+          gender: response.gender === true ? 'male' : (response.gender === false ? 'female' : ''),
+          address: response.location || response.address || '',
+          location: response.location || ''
+        };
+        
+        // Cập nhật userName để tương thích với code cũ
+        this.userName = fullName;
+        
+        // Load ProfileVisibility từ profile
+        if (response.profileVisibility !== undefined && response.profileVisibility !== null) {
+          this.allowRecruiterSearch = response.profileVisibility;
+        }
+
+        this.isLoadingProfile = false;
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+        this.profileData = {
+          fullName: '',
+          email: '',
+          phone: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
+          location: ''
+        };
+        this.userName = '';
+        this.isLoadingProfile = false;
       }
     });
   }

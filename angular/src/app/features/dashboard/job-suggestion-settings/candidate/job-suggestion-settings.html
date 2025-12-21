@@ -64,10 +64,12 @@
                     [label]="'Vị trí chuyên môn (chọn tối đa 5 vị trí từ danh mục)'"
                     [required]="true"
                     [options]="positionOptions"
-                    [(selectedValues)]="selectedPositions"
+                    [selectedValues]="selectedPositions"
+                    (selectedValuesChange)="onPositionsChange($event)"
                     [(error)]="positionError"
                     [labelType]="'jobPosition'">
                   </app-multi-select-location>
+                  <div *ngIf="isLoadingCategories" class="loading-text">Đang tải danh mục...</div>
                 </div>
 
                 <div class="field-group span-2">
@@ -87,12 +89,19 @@
                   <label>Kỹ năng</label>
                   <select
                     [(ngModel)]="jobPreference.skillsText"
-                    name="skillsText">
+                    name="skillsText"
+                    [disabled]="!selectedPositions.length || isLoadingCategories">
                     <option value="" disabled>Chọn kỹ năng</option>
-                    <option *ngFor="let skill of skillOptions" [value]="skill">
-                      {{ skill }}
+                    <option *ngFor="let skill of skillOptions" [value]="skill.value">
+                      {{ skill.label }}
                     </option>
                   </select>
+                  <div *ngIf="!selectedPositions.length && !isLoadingCategories" class="field-hint">
+                    Vui lòng chọn vị trí chuyên môn trước để hiển thị kỹ năng
+                  </div>
+                  <div *ngIf="selectedPositions.length && skillOptions.length === 0 && !isLoadingCategories" class="field-hint">
+                    Vị trí đã chọn không có kỹ năng con
+                  </div>
                 </div>
 
                 <div class="field-group span-2">
@@ -104,10 +113,9 @@
                     #experienceLevelModel="ngModel"
                     [class.error]="formSubmitted && experienceLevelModel.invalid">
                     <option value="" disabled>Chọn kinh nghiệm</option>
-                    <option value="intern">Thực tập</option>
-                    <option value="fresher">Fresher</option>
-                    <option value="junior">Junior</option>
-                    <option value="mid">Middle</option>
+                    <option *ngFor="let exp of experienceOptions" [value]="exp.value">
+                      {{ exp.label }}
+                    </option>
                   </select>
                   <div class="field-error" *ngIf="formSubmitted && experienceLevelModel.invalid">
                     Vui lòng chọn kinh nghiệm làm việc.
@@ -141,6 +149,7 @@
                     [(selectedValues)]="selectedLocations"
                     [(error)]="locationError">
                   </app-multi-select-location>
+                  <div *ngIf="isLoadingLocations" class="loading-text">Đang tải địa điểm...</div>
                 </div>
 
                 <div class="field-group span-2 checkbox-row">
@@ -163,13 +172,16 @@
               [type]="'primary'"
               [size]="'medium'"
               [fullWidth]="true"
-              [buttonType]="'submit'">
-              Cập nhật
+              [buttonType]="'submit'"
+              [disabled]="isSaving">
+              <span *ngIf="!isSaving">Cập nhật</span>
+              <span *ngIf="isSaving">Đang cập nhật...</span>
             </app-button>
           </div>
 
-          <div class="feedback-banner" *ngIf="lastSavedMessage">
-            <i class="fa fa-circle-check"></i>
+          <div class="feedback-banner" *ngIf="lastSavedMessage" [class.error]="lastSavedMessage.includes('lỗi') || lastSavedMessage.includes('Lỗi')">
+            <i class="fa" [class.fa-circle-check]="!lastSavedMessage.includes('lỗi') && !lastSavedMessage.includes('Lỗi')" 
+               [class.fa-circle-exclamation]="lastSavedMessage.includes('lỗi') || lastSavedMessage.includes('Lỗi')"></i>
             {{ lastSavedMessage }}
           </div>
         </form>
@@ -177,7 +189,7 @@
     </div>
 
     <!-- Right Sidebar - profile card nằm bên phải -->
-    <div class="right-sidebar">
+    <!-- <div class="right-sidebar">
       <app-profile-card
         [userName]="profileUser.name"
         [accountStatus]="profileUser.accountStatus"
@@ -188,5 +200,5 @@
         (upgradeClick)="onUpgradeAccount()"
       ></app-profile-card>
     </div>
-  </div>
+  </div> -->
 </div>

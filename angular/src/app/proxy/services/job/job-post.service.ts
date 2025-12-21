@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { JobStatus } from '../../constants/job-constant/job-status.enum';
-import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobViewDto, PostJobDto } from '../../dto/job-dto/models';
+import type { JobApproveViewDto, JobFilterDto, JobPostCreateDto, JobPostStatisticDto, JobPostUpdateDto, JobRequestViewDto, JobViewDto, JobViewManageDetailDto, PostJobDto } from '../../dto/job-dto/models';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +21,15 @@ export class JobPostService {
     this.restService.request<any, void>({
       method: 'POST',
       url: `/api/app/job-post/${id}/close-job-post`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  countJobByStatusByStatus = (status: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number>({
+      method: 'POST',
+      url: '/api/app/job-post/count-job-by-status',
+      params: { status },
     },
     { apiName: this.apiName,...config });
   
@@ -52,19 +60,19 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  executeExpiredJobPostAutomaticallyById = (id: string, config?: Partial<Rest.Config>) =>
+  executeExpiredJobPostBackgoundWorker = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-post/${id}/execute-expired-job-post-automatically`,
+      url: '/api/app/job-post/execute-expired-job-post-backgound-worker',
     },
     { apiName: this.apiName,...config });
   
 
-  getJobByCompanyIdByCompanyIdAndMaxCount = (companyId: number, maxCount: number = 10, config?: Partial<Rest.Config>) =>
+  getJobByCompanyIdByCompanyIdAndPageAndPageSize = (companyId: number, page?: number, pageSize: number = 10, config?: Partial<Rest.Config>) =>
     this.restService.request<any, JobViewDto[]>({
       method: 'GET',
       url: `/api/app/job-post/job-by-company-id/${companyId}`,
-      params: { maxCount },
+      params: { page, pageSize },
     },
     { apiName: this.apiName,...config });
   
@@ -78,11 +86,11 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  getJobPostBySatusByStatusAndMaxCount = (status: JobStatus, maxCount: number = 10, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, JobViewDto[]>({
+  getJobPostManageByDto = (dto: JobRequestViewDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, JobViewManageDetailDto[]>({
       method: 'GET',
-      url: '/api/app/job-post/job-post-by-satus',
-      params: { status, maxCount },
+      url: '/api/app/job-post/job-post-manage',
+      params: { searchField: dto.searchField, status: dto.status, startTime: dto.startTime, endTime: dto.endTime },
     },
     { apiName: this.apiName,...config });
   
@@ -104,10 +112,11 @@ export class JobPostService {
     { apiName: this.apiName,...config });
   
 
-  rejectJobPost = (id: string, config?: Partial<Rest.Config>) =>
+  rejectJobPost = (jobId: string, reasonReject: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',
-      url: `/api/app/job-post/${id}/reject-job-post`,
+      url: `/api/app/job-post/reject-job-post/${jobId}`,
+      params: { reasonReject },
     },
     { apiName: this.apiName,...config });
   

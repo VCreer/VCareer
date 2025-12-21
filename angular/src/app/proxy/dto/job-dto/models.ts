@@ -73,18 +73,33 @@ export interface JobPostStatisticDto {
 }
 
 export interface JobPostUpdateDto {
+  id?: string;
+  title?: string;
+  slug?: string;
   description?: string;
   requirements?: string;
   benefits?: string;
   salaryMin?: number;
   salaryMax?: number;
   salaryDeal: boolean;
+  employmentType?: EmploymentType;
+  positionType?: PositionType;
+  experience?: ExperienceLevel;
   workTime?: string;
+  provinceCode: number;
   wardCode?: number;
   workLocation?: string;
   quantity: number;
+  tagIds: number[];
   expiresAt?: string;
-  isSetActive: boolean;
+  jobCategoryId?: string;
+}
+
+export interface JobRequestViewDto {
+  searchField?: string;
+  status?: JobStatus;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface JobSearchInputDto {
@@ -131,6 +146,36 @@ export interface JobViewDto {
   jobCategoryId?: string;
 }
 
+export interface JobViewManageDetailDto {
+  id?: string;
+  companyImageUrl?: string;
+  companyId: number;
+  companyName?: string;
+  title?: string;
+  description?: string;
+  requirements?: string;
+  benefits?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryDeal: boolean;
+  employmentType?: EmploymentType;
+  positionType?: PositionType;
+  experience?: ExperienceLevel;
+  workTime?: string;
+  provinceCode: number;
+  wardCode?: number;
+  workLocation?: string;
+  quantity: number;
+  status?: JobStatus;
+  riskJobLevel?: RiskJobLevel;
+  rejectedReason?: string;
+  approvedBy?: string;
+  approveAt?: string;
+  postedAt?: string;
+  recruiterId?: string;
+  jobCategoryId?: string;
+}
+
 export interface PagedResultDto<T> {
   items: T[];
   totalCount: number;
@@ -161,6 +206,7 @@ export interface RecruimentCampainViewDto {
   companyId: number;
   creationTime?: string;
   creatorId?: string;
-  lastModificationTime?: string;
-  lastModifierId?: string;
+  creatorEmail?: string;
+  numberOfJob: number;
+  numberOfCv: number;
 }

@@ -1,6 +1,6 @@
-<div class="find-candidate-container">
+<div class="find-candidate-container" [class.sidebar-expanded]="sidebarExpanded">
   <!-- Breadcrumb -->
-  <div class="breadcrumb-box">
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
     <div class="breadcrumb-container">
       <span class="breadcrumb-item active">Tìm kiếm ứng viên</span>
     </div>
@@ -10,38 +10,6 @@
   <div class="main-content">
     <!-- Left Sidebar - Filters -->
     <div class="sidebar-filters">
-      <!-- Saved Filters Section -->
-      <div class="filter-section">
-        <h3 class="filter-section-title">TÌM KIẾM THEO BỘ LỌC CÓ SẴN</h3>
-        <div class="saved-filter-dropdown">
-          <select 
-            class="filter-select"
-            [(ngModel)]="selectedSavedFilter"
-            (change)="onSavedFilterChange()">
-            <option value="">Chọn bộ lọc có sẵn</option>
-            <option *ngFor="let filter of savedFilters" [value]="filter.id">
-              {{ filter.name }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-actions">
-          <app-button 
-            [type]="'primary'"
-            [size]="'small'"
-            (click)="onCreateNewFilter()"
-            class="create-filter-btn">
-            + Tạo mới bộ lọc
-          </app-button>
-          <app-button 
-            [type]="'secondary'"
-            [size]="'small'"
-            (click)="onUpdateFilter()"
-            class="update-filter-btn">
-            Cập nhật bộ lọc
-          </app-button>
-        </div>
-      </div>
-
       <!-- Basic Search Section -->
       <div class="filter-section">
         <h3 class="filter-section-title">TÌM KIẾM CƠ BẢN</h3>
@@ -108,39 +76,6 @@
             placeholder="Nhập địa điểm">
         </div>
 
-        <!-- CV Classification -->
-        <div class="filter-field">
-          <label class="filter-label">Phân loại CV</label>
-          <div class="radio-group">
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="all"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Tất cả</span>
-            </label>
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="unseen"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Chưa xem</span>
-            </label>
-            <label class="radio-item">
-              <input 
-                type="radio" 
-                name="cvClassification"
-                value="seen"
-                [(ngModel)]="cvClassification"
-                (change)="onCvClassificationChange()">
-              <span>Đã xem</span>
-            </label>
-          </div>
-        </div>
       </div>
 
       <!-- Search Button -->
@@ -188,15 +123,7 @@
                 (change)="onDisplayPriorityChange()">
               <span>Có kinh nghiệm</span>
             </label>
-            <label class="priority-radio-item">
-              <input 
-                type="radio" 
-                name="displayPriority"
-                value="suitable"
-                [(ngModel)]="displayPriority"
-                (change)="onDisplayPriorityChange()">
-              <span>Ứng viên phù hợp</span>
-            </label>
+            <!-- Đã bỏ lựa chọn 'Ứng viên phù hợp' theo yêu cầu -->
           </div>
         </div>
       </div>
@@ -286,6 +213,40 @@
       <!-- Empty State -->
       <div *ngIf="!loading && candidates.length === 0" class="empty-state">
         <p>Không tìm thấy ứng viên phù hợp</p>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!loading && totalResults > 0 && totalPages > 1" class="pagination-container">
+        <div class="pagination-info">
+          <span>Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, totalResults) }} trong tổng số {{ totalResults }} ứng viên</span>
+        </div>
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn"
+            [disabled]="!hasPreviousPage"
+            (click)="onPreviousPage()"
+            [class.disabled]="!hasPreviousPage">
+            <i class="fa fa-chevron-left"></i> Trước
+          </button>
+          
+          <div class="pagination-pages">
+            <button 
+              *ngFor="let page of pageNumbers"
+              class="pagination-page-btn"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)">
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-btn"
+            [disabled]="!hasNextPage"
+            (click)="onNextPage()"
+            [class.disabled]="!hasNextPage">
+            Sau <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

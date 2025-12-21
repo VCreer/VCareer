@@ -54,10 +54,10 @@
               <!-- Company Logo -->
               <div class="company-logo">
                 <img 
-                  [src]="job.companyLogoImage || 'assets/images/companies/default-logo.png'" 
+                  [src]="job.companyLogoImage || 'assets/images/home/company-placeholder.png'" 
                   [alt]="job.companyName"
                   class="logo-image"
-                  (error)="$event.target.src='assets/images/companies/default-logo.png'">
+                  (error)="job.companyLogoImage = 'assets/images/home/company-placeholder.png'; $event.target.src='assets/images/home/company-placeholder.png'">
               </div>
 
               <!-- Job Details -->
@@ -76,20 +76,28 @@
                 <div class="cv-info-row">
                   <p class="cv-info">
                     CV đã ứng tuyển: 
-                    <a href="#" class="cv-link">{{ job.cvName }}</a>
+                    <a 
+                      href="javascript:void(0)" 
+                      class="cv-link"
+                      (click)="onCvLinkClick(job, $event)"
+                      *ngIf="job.cvId">
+                      {{ job.cvName }}
+                    </a>
+                    <span *ngIf="!job.cvId">{{ job.cvName }}</span>
                   </p>
                   <div class="action-buttons">
                     <app-button 
                       [type]="'primary'"
                       [size]="'small'"
-                      (click)="onViewCV(job)">
+                      (click)="onViewCV(job)"
+                      [disabled]="!job.cvId">
                       Xem CV
                     </app-button>
                   </div>
                 </div>
 
                 <!-- Status Indicators -->
-                <div class="status-indicators" *ngIf="job.status === 'viewed' || job.status === 'suitable'">
+                <div class="status-indicators" *ngIf="job.status === 'viewed' || job.status === 'suitable' || job.status === 'not-suitable'">
                   <div class="status-divider"></div>
                   
                   <div class="employer-status" *ngIf="job.status === 'viewed'">
@@ -97,8 +105,14 @@
                   </div>
 
                   <div class="applied-date-status" *ngIf="job.status === 'suitable'">
-                    <span class="applied-date-text">
-                      Đã ứng tuyển ({{ job.appliedDate }} {{ job.appliedTime }})
+                    <span class="status-text suitable">
+                      Hồ sơ phù hợp
+                    </span>
+                  </div>
+
+                  <div class="applied-date-status" *ngIf="job.status === 'not-suitable'">
+                    <span class="status-text not-suitable">
+                      Hồ sơ chưa phù hợp
                     </span>
                   </div>
                 </div>
@@ -158,20 +172,8 @@
             <div class="profile-right-column">
               <div class="profile-info">
                 <span class="profile-label">Profile</span>
-                <h3>{{ translate('profile_sidebar.welcome_back') }}, Uông Hoàng Duy</h3>
+                <h3>Chào bạn trở lại, {{ profileData.fullName || 'User' }}</h3>
               </div>
-              
-              <div class="account-status">
-                <span class="verified-badge">{{ translate('profile_sidebar.verified_account') }}</span>
-              </div>
-              
-              <app-button 
-                [type]="'primary'"
-                [size]="'small'"
-                class="upgrade-btn">
-                <i class="fa fa-arrow-up"></i>
-                {{ translate('profile_sidebar.upgrade_account') }}
-              </app-button>
             </div>
           </div>
 
@@ -220,10 +222,7 @@
                     <p class="toggle-description">
                       {{ translate('profile_sidebar.contact_description') }}
                     </p>
-                    <div class="contact-method">
-                      <i class="fa fa-envelope contact-icon"></i>
-                      <span>{{ translate('profile_sidebar.email_phone') }}</span>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -249,5 +248,12 @@
     (changePicture)="onProfilePictureChange()"
     (deletePicture)="onProfilePictureDelete()">
   </app-profile-picture-edit-modal>
+
+  <!-- Enable Job Search Modal -->
+  <app-enable-job-search-modal
+    [show]="showEnableJobSearchModal"
+    (close)="onCloseEnableJobSearchModal()"
+    (enableJobSearch)="onEnableJobSearch($event)">
+  </app-enable-job-search-modal>
 </div>
 

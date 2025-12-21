@@ -32,7 +32,7 @@
 
       <form class="campaign-form" (ngSubmit)="onNext()">
         <!-- Tên chiến dịch -->
-        <div class="form-row">
+        <div class="form-row single-column">
           <div class="form-group">
             <app-input-field
               label="Tên chiến dịch tuyển dụng"
@@ -72,11 +72,12 @@
     <div class="campaign-management-card">
       <!-- Filter + Search -->
       <div class="filter-search-section">
-        <select class="filter-dropdown" [(ngModel)]="filterType" (change)="onFilterChange()">
-          <option value="all">Tất cả chiến dịch</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Đã tắt</option>
-        </select>
+        <app-select-field
+          [options]="filterOptions"
+          [(ngModel)]="filterType"
+          (valueChange)="onFilterChange()"
+          placeholder="Tất cả chiến dịch">
+        </app-select-field>
 
         <div class="search-input-wrapper">
           <input
@@ -105,7 +106,9 @@
             <tr>
               <th>ID</th>
               <th>Chiến dịch</th>
+              <th>Số công việc</th>
               <th>CV ứng tuyển</th>
+              <th>Người tạo</th>
               <th>Ngày tạo</th>
               <th>Trạng thái</th>
               <th>Hoạt động</th>
@@ -117,23 +120,26 @@
               <td class="campaign-info-cell">
                 <div class="campaign-name">{{ campaign.name }}</div>
               </td>
+              <td class="job-count-cell">
+                <span class="job-count-badge">{{ campaign.numberOfJob || 0 }}</span>
+              </td>
               <td class="applied-cvs-cell">
-                <span class="applied-cvs-empty">Chưa có CV</span>
+                <span class="cv-count-badge" *ngIf="campaign.numberOfCv > 0">{{ campaign.numberOfCv }}</span>
+                <span class="applied-cvs-empty" *ngIf="campaign.numberOfCv === 0">Chưa có CV</span>
+              </td>
+              <td class="creator-cell">
+                <div class="creator-info">
+                  <div class="creator-email">{{ campaign.creatorEmail || 'N/A' }}</div>
+                </div>
               </td>
               <td>{{ formatDate(campaign.creationTime) }}</td>
-              <td class="status-cell">
-                <span class="status-badge" [class.active]="campaign.isActive">
-                  {{ campaign.isActive ? 'Đang hoạt động' : 'Đã tắt' }}
-                </span>
-              </td>
+             <td class="status-cell">
+  <span class="status-badge" [class.active]="campaign.isActive">
+    {{ campaign.isActive ? 'Đang hoạt động' : 'Không hoạt động' }}
+  </span>
+</td>
               <td class="actions-cell">
                 <div class="actions-container">
-                  <app-toggle-switch
-                    [checked]="campaign.isActive"
-                    (checkedChange)="onToggleCampaign(campaign, $event)"
-                  >
-                  </app-toggle-switch>
-
                   <div class="actions-menu-container" [attr.data-campaign-id]="campaign.id">
                     <button class="actions-btn" (click)="toggleActionsMenu(campaign.id, $event)">
                       <i class="fa fa-ellipsis-h"></i>
@@ -142,6 +148,9 @@
                     <div
                       class="actions-menu"
                       [class.show]="showActionsMenu === campaign.id"
+                      [style.top.px]="menuPosition?.top"
+                      [style.left.px]="menuPosition?.left"
+                      [style.max-width.px]="menuPosition?.maxWidth"
                       (click)="$event.stopPropagation()"
                     >
                       <div class="menu-item" (click)="onViewCampaign(campaign)">
@@ -226,9 +235,9 @@
         placeholder="Nhập tên mới"
       >
       </app-input-field>
-      <div class="mt-4 text-right">
+      <div class="modal-footer-actions">
         <app-button type="secondary" (click)="showEditModal = false">Hủy</app-button>
-        <app-button type="primary" class="ml-2" (click)="onSaveEditCampaign()">Lưu</app-button>
+        <app-button type="primary" (click)="onSaveEditCampaign()">Lưu</app-button>
       </div>
     </div>
   </app-generic-modal>

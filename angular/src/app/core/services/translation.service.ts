@@ -61,6 +61,7 @@ export class TranslationService {
       // Sidebar
       'sidebar.verification': 'Tài khoản xác thực',
       'sidebar.not_verified': 'Chưa xác thực',
+      'sidebar.verified': 'Tài khoản đã xác thực',
       'sidebar.dashboard': 'Bảng tin',
       'sidebar.insights': 'Đăng tuyển dụng',
       'sidebar.rewards': 'TopCV Rewards',
@@ -219,6 +220,9 @@ export class TranslationService {
       'apply_modal.file_type_error': 'Chỉ hỗ trợ file .doc, .docx, pdf',
       'apply_modal.file_size_error': 'Kích thước file không được vượt quá 5MB',
       'apply_modal.submit_success': 'Đã nộp hồ sơ ứng tuyển thành công',
+      'apply_modal.cover_letter': 'Thư giới thiệu:',
+      'apply_modal.cover_letter_description': 'Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.',
+      'apply_modal.cover_letter_placeholder': 'Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này.',
       
       // Job Detail - Benefits Section
       'job_detail.financial_benefits': 'Financial Benefits',
@@ -345,24 +349,25 @@ export class TranslationService {
       'homepage.job_categories': 'Danh mục việc làm',
       'homepage.stats.jobs': 'Việc làm',
       'homepage.stats.companies': 'Công ty',
+      'homepage.stats.categories': 'Danh mục nghề',
+      'homepage.stats.provinces': 'Tỉnh/Thành phố',
       'homepage.stats.candidates': 'Ứng viên',
       'homepage.stats.success': 'Thành công'
       ,
       // Stats
       'stats.customers_title': 'Khách hàng trên toàn thế giới',
-      'stats.customers_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.',
+      'stats.customers_desc': 'Chúng tôi tự hào phục vụ hàng chục nghìn khách hàng trên toàn cầu, mang đến trải nghiệm tuyển dụng hiệu quả và đáng tin cậy.',
       'stats.resumes_title': 'Sơ yếu lý lịch đang hoạt động',
-      'stats.resumes_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.',
+      'stats.resumes_desc': 'Hệ thống luôn cập nhật hàng chục nghìn hồ sơ chất lượng, giúp việc kết nối giữa ứng viên và doanh nghiệp trở nên nhanh chóng và chính xác.',
       'stats.companies_title': 'Các công ty',
-      'stats.companies_desc': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scele.'
-      ,
+      'stats.companies_desc': 'Nhiều doanh nghiệp uy tín tin tưởng sử dụng nền tảng của chúng tôi để tìm kiếm nhân tài và mở rộng đội ngũ.',
       // About / CTA / Future
       'about.title': 'Cuộc sống tốt đẹp bắt đầu từ một công ty tốt',
-      'about.description': 'Ultricies purus dolor viverra mi laoreet at cursus justo. Ultrices purus diam egestas amet faucibus tempor blandit. Elit velit mauris aliquam est diam. Leo sagittis consectetur diam morbi erat aenean. Vulputate praesent congue faucibus in euismod feugiat euismod volutpat.',
+      'about.description': 'Một công ty tốt không chỉ mang đến công việc ổn định mà còn tạo ra môi trường giúp bạn phát triển mỗi ngày. Khi được làm việc đúng nơi, bạn sẽ cảm thấy tự tin, có động lực và tận hưởng cuộc sống trọn vẹn hơn. Hãy bắt đầu hành trình tìm kiếm cơ hội phù hợp để xây dựng tương lai tốt đẹp cho chính mình.',
       'cta.find_jobs': 'Tìm Kiếm Việc Làm',
       'cta.learn_more': 'Tìm hiểu thêm',
       'future.title': 'Tạo dựng một tương lai tốt đẹp hơn cho chính bạn',
-      'future.description': 'At eu lobortis pretium tincidunt amet lacus ut aenean aliquet. Blandit a massa elementum id scelerisque rhoncus.'
+      'future.description':'Hãy bắt đầu xây dựng tương lai của bạn bằng những lựa chọn đúng đắn ngay hôm nay. Chúng tôi mang đến cơ hội, công cụ và môi trường giúp bạn phát triển kỹ năng, mở rộng sự nghiệp và đạt được mục tiêu mong muốn.'
       ,
       // Footer / Common
       'footer.tagline': 'Tiếp lợi thế - Nối thành công',
@@ -406,6 +411,7 @@ export class TranslationService {
       // Write CV
       'write_cv.unnamed_cv': 'CV chưa đặt tên',
       'write_cv.preview': 'Xem trước',
+      'write_cv.export_pdf': 'Xuất PDF',
       'write_cv.save_cv': 'Lưu CV',
       'write_cv.edit_photo': 'Sửa ảnh',
       'write_cv.fullname_placeholder': 'Họ và tên',
@@ -550,7 +556,13 @@ export class TranslationService {
       'saved_jobs.no_jobs_title': 'Chưa có việc làm đã lưu',
       'saved_jobs.no_jobs_description': 'Bạn chưa lưu việc làm nào. Hãy duyệt và lưu những việc làm phù hợp với bạn.',
       'saved_jobs.browse_jobs': 'Duyệt việc làm',
-      'saved_jobs.loading': 'Đang tải...'
+      'saved_jobs.loading': 'Đang tải...',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Xác nhận xóa',
+      'confirm_delete.message': 'Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.',
+      'confirm_delete.cancel': 'Hủy',
+      'confirm_delete.delete': 'Xóa'
     },
     en: {
       // Breadcrumb
@@ -758,6 +770,9 @@ export class TranslationService {
       'apply_modal.file_type_error': 'Only .doc, .docx, pdf files are supported',
       'apply_modal.file_size_error': 'File size must not exceed 5MB',
       'apply_modal.submit_success': 'Application submitted successfully',
+      'apply_modal.cover_letter': 'Cover Letter:',
+      'apply_modal.cover_letter_description': 'A brief, well-written cover letter will help you appear more professional and make a better impression on employers.',
+      'apply_modal.cover_letter_placeholder': 'Write a brief introduction about yourself (strengths, weaknesses) and clearly state your desires and reasons for applying for this position.',
       
       // Job Detail - Benefits Section
       'job_detail.financial_benefits': 'Financial Benefits',
@@ -885,6 +900,8 @@ export class TranslationService {
       'homepage.job_categories': 'Job Categories',
       'homepage.stats.jobs': 'Jobs',
       'homepage.stats.companies': 'Companies',
+      'homepage.stats.categories': 'Job categories',
+      'homepage.stats.provinces': 'Provinces',
       'homepage.stats.candidates': 'Candidates',
       'homepage.stats.success': 'Success'
       ,
@@ -946,6 +963,7 @@ export class TranslationService {
       // Write CV
       'write_cv.unnamed_cv': 'Unnamed CV',
       'write_cv.preview': 'Preview',
+      'write_cv.export_pdf': 'Export PDF',
       'write_cv.save_cv': 'Save CV',
       'write_cv.edit_photo': 'Edit Photo',
       'write_cv.fullname_placeholder': 'Full Name',
@@ -1090,7 +1108,13 @@ export class TranslationService {
       'saved_jobs.no_jobs_title': 'No saved jobs yet',
       'saved_jobs.no_jobs_description': 'You haven\'t saved any jobs yet. Browse and save jobs that match your interests.',
       'saved_jobs.browse_jobs': 'Browse Jobs',
-      'saved_jobs.loading': 'Loading...'
+      'saved_jobs.loading': 'Loading...',
+      
+      // Confirm Delete Modal
+      'confirm_delete.title': 'Confirm Delete',
+      'confirm_delete.message': 'Are you sure you want to delete this item? This action cannot be undone.',
+      'confirm_delete.cancel': 'Cancel',
+      'confirm_delete.delete': 'Delete'
       ,
       // Category names (extra pages)
       'Sản xuất': 'Manufacturing',
@@ -1197,7 +1221,6 @@ export class TranslationService {
 
   setLanguage(language: string) {
     this.currentLanguage.next(language);
-    console.log('🌐 Language changed to:', language);
   }
 
   getCurrentLanguage(): string {

@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, GenericModalComponent, PaginationComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
+import { ApplicationService } from '../../../../proxy/http-api/controllers/application.service';
+import type { ApplicationDto, GetApplicationListDto } from '../../../../proxy/dto/applications/models';
 
 export interface CandidateCV {
   id: string;
@@ -29,6 +31,12 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
   jobId: string | null = null;
   campaignName: string = '';
   jobTitle: string = '';
+  
+  // Sidebar state
+  sidebarExpanded: boolean = false;
+  sidebarWidth = 72;
+  private sidebarObserver?: ResizeObserver;
+  private resizeListener?: () => void;
   
   // CV list
   cvs: CandidateCV[] = [];
@@ -88,7 +96,9 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private sidebarSync: SidebarSyncService
+    private sidebarSync: SidebarSyncService,
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -99,75 +109,189 @@ export class CampaignJobManagementViewCvComponent implements OnInit, OnDestroy {
       this.componentId
     );
 
-    // Get campaign ID, job ID from query params
+    // Setup sidebar width tracking
+    this.setupSidebarTracking();
+
+    // Get campaign ID, job ID from query params rồi load data thực từ API
     this.route.queryParams.subscribe(params => {
       this.campaignId = params['campaignId'] || null;
       this.jobId = params['jobId'] || null;
       this.campaignName = params['campaignName'] || 'Chiến dịch tuyển dụng';
       this.jobTitle = params['jobTitle'] || 'Công việc';
-    });
 
-    // Load mock data
-    this.loadCVs();
+      this.loadCVs();
+    });
   }
 
   ngOnDestroy(): void {
     this.sidebarSync.cleanup(this.componentId);
+    this.cleanupSidebarTracking();
+  }
+
+  // ==================== SIDEBAR METHODS ====================
+  
+  setupSidebarTracking(): void {
+    const trySetup = (attempts = 0) => {
+      const sidebar = document.querySelector('app-sidebar .sidebar') as HTMLElement;
+      
+      if (sidebar) {
+        this.checkSidebarState(sidebar);
+        
+        this.sidebarObserver = new ResizeObserver(() => {
+          this.checkSidebarState(sidebar);
+        });
+        
+        this.sidebarObserver.observe(sidebar);
+        
+        this.resizeListener = () => {
+          this.checkSidebarState(sidebar);
+          this.cdr.markForCheck();
+        };
+        window.addEventListener('resize', this.resizeListener);
+      } else if (attempts < 10) {
+        setTimeout(() => trySetup(attempts + 1), 100);
+      }
+    };
+    
+    trySetup();
+  }
+
+  cleanupSidebarTracking(): void {
+    if (this.sidebarObserver) {
+      this.sidebarObserver.disconnect();
+    }
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+  }
+
+  checkSidebarState(sidebar: HTMLElement): void {
+    const rect = sidebar.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    if (this.sidebarWidth !== width) {
+      this.sidebarWidth = width;
+      this.sidebarExpanded = sidebar.classList.contains('show') || width > 100;
+      this.cdr.markForCheck();
+    }
+  }
+
+  getContentPaddingLeft(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getContentWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getContentMaxWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return 'calc(100vw - 32px)';
+    }
+    const sidePadding = 48;
+    const availableWidth = viewportWidth - this.sidebarWidth - sidePadding;
+    const maxContentWidth = Math.min(1400, Math.max(900, availableWidth));
+    return `${maxContentWidth}px`;
+  }
+
+  getBreadcrumbLeft(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '0';
+    }
+    return `${this.sidebarWidth}px`;
+  }
+
+  getBreadcrumbWidth(): string {
+    const viewportWidth = window.innerWidth;
+    if (viewportWidth <= 768) {
+      return '100%';
+    }
+    return `calc(100% - ${this.sidebarWidth}px)`;
+  }
+
+  getWindowWidth(): number {
+    return window.innerWidth;
   }
 
   loadCVs(): void {
-    // Mock data - replace with actual API call
-    this.cvs = [
-      {
-        id: 'CV-001',
-        fullName: 'Nguyễn Văn A',
-        email: 'nguyenvana@example.com',
-        phone: '0901234567',
-        appliedDate: '2025-01-20',
-        status: 'suitable',
-        notes: 'Ứng viên có kinh nghiệm tốt, phù hợp với vị trí'
+    if (!this.jobId) {
+      this.cvs = [];
+      this.filteredCvs = [];
+      this.paginatedCvs = [];
+      return;
+    }
+
+    const input: GetApplicationListDto = {
+      jobId: this.jobId,
+      recruitmentCampaignId: this.campaignId || undefined,
+      skipCount: 0,
+      maxResultCount: 1000,
+      sorting: 'creationTime DESC'
+    };
+
+    this.applicationService.getJobApplications(this.jobId, input).subscribe({
+      next: (response) => {
+        const paged = response;
+        let applications: ApplicationDto[] = paged?.items || [];
+
+        // Phòng trường hợp backend không filter theo campaign, tự filter thêm ở frontend
+        if (this.campaignId) {
+          applications = applications.filter(
+            app => app.recruitmentCampaignId === this.campaignId
+          );
+        }
+
+        this.cvs = this.mapApplicationsToCvs(applications);
+        this.filteredCvs = [...this.cvs];
+        this.generateCalendar();
+        this.generateNextCalendar();
+        this.updatePagination();
       },
-      {
-        id: 'CV-002',
-        fullName: 'Trần Thị B',
-        email: 'tranthib@example.com',
-        phone: '0912345678',
-        appliedDate: '2025-01-19',
-        status: 'reviewing',
-        notes: 'Cần kiểm tra thêm về kỹ năng giao tiếp'
-      },
-      {
-        id: 'CV-003',
-        fullName: 'Lê Văn C',
-        email: 'levanc@example.com',
-        phone: '0923456789',
-        appliedDate: '2025-01-18',
-        status: 'rejected',
-        notes: 'Không đáp ứng yêu cầu về kinh nghiệm'
-      },
-      {
-        id: 'CV-004',
-        fullName: 'Phạm Thị D',
-        email: 'phamthid@example.com',
-        phone: '0934567890',
-        appliedDate: '2025-01-17',
-        status: 'suitable'
-      },
-      {
-        id: 'CV-005',
-        fullName: 'Hoàng Văn E',
-        email: 'hoangvane@example.com',
-        phone: '0945678901',
-        appliedDate: '2025-01-16',
-        status: 'reviewing',
-        notes: 'Đã liên hệ, chờ phản hồi'
+      error: (error) => {
+        console.error('Error loading job applications for campaign detail:', error);
+        this.cvs = [];
+        this.filteredCvs = [];
+        this.paginatedCvs = [];
       }
-    ];
-    
-    this.filteredCvs = [...this.cvs];
-    this.generateCalendar();
-    this.generateNextCalendar();
-    this.updatePagination();
+    });
+  }
+
+  private mapApplicationsToCvs(applications: ApplicationDto[]): CandidateCV[] {
+    return (applications || []).map(app => {
+      const status = (app.status || '').toLowerCase().trim();
+      let mappedStatus: CandidateCV['status'] = 'reviewing';
+
+      if (['accepted'].includes(status)) {
+        mappedStatus = 'suitable';
+      } else if (['rejected', 'withdrawn', 'not-suitable'].includes(status)) {
+        mappedStatus = 'rejected';
+      } else {
+        mappedStatus = 'reviewing';
+      }
+
+      const appliedDateIso = app.creationTime
+        ? new Date(app.creationTime as string).toISOString()
+        : new Date().toISOString();
+
+      return {
+        id: app.id || '',
+        fullName: app.candidateName || 'Ứng viên ẩn danh',
+        email: app.candidateEmail || 'N/A',
+        phone: app.candidatePhone || 'N/A',
+        appliedDate: appliedDateIso,
+        status: mappedStatus,
+        notes: app.recruiterNotes || ''
+      };
+    });
   }
 
   onSearchChange(query: string): void {

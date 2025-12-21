@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProfileService } from '../../../../proxy/profile/profile.service';
-import { CompanyLegalInfoDto, ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto, VerifyPhoneNumberDto, VerifyEmailNumberDto, SendEmailOtpDto, SelectCompanyDto, UpdateCompanyLegalInfoDto } from '../../../../proxy/dto/profile';
+import { CompanyLegalInfoDto, ProfileDto, UpdatePersonalInfoDto, ChangePasswordDto, VerifyPhoneNumberDto, VerifyEmailNumberDto, SendEmailOtpDto, SelectCompanyDto, UpdateCompanyLegalInfoDto, SubmitCompanyLegalInfoDto } from '../../../../proxy/dto/profile';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
@@ -18,6 +18,7 @@ import { CreateCompanyFormComponent } from '../../../../shared/components/create
 import { BusinessRegistrationComponent } from '../../../../shared/components/business-registration/business-registration.component';
 import { PasswordFormActionsComponent } from '../../../../shared/components/password-form-actions/password-form-actions.component';
 import { CompanyLegalInfoService } from '../../../../proxy/profile/company-legal-info.service';
+import { TeamManagementService } from '../../../../proxy/services/team-management';
 import { environment } from '../../../../../environments/environment';
 
 interface CompanyCard {
@@ -66,7 +67,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     fullName: '',
     email: '',
     phone: '',
-    gender: '',
     avatarUrl: ''
   };
   
@@ -95,6 +95,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   ];
   verificationProgressSteps: number = 0;
   isEmailVerified = false;
+  isHRStaff: boolean = false; // Flag: tài khoản HR Staff (IsLead = false) hay Leader
 
   // Company info
   companyTab: string = 'search'; // 'search' or 'create'
@@ -115,13 +116,13 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     scale: '',
     email: '',
     companyName: '',
-    industry: '',
     address: '',
     phone: '',
     description: ''
   };
   companyFormData = { ...this.companyFormDefaults };
   companyLogoPreview: string | null = null;
+  companyLogoFile: File | null = null;
   isSavingCompany: boolean = false;
   companyFormErrors: any = {};
   isEditingCompany = false;
@@ -176,7 +177,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
     private cdr: ChangeDetectorRef,
     private formBuilder: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private teamManagementService: TeamManagementService
   ) {
     // Initialize change password form (for users who already have password)
     this.changePasswordForm = this.formBuilder.group({
@@ -212,6 +214,21 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.setPasswordForm.valueChanges.subscribe(() => {
       if (this.setPasswordForm.get('newPassword')?.value && this.setPasswordForm.get('confirmPassword')?.value) {
         this.setPasswordForm.updateValueAndValidity();
+      }
+    });
+
+    // Xác định HR Staff hay Leader để ẩn/bỏ các phần không được phép
+    this.loadCurrentUserRole();
+  }
+
+  private loadCurrentUserRole(): void {
+    this.teamManagementService.getCurrentUserInfo().subscribe({
+      next: (userInfo) => {
+        this.isHRStaff = !userInfo.isLead;
+      },
+      error: (error) => {
+        console.error('Error loading user role in recruiter-setting:', error);
+        this.isHRStaff = false;
       }
     });
   }
@@ -304,7 +321,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           fullName: `${name} ${surname}`.trim() || 'User',
           email: profile.email || '',
           phone: profile.phoneNumber || '',
-          gender: profile.gender === true ? 'male' : profile.gender === false ? 'female' : '',
           avatarUrl: ''
         };
 
@@ -337,7 +353,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           fullName: 'Uông Hoàng Duy',
           email: 'duyuhhe171632@fpt.edu.vn',
           phone: '0966211316',
-          gender: 'male',
           avatarUrl: ''
         };
         // Default to non-Google user if error
@@ -384,8 +399,17 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     
     const nameParts = this.profileData.fullName.trim().split(' ');
-    const surname = nameParts.pop() || '';
-    const name = nameParts.join(' ') || '';
+    let surname = nameParts.pop() || '';
+    let name = nameParts.join(' ') || '';
+
+    // Nếu chỉ có 1 từ (name rỗng), gán name = surname để tránh gửi Name rỗng
+    if (!name && surname) {
+      name = surname;
+    }
+    // Nếu surname rỗng, fallback = name
+    if (!surname && name) {
+      surname = name;
+    }
 
     const updateDto: UpdatePersonalInfoDto = {
       name,
@@ -400,11 +424,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       updateDto.phoneNumber = this.profileData.phone.trim();
     }
 
-    if (this.profileData.gender === 'male') {
-      updateDto.gender = true;
-    } else if (this.profileData.gender === 'female') {
-      updateDto.gender = false;
-    }
+    // Giới tính đã được bỏ khỏi form, không cần map lên DTO nữa
 
     const targetUrl = '/recruiter/recruiter-setting?tab=personal-info';
     
@@ -422,16 +442,49 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isSaving = false;
         
-        setTimeout(() => {
-          if (!this.router.url.includes('/recruiter/recruiter-setting')) {
-            this.router.navigateByUrl(targetUrl, { skipLocationChange: false, replaceUrl: true });
+        // Extract error message from ABP UserFriendlyException
+        // ABP error structure can be:
+        // { error: { message: "...", details: "...", code: "..." } }
+        // or { message: "...", details: "..." } (top level)
+        let errorMessage = 'Có lỗi xảy ra khi lưu thông tin';
+        if (error.error) {
+          // Check nested error structure first
+          if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          } 
+          // Check direct error.message (most common for UserFriendlyException)
+          else if (error.error.message) {
+            errorMessage = error.error.message;
+          } 
+          // Check error.details as fallback
+          else if (error.error.details) {
+            errorMessage = error.error.details;
+          } 
+          // Check validation errors
+          else if (error.error.errors) {
+            const messages: string[] = [];
+            Object.keys(error.error.errors).forEach(k => {
+              const errs = error.error.errors[k];
+              if (Array.isArray(errs)) errs.forEach(e => messages.push(e));
+              else messages.push(errs);
+            });
+            if (messages.length > 0) errorMessage = messages.join('\n');
           }
-        }, 100);
+        }
+        // Fallback: check top-level message
+        else if (error.message) {
+          errorMessage = error.message;
+        }
         
-        if (error.status === 401) {
+        if (error.status === 401 || error.status === 403) {
           this.showToastMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+          setTimeout(() => {
+            if (!this.router.url.includes('/recruiter/recruiter-setting')) {
+              this.router.navigateByUrl(targetUrl, { skipLocationChange: false, replaceUrl: true });
+            }
+          }, 100);
         } else {
-          this.showToastMessage('Có lỗi xảy ra khi lưu thông tin', 'error');
+          this.showToastMessage(errorMessage, 'error');
         }
       }
     });
@@ -455,10 +508,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(this.profileData.phone)) {
       this.showToastMessage('Số điện thoại phải có 10-11 chữ số', 'error');
-      return false;
-    }
-    if (!this.profileData.gender) {
-      this.showToastMessage('Vui lòng chọn giới tính', 'error');
       return false;
     }
     return true;
@@ -984,6 +1033,14 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
     this.verificationProgress = Math.round((completed / this.verificationSteps.length) * 100);
     const levelStep = completed === 0 ? 1 : completed;
     this.verificationLevel = `Cấp ${Math.min(levelStep, this.verificationSteps.length)}/3`;
+
+    // Cập nhật trạng thái xác thực toàn hệ thống (dùng cho sidebar, điều hướng, ...)
+    if (completed === this.verificationSteps.length) {
+      // Hoàn thành 3/3 bước -> tài khoản đã xác thực
+      this.navigationService.setVerified(true);
+    } else {
+      this.navigationService.setVerified(false);
+    }
   }
 
   getTabTitle(tab: string): string {
@@ -1054,6 +1111,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
           raw: detail,
           isOwned: false // Company selected from list, not owned by user
         };
+        // Đồng bộ logo preview (dùng cho form chỉnh sửa)
+        this.companyLogoPreview = this.resolveLogoUrl(detail.logoUrl);
         this.isLoadingCompanyDetail = false;
         this.updateCompanyVerificationStepStatus(true);
         const legalApproved = detail.legalVerificationStatus === 'approved';
@@ -1079,14 +1138,19 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   }
 
   onLogoSelected(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.companyLogoPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+    const file: File | undefined = event?.target?.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      this.showToastMessage('Vui lòng chọn file hình ảnh hợp lệ (jpg, png)', 'error');
+      return;
     }
+
+    this.companyLogoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.companyLogoPreview = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   private ensureCompanyListLoaded(force: boolean = false) {
@@ -1222,7 +1286,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
 
   private buildUpdateCompanyDtoFromForm(detail: CompanyLegalInfoDto): UpdateCompanyLegalInfoDto {
     const companySize = this.getCompanySizeFromScale(this.companyFormData.scale) ?? detail.companySize ?? 10;
-    const industryId = this.getIndustryIdFromSelection(this.companyFormData.industry, detail.industryId);
+    const industryId = detail.industryId; // Giữ nguyên industryId từ detail, không yêu cầu từ form
     const issueDate = detail.businessLicenseIssueDate || new Date().toISOString();
 
     return {
@@ -1235,8 +1299,8 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       companySize,
       industryId,
       foundedYear: detail.foundedYear ?? new Date().getFullYear(),
+      websiteUrl: this.companyFormData.website || detail.websiteUrl || null,
       taxCode: this.companyFormData.taxId || detail.taxCode || '0000000000',
-      businessLicenseNumber: detail.businessLicenseNumber || 'Đang cập nhật',
       businessLicenseIssueDate: issueDate,
       businessLicenseIssuePlace: detail.businessLicenseIssuePlace || 'Đang cập nhật',
       legalRepresentative: detail.legalRepresentative || 'Đang cập nhật',
@@ -1244,6 +1308,34 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       taxCertificateFile: detail.taxCertificateFile,
       representativeIdCardFile: detail.representativeIdCardFile,
       otherSupportFile: detail.otherSupportFile
+    };
+  }
+
+  private buildSubmitCompanyDtoFromForm(): SubmitCompanyLegalInfoDto {
+    const companySize = this.getCompanySizeFromScale(this.companyFormData.scale) ?? 10;
+    const industryId = undefined; // Không yêu cầu industry khi tạo mới
+
+    const now = new Date();
+    const defaultIssueDate = now.toISOString();
+
+    return {
+      companyName: this.companyFormData.companyName?.trim() || 'Chưa cập nhật',
+      companyCode: undefined,
+      description: this.companyFormData.description?.trim() || undefined,
+      headquartersAddress: this.companyFormData.address?.trim() || 'Chưa cập nhật',
+      contactEmail: this.companyFormData.email?.trim() || 'contact@example.com',
+      contactPhone: this.companyFormData.phone?.trim() || '0000000000',
+      companySize,
+      industryId,
+      foundedYear: now.getFullYear(),
+      taxCode: this.companyFormData.taxId?.trim() || '0000000000',
+      businessLicenseIssueDate: defaultIssueDate,
+      businessLicenseIssuePlace: 'Đang cập nhật',
+      legalRepresentative: 'Đang cập nhật',
+      businessLicenseFile: undefined,
+      taxCertificateFile: undefined,
+      representativeIdCardFile: undefined,
+      otherSupportFile: undefined
     };
   }
 
@@ -1261,15 +1353,21 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       return undefined;
     }
 
+    // Nếu đã là full URL (http/https), dùng trực tiếp
     if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
       return logoUrl;
     }
 
+    // Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+    // Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
     const baseUrl = environment.apis?.default?.url || '';
-    if (baseUrl && logoUrl.startsWith('/')) {
-      return `${baseUrl}${logoUrl}`;
+    if (baseUrl) {
+      // Encode storagePath để tránh lỗi URL
+      const encodedStoragePath = encodeURIComponent(logoUrl);
+      return `${baseUrl}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
     }
 
+    // Fallback: trả về nguyên gốc (sẽ là relative tới FE)
     return logoUrl;
   }
 
@@ -1298,9 +1396,11 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       email: this.selectedCompanyDetail.contactEmail || '',
       description: this.selectedCompanyDetail.description || '',
       website: this.selectedCompanyDetail.websiteUrl || '',
-      scale: this.getScaleSelectionFromSize(this.selectedCompanyDetail.companySize),
-      industry: this.getIndustrySelectionFromId(this.selectedCompanyDetail.industryId)
+      scale: this.getScaleSelectionFromSize(this.selectedCompanyDetail.companySize)
     };
+    // Ưu tiên dùng logoImage đã render trên card (đã resolve URL đầy đủ)
+    this.companyLogoPreview = this.selectedCompanyCard?.logoImage || this.resolveLogoUrl(this.selectedCompanyDetail.logoUrl);
+    this.companyLogoFile = null;
     this.companyFormErrors = {};
     this.companyTab = 'create';
   }
@@ -1377,12 +1477,6 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
         }
         break;
 
-      case 'industry':
-        if (!value || value === '') {
-          this.companyFormErrors.industry = 'Vui lòng chọn lĩnh vực hoạt động';
-        }
-        break;
-
       case 'website':
         if (value && (value as string).trim() !== '') {
           const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
@@ -1395,7 +1489,7 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
   }
 
   validateAllFields(): boolean {
-    const requiredFields = ['taxId', 'companyName', 'email', 'phone', 'address', 'scale', 'industry'];
+    const requiredFields = ['taxId', 'companyName', 'email', 'phone', 'address', 'scale'];
     let isValid = true;
 
     requiredFields.forEach(field => {
@@ -1427,17 +1521,14 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       const updateDto = this.buildUpdateCompanyDtoFromForm(this.editingCompanyDetail);
       this.isSavingCompany = true;
       this.companyLegalInfoService.updateCompanyLegalInfo(this.editingCompanyId, updateDto).subscribe({
-        next: () => {
-          this.isSavingCompany = false;
-          this.showToastMessage('Cập nhật thông tin công ty thành công!', 'success');
-          this.isEditingCompany = false;
-          this.companyTab = 'search';
-          const companyId = this.selectedCompanyId ?? this.editingCompanyId;
-          this.editingCompanyId = null;
-          this.editingCompanyDetail = null;
-          this.resetCompanyForm();
-          if (companyId) {
-            this.loadSelectedCompany(companyId);
+        next: (updated) => {
+          const companyId = updated.id ?? this.editingCompanyId!;
+
+          // Nếu có chọn logo mới thì upload sau khi update xong
+          if (this.companyLogoFile) {
+            this.uploadCompanyLogo(companyId, 'Cập nhật thông tin công ty thành công! Logo đã được lưu.');
+          } else {
+            this.afterSaveCompanySuccess(companyId, 'Cập nhật thông tin công ty thành công! Hồ sơ đang chờ xác thực lại từ phía Employee.');
           }
         },
         error: (error) => {
@@ -1449,14 +1540,66 @@ export class RecruiterSettingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Tạo mới công ty
+    const submitDto = this.buildSubmitCompanyDtoFromForm();
     this.isSavingCompany = true;
 
-    // TODO: Call API to save company
-    setTimeout(() => {
-      this.isSavingCompany = false;
-      this.showToastMessage('Tạo công ty thành công!', 'success');
-      this.resetCompanyForm();
-    }, 1000);
+    this.companyLegalInfoService.submitCompanyLegalInfo(submitDto).subscribe({
+      next: (created) => {
+        const companyId = created.id!;
+
+        if (this.companyLogoFile) {
+          this.uploadCompanyLogo(companyId, 'Tạo công ty thành công! Logo đã được lưu.');
+        } else {
+          this.afterSaveCompanySuccess(companyId, 'Tạo công ty thành công!');
+        }
+      },
+      error: (error) => {
+        this.isSavingCompany = false;
+        const message = error?.error?.error?.message || 'Không thể tạo mới công ty.';
+        this.showToastMessage(message, 'error');
+      }
+    });
+  }
+
+  private uploadCompanyLogo(companyId: number, successMessage: string) {
+    if (!this.companyLogoFile) {
+      this.afterSaveCompanySuccess(companyId, successMessage);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', this.companyLogoFile);
+
+    const apiUrl = `${environment.apis.default.url}/api/profile/company-legal-info/${companyId}/upload-logo`;
+
+    this.http.post<any>(apiUrl, formData, {
+      withCredentials: true
+    }).subscribe({
+      next: () => {
+        this.afterSaveCompanySuccess(companyId, successMessage);
+      },
+      error: (error) => {
+        this.isSavingCompany = false;
+        const message = error?.error?.error?.message || 'Upload logo công ty thất bại.';
+        this.showToastMessage(message, 'error');
+      }
+    });
+  }
+
+  private afterSaveCompanySuccess(companyId: number, message: string) {
+    this.isSavingCompany = false;
+    this.showToastMessage(message, 'success');
+    this.isEditingCompany = false;
+    this.companyTab = 'search';
+    this.editingCompanyId = null;
+    this.editingCompanyDetail = null;
+    this.companyLogoFile = null;
+    this.resetCompanyForm();
+    if (companyId) {
+      this.selectedCompanyId = companyId;
+      this.loadSelectedCompany(companyId);
+    }
   }
 
   onBusinessCertDocumentTypeChange(type: string) {

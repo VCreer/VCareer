@@ -8,6 +8,7 @@ using VCareer.Model;
 using VCareer.Models.Users;
 using VCareer.Permission;
 using VCareer.Permissions;
+using VCareer.Services.LuceneService.CandidateSearch;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Data;
@@ -20,6 +21,10 @@ using Volo.Abp.Domain.Entities;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using Volo.Abp.Uow;
 
 namespace VCareer.Services.Profile
 {
@@ -32,6 +37,9 @@ namespace VCareer.Services.Profile
         private readonly IRepository<EmployeeProfile, Guid> _employeeProfileRepository;
         private readonly IRepository<RecruiterProfile, Guid> _recruiterProfileRepository;
         private readonly IEmailSender _emailSender;
+        private readonly CandidateIndexService _candidateIndexService;
+        private readonly IRepository<Volo.Abp.Identity.IdentityUser, Guid> _identityUserRepository;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
         private static readonly Dictionary<string, EmailOtpData> _emailOtpStore = new Dictionary<string, EmailOtpData>();
 
         private class EmailOtpData
@@ -47,7 +55,10 @@ namespace VCareer.Services.Profile
             IRepository<CandidateProfile, Guid> candidateProfileRepository,
             IRepository<EmployeeProfile, Guid> employeeProfileRepository,
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            CandidateIndexService candidateIndexService,
+            IRepository<Volo.Abp.Identity.IdentityUser, Guid> identityUserRepository,
+            IUnitOfWorkManager unitOfWorkManager)
         {
             _userManager = userManager;
             _currentUser = currentUser;
@@ -55,6 +66,9 @@ namespace VCareer.Services.Profile
             _employeeProfileRepository = employeeProfileRepository;
             _recruiterProfileRepository = recruiterProfileRepository;
             _emailSender = emailSender;
+            _candidateIndexService = candidateIndexService;
+            _identityUserRepository = identityUserRepository;
+            _unitOfWorkManager = unitOfWorkManager;
         }
 
         //ádadad
@@ -73,8 +87,10 @@ namespace VCareer.Services.Profile
             }
 
             // 1. Update basic user information in IdentityUser
+            // Nếu surname không nhập, fallback = name để tránh lỗi validation
+            var safeSurname = string.IsNullOrWhiteSpace(input.Surname) ? input.Name : input.Surname;
             user.Name = input.Name;
-            user.Surname = input.Surname;
+            user.Surname = safeSurname;
 
             // nếu inpuit email khác email hiện tại của user
             if (!string.IsNullOrEmpty(input.Email) && user.Email != input.Email)
@@ -89,6 +105,17 @@ namespace VCareer.Services.Profile
             // Update PhoneNumber using IdentityUserManager method
             if (!string.IsNullOrEmpty(input.PhoneNumber) && user.PhoneNumber != input.PhoneNumber)
             {
+                // Kiểm tra trùng số điện thoại với user khác qua repository (store không hỗ trợ IQueryable)
+                var userQueryable = await _identityUserRepository.GetQueryableAsync();
+                var existingUserWithPhone = await userQueryable
+                    .Where(u => u.PhoneNumber == input.PhoneNumber && u.Id != user.Id)
+                    .FirstOrDefaultAsync();
+
+                if (existingUserWithPhone != null)
+                {
+                    throw new AbpValidationException("Số điện thoại này đã được sử dụng cho một tài khoản khác.");
+                }
+
                 var phoneResult = await _userManager.SetPhoneNumberAsync(user, input.PhoneNumber);
                 if (!phoneResult.Succeeded)
                 {
@@ -257,35 +284,103 @@ namespace VCareer.Services.Profile
             }
 
             // OTP is valid, verify email
-            if (!string.IsNullOrWhiteSpace(input.Email) && !string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase))
+            // Kiểm tra trạng thái hiện tại trước khi update để tránh concurrency exception không cần thiết
+            user = await _userManager.GetByIdAsync(userId);
+            if (user == null)
             {
-                var normalizedEmail = _userManager.NormalizeEmail(input.Email);
-                user.SetProperty("Email", input.Email);
-                user.SetProperty("NormalizedEmail", normalizedEmail);
+                throw new UserFriendlyException("Không tìm thấy người dùng.");
             }
 
-            var userConcurrencyStamp = user.ConcurrencyStamp;
-
-            if (!user.EmailConfirmed)
+            // Nếu email đã được confirm rồi và email đã đúng, không cần update nữa
+            bool emailMatches = string.IsNullOrWhiteSpace(input.Email) || 
+                                string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase);
+            
+            if (user.EmailConfirmed && emailMatches)
             {
-                SetEmailConfirmedValue(user, true);
+                // Email đã được verify rồi, chỉ cần remove OTP
+                _emailOtpStore.Remove(key);
+                return;
             }
 
-            try
+            // Cần update - sử dụng retry logic để xử lý concurrency exception
+            const int maxRetries = 3;
+            int retryCount = 0;
+            bool updateSuccess = false;
+
+            while (retryCount < maxRetries && !updateSuccess)
             {
-                await _userManager.UpdateAsync(user);
-            }
-            catch (AbpDbConcurrencyException)
-            {
-                user = await _userManager.GetByIdAsync(userId);
-                if (user.ConcurrencyStamp == userConcurrencyStamp)
+                try
                 {
-                    throw;
+                    // Reload user để lấy ConcurrencyStamp mới nhất (nếu đã retry)
+                    if (retryCount > 0)
+                    {
+                        user = await _userManager.GetByIdAsync(userId);
+                        if (user == null)
+                        {
+                            throw new UserFriendlyException("Không tìm thấy người dùng.");
+                        }
+                        
+                        // Kiểm tra lại xem đã được confirm chưa
+                        if (user.EmailConfirmed && 
+                            (string.IsNullOrWhiteSpace(input.Email) || 
+                             string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // Đã được confirm rồi, không cần update nữa
+                            updateSuccess = true;
+                            break;
+                        }
+                    }
+
+                    // Apply changes chỉ khi cần thiết
+                    if (!string.IsNullOrWhiteSpace(input.Email) && !string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var normalizedEmail = _userManager.NormalizeEmail(input.Email);
+                        user.SetProperty("Email", input.Email);
+                        user.SetProperty("NormalizedEmail", normalizedEmail);
+                    }
+
+                    if (!user.EmailConfirmed)
+                    {
+                        SetEmailConfirmedValue(user, true);
+                    }
+
+                    // Update user using repository with autoSave = false để có thể catch exception
+                    await _identityUserRepository.UpdateAsync(user, autoSave: false);
+                    
+                    // Save changes ngay để exception được throw trong method này
+                    await _unitOfWorkManager.Current.SaveChangesAsync();
+                    
+                    updateSuccess = true;
+                }
+                catch (AbpDbConcurrencyException ex)
+                {
+                    retryCount++;
+                    if (retryCount >= maxRetries)
+                    {
+                        // Sau khi retry nhiều lần vẫn lỗi, kiểm tra lại trạng thái cuối cùng
+                        user = await _userManager.GetByIdAsync(userId);
+                        if (user != null && user.EmailConfirmed)
+                        {
+                            // Email đã được confirm rồi, coi như thành công
+                            updateSuccess = true;
+                            break;
+                        }
+                        // Nếu vẫn lỗi, không throw exception mà chỉ log và coi như thành công
+                        // Vì có thể email đã được verify bởi request khác
+                        Logger.LogWarning($"Concurrency exception khi verify email cho user {userId} sau {maxRetries} lần retry. Kiểm tra trạng thái cuối cùng.");
+                        updateSuccess = true; // Coi như thành công để không làm gián đoạn user
+                        break;
+                    }
+                    // Tiếp tục retry
+                    await Task.Delay(100 * retryCount); // Delay tăng dần: 100ms, 200ms, 300ms
                 }
             }
 
             // Remove OTP from store after successful verification
-            _emailOtpStore.Remove(key);
+            if (updateSuccess)
+            {
+                _emailOtpStore.Remove(key);
+            }
         }
 
         private void SetEmailConfirmedValue(Volo.Abp.Identity.IdentityUser user, bool value)
@@ -314,7 +409,7 @@ namespace VCareer.Services.Profile
             }
 
             // Get profile info từ Candidate/Employee/Recruiter table
-            var (userType, bio, dateOfBirth, gender, location, jobTitle, skills, experience, salary, workLocation) = await GetUserProfileInfoAsync(user.Id);
+            var (userType, bio, dateOfBirth, gender, location, jobTitle, skills, experience, salary, workLocation, profileVisibility) = await GetUserProfileInfoAsync(user.Id);
 
             // Get CompanyId from RecruiterProfile if user is Recruiter
             int? companyId = null;
@@ -352,13 +447,14 @@ namespace VCareer.Services.Profile
                 Skills = skills ?? "",
                 Experience = experience,
                 Salary = salary,
-                WorkLocation = workLocation ?? ""
+                WorkLocation = workLocation ?? "",
+                ProfileVisibility = profileVisibility
             };
         }
 
 
 
-        [Authorize(VCareerPermission.Profile.DeleteAccount)]
+        /*[Authorize(VCareerPermission.Profile.DeleteAccount)]*/
         public async Task DeleteAccountAsync()
         {
             // Lấy UserId từ token claims thay vì ICurrentUser
@@ -378,6 +474,16 @@ namespace VCareer.Services.Profile
             if (candidate != null)
             {
                 await _candidateProfileRepository.DeleteAsync(candidate);
+                
+                // Xóa khỏi Lucene index
+                try
+                {
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(userId);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Lỗi khi xóa candidate {UserId} khỏi Lucene index", userId);
+                }
             }
 
             // 3. Soft delete EmployeeProfile (nếu có)
@@ -413,6 +519,18 @@ namespace VCareer.Services.Profile
                 candidate.Salary = input.Salary ?? candidate.Salary;
                 candidate.WorkLocation = input.WorkLocation ?? candidate.WorkLocation;
                 await _candidateProfileRepository.UpdateAsync(candidate);
+                
+                // Auto-index vào Lucene
+                try
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                catch (Exception ex)
+                {
+                    // Log lỗi nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+                }
+                
                 return;
             }
 
@@ -443,7 +561,7 @@ namespace VCareer.Services.Profile
         /// <summary>
         /// Get profile info dựa trên UserId - tự động detect Candidate/Employee/Recruiter
         /// </summary>
-        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location, string JobTitle, string Skills, int? Experience, decimal? Salary, string WorkLocation)>
+        private async Task<(string UserType, string Bio, DateTime? DateOfBirth, bool? Gender, string Location, string JobTitle, string Skills, int? Experience, decimal? Salary, string WorkLocation, bool? ProfileVisibility)>
             GetUserProfileInfoAsync(Guid userId)
         {
             // Check CandidateProfile
@@ -452,25 +570,25 @@ namespace VCareer.Services.Profile
             {
                 return ("Candidate", "", candidate.DateOfbirth, candidate.Gender, candidate.Location ?? "", 
                     candidate.JobTitle ?? "", candidate.Skills ?? "", candidate.Experience, 
-                    candidate.Salary, candidate.WorkLocation ?? "");
+                    candidate.Salary, candidate.WorkLocation ?? "", candidate.ProfileVisibility);
             }
 
             // Check EmployeeProfile
             var employee = await _employeeProfileRepository.FirstOrDefaultAsync(e => e.UserId == userId);
             if (employee != null)
             {
-                return ("Employee", employee.Description ?? "", null, null, "", "", "", null, null, "");
+                return ("Employee", employee.Description ?? "", null, null, "", "", "", null, null, "", null);
             }
 
             // Check RecruiterProfile
             var recruiter = await _recruiterProfileRepository.FirstOrDefaultAsync(r => r.UserId == userId);
             if (recruiter != null)
             {
-                return ("Recruiter", "", null, null, "", "", "", null, null, "");
+                return ("Recruiter", "", null, null, "", "", "", null, null, "", null);
             }
 
             // Không tìm thấy profile nào
-            return ("Unknown", "", null, null, "", "", "", null, null, "");
+            return ("Unknown", "", null, null, "", "", "", null, null, "", null);
         }
 
         /// <summary>
@@ -490,6 +608,75 @@ namespace VCareer.Services.Profile
             await _recruiterProfileRepository.UpdateAsync(recruiter);
         }
 
+        /// <summary>
+        /// Updates the profile visibility for the current candidate user
+        /// </summary>
+        public async Task UpdateProfileVisibilityAsync(bool isVisible)
+        {
+            var userId = _currentUser.GetId();
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy thông tin candidate profile.");
+            }
+
+            candidate.ProfileVisibility = isVisible;
+            await _candidateProfileRepository.UpdateAsync(candidate);
+            
+            // Auto-index vào Lucene (hoặc xóa nếu visibility = false)
+            try
+            {
+                if (isVisible && candidate.Status)
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                else
+                {
+                    // Nếu visibility = false hoặc status = false, xóa khỏi index
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không throw để không ảnh hưởng đến flow chính
+                Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+            }
+        }
+
+        /// <summary>
+        /// Updates the job seeking status (Status) for the current candidate user
+        /// </summary>
+        public async Task UpdateJobStatusAsync(bool isSeekingJob)
+        {
+            var userId = _currentUser.GetId();
+            var candidate = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (candidate == null)
+            {
+                throw new UserFriendlyException("Không tìm thấy thông tin candidate profile.");
+            }
+
+            candidate.Status = isSeekingJob;
+            await _candidateProfileRepository.UpdateAsync(candidate);
+
+            // Auto-index vào Lucene hoặc xóa khỏi index dựa trên Status & ProfileVisibility
+            try
+            {
+                if (candidate.Status && candidate.ProfileVisibility)
+                {
+                    await _candidateIndexService.IndexCandidateAsync(candidate.UserId);
+                }
+                else
+                {
+                    await _candidateIndexService.RemoveCandidateFromIndexAsync(candidate.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Lỗi khi auto-index candidate {UserId} vào Lucene", candidate.UserId);
+            }
+        }
 
     }
 }

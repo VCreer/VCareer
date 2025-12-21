@@ -9,11 +9,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VCareer.Constants.Authentication;
 using VCareer.Constants.ErrorCodes;
+using VCareer.Constants.JobConstant;
 using VCareer.Dto.AuthDto;
 using VCareer.Dto.JwtDto;
 using VCareer.IRepositories.ICompanyRepository;
@@ -25,6 +27,8 @@ using VCareer.Models.Users;
 using VCareer.OptionConfigs;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Auditing;
+using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Emailing;
@@ -94,6 +98,7 @@ namespace VCareer.Services.Auth
 
 
 
+        // API chung cho forgot password (có thể dùng cho recruiter hoặc các role khác)
         public async Task ForgotPasswordAsync(ForgotPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -123,6 +128,50 @@ namespace VCareer.Services.Auth
 
             await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
         }
+        [DisableAuditing]
+        // API riêng cho candidate forgot password
+        public async Task CandidateForgotPasswordAsync(ForgotPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // Kiểm tra user có phải là candidate không
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (candidateProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản ứng viên. Vui lòng sử dụng chức năng quên mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của candidate
+            if (!candidateProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var token = await _identityManager.GeneratePasswordResetTokenAsync(user);
+
+            // Lấy AngularUrl từ configuration với fallback
+            var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
+
+            // Đảm bảo URL không có trailing slash
+            angularUrl = angularUrl.TrimEnd('/');
+
+            // Log để debug (có thể xóa sau khi test xong)
+            Logger.LogInformation($"CandidateForgotPassword: AngularUrl from config = {angularUrl}");
+
+            // Tạo link reset password với token và email trong query string
+            // Sử dụng route candidate/reset-password cho candidate
+            var resetLink = $"{angularUrl}/candidate/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+
+            Logger.LogInformation($"CandidateForgotPassword: Reset link = {resetLink}");
+
+            var body = await _templateRenderer.RenderAsync(
+                 "Abp.StandardEmailTemplates.Message",
+            new { message = $"Nhấn vào liên kết để đặt lại mật khẩu: <a href='{resetLink}'>Reset Password</a>" }
+                );
+
+            await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
+        }
 
         public async Task RecruiterLoginAsync(LoginDto input)
         {
@@ -139,9 +188,8 @@ namespace VCareer.Services.Auth
 
             var tokens = await _tokenGenerator.CreateTokenAsync(user);
             UpdateTokenToCookie(tokens);
-
         }
-
+        [DisableAuditing]
         public async Task CandidateLoginAsync(LoginDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
@@ -158,32 +206,229 @@ namespace VCareer.Services.Auth
             var tokens = await _tokenGenerator.CreateTokenAsync(user);
             UpdateTokenToCookie(tokens);
 
-
         }
 
-        //check role cái này 
+        [UnitOfWork]
         public async Task LoginWithGoogleAsync(GoogleLoginDto input)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            try
             {
-                Audience = new[] { _googleOptions.ClientId }
-            });
-            var user = await _identityManager.FindByEmailAsync(payload.Email);
+                Logger.LogInformation($"LoginWithGoogleAsync: Starting Google login with email from token");
 
-            if (user == null)
-            {
-                user = new IdentityUser(id: Guid.NewGuid(), userName: payload.Email, email: payload.Email)
+                if (string.IsNullOrEmpty(input.IdToken))
                 {
-                    IsExternal = true,
-                };
+                    Logger.LogError("LoginWithGoogleAsync: IdToken is null or empty");
+                    throw new UserFriendlyException("IdToken không được để trống");
+                }
 
-                var result = await _identityManager.CreateAsync(user);
-                if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+                if (string.IsNullOrEmpty(_googleOptions?.ClientId))
+                {
+                    Logger.LogError("LoginWithGoogleAsync: Google ClientId is not configured");
+                    throw new UserFriendlyException("Google ClientId chưa được cấu hình");
+                }
+
+                Logger.LogInformation($"LoginWithGoogleAsync: Validating Google token with ClientId: {_googleOptions.ClientId}");
+
+                GoogleJsonWebSignature.Payload payload;
+                try
+                {
+                    payload = await GoogleJsonWebSignature.ValidateAsync(input.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = new[] { _googleOptions.ClientId }
+                    });
+                    Logger.LogInformation($"LoginWithGoogleAsync: Token validated successfully for email: {payload.Email}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"LoginWithGoogleAsync: Error validating Google token - {ex.Message}");
+                    Logger.LogError($"LoginWithGoogleAsync: Exception type - {ex.GetType().Name}");
+                    Logger.LogError($"LoginWithGoogleAsync: Stack trace - {ex.StackTrace}");
+                    throw new UserFriendlyException($"Lỗi xác thực token Google: {ex.Message}. Vui lòng kiểm tra ClientId trong cấu hình.");
+                }
+
+                if (string.IsNullOrEmpty(payload.Email))
+                {
+                    Logger.LogError("LoginWithGoogleAsync: Email is null or empty in payload");
+                    throw new UserFriendlyException("Không thể lấy email từ Google");
+                }
+
+                var user = await _identityManager.FindByEmailAsync(payload.Email);
+
+                // Xác định role từ request (mặc định là candidate)
+                var requestedRole = (input.Role ?? "").ToLower().Trim();
+                var isRecruiterRequest = requestedRole == "recruiter";
+
+                if (user == null)
+                {
+                    // Tạo user mới
+                    Logger.LogInformation($"LoginWithGoogleAsync: Creating new user for email: {payload.Email}, requested role: {requestedRole}");
+                    user = new IdentityUser(id: Guid.NewGuid(), userName: payload.Email, email: payload.Email)
+                    {
+                        IsExternal = true,
+                        Name = payload.Name // Lưu tên từ Google
+                    };
+
+                    var result = await _identityManager.CreateAsync(user);
+                    if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
+                    if (isRecruiterRequest)
+                    {
+                        // Tạo recruiter profile
+                        Logger.LogInformation($"LoginWithGoogleAsync: Creating recruiter profile for new user");
+
+                        // Gán role LEADRECRUITER
+                        var recruiterRole = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
+                        if (recruiterRole == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                        result = await _identityManager.AddToRoleAsync(user, recruiterRole.Name);
+                        if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+
+                        // Tạo Company (cần có company để tạo recruiter profile)
+                        var company = new Company
+                        {
+                            CompanyName = payload.Name ?? "Chưa cập nhật", // Tạm thời dùng tên từ Google
+                            TaxCode = "" // Sẽ cập nhật sau
+                        };
+                        await _companyRepository.InsertAsync(company);
+                        await CurrentUnitOfWork.SaveChangesAsync();
+
+                        // Tạo RecruiterProfile
+                        var recruiterProfile = new RecruiterProfile
+                        {
+                            UserId = user.Id,
+                            Status = true,
+                            Email = user.Email,
+                            RecruiterLevel = RecruiterLevel.Unverified,
+                            IsLead = true,
+                            CompanyId = company.Id
+                        };
+                        await _recruiterRepository.InsertAsync(recruiterProfile);
+                        await CurrentUnitOfWork.SaveChangesAsync();
+                        Logger.LogInformation($"LoginWithGoogleAsync: Created new recruiter profile for user: {user.Email}");
+                    }
+                    else
+                    {
+                        // Tạo candidate profile (mặc định)
+                        Logger.LogInformation($"LoginWithGoogleAsync: Creating candidate profile for new user");
+
+                        // Gán role CANDIDATE
+                        var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
+                        if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                        result = await _identityManager.AddToRoleAsync(user, role.Name);
+                        if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+
+                        // Tạo CandidateProfile
+                        var candidateProfile = new CandidateProfile
+                        {
+                            UserId = user.Id,
+                            Email = user.Email,
+                            Status = true
+                        };
+                        await _candidateProfileRepository.InsertAsync(candidateProfile);
+                        await CurrentUnitOfWork.SaveChangesAsync();
+                        Logger.LogInformation($"LoginWithGoogleAsync: Created new candidate profile for user: {user.Email}");
+                    }
+                }
+                else
+                {
+                    // User đã tồn tại - kiểm tra xem có recruiter profile hay candidate profile
+                    Logger.LogInformation($"LoginWithGoogleAsync: User already exists, checking profiles for: {user.Email}");
+
+                    var recruiterProfile = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+                    var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+                    if (recruiterProfile != null)
+                    {
+                        // User có recruiter profile - xử lý như recruiter
+                        Logger.LogInformation($"LoginWithGoogleAsync: User has recruiter profile, processing as recruiter");
+
+                        // Kiểm tra status
+                        if (!recruiterProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
+
+                        // Đảm bảo user có role recruiter
+                        var roles = await _identityManager.GetRolesAsync(user);
+                        var rolesLowerCase = roles.Select(r => r.ToLower()).ToList();
+                        var hasRecruiterRole = rolesLowerCase.Any(r => r.Contains("recruiter") || r == "hr_staff");
+
+                        if (!hasRecruiterRole)
+                        {
+                            var recruiterRole = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
+                            if (recruiterRole == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                            var result = await _identityManager.AddToRoleAsync(user, recruiterRole.Name);
+                            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+                        }
+                    }
+                    else if (candidateProfile != null)
+                    {
+                        // User có candidate profile - xử lý như candidate
+                        Logger.LogInformation($"LoginWithGoogleAsync: User has candidate profile, processing as candidate");
+
+                        // Kiểm tra status
+                        if (!candidateProfile.Status) throw new UserFriendlyException("Tài khoản của bạn đã bị khóa");
+
+                        // Đảm bảo user có role candidate
+                        var roles = await _identityManager.GetRolesAsync(user);
+                        if (!roles.Contains(RoleName.CANDIDATE))
+                        {
+                            var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
+                            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                            var result = await _identityManager.AddToRoleAsync(user, role.Name);
+                            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+                        }
+                    }
+                    else
+                    {
+                        // User tồn tại nhưng chưa có profile nào - tạo candidate profile mặc định
+                        Logger.LogInformation($"LoginWithGoogleAsync: User exists but no profile, creating candidate profile");
+
+                        // Kiểm tra và gán role CANDIDATE nếu chưa có
+                        var roles = await _identityManager.GetRolesAsync(user);
+                        if (!roles.Contains(RoleName.CANDIDATE))
+                        {
+                            var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
+                            if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
+                            var result = await _identityManager.AddToRoleAsync(user, role.Name);
+                            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
+                        }
+
+                        candidateProfile = new CandidateProfile
+                        {
+                            UserId = user.Id,
+                            Email = user.Email,
+                            Status = true
+                        };
+                        await _candidateProfileRepository.InsertAsync(candidateProfile);
+                        await CurrentUnitOfWork.SaveChangesAsync();
+                    }
+                }
+
+                Logger.LogInformation($"LoginWithGoogleAsync: Creating token for user: {user.Email}");
+                var tokens = await _tokenGenerator.CreateTokenAsync(user);
+                UpdateTokenToCookie(tokens);
+                Logger.LogInformation($"LoginWithGoogleAsync: Google login successful for user: {user.Email}");
             }
-            var tokens = await _tokenGenerator.CreateTokenAsync(user);
-            UpdateTokenToCookie(tokens);
+            catch (UserFriendlyException)
+            {
+                // Re-throw UserFriendlyException để frontend hiển thị message
+                throw;
+            }
+            catch (BusinessException)
+            {
+                // Re-throw BusinessException
+                throw;
+            }
+            catch (EntityNotFoundException)
+            {
+                // Re-throw EntityNotFoundException
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"LoginWithGoogleAsync: Unexpected error - {ex.Message}");
+                Logger.LogError($"LoginWithGoogleAsync: Stack trace - {ex.StackTrace}");
+                throw new UserFriendlyException($"Lỗi đăng nhập Google: {ex.Message}");
+            }
         }
-
+        [DisableAuditing]
         public async Task LogOutAllDeviceAsync()
         {
             if (!_currentUser.IsAuthenticated) return;
@@ -200,6 +445,7 @@ namespace VCareer.Services.Auth
         }
 
         [Authorize]
+        [DisableAuditing]
         [IgnoreAntiforgeryToken]
         public async Task LogOutAsync()
         {
@@ -221,14 +467,39 @@ namespace VCareer.Services.Auth
         }
 
         [UnitOfWork]
+        [DisableAuditing]
         public async Task CandidateRegisterAsync(CandidateRegisterDto input)
         {
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
-            var result = await _identityManager.CreateAsync(newUser, input.Password);
-            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            // Tách tên thành name và surname
+            var nameParts = input.Name?.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            string name = string.Empty;
+            string surname = string.Empty;
+
+            if (nameParts.Length == 0)
+            {
+                name = surname = string.Empty;
+            }
+            else if (nameParts.Length == 1)
+            {
+                name = surname = nameParts[0];
+            }
+            else
+            {
+                surname = nameParts[nameParts.Length - 1]; // Từ cuối là surname
+                name = string.Join(" ", nameParts.Take(nameParts.Length - 1)); // Phần còn lại là name
+            }
+
+        var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email)
+        {
+            Name = name,
+            Surname = surname
+        };
+        var result = await _identityManager.CreateAsync(newUser, input.Password);
+        if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+
 
             //gắn role canđiate
             var role = await _roleManager.FindByNameAsync(RoleName.CANDIDATE);
@@ -236,46 +507,48 @@ namespace VCareer.Services.Auth
             result = await _identityManager.AddToRoleAsync(newUser, role.Name);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            // cập nhật tạo bản ghi vào canđiate profile
-            var candidateProfile = new CandidateProfile
-            {
-                UserId = newUser.Id,
-                Email = newUser.Email,
-                Status = true
-            };
-            await _candidateProfileRepository.InsertAsync(candidateProfile);
+        // cập nhật tạo bản ghi vào canđiate profile
+        var candidateProfile = new CandidateProfile
+        {
+            UserId = newUser.Id,
+            Email = newUser.Email,
+            Status = true
+        };
+        await _candidateProfileRepository.InsertAsync(candidateProfile);
 
-            await CurrentUnitOfWork.SaveChangesAsync();
-        }
+        await CurrentUnitOfWork.SaveChangesAsync();
+    }
+
 
         [UnitOfWork]
+        [DisableAuditing]
         public async Task RecruiterRegisterAsync(RecruiterRegisterDto input)
         {
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            //check ma so thue
-
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
+            newUser.Name = input.Name;
+            newUser.SetPhoneNumber(input.PhoneNumber, false);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.RegisterFailed, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            //gắn role recruiter 
+            // Gắn role recruiter 
             var role = await _roleManager.FindByNameAsync(RoleName.LEADRECRUITER);
             if (role == null) throw new EntityNotFoundException(AuthErrorCode.RoleNotFound);
             result = await _identityManager.AddToRoleAsync(newUser, role.Name);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.AddRoleFail, string.Join(",", result.Errors.Select(x => x.Description)));
 
-            //tạo công ty
+            // Tạo công ty mới cho recruiter
             var company = new Company
             {
                 CompanyName = input.CompanyName,
-                TaxCode = input.TaxCode,
+                TaxCode = string.Empty // TaxCode không nullable, để empty string
             };
             await _companyRepository.InsertAsync(company);
-            await CurrentUnitOfWork.SaveChangesAsync();  // lay id som
+            await CurrentUnitOfWork.SaveChangesAsync();  // Lấy Id sớm cho recruiter profile
 
-            // cập nhật tạo bản ghi vào canđiate profile
+            // Tạo RecruiterProfile và gắn với CompanyId ở trên
             var recruiterProfile = new RecruiterProfile
             {
                 UserId = newUser.Id,
@@ -288,10 +561,103 @@ namespace VCareer.Services.Auth
             await _recruiterRepository.InsertAsync(recruiterProfile, true);
         }
 
+        // API chung cho reset password (có thể dùng cho recruiter hoặc các role khác)
         public async Task ResetPasswordAsync(ResetPasswordDto input)
         {
             var user = await _identityManager.FindByEmailAsync(input.Email);
             if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            //SAU CẦN GHI THÊM LOG VÀO ĐÂY
+        }
+        [DisableAuditing]
+        // API riêng cho candidate reset password
+        public async Task CandidateResetPasswordAsync(ResetPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            // Kiểm tra user có phải là candidate không
+            var candidateProfile = await _candidateProfileRepository.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            if (candidateProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản ứng viên. Vui lòng sử dụng chức năng đặt lại mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của candidate
+            if (!candidateProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
+            if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
+            //SAU CẦN GHI THÊM LOG VÀO ĐÂY
+        }
+
+        // API riêng cho recruiter forgot password
+        public async Task RecruiterForgotPasswordAsync(ForgotPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new UserFriendlyException("Email not found");
+
+            // Kiểm tra user có phải là recruiter không
+            var recruiterProfile = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+            if (recruiterProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản nhà tuyển dụng. Vui lòng sử dụng chức năng quên mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của recruiter
+            if (!recruiterProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
+
+            var token = await _identityManager.GeneratePasswordResetTokenAsync(user);
+
+            // Lấy AngularUrl từ configuration với fallback
+            var angularUrl = _configuration?["App:AngularUrl"]?.Trim() ?? "http://localhost:4200";
+
+            // Đảm bảo URL không có trailing slash
+            angularUrl = angularUrl.TrimEnd('/');
+
+            // Log để debug (có thể xóa sau khi test xong)
+            Logger.LogInformation($"RecruiterForgotPassword: AngularUrl from config = {angularUrl}");
+
+            // Tạo link reset password với token và email trong query string
+            // Sử dụng route recruiter/reset-password cho recruiter
+            var resetLink = $"{angularUrl}/recruiter/reset-password?email={Uri.EscapeDataString(input.Email)}&token={Uri.EscapeDataString(token)}";
+
+            Logger.LogInformation($"RecruiterForgotPassword: Reset link = {resetLink}");
+
+            var body = await _templateRenderer.RenderAsync(
+                 "Abp.StandardEmailTemplates.Message",
+            new { message = $"Nhấn vào liên kết để đặt lại mật khẩu: <a href='{resetLink}'>Reset Password</a>" }
+                );
+
+            await _emailSender.SendAsync(user.Email, "Forgot Password!", body);
+        }
+
+        // API riêng cho recruiter reset password
+        public async Task RecruiterResetPasswordAsync(ResetPasswordDto input)
+        {
+            var user = await _identityManager.FindByEmailAsync(input.Email);
+            if (user == null) throw new EntityNotFoundException(AuthErrorCode.UserNotFound);
+
+            // Kiểm tra user có phải là recruiter không
+            var recruiterProfile = await _recruiterRepository.FirstOrDefaultAsync(r => r.UserId == user.Id);
+            if (recruiterProfile == null)
+            {
+                throw new UserFriendlyException("Email này không thuộc tài khoản nhà tuyển dụng. Vui lòng sử dụng chức năng đặt lại mật khẩu phù hợp với vai trò của bạn.");
+            }
+
+            // Kiểm tra status của recruiter
+            if (!recruiterProfile.Status)
+            {
+                throw new UserFriendlyException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+            }
 
             var result = await _identityManager.ResetPasswordAsync(user, input.Token, input.NewPassword);
             if (!result.Succeeded) throw new BusinessException(AuthErrorCode.ResetPasswordFailed, string.Join(",", result.Errors.Select(x => x.Description)));
@@ -304,7 +670,6 @@ namespace VCareer.Services.Auth
             if (await _identityManager.FindByEmailAsync(input.Email) != null)
                 throw new UserFriendlyException("Email already exist");
 
-            //check ma so thue
 
             var newUser = new IdentityUser(id: Guid.NewGuid(), userName: input.Email, email: input.Email);
             var result = await _identityManager.CreateAsync(newUser, input.Password);
@@ -345,19 +710,25 @@ namespace VCareer.Services.Auth
             UpdateTokenToCookie(tokens);
         }
 
+        [DisableAuditing]
         public async Task RefeshTokenAsync()
         {
             var request = _httpContextAcessor.HttpContext!.Request;
-            var response = _httpContextAcessor.HttpContext.Response;
-
             var refreshToken = request.Cookies["refresh_token"];
-            if (string.IsNullOrEmpty(refreshToken)) throw new BusinessException("cant get refresk token to Refresh");
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                throw new AbpAuthorizationException("Unauthorized");
+            }
 
             var tokens = await _tokenGenerator.RefreshAsync(refreshToken);
-            if (tokens == null) throw new BusinessException("Refresh token create failed");
+            if (tokens == null)
+                throw new AbpAuthorizationException("Unauthorized");
+
             UpdateTokenToCookie(tokens);
         }
 
+        [DisableAuditing]
         private void UpdateTokenToCookie(TokenResponseDto tokenResonse)
         {
             var response = _httpContextAcessor.HttpContext?.Response ?? throw new BusinessException("Cannot access HTTP response");
@@ -367,10 +738,12 @@ namespace VCareer.Services.Auth
             //response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/" });
 
             double expiredMinuteAcesstoken = 5;
-            if (tokenResonse.ExpireMinuteAcesstoken!=null) expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireHourRefreshToken);
+            if (tokenResonse.ExpireMinuteAcesstoken != null)
+                expiredMinuteAcesstoken = double.Parse(tokenResonse.ExpireMinuteAcesstoken);
 
-            double expiredHourReFrecesstoken = 48;
-            if (tokenResonse.ExpireHourRefreshToken!=null) expiredHourReFrecesstoken= double.Parse(tokenResonse.ExpireHourRefreshToken);
+            double expiredHourRefreshToken = 48;
+            if (tokenResonse.ExpireHourRefreshToken != null)
+                expiredHourRefreshToken = double.Parse(tokenResonse.ExpireHourRefreshToken);
 
             response.Cookies.Append("access_token", tokenResonse.AccessToken, new CookieOptions
             {
@@ -386,13 +759,14 @@ namespace VCareer.Services.Auth
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(expiredHourReFrecesstoken),
+                Expires = DateTime.UtcNow.AddHours(expiredHourRefreshToken),
                 Path = "/"
             });
         }
         //vì fe ko thể đọc được cookie để decode claims nên phải tạo 1 api để gửi thông tin người dùng hiện tại từ current user
         //còn mục đích của token là để phục vụ auth backend , tạo current user
         //thực ra có khi vẫn dùng curent user bình thường , cái này ko b có tác dụng j ko 
+        [DisableAuditing]
         public async Task<CurrentUserInfoDto> GetCurrentUserAsync()
         {
             var email = _currentUser.Email;
@@ -400,17 +774,17 @@ namespace VCareer.Services.Auth
             var roles = _currentUser.Roles;
             var userId = _currentUser.Id;
 
-            /*    if (string.IsNullOrEmpty(email) ||
-                   !roles.Any() ||
-                   userId == null) throw new BusinessException("Cant get current user infomation");*/
+            if (string.IsNullOrEmpty(email) ||
+               !roles.Any() ||
+               userId == null) throw new BusinessException("Cant get current user infomation");
 
-            return await Task.FromResult(new CurrentUserInfoDto
+            return new CurrentUserInfoDto
             {
                 Email = email,
                 FullName = fullName,
                 Roles = roles,
                 UserId = userId
-            });
+            };
         }
     }
 }

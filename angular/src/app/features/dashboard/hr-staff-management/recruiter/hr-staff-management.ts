@@ -10,9 +10,7 @@ import {
   StatCardComponent,
   PaginationComponent,
   StaffTableComponent,
-  ActivityLogTableComponent,
   HRStaff,
-  ActivityLog,
 } from '../../../../shared/components';
 import { TeamManagementService } from '../../../../proxy/services/team-management';
 import type {
@@ -21,12 +19,7 @@ import type {
   DeactivateStaffDto,
   InviteStaffDto,
 } from '../../../../proxy/dto/team-management-dto/models';
-import { ActivityLogService } from '../../../../proxy/services/auth/activity-log';
-import type {
-  ActivityLogDto,
-  ActivityLogFilterDto,
-  ActivityLogListDto,
-} from '../../../../proxy/dto/activity-log-dto/models';
+import { NavigationService } from '../../../../core/services/navigation.service';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -42,7 +35,6 @@ import * as XLSX from 'xlsx';
     StatCardComponent,
     PaginationComponent,
     StaffTableComponent,
-    ActivityLogTableComponent,
   ],
   templateUrl: './hr-staff-management.html',
   styleUrls: ['./hr-staff-management.scss'],
@@ -60,7 +52,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   showEditModal = false;
   showDeleteModal = false;
   showFilterDropdown = false;
-  showActivityLog = false;
   selectedStaff: HRStaff | null = null;
 
   // Form data
@@ -99,28 +90,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   statusOptions = [
     { value: '', label: 'Tất cả trạng thái' },
     { value: 'active', label: 'Đang hoạt động' },
-    { value: 'pending', label: 'Chờ duyệt' },
     { value: 'inactive', label: 'Ngừng hoạt động' },
   ];
-
-  // Activity Log
-  activitySearchKeyword = '';
-  activityLogs: ActivityLog[] = [];
-  filteredActivityLogs: ActivityLog[] = [];
-  paginatedActivityLogs: ActivityLog[] = [];
-  loadingActivityLogs = false;
-
-  // Activity Log Pagination
-  activityCurrentPage: number = 1;
-  activityItemsPerPage: number = 7;
-
-  get activityTotalPages(): number {
-    return Math.ceil(this.filteredActivityLogs.length / this.activityItemsPerPage);
-  }
 
   // Current Leader Info
   currentLeaderInfo: StaffListItemDto | null = null;
   loadingLeaderInfo = false;
+  // Chỉ cho phép Leader đã xác thực (Cấp 3/3) thêm HR Staff
+  canAddStaff: boolean = false;
 
   // Staff list
   staffList: HRStaff[] = [];
@@ -146,10 +123,6 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return this.staffList.filter(s => s.status === 'active').length;
   }
 
-  get pendingStaff(): number {
-    return 0; // API không hỗ trợ pending status
-  }
-
   get inactiveStaff(): number {
     return this.staffList.filter(s => s.status === 'inactive').length;
   }
@@ -157,7 +130,7 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private teamManagementService: TeamManagementService,
-    private activityLogService: ActivityLogService
+    private navigationService: NavigationService
   ) {}
 
   ngOnInit(): void {
@@ -181,15 +154,35 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     this.teamManagementService.getCurrentUserInfo().subscribe({
       next: userInfo => {
         this.currentLeaderInfo = userInfo;
+        // Leader được phép thêm HR Staff chỉ khi đã xác thực tài khoản (Cấp 3/3)
+        const isLeader = !!userInfo.isLead;
+        // Kiểm tra verification status từ userInfo hoặc từ navigationService
+        const verificationStatus = (userInfo as any)?.verificationStatus;
+        let isVerified = false;
+        if (verificationStatus !== undefined) {
+          isVerified = verificationStatus;
+          // Cập nhật verification status trong navigationService
+          this.navigationService.setVerified(verificationStatus);
+        } else {
+          // Fallback: sử dụng giá trị từ navigationService
+          isVerified = this.navigationService.isVerified();
+        }
+        this.canAddStaff = isLeader && isVerified;
         this.loadingLeaderInfo = false;
         console.log('Current user info:', userInfo);
         console.log('IsLead:', userInfo.isLead);
+        console.log('IsVerified:', isVerified);
         console.log('CompanyId:', userInfo.companyId);
         console.log('CompanyName:', userInfo.companyName);
       },
       error: error => {
         console.error('Error loading current user info:', error);
         this.loadingLeaderInfo = false;
+        // Nếu lỗi 401/403, có thể là vấn đề authentication
+        if (error.status === 401 || error.status === 403) {
+          console.warn('Authentication error, user may need to re-login');
+          // Không redirect tự động, để user tự xử lý
+        }
       },
     });
   }
@@ -203,7 +196,9 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
 
   handleClickOutside = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
-    if (!target.closest('.filter-dropdown')) {
+    // Đóng dropdown nếu click không phải trong filter-dropdown
+    // Và không phải trong modal
+    if (!target.closest('.filter-dropdown') && !target.closest('.modal-overlay') && !target.closest('.modal-content')) {
       this.showFilterDropdown = false;
     }
   };
@@ -329,159 +324,48 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
     return selected ? selected.label : 'Tất cả trạng thái';
   }
 
-  toggleActivityLog(): void {
-    this.showActivityLog = !this.showActivityLog;
-    if (this.showActivityLog) {
-      this.activitySearchKeyword = '';
-      this.loadActivityLogs();
-    }
-  }
-
-  loadActivityLogs(): void {
-    if (this.staffList.length === 0) {
-      // Nếu chưa có staff list, load lại
-      this.loadStaffList();
+  openAddModal(): void {
+    if (!this.canAddStaff) {
+      this.showToastMessage(
+        'Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.',
+        'error'
+      );
       return;
     }
 
-    this.loadingActivityLogs = true;
-    this.activityLogs = [];
+    // Đóng tất cả modal và dropdown khác trước khi mở modal thêm
+    this.closeAllModals();
 
-    // Lấy activity logs cho tất cả HR Staff
-    const activityPromises = this.staffList.map(staff => {
-      if (!staff.id) return Promise.resolve(null);
-
-      const filter: ActivityLogFilterDto = {
-        skipCount: 0,
-        maxResultCount: 100, // Lấy tối đa 100 logs mỗi staff
-        sorting: 'creationTime DESC',
-        searchKeyword: '', // Truyền empty string để tránh validation error (backend sẽ check IsNullOrWhiteSpace)
+    // Đợi một chút để đảm bảo các modal khác đã đóng hoàn toàn
+    setTimeout(() => {
+      this.staffForm = {
+        email: '',
       };
-
-      return this.activityLogService
-        .getStaffActivityLogs(staff.id, filter)
-        .toPromise()
-        .then((response: ActivityLogListDto | undefined) => {
-          if (response && response.activities) {
-            return response.activities.map((activity: ActivityLogDto) => ({
-              id: activity.id || '',
-              staffId: staff.id,
-              staffName: staff.name,
-              staffRole: staff.role,
-              activityType: this.mapActivityType(String(activity.activityType || '')),
-              detail: this.formatActivityDetail(activity),
-              timestamp: activity.creationTime ? new Date(activity.creationTime) : new Date(),
-            }));
-          }
-          return [];
-        })
-        .catch(error => {
-          console.error(`Error loading activity logs for staff ${staff.id}:`, error);
-          return [];
-        });
-    });
-
-    Promise.all(activityPromises)
-      .then(allLogs => {
-        // Merge tất cả logs và sort theo thời gian (mới nhất trước)
-        // Sử dụng reduce thay vì flat() để tương thích với TypeScript cũ hơn
-        this.activityLogs = allLogs
-          .reduce((acc: ActivityLog[], logs) => {
-            if (logs && Array.isArray(logs)) {
-              acc.push(...logs);
-            }
-            return acc;
-          }, [])
-          .filter(log => log !== null)
-          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        this.filterActivityLogs();
-        this.loadingActivityLogs = false;
-      })
-      .catch(error => {
-        console.error('Error loading activity logs:', error);
-        this.showToastMessage('Không thể tải nhật ký hoạt động. Vui lòng thử lại.', 'error');
-        this.loadingActivityLogs = false;
-      });
+      this.showAddModal = true;
+      this.cdr.detectChanges();
+    }, 50);
   }
 
-  mapActivityType(activityType: string): string {
-    // Map ActivityType enum sang string dễ hiểu
-    const typeMap: { [key: string]: string } = {
-      Login: 'login',
-      Logout: 'logout',
-      JobPosted: 'create_campaign',
-      JobUpdated: 'update_campaign',
-      JobDeleted: 'delete_campaign',
-      ApplicationSubmitted: 'submit_application',
-      ApplicationApproved: 'approve',
-      ApplicationRejected: 'reject',
-      CandidateEvaluated: 'review_cv',
-      ProfileUpdated: 'update_profile',
-      EmailSent: 'send_email',
-      InterviewScheduled: 'schedule_interview',
-      InterviewCompleted: 'complete_interview',
-    };
-
-    return typeMap[activityType] || activityType.toLowerCase();
-  }
-
-  formatActivityDetail(activity: ActivityLogDto): string {
-    // Format activity detail từ action và description
-    if (activity.description) {
-      return activity.description;
-    }
-    if (activity.action) {
-      return activity.action;
-    }
-    return 'Hoạt động không có mô tả';
-  }
-
-  filterActivityLogs(): void {
-    if (!this.activitySearchKeyword || this.activitySearchKeyword.trim() === '') {
-      this.filteredActivityLogs = [...this.activityLogs];
-    } else {
-      const keyword = this.activitySearchKeyword.toLowerCase();
-      this.filteredActivityLogs = this.activityLogs.filter(
-        log =>
-          log.staffName.toLowerCase().includes(keyword) ||
-          log.detail.toLowerCase().includes(keyword) ||
-          log.activityType.toLowerCase().includes(keyword)
-      );
-    }
-    this.activityCurrentPage = 1;
-    this.updatePaginatedActivityLogs();
-  }
-
-  updatePaginatedActivityLogs(): void {
-    const startIndex = (this.activityCurrentPage - 1) * this.activityItemsPerPage;
-    const endIndex = startIndex + this.activityItemsPerPage;
-    this.paginatedActivityLogs = this.filteredActivityLogs.slice(startIndex, endIndex);
-  }
-
-  onActivityPageChange(page: number): void {
-    this.activityCurrentPage = page;
-    this.updatePaginatedActivityLogs();
-
-    // Scroll to top of table
-    const tableElement = document.querySelector('.staff-table-container');
-    if (tableElement) {
-      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  openAddModal(): void {
-    this.staffForm = {
-      email: '',
-    };
-    this.showAddModal = true;
+  closeAllModals(): void {
+    this.showAddModal = false;
+    this.showEditModal = false;
+    this.showDeleteModal = false;
+    this.showFilterDropdown = false;
+    this.selectedStaff = null;
+    this.cdr.detectChanges();
   }
 
   closeAddModal(): void {
     this.showAddModal = false;
+    this.staffForm = {
+      email: '',
+    };
   }
 
   openEditModal(staff: HRStaff): void {
+    // Đóng dropdown khi mở modal
+    this.showFilterDropdown = false;
+    
     this.selectedStaff = staff;
     this.staffForm = { ...staff };
     this.showEditModal = true;
@@ -490,9 +374,16 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   closeEditModal(): void {
     this.showEditModal = false;
     this.selectedStaff = null;
+    this.staffForm = {
+      email: '',
+    };
+    this.cdr.detectChanges();
   }
 
   openDeleteModal(staff: HRStaff): void {
+    // Đóng dropdown khi mở modal
+    this.showFilterDropdown = false;
+    
     this.selectedStaff = staff;
     this.showDeleteModal = true;
   }
@@ -503,6 +394,14 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
   }
 
   onAddStaff(): void {
+    if (!this.canAddStaff) {
+      this.showToastMessage(
+        'Chỉ Leader Recruiter đã xác thực tài khoản (Cấp 3/3) mới được phép thêm HR Staff.',
+        'error'
+      );
+      return;
+    }
+
     // Validate email
     if (!this.staffForm.email || !this.staffForm.email.trim()) {
       this.showToastMessage('Vui lòng nhập email.', 'error');
@@ -533,6 +432,8 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
           'success'
         );
         this.loadStaffList(); // Reload list to show new staff
+        // Reload current user info để cập nhật verification status
+        this.loadCurrentUserInfo();
         this.closeAddModal();
         this.loading = false;
       },
@@ -594,11 +495,11 @@ export class HRStaffManagementComponent implements OnInit, OnDestroy {
           id: staff.recruiterProfileId || staff.userId || '',
           name: staff.fullName || '',
           email: staff.email || '',
-          phone: '', // API không trả về phone, có thể để trống hoặc lấy từ profile khác
+          phone: staff.phoneNumber || '', // Lấy số điện thoại từ API
           role: 'HR Staff', // HR Staff role
           department: 'Tuyển dụng', // Default department
           status: staff.status ? 'active' : 'inactive',
-          joinDate: '', // API không trả về joinDate
+          joinDate: '', // API hiện chưa trả về joinDate
           campaigns: 0, // Có thể tính sau
           candidates: 0, // Có thể tính sau
         }));

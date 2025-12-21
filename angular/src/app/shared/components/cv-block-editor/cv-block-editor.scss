@@ -1,0 +1,240 @@
+.cv-block-editor {
+  padding: 12px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .add-block-container {
+    position: relative;
+    margin-bottom: 20px;
+
+    .btn-add-block {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #0F83BA;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #0d6fa0;
+      }
+
+      &.active {
+        background: #0a5d85;
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+
+    .add-block-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      min-width: 250px;
+      overflow: hidden;
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #f5f5f5;
+        }
+
+        i {
+          width: 18px;
+          text-align: center;
+          color: #0F83BA;
+          font-size: 14px;
+        }
+
+        span {
+          font-size: 13px;
+          color: #333;
+        }
+      }
+    }
+  }
+
+  .blocks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .block-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+
+    &:hover {
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    &.pinned {
+      border-color: #0F83BA;
+      background: #f8fbff;
+    }
+
+    &.cdk-drag-preview {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+    }
+
+    &.cdk-drag-placeholder {
+      opacity: 0.3;
+    }
+
+    .block-drag-handle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: #f5f5f5;
+      cursor: move;
+      color: #666;
+
+      &:hover {
+        background: #e0e0e0;
+        color: #0F83BA;
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+
+    .block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: pointer;
+
+      .block-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+
+        i {
+          color: #0F83BA;
+          font-size: 16px;
+        }
+      }
+
+      .block-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+
+        .btn-action {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border: none;
+          background: transparent;
+          color: #666;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.2s;
+
+          &:hover:not(:disabled) {
+            background: #e0e0e0;
+            color: #0F83BA;
+          }
+
+          &:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+          }
+
+          i {
+            font-size: 12px;
+          }
+
+          &.btn-delete:hover:not(:disabled) {
+            background: #fee;
+            color: #d32f2f;
+          }
+        }
+      }
+    }
+
+    .block-content {
+      padding: 12px;
+    }
+
+    &.collapsed {
+      .block-content {
+        display: none;
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+
+    i {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    p {
+      font-size: 16px;
+    }
+  }
+}
+
+// CDK Drag & Drop styles
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.blocks-container.cdk-drop-list-dragging .block-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+
+

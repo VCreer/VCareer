@@ -23,7 +23,7 @@ namespace VCareer.IServices.Subcriptions
         //price
         public Task<List<SubcriptionPriceViewDto>> GetSubcriptionsPrice(Guid subcriptionId, bool? isExpired, PagingDto pagingDto);
         // Get active subscription services for purchase
-        public Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(SubcriptorTarget? target = null);
+        public Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(string? target = null);
 
     }
 }

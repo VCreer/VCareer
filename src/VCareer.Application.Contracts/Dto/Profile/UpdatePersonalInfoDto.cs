@@ -10,9 +10,9 @@ namespace VCareer.Dto.Profile
         [StringLength(256, ErrorMessage = "Name cannot exceed 256 characters")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Surname is required")]
+        // Cho phép bỏ trống họ (surname); nếu để trống sẽ tự dùng Name ở service
         [StringLength(256, ErrorMessage = "Surname cannot exceed 256 characters")]
-        public string Surname { get; set; }
+        public string? Surname { get; set; }
 
         // Email: Optional field - validation sẽ được thực hiện trong service layer
         // Bỏ [EmailAddress] attribute vì nó validate cả empty string

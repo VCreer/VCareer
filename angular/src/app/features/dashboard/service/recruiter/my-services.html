@@ -25,24 +25,6 @@
               <span>{{ getTabLabel('running') }}</span>
             </a>
           </li>
-          <li class="sidebar-nav-item" [class.active]="activeTab === 'scheduled'">
-            <a (click)="onTabChange('scheduled')" class="sidebar-link">
-              <i [ngClass]="getTabIcon('scheduled')"></i>
-              <span>{{ getTabLabel('scheduled') }}</span>
-            </a>
-          </li>
-          <li class="sidebar-nav-item" [class.active]="activeTab === 'unused'">
-            <a (click)="onTabChange('unused')" class="sidebar-link">
-              <i [ngClass]="getTabIcon('unused')"></i>
-              <span>{{ getTabLabel('unused') }}</span>
-            </a>
-          </li>
-          <li class="sidebar-nav-item" [class.active]="activeTab === 'pending'">
-            <a (click)="onTabChange('pending')" class="sidebar-link">
-              <i [ngClass]="getTabIcon('pending')"></i>
-              <span>{{ getTabLabel('pending') }}</span>
-            </a>
-          </li>
           <li class="sidebar-nav-item" [class.active]="activeTab === 'ended'">
             <a (click)="onTabChange('ended')" class="sidebar-link">
               <i [ngClass]="getTabIcon('ended')"></i>
@@ -75,162 +57,96 @@
               (statusChange)="onServiceTypeChange($event)">
             </app-status-dropdown>
           </div>
-          
-          <div class="filter-group">
-            <app-status-dropdown
-              [options]="orderIdOptions"
-              [selectedValue]="selectedOrderId"
-              placeholder="Mã đơn hàng"
-              (statusChange)="onOrderIdChange($event)">
-            </app-status-dropdown>
-          </div>
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
       <!-- Services Table -->
-      <div class="services-table-container">
-        <table class="services-table">
+      <div *ngIf="!isLoading" class="services-table-container">
+        <table class="services-table" *ngIf="filteredServices.length > 0">
           <thead>
             <tr>
-              <th>Mã đơn hàng</th>
-              <th>Dịch vụ</th>
-              <th>Số lượng</th>
-              <!-- Tab unused: Kích hoạt dịch vụ và Hạn kích hoạt -->
-              <th *ngIf="activeTab === 'unused'">Kích hoạt dịch vụ</th>
-              <th *ngIf="activeTab === 'unused'">Hạn kích hoạt</th>
-              <!-- Tab expired: Kích hoạt dịch vụ và Hạn kích hoạt -->
-              <th *ngIf="activeTab === 'expired'">Kích hoạt dịch vụ</th>
-              <th *ngIf="activeTab === 'expired'">Hạn kích hoạt</th>
-              <!-- Tab pending: Ngày bắt đầu, Chiến dịch, và cột trống -->
-              <th *ngIf="activeTab === 'pending'">Ngày bắt đầu</th>
-              <th *ngIf="activeTab === 'pending'">Chiến dịch</th>
-              <th *ngIf="activeTab === 'pending'"></th>
-              <!-- Tab ended: Bắt đầu, Kết thúc, Chiến dịch, và cột trống -->
-              <th *ngIf="activeTab === 'ended'">Bắt đầu</th>
-              <th *ngIf="activeTab === 'ended'">Kết thúc</th>
-              <th *ngIf="activeTab === 'ended'">Chiến dịch</th>
-              <th *ngIf="activeTab === 'ended'"></th>
-              <!-- Các tab khác: Bắt đầu, Kết thúc, Chiến dịch, Thao tác -->
-              <th *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'">Bắt đầu</th>
-              <th *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'">Kết thúc</th>
-              <th *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'">Chiến dịch</th>
-              <th *ngIf="activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired' && activeTab !== 'scheduled'">Thao tác</th>
+              <th style="width: 35%;">Dịch vụ</th>
+              <th style="width: 20%;">Thời hạn</th>
+              <th style="width: 15%;">Còn lại</th>
+              <th style="width: 15%;">Trạng thái</th>
+              <th style="width: 15%;">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let service of paginatedServices; trackBy: trackByServiceId">
-              <td class="order-id-cell">
-                <a (click)="onOrderIdClick(service.orderId, $event)" class="order-id-link">
-                  #{{ service.orderId }}
-                </a>
-              </td>
               <td class="service-cell">
                 <div class="service-info">
-                  <div class="service-name-row">
-                    <span class="service-name">{{ service.serviceName }}</span>
-                    <span class="service-duration">/ {{ service.duration }}</span>
-                    <span *ngIf="service.isGift" class="gift-badge">Quà tặng</span>
-                  </div>
-                  <div class="service-details">
-                    <span class="service-code">Mã dịch vụ: {{ service.serviceCode }}</span>
-                    <span class="service-separator">•</span>
-                    <span class="purchase-date">Ngày mua: {{ service.purchaseDate }}</span>
+                  <div class="service-name">{{ service.title }}</div>
+                  <div class="service-description" *ngIf="service.description">
+                    {{ service.description }}
                   </div>
                 </div>
               </td>
-              <td class="quantity-cell">{{ service.quantity }}</td>
-              
-              <!-- Tab unused: Kích hoạt dịch vụ và Hạn kích hoạt -->
-              <td *ngIf="activeTab === 'unused'" class="date-cell">{{ service.activationDate || '-' }}</td>
-              <td *ngIf="activeTab === 'unused'" class="date-cell">{{ service.expirationDate || '-' }}</td>
-              
-              <!-- Tab expired: Kích hoạt dịch vụ và Hạn kích hoạt (màu đỏ) -->
-              <td *ngIf="activeTab === 'expired'" class="date-cell">{{ service.activationDate || '-' }}</td>
-              <td *ngIf="activeTab === 'expired'" class="date-cell expired-date">{{ service.expirationDate || '-' }}</td>
-              
-              <!-- Tab pending: Ngày bắt đầu, Chiến dịch, và menu 3 chấm -->
-              <td *ngIf="activeTab === 'pending'" class="date-cell">{{ service.startDate }}</td>
-              <td *ngIf="activeTab === 'pending'" class="campaign-cell">
-                <div *ngIf="service.campaign !== '-'" class="campaign-info">
-                  <span class="campaign-name">{{ service.campaign }}</span>
-                  <span *ngIf="service.campaignJob" class="campaign-job" [innerHTML]="service.campaignJob"></span>
-                </div>
-                <span *ngIf="service.campaign === '-'" class="campaign-empty">-</span>
-              </td>
-              <td *ngIf="activeTab === 'pending'" class="actions-cell">
-                <div class="actions-menu-container">
-                  <button 
-                    class="actions-menu-btn"
-                    (click)="toggleActionsMenu(service.id, $event)"
-                    type="button">
-                    <i class="fa fa-ellipsis-h"></i>
-                  </button>
-                  <div 
-                    class="actions-menu"
-                    [class.show]="showActionsMenu === service.id"
-                    [attr.data-service-id]="service.id"
-                    (click)="$event.stopPropagation()">
-                    <div class="menu-item" (click)="onCancelActivation(service, $event)">
-                      <i class="fa fa-times menu-icon"></i>
-                      <span>Hủy kích hoạt dịch vụ</span>
-                    </div>
+              <td class="duration-cell">
+                <div class="duration-info">
+                  <div>{{ getDurationText(service) }}</div>
+                  <div class="date-range" *ngIf="service.userSubscription">
+                    <small>{{ formatDate(service.userSubscription.startDate) }} - {{ formatDate(service.userSubscription.endDate) }}</small>
                   </div>
                 </div>
               </td>
-              
-              <!-- Tab ended: Bắt đầu, Kết thúc, Chiến dịch, và menu 3 chấm -->
-              <td *ngIf="activeTab === 'ended'" class="date-cell">{{ service.startDate }}</td>
-              <td *ngIf="activeTab === 'ended'" class="date-cell">{{ service.endDate }}</td>
-              <td *ngIf="activeTab === 'ended'" class="campaign-cell">
-                <div *ngIf="service.campaign !== '-'" class="campaign-info">
-                  <span class="campaign-name">{{ service.campaign }}</span>
-                  <span *ngIf="service.campaignJob" class="campaign-job" [innerHTML]="service.campaignJob"></span>
-                </div>
-                <span *ngIf="service.campaign === '-'" class="campaign-empty">-</span>
-              </td>
-              <td *ngIf="activeTab === 'ended'" class="actions-cell">
-                <div class="actions-menu-container">
-                  <button 
-                    class="actions-menu-btn"
-                    (click)="toggleActionsMenu(service.id, $event)"
-                    type="button">
-                    <i class="fa fa-ellipsis-h"></i>
-                  </button>
-                  <div 
-                    class="actions-menu"
-                    [class.show]="showActionsMenu === service.id"
-                    [attr.data-service-id]="service.id"
-                    (click)="$event.stopPropagation()">
-                    <div class="menu-item" (click)="onViewCampaignReport(service, $event)">
-                      <i class="fa fa-file-alt menu-icon"></i>
-                      <span>Báo cáo chiến dịch tuyển dụng</span>
-                    </div>
-                  </div>
-                </div>
-              </td>
-              
-              <!-- Các tab khác: Bắt đầu, Kết thúc, Chiến dịch -->
-              <td *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'" class="date-cell">{{ service.startDate }}</td>
-              <td *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'" class="date-cell">{{ service.endDate }}</td>
-              <td *ngIf="activeTab !== 'unused' && activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired'" class="campaign-cell">
-                <div *ngIf="service.campaign !== '-'" class="campaign-info">
-                  <span class="campaign-name">{{ service.campaign }}</span>
-                  <span *ngIf="service.campaignJob" class="campaign-job" [innerHTML]="service.campaignJob"></span>
-                </div>
-                <span *ngIf="service.campaign === '-'" class="campaign-empty">-</span>
-              </td>
-              
-              <!-- Thao tác cho các tab khác -->
-              <td *ngIf="activeTab !== 'pending' && activeTab !== 'ended' && activeTab !== 'expired' && activeTab !== 'scheduled'" class="actions-cell">
-                <div class="actions-container">
-                  <!-- Kích hoạt dịch vụ - cho tab unused -->
-                  <span 
-                    *ngIf="activeTab === 'unused'" 
-                    class="activate-tag"
-                    (click)="onActivateService(service, $event)"
-                    title="Kích hoạt dịch vụ">
-                    Kích hoạt
+              <td class="remaining-cell">
+                <div class="remaining-info" *ngIf="service.userSubscription && !service.isLifeTime">
+                  <span class="remaining-days" [class.warning]="getRemainingDays(service.userSubscription.endDate) <= 7">
+                    {{ getRemainingDays(service.userSubscription.endDate) }} ngày
                   </span>
+                </div>
+                <div class="remaining-info" *ngIf="service.isLifeTime">
+                  <span class="lifetime-badge">∞</span>
+                </div>
+              </td>
+              <td class="status-cell">
+                <span class="status-badge" [class.status-active]="service.isActive" [class.status-inactive]="!service.isActive">
+                  {{ service.isActive ? 'Hoạt động' : 'Không hoạt động' }}
+                </span>
+              </td>
+              
+              <!-- Actions -->
+              <td class="actions-cell">
+                <div class="actions-menu-container">
+                  <button 
+                    class="actions-menu-btn"
+                    (click)="toggleActionsMenu(service.id, $event)"
+                    type="button">
+                    <i class="fa fa-ellipsis-h"></i>
+                  </button>
+                  <div 
+                    class="actions-menu"
+                    [class.show]="showActionsMenu === service.id"
+                    [attr.data-service-id]="service.id"
+                    (click)="$event.stopPropagation()">
+                    <div class="menu-item" (click)="onViewDetails(service, $event)">
+                      <i class="fa fa-info-circle menu-icon"></i>
+                      <span>Chi tiết dịch vụ</span>
+                    </div>
+                    <div class="menu-item" (click)="onViewUsageHistory(service, $event)">
+                      <i class="fa fa-history menu-icon"></i>
+                      <span>Lịch sử sử dụng</span>
+                    </div>
+                    <div class="menu-item" *ngIf="activeTab === 'running' && service.userSubscription?.isShared === false" (click)="onToggleShare(service, $event)">
+                      <i class="fa fa-share-alt menu-icon"></i>
+                      <span>Bật chia sẻ</span>
+                    </div>
+                    <div class="menu-item" *ngIf="activeTab === 'running' && service.userSubscription?.isShared === true" (click)="onToggleShare(service, $event)">
+                      <i class="fa fa-share-alt-square menu-icon"></i>
+                      <span>Tắt chia sẻ</span>
+                    </div>
+                    <div class="menu-item" *ngIf="activeTab === 'running'" (click)="onCancelSubscription(service, $event)">
+                      <i class="fa fa-times menu-icon"></i>
+                      <span>Hủy dịch vụ</span>
+                    </div>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -245,7 +161,7 @@
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-container" *ngIf="filteredServices.length > 0">
+      <div class="pagination-container" *ngIf="!isLoading && filteredServices.length > 0">
         <app-pagination
           [currentPage]="currentPage"
           [totalPages]="totalPages"
@@ -255,77 +171,410 @@
     </div>
   </div>
 
-  <!-- Activate Service Modal -->
+  <!-- Service Details Modal -->
   <app-generic-modal
-    [show]="showActivateModal"
-    [title]="'Yêu cầu kích hoạt dịch vụ'"
-    [maxWidth]="'600px'"
+    [show]="showDetailsModal"
+    [title]="'Chi tiết dịch vụ'"
+    [maxWidth]="'1000px'"
     [bodyBackground]="'white'"
     [closeOnOverlayClick]="true"
-    (close)="onCloseActivateModal()">
-    <div class="activate-service-modal-content">
-      <div *ngIf="selectedServiceForActivation" class="service-info-section">
-        <div class="service-details">
-          <div class="detail-row">
-            <span class="detail-label">Mã đơn hàng:</span>
-            <span class="detail-value">{{ selectedServiceForActivation.orderId }}</span>
+    (close)="onCloseDetailsModal()">
+    <div class="details-modal-content" *ngIf="selectedServiceForDetails">
+      <!-- Subscription Info -->
+      <div class="details-section">
+        <h3 class="section-title">
+          <i class="fa fa-box-open"></i>
+          Thông tin gói dịch vụ
+        </h3>
+        <div class="info-grid-2col">
+          <div class="info-item">
+            <label><i class="fa fa-tag"></i> Tên dịch vụ:</label>
+            <span class="info-value">{{ selectedServiceForDetails.title }}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">Dịch vụ:</span>
-            <span class="detail-value">{{ selectedServiceForActivation.serviceName }}</span>
+          <div class="info-item">
+            <label><i class="fa fa-money-bill-wave"></i> Giá gốc:</label>
+            <span class="info-value">{{ formatPrice(selectedServiceForDetails.originalPrice) }}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">Số lượng:</span>
-            <div class="quantity-input-wrapper">
-              <input 
-                type="number" 
-                class="quantity-input" 
-                [(ngModel)]="selectedQuantity"
-                [min]="1"
-                [max]="selectedServiceForActivation.quantity"
-                (keydown)="$event.stopPropagation()"
-                (click)="$event.stopPropagation()">
-              <span class="quantity-max">/{{ selectedServiceForActivation.quantity }}</span>
+          <div class="info-item full-width" *ngIf="selectedServiceForDetails.description">
+            <label><i class="fa fa-align-left"></i> Mô tả:</label>
+            <span class="info-value description-text">{{ selectedServiceForDetails.description }}</span>
+          </div>
+          <div class="info-item">
+            <label><i class="fa fa-calendar-check"></i> Ngày bắt đầu:</label>
+            <span class="info-value">{{ formatDateTime(selectedServiceForDetails.userSubscription?.startDate) }}</span>
+          </div>
+          <div class="info-item">
+            <label><i class="fa fa-calendar-times"></i> Ngày kết thúc:</label>
+            <span class="info-value">{{ formatDateTime(selectedServiceForDetails.userSubscription?.endDate) }}</span>
+          </div>
+          <div class="info-item">
+            <label><i class="fa fa-clock"></i> Thời hạn:</label>
+            <span class="info-value">{{ getDurationText(selectedServiceForDetails) }}</span>
+          </div>
+          <div class="info-item" *ngIf="!selectedServiceForDetails.isLifeTime && selectedServiceForDetails.userSubscription">
+            <label><i class="fa fa-hourglass-half"></i> Số ngày còn lại:</label>
+            <span class="info-value remaining-highlight" [class.warning]="getRemainingDays(selectedServiceForDetails.userSubscription.endDate) <= 7">
+              {{ getRemainingDays(selectedServiceForDetails.userSubscription.endDate) }} ngày
+            </span>
+          </div>
+          <div class="info-item">
+            <label><i class="fa fa-info-circle"></i> Trạng thái:</label>
+            <span class="status-badge" 
+                  [class.status-active]="selectedServiceForDetails.userSubscription?.status === SubcriptionStatus.Active"
+                  [class.status-inactive]="selectedServiceForDetails.userSubscription?.status === SubcriptionStatus.Inactive"
+                  [class.status-expired]="selectedServiceForDetails.userSubscription?.status === SubcriptionStatus.Expired"
+                  [class.status-cancelled]="selectedServiceForDetails.userSubscription?.status === SubcriptionStatus.Cancelled">
+              {{ getChildServiceStatusLabel(selectedServiceForDetails.userSubscription?.status) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label><i class="fa fa-share-alt"></i> Chia sẻ:</label>
+            <span class="info-value">
+              <span class="badge" [class.badge-success]="selectedServiceForDetails.userSubscription?.isShared" [class.badge-secondary]="!selectedServiceForDetails.userSubscription?.isShared">
+                {{ selectedServiceForDetails.userSubscription?.isShared ? 'Có' : 'Không' }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Child Services -->
+      <div class="details-section">
+        <h3 class="section-title">
+          <i class="fa fa-cubes"></i>
+          Các dịch vụ con
+        </h3>
+        
+        <!-- Loading indicator -->
+        <div *ngIf="isLoadingDetails" class="loading-container-small">
+          <div class="spinner-small"></div>
+          <p>Đang tải chi tiết dịch vụ...</p>
+        </div>
+
+        <div class="child-services-grid" *ngIf="!isLoadingDetails">
+          <div class="empty-message" *ngIf="detailedChildServices.length === 0">
+            <i class="fa fa-inbox"></i>
+            <p>Không có dịch vụ con nào</p>
+          </div>
+
+          <div class="child-service-card" *ngFor="let childService of detailedChildServices; trackBy: trackByChildServiceId">
+            <div class="child-service-header">
+              <div class="header-left">
+                <h4 class="child-service-name">
+                  <i class="fa fa-cube"></i>
+                  {{ childService.name || 'Dịch vụ' }}
+                </h4>
+                <span class="service-type-badge" [ngClass]="'action-' + childService.action">
+                  {{ getServiceActionLabel(childService.action) }}
+                </span>
+              </div>
+              <div class="header-right">
+                <span class="status-indicator" [class.active]="childService.isActive" [class.inactive]="!childService.isActive">
+                  <i class="fa" [ngClass]="childService.isActive ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                  {{ childService.isActive ? 'Hoạt động' : 'Không hoạt động' }}
+                </span>
+              </div>
+            </div>
+            
+            <p class="child-service-description" *ngIf="childService.description">
+              {{ childService.description }}
+            </p>
+
+            <div class="child-service-info">
+              <div class="info-grid-2col">
+                <div class="info-item-small">
+                  <label><i class="fa fa-infinity"></i> Thời hạn</label>
+                  <span>
+                    <span class="badge" [class.badge-success]="childService.isLifeTime" [class.badge-info]="!childService.isLifeTime">
+                      {{ childService.isLifeTime ? 'Vĩnh viễn' : ((childService.dayDuration || 0) + ' ngày') }}
+                    </span>
+                  </span>
+                </div>
+
+                <div class="info-item-small">
+                  <label><i class="fa fa-chart-bar"></i> Giới hạn sử dụng</label>
+                  <span>
+                    <span class="badge" [class.badge-warning]="childService.isLimitUsedTime" [class.badge-success]="!childService.isLimitUsedTime">
+                      {{ childService.isLimitUsedTime ? (childService.timeUsedLimit + ' lần') : 'Không giới hạn' }}
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Usage Stats -->
+              <div class="usage-stats" *ngIf="childService.isLimitUsedTime">
+                <div class="usage-header">
+                  <span class="usage-label">
+                    <i class="fa fa-analytics"></i>
+                    Thống kê sử dụng
+                  </span>
+                </div>
+                <div class="usage-bar-container">
+                  <div class="usage-bar">
+                    <div class="usage-bar-fill" 
+                         [style.width.%]="(getUsedTimeForChild(childService) / getTotalUsageLimitForChild(childService)) * 100"
+                         [class.warning]="(getUsedTimeForChild(childService) / getTotalUsageLimitForChild(childService)) > 0.8">
+                    </div>
+                  </div>
+                  <div class="usage-text">
+                    <span class="usage-used">{{ getUsedTimeForChild(childService) }}</span>
+                    <span class="usage-separator">/</span>
+                    <span class="usage-total">{{ getTotalUsageLimitForChild(childService) }}</span>
+                    <span class="usage-remaining">
+                      (Còn <strong>{{ getRemainingUsageForChild(childService) }}</strong> lượt)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Time Info from UserSubscription -->
+              <div class="time-info" *ngIf="selectedServiceForDetails.userSubscription">
+                <div class="divider"></div>
+                <div class="info-grid-2col">
+                  <div class="info-item-small">
+                    <label><i class="fa fa-calendar-plus"></i> Bắt đầu gói</label>
+                    <span>{{ formatDate(selectedServiceForDetails.userSubscription.startDate) }}</span>
+                  </div>
+                  <div class="info-item-small">
+                    <label><i class="fa fa-calendar-minus"></i> Kết thúc gói</label>
+                    <span>{{ formatDate(selectedServiceForDetails.userSubscription.endDate) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feature Badges -->
+              <div class="feature-badges" *ngIf="childService.isAutoActive">
+                <span class="feature-badge">
+                  <i class="fa fa-bolt"></i> Tự động kích hoạt
+                </span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="onCloseDetailsModal()">
+          <i class="fa fa-times"></i>
+          Đóng
+        </button>
+      </div>
+    </div>
+  </app-generic-modal>
+
+  <!-- Usage History Modal -->
+  <app-generic-modal
+    [show]="showUsageHistoryModal"
+    [title]="'Lịch sử sử dụng dịch vụ'"
+    [maxWidth]="'1200px'"
+    [bodyBackground]="'white'"
+    [closeOnOverlayClick]="true"
+    (close)="onCloseUsageHistoryModal()">
+    <div class="usage-history-modal-content" *ngIf="selectedServiceForUsageHistory">
+      <!-- Service Info Header -->
+      <div class="usage-history-header">
+        <h3 class="service-name">{{ selectedServiceForUsageHistory.title }}</h3>
+        <p class="service-description" *ngIf="selectedServiceForUsageHistory.description">
+          {{ selectedServiceForUsageHistory.description }}
+        </p>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="isLoadingUsageHistory" class="loading-container-small">
+        <div class="spinner-small"></div>
+        <p>Đang tải lịch sử sử dụng...</p>
+      </div>
+
+     <!-- Child Services Usage History -->
+<div class="child-services-usage-list" *ngIf="!isLoadingUsageHistory && usageHistoryData.length > 0">
+  <div class="child-service-usage-card" *ngFor="let item of usageHistoryData; trackBy: trackByOptionId">
+    <!-- Child Service Header -->
+    <div class="usage-card-header">
+      <div class="service-info-section">
+        <h4 class="child-service-title">
+          <i class="fa fa-cube"></i>
+          {{ item.childServiceDetail?.name || 'Dịch vụ' }}
+        </h4>
+        <span class="service-type-badge" [ngClass]="'action-' + item.childServiceDetail?.action">
+          {{ getServiceActionLabel(item.childServiceDetail?.action) }}
+        </span>
+      </div>
+      <div class="status-section">
+        <span class="status-badge" 
+              [class.status-active]="item.userChildService?.status === ChildServiceStatus.Active"
+              [class.status-inactive]="item.userChildService?.status === ChildServiceStatus.Inactive"
+              [class.status-expired]="item.userChildService?.status === ChildServiceStatus.Expired"
+              [class.status-cancelled]="item.userChildService?.status === ChildServiceStatus.Cancelled">
+          {{ getChildServiceStatusLabel(item.userChildService?.status) }}
+        </span>
+      </div>
+    </div>
+
+    <p class="child-service-description" *ngIf="item.childServiceDetail?.description">
+      {{ item.childServiceDetail.description }}
+    </p>
+
+    <!-- User Information -->
+    <div class="user-info-section">
+      <div class="user-info-header">
+        <i class="fa fa-user"></i>
+        <span class="section-label">Thông tin người sử dụng</span>
+      </div>
+      <div class="user-info-content">
+        <div class="user-info-item">
+          <label><i class="fa fa-id-card"></i> User ID:</label>
+          <span class="user-id">{{ item.userChildService?.userId || 'N/A' }}</span>
+        </div>
+        <div class="user-info-item">
+          <label><i class="fa fa-user-tag"></i> Loại người dùng:</label>
+          <span class="user-type-badge" [class.owner]="item.userChildService?.isPrimaryOwner" [class.employee]="!item.userChildService?.isPrimaryOwner">
+            <i class="fa" [ngClass]="item.userChildService?.isPrimaryOwner ? 'fa-crown' : 'fa-users'"></i>
+            {{ item.userChildService?.isPrimaryOwner ? 'Chủ sở hữu (Bản thân)' : 'Nhân viên công ty' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time Information -->
+    <div class="time-info-section">
+      <div class="time-info-header">
+        <i class="fa fa-clock"></i>
+        <span class="section-label">Thời gian sử dụng</span>
+      </div>
+      <div class="time-grid">
+        <div class="time-item">
+          <label><i class="fa fa-calendar-check"></i> Ngày bắt đầu</label>
+          <span class="time-value">{{ formatDateTime(item.userChildService?.startDate) }}</span>
+        </div>
+        <div class="time-item">
+          <label><i class="fa fa-calendar-times"></i> Ngày kết thúc</label>
+          <span class="time-value">{{ formatDateTime(item.userChildService?.endDate) }}</span>
+        </div>
+        <div class="time-item">
+          <label><i class="fa fa-hourglass-half"></i> Thời hạn</label>
+          <span class="time-value">
+            <span class="badge" [class.badge-success]="item.userChildService?.isLifeTime" [class.badge-info]="!item.userChildService?.isLifeTime">
+              {{ item.userChildService?.isLifeTime ? 'Vĩnh viễn' : getDurationTextForUserChild(item) }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Details -->
+    <div class="service-details-section">
+      <div class="details-grid">
+        <div class="detail-item">
+          <label><i class="fa fa-bullseye"></i> Mục tiêu:</label>
+          <span class="detail-value">{{ getServiceTargetLabel(item.childServiceDetail?.target) }}</span>
+        </div>
+        <div class="detail-item">
+          <label><i class="fa fa-cog"></i> Trạng thái:</label>
+          <span class="status-badge-inline" 
+                [class.status-active]="item.userChildService?.status === ChildServiceStatus.Active"
+                [class.status-inactive]="item.userChildService?.status === ChildServiceStatus.Inactive"
+                [class.status-expired]="item.userChildService?.status === ChildServiceStatus.Expired"
+                [class.status-cancelled]="item.userChildService?.status === ChildServiceStatus.Cancelled">
+            {{ getChildServiceStatusLabel(item.userChildService?.status) }}
+          </span>
+        </div>
+        <div class="detail-item" *ngIf="item.childServiceDetail?.isAutoActive">
+          <label><i class="fa fa-bolt"></i> Tự động kích hoạt:</label>
+          <span class="detail-value">
+            <span class="badge badge-success">
+              <i class="fa fa-check"></i> Có
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- Empty State -->
+      <div class="empty-usage-history" *ngIf="!isLoadingUsageHistory && usageHistoryData.length === 0">
+        <i class="fa fa-history"></i>
+        <p>Chưa có lịch sử sử dụng dịch vụ này</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="onCloseUsageHistoryModal()">
+          <i class="fa fa-times"></i>
+          Đóng
+        </button>
+      </div>
+    </div>
+  </app-generic-modal>
+
+  <!-- Cancel Subscription Modal -->
+  <app-generic-modal
+    [show]="showCancelModal"
+    [title]="'Hủy dịch vụ'"
+    [maxWidth]="'500px'"
+    [bodyBackground]="'white'"
+    [closeOnOverlayClick]="true"
+    (close)="onCloseCancelModal()">
+    <div class="cancel-modal-content">
+      <div *ngIf="selectedServiceForCancellation" class="cancel-info-section">
+        <div class="warning-icon">
+          <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <p class="modal-message">
+          Bạn có chắc chắn muốn hủy dịch vụ <strong>{{ selectedServiceForCancellation.title }}</strong> không?
+        </p>
+        <p class="modal-warning">
+          <i class="fa fa-info-circle"></i>
+          Hành động này không thể hoàn tác.
+        </p>
         
         <div class="modal-actions">
-          <button class="btn btn-secondary" (click)="onCloseActivateModal()">
-            Hủy
+          <button class="btn btn-secondary" (click)="onCloseCancelModal()">
+            <i class="fa fa-times"></i>
+            Hủy bỏ
           </button>
-          <button class="btn btn-primary" (click)="onConfirmActivate()">
-            Đồng ý
+          <button class="btn btn-danger" (click)="onConfirmCancel()">
+            <i class="fa fa-check"></i>
+            Xác nhận hủy
           </button>
         </div>
       </div>
     </div>
   </app-generic-modal>
 
-  <!-- Cancel Activation Modal -->
+  <!-- Toggle Share Modal -->
   <app-generic-modal
-    [show]="showCancelActivationModal"
-    [title]="'Hủy kích hoạt dịch vụ'"
+    [show]="showToggleShareModal"
+    [title]="selectedServiceForShare?.userSubscription?.isShared ? 'Tắt chia sẻ dịch vụ' : 'Bật chia sẻ dịch vụ'"
     [maxWidth]="'500px'"
     [bodyBackground]="'white'"
     [closeOnOverlayClick]="true"
-    (close)="onCloseCancelActivationModal()">
-    <div class="cancel-activation-modal-content">
-      <div *ngIf="selectedServiceForCancellation" class="cancel-activation-info-section">
+    (close)="onCloseToggleShareModal()">
+    <div class="toggle-share-modal-content">
+      <div *ngIf="selectedServiceForShare" class="share-info-section">
+        <div class="info-icon">
+          <i class="fa" [ngClass]="selectedServiceForShare.userSubscription?.isShared ? 'fa-times-circle' : 'fa-share-alt'"></i>
+        </div>
         <p class="modal-message">
-          Bạn có chắc chắn muốn hủy kích hoạt dịch vụ này không? Trạng thái dịch vụ sẽ được chuyển về Chưa sử dụng.
+          Bạn có chắc chắn muốn 
+          <strong>{{ selectedServiceForShare.userSubscription?.isShared ? 'tắt chia sẻ' : 'bật chia sẻ' }}</strong> 
+          cho dịch vụ <strong>{{ selectedServiceForShare.title }}</strong> không?
+        </p>
+        <p class="modal-info" *ngIf="!selectedServiceForShare.userSubscription?.isShared">
+          <i class="fa fa-info-circle"></i>
+          Khi bật chia sẻ, dịch vụ này có thể được sử dụng bởi các thành viên khác trong công ty.
         </p>
         
         <div class="modal-actions">
-          <button class="btn btn-secondary" (click)="onCloseCancelActivationModal()">
-            Hủy
+          <button class="btn btn-secondary" (click)="onCloseToggleShareModal()">
+            <i class="fa fa-times"></i>
+            Hủy bỏ
           </button>
-          <button class="btn btn-primary" (click)="onConfirmCancelActivation()">
-            Đồng ý
+          <button class="btn btn-primary" (click)="onConfirmToggleShare()">
+            <i class="fa fa-check"></i>
+            Xác nhận
           </button>
         </div>
       </div>
     </div>
   </app-generic-modal>
 </div>
-

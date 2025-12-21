@@ -1,8 +1,9 @@
 {
-  "profiles": {
-    "WSL": {
-      "commandName": "WSL2",
-      "distributionName": ""
+    "profiles": {
+        "VCareer.DbMigrator": {
+            "commandName": "Project",
+            "dotnetRunMessages": true
+        }
     }
-  }
 }
+

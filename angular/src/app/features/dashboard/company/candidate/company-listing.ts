@@ -192,27 +192,36 @@ export class CompanyListingComponent implements OnInit {
 
   /**
    * Build full URL cho logo
-   * Nếu logoUrl là full URL (http/https) thì dùng trực tiếp
-   * Nếu là relative path thì append với base URL từ backend
+   * Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+   * Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
    */
-  getLogoUrl(logoUrl: string | undefined): string {
-    if (!logoUrl) {
-      return 'assets/images/default-company.png';
+  getLogoUrl(logoUrl: string | undefined | null): string {
+    // Kiểm tra null, undefined, hoặc empty string
+    if (!logoUrl || logoUrl.trim() === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
-    // Nếu đã là full URL (http/https), dùng trực tiếp
-    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-      return logoUrl;
+    // Remove single quotes if present
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    // Nếu sau khi clean vẫn empty, return default
+    if (cleanUrl === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
-    // Nếu là relative path, append với base URL từ backend
-    const baseUrl = environment.apis?.default?.url || '';
-    if (baseUrl && logoUrl.startsWith('/')) {
-      return `${baseUrl}${logoUrl}`;
+    // Nếu đã là full URL (http/https), return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
     }
 
-    // Nếu không có baseUrl hoặc path không bắt đầu bằng /, dùng trực tiếp
-    return logoUrl;
+    // Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+    // Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+
+    // Encode storagePath để tránh lỗi URL
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   loadTopCompanies() {

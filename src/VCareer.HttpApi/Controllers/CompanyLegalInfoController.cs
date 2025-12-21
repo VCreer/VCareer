@@ -93,10 +93,12 @@ namespace VCareer.Profile
 
         /// <summary>
         /// Gets company legal information by ID
+        /// Public endpoint - không yêu cầu authentication để hiển thị thông tin công ty
         /// </summary>
         /// <param name="id">Company ID</param>
         /// <returns>Company legal information</returns>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<CompanyLegalInfoDto> GetCompanyLegalInfoAsync(int id)
         {
             return await _companyLegalInfoAppService.GetCompanyLegalInfoAsync(id);
@@ -158,6 +160,20 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Upload logo công ty và cập nhật Company.LogoUrl
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="input">File ảnh logo</param>
+        /// <returns>Thông tin công ty sau khi cập nhật</returns>
+        [HttpPost("{id}/upload-logo")]
+        [Consumes("multipart/form-data")]
+        [IgnoreAntiforgeryToken]
+        public async Task<CompanyLegalInfoDto> UploadCompanyLogoAsync(int id, [FromForm] UploadCompanyLogoInputDto input)
+        {
+            return await _companyLegalInfoAppService.UploadCompanyLogoAsync(id, input.File);
+        }
+
+        /// <summary>
         /// Download/Xem file Giấy đăng ký doanh nghiệp theo storagePath
         /// </summary>
         /// <param name="storagePath">Giá trị lưu trong Company.LegalDocumentUrl</param>
@@ -174,23 +190,205 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Download/Xem file logo công ty theo storagePath
+        /// Public endpoint - không yêu cầu authentication
+        /// </summary>
+        /// <param name="storagePath">Giá trị lưu trong Company.LogoUrl</param>
+        /// <returns>File stream</returns>
+        [HttpGet("company-logo")]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> GetCompanyLogoAsync([FromQuery] string storagePath)
+        {
+            var fileResult = await _companyLegalInfoAppService.GetCompanyLogoFileAsync(storagePath);
+
+            // Hiển thị trực tiếp (inline), không bắt tải về
+            Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileResult.FileName}\"";
+            return File(fileResult.Data, fileResult.MimeType);
+        }
+
+        /// <summary>
         /// Deletes company legal information
         /// </summary>
         /// <param name="id">Company ID</param>
         /// <returns>No content</returns>
         [HttpDelete("{id}")]
-        [Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]
+        /*[Authorize(VCareerPermission.Profile.DeleteSupportingDocument)]*/
         public async Task<IActionResult> DeleteCompanyLegalInfoAsync(int id)
         {
             await _companyLegalInfoAppService.DeleteCompanyLegalInfoAsync(id);
             return NoContent();
         }
 
-        ///lấy công ty
+        /// <summary>
+        /// Lấy thông tin công ty theo Job ID
+        /// Public endpoint - không yêu cầu authentication
+        /// </summary>
+        /// <param name="jobId">Job ID</param>
+        /// <returns>Thông tin công ty</returns>
         [HttpGet("by-job/{jobId}")]
+        [AllowAnonymous]
         public async Task<CompanyInfoForJobDetailDto> GetCompanyByJobIdAsync(Guid jobId)
         {
             return await _companyLegalInfoAppService.GetCompanyByJobIdAsync(jobId);
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty chờ xác thực (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty chờ xác thực</returns>
+        [HttpPost("pending-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetPendingCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetPendingCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty chờ xác thực", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Duyệt công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <returns>No content</returns>
+        [HttpPost("{id}/approve")]
+        [Authorize]
+        public async Task<IActionResult> ApproveCompanyAsync(int id)
+        {
+            try
+            {
+                await _companyLegalInfoAppService.ApproveCompanyAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi duyệt công ty", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Từ chối công ty (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="id">Company ID</param>
+        /// <param name="input">Lý do từ chối</param>
+        /// <returns>No content</returns>
+        [HttpPost("{id}/reject")]
+        [Authorize]
+        public async Task<IActionResult> RejectCompanyAsync(int id, [FromBody] RejectCompanyDto input)
+        {
+            try
+            {
+                await _companyLegalInfoAppService.RejectCompanyAsync(id, input);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi từ chối công ty", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã được xác minh (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã được xác minh</returns>
+        [HttpPost("verified-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetVerifiedCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetVerifiedCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty đã xác minh", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách công ty đã bị từ chối (chỉ Employee/Admin)
+        /// </summary>
+        /// <param name="input">Filter và pagination</param>
+        /// <returns>Danh sách công ty đã bị từ chối</returns>
+        [HttpPost("rejected-companies")]
+        [Authorize]
+        public async Task<ActionResult<PagedResultDto<CompanyVerificationViewDto>>> GetRejectedCompaniesAsync([FromBody] CompanyVerificationFilterDto input)
+        {
+            try
+            {
+                if (input == null)
+                {
+                    input = new CompanyVerificationFilterDto
+                    {
+                        MaxResultCount = 10,
+                        SkipCount = 0
+                    };
+                }
+
+                if (input.MaxResultCount <= 0)
+                {
+                    input.MaxResultCount = 10;
+                }
+
+                if (input.SkipCount < 0)
+                {
+                    input.SkipCount = 0;
+                }
+
+                var result = await _companyLegalInfoAppService.GetRejectedCompaniesAsync(input);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách công ty đã bị từ chối", error = ex.Message });
+            }
         }
     }
 }

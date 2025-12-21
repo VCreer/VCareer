@@ -3,8 +3,34 @@
   (undo)="onUndo()"
   (redo)="onRedo()"
   (preview)="onPreview()"
+  (exportPdf)="onExportPdf()"
   (save)="onSave()">
 </app-header-cv-editor>
+
+<!-- Global toast notification -->
+<app-toast-notification
+  [show]="toast.show"
+  [type]="toast.type"
+  [message]="toast.message"
+  [duration]="toast.duration"
+  (close)="toast.show = false">
+</app-toast-notification>
+
+<!-- Validation popup -->
+<div class="validation-popup-wrapper" *ngIf="showValidationPopup">
+  <div class="validation-popup">
+    <div class="validation-popup__header">
+      <span>Thiếu thông tin bắt buộc</span>
+      <button class="validation-popup__close" (click)="closeValidationPopup()">&times;</button>
+    </div>
+    <div class="validation-popup__body">
+      <p>{{ validationPopupMessage }}</p>
+    </div>
+    <div class="validation-popup__footer">
+      <button class="validation-popup__confirm" (click)="closeValidationPopup()">Đã hiểu</button>
+    </div>
+  </div>
+</div>
 
 <!-- Preview Dialog -->
 <div class="el-dialog__wrapper" *ngIf="showPreviewDialog">
@@ -53,18 +79,20 @@
     <p>Đang tải template...</p>
   </div>
 
-  <!-- Template Form Container -->
-  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate"></div>
+  <!-- Block-based Editor (New) - Form Preview Style -->
+  <div class="cv-form-preview-container" *ngIf="!loading && useBlockEditor">
+    <app-cv-form-preview
+      [blocks]="blocks"
+      [templateSettings]="templateSettings"
+      (blocksChange)="onBlocksChange($event)">
+    </app-cv-form-preview>
+  </div>
+
+  <!-- Template Form Container (Legacy) -->
+  <div #templateFormContainer class="cv-template-form-container" *ngIf="!loading && currentTemplate && !useBlockEditor"></div>
 
   <!-- Fallback: Original Form (sẽ được ẩn khi có template) -->
   <div class="cv-section-main" [style.display]="currentTemplate ? 'none' : 'block'">
-    <app-toast-notification
-      [show]="toast.show"
-      [type]="toast.type"
-      [message]="toast.message"
-      [duration]="toast.duration"
-      (close)="toast.show = false">
-    </app-toast-notification>
     <!-- Profile Header Section -->
     <div class="profile-header-section">
       <!-- Profile Picture -->

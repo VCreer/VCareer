@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  ButtonComponent, 
+import {
+  ButtonComponent,
   ToastNotificationComponent,
   InputFieldComponent,
   SelectFieldComponent,
@@ -11,6 +11,8 @@ import {
   StatusDropdownComponent,
   StatusOption
 } from '../../../shared/components';
+import { UserService } from '../../../proxy/services/user/user.service';
+import * as XLSX from 'xlsx';
 
 export interface RecruitingUser {
   id: string;
@@ -27,6 +29,8 @@ export interface RecruitingUser {
   ipAddresses: string[];
   mustChangePassword: boolean;
   securityStamp: string;
+  roles?: string[];
+  roleDisplay?: string;
 }
 
 @Component({
@@ -68,7 +72,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   filterCompany = '';
   filterDateFrom = '';
   filterDateTo = '';
-  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate' = 'createdDate';
+  sortField: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay' = 'createdDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
   // Date Pickers
@@ -118,7 +122,10 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   // IP Restrict Form
   ipAddress = '';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.checkSidebarState();
@@ -291,58 +298,64 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    // Mock data - replace with API call
-    this.allUsers = [
-      {
-        id: '1',
-        username: 'recruiter1',
-        email: 'recruiter1@example.com',
-        fullName: 'Nguyễn Văn A',
-        phone: '0901234567',
-        companyName: 'Công ty ABC',
-        isActive: true,
-        isLocked: false,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-15T10:30:00',
-        createdDate: '2023-01-01T00:00:00',
-        ipAddresses: ['192.168.1.1', '192.168.1.2'],
-        mustChangePassword: false,
-        securityStamp: 'stamp1'
-      },
-      {
-        id: '2',
-        username: 'recruiter2',
-        email: 'recruiter2@example.com',
-        fullName: 'Trần Thị B',
-        phone: '0907654321',
-        companyName: 'Công ty XYZ',
-        isActive: true,
-        isLocked: true,
-        lockoutEnabled: true,
-        lastLoginDate: '2024-01-14T15:20:00',
-        createdDate: '2023-02-01T00:00:00',
-        ipAddresses: ['192.168.1.3'],
-        mustChangePassword: true,
-        securityStamp: 'stamp2'
-      },
-      {
-        id: '3',
-        username: 'recruiter3',
-        email: 'recruiter3@example.com',
-        fullName: 'Lê Văn C',
-        phone: '0912345678',
-        companyName: 'Công ty DEF',
-        isActive: false,
-        isLocked: false,
-        lockoutEnabled: true,
-        createdDate: '2023-03-01T00:00:00',
-        ipAddresses: [],
-        mustChangePassword: false,
-        securityStamp: 'stamp3'
-      }
-    ];
+    // Gọi API: GetUsersInfoByRoleAsync (UserIdentifyService) với RoleType Recruiter = 2
+    this.userService.getUsersInfoByRole(2).subscribe({
+      next: async (users) => {
+        console.log('Recruiter users loaded:', users);
+        const mapped: RecruitingUser[] = (users || []).map(u => {
+          const fullName = `${(u as any).name || ''} ${(u as any).surname || ''}`.trim();
+          const extra = (u as any).extraProperties || {};
+          return {
+            id: u.id,
+            username: (u as any).userName || '',
+            email: (u as any).email || '',
+            // Nếu name và surname đều null/empty thì để trống Họ tên
+            fullName: fullName || '',
+            phone: (u as any).phoneNumber || '',
+            // companyName được BE map từ bảng Companies (gắn trong ExtraProperties)
+            companyName: extra.companyName || '',
+            isActive: (u as any).isActive,
+            // Xem như bị khóa nếu có lockoutEnd trong tương lai
+            isLocked: !!(u as any).lockoutEnd && new Date((u as any).lockoutEnd) > new Date(),
+            lockoutEnabled: (u as any).lockoutEnabled,
+            // API hiện tại chưa trả lastLoginDate
+            lastLoginDate: undefined,
+            // creationTime lấy từ ExtensibleFullAuditedEntityDto
+            createdDate: (u as any).creationTime || '',
+            ipAddresses: [],
+            mustChangePassword: false,
+            securityStamp: (u as any).concurrencyStamp || '',
+            roles: [],
+            roleDisplay: ''
+          };
+        });
 
-    this.applyFilters();
+        // Lấy thêm roles cho từng user để hiển thị cột Role
+        const rolePromises = mapped.map(async user => {
+          try {
+            const roles = await this.userService.getRolesByUserId(user.id).toPromise();
+            user.roles = roles || [];
+            const displayRoles = (roles || []).map(r => this.mapRoleName(r));
+            user.roleDisplay = displayRoles.length ? displayRoles.join(', ') : '';
+          } catch {
+            user.roles = [];
+            user.roleDisplay = '';
+          }
+        });
+
+        await Promise.all(rolePromises);
+
+        this.allUsers = mapped;
+        console.log('Mapped recruiter users:', this.allUsers);
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading recruiter users:', error);
+        this.allUsers = [];
+        this.showToastMessage('Không thể tải danh sách người dùng. Vui lòng thử lại sau.', 'error');
+        this.applyFilters();
+      }
+    });
   }
 
   applyFilters(): void {
@@ -401,7 +414,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
       let aValue: any = a[this.sortField];
       let bValue: any = b[this.sortField];
 
-      if (this.sortField === 'createdDate' || this.sortField === 'lastLoginDate') {
+      if (this.sortField === 'createdDate') {
         aValue = new Date(aValue || 0).getTime();
         bValue = new Date(bValue || 0).getTime();
       } else {
@@ -437,7 +450,7 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'lastLoginDate'): void {
+  onSort(field: 'username' | 'email' | 'fullName' | 'createdDate' | 'roleDisplay'): void {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -468,13 +481,20 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
   }
 
   onToggleActive(user: RecruitingUser): void {
-    // TODO: Call API to activate/deactivate
-    user.isActive = !user.isActive;
+    const newStatus = !user.isActive;
+    this.userService.setUserActiveStatus(user.id, newStatus).subscribe({
+      next: () => {
+        user.isActive = newStatus;
     this.showToastMessage(
       user.isActive ? 'Đã kích hoạt người dùng' : 'Đã vô hiệu hóa người dùng',
       'success'
     );
     this.applyFilters();
+      },
+      error: () => {
+        this.showToastMessage('Thay đổi trạng thái hoạt động thất bại', 'error');
+      }
+    });
   }
 
   onToggleLock(user: RecruitingUser): void {
@@ -536,18 +556,47 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     this.showToastMessage('Đã xóa địa chỉ IP', 'success');
   }
 
-  onExport(): void {
-    // TODO: Call API to export user data
-    this.showToastMessage('Đang xuất dữ liệu...', 'info');
-    // Simulate export
-    setTimeout(() => {
-      this.showToastMessage('Xuất dữ liệu thành công', 'success');
-    }, 1000);
-  }
+  onExportExcel(): void {
+    try {
+      if (!this.filteredUsers.length) {
+        this.showToastMessage('Không có dữ liệu để xuất Excel', 'warning');
+        return;
+      }
 
-  onImport(): void {
-    // TODO: Implement import functionality
-    this.showToastMessage('Tính năng import đang được phát triển', 'info');
+      this.showToastMessage('Đang xuất file Excel...', 'info');
+
+      const exportData = this.filteredUsers.map(user => ({
+        Id: user.username,
+        'Họ tên': user.fullName,
+        Email: user.email,
+        'Công ty': user.companyName || '',
+        'Trạng thái': this.getStatusLabel(user),
+        'Vai trò': user.roleDisplay || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Recruiters');
+
+      worksheet['!cols'] = [
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 35 },
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 25 }
+      ];
+
+      const fileName = `Recruiter_User_Management_${new Date()
+        .toISOString()
+        .split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      this.showToastMessage('Xuất file Excel thành công!', 'success');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      this.showToastMessage('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.', 'error');
+    }
   }
 
   // Helper methods
@@ -561,6 +610,14 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     if (user.isLocked) return 'status-locked';
     if (!user.isActive) return 'status-inactive';
     return 'status-active';
+  }
+
+  getShortId(user: RecruitingUser): string {
+    if (!user || user.id === undefined || user.id === null) {
+      return '';
+    }
+    const idStr = String(user.id);
+    return idStr.length > 7 ? idStr.slice(-7) : idStr;
   }
 
   formatDate(dateString?: string): string {
@@ -625,6 +682,17 @@ export class RecruitingUserManagementComponent implements OnInit, OnDestroy {
     const padding = 32; // 16px mỗi bên
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
+  }
+
+  private mapRoleName(role: string): string {
+    switch (role) {
+      case 'hr_staff':
+        return 'HR Staff';
+      case 'lead_recruiter':
+        return 'Leader Recruiter';
+      default:
+        return role;
+    }
   }
 
   @HostListener('document:click', ['$event'])

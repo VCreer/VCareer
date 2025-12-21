@@ -1,49 +1,101 @@
-// src/app/core/guards/auth-guard.ts
+// src/app/guards/auth.guard.ts
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import {
+  CanActivate,
+  Router,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { AuthStateService } from '../core/services/auth-Cookiebased/auth-state.service';
-import { AuthFacadeService } from '../core/services/auth-Cookiebased/auth-facade.service';
-import { Observable, of } from 'rxjs';
-import { map, switchMap, take } from 'rxjs/operators';
+import { UnauthorizedModalService } from '../shared/services/unauthorized-modal.service';
+import { Observable } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+import { getPrimaryRoutingRole } from './RoleMapping.service';
 
+/**
+ * AuthGuard - Bảo vệ các route yêu cầu role cụ thể
+ * CHỈ kiểm tra auth khi route có data.role
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
   constructor(
     private state: AuthStateService,
-    private authFacade: AuthFacadeService,
-    private router: Router
+    private router: Router,
+    private unauthorizedModal: UnauthorizedModalService
   ) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    const user = this.state.user;
-    if (user) {
-      return of(this.checkRole(route, state, user));
-    }
-
-    return this.authFacade.loadCurrentUser().pipe(
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> | boolean {
+    return this.state.user$.pipe(
       take(1),
-      map(u => this.checkRole(route, state, u)),
-      // errors handled by router/global error handler
+      map(user => {
+        // Lấy required role từ route data
+        const requiredRole = route.data['role'] as 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE' | undefined;
+
+        // CASE 1: Route không yêu cầu role cụ thể → cho phép truy cập (public route)
+        if (!requiredRole) {
+          return true;
+        }
+
+        // CASE 2: Route yêu cầu role nhưng chưa đăng nhập → redirect to login
+        if (!user) {
+          this.redirectToLogin(requiredRole, state.url);
+          return false;
+        }
+
+        // CASE 3: Đã login → kiểm tra role
+        const backendRoles = user.roles ?? [];
+        const primaryRole = getPrimaryRoutingRole(backendRoles);
+
+        if (!primaryRole) {
+          console.warn('[AuthGuard] User has no valid routing role');
+          this.redirectToLogin(requiredRole, state.url);
+          return false;
+        }
+
+        // CASE 4: Sai role → hiện modal và redirect về home của role hiện tại
+        if (primaryRole !== requiredRole) {
+          console.warn(`[AuthGuard] Role mismatch: required=${requiredRole}, actual=${primaryRole}`);
+          this.unauthorizedModal.show('Bạn không có quyền truy cập trang này.');
+          this.redirectToRoleHome(primaryRole);
+          return false;
+        }
+
+        // CASE 5: Đúng role → cho phép truy cập
+        return true;
+      })
     );
   }
 
-  private checkRole(route: ActivatedRouteSnapshot, state: RouterStateSnapshot, user: any): boolean {
-    if (!user) {
-      this.redirectToLogin(state.url);
-      return false;
-    }
+  /**
+   * Redirect đến trang login phù hợp với role yêu cầu
+   */
+  private redirectToLogin(requiredRole: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE', attemptedUrl: string): void {
+    const loginMap = {
+      EMPLOYEE: ['/employee/login'],
+      RECRUITER: ['/recruiter/login'],
+      CANDIDATE: ['/candidate/login'],
+    };
 
-    const requiredRole = route.data['role'] as string | undefined;
-    if (requiredRole && !(user.roles ?? []).includes(requiredRole)) {
-      this.router.navigate(['/']);
-      return false;
-    }
-    return true;
+    this.router.navigate(loginMap[requiredRole], {
+      queryParams: { returnUrl: attemptedUrl }
+    });
   }
 
-  private redirectToLogin(url: string) {
-    if (url.includes('/recruiter')) this.router.navigate(['/recruiter/login']);
-    else if (url.includes('/employee')) this.router.navigate(['/employee/login']);
-    else this.router.navigate(['/candidate/login']);
+  /**
+   * Redirect về trang home phù hợp với role của user
+   */
+  private redirectToRoleHome(role: 'EMPLOYEE' | 'RECRUITER' | 'CANDIDATE'): void {
+    const homeMap = {
+      EMPLOYEE: ['/employee/statistical-reports'],
+      RECRUITER: ['/recruiter/recruitment-report'],
+      CANDIDATE: ['candidate/home'],
+    };
+
+    this.router.navigate(homeMap[role]).catch(err => {
+      console.error('[AuthGuard] Navigation error:', err);
+    });
   }
 }

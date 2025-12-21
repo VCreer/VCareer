@@ -7,8 +7,7 @@ import {
   EmploymentType,
   ExperienceLevel,
   PositionType,
-  SalaryFilterType,
-} from '../../../apiTest/api/job.service';
+} from '../../../proxy/constants/job-constant';
 
 interface FilterOption {
   value: number | null;
@@ -77,16 +76,16 @@ export class JobFilterComponent implements OnInit {
     { value: PositionType.Consultant, label: 'Tư vấn', checked: false },
   ];
 
-  // Mức lương (SalaryFilterType)
+  // Mức lương (local mapping)
   salaryFilters: FilterOption[] = [
     { value: null, label: 'Tất cả', checked: true },
-    { value: SalaryFilterType.Under10, label: 'Dưới 10 triệu', checked: false },
-    { value: SalaryFilterType.Range10To15, label: '10 - 15 triệu', checked: false },
-    { value: SalaryFilterType.Range15To20, label: '15 - 20 triệu', checked: false },
-    { value: SalaryFilterType.Range20To30, label: '20 - 30 triệu', checked: false },
-    { value: SalaryFilterType.Range30To50, label: '30 - 50 triệu', checked: false },
-    { value: SalaryFilterType.Over50, label: 'Trên 50 triệu', checked: false },
-    { value: SalaryFilterType.Deal, label: 'Thỏa thuận', checked: false },
+    { value: 1, label: 'Dưới 10 triệu', checked: false },
+    { value: 2, label: '10 - 15 triệu', checked: false },
+    { value: 3, label: '15 - 20 triệu', checked: false },
+    { value: 4, label: '20 - 30 triệu', checked: false },
+    { value: 5, label: '30 - 50 triệu', checked: false },
+    { value: 6, label: 'Trên 50 triệu', checked: false },
+    { value: 7, label: 'Thỏa thuận', checked: false },
   ];
 
   constructor(private translationService: TranslationService) {}
@@ -186,7 +185,6 @@ export class JobFilterComponent implements OnInit {
       salaryFilter: selectedSalary && selectedSalary.value !== null ? selectedSalary.value : null,
     };
     
-    console.log('🔧 JobFilter emitting:', filters);
     this.filterChange.emit(filters);
   }
 }

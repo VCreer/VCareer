@@ -41,10 +41,6 @@ namespace VCareer.Dto.Profile
         public string TaxCode { get; set; }
 
         [Required]
-        [StringLength(100)]
-        public string? BusinessLicenseNumber { get; set; }
-
-        [Required]
         public DateTime? BusinessLicenseIssueDate { get; set; }
 
         [Required]
@@ -94,14 +90,14 @@ namespace VCareer.Dto.Profile
         public int? IndustryId { get; set; }
         public int? FoundedYear { get; set; }
 
+        [StringLength(500)]
+        public string? WebsiteUrl { get; set; }
+
         // Legal Information fields
         [StringLength(50)]
         public string? TaxCode { get; set; }
 
         // Các trường pháp lý còn lại cho phép để trống khi chỉ cập nhật thông tin cơ bản
-        [StringLength(100)]
-        public string? BusinessLicenseNumber { get; set; }
-
         public DateTime? BusinessLicenseIssueDate { get; set; }
 
         [StringLength(255)]
@@ -146,8 +142,7 @@ namespace VCareer.Dto.Profile
         public DateTime? VerifyAt { get; set; }
         
         // Legal Information fields
-        public string TaxCode { get; set; }
-        public string? BusinessLicenseNumber { get; set; }
+        public string? TaxCode { get; set; }
         public DateTime? BusinessLicenseIssueDate { get; set; }
         public string? BusinessLicenseIssuePlace { get; set; }
         public string? LegalRepresentative { get; set; }
@@ -196,6 +191,67 @@ namespace VCareer.Dto.Profile
     }
 
     /// <summary>
+    /// DTO để hiển thị danh sách công ty chờ xác thực cho Employee
+    /// </summary>
+    public class CompanyVerificationViewDto : EntityDto<int>
+    {
+        public string? CompanyName { get; set; }
+        public string? CompanyCode { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? HeadquartersAddress { get; set; }
+        public string? Description { get; set; }
+        public int? CompanySize { get; set; }
+        public int? FoundedYear { get; set; }
+        public string? WebsiteUrl { get; set; }
+        
+        // Legal Information
+        public string? TaxCode { get; set; }
+        public DateTime? BusinessLicenseIssueDate { get; set; }
+        public string? BusinessLicenseIssuePlace { get; set; }
+        public string? LegalRepresentative { get; set; }
+        
+        // File URLs
+        public string? BusinessLicenseFile { get; set; }
+        public string? TaxCertificateFile { get; set; }
+        public string? RepresentativeIdCardFile { get; set; }
+        public string? OtherSupportFile { get; set; }
+        public string? LegalDocumentUrl { get; set; } // File upload từ business-cert tab
+        
+        // Verification status
+        public bool? VerificationStatus { get; set; }
+        public string? LegalVerificationStatus { get; set; }
+        public long? LegalReviewedBy { get; set; }
+        public DateTime? LegalReviewedAt { get; set; }
+        public string? RejectionNotes { get; set; }
+        public DateTime? CreationTime { get; set; }
+        
+        // Recruiter info
+        public string? RecruiterName { get; set; }
+        public string? RecruiterEmail { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để từ chối công ty
+    /// </summary>
+    public class RejectCompanyDto
+    {
+        [Required]
+        [StringLength(1000)]
+        public string RejectionNotes { get; set; }
+    }
+
+    /// <summary>
+    /// DTO để lọc danh sách công ty chờ xác thực
+    /// </summary>
+    public class CompanyVerificationFilterDto : PagedAndSortedResultRequestDto
+    {
+        public string? Keyword { get; set; }
+        public DateTime? CreatedFrom { get; set; }
+        public DateTime? CreatedTo { get; set; }
+    }
+
+    /// <summary>
     /// DTO để chọn công ty cho RecruiterProfile
     /// </summary>
     public class SelectCompanyDto
@@ -205,6 +261,12 @@ namespace VCareer.Dto.Profile
     }
 
     public class UploadLegalDocumentInputDto
+    {
+        [Required]
+        public IFormFile File { get; set; }
+    }
+
+    public class UploadCompanyLogoInputDto
     {
         [Required]
         public IFormFile File { get; set; }

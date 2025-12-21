@@ -10,21 +10,18 @@
 
   <!-- Company Banner Section -->
   <div class="company-banner-section">
-    <!-- Top Banner (Red) - Empty placeholder for banner image -->
+    <!-- Top Banner (Red) - Only show when banner image exists -->
     <div class="company-banner" *ngIf="company.bannerImage" [style.background-image]="'url(' + company.bannerImage + ')'">
       <!-- Banner will show when bannerImage is provided -->
     </div>
-    <div class="company-banner-empty" *ngIf="!company.bannerImage">
-      <!-- Empty banner placeholder -->
-    </div>
 
-    <!-- Bottom Info Section (Green) -->
-    <div class="company-info-section">
+    <!-- Bottom Info Section (Green) - Replaces banner when no banner image -->
+    <div class="company-info-section" [class.no-banner]="!company.bannerImage">
       <div class="info-content">
         <!-- Company Logo (overlapping) -->
         <div class="company-logo-wrapper">
           <div class="logo-box">
-            <img [src]="company.logoUrl" [alt]="company.name" class="company-logo" onerror="this.src='assets/images/default-company.png'">
+            <img [src]="company.logoUrl || 'assets/images/home/company-placeholder.png'" [alt]="company.name || company.fullName" class="company-logo" onerror="this.src='assets/images/home/company-placeholder.png'">
           </div>
         </div>
 
@@ -34,7 +31,6 @@
           
           <div class="company-details-row">
             <div class="details-left">
-              <span class="pro-badge" *ngIf="company.isProCompany">Pro Company</span>
               <div class="detail-item" *ngIf="company.website">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -63,13 +59,6 @@
                 </svg>
                 <span>{{ company.followers }} người theo dõi</span>
               </div>
-              <button class="follow-btn" [class.following]="company.isFollowing" (click)="onFollowCompany()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                {{ company.isFollowing ? 'Đã theo dõi' : 'Theo dõi công ty' }}
-              </button>
             </div>
           </div>
         </div>

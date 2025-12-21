@@ -48,12 +48,6 @@
 
     <!-- Right Section -->
     <div class="right-section">
-      <!-- Language Toggle -->
-      <app-language-toggle 
-        [selectedLanguage]="selectedLanguage"
-        (languageChange)="onLanguageChange($event)">
-      </app-language-toggle>
-
       <!-- Not Logged In State -->
       <div class="auth-actions" *ngIf="!isLoggedIn">
       <button class="login-btn" (click)="navigateToLogin()">
@@ -73,55 +67,69 @@
         <div class="notification-container" #notificationContainer>
           <button class="notification-btn" (click)="toggleNotificationMenu()" title="Thông báo">
             <i class="fa fa-bell"></i>
-            <span class="notification-badge">1</span>
+            <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </button>
 
           <!-- Notification Menu Dropdown -->
-          <div class="notification-menu" *ngIf="showNotificationMenu">
+          <div class="notification-menu" *ngIf="showNotificationMenu" (click)="$event.stopPropagation()">
             <!-- Header -->
             <div class="notification-header">
-              <h3 class="notification-title">{{ translate('notifications.title') }}</h3>
+              <h3 class="notification-title">{{ translate('notifications.title') || 'Thông báo' }}</h3>
               <button class="mark-read-btn" (click)="markAllAsRead()">
-                {{ translate('notifications.mark_all_read') }}
+                {{ translate('notifications.mark_all_read') || 'Đánh dấu tất cả đã đọc' }}
               </button>
             </div>
 
             <!-- Notification Items -->
             <div class="notification-items">
-              <!-- Sample notification item -->
-              <div class="notification-item">
+              <div *ngIf="isLoadingNotifications" class="notification-loading">
+                <p>Đang tải...</p>
+              </div>
+              <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="notification-empty">
+                <p>{{ translate('notifications.no_notifications') || 'Không có thông báo mới' }}</p>
+              </div>
+              <div *ngFor="let notification of notifications" 
+                   class="notification-item" 
+                   [class.unread]="!notification.isRead"
+                   (click)="navigateToJobDetail(notification)">
                 <div class="notification-content">
-                  <h4 class="notification-text">{{ translate('notifications.sample_text') }}</h4>
-                  <span class="notification-date">15/10/2025</span>
+                  <h4 class="notification-text">{{ notification.title }}</h4>
+                  <p class="notification-message">{{ notification.message }}</p>
+                  <span class="notification-date">{{ formatDate(notification.creationTime) }}</span>
                 </div>
+              </div>
+              
+              <!-- View All Link -->
+              <div class="notification-footer" *ngIf="!isLoadingNotifications && notifications.length > 0">
+                <a class="view-all-link" (click)="navigateToAllNotifications(); $event.stopPropagation()">
+                  Xem tất cả thông báo
+                  <i class="fa fa-arrow-right"></i>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Profile Container -->
-        <div class="profile-container" (mouseenter)="showProfileMenu = true" (mouseleave)="onProfileMouseLeave()">
+        <div class="profile-container">
           <!-- User Profile -->
-          <div class="user-profile">
+          <div class="user-profile" (click)="toggleProfileMenu()">
             <div class="user-avatar-placeholder">
               <i class="fa fa-user"></i>
             </div>
           </div>
 
           <!-- Profile Menu Dropdown -->
-          <div class="profile-menu" *ngIf="showProfileMenu" (mouseenter)="showProfileMenu = true" (mouseleave)="onProfileMouseLeave()">
+          <div class="profile-menu" *ngIf="showProfileMenu">
           <!-- User Info -->
           <div class="profile-header">
             <div class="profile-avatar">
               <i class="fa fa-user"></i>
             </div>
             <div class="profile-info">
-              <h3 class="profile-name">{{ currentUser?.name || currentUser?.userName || 'Người dùng' }}</h3>
-              <p class="profile-status">{{ translate('profile.verified_account') }}</p>
-              <p class="profile-details" *ngIf="currentUser">
-                <span *ngIf="currentUser.id">ID {{ currentUser.id }}</span>
-                <span *ngIf="currentUser.id && currentUser.email"> | </span>
-                <span *ngIf="currentUser.email">{{ currentUser.email }}</span>
+              <h3 class="profile-name">{{ getFullName() }}</h3>
+              <p class="profile-details" *ngIf="currentUser?.email || profileData?.email">
+                <span>{{ currentUser?.email || profileData?.email }}</span>
               </p>
             </div>
           </div>
@@ -167,22 +175,6 @@
                           </div>
             </div>
 
-                        <!-- Cài đặt email & thông báo -->
-                        <div class="menu-section" (click)="toggleSection('emailSettings')">
-                          <div class="section-header">
-                            <div class="section-icon">
-                              <i class="fa fa-envelope"></i>
-                              <span class="notification-dot"></span>
-                            </div>
-                            <span class="section-title">{{ translate('profile.email_settings') }}</span>
-                            <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.emailSettings"></i>
-                          </div>
-                          <div class="section-content" *ngIf="expandedSections.emailSettings">
-                            <div class="menu-item">{{ translate('profile.job_notification_settings') }}</div>
-                            <div class="menu-item">{{ translate('profile.email_reception_settings') }}</div>
-                          </div>
-                        </div>
-
                         <!-- Cá nhân & Bảo mật -->
                         <div class="menu-section" (click)="toggleSection('personalSecurity')">
                           <div class="section-header">
@@ -195,25 +187,10 @@
                           </div>
                           <div class="section-content" *ngIf="expandedSections.personalSecurity">
                             <div class="menu-item" (click)="navigateToPersonalInfo()">{{ translate('profile.personal_info_settings') }}</div>
-                            <div class="menu-item">{{ translate('profile.security_settings') }}</div>
                             <div class="menu-item" (click)="navigateToChangePassword()">{{ translate('profile.change_password') }}</div>
                           </div>
                         </div>
 
-                        <!-- Nâng cấp tài khoản -->
-                        <div class="menu-section" (click)="toggleSection('upgradeAccount')">
-                          <div class="section-header">
-                            <div class="section-icon">
-                              <i class="fa fa-star"></i>
-                              <span class="notification-dot"></span>
-                            </div>
-                            <span class="section-title">{{ translate('profile.upgrade_account') }}</span>
-                            <i class="fa fa-chevron-down section-chevron" [class.rotated]="expandedSections.upgradeAccount"></i>
-                          </div>
-                          <div class="section-content" *ngIf="expandedSections.upgradeAccount">
-                            <div class="menu-item" (click)="navigateToService()">{{ translate('profile.upgrade_vip_account') }}</div>
-                          </div>
-                        </div>
           </div>
 
           <!-- Logout Button -->
@@ -284,10 +261,6 @@
         </a>
       </li>
       <li class="nav-item mobile-auth">
-        <app-language-toggle 
-          [selectedLanguage]="selectedLanguage"
-          (languageChange)="onLanguageChange($event)">
-        </app-language-toggle>
         <button class="login-btn" (click)="navigateToLogin()">
           {{ translate('header.login') }}
         </button>

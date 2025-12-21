@@ -1,4 +1,4 @@
-<div class="job-posting-page" [class.sidebar-expanded]="sidebarExpanded">
+<div class="job-posting-page" [style.padding-left]="getContentPaddingLeft()">
   <!-- Toast Notification -->
   <app-toast-notification
     [show]="showToast"
@@ -9,24 +9,32 @@
   </app-toast-notification>
 
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+  <div class="breadcrumb-box" [style.left]="getBreadcrumbLeft()" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <div class="page-header">
         <h1 class="page-title">Đăng tin tuyển dụng</h1>
-        <span class="campaign-badge" *ngIf="campaignName"> Chiến dịch: {{ campaignName }} </span>
+        <div class="campaign-selector">
+          <app-select-field
+            placeholder="Chọn chiến dịch"
+            [options]="campaignOptions"
+            [(ngModel)]="campaignId"
+            (ngModelChange)="onCampaignChange($event)"
+          ></app-select-field>
+        </div>
       </div>
       <div class="action-buttons">
         <app-button type="secondary" size="small" (click)="openPreviewModal()">
           Xem trước
         </app-button>
-        <app-button type="secondary" size="small" (click)="onSaveJob()"> Lưu việc làm </app-button>
-        <app-button type="primary" size="small" (click)="onPostJob()"> Đăng công việc </app-button>
+        <app-button type="primary" size="small" (click)="onSaveOrUpdateJob()">
+          {{ getSubmitButtonText() }}
+        </app-button>
       </div>
     </div>
   </div>
 
   <!-- Content Wrapper -->
-  <div class="content-wrapper">
+  <div class="content-wrapper" [style.max-width]="getContentMaxWidth()">
     <!-- Form -->
     <div class="form-wrapper">
       <h2 class="form-main-title">Thông tin công việc</h2>
@@ -103,7 +111,6 @@
             </div>
           </div>
 
-          <!-- Khi lương thỏa thuận -->
           <div class="salary-display-box" *ngIf="salaryDeal">
             <span style="font-weight: 600">Lương thỏa thuận</span>
           </div>
@@ -115,9 +122,9 @@
               class="range-highlight"
               *ngIf="!salaryDeal"
               [ngStyle]="{
-        left: (salaryMin / 500000000 * 100) + '%',
-        width: ((salaryMax - salaryMin) / 500000000 * 100) + '%'
-      }"
+                left: (salaryMin / 500000000 * 100) + '%',
+                width: ((salaryMax - salaryMin) / 500000000 * 100) + '%'
+              }"
             ></div>
 
             <input
@@ -161,18 +168,27 @@
         >
         </app-select-field>
 
-        <!-- Application Deadline -->
-        <app-input-field
-          label="Hạn nộp hồ sơ"
-          type="date"
-          placeholder="Chọn hạn nộp hồ sơ"
-          [required]="true"
-          [error]="getFieldError('applicationDeadline')"
-          [(ngModel)]="jobForm.applicationDeadline"
-          (ngModelChange)="onFieldChange('applicationDeadline')"
-          name="applicationDeadline"
-        >
-        </app-input-field>
+        <!-- Application Deadline - Native Input với min và max -->
+        <div class="input-field-wrapper">
+          <label class="input-label">
+            Hạn nộp hồ sơ
+            <span class="required-mark">*</span>
+          </label>
+          <input
+            type="date"
+            class="date-input"
+            [class.has-error]="getFieldError('applicationDeadline')"
+            [min]="getMinApplicationDeadline()"
+            [max]="getMaxApplicationDeadline()"
+            [(ngModel)]="jobForm.applicationDeadline"
+            (ngModelChange)="onFieldChange('applicationDeadline')"
+            name="applicationDeadline"
+          />
+          <div class="input-hint">Từ 7 ngày đến 2 tháng kể từ hôm nay</div>
+          <div class="error-message" *ngIf="getFieldError('applicationDeadline')">
+            {{ getFieldError('applicationDeadline') }}
+          </div>
+        </div>
       </div>
 
       <!-- General Information Section -->
@@ -195,12 +211,17 @@
         <!-- Quantity -->
         <app-input-field
           label="Số lượng tuyển"
-          type="number"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="off"
           placeholder="Nhập số lượng tuyển"
           [required]="true"
           [error]="getFieldError('quantity')"
           [(ngModel)]="jobForm.quantity"
-          (ngModelChange)="onFieldChange('quantity')"
+          (ngModelChange)="onQuantityChange($event)"
+          (keypress)="blockNonNumeric($event)"
+          (keydown)="preventBelowOne($event)"
+          (wheel)="preventQuantityWheel($event)"
           name="quantity"
         >
         </app-input-field>
@@ -272,16 +293,15 @@
           {{ getFieldError('benefits') }}
         </div>
       </div>
-      
-      <!-- === NGÀNH NGHỀ (2 DROPDOWN) === -->
+
+      <!-- Category Section -->
       <div class="form-section">
         <h3 class="section-title">
           Ngành nghề
           <span class="required-mark">*</span>
         </h3>
-        
+
         <div class="category-dropdowns">
-          <!-- Parent Category Dropdown -->
           <app-select-field
             label="Ngành nghề chính"
             placeholder="Chọn ngành nghề chính"
@@ -293,7 +313,6 @@
             name="parentCategory"
           ></app-select-field>
 
-          <!-- Child Category Dropdown -->
           <app-select-field
             label="Lĩnh vực cụ thể"
             placeholder="Chọn lĩnh vực cụ thể"
@@ -308,15 +327,14 @@
         </div>
       </div>
 
-      <!-- === TỪ KHÓA (TAGS) - CHỈ HIỂN THỊ KHI ĐÃ CHỌN CHILD CATEGORY === -->
+      <!-- Tags Section -->
       <div class="form-section" *ngIf="selectedCategoryId && availableTags.length > 0">
         <h3 class="section-title">
           Từ khóa tuyển dụng
           <span class="optional-mark">(Tùy chọn)</span>
         </h3>
-        
+
         <div class="tags-selector">
-          <!-- Tags đã chọn -->
           <div class="selected-tags-area" *ngIf="selectedTags.length > 0">
             <div class="selected-tags-header">
               <span class="tags-count">
@@ -341,7 +359,6 @@
             </div>
           </div>
 
-          <!-- Tags có sẵn để chọn -->
           <div class="available-tags-area">
             <p class="area-label">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -362,7 +379,6 @@
             </div>
           </div>
 
-          <!-- Helper text -->
           <div class="tags-helper">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
@@ -377,29 +393,33 @@
       <div class="form-section">
         <h3 class="section-title">Địa điểm làm việc</h3>
 
-        <app-input-field
+        <!-- Địa điểm làm việc - dùng rich-text-editor -->
+        <app-rich-text-editor
           label="Địa điểm làm việc"
-          type="text"
           placeholder="Nhập địa điểm làm việc cụ thể"
           [required]="true"
-          [error]="getFieldError('workLocation')"
           [(ngModel)]="jobForm.workLocation"
           (ngModelChange)="onFieldChange('workLocation')"
           name="workLocation"
         >
-        </app-input-field>
+        </app-rich-text-editor>
+        <div class="error-message" *ngIf="getFieldError('workLocation')">
+          {{ getFieldError('workLocation') }}
+        </div>
 
-        <app-input-field
+        <!-- Thời gian làm việc - dùng rich-text-editor -->
+        <app-rich-text-editor
           label="Thời gian làm việc"
-          type="text"
           placeholder="Nhập thời gian làm việc cụ thể"
           [required]="true"
-          [error]="getFieldError('workTime')"
           [(ngModel)]="jobForm.workTime"
           (ngModelChange)="onFieldChange('workTime')"
           name="workTime"
         >
-        </app-input-field>
+        </app-rich-text-editor>
+        <div class="error-message" *ngIf="getFieldError('workTime')">
+          {{ getFieldError('workTime') }}
+        </div>
       </div>
 
       <!-- Preview Modal -->
@@ -410,7 +430,7 @@
         bodyBackground="#f8fafc"
         (close)="closePreviewModal()"
       >
-        <app-job-preview [jobData]="jobForm"></app-job-preview>
+        <app-job-preview [jobData]="previewJobData"></app-job-preview>
       </app-generic-modal>
     </div>
   </div>

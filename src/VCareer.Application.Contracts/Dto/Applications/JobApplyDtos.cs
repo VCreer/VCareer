@@ -128,6 +128,21 @@ namespace VCareer.Dto.Applications
         public string? JobTitle { get; set; }
 
         /// <summary>
+        /// ID chiến dịch tuyển dụng chứa công việc
+        /// </summary>
+        public Guid? RecruitmentCampaignId { get; set; }
+
+        /// <summary>
+        /// Tên chiến dịch tuyển dụng chứa công việc
+        /// </summary>
+        public string? RecruitmentCampaignName { get; set; }
+
+        /// <summary>
+        /// Mức lương hiển thị cho job (ví dụ: \"Tới 3 triệu\", \"Thoả thuận\")
+        /// </summary>
+        public string? JobSalaryText { get; set; }
+
+        /// <summary>
         /// ID ứng viên
         /// </summary>
         public Guid CandidateId { get; set; }
@@ -254,6 +269,11 @@ namespace VCareer.Dto.Applications
         public Guid? JobId { get; set; }
 
         /// <summary>
+        /// ID chiến dịch tuyển dụng (lọc theo chiến dịch)
+        /// </summary>
+        public Guid? RecruitmentCampaignId { get; set; }
+
+        /// <summary>
         /// ID ứng viên (lọc theo ứng viên)
         /// </summary>
         public Guid? CandidateId { get; set; }
@@ -292,6 +312,11 @@ namespace VCareer.Dto.Applications
         /// Có được phản hồi chưa
         /// </summary>
         public bool? IsResponded { get; set; }
+
+        /// <summary>
+        /// Từ khóa tìm kiếm (tên ứng viên, email, số điện thoại, tiêu đề công việc)
+        /// </summary>
+        public string? Keyword { get; set; }
     }
 
     /// <summary>

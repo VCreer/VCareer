@@ -66,16 +66,19 @@
   .summary-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 20px;
+    max-width: 100%;
 
     @media (max-width: 1024px) {
       grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
     }
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
       gap: 10px;
+      max-width: 100%;
     }
 
     .summary-card {
@@ -150,6 +153,32 @@
         border-color: #ef4444;
         .summary-card-icon {
           color: #ef4444;
+        }
+      }
+
+      &.clickable {
+        cursor: pointer;
+        user-select: none;
+        
+        &:active {
+          transform: translateY(-1px) scale(0.98);
+        }
+      }
+      
+      &.active {
+        border-width: 3px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        
+        &:nth-child(2) {
+          box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+        }
+        
+        &:nth-child(3) {
+          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        }
+        
+        &:nth-child(4) {
+          box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
         }
       }
     }
@@ -234,7 +263,7 @@
 
         .filter-controls {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 12px;
 
           @media (max-width: 768px) {
@@ -367,6 +396,51 @@
                 color: #ffffff;
               }
             }
+          }
+
+          .filter-input {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #e5e7eb;
+            background: #ffffff;
+            color: #111827;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+
+            &:focus {
+              outline: none;
+              border-color: #0f83ba;
+              box-shadow: 0 0 0 3px rgba(15, 131, 186, 0.08);
+            }
+
+            &::placeholder {
+              color: #9ca3af;
+            }
+
+            &[type="date"] {
+              cursor: pointer;
+              
+              &::-webkit-calendar-picker-indicator {
+                cursor: pointer;
+                color: #6b7280;
+              }
+            }
+          }
+        }
+      }
+
+      .search-filter-bar {
+        .search-filter-controls {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 10px;
           }
         }
       }
@@ -708,9 +782,9 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       display: flex;
       flex-direction: column;
-      max-height: none;
+      max-height: calc(100vh - 200px);
       min-height: 600px;
-      overflow-y: visible;
+      overflow: hidden;
       align-self: flex-start;
       height: fit-content;
       position: sticky;
@@ -720,6 +794,7 @@
         max-height: none;
         position: static;
         top: auto;
+        overflow: visible;
       }
 
       /* Custom scrollbar */
@@ -811,6 +886,26 @@
         gap: 24px;
         flex: 1;
         min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        /* Custom scrollbar */
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: #f1f5f9;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+
+          &:hover {
+            background: #94a3b8;
+          }
+        }
 
         .detail-section {
           display: flex;

@@ -7,7 +7,35 @@
     </div>
   </div>
 
-  <div class="detail-content">
+  <!-- Access Denied State -->
+  <div *ngIf="!isLoading && accessDenied" class="access-denied-container">
+    <div class="access-denied-card">
+      <div class="access-denied-icon">
+        <i class="fa fa-lock"></i>
+      </div>
+      <h2 class="access-denied-title">Không có quyền truy cập</h2>
+      <p class="access-denied-message">
+        Ứng viên đã tắt chế độ cho phép nhà tuyển dụng xem hồ sơ. 
+        Bạn không thể xem thông tin CV của ứng viên này.
+      </p>
+      <div class="access-denied-actions">
+        <app-button
+          type="primary"
+          size="medium"
+          (click)="router.navigate(['/recruiter/find-cv'])">
+          Quay lại danh sách
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading && !accessDenied" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Đang tải thông tin ứng viên...</p>
+  </div>
+
+  <div *ngIf="!isLoading && !accessDenied && hasAccess" class="detail-content">
     <div class="cv-viewer-card">
       <div class="cv-viewer-header">
         <h2>Hồ sơ ứng viên</h2>

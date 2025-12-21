@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ using VCareer.IServices.Common;
 using VCareer.IServices.Subcriptions;
 using VCareer.Models.Subcription;
 using VCareer.Models.Subcription_Payment;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -27,17 +30,21 @@ namespace VCareer.Services.Subcription
         private readonly IChildService_SubcriptionServiceRepository _childService_SubcriptionServiceRepository;
         private readonly IChildServiceRepository _childServiceRepository;
         private readonly ISubcriptionPriceRepository _subcriptionPriceRepository;
+        private readonly IUser_SubcriptionServicerRepository _user_SubcriptionServicerRepository;
 
         public SubcriptionService_Service(ISubcriptionServiceRepository subcriptionServiceRepository,
             IChildService_SubcriptionServiceRepository childService_SubcriptionServiceRepository,
             IChildServiceRepository childServiceRepository,
+            IUser_SubcriptionServicerRepository user_SubcriptionServicerRepository,
             ISubcriptionPriceRepository subcriptionPriceRepository)
         {
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _childService_SubcriptionServiceRepository = childService_SubcriptionServiceRepository;
             _childServiceRepository = childServiceRepository;
+            _user_SubcriptionServicerRepository = user_SubcriptionServicerRepository;
             _subcriptionPriceRepository = subcriptionPriceRepository;
         }
+        [Authorize(VCareerPermission.SubcriptionService.AddChildService)]
         public async Task AddChildServiceAsync(AddChildServicesDto dto)
         {
             var subcriptionService = await _subcriptionServiceRepository
@@ -67,6 +74,7 @@ namespace VCareer.Services.Subcription
                 await _childService_SubcriptionServiceRepository.InsertAsync(m);
             }
         }
+
         private async Task CheckChildServiceAsync(AddChildServicesDto dto)
         {
             var queryable = await _childServiceRepository.GetQueryableAsync();
@@ -88,10 +96,12 @@ namespace VCareer.Services.Subcription
             return existingChildService;
 
         }
+
+        [Authorize(VCareerPermission.SubcriptionService.Create)]
         public async Task CreateSubCriptionAsync(SubcriptionsCreateDto dto)
         {
             if (dto.OriginalPrice < 0) throw new UserFriendlyException("OriginalPrice must be greater than 0");
-            if (dto.TotalBuyEachUser <= 0) throw new UserFriendlyException("Incase buy limit , TotalBuyEachUser must be greater than 0");
+            //if (dto.TotalBuyEachUser <= 0) throw new UserFriendlyException("Incase buy limit , TotalBuyEachUser must be greater than 0");
 
             var newSubcription = new SubcriptionService()
             {
@@ -102,14 +112,18 @@ namespace VCareer.Services.Subcription
                 Title = dto.Title,
                 Target = dto.Target,
                 TotalBuyEachUser = dto.TotalBuyEachUser,
-                Status = dto.Status,
                 OriginalPrice = dto.OriginalPrice,
                 IsLifeTime = dto.IsLifeTime,
-                DayDuration = dto.DayDuration
+                DayDuration = dto.DayDuration,
+                TotalLimitpackage = dto.TotalLimitpackage,
+                IShareable = dto.IShareable,
+
             };
 
             await _subcriptionServiceRepository.InsertAsync(newSubcription, true);
         }
+
+        [Authorize(VCareerPermission.SubcriptionService.RemoveChildService)]
         public async Task RemoveChildServiceAsync(AddChildServicesDto dto)
         {
             var query = await _childService_SubcriptionServiceRepository.GetQueryableAsync();
@@ -131,15 +145,19 @@ namespace VCareer.Services.Subcription
         }
         //xóa mềm này mục đích chỉ ảnh hưởng tới hiển thị đối với người chưa mua sẽ ko hiển thị
         //với người dùng mua vẫn sẽ hiển thị bình thường thông qua User subcriptionservice - mong là thế
+
+        [Authorize(VCareerPermission.SubcriptionService.Delete)]
         public async Task DeleteSubcriptionAsync(Guid subcriptionId)
         {
             var subcription = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionId);
             if (subcription == null) throw new BusinessException("Subcription not found");
             subcription.IsActive = false;
-            subcription.Status = SubcriptionContance.SubcriptionStatus.Inactive;
-            await _subcriptionServiceRepository.UpdateAsync(subcription);
+            var userSubcriptionService = _user_SubcriptionServicerRepository.FirstOrDefaultAsync(x=>x.SubcriptionServiceId==subcriptionId);
+            if(userSubcriptionService != null) throw new UserFriendlyException("This subcription has been used by user, you cant delete it");
+            await _subcriptionServiceRepository.DeleteAsync(subcription);
         }
 
+        [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]
         public async Task<List<ChildServiceViewDto>> GetChildServicesWithPaging(Guid subcriptionId, bool? isActive, PagingDto pagingDto)
         {
             var query = await _childService_SubcriptionServiceRepository.GetQueryableAsync();
@@ -154,6 +172,8 @@ namespace VCareer.Services.Subcription
                 .ToList();
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
         }
+
+        [Authorize(VCareerPermission.SubcriptionService.LoadChildService)]
         public async Task<List<ChildServiceViewDto>> GetChildServices(Guid subcriptionId, bool? isActive)
         {
             var query = await _childService_SubcriptionServiceRepository.GetQueryableAsync();
@@ -169,6 +189,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<ChildService>, List<ChildServiceViewDto>>(childServices);
         }
 
+        [Authorize(VCareerPermission.SubcriptionService.Load)]
         public async Task<SubcriptionsViewDto> GetSubcriptionService(Guid subcriptionId)
         {
             var subcriptionService = await _subcriptionServiceRepository.FirstOrDefaultAsync(x => x.Id == subcriptionId);
@@ -176,6 +197,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<SubcriptionService, SubcriptionsViewDto>(subcriptionService);
         }
 
+        [Authorize(VCareerPermission.SubcriptionPrice.Load)]
         public async Task<List<SubcriptionPriceViewDto>> GetSubcriptionsPrice(Guid subcriptionId, bool? isExpired, PagingDto pagingDto)
         {
             var query = await _subcriptionPriceRepository.GetQueryableAsync();
@@ -197,7 +219,7 @@ namespace VCareer.Services.Subcription
             return ObjectMapper.Map<List<SubcriptionPrice>, List<SubcriptionPriceViewDto>>(result);
         }
 
-
+        [Authorize(VCareerPermission.SubcriptionService.Update)]
         public async Task UpdateSubcriptionAsync(SubcriptionsUpdateDto dto)
         {
             var subcriptionService = await _subcriptionServiceRepository.GetAsync(dto.SubcriptionId);
@@ -210,14 +232,30 @@ namespace VCareer.Services.Subcription
             await _subcriptionServiceRepository.UpdateAsync(subcriptionService);
         }
 
-        public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(SubcriptorTarget? target = null)
+        [Authorize(VCareerPermission.SubcriptionService.Load)]
+        public async Task<List<SubcriptionsViewDto>> GetActiveSubscriptionServicesAsync(string? target = null)
         {
             var query = await _subcriptionServiceRepository.GetQueryableAsync();
-            query = query.Where(x => x.IsActive == true && x.Status == SubcriptionContance.SubcriptionStatus.Active);
+            query = query.Where(x => x.IsActive == true);
 
-            if (target.HasValue)
+            if (!string.IsNullOrWhiteSpace(target)
+      && Enum.TryParse<SubcriptorTarget>(target, true, out var parsedTarget))
             {
-                query = query.Where(x => x.Target == target.Value);
+                query = query.Where(x => x.Target == parsedTarget);
+            }
+
+            var services = await AsyncExecuter.ToListAsync(query);
+            return ObjectMapper.Map<List<SubcriptionService>, List<SubcriptionsViewDto>>(services);
+        }
+        public async Task<List<SubcriptionsViewDto>> GetSubscriptionServicesAsync(string? target, bool? isActive)
+        {
+            var query = await _subcriptionServiceRepository.GetQueryableAsync();
+            if (isActive != null) query = query.Where(x => x.IsActive == isActive);
+
+            if (!string.IsNullOrWhiteSpace(target)
+&& Enum.TryParse<SubcriptorTarget>(target, true, out var parsedTarget))
+            {
+                query = query.Where(x => x.Target == parsedTarget);
             }
 
             var services = await AsyncExecuter.ToListAsync(query);

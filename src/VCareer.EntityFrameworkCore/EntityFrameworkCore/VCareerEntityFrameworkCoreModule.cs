@@ -6,12 +6,14 @@ using VCareer.IRepositories.Payment;
 using VCareer.IRepositories.Profile;
 using VCareer.IRepositories.Subcriptions;
 using VCareer.IRepositories.Cart;
+using VCareer.IRepositories.Notification;
 using VCareer.Models.Job;
 using VCareer.Models.JobCategory;
 using VCareer.Models.Subcription;
 using VCareer.Models.Subcription_Payment;
 using VCareer.Models.Users;
 using VCareer.Repositories.Category;
+using VCareer.EntityFrameworkCore.Repositories.Notification;
 
 // 🔧 Thêm using cho custom repositories
 using VCareer.Repositories.Job;
@@ -50,7 +52,7 @@ namespace VCareer.EntityFrameworkCore;
     typeof(AbpOpenIddictEntityFrameworkCoreModule),
     typeof(AbpTenantManagementEntityFrameworkCoreModule),
     typeof(BlobStoringDatabaseEntityFrameworkCoreModule)
-    )]
+       )]
 public class VCareerEntityFrameworkCoreModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
@@ -84,8 +86,10 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
             options.AddRepository<User_ChildService, User_ChildServiceRepository>();
             options.AddRepository<SubcriptionPrice, SubcriptionPriceRepository>();
             options.AddRepository<EffectingJobService, EffectingJobServiceRepository>();
-                
+
             options.AddRepository<CartEntity, CartRepository>();
+
+            options.AddRepository<Models.Notification.UserNotification, NotificationRepository>();
 
         });
 
@@ -109,6 +113,7 @@ public class VCareerEntityFrameworkCoreModule : AbpModule
         context.Services.AddTransient<ISubcriptionPriceRepository, SubcriptionPriceRepository>();
         context.Services.AddTransient<IEffectingJobServiceRepository, EffectingJobServiceRepository>();
         context.Services.AddTransient<ICartRepository, CartRepository>();
+        context.Services.AddTransient<INotificationRepository, NotificationRepository>();
 
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)

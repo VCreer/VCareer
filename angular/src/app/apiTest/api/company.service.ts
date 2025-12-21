@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { delay, catchError } from 'rxjs/operators';
+import { delay, catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Company {
@@ -34,10 +34,10 @@ export interface CompanyFilters {
  */
 export interface CompanyInfoForJobDetailDto {
   id: number;
-  companyName?: string;
-  logoUrl?: string;
-  companySize: number;
-  headquartersAddress?: string;
+  companyName?: string | null;
+  logoUrl?: string | null;
+  companySize: number | null;
+  headquartersAddress?: string | null;
   industries: string[];
 }
 
@@ -211,7 +211,20 @@ export class CompanyService {
     
     const url = `${this.apiUrl}/api/profile/company-legal-info/by-job/${jobId}`;
     
-    return this.http.get<CompanyInfoForJobDetailDto>(url).pipe(
+    // API có thể trả về CompanyLegalInfoDto, cần map sang CompanyInfoForJobDetailDto
+    return this.http.get<CompanyLegalInfoDto>(url).pipe(
+      map((legalInfo: CompanyLegalInfoDto) => {
+        // Map từ CompanyLegalInfoDto sang CompanyInfoForJobDetailDto
+        const companyInfo: CompanyInfoForJobDetailDto = {
+          id: legalInfo.id,
+          companyName: legalInfo.companyName || null,
+          logoUrl: legalInfo.logoUrl || null,
+          companySize: legalInfo.companySize !== undefined ? legalInfo.companySize : null,
+          headquartersAddress: legalInfo.headquartersAddress || null,
+          industries: legalInfo.industryId ? [`Industry ${legalInfo.industryId}`] : [], // TODO: Map industryId sang industry name
+        };
+        return companyInfo;
+      }),
       catchError(error => {
         return throwError(() => error);
       })

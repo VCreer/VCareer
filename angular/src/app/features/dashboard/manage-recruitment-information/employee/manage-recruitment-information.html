@@ -16,7 +16,13 @@
   <div class="job-management-content" [style.max-width]="getContentMaxWidth()">
     <!-- Summary Cards -->
     <div class="summary-cards">
-      <div class="summary-card" *ngFor="let card of summaryCards">
+      <div 
+        class="summary-card" 
+        *ngFor="let card of summaryCards"
+        [class.clickable]="card.status !== undefined"
+        [class.active]="(card.status === 1 && currentViewMode === 'pending') || (card.status === 2 && currentViewMode === 'approved') || (card.status === 5 && currentViewMode === 'rejected')"
+        (click)="card.status !== undefined ? onSummaryCardClick(card) : null"
+      >
         <div class="summary-card-icon" [style.border-color]="card.borderColor">
           <i [class]="card.icon"></i>
         </div>
@@ -31,8 +37,8 @@
     <div class="job-list-card">
       <div class="wrapper-content" [class.show-detail-job]="selectedJob">
         <div class="job-list-column">
-          <!-- Filter Bar with 3 Dropdowns -->
-          <div class="filter-bar">
+          <!-- Filter Bar for Pending View -->
+          <div class="filter-bar" *ngIf="currentViewMode === 'pending'">
             <div class="filter-header">
               <i class="fa fa-filter filter-icon"></i>
               <span class="filter-title">Bộ lọc</span>
@@ -55,30 +61,6 @@
                     *ngFor="let option of priorityLevelOptions"
                     [class.active]="selectedPriorityLevel.value === option.value"
                     (click)="selectPriorityLevel(option)"
-                  >
-                    <span>{{ option.label }}</span>
-                    <i class="fa fa-check check-icon"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Recruiter Level Filter -->
-              <div class="filter-group filter-dropdown-wrapper" (click)="$event.stopPropagation()">
-                <label class="filter-label">
-                  <i class="fa fa-shield-alt"></i>
-                  Cấp độ tuyển dụng
-                </label>
-                <button type="button" class="filter-dropdown" (click)="toggleRecruiterDropdown()">
-                  <span class="filter-value">{{ selectedRecruiterLevel.label }}</span>
-                  <i class="fa fa-chevron-down dropdown-icon" [class.rotate]="showRecruiterDropdown"></i>
-                </button>
-                <div class="filter-dropdown-menu" *ngIf="showRecruiterDropdown">
-                  <button
-                    type="button"
-                    class="filter-dropdown-item"
-                    *ngFor="let option of recruiterLevelOptions"
-                    [class.active]="selectedRecruiterLevel.value === option.value"
-                    (click)="selectRecruiterLevel(option)"
                   >
                     <span>{{ option.label }}</span>
                     <i class="fa fa-check check-icon"></i>
@@ -112,6 +94,53 @@
             </div>
           </div>
 
+          <!-- Filter Bar for Approved/Rejected View -->
+          <div class="filter-bar search-filter-bar" *ngIf="currentViewMode !== 'pending'">
+            <div class="filter-header">
+              <i class="fa fa-filter filter-icon"></i>
+              <span class="filter-title">Bộ lọc</span>
+            </div>
+            <div class="search-filter-controls">
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="fa fa-search"></i>
+                  Tìm kiếm
+                </label>
+                <input
+                  type="text"
+                  class="filter-input"
+                  placeholder="Tìm theo tên công ty, tiêu đề..."
+                  [(ngModel)]="searchField"
+                  (ngModelChange)="onSearchFieldChange()"
+                />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="fa fa-calendar"></i>
+                  Từ ngày
+                </label>
+                <input
+                  type="date"
+                  class="filter-input"
+                  [(ngModel)]="startTime"
+                  (ngModelChange)="onDateFilterChange()"
+                />
+              </div>
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="fa fa-calendar"></i>
+                  Đến ngày
+                </label>
+                <input
+                  type="date"
+                  class="filter-input"
+                  [(ngModel)]="endTime"
+                  (ngModelChange)="onDateFilterChange()"
+                />
+              </div>
+            </div>
+          </div>
+
           <!-- Loading State -->
           <div class="loading-state" *ngIf="isLoading">
             <div class="loading-spinner">
@@ -124,10 +153,10 @@
           <div class="job-list" *ngIf="!isLoading && filteredPostings.length > 0; else emptyState">
             <div
               class="job-item"
-              *ngFor="let posting of filteredPostings"
+              *ngFor="let posting of pagedPostings"
               [class.selected]="selectedJob?.id === posting.id"
               (click)="onJobItemClick(posting)"
-              (mouseenter)="onJobItemMouseEnter(posting.id)"
+              (mouseenter)="onJobItemMouseEnter(posting.id!)"
               (mouseleave)="onJobItemMouseLeave()"
             >
               <div class="job-item-left">
@@ -154,22 +183,14 @@
 
                 <div class="company-name-wrapper">
                   <div class="company-name">{{ posting.companyName }}</div>
-                  <button
-                    type="button"
-                    class="view-detail-btn"
-                    (click)="viewDetail(posting); $event.stopPropagation()"
-                  >
-                    Xem chi tiết
-                  </button>
                 </div>
 
                 <div class="job-tags-wrapper">
                   <div class="job-tags">
                     <span class="tag tag-location">{{ getLocationText(posting) }}</span>
-                    <!-- <span class="tag tag-experience">{{ getExperienceText(posting) }}</span> -->
                     <span
                       class="reject-reason-tag"
-                      *ngIf="posting.status === 5 && posting.rejectedReason && hoveredJobId === posting.id"
+                      *ngIf="posting.status === 5 && posting.rejectedReason && hoveredJobId?.toString() === posting.id"
                       (click)="onViewRejectReason(posting); $event.stopPropagation()"
                     >
                       <i class="fa fa-info-circle"></i>
@@ -177,8 +198,8 @@
                     </span>
                   </div>
                   <div class="job-status">
-                    <span [class]="getStatusBadgeClass(posting.status)">
-                      {{ getStatusLabel(posting.status) }}
+                    <span [class]="getStatusBadgeClass(posting.status!)">
+                      {{ getStatusLabel(posting.status!) }}
                     </span>
                   </div>
                 </div>
@@ -194,7 +215,7 @@
           </ng-template>
 
           <app-pagination
-            *ngIf="!isLoading && totalPages > 1"
+            *ngIf="!isLoading && filteredPostings.length > 0 && totalPages > 1"
             [currentPage]="currentPage"
             [totalPages]="totalPages"
             [totalItems]="totalItems"
@@ -210,7 +231,7 @@
             <div class="campaign-code-header">Mã tin: #{{ selectedJob.id }}</div>
             <h2 class="job-detail-title">{{ selectedJob.title }}</h2>
             <div class="job-tags-header">
-              <span class="job-tag">{{ selectedJob.categoryName }}</span>
+              <span class="job-tag" *ngIf="'categoryName' in selectedJob && selectedJob.categoryName">{{ selectedJob.categoryName }}</span>
               <span class="job-tag">{{ getSalaryRangeText(selectedJob) }}</span>
             </div>
             <button type="button" class="close-detail-btn" (click)="onCloseDetail()">
@@ -236,20 +257,27 @@
 
             <div class="detail-section" *ngIf="selectedJob.workLocation">
               <h3 class="section-title">Địa điểm làm việc</h3>
-              <p class="section-content">{{ selectedJob.workLocation }}</p>
+              <div class="section-content" [innerHTML]="selectedJob.workLocation"></div>
             </div>
 
             <div class="detail-section">
               <h3 class="section-title">Thông tin khác</h3>
               <ul class="section-list">
                 <li><strong>Số lượng tuyển:</strong> {{ selectedJob.quantity }} người</li>
-                <li *ngIf="selectedJob.workTime"><strong>Thời gian làm việc:</strong> {{ selectedJob.workTime }}</li>
-                <li *ngIf="selectedJob.postedAt"><strong>Ngày đăng:</strong> {{ selectedJob.postedAt | date: 'dd/MM/yyyy' }}</li>
-                <li *ngIf="selectedJob.expiresAt"><strong>Hạn nộp:</strong> {{ selectedJob.expiresAt | date: 'dd/MM/yyyy' }}</li>
+                <li *ngIf="'workTime' in selectedJob && selectedJob.workTime"><strong>Thời gian làm việc:</strong> <span [innerHTML]="selectedJob.workTime"></span></li>
+                <li *ngIf="selectedJob.employmentType"><strong>Loại công việc:</strong> {{ getEmploymentTypeLabel(selectedJob.employmentType) }}</li>
+                <li *ngIf="selectedJob.positionType"><strong>Cấp bậc:</strong> {{ getPositionTypeLabel(selectedJob.positionType) }}</li>
+                <li *ngIf="selectedJob.experience"><strong>Kinh nghiệm:</strong> {{ getExperienceLevelLabel(selectedJob.experience) }}</li>
+                <li *ngIf="'priorityLevel' in selectedJob && selectedJob.priorityLevel !== undefined"><strong>Mức độ ưu tiên:</strong> {{ getPriorityLevelLabel(selectedJob.priorityLevel) }}</li>
+                <li *ngIf="selectedJob.riskJobLevel !== undefined"><strong>Mức độ rủi ro:</strong> {{ getRiskJobLevelLabel(selectedJob.riskJobLevel) }}</li>
+                <li *ngIf="'postedAt' in selectedJob && selectedJob.postedAt"><strong>Ngày đăng:</strong> {{ selectedJob.postedAt | date: 'dd/MM/yyyy HH:mm' }}</li>
+                <li *ngIf="'expiresAt' in selectedJob && selectedJob.expiresAt"><strong>Hạn nộp:</strong> {{ selectedJob.expiresAt | date: 'dd/MM/yyyy' }}</li>
+                <li *ngIf="'approvedBy' in selectedJob && selectedJob.approvedBy"><strong>Người duyệt:</strong> {{ selectedJob.approvedBy }}</li>
+                <li *ngIf="'approveAt' in selectedJob && selectedJob.approveAt"><strong>Ngày duyệt:</strong> {{ selectedJob.approveAt | date: 'dd/MM/yyyy HH:mm' }}</li>
               </ul>
             </div>
 
-            <div class="detail-actions">
+            <div class="detail-actions" *ngIf="currentViewMode === 'pending'">
               <button type="button" class="action-btn approve-btn" (click)="onApprove()">
                 Duyệt
               </button>

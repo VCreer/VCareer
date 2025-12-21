@@ -4,25 +4,37 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastNotificationComponent, StatusDropdownComponent, StatusOption, PaginationComponent, GenericModalComponent, CvEmptyStateComponent } from '../../../../shared/components';
 import { SidebarSyncService } from '../../../../core/services/sidebar-sync.service';
+import { UserSubcriptionService, SubcriptionService_Service, User_ChildService_Service } from 'src/app/proxy/services/subcription';
+import { OptionsChildServiceViewDto, User_ChildServiceViewDto, ChildServiceViewDto, User_SubcirptionViewDto, SubcriptionsViewDto } from 'src/app/proxy/dto/subcriptions';
+import { SubcriptionContance_SubcriptionStatus, SubcriptionContance_ChildServiceStatus, SubcriptionContance_ServiceAction, SubcriptionContance_ServiceTarget } from 'src/app/proxy/constants/job-constant';
+import { CurrentUserInfoDto } from 'src/app/proxy/dto/auth-dto';
+import { AuthStateService } from 'src/app/core/services/auth-Cookiebased/auth-state.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 export interface ServiceItem {
   id: string;
-  orderId: string;
-  serviceName: string;
-  duration: string;
-  serviceCode: string;
-  purchaseDate: string;
-  quantity: number;
-  startDate: string;
-  endDate: string;
-  campaign: string;
-  campaignJob?: string;
-  isGift?: boolean;
-  activationDate?: string; // Ngày kích hoạt dịch vụ (cho tab unused)
-  expirationDate?: string; // Hạn kích hoạt (cho tab unused)
+  title: string;
+  description: string;
+  originalPrice: number;
+  dayDuration?: number;
+  isActive: boolean;
+  isLifeTime: boolean;
+  userSubscription?: User_SubcirptionViewDto;
+  childServices?: ChildServiceInfo[];
 }
 
-export type ServiceStatus = 'running' | 'scheduled' | 'unused' | 'pending' | 'ended' | 'expired';
+export interface ChildServiceInfo {
+  childService: ChildServiceViewDto;
+  userChildService: User_ChildServiceViewDto;
+}
+
+export interface UsageHistoryItem {
+  userChildService: User_ChildServiceViewDto;
+  childServiceDetail?: ChildServiceViewDto;
+}
+
+export type ServiceStatus = 'running' | 'ended' | 'expired';
 
 @Component({
   selector: 'app-my-services',
@@ -37,83 +49,89 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   sidebarExpanded: boolean = false;
   private sidebarCheckInterval?: any;
   
-  // Active tab
   activeTab: ServiceStatus = 'running';
   
-  // Service list
   allServices: ServiceItem[] = [];
   filteredServices: ServiceItem[] = [];
   paginatedServices: ServiceItem[] = [];
   
-  // Filters
   selectedServiceType: string = 'all';
-  selectedOrderId: string = '';
   
-  // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
   
-  // Service type options
   serviceTypeOptions: StatusOption[] = [
     { value: 'all', label: 'Tất cả loại dịch vụ' },
-    { value: 'top-max', label: 'TOP MAX' },
-    { value: 'top-pro', label: 'TOP PRO' },
-    { value: 'scout', label: 'Scout' },
-    { value: 'ebp', label: 'Chuyên trang tuyển dụng - EBP' }
+    { value: 'boost', label: 'Tăng điểm Job' },
+    { value: 'top', label: 'Top danh sách' },
+    { value: 'badge', label: 'Badge công việc' },
+    { value: 'theme', label: 'Giao diện công ty' }
   ];
   
-  // Order ID options (dynamically generated from services)
-  orderIdOptions: StatusOption[] = [
-    { value: '', label: 'Mã đơn hàng' }
-  ];
-  
-  // Toast notification
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
   
-  // Activate service modal
-  showActivateModal = false;
-  selectedServiceForActivation: ServiceItem | null = null;
-  selectedQuantity: number = 1;
-  
-  // Cancel activation modal
-  showCancelActivationModal = false;
+  showCancelModal = false;
   selectedServiceForCancellation: ServiceItem | null = null;
   
-  // Actions menu
+  showDetailsModal = false;
+  selectedServiceForDetails: ServiceItem | null = null;
+  detailedChildServices: ChildServiceViewDto[] = [];
+  isLoadingDetails: boolean = false;
+  
+  showUsageHistoryModal = false;
+  selectedServiceForUsageHistory: ServiceItem | null = null;
+  usageHistoryData: UsageHistoryItem[] = [];
+  isLoadingUsageHistory: boolean = false;
+  
+  showToggleShareModal = false;
+  selectedServiceForShare: ServiceItem | null = null;
+  
   showActionsMenu: string | null = null;
   private scrollListener?: () => void;
   private currentMenuServiceId: string | null = null;
   private currentMenuButton: HTMLElement | null = null;
 
+  isLoading: boolean = false;
+
+  private currentUser: CurrentUserInfoDto | null = null;
+
+  SubcriptionStatus = SubcriptionContance_SubcriptionStatus;
+  ChildServiceStatus = SubcriptionContance_ChildServiceStatus;
+  ServiceAction = SubcriptionContance_ServiceAction;
+  ServiceTarget = SubcriptionContance_ServiceTarget;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private sidebarSync: SidebarSyncService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private userSubcriptionService: UserSubcriptionService,
+    private subcriptionService: SubcriptionService_Service,
+    private userChildServiceService: User_ChildService_Service,
+    private authApi: AuthStateService
   ) {}
 
   ngOnInit(): void {
-    // Setup sidebar sync
     this.sidebarSync.setupSync(
       '.my-services-page',
       '.breadcrumb-box',
       this.componentId
     );
     
-    // Check sidebar state periodically
     this.checkSidebarState();
     this.sidebarCheckInterval = setInterval(() => {
       this.checkSidebarState();
     }, 100);
     
-    // Check route for tab parameter
+    this.currentUser = this.authApi.user;
+    
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         const tab = params['tab'] as ServiceStatus;
-        if (['running', 'scheduled', 'unused', 'pending', 'ended', 'expired'].includes(tab)) {
+        if (['running', 'ended', 'expired'].includes(tab)) {
           this.activeTab = tab;
         }
       }
@@ -139,234 +157,125 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   loadServices(): void {
-    // Mock data based on active tab
-    this.allServices = this.getMockServices(this.activeTab);
-    
-    // Update order ID options from services
-    this.updateOrderIdOptions();
-    
-    // Reset filters when loading new tab data
-    this.selectedServiceType = 'all';
-    this.selectedOrderId = '';
-    
-    this.filterServices();
-    this.cdr.detectChanges();
-  }
+    if (!this.currentUser || !this.currentUser.userId) {
+      console.warn('User ID not available');
+      return;
+    }
 
-  updateOrderIdOptions(): void {
-    // Get unique order IDs from services
-    const uniqueOrderIds = [...new Set(this.allServices.map(s => s.orderId))].sort();
+    this.isLoading = true;
+    const status = this.getStatusFromTab(this.activeTab);
     
-    // Update order ID options
-    this.orderIdOptions = [
-      { value: '', label: 'Mã đơn hàng' },
-      ...uniqueOrderIds.map(id => ({ value: id, label: `#${id}` }))
+    const actions = [
+      SubcriptionContance_ServiceAction.BoostScoreJob,
+      SubcriptionContance_ServiceAction.TopList,
+      SubcriptionContance_ServiceAction.JobBadge,
+      SubcriptionContance_ServiceAction.ThemeCompany,
     ];
-  }
 
-  getMockServices(status: ServiceStatus): ServiceItem[] {
-    const baseServices: ServiceItem[] = [
-      {
-        id: '1',
-        orderId: '23827',
-        serviceName: 'TOP MAX',
-        duration: '2 tuần',
-        serviceCode: '49964',
-        purchaseDate: '21/09/2022',
-        quantity: 1,
-        startDate: '21/09/2022',
-        endDate: '05/10/2022',
-        campaign: 'Chiến dịch test Tim CV',
-        campaignJob: 'Tuyển Dụng Tester'
+    const requests = actions.map(action => 
+      this.userSubcriptionService.getAllSubcriptionsByUserByUserIdAndStatusAndPagingDtoAndServiceAction(
+        this.currentUser!.userId,
+        status,
+        {
+          pageIndex: 0,
+          pageSize: 1000
+        },
+        action
+      ).pipe(
+        catchError(error => {
+          console.error(`Error loading services for action ${action}:`, error);
+          return of([]);
+        })
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results: OptionsChildServiceViewDto[][]) => {
+        console.log('Services loaded from all actions:', results);
+        
+        const allOptions = results.reduce((acc, curr) => acc.concat(curr), []);
+        
+        const subscriptionMap = new Map<string, OptionsChildServiceViewDto[]>();
+        
+        allOptions.forEach(opt => {
+          const subId = opt.user_subcription?.id;
+          if (subId) {
+            if (!subscriptionMap.has(subId)) {
+              subscriptionMap.set(subId, []);
+            }
+            subscriptionMap.get(subId)!.push(opt);
+          }
+        });
+        
+        this.allServices = Array.from(subscriptionMap.entries()).map(([subId, options]) => 
+          this.mapToServiceItem(options)
+        );
+        
+        console.log('Mapped services:', this.allServices);
+        
+        this.selectedServiceType = 'all';
+        
+        this.filterServices();
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      {
-        id: '2',
-        orderId: '23750',
-        serviceName: 'Scout Standard',
-        duration: '4 tuần',
-        serviceCode: '49854',
-        purchaseDate: '17/03/2022',
-        quantity: 1,
-        startDate: '12/09/2022',
-        endDate: '10/10/2022',
-        campaign: 'ahihisadsadsa',
-        campaignJob: '<H1 Onclick=Alert(1)>test</H1>'
-      },
-      {
-        id: '3',
-        orderId: '23751',
-        serviceName: 'Chuyên trang tuyển dụng - EBP',
-        duration: '53 tuần',
-        serviceCode: '49630',
-        purchaseDate: '20/03/2022',
-        quantity: 1,
-        startDate: '20/03/2022',
-        endDate: '26/03/2023',
-        campaign: '-'
-      },
-      {
-        id: '4',
-        orderId: '23731',
-        serviceName: 'Chuyên trang tuyển dụng - EBP',
-        duration: '53 tuần',
-        serviceCode: '49558',
-        purchaseDate: '21/01/2022',
-        quantity: 1,
-        startDate: '16/02/2022',
-        endDate: '22/02/2023',
-        campaign: '-',
-        isGift: true
+      error: (error) => {
+        console.error('Error loading services:', error);
+        this.showErrorToast('Không thể tải danh sách dịch vụ');
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
-    ];
+    });
+  }
 
-    // Filter by status (mock logic)
-    if (status === 'running') {
-      return baseServices.filter(s => {
-        const endDate = new Date(s.endDate.split('/').reverse().join('-'));
-        const today = new Date();
-        return endDate >= today;
-      });
-    } else if (status === 'ended') {
-      return baseServices.filter(s => {
-        const endDate = new Date(s.endDate.split('/').reverse().join('-'));
-        const today = new Date();
-        return endDate < today;
-      });
-    } else if (status === 'unused') {
-      // Mock data cho tab unused với activationDate và expirationDate
-      return [
-        {
-          id: '5',
-          orderId: '23830',
-          serviceName: 'TOP MAX',
-          duration: '2 tuần',
-          serviceCode: '49965',
-          purchaseDate: '15/10/2024',
-          quantity: 1,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '15/12/2024'
-        },
-        {
-          id: '6',
-          orderId: '23831',
-          serviceName: 'TOP PRO',
-          duration: '4 tuần',
-          serviceCode: '49966',
-          purchaseDate: '20/10/2024',
-          quantity: 2,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '20/12/2024'
-        },
-        {
-          id: '7',
-          orderId: '23832',
-          serviceName: 'Scout Standard',
-          duration: '1 tuần',
-          serviceCode: '49967',
-          purchaseDate: '25/10/2024',
-          quantity: 1,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '25/11/2024',
-          isGift: true
-        }
-      ];
-    } else if (status === 'pending') {
-      // Mock data cho tab pending
-      return [
-        {
-          id: '8',
-          orderId: '23833',
-          serviceName: 'TOP MAX',
-          duration: '2 tuần',
-          serviceCode: '49968',
-          purchaseDate: '01/11/2024',
-          quantity: 1,
-          startDate: '05/11/2024',
-          endDate: '19/11/2024',
-          campaign: 'Chiến dịch tuyển dụng nhân viên',
-          campaignJob: 'Tuyển dụng nhân viên bán hàng'
-        },
-        {
-          id: '9',
-          orderId: '23834',
-          serviceName: 'TOP PRO',
-          duration: '4 tuần',
-          serviceCode: '49969',
-          purchaseDate: '02/11/2024',
-          quantity: 2,
-          startDate: '10/11/2024',
-          endDate: '08/12/2024',
-          campaign: 'Tuyển dụng kế toán',
-          campaignJob: 'Tuyển dụng kế toán viên'
-        }
-      ];
-    } else if (status === 'expired') {
-      // Mock data cho tab expired với activationDate và expirationDate (đã hết hạn)
-      return [
-        {
-          id: '10',
-          orderId: '23835',
-          serviceName: 'TOP MAX',
-          duration: '2 tuần',
-          serviceCode: '49970',
-          purchaseDate: '01/09/2024',
-          quantity: 1,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '15/09/2024'
-        },
-        {
-          id: '11',
-          orderId: '23836',
-          serviceName: 'TOP PRO',
-          duration: '4 tuần',
-          serviceCode: '49971',
-          purchaseDate: '10/08/2024',
-          quantity: 2,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '10/09/2024'
-        },
-        {
-          id: '12',
-          orderId: '23837',
-          serviceName: 'Scout Standard',
-          duration: '1 tuần',
-          serviceCode: '49972',
-          purchaseDate: '20/08/2024',
-          quantity: 1,
-          startDate: '',
-          endDate: '',
-          campaign: '-',
-          activationDate: '-',
-          expirationDate: '27/08/2024',
-          isGift: true
-        }
-      ];
+  private mapToServiceItem(options: OptionsChildServiceViewDto[]): ServiceItem {
+    if (options.length === 0) {
+      throw new Error('Empty options array');
     }
     
-    return baseServices;
+    const userSubscription = options[0].user_subcription!;
+    const subscriptionDto = options[0].subcriptionsViewDto!;
+    
+    const childServices: ChildServiceInfo[] = [];
+    
+    options.forEach(opt => {
+      if (opt.childService && opt.user_ChildServices) {
+        childServices.push({
+          childService: opt.childService,
+          userChildService: opt.user_ChildServices
+        });
+      }
+    });
+    
+    const isLifeTime = childServices.some(cs => cs.childService.isLifeTime) || subscriptionDto.isLifeTime;
+    const dayDuration = subscriptionDto.dayDuration;
+    
+    return {
+      id: userSubscription.id || '',
+      title: subscriptionDto.title || 'Gói dịch vụ',
+      description: subscriptionDto.description || '',
+      originalPrice: subscriptionDto.originalPrice || 0,
+      dayDuration: dayDuration,
+      isActive: userSubscription.status === SubcriptionContance_SubcriptionStatus.Active,
+      isLifeTime: isLifeTime,
+      userSubscription: userSubscription,
+      childServices: childServices
+    };
+  }
+
+  private getStatusFromTab(tab: ServiceStatus): SubcriptionContance_SubcriptionStatus {
+    const statusMap: Record<ServiceStatus, SubcriptionContance_SubcriptionStatus> = {
+      'running': SubcriptionContance_SubcriptionStatus.Active,
+      'ended': SubcriptionContance_SubcriptionStatus.Cancelled,
+      'expired': SubcriptionContance_SubcriptionStatus.Expired
+    };
+    return statusMap[tab];
   }
 
   onTabChange(tab: ServiceStatus): void {
     this.activeTab = tab;
     this.currentPage = 1;
-    // Reset filters when changing tabs
     this.selectedServiceType = 'all';
-    this.selectedOrderId = '';
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab },
@@ -382,36 +291,30 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.filterServices();
   }
 
-  onOrderIdChange(value: string): void {
-    this.selectedOrderId = value;
-    this.currentPage = 1;
-    this.filterServices();
-  }
-
-
   filterServices(): void {
     this.filteredServices = this.allServices.filter(service => {
-      // Filter by service type
-      let matchesServiceType = true;
       if (this.selectedServiceType !== 'all') {
-        const serviceNameLower = service.serviceName.toLowerCase();
-        if (this.selectedServiceType === 'top-max') {
-          matchesServiceType = serviceNameLower.includes('top max');
-        } else if (this.selectedServiceType === 'top-pro') {
-          matchesServiceType = serviceNameLower.includes('top pro');
-        } else if (this.selectedServiceType === 'scout') {
-          matchesServiceType = serviceNameLower.includes('scout');
-        } else if (this.selectedServiceType === 'ebp') {
-          matchesServiceType = serviceNameLower.includes('ebp') || serviceNameLower.includes('chuyên trang');
-        } else {
-          matchesServiceType = serviceNameLower.includes(this.selectedServiceType.toLowerCase());
+        const hasMatchingType = service.childServices?.some(cs => {
+          const action = cs.childService.action;
+          switch (this.selectedServiceType) {
+            case 'boost':
+              return action === SubcriptionContance_ServiceAction.BoostScoreJob;
+            case 'top':
+              return action === SubcriptionContance_ServiceAction.TopList;
+            case 'badge':
+              return action === SubcriptionContance_ServiceAction.JobBadge;
+            case 'theme':
+              return action === SubcriptionContance_ServiceAction.ThemeCompany;
+            default:
+              return false;
+          }
+        });
+        
+        if (!hasMatchingType) {
+          return false;
         }
       }
-      
-      // Filter by order ID
-      const matchesOrderId = !this.selectedOrderId || service.orderId === this.selectedOrderId;
-      
-      return matchesServiceType && matchesOrderId;
+      return true;
     });
     
     this.updatePagination();
@@ -433,25 +336,11 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.updatePagination();
   }
 
-  onOrderIdClick(orderId: string, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Filter by order ID
-    this.selectedOrderId = orderId;
-    this.filterServices();
-    this.currentPage = 1;
-    this.updatePagination();
-  }
-
   getTabLabel(tab: ServiceStatus): string {
     const labels: Record<ServiceStatus, string> = {
       'running': 'Đang chạy',
-      'scheduled': 'Đã lên lịch',
-      'unused': 'Chưa sử dụng',
-      'pending': 'Chờ kích hoạt',
       'ended': 'Đã kết thúc',
-      'expired': 'Đã hết hạn'
+      'expired': 'Hết hạn'
     };
     return labels[tab];
   }
@@ -459,9 +348,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   getTabIcon(tab: ServiceStatus): string {
     const icons: Record<ServiceStatus, string> = {
       'running': 'fa-play-circle',
-      'scheduled': 'fa-calendar',
-      'unused': 'fa-link',
-      'pending': 'fa-clock',
       'ended': 'fa-stopwatch',
       'expired': 'fa-calendar-times'
     };
@@ -477,85 +363,230 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
+  showErrorToast(message: string): void {
+    this.toastMessage = message;
+    this.toastType = 'error';
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
   onToastClose(): void {
     this.showToast = false;
   }
 
-  onActivateService(service: ServiceItem, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.selectedServiceForActivation = service;
-    this.selectedQuantity = service.quantity || 1;
-    this.showActivateModal = true;
-  }
-
-  onCloseActivateModal(): void {
-    this.showActivateModal = false;
-    this.selectedServiceForActivation = null;
-    this.selectedQuantity = 1;
-  }
-
-  onConfirmActivate(): void {
-    if (this.selectedServiceForActivation && this.selectedQuantity > 0) {
-      // TODO: Call API to activate service with selectedQuantity
-      this.showSuccessToast('Yêu cầu kích hoạt dịch vụ đã được gửi thành công!');
-      this.showActivateModal = false;
-      this.selectedServiceForActivation = null;
-      this.selectedQuantity = 1;
-      // Reload services
-      this.loadServices();
+  onViewDetails(service: ServiceItem, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
     }
-  }
-
-  onCancelActivation(service: ServiceItem, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
     
-    // Close menu
     this.closeActionsMenu();
     
-    // Show cancel activation modal
-    this.selectedServiceForCancellation = service;
-    this.showCancelActivationModal = true;
+    this.selectedServiceForDetails = service;
+    this.showDetailsModal = true;
+    
+    this.loadServiceDetails(service);
   }
 
-  onCloseCancelActivationModal(): void {
-    this.showCancelActivationModal = false;
+  private loadServiceDetails(service: ServiceItem): void {
+    if (!service.userSubscription?.subcriptionServiceId) {
+      console.warn('No subscription service ID available');
+      return;
+    }
+
+    this.isLoadingDetails = true;
+    this.detailedChildServices = [];
+    
+    this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
+      service.userSubscription.subcriptionServiceId,
+      true
+    ).subscribe({
+      next: (childServices: ChildServiceViewDto[]) => {
+        console.log('Child services loaded:', childServices);
+        this.detailedChildServices = childServices;
+        this.isLoadingDetails = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading child services:', error);
+        this.showErrorToast('Không thể tải chi tiết dịch vụ');
+        this.isLoadingDetails = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCloseDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedServiceForDetails = null;
+    this.detailedChildServices = [];
+    this.isLoadingDetails = false;
+  }
+
+  onViewUsageHistory(service: ServiceItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForUsageHistory = service;
+    this.showUsageHistoryModal = true;
+    
+    this.loadUsageHistory(service);
+  }
+
+  private loadUsageHistory(service: ServiceItem): void {
+    if (!service.userSubscription?.id) {
+      console.warn('No subscription ID available');
+      return;
+    }
+
+    if (!service.userSubscription?.subcriptionServiceId) {
+      console.warn('No subscription service ID available');
+      return;
+    }
+
+    this.isLoadingUsageHistory = true;
+    this.usageHistoryData = [];
+    
+    // Load User_ChildService list và ChildService details
+    forkJoin({
+      userChildServices: this.userChildServiceService.getUserChildServiceByUserSubcriptionId(
+        service.userSubscription.id
+      ),
+      childServiceDetails: this.subcriptionService.getChildServicesBySubcriptionIdAndIsActive(
+        service.userSubscription.subcriptionServiceId,
+        true
+      )
+    }).subscribe({
+      next: ({ userChildServices, childServiceDetails }) => {
+        console.log('User child services loaded:', userChildServices);
+        console.log('Child service details loaded:', childServiceDetails);
+        
+        // Map userChildServices với childServiceDetails
+        this.usageHistoryData = userChildServices.map(ucs => {
+          const childDetail = childServiceDetails.find(
+            cs => cs.id === ucs.childServiceId
+          );
+          
+          return {
+            userChildService: ucs,
+            childServiceDetail: childDetail
+          };
+        });
+        
+        console.log('Usage history mapped:', this.usageHistoryData);
+        console.log('Total usage history items:', this.usageHistoryData.length);
+        
+        this.isLoadingUsageHistory = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading usage history:', error);
+        this.showErrorToast('Không thể tải lịch sử sử dụng');
+        this.isLoadingUsageHistory = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCloseUsageHistoryModal(): void {
+    this.showUsageHistoryModal = false;
+    this.selectedServiceForUsageHistory = null;
+    this.usageHistoryData = [];
+    this.isLoadingUsageHistory = false;
+  }
+
+  onToggleShare(service: ServiceItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForShare = service;
+    this.showToggleShareModal = true;
+  }
+
+  onCloseToggleShareModal(): void {
+    this.showToggleShareModal = false;
+    this.selectedServiceForShare = null;
+  }
+
+  onConfirmToggleShare(): void {
+    if (!this.selectedServiceForShare?.userSubscription?.id) {
+      this.showErrorToast('Không thể thay đổi trạng thái chia sẻ');
+      return;
+    }
+
+    const newShareStatus = !this.selectedServiceForShare.userSubscription.isShared;
+    
+    this.userSubcriptionService.setStatusShareSuubcriptionServiceByUser_subcriptionServiceIdAndIsShare(
+      this.selectedServiceForShare.userSubscription.id,
+      newShareStatus
+    ).subscribe({
+      next: () => {
+        this.showSuccessToast(
+          newShareStatus 
+            ? 'Đã bật chia sẻ dịch vụ thành công!' 
+            : 'Đã tắt chia sẻ dịch vụ thành công!'
+        );
+        this.showToggleShareModal = false;
+        this.selectedServiceForShare = null;
+        this.loadServices();
+      },
+      error: (error) => {
+        console.error('Error toggling share status:', error);
+        this.showErrorToast('Không thể thay đổi trạng thái chia sẻ. Vui lòng thử lại.');
+      }
+    });
+  }
+
+  onCancelSubscription(service: ServiceItem, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.closeActionsMenu();
+    
+    this.selectedServiceForCancellation = service;
+    this.showCancelModal = true;
+  }
+
+  onCloseCancelModal(): void {
+    this.showCancelModal = false;
     this.selectedServiceForCancellation = null;
   }
 
-  onConfirmCancelActivation(): void {
-    if (this.selectedServiceForCancellation) {
-      // TODO: Call API to cancel activation
-      this.showSuccessToast('Hủy kích hoạt dịch vụ thành công!');
-      this.showCancelActivationModal = false;
-      this.selectedServiceForCancellation = null;
-      // Reload services
-      this.loadServices();
-    }
-  }
-
-  onViewCampaignReport(service: ServiceItem, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Close menu
-    this.showActionsMenu = null;
-    
-    // Navigate to recruitment report page
-    if (service.campaign && service.campaign !== '-') {
-      this.router.navigate(['/recruiter/recruitment-report'], {
-        queryParams: {
-          campaign: service.campaign
+  onConfirmCancel(): void {
+    if (this.selectedServiceForCancellation && this.selectedServiceForCancellation.userSubscription?.subcriptionServiceId) {
+      this.userSubcriptionService.cancleUserSubcriptionBySubcriptionServiceId(
+        this.selectedServiceForCancellation.userSubscription.subcriptionServiceId
+      ).subscribe({
+        next: () => {
+          this.showSuccessToast('Hủy dịch vụ thành công!');
+          this.showCancelModal = false;
+          this.selectedServiceForCancellation = null;
+          this.loadServices();
+        },
+        error: (error) => {
+          console.error('Error canceling subscription:', error);
+          this.showErrorToast('Không thể hủy dịch vụ. Vui lòng thử lại.');
         }
       });
-    } else {
-      this.router.navigate(['/recruiter/recruitment-report']);
     }
   }
 
   trackByServiceId(index: number, service: ServiceItem): string {
     return service.id;
+  }
+
+  trackByChildServiceId(index: number, childService: ChildServiceViewDto): string {
+    return childService.id || index.toString();
+  }
+
+  trackByOptionId(index: number, item: UsageHistoryItem): string {
+    return item.userChildService.childServiceId || index.toString();
   }
 
   toggleActionsMenu(serviceId: string, event?: Event): void {
@@ -566,15 +597,13 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     if (this.showActionsMenu === serviceId) {
       this.closeActionsMenu();
     } else {
-      this.closeActionsMenu(); // Close any existing menu first
+      this.closeActionsMenu();
       this.showActionsMenu = serviceId;
       this.currentMenuServiceId = serviceId;
-      // Store button reference
       if (event) {
         const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
         this.currentMenuButton = button || null;
       }
-      // Position menu using fixed positioning
       setTimeout(() => {
         this.positionActionsMenu(serviceId, event);
         this.setupScrollListener(serviceId);
@@ -618,7 +647,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     const button = this.currentMenuButton;
     
     if (!menu || !button) {
-      // Retry after a short delay if menu not found
       if (!menu) {
         setTimeout(() => this.updateMenuPosition(serviceId), 10);
       }
@@ -633,31 +661,23 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     const viewportHeight = window.innerHeight;
     const padding = 8;
     
-    // Calculate available width (viewport - sidebar - padding)
-    const availableWidth = viewportWidth - sidebarWidth - (padding * 2);
-    
-    // Center menu below button
     let left = rect.left + rect.width / 2 - menuWidth / 2;
     let top = rect.bottom + 8;
     
-    // Ensure menu doesn't go off left edge (consider sidebar)
     const minLeft = sidebarWidth + padding;
     if (left < minLeft) {
       left = minLeft;
     }
     
-    // Ensure menu doesn't go off right edge
     const maxLeft = viewportWidth - menuWidth - padding;
     if (left > maxLeft) {
       left = maxLeft;
     }
     
-    // Ensure menu doesn't go off bottom
     if (top + menuHeight > viewportHeight - padding) {
       top = rect.top - menuHeight - 8;
     }
     
-    // Ensure menu doesn't go off top
     if (top < padding) {
       top = padding;
     }
@@ -675,7 +695,6 @@ export class MyServicesComponent implements OnInit, OnDestroy {
   }
 
   private positionActionsMenu(serviceId: string, event?: Event): void {
-    // Use stored button reference if available, otherwise try to find from event
     if (!this.currentMenuButton && event) {
       const button = (event.target as HTMLElement).closest('.actions-menu-btn') as HTMLElement;
       this.currentMenuButton = button || null;
@@ -686,6 +705,155 @@ export class MyServicesComponent implements OnInit, OnDestroy {
     this.updateMenuPosition(serviceId);
   }
 
+  formatPrice(price: number): string {
+    return price.toLocaleString('vi-VN') + ' đ';
+  }
+
+  formatDate(date?: string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('vi-VN');
+  }
+
+  formatDateTime(date?: string): string {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleString('vi-VN');
+  }
+
+  getDurationText(service: ServiceItem): string {
+    if (service.isLifeTime) {
+      return 'Vĩnh viễn';
+    }
+    if (service.dayDuration) {
+      if (service.dayDuration < 7) {
+        return `${service.dayDuration} ngày`;
+      } else if (service.dayDuration % 7 === 0) {
+        return `${service.dayDuration / 7} tuần`;
+      } else {
+        return `${service.dayDuration} ngày`;
+      }
+    }
+    return '-';
+  }
+
+  getDurationTextForUserChild(item: UsageHistoryItem): string {
+    if (item.userChildService?.isLifeTime) {
+      return 'Vĩnh viễn';
+    }
+    
+    const dayDuration = item.childServiceDetail?.dayDuration;
+    if (dayDuration) {
+      if (dayDuration < 7) {
+        return `${dayDuration} ngày`;
+      } else if (dayDuration % 7 === 0) {
+        return `${dayDuration / 7} tuần`;
+      } else {
+        return `${dayDuration} ngày`;
+      }
+    }
+    return '-';
+  }
+
+  getServiceActionLabel(action?: SubcriptionContance_ServiceAction): string {
+    const labels: Record<SubcriptionContance_ServiceAction, string> = {
+      [SubcriptionContance_ServiceAction.BoostScoreJob]: 'Tăng điểm việc làm',
+      [SubcriptionContance_ServiceAction.TopList]: 'Đưa lên đầu danh sách',
+      [SubcriptionContance_ServiceAction.JobBadge]: 'Huy hiệu việc làm',
+      [SubcriptionContance_ServiceAction.ThemeCompany]: 'Giao diện công ty'
+    };
+    return action !== undefined ? labels[action] : '-';
+  }
+
+  getServiceTargetLabel(target?: SubcriptionContance_ServiceTarget): string {
+    const labels: Record<SubcriptionContance_ServiceTarget, string> = {
+      [SubcriptionContance_ServiceTarget.JobPost]: 'Bài đăng việc làm',
+      [SubcriptionContance_ServiceTarget.Company]: 'Công ty'
+    };
+    return target !== undefined ? labels[target] : '-';
+  }
+
+  getChildServiceStatusLabel(status?: SubcriptionContance_ChildServiceStatus): string {
+    const labels: Record<number, string> = {
+      0: 'Không hoạt động',
+      1: 'Đang hoạt động',
+      2: 'Hết hạn',
+      3: 'Đã hủy',
+      4: 'Hết lượt sử dụng'
+    };
+    return status !== undefined ? labels[status] : '-';
+  }
+
+  getChildServiceStatusClass(status?: SubcriptionContance_ChildServiceStatus): string {
+    const classes: Record<number, string> = {
+      0: 'status-inactive',
+      1: 'status-active',
+      2: 'status-expired',
+      3: 'status-cancelled',
+      4: 'status-limit-reached'
+    };
+    return status !== undefined ? classes[status] : '';
+  }
+
+  getRemainingUsageForChild(childService: ChildServiceViewDto): string {
+    if (!this.selectedServiceForDetails?.childServices) return '-';
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    if (!matchingChild) {
+      if (childService.isLifeTime) return 'Vĩnh viễn';
+      if (!childService.isLimitUsedTime) return 'Không giới hạn';
+      return `${childService.timeUsedLimit || 0}`;
+    }
+    
+    const userChildService = matchingChild.userChildService;
+    
+    if (userChildService.isLifeTime) return 'Vĩnh viễn';
+    if (!userChildService.isLimitUsedTime) return 'Không giới hạn';
+    
+    const used = userChildService.usedTime || 0;
+    const total = userChildService.totalUsageLimit || 0;
+    const remaining = total - used;
+    
+    return `${remaining}`;
+  }
+
+  getUsedTimeForChild(childService: ChildServiceViewDto): number {
+    if (!this.selectedServiceForDetails?.childServices) return 0;
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    return matchingChild?.userChildService?.usedTime || 0;
+  }
+
+  getTotalUsageLimitForChild(childService: ChildServiceViewDto): number {
+    if (!this.selectedServiceForDetails?.childServices) {
+      return childService.isLimitUsedTime ? (childService.timeUsedLimit || 0) : 0;
+    }
+    
+    const matchingChild = this.selectedServiceForDetails.childServices.find(
+      cs => cs.childService.id === childService.id
+    );
+    
+    if (matchingChild?.userChildService) {
+      return matchingChild.userChildService.totalUsageLimit || 0;
+    }
+    
+    return childService.isLimitUsedTime ? (childService.timeUsedLimit || 0) : 0;
+  }
+
+  getRemainingDays(endDate?: string): number {
+    if (!endDate) return 0;
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
@@ -693,6 +861,4 @@ export class MyServicesComponent implements OnInit, OnDestroy {
       this.closeActionsMenu();
     }
   }
-
 }
-

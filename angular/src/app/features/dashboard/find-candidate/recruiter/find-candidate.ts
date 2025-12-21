@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -46,7 +46,8 @@ export interface CandidateSearchResult {
   templateUrl: './find-candidate.html',
   styleUrls: ['./find-candidate.scss']
 })
-export class FindCandidateComponent implements OnInit {
+export class FindCandidateComponent implements OnInit, OnDestroy {
+  sidebarExpanded = false;
   // Search filters
   keyword: string = '';
   searchScope = {
@@ -57,15 +58,9 @@ export class FindCandidateComponent implements OnInit {
     skills: false
   };
   location: string = '';
-  cvClassification: 'all' | 'unseen' | 'seen' = 'all';
-  
-  // Saved filters
-  savedFilters: any[] = [];
-  selectedSavedFilter: string = '';
-  showSavedFilterDropdown: boolean = false;
 
   // Display priority
-  displayPriority: 'newest' | 'seeking' | 'experienced' | 'suitable' = 'newest';
+  displayPriority: 'newest' | 'seeking' | 'experienced' = 'newest';
 
   // Search results
   candidates: CandidateSearchResult[] = [];
@@ -81,33 +76,41 @@ export class FindCandidateComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 10;
 
+  // Sidebar tracking
+  private sidebarCheckInterval: any;
+
   constructor(
     private router: Router,
     private candidateSearchService: CandidateSearchService
   ) {}
 
   ngOnInit() {
+    this.startSidebarCheck();
     // Không tự động search khi load, để user nhập filter trước
   }
 
-  onSavedFilterChange() {
-    // TODO: Load saved filter
+  ngOnDestroy(): void {
+    if (this.sidebarCheckInterval) {
+      clearInterval(this.sidebarCheckInterval);
+    }
   }
 
-  onCreateNewFilter() {
-    // TODO: Open modal to create new filter
+  private startSidebarCheck(): void {
+    this.checkSidebarState();
+    this.sidebarCheckInterval = setInterval(() => this.checkSidebarState(), 150);
   }
 
-  onUpdateFilter() {
-    // TODO: Open modal to update current filter
+  private checkSidebarState(): void {
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (!sidebar) {
+      this.sidebarExpanded = false;
+      return;
+    }
+    this.sidebarExpanded = sidebar.classList.contains('show') || sidebar.offsetWidth > 100;
   }
 
   onSearchScopeChange() {
     // Handle search scope checkbox changes
-  }
-
-  onCvClassificationChange() {
-    // Handle CV classification radio changes
   }
 
   onDisplayPriorityChange() {
@@ -120,13 +123,16 @@ export class FindCandidateComponent implements OnInit {
     
     const searchInput: SearchCandidateInputDto = {
       keyword: this.keyword && this.keyword.trim() ? this.keyword.trim() : undefined,
+      // Các trường jobTitle / skills chỉ dùng cho filter nâng cao riêng, 
+      // không tự động gán từ keyword để tránh lọc mất những CV chỉ match trong dataJson hoặc field khác.
+      jobTitle: undefined,
+      skills: undefined,
       workLocation: this.location && this.location.trim() ? this.location.trim() : undefined,
       searchInJobTitle: false,
       searchInActivity: false,
       searchInEducation: false,
       searchInExperience: false,
       searchInSkills: false,
-      cvClassification: this.cvClassification === 'all' ? undefined : this.cvClassification,
       displayPriority: this.displayPriority,
       skipCount: (this.currentPage - 1) * this.itemsPerPage,
       maxResultCount: this.itemsPerPage,
@@ -135,22 +141,38 @@ export class FindCandidateComponent implements OnInit {
 
     const hasCustomScope = Object.values(this.searchScope).some(isChecked => isChecked);
     if (hasCustomScope) {
+      // Nếu user chọn custom scope, chỉ search trong các scope đó
       searchInput.searchInJobTitle = this.searchScope.appliedPosition;
       searchInput.searchInActivity = this.searchScope.activity;
       searchInput.searchInEducation = this.searchScope.education;
       searchInput.searchInExperience = this.searchScope.experience;
       searchInput.searchInSkills = this.searchScope.skills;
     } else {
-      searchInput.searchInJobTitle = true;
-      searchInput.searchInActivity = true;
-      searchInput.searchInEducation = true;
-      searchInput.searchInExperience = true;
-      searchInput.searchInSkills = true;
+      // Không chọn scope: nếu có keyword thì bật tìm tất cả field (jobTitle/skills/education/experience/activity + dataJson CV)
+      if (this.keyword && this.keyword.trim()) {
+        searchInput.searchInJobTitle = true;
+        searchInput.searchInActivity = true;
+        searchInput.searchInEducation = true;
+        searchInput.searchInExperience = true;
+        searchInput.searchInSkills = true;
+      } else {
+        // Không keyword: không filter scope
+        searchInput.searchInJobTitle = false;
+        searchInput.searchInActivity = false;
+        searchInput.searchInEducation = false;
+        searchInput.searchInExperience = false;
+        searchInput.searchInSkills = false;
+      }
     }
 
+    console.log('Search input:', searchInput);
     this.candidateSearchService.searchCandidates(searchInput).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         try {
+          console.log('Search response:', response);
+          console.log('Response type:', typeof response);
+          console.log('Response keys:', response ? Object.keys(response) : 'null');
+          
           // Response có thể là ActionResult<PagedResultDto> hoặc PagedResultDto trực tiếp
           let pagedResult: any = null;
           
@@ -158,25 +180,53 @@ export class FindCandidateComponent implements OnInit {
             // Nếu có property 'value', đó là ActionResult
             if ('value' in response) {
               pagedResult = response.value;
+              console.log('Found response.value:', pagedResult);
             } 
+            // Nếu có property 'result', đó cũng có thể là ActionResult
+            else if ('result' in response) {
+              pagedResult = response.result;
+              console.log('Found response.result:', pagedResult);
+            }
             // Nếu có property 'items' và 'totalCount', đó là PagedResultDto trực tiếp
             else if ('items' in response && 'totalCount' in response) {
               pagedResult = response;
+              console.log('Found direct PagedResultDto:', pagedResult);
+            }
+            // Nếu response là array (không nên xảy ra nhưng check để an toàn)
+            else if (Array.isArray(response)) {
+              console.log('Response is array, converting to PagedResultDto');
+              pagedResult = {
+                items: response,
+                totalCount: (response as any[]).length
+              };
             }
           }
 
-          if (pagedResult && pagedResult.items) {
-            this.totalResults = pagedResult.totalCount || 0;
-            this.candidates = (pagedResult.items || []).map((candidate: CandidateSearchResultDto) => 
-              this.mapCandidateToResult(candidate)
-            );
-            this.applyClientSorting();
+          if (pagedResult) {
+            console.log('PagedResult:', pagedResult);
+            console.log('PagedResult.items:', pagedResult.items);
+            console.log('PagedResult.totalCount:', pagedResult.totalCount);
+            
+            if (pagedResult.items && Array.isArray(pagedResult.items)) {
+              this.totalResults = pagedResult.totalCount || pagedResult.items.length || 0;
+              this.candidates = pagedResult.items.map((candidate: CandidateSearchResultDto) => 
+                this.mapCandidateToResult(candidate)
+              );
+              console.log('Mapped candidates:', this.candidates.length);
+              this.applyClientSorting();
+            } else {
+              console.warn('PagedResult.items is not an array:', pagedResult.items);
+              this.totalResults = 0;
+              this.candidates = [];
+            }
           } else {
+            console.warn('No pagedResult found in response');
             this.totalResults = 0;
             this.candidates = [];
           }
         } catch (error) {
           console.error('Error parsing response:', error);
+          console.error('Response that caused error:', response);
           this.totalResults = 0;
           this.candidates = [];
         }
@@ -184,7 +234,13 @@ export class FindCandidateComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error searching candidates:', error);
-        this.showToastMessage('Có lỗi xảy ra khi tìm kiếm ứng viên', 'error');
+        console.error('Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          message: error.message,
+          error: error.error
+        });
+        this.showToastMessage('Có lỗi xảy ra khi tìm kiếm ứng viên: ' + (error.error?.message || error.message || 'Unknown error'), 'error');
         this.loading = false;
         this.candidates = [];
         this.totalResults = 0;
@@ -284,11 +340,9 @@ export class FindCandidateComponent implements OnInit {
       case 'newest':
         return 'LastModificationTime DESC, CreationTime DESC';
       case 'seeking':
-        return 'Status DESC, ProfileVisibility DESC, LastModificationTime DESC';
+        return 'Status DESC, LastModificationTime DESC';
       case 'experienced':
         return 'Experience DESC, LastModificationTime DESC';
-      case 'suitable':
-        return 'LastModificationTime DESC, Experience DESC';
       default:
         return 'LastModificationTime DESC, CreationTime DESC';
     }
@@ -403,6 +457,9 @@ export class FindCandidateComponent implements OnInit {
     return name.substring(0, 2).toUpperCase();
   }
 
+  // Expose Math for template
+  Math = Math;
+
   formatExperience(experience?: number): string {
     if (!experience) return '';
     const years = Math.floor(experience);
@@ -411,6 +468,57 @@ export class FindCandidateComponent implements OnInit {
       return `${years} năm ${months} tháng`;
     }
     return `${years} năm`;
+  }
+
+  // Pagination methods
+  get totalPages(): number {
+    return Math.ceil(this.totalResults / this.itemsPerPage);
+  }
+
+  get hasNextPage(): boolean {
+    return this.currentPage < this.totalPages;
+  }
+
+  get hasPreviousPage(): boolean {
+    return this.currentPage > 1;
+  }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  }
+
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.performSearch();
+      // Scroll to top of results
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  onNextPage() {
+    if (this.hasNextPage) {
+      this.onPageChange(this.currentPage + 1);
+    }
+  }
+
+  onPreviousPage() {
+    if (this.hasPreviousPage) {
+      this.onPageChange(this.currentPage - 1);
+    }
   }
 }
 

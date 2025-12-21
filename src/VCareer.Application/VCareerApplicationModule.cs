@@ -2,15 +2,23 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
+using VCareer.Application.Applications;
+using VCareer.IServices.Application;
 using VCareer.IServices.IJobServices;
+using VCareer.IServices.Subcriptions;
 using VCareer.Jwt;
 using VCareer.Security;
 using VCareer.Services.Job;
 using VCareer.Services.LuceneService.JobSearch;
+using VCareer.Services.LuceneService.CandidateSearch;
 using VCareer.Services.Payment;
+using VCareer.Services.Subcription;
 using VCareer.Token;
+using VNPAY;
 using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BackgroundWorkers.Quartz;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
@@ -19,8 +27,6 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.Users;
-using VNPAY;
-using System.Linq;
 
 namespace VCareer;
 
@@ -52,13 +58,18 @@ public class VCareerApplicationModule : AbpModule
         // ISingletonDependency đã được implement trong LuceneJobIndexer
         // ABP tự động đăng ký, nhưng ta có thể đăng ký thủ công để rõ ràng:
         context.Services.AddSingleton<ILuceneJobIndexer, LuceneJobIndexer>();
+        context.Services.AddSingleton<ILuceneCandidateIndexer, LuceneCandidateIndexer>();
 
         // 🔧 ĐĂNG KÝ VNPAY CLIENT được thực hiện trong VCareerHttpApiHostModule
         // để có access đến IConfiguration
 
         // 🔧 ĐĂNG KÝ VNPAY SERVICE
         context.Services.AddScoped<IVnpayService, VnpayService>();
-                      }
+        context.Services.AddTransient<ISubcriptionService, SubcriptionService_Service>();
+        context.Services.AddTransient<IUser_ChildService, User_ChildService_Service>();
+
+        context.Services.AddScoped<IJobApply,ApplicationAppService>();
+         }
 
    
 

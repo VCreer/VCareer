@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -21,6 +21,7 @@ namespace VCareer.Services.Payment
         Dictionary<string, string> ParseCallbackData(string queryString);
     }
 
+    
     public class VnpayService : IVnpayService
     {
         private readonly IConfiguration _configuration;
@@ -48,6 +49,8 @@ namespace VCareer.Services.Payment
             _returnUrl = _configuration["VNPay:ReturnUrl"] ?? "http://localhost:4200/recruiter/payment/callback";
         }
 
+
+        //tạo url từ thư viện của url
         public (string PaymentUrl, string PaymentId) CreatePaymentUrlWithId(Guid orderId, string orderCode, decimal totalAmount, string returnUrl)
         {
             try
@@ -91,6 +94,7 @@ namespace VCareer.Services.Payment
             }
         }
 
+        // tao\j payment urrl
         public string CreatePaymentUrl(Guid orderId, string orderCode, decimal totalAmount, string returnUrl)
         {
             // Wrapper method for backward compatibility
@@ -98,6 +102,8 @@ namespace VCareer.Services.Payment
             return paymentUrl;
         }
 
+
+        
         public bool ValidatePaymentCallback(Dictionary<string, string> vnpayData, string secureHash)
         {
             try
@@ -129,6 +135,8 @@ namespace VCareer.Services.Payment
                 return false;
             }
         }
+
+
 
         public Dictionary<string, string> ParseCallbackData(string queryString)
         {

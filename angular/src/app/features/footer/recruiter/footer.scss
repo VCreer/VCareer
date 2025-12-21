@@ -1,0 +1,141 @@
+.vc-footer {
+  background: #f8fafc;
+  padding: 32px 24px 28px;
+  color: #0f172a;
+  border-top: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.vc-footer__top {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vc-footer__brand {
+  min-width: 260px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vc-footer__logo {
+  height: 78px;
+  max-height: 84px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.vc-footer__tagline {
+  margin: 0;
+  font-weight: 600;
+}
+
+.vc-footer__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trust-badge {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.vc-footer__badges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 6px;
+}
+
+.vc-footer__badges-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  img {
+    height: 42px;
+    width: auto;
+  }
+}
+
+.vc-footer__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+  flex: 1;
+}
+
+.vc-footer__column {
+  h4 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  a {
+    display: block;
+    margin: 6px 0;
+    color: #334155;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    &:hover {
+      color: #0f83ba;
+    }
+  }
+}
+
+.vc-footer__social {
+  max-width: 1200px;
+  margin: 18px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vc-footer__social-row {
+  display: flex;
+  gap: 12px;
+  a {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #0f83ba;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    transition: transform 0.2s ease, background 0.2s ease;
+    &:hover {
+      transform: translateY(-2px);
+      background: #0b6a94;
+    }
+  }
+}
+
+.vc-footer__label {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+@media (max-width: 768px) {
+  .vc-footer {
+    padding: 24px 16px;
+  }
+  .vc-footer__top {
+    flex-direction: column;
+  }
+}
+

@@ -2,11 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using VCareer.Constants.Authentication;
 using VCareer.Constants.ErrorCodes;
 using VCareer.Dto.TeamManagementDto;
+using VCareer.IServices.IActivityLogService;
 using VCareer.IServices.ITeamManagement;
+using VCareer.Models.ActivityLogs;
 using VCareer.Models.Users;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Entities;
@@ -32,6 +37,7 @@ namespace VCareer.Services.TeamManagement
         private readonly ICurrentUser _currentUser;
         private readonly IEmailSender _emailSender;
         private readonly ITemplateRenderer _templateRenderer;
+        private readonly IActivityLogAppService _activityLogAppService;
 
         public TeamManagementAppService(
             IRepository<RecruiterProfile, Guid> recruiterProfileRepository,
@@ -40,7 +46,8 @@ namespace VCareer.Services.TeamManagement
             IdentityRoleManager roleManager,
             ICurrentUser currentUser,
             IEmailSender emailSender,
-            ITemplateRenderer templateRenderer)
+            ITemplateRenderer templateRenderer,
+            IActivityLogAppService activityLogAppService)
         {
             _recruiterProfileRepository = recruiterProfileRepository;
             _employeeProfileRepository = employeeProfileRepository;
@@ -49,11 +56,13 @@ namespace VCareer.Services.TeamManagement
             _currentUser = currentUser;
             _emailSender = emailSender;
             _templateRenderer = templateRenderer;
+            _activityLogAppService = activityLogAppService;
         }
 
         /// <summary>
         /// Lấy thông tin user hiện tại (DEBUG)
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.GetCurrentUserInfo)]
         public async Task<StaffListItemDto> GetCurrentUserInfoAsync()
         {
             try
@@ -82,6 +91,7 @@ namespace VCareer.Services.TeamManagement
         /// Lấy danh sách HR Staff (IsLead = 0) trong company
         /// Chỉ Leader Recruiter (IsLead = 1) mới có quyền xem
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.GetAllStaff)]
         public async Task<List<StaffListItemDto>> GetAllStaffAsync()
         {
             // Get current user profile và verify là Leader Recruiter (IsLead = 1)
@@ -106,6 +116,7 @@ namespace VCareer.Services.TeamManagement
                 RecruiterProfileId = s.Id,
                 FullName = $"{s.User?.Name} {s.User?.Surname}".Trim(),
                 Email = s.User?.Email ?? "",
+                PhoneNumber = s.User?.PhoneNumber ?? string.Empty,
                 IsLead = s.IsLead,
                 Status = s.Status,
                 CompanyId = s.CompanyId,
@@ -118,6 +129,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Deactivate HR Staff
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.DeactivateStaff)]
         public async Task<StaffStatusChangeDto> DeactivateStaffAsync(DeactivateStaffDto input)
         {
             // Validate input
@@ -213,6 +225,7 @@ namespace VCareer.Services.TeamManagement
         /// Invite HR Staff mới
         /// Tạo tài khoản và gửi email với thông tin đăng nhập
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.InviteStaff)]
         [UnitOfWork]
         public async Task<StaffListItemDto> InviteStaffAsync(InviteStaffDto input)
         {
@@ -256,14 +269,19 @@ namespace VCareer.Services.TeamManagement
             }
 
             // Tạo RecruiterProfile với IsLead = false và CompanyId của Leader
+            // Nếu Leader đã được xác thực (IsVerified = true hoặc RecruiterLevel >= Verified)
+            // thì HR Staff mới sẽ được coi là đã xác thực ngay lập tức.
             var recruiterProfile = new RecruiterProfile
             {
                 UserId = newUser.Id,
                 Status = true,
                 Email = input.Email,
-                RecruiterLevel = Constants.JobConstant.RecruiterLevel.Unverified,
                 IsLead = false, // HR Staff không phải Leader
                 CompanyId = currentRecruiter.CompanyId, // Cùng công ty với Leader
+                IsVerified = currentRecruiter.IsVerified,
+                RecruiterLevel = currentRecruiter.IsVerified 
+                    ? currentRecruiter.RecruiterLevel 
+                    : Constants.JobConstant.RecruiterLevel.Unverified,
             };
             await _recruiterProfileRepository.InsertAsync(recruiterProfile);
             await CurrentUnitOfWork.SaveChangesAsync();
@@ -288,6 +306,27 @@ namespace VCareer.Services.TeamManagement
             );
 
             await _emailSender.SendAsync(input.Email, "Thông tin đăng nhập VCareer - HR Staff", emailBody);
+
+            // Ghi log: Thêm HR Staff
+            if (_currentUser.IsAuthenticated && _currentUser.Id.HasValue)
+            {
+                try
+                {
+                    await _activityLogAppService.LogActivityAsync(
+                        _currentUser.Id.Value,
+                        ActivityType.StaffAdded,
+                        "InviteStaff",
+                        $"Thêm HR Staff mới: {input.Email}",
+                        recruiterProfile.Id,
+                        nameof(RecruiterProfile),
+                        null);
+                }
+                catch (Exception ex)
+                {
+                    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+                    Logger.LogWarning($"Failed to log activity for StaffAdded: {ex.Message}");
+                }
+            }
 
             // Return created staff info
             return new StaffListItemDto
@@ -342,6 +381,7 @@ namespace VCareer.Services.TeamManagement
         /// <summary>
         /// Activate HR Staff
         /// </summary>
+       // [Authorize(VCareerPermission.TeamManagement.ActivateStaff)]
         public async Task<StaffStatusChangeDto> ActivateStaffAsync(ActivateStaffDto input)
         {
             // Validate input

@@ -27,6 +27,14 @@ export class CandidateCvService {
     { apiName: this.apiName,...config });
   
 
+  downloadCv = (cvId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, number[]>({
+      method: 'POST',
+      url: `/api/app/candidate-cv/download-cv/${cvId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CandidateCvDto>({
       method: 'GET',
@@ -90,6 +98,15 @@ export class CandidateCvService {
       method: 'PUT',
       url: `/api/app/candidate-cv/${id}`,
       body: input,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updatePreviewImage = (cvId: string, previewImageUrl: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: `/api/app/candidate-cv/preview-image/${cvId}`,
+      params: { previewImageUrl },
     },
     { apiName: this.apiName,...config });
 

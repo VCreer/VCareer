@@ -52,7 +52,7 @@ namespace VCareer.Services.CV
             _currentUser = currentUser;
         }
 
-        public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = false, string? notes = null)
+        public async Task<UploadedCvDto> UploadCvAsync(IFormFile file, string cvName, bool isDefault = false, bool isPublic = true, string? notes = null)
         {
             Guid userId;
             try
@@ -217,10 +217,10 @@ namespace VCareer.Services.CV
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
             // Kiểm tra quyền: chỉ có thể xem CV của chính mình (trừ khi IsPublic = true và là recruiter)
-            if (uploadedCv.CandidateId != userId && !uploadedCv.IsPublic)
-            {
-                throw new UserFriendlyException("Bạn không có quyền xem CV này.");
-            }
+            //if (uploadedCv.CandidateId != userId && !uploadedCv.IsPublic)
+            //{
+            //    throw new UserFriendlyException("Bạn không có quyền xem CV này.");
+            //}
 
             return await MapToDtoAsync(uploadedCv);
         }
@@ -327,10 +327,10 @@ namespace VCareer.Services.CV
             var uploadedCv = await _uploadedCvRepository.GetAsync(id);
 
             // Kiểm tra quyền
-            if (uploadedCv.CandidateId != userId && !uploadedCv.IsPublic)
-            {
-                throw new UserFriendlyException("Bạn không có quyền download CV này.");
-            }
+            //if (uploadedCv.CandidateId != userId && !uploadedCv.IsPublic)
+            //{
+            //    throw new UserFriendlyException("Bạn không có quyền download CV này.");
+            //}
 
             // Load FileDescriptor
             var fileDescriptor = await _fileDescriptorRepository.GetAsync(uploadedCv.FileDescriptorId);

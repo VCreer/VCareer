@@ -134,6 +134,137 @@
   margin-bottom: 24px;
 }
 
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #374151;
+
+  i {
+    color: #0F83BA;
+  }
+}
+
+.application-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.application-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .application-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .candidate-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .candidate-name {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .candidate-email,
+    .candidate-phone {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  }
+
+  .job-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    .job-title {
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .campaign-name {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  }
+
+  .application-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-online {
+      background: #ecfdf3;
+      color: #15803d;
+    }
+    .badge-uploaded {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .status-text {
+      color: #374151;
+      font-weight: 600;
+    }
+    .created-at {
+      color: #6b7280;
+      font-size: 13px;
+    }
+  }
+}
+
+.pagination {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: #0F83BA;
+      color: #0F83BA;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .page-info {
+    font-weight: 600;
+    color: #111827;
+  }
+}
+
 // Tabs
 .campaign-tabs {
   display: flex;

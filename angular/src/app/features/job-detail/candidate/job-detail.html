@@ -1,38 +1,44 @@
 <div class="job-detail-page">
-  <!-- Search Header -->
-  <app-search-header
-    [pageTitle]="translate('job_detail.title')"
-    [showPageTitle]="false"
-    [selectedCategory]="selectedCategory"
-    [selectedLocation]="selectedLocation"
-    [searchPosition]="searchPosition"
-    [categoryPlaceholder]="translate('job_page.category_placeholder')"
-    [positionPlaceholder]="translate('job_page.position_placeholder')"
-    [locationPlaceholder]="translate('job_page.location_placeholder')"
-    [searchButton]="translate('job_page.search_button')"
-    [categories]="{
-      it: translate('job_page.categories.it'),
-      marketing: translate('job_page.categories.marketing'),
-      accounting: translate('job_page.categories.accounting')
-    }"
-    [locationLongAn]="translate('job_data.location_long_an')"
-    [locationHanoi]="translate('job_page.locations.hanoi')"
-    [locationHcm]="translate('job_page.locations.hcm')"
-    [locationDanang]="translate('job_page.locations.danang')"
-    (categoryChange)="onCategoryChange($event)"
-    (locationChange)="onLocationChange($event)"
-    (positionChange)="onPositionChange($event)"
-    (search)="onSearch()"
-    (clearPosition)="onClearPosition()"
-  >
-  </app-search-header>
+  <!-- Search Header - Using FilterBarComponent -->
+  <div class="search-header-wrapper">
+    <app-filter-bar
+      [categories]="categoryTree"
+      [provinces]="provinces"
+      [selectedCategoryIds]="selectedCategoryIds"
+      [selectedProvinceCodes]="selectedProvinceCodes"
+      [selectedWardCodes]="selectedWardCodes"
+      (categorySelected)="onCategorySelected($event)"
+      (locationSelected)="onLocationSelected($event)"
+    >
+      <!-- Search Input -->
+      <input
+        search-input
+        type="text"
+        class="main-search-input"
+        placeholder="{{ translate('job_page.position_placeholder') }}"
+        [(ngModel)]="searchPosition"
+        (keyup.enter)="onSearch($event)"
+      />
+
+      <!-- Search Button -->
+      <button
+        search-button
+        type="button"
+        class="main-search-btn"
+        (click)="onSearch($event)"
+      >
+        <i class="fa fa-search search-icon"></i>
+        {{ translate('job_page.search_button') }}
+      </button>
+    </app-filter-bar>
+  </div>
 
   <!-- Breadcrumb -->
   <div class="breadcrumb-wrapper">
     <div class="breadcrumb-container">
-      <a routerLink="/candidate/job" class="breadcrumb-item">{{ translate('breadcrumb.home') }}</a>
+      <a routerLink="/job" class="breadcrumb-item">{{ translate('breadcrumb.home') }}</a>
       <span class="breadcrumb-separator">></span>
-      <a routerLink="/candidate/job" class="breadcrumb-item">{{ translate('breadcrumb.jobs') }}</a>
+      <a routerLink="/job" class="breadcrumb-item">{{ translate('breadcrumb.jobs') }}</a>
       <span class="breadcrumb-separator">></span>
       <span class="breadcrumb-item" *ngIf="jobDetail">{{ jobDetail.title }}</span>
     </div>
@@ -58,14 +64,14 @@
 
           <!-- Job Details Section -->
           <div class="job-detail__info--sections">
-            <div class="job-detail__info-item">
+            <div class="job-detail__info-item" *ngIf="jobDetail">
               <div class="job-detail__info-item-icon">
                 <i class="fa fa-dollar-sign"></i>
               </div>
               <div class="job-detail__info-item-content">
                 <div class="job-detail__info-item-title">{{ translate('job_detail.salary') }}</div>
                 <div class="job-detail__info-item-value">
-                  {{ jobDetail.salaryText || 'Thỏa thuận' }}
+                  {{ formatSalary(jobDetail) }}
                 </div>
               </div>
             </div>
@@ -78,7 +84,7 @@
                   {{ translate('job_detail.location') }}
                 </div>
                 <div class="job-detail__info-item-value">
-                  {{ jobDetail.provinceName || 'Không xác định' }}
+                  {{ getFullLocation() }}
                 </div>
               </div>
             </div>
@@ -91,17 +97,8 @@
                   {{ translate('job_detail.experience') }}
                 </div>
                 <div class="job-detail__info-item-value">
-                  {{ jobDetail.experienceText || 'Không yêu cầu' }}
+                  {{ getExperienceText(jobDetail?.experience) }}
                 </div>
-              </div>
-            </div>
-            <div class="job-detail__info-item">
-              <div class="job-detail__info-item-icon">
-                <i class="fa fa-eye"></i>
-              </div>
-              <div class="job-detail__info-item-content">
-                <div class="job-detail__info-item-title">Lượt xem</div>
-                <div class="job-detail__info-item-value">{{ jobDetail.viewCount || 0 }}</div>
               </div>
             </div>
           </div>
@@ -174,7 +171,13 @@
           <!-- Work Location Section -->
           <div class="job-detail__info--section" *ngIf="jobDetail.workLocation">
             <h3 class="section-title">{{ translate('job_detail.work_location') }}</h3>
-            <p>{{ jobDetail.workLocation }}</p>
+        <div [innerHTML]="jobDetail.workLocation"></div>
+          </div>
+
+          <!-- Work Time Section -->
+          <div class="job-detail__info--section" *ngIf="jobDetail.workTime && jobDetail.workTime.trim()">
+            <h3 class="section-title">Thời gian làm việc</h3>
+            <div [innerHTML]="jobDetail.workTime"></div>
           </div>
 
           <!-- Application Method Section -->
@@ -188,6 +191,49 @@
                 }}</span
               >
             </div>
+
+            <!-- Action Buttons -->
+            <div class="job-detail__action-buttons">
+              <button class="btn-apply-now" (click)="openApplyModal()">
+                <i class="fa fa-paper-plane"></i>
+                {{ hasApplied ? 'Ứng tuyển lại' : 'Ứng tuyển ngay' }}
+              </button>
+              <button class="btn-save-job" [class.active]="isHeartActive" (click)="toggleHeart()">
+                <i class="fa" [ngClass]="isHeartActive ? 'fa-heart' : 'fa-heart-o'"></i>
+                <span>{{ isHeartActive ? 'Đã lưu' : 'Lưu tin' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Related Jobs Section -->
+          <div class="related-jobs-section">
+            <div class="recruitment-details-header">
+              <div class="section-title-bar"></div>
+              <h2 class="section-title">Việc làm liên quan</h2>
+            </div>
+            
+            <!-- Loading State -->
+            <div *ngIf="isLoadingRelatedJobs" class="related-jobs-loading">
+              <div class="loading-spinner"></div>
+              <p>Đang tải việc làm liên quan...</p>
+            </div>
+
+            <!-- Related Jobs List -->
+            <div *ngIf="!isLoadingRelatedJobs && relatedJobs.length > 0" class="related-jobs-list">
+              <app-job-list
+                [jobs]="relatedJobs"
+                [totalCount]="relatedJobs.length"
+                [isLoading]="false"
+                [provinces]="provinces"
+                [hideQuickView]="true"
+                (jobClick)="navigateToJob($event)"
+              ></app-job-list>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoadingRelatedJobs && relatedJobs.length === 0" class="related-jobs-empty">
+              <p>Không có việc làm liên quan</p>
+            </div>
           </div>
         </div>
       </div>
@@ -198,32 +244,29 @@
         <div class="job-detail__company" *ngIf="companyInfo && !isLoadingCompany && !companyError">
           <div class="company-logo">
             <img
-              *ngIf="companyInfo.logoUrl"
+              *ngIf="companyInfo.logoUrl && companyInfo.logoUrl.trim()"
               [src]="getLogoUrl(companyInfo.logoUrl)"
               [alt]="companyInfo.companyName || 'Company Logo'"
               class="company-logo-img"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              (error)="$event.target.src='assets/images/home/company-placeholder.png'; $event.target.onerror=null;"
             />
-            <div class="logo-box" [style.display]="companyInfo.logoUrl ? 'none' : 'flex'">
-              {{ (companyInfo.companyName || 'SM').substring(0, 2).toUpperCase() }}
+            <div class="logo-box" [style.display]="(!companyInfo.logoUrl || !companyInfo.logoUrl.trim()) ? 'flex' : 'none'">
+              {{ getCompanyInitials(companyInfo.companyName) }}
             </div>
           </div>
           <h3 class="company-name">{{ companyInfo.companyName || 'Chưa có thông tin' }}</h3>
           <div class="company-details">
-            <div class="company-detail-item" *ngIf="companyInfo.companySize">
+            <div class="company-detail-item" *ngIf="companyInfo.companySize !== null && companyInfo.companySize !== undefined">
               <i class="fa fa-users"></i>
               <span class="label">Quy mô:</span>
               <span>{{ formatCompanySize(companyInfo.companySize) }}</span>
             </div>
-            <div
-              class="company-detail-item"
-              *ngIf="companyInfo.industries && companyInfo.industries.length > 0"
-            >
+            <div class="company-detail-item" *ngIf="companyInfo.industries && companyInfo.industries.length > 0">
               <i class="fa fa-briefcase"></i>
               <span class="label">Lĩnh vực:</span>
-              <span>{{ companyInfo.industries.join(', ') }}</span>
+              <span>{{ getIndustriesText(companyInfo.industries) }}</span>
             </div>
-            <div class="company-detail-item" *ngIf="companyInfo.headquartersAddress">
+            <div class="company-detail-item" *ngIf="companyInfo.headquartersAddress && companyInfo.headquartersAddress.trim()">
               <i class="fa fa-map-marker-alt"></i>
               <span class="label">Địa điểm:</span>
               <span>{{ companyInfo.headquartersAddress }}</span>
@@ -280,17 +323,18 @@
           <div class="category-tags">
             <a
               class="tag"
-              *ngFor="let c of jobDetail.categoryPath"
+              *ngFor="let c of jobCategories"
               href="/candidate/job"
               (click)="onRelatedCategoryClick(c, $event)"
             >
-              {{ c.name }}
+              {{ c.categoryName }}
             </a>
+            <span class="tag" *ngIf="jobCategories.length === 0">Chưa có danh mục</span>
           </div>
 
           <h3 style="margin-top: 1.5rem">{{ translate('job_detail.area') }}</h3>
           <div class="category-tags">
-            <span class="tag">{{ jobDetail.provinceName || 'không có' }}</span>
+            <span class="tag">{{ getFullLocation() }}</span>
           </div>
         </div>
       </div>
@@ -323,7 +367,7 @@
 
   <!-- Login Modal -->
   <app-login-modal
-    *ngIf="showLoginModal"
+    [show]="showLoginModal"
     (close)="closeLoginModal()"
     (loginSuccess)="onLoginSuccess()"
   ></app-login-modal>

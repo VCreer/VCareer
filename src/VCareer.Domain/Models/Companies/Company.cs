@@ -29,7 +29,7 @@ namespace VCareer.Models.Companies
         public DateTime? VerifyAt { get; set; }
 
         // Legal Information fields (gộp từ CompanyLegalInfo)
-        public string TaxCode { get; set; }
+         public string TaxCode { get; set; }
         public string? BusinessLicenseNumber { get; set; }
         public DateTime? BusinessLicenseIssueDate { get; set; }
         public string? BusinessLicenseIssuePlace { get; set; }
@@ -43,8 +43,9 @@ namespace VCareer.Models.Companies
 
         // Legal verification status
         public string? LegalVerificationStatus { get; set; } // pending, approved, rejected
-        public long? LegalReviewedBy { get; set; } // Admin duyệt
+        public long? LegalReviewedBy { get; set; } // Admin duyệt (tạm thời dùng long để tương thích với database)
         public DateTime? LegalReviewedAt { get; set; } // Thời gian duyệt
+        public string? RejectionNotes { get; set; } // Ghi chú lý do từ chối
 
         public ICollection<CompanyIndustry> CompanyIndustries { get; private set; }
         public ICollection<RecruiterProfile> RecruiterProfiles { get; private set; } = new List<RecruiterProfile>();

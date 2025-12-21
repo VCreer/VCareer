@@ -1,7 +1,9 @@
 <div class="job-listings-section">
   <div class="section-header">
     <h2>{{ translate('home.recent_jobs') }}</h2>
-    <a href="#" class="view-all-link">{{ translate('common.view_all') }}</a>
+    <a href="#" class="view-all-link" (click)="onViewAllClick($event)">
+      {{ translate('common.view_all') }}
+    </a>
   </div>
   
   <!-- Filter Bar (chỉ hiển thị nếu cần) -->
@@ -21,14 +23,13 @@
         <img 
           class="job-image" 
           loading="lazy" 
-          [src]="job.companyImageUrl || defaultLogo" 
+          [src]="getCompanyLogoUrl(job.companyImageUrl, job.companyId)" 
           [alt]="job.companyName || 'Company logo'" 
           (error)="onImgError($event)" 
         />
         
         <div class="job-content">
           <!-- Job Title -->
-          <!-- ✅ REMOVED: (click) từ h3 vì đã có ở parent -->
           <h3 class="job-title">
             {{ job.title || 'Chưa có tiêu đề' }}
           </h3>
@@ -36,70 +37,27 @@
           <!-- Company Name -->
           <p class="company-name">{{ job.companyName || 'Chưa có tên công ty' }}</p>
           
-          <!-- Salary -->
-          <div class="job-detail-row">
-            <span class="job-detail-item">
-              <i class="fa fa-money" aria-hidden="true"></i>
-              {{ formatSalary(job) }}
-            </span>
-          </div>
-          
-          <!-- Location -->
-          <div class="job-detail-row" *ngIf="job.provinceCode">
-            <span class="job-detail-item">
-              <i class="fa fa-map-marker" aria-hidden="true"></i>
-              <span *ngIf="getWardName(job.provinceCode, job.districtCode)">
-                {{ getWardName(job.provinceCode, job.districtCode) }}, 
+          <!-- Tags: Salary and Location -->
+          <div class="job-tags-wrapper">
+            <div class="job-tags">
+              <span class="job-tag" *ngIf="formatSalary(job) !== 'Chưa cập nhật'">
+                {{ formatSalary(job) }}
               </span>
-              {{ getProvinceName(job.provinceCode) || 'Chưa cập nhật' }}
-            </span>
+              <span class="job-tag" *ngIf="job.provinceCode">
+                <span *ngIf="getWardName(job.provinceCode, job.districtCode)">
+                  {{ getWardName(job.provinceCode, job.districtCode) }}, 
+                </span>
+                {{ getProvinceName(job.provinceCode) || 'Chưa cập nhật' }}
+              </span>
+            </div>
+            <!-- Heart Icon - Same line as tags -->
+            <button 
+              class="heart-btn" 
+              [class.active]="job.isBookmarked" 
+              (click)="toggleBookmark(job); $event.stopPropagation()">
+              <i class="fa" [class.fa-heart]="job.isBookmarked" [class.fa-heart-o]="!job.isBookmarked" aria-hidden="true"></i>
+            </button>
           </div>
-          
-          <!-- Employment Type & Experience -->
-          <div class="job-detail-row">
-            <span class="job-detail-item" *ngIf="job.employmentType">
-              <i class="fa fa-briefcase" aria-hidden="true"></i>
-              {{ formatEmploymentType(job.employmentType) }}
-            </span>
-            <span class="job-detail-item" *ngIf="job.experience">
-              <i class="fa fa-user" aria-hidden="true"></i>
-              {{ formatExperience(job.experience) }}
-            </span>
-          </div>
-          
-          <!-- Position Type -->
-          <div class="job-detail-row" *ngIf="job.positionType">
-            <span class="job-detail-item">
-              <i class="fa fa-building" aria-hidden="true"></i>
-              {{ formatPositionType(job.positionType) }}
-            </span>
-          </div>
-          
-          <!-- Category -->
-          <div class="job-detail-row" *ngIf="job.jobCategoryId">
-            <span class="job-detail-item">
-              <i class="fa fa-tag" aria-hidden="true"></i>
-              {{ getCategoryName(job.jobCategoryId) }}
-            </span>
-          </div>
-          
-          <!-- Expires Date -->
-          <div class="job-detail-row" *ngIf="job.expiresAt">
-            <span class="job-detail-item job-expires">
-              <i class="fa fa-clock-o" aria-hidden="true"></i>
-              Hết hạn: {{ formatDate(job.expiresAt) }}
-            </span>
-          </div>
-        </div>
-        
-        <div class="job-meta">
-          <!-- ✅ FIXED: Thêm $event.stopPropagation() để không trigger job click -->
-          <button 
-            class="heart-btn" 
-            [class.active]="job.isBookmarked" 
-            (click)="toggleBookmark(job); $event.stopPropagation()">
-            ♡
-          </button>
         </div>
       </div>
     </div>
@@ -112,6 +70,13 @@
     [type]="toastType"
     (close)="showToast = false"
   ></app-toast-notification>
+
+  <!-- Login Modal -->
+  <app-login-modal
+    [show]="showLoginModal"
+    (close)="closeLoginModal()"
+    (loginSuccess)="onLoginSuccess()"
+  ></app-login-modal>
   
   <div class="pagination">
     <button 

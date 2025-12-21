@@ -1071,6 +1071,27 @@
     flex-direction: column;
     gap: 16px;
 
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px; // Tách form-label và form-input ra một chút
+
+      .form-label {
+        margin-bottom: 0; // Đảm bảo không có margin-bottom mặc định
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .form-input {
+        &[disabled],
+        &[readonly] {
+          background-color: #f3f4f6;
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+      }
+    }
+
     .otp-input-row {
       display: flex;
       gap: 12px;

@@ -1,6 +1,6 @@
-<div class="campaign-job-management-view-cv-page">
+<div class="campaign-job-management-view-cv-page" [style.margin-left.px]="getWindowWidth() > 768 ? sidebarWidth : 0" [style.width]="getContentWidth()">
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box">
+  <div class="breadcrumb-box" [style.left.px]="getWindowWidth() > 768 ? sidebarWidth : 0" [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <button class="back-btn" (click)="onBack()">
         <i class="fa fa-arrow-left"></i>
@@ -11,7 +11,7 @@
   </div>
 
   <!-- Main Content -->
-  <div class="main-content">
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
     <!-- Filter Bar -->
     <div class="filter-bar">
       <div class="search-group">

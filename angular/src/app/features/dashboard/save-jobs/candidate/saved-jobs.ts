@@ -4,9 +4,13 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { ToastNotificationComponent } from '../../../../shared/components/toast-notification/toast-notification';
-import { JobApiService, SavedJobDto, JobViewDto } from '../../../../apiTest/api/job.service';
 import { NavigationService } from '../../../../core/services/navigation.service';
 import { take } from 'rxjs/operators';
+import { JobSearchService } from '../../../../proxy/services/job/job-search.service';
+import { SavedJobDto } from '../../../../proxy/dto/job/models';
+import { GeoService } from '../../../../proxy/services/geo/geo.service';
+import { catchError, of } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-saved-jobs',
@@ -22,12 +26,18 @@ export class SavedJobsComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
   totalCount = 0;
+  // Map để lưu province name và logo cho mỗi job
+  jobProvinceNames: Map<string, string> = new Map();
+  jobLogos: Map<string, string> = new Map();
+  // Map để track logo load errors
+  logoLoadErrors: Set<string> = new Set();
 
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private jobApi: JobApiService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private jobSearchService: JobSearchService,
+    private geoService: GeoService
   ) {}
 
   ngOnInit() {
@@ -61,10 +71,19 @@ export class SavedJobsComponent implements OnInit {
 
   loadSavedJobs() {
     this.loading = true;
-    this.jobApi.getSavedJobs(0, 100).subscribe({
+    this.jobSearchService.getSavedJobs(0, 100).subscribe({
       next: (result) => {
         this.savedJobs = result.items || [];
         this.totalCount = result.totalCount || 0;
+        
+        // Load province names và logos cho tất cả jobs
+        this.savedJobs.forEach(job => {
+          if (job.jobId) {
+            this.loadProvinceName(job);
+            this.loadCompanyLogo(job);
+          }
+        });
+        
         this.loading = false;
       },
       error: (error) => {
@@ -75,7 +94,50 @@ export class SavedJobsComponent implements OnInit {
     });
   }
 
+  /**
+   * Load province name từ provinceCode
+   */
+  private loadProvinceName(job: SavedJobDto): void {
+    if (!job.jobId) return;
+    
+    const detail = job.jobDetail as any;
+    const provinceCode = detail?.provinceCode;
+    
+    if (provinceCode) {
+      this.geoService.getProvinceNameByCodeByProvinceCode(provinceCode)
+        .pipe(
+          catchError(error => {
+            console.error(`Error getting province name for code ${provinceCode}:`, error);
+            return of('');
+          })
+        )
+        .subscribe(provinceName => {
+          if (provinceName) {
+            this.jobProvinceNames.set(job.jobId!, provinceName);
+          }
+        });
+    }
+  }
+
+  /**
+   * Load company logo từ jobDetail
+   */
+  private loadCompanyLogo(job: SavedJobDto): void {
+    if (!job.jobId) return;
+    
+    const detail = job.jobDetail as any;
+    const companyImageUrl = detail?.companyImageUrl;
+    
+    if (companyImageUrl && companyImageUrl.trim() !== '') {
+      this.jobLogos.set(job.jobId!, this.formatCompanyLogoUrl(companyImageUrl));
+    }
+  }
+
   onApplyJob(job: SavedJobDto) {
+    if (this.isJobExpired(job)) {
+      this.showToastMessage('Công việc đã hết hạn nộp, bạn không thể ứng tuyển.', 'warning');
+      return;
+    }
     this.router.navigate(['/candidate/job-detail', job.jobId], { 
       queryParams: { openApplyModal: 'true' } 
     });
@@ -85,12 +147,20 @@ export class SavedJobsComponent implements OnInit {
    * Navigate to job detail khi click vào job title
    */
   onJobTitleClick(job: SavedJobDto) {
+    if (this.isJobExpired(job)) {
+      this.showToastMessage('Công việc đã hết hạn nộp, bạn không thể xem chi tiết.', 'warning');
+      return;
+    }
     this.router.navigate(['/candidate/job-detail', job.jobId]);
   }
 
   onUnsaveJob(job: SavedJobDto) {
     // Logic giống hệt như ở job detail
-    this.jobApi.unsaveJob(job.jobId).subscribe({
+    if (!job.jobId) {
+      return;
+    }
+
+    this.jobSearchService.unsaveJob(job.jobId).subscribe({
       next: () => {
         // Remove from list
         this.savedJobs = this.savedJobs.filter(j => j.jobId !== job.jobId);
@@ -133,9 +203,6 @@ export class SavedJobsComponent implements OnInit {
         console.warn('Invalid date:', savedAt);
         return '';
       }
-      
-      // Debug log
-      console.log('Original date:', savedAt, '→ Parsed UTC:', date.toISOString(), '→ Local:', date.toString());
       
       // Lấy UTC components
       const utcYear = date.getUTCFullYear();
@@ -193,10 +260,156 @@ export class SavedJobsComponent implements OnInit {
   }
 
   /**
-   * Get province name from jobDetail hoặc location
+   * Get province name - chỉ hiển thị tên tỉnh/thành phố, không hiển thị địa chỉ chi tiết
    */
   getProvinceName(job: SavedJobDto): string {
-    return job.jobDetail?.provinceName || job.location || 'N/A';
+    if (!job.jobId) return 'N/A';
+    
+    // Ưu tiên lấy từ map (đã load từ provinceCode)
+    const provinceName = this.jobProvinceNames.get(job.jobId);
+    if (provinceName) {
+      return provinceName;
+    }
+    
+    // Fallback: nếu chưa load xong, thử lấy từ jobDetail
+    const detail: any = job.jobDetail as any;
+    if (detail?.provinceName) {
+      return detail.provinceName;
+    }
+    
+    return 'N/A';
+  }
+
+  /**
+   * Get company logo URL
+   */
+  getCompanyLogoUrl(job: SavedJobDto): string {
+    if (!job.jobId) return '';
+    
+    // Nếu logo đã bị lỗi khi load, không hiển thị
+    if (this.logoLoadErrors.has(job.jobId)) {
+      return '';
+    }
+    
+    // Lấy từ map nếu đã load
+    const logo = this.jobLogos.get(job.jobId);
+    if (logo) {
+      return logo;
+    }
+    
+    // Fallback: lấy từ jobDetail
+    const detail: any = job.jobDetail as any;
+    const companyImageUrl = detail?.companyImageUrl;
+    if (companyImageUrl && companyImageUrl.trim() !== '') {
+      return this.formatCompanyLogoUrl(companyImageUrl);
+    }
+    
+    return '';
+  }
+
+  /**
+   * Handle logo load error
+   */
+  onLogoError(job: SavedJobDto): void {
+    if (job.jobId) {
+      this.logoLoadErrors.add(job.jobId);
+    }
+  }
+
+  /**
+   * Format logo URL của công ty
+   */
+  private formatCompanyLogoUrl(logoUrl: string | undefined | null): string {
+    if (!logoUrl || logoUrl.trim() === '') {
+      return '';
+    }
+
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    if (cleanUrl === '') {
+      return '';
+    }
+
+    // Nếu đã là full URL (http/https), return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Logo được lưu trong blob storage với StoragePath
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
+  }
+
+  /**
+   * Text hiển thị hạn nộp cho từng job đã lưu
+   * - Nếu đã hết hạn: 'Đã hết hạn nộp'
+   * - Nếu còn ≤ 20 ngày: 'Còn X ngày' (0: Hết hạn hôm nay)
+   * - Nếu > 20 ngày: 'Ngày hết hạn: dd/MM/yyyy'
+   */
+  getDeadlineText(job: SavedJobDto): string {
+    // TS model JobViewDto hiện chưa khai báo expiresAt, nên cast any để đọc trường backend trả về
+    const expiresAt = (job.jobDetail as any)?.expiresAt;
+    if (!expiresAt) {
+      return '';
+    }
+
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    if (isNaN(expiry.getTime())) {
+      return '';
+    }
+
+    // Tính số ngày chênh lệch (lấy theo ngày, bỏ phần giờ)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfExpiry = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+    const diffMs = startOfExpiry.getTime() - startOfToday.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return 'Đã hết hạn nộp';
+    }
+
+    if (diffDays === 0) {
+      return 'Hết hạn hôm nay';
+    }
+
+    if (diffDays <= 20) {
+      if (diffDays === 1) {
+        return 'Còn 1 ngày';
+      }
+      return `Còn ${diffDays} ngày`;
+    }
+
+    // > 20 ngày: hiển thị ngày hết hạn dạng dd/MM/yyyy
+    const day = String(startOfExpiry.getDate()).padStart(2, '0');
+    const month = String(startOfExpiry.getMonth() + 1).padStart(2, '0');
+    const year = startOfExpiry.getFullYear();
+    return `Ngày hết hạn: ${day}/${month}/${year}`;
+  }
+
+  /**
+   * Kiểm tra job đã hết hạn chưa (dùng để chặn click)
+   */
+  isJobExpired(job: SavedJobDto): boolean {
+    const expiresAt = (job.jobDetail as any)?.expiresAt;
+    if (!expiresAt) {
+      return false;
+    }
+
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    if (isNaN(expiry.getTime())) {
+      return false;
+    }
+
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfExpiry = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+    const diffMs = startOfExpiry.getTime() - startOfToday.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays < 0;
   }
 
   onBrowseJobs() {

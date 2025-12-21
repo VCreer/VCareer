@@ -13,7 +13,7 @@ export class ProfileCardComponent {
   @Input() userName: string = 'Nguyễn Văn A';
   @Input() userEmail: string = 'user@example.com';
   @Input() avatarUrl?: string;
-  @Input() accountStatus: string = 'Tài khoản đã xác thực';
+   @Input() accountStatus: string = 'Tài khoản đã xác thực';
   @Input() jobSearchEnabled: boolean = false;
   @Input() allowRecruiterSearch: boolean = true;
   

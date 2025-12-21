@@ -76,6 +76,13 @@ export class MultiSelectLocationComponent {
   }
 
   getLocationLabel(value: string): string {
+    // Ưu tiên tìm trong options input trước (từ API hoặc parent component)
+    const option = this.options.find(opt => opt.value === value);
+    if (option) {
+      return option.label;
+    }
+    
+    // Nếu không tìm thấy trong options, fallback về service
     if (this.labelType === 'jobPosition') {
       return this.jobOptionsService.getJobPositionLabel(value);
     }

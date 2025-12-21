@@ -29,7 +29,8 @@
         <a 
           class="nav-item" 
           [class.active]="activeTab === 'business-cert'"
-          (click)="setActiveTab('business-cert')">
+          (click)="setActiveTab('business-cert')"
+          *ngIf="!isHRStaff">
           <i class="fa fa-file-text nav-icon"></i>
           <span>Giấy đăng ký doanh nghiệp</span>
         </a>
@@ -41,29 +42,13 @@
           <i class="fa fa-building nav-icon"></i>
           <span>Thông tin công ty</span>
         </a>
-        
-        <a 
-          class="nav-item" 
-          [class.active]="activeTab === 'api-connection'"
-          (click)="setActiveTab('api-connection')">
-          <i class="fa fa-plug nav-icon"></i>
-          <span>Kết nối API</span>
-        </a>
-        
-        <a 
-          class="nav-item" 
-          [class.active]="activeTab === 'settings'"
-          (click)="setActiveTab('settings')">
-          <i class="fa fa-cog nav-icon"></i>
-          <span>Cài đặt</span>
-        </a>
       </nav>
     </div>
 
     <!-- Right Content Panel -->
     <div class="right-content" *ngIf="activeTab === 'personal-info'">
-      <!-- Account Verification Section -->
-      <div class="section-card">
+      <!-- Account Verification Section - ẩn với HR Staff -->
+      <div class="section-card" *ngIf="!isHRStaff">
         <div class="section-header">
           <div class="section-title-group">
             <h2 class="section-title">Tài khoản xác thực: {{ verificationLevel }}</h2>
@@ -136,7 +121,8 @@
               [(ngModel)]="profileData.email"
               name="email"
               required
-              readonly>
+              readonly
+              disabled>
           </div>
         </div>
         
@@ -150,18 +136,6 @@
                 [(ngModel)]="profileData.fullName"
                 name="fullName"
                 required>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Giới tính</label>
-              <select 
-                class="form-input" 
-                [(ngModel)]="profileData.gender"
-                name="gender">
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
             </div>
           </div>
           
@@ -347,7 +321,8 @@
                 </p>
               </div>
             </div>
-            <div class="detail-actions">
+            <!-- HR Staff chỉ được xem, không được chỉnh sửa thông tin công ty -->
+            <div class="detail-actions" *ngIf="!isHRStaff">
               <app-button
                 type="button"
                 [size]="'small'"
@@ -370,12 +345,6 @@
                   {{ selectedCompanyDetail.websiteUrl }}
                 </a>
                 <span class="detail-value" *ngIf="!selectedCompanyDetail?.websiteUrl">Chưa cập nhật</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Lĩnh vực hoạt động</span>
-                <span class="detail-value">
-                  {{ selectedCompanyCard.tags?.length ? (selectedCompanyCard.tags.join(', ')) : 'Chưa cập nhật' }}
-                </span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Số điện thoại</span>
@@ -405,8 +374,8 @@
           </ng-template>
         </div>
 
-        <!-- Edit Company Form -->
-        <div class="company-edit-form" *ngIf="isEditingCompany">
+        <!-- Edit Company Form - chỉ Leader được chỉnh sửa -->
+        <div class="company-edit-form" *ngIf="isEditingCompany && !isHRStaff">
           <div class="editing-banner">
             <div class="editing-text">
               <strong>Đang chỉnh sửa:</strong>
@@ -432,9 +401,9 @@
           </app-create-company-form>
         </div>
 
-        <!-- Create Company Section -->
+        <!-- Create Company Section - chỉ Leader được tạo/chỉnh sửa công ty -->
         <app-create-company-form
-          *ngIf="companyTab === 'create' && !selectedCompanyId"
+          *ngIf="companyTab === 'create' && !selectedCompanyId && !isHRStaff"
           [formData]="companyFormData"
           [logoPreview]="companyLogoPreview"
           [formErrors]="companyFormErrors"
@@ -444,43 +413,6 @@
           (fieldValidate)="validateField($event)"
           (save)="onSaveCompany()">
         </app-create-company-form>
-      </div>
-    </div>
-
-    <!-- Settings Content -->
-    <div class="right-content" *ngIf="activeTab === 'settings'">
-      <div class="section-card">
-        <h2 class="section-title">Cài đặt nhận thông báo đến email tài khoản</h2>
-        
-        <!-- Email Notification Card -->
-        <div class="notification-card">
-          <div class="notification-icon">
-            <i class="fa fa-envelope"></i>
-          </div>
-          
-          <div class="notification-content">
-            <div class="notification-header">
-              <h3 class="notification-title">Thông báo CV ứng tuyển</h3>
-              <span class="notification-status" [class.active]="cvApplicationNotificationEnabled" [class.inactive]="!cvApplicationNotificationEnabled">
-                {{ cvApplicationNotificationEnabled ? 'Đang hoạt động' : 'Không hoạt động' }}
-              </span>
-            </div>
-            <p class="notification-description">
-              Tự động gửi email khi ứng viên ứng tuyển vào tin tuyển dụng của bạn
-            </p>
-          </div>
-          
-          <div class="notification-toggle">
-            <label class="toggle-switch">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="cvApplicationNotificationEnabled"
-                (change)="onToggleCvApplicationNotification()"
-                name="cvApplicationNotification">
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -537,7 +469,9 @@
           type="email"
           class="form-input"
           [(ngModel)]="emailVerification.email"
-          name="verificationEmail">
+          name="verificationEmail"
+          readonly
+          disabled>
       </div>
 
       <div class="form-group">

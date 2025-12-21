@@ -77,6 +77,14 @@ export class JobSearchService {
     { apiName: this.apiName,...config });
   
 
+  removeJobsFromIndex = (jobId: string[], config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/job-search/jobs-from-index/${jobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   saveJob = (jobId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, void>({
       method: 'POST',

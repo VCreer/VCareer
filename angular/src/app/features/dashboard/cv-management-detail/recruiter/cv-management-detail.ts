@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import {
   ButtonComponent,
   ToastNotificationComponent
@@ -11,6 +11,7 @@ import { ApplicationService } from '../../../../proxy/http-api/controllers/appli
 import { CandidateCvService } from '../../../../proxy/http-api/controllers/candidate-cv.service';
 import { UploadedCvService } from '../../../../proxy/http-api/controllers/uploaded-cv.service';
 import type { ApplicationDto,UpdateApplicationStatusDto } from 'src/app/proxy/dto/applications';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { environment } from '../../../../../environments/environment';
 
 export interface CvDetail {
@@ -88,7 +89,12 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   // CV Display
   pdfUrl: SafeResourceUrl | null = null;
   cvHtml: string = '';
+  safeCvHtml: SafeHtml | null = null;
   cvType: 'online' | 'uploaded' | null = null;
+  
+  // Access Control
+  hasAccess: boolean = true;
+  accessDenied: boolean = false;
 
   // Toast notification
   showToast = false;
@@ -103,9 +109,7 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   statusOptions = [
     { value: 'received', label: 'CV tiếp nhận' },
     { value: 'suitable', label: 'Phù hợp' },
-    { value: 'interview', label: 'Hẹn phỏng vấn' },
     { value: 'offer', label: 'Gửi đề nghị' },
-    { value: 'hired', label: 'Nhận việc' },
     { value: 'not-suitable', label: 'Chưa phù hợp' }
   ];
 
@@ -116,7 +120,8 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
     private candidateCvService: CandidateCvService,
     private uploadedCvService: UploadedCvService,
     private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -153,68 +158,121 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
 
   loadApplicationDetail(): void {
     this.loading = true;
+    this.hasAccess = true;
+    this.accessDenied = false;
     
     this.applicationService.getApplication(this.applicationId).subscribe({
       next: (application: ApplicationDto) => {
         this.application = application;
         this.isViewed = !!application.viewedAt;
         
-        // Mark as viewed if not viewed yet
-        if (!this.isViewed) {
-          this.markAsViewed();
-        }
-        
-        // Map ApplicationDto to CvDetail
-        this.cvDetail = {
-          id: application.id || '',
-          name: application.candidateName || 'N/A',
-          email: application.candidateEmail || 'N/A',
-          phone: application.candidatePhone || 'N/A',
-          position: application.jobTitle || 'N/A',
-          status: application.status || 'received',
-          campaignName: application.jobTitle || '',
-          contactOpenedDate: application.viewedAt ? new Date(application.viewedAt).toLocaleDateString('vi-VN') : undefined
-        };
-        
-        this.selectedStatus = application.status || 'received';
-        
-        // Determine CV type and load CV
-        if (application.cvType === 'Online' && application.candidateCvId) {
-          this.cvType = 'online';
-          this.loadOnlineCv(application.candidateCvId);
-        } else if (application.cvType === 'Uploaded' && application.uploadedCvId) {
-          this.cvType = 'uploaded';
-          this.loadUploadedCv(application.uploadedCvId);
-        } else {
-          this.loading = false;
-          this.showToastMessage('Không tìm thấy CV', 'error');
-        }
+        // Check if we have access to view this candidate's CV
+        // This will be handled by backend, but we also check on frontend
+        this.checkCandidateAccess(application.candidateId).then(hasAccess => {
+          if (!hasAccess) {
+            this.hasAccess = false;
+            this.accessDenied = true;
+            this.loading = false;
+            return;
+          }
+          
+          // Mark as viewed if not viewed yet
+          if (!this.isViewed) {
+            this.markAsViewed();
+          }
+          
+          // Map ApplicationDto to CvDetail
+          this.cvDetail = {
+            id: application.id || '',
+            name: application.candidateName || 'N/A',
+            email: application.candidateEmail || 'N/A',
+            phone: application.candidatePhone || 'N/A',
+            position: application.jobTitle || 'N/A',
+            status: application.status || 'received',
+            campaignName: application.jobTitle || '',
+            contactOpenedDate: application.viewedAt ? new Date(application.viewedAt).toLocaleDateString('vi-VN') : undefined
+          };
+          
+          this.selectedStatus = application.status || 'received';
+          
+          // Determine CV type and load CV
+          if (application.cvType === 'Online' && application.candidateCvId) {
+            this.cvType = 'online';
+            this.loadOnlineCv(application.candidateCvId);
+          } else if (application.cvType === 'Uploaded' && application.uploadedCvId) {
+            this.cvType = 'uploaded';
+            this.loadUploadedCv(application.uploadedCvId);
+          } else {
+            this.loading = false;
+            this.showToastMessage('Không tìm thấy CV', 'error');
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading application:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        
+        // Check if error is due to access denied (403 or specific error message)
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || error.error.message?.includes('access')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải thông tin ứng viên', 'error');
+        }
       }
     });
+  }
+  
+  private async checkCandidateAccess(candidateId?: string): Promise<boolean> {
+    if (!candidateId) {
+      return false;
+    }
+    
+    try {
+      // Try to load CV to check access - if it fails with 403, access is denied
+      // For now, we'll assume access is granted if application was loaded
+      // Backend should handle the actual check
+      return true;
+    } catch (error: any) {
+      if (error.status === 403 || error.status === 401) {
+        return false;
+      }
+      return true; // Other errors don't necessarily mean access denied
+    }
   }
 
   loadOnlineCv(cvId: string): void {
     this.candidateCvService.renderCv(cvId).subscribe({
       next: (response: any) => {
-        // Extract htmlContent từ ActionResult
+        // Extract htmlContent từ ActionResult - kiểm tra nhiều cấu trúc response có thể
         let htmlContent = '';
-        if (response.result?.htmlContent) {
-          htmlContent = response.result.htmlContent;
-        } else if (response.htmlContent) {
+        
+        // Log để debug
+        console.log('Render CV Response:', response);
+        
+        // Thử các cấu trúc response khác nhau
+        if (response.htmlContent) {
           htmlContent = response.htmlContent;
+        } else if (response.result?.htmlContent) {
+          htmlContent = response.result.htmlContent;
         } else if (response.value?.htmlContent) {
           htmlContent = response.value.htmlContent;
+        } else if (response.data?.htmlContent) {
+          htmlContent = response.data.htmlContent;
+        } else if (typeof response.value === 'string') {
+          htmlContent = response.value;
+        } else if (typeof response.result === 'string') {
+          htmlContent = response.result;
         }
         
         if (htmlContent) {
           this.cvHtml = htmlContent;
+          // Sử dụng DomSanitizer để cho phép render HTML/CSS
+          this.safeCvHtml = this.sanitizer.bypassSecurityTrustHtml(htmlContent);
           this.loading = false;
         } else {
+          console.error('Rendered CV HTML is empty. Response structure:', response);
           this.loading = false;
           this.showToastMessage('Không thể render CV online', 'error');
         }
@@ -222,7 +280,15 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading online CV:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải CV online', 'error');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401 || 
+            (error.error && (error.error.message?.includes('visibility') || error.error.message?.includes('access') || error.error.message?.includes('ProfileVisibility')))) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải CV online', 'error');
+        }
       }
     });
   }
@@ -242,7 +308,14 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading uploaded CV:', error);
         this.loading = false;
-        this.showToastMessage('Không thể tải CV đã upload', 'error');
+        
+        // Check if error is due to access denied
+        if (error.status === 403 || error.status === 401) {
+          this.hasAccess = false;
+          this.accessDenied = true;
+        } else {
+          this.showToastMessage('Không thể tải CV đã upload', 'error');
+        }
       }
     });
   }
@@ -279,47 +352,72 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   onDownloadPdf(): void {
-    if (!this.application) {
+    if (!this.application || !this.applicationId) {
       this.showToastMessage('Không có thông tin CV', 'error');
       return;
     }
 
     this.showToastMessage('Đang tải CV PDF...', 'info');
 
-    if (this.cvType === 'online' && this.application.candidateCvId) {
-      // TODO: Implement PDF generation for online CV
-      // For now, open in new window
-      const printWindow = window.open('', '_blank');
-      if (printWindow && this.cvHtml) {
-        printWindow.document.write(this.cvHtml);
-        printWindow.document.close();
-        printWindow.print();
-      }
-      this.showToastMessage('Đang mở CV để in...', 'info');
-    } else if (this.cvType === 'uploaded' && this.application.uploadedCvId) {
-      const downloadUrl = `${environment.apis.default.url}/api/cv/uploaded/${this.application.uploadedCvId}/download?inline=false`;
-      
-      this.http.get(downloadUrl, {
-        responseType: 'blob',
-        withCredentials: true
-      }).subscribe({
-        next: (blob: Blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = this.application?.uploadedCvName || 'CV.pdf';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-          this.showToastMessage('Tải CV PDF thành công!', 'success');
-        },
-        error: (error) => {
-          console.error('Error downloading CV:', error);
-          this.showToastMessage('Không thể tải CV PDF', 'error');
+    // Sử dụng fetch trực tiếp để download file PDF từ application endpoint
+    fetch(`${environment.apis.default.url}/api/applications/${this.applicationId}/download-cv`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/pdf, application/octet-stream, */*',
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage = 'Không thể tải CV. Vui lòng thử lại.';
+          
+          try {
+            const error = JSON.parse(errorText);
+            errorMessage = error.error?.message || error.message || errorMessage;
+          } catch {
+            errorMessage = `Lỗi ${response.status}: ${errorText || 'Không thể tải CV'}`;
+          }
+          
+          this.showToastMessage(errorMessage, 'error');
+          return;
         }
+        
+        // Kiểm tra content-type để đảm bảo là PDF
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorText = await response.text();
+          try {
+            const error = JSON.parse(errorText);
+            this.showToastMessage(error.error?.message || error.message || 'Không thể tải CV.', 'error');
+          } catch {
+            this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
+          }
+          return;
+        }
+        
+        // Lấy blob từ response
+        const blob = await response.blob();
+        
+        // Tạo URL từ blob và trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        // Tạo tên file an toàn (loại bỏ ký tự đặc biệt)
+        const candidateName = this.cvDetail?.name || this.application.candidateName || 'CV';
+        const safeName = candidateName.replace(/[^a-zA-Z0-9\s]/g, '_').trim();
+        link.download = `CV_${safeName}_${this.applicationId.substring(0, 8)}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        this.showToastMessage(`Đã tải CV của ${candidateName} thành công!`, 'success');
+      })
+      .catch((error) => {
+        console.error('Error downloading CV:', error);
+        this.showToastMessage('Không thể tải CV. Vui lòng thử lại.', 'error');
       });
-    }
   }
 
   onContact(contactType: 'phone' | 'email' | 'chat'): void {
@@ -342,13 +440,28 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
     if (!this.application || this.changingStatus) return;
     
     const oldStatus = this.selectedStatus;
+
+    // Don't update if status hasn't changed
+    if (oldStatus === status) {
+      this.showStatusDropdown = false;
+      return;
+    }
+
+    console.log(`Changing status from ${oldStatus} to ${status}`);
+
+    // Optimistic update - update UI immediately
     this.selectedStatus = status;
     this.showStatusDropdown = false;
     this.changingStatus = true;
 
+    if (this.cvDetail) {
+      this.cvDetail.status = status;
+    }
+
     const updateDto: UpdateApplicationStatusDto = {
       status: status,
-      recruiterNotes: ''
+      recruiterNotes: this.application.recruiterNotes || '',
+      rating: this.application.rating
     };
 
     this.applicationService.updateApplicationStatus(this.applicationId, updateDto).subscribe({
@@ -358,13 +471,37 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
           this.cvDetail.status = updatedApplication.status || 'received';
         }
         this.changingStatus = false;
-        this.showToastMessage(`Đã cập nhật trạng thái thành "${this.getStatusLabel(status)}"`, 'success');
+        this.showToastMessage(
+          `Đã cập nhật trạng thái thành "${this.getStatusLabel(status)}"`,
+          'success'
+        );
+
+        // Send notification to candidate when status changes to 'offer'
+        if (status === 'offer' && this.application.candidateId) {
+          console.log('[CV Detail] Status changed to offer, preparing to send notification');
+          this.sendOfferNotification();
+        }
       },
       error: (error) => {
         console.error('Error updating status:', error);
-        this.selectedStatus = oldStatus;
+        console.error('Error status:', error.status);
+
+        let errorMessage = 'Không thể cập nhật trạng thái. Vui lòng thử lại.';
+
+        if (error.status === 403) {
+          errorMessage = 'Bạn không có quyền cập nhật trạng thái ứng viên này.';
+        } else if (error.status === 401) {
+          errorMessage = 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+        }
+
+        this.showToastMessage(errorMessage, 'error');
         this.changingStatus = false;
-        this.showToastMessage('Không thể cập nhật trạng thái', 'error');
+
+        // Revert to previous status on error
+        this.selectedStatus = oldStatus;
+        if (this.cvDetail) {
+          this.cvDetail.status = oldStatus;
+        }
       }
     });
   }
@@ -372,6 +509,77 @@ export class CvManagementDetailComponent implements OnInit, OnDestroy {
   getStatusLabel(value: string): string {
     const status = this.statusOptions.find(s => s.value === value);
     return status ? status.label : 'CV tiếp nhận';
+  }
+
+  getStatusName(status: string): string {
+    return this.getStatusLabel(status);
+  }
+
+  private sendOfferNotification(): void {
+    if (!this.application?.candidateId) {
+      console.warn('[CV Detail] Cannot send notification: candidateId is missing');
+      return;
+    }
+
+    // Validate and convert candidateId to Guid
+    let candidateGuid: string;
+    try {
+      candidateGuid = this.application.candidateId;
+      // Validate Guid format
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateGuid)) {
+        console.error('[CV Detail] Invalid candidateId format (not a Guid):', this.application.candidateId);
+        return;
+      }
+    } catch (error) {
+      console.error('[CV Detail] Error parsing candidateId:', error);
+      return;
+    }
+
+    // Prepare notification metadata
+    const metadata = {
+      JobTitle: this.application.jobTitle || 'Công việc',
+      CompanyName: '', // TODO: Get company name from current user context
+      JobId: this.application.jobId || '',
+      ApplicationId: this.application.id || '',
+    };
+
+    // Convert jobId to Guid if provided, otherwise null
+    let relatedEntityId: string | null = null;
+    if (this.application.jobId) {
+      try {
+        // Validate Guid format
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(this.application.jobId)) {
+          relatedEntityId = this.application.jobId;
+        } else {
+          console.warn('[CV Detail] Invalid jobId format (not a Guid):', this.application.jobId);
+        }
+      } catch (error) {
+        console.warn('[CV Detail] Error parsing jobId:', error);
+      }
+    }
+
+    const notification = {
+      userId: candidateGuid,
+      userRole: 'Candidate',
+      notificationType: 'JobOffer',
+      title: 'Đề nghị công việc',
+      message: '',
+      relatedEntityType: 'JobPost',
+      relatedEntityId: relatedEntityId,
+      metadata: JSON.stringify(metadata),
+    };
+
+    console.log('[CV Detail] Sending offer notification:', notification);
+
+    this.notificationService.createNotification(notification).subscribe({
+      next: () => {
+        console.log('[CV Detail] Offer notification sent successfully');
+      },
+      error: (error) => {
+        console.error('[CV Detail] Error sending offer notification:', error);
+        // Don't show error toast to user, just log it
+      },
+    });
   }
 
   formatDate(dateString?: string): string {

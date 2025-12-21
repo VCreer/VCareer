@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Template - Two Column</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .cv-container {
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            display: flex;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Left Column */
+        .cv-left-column {
+            width: 35%;
+            background: #f5f0e8;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Profile Picture */
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid #2d5a3d;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-picture-placeholder {
+            font-size: 60px;
+            color: #999;
+        }
+
+        /* Contact Info */
+        .contact-info {
+            margin-bottom: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .contact-item i {
+            width: 20px;
+            margin-right: 10px;
+            color: #2d5a3d;
+            font-size: 14px;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2d5a3d;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2d5a3d;
+        }
+
+        /* Skills */
+        .skills-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .skill-item::before {
+            content: "★";
+            color: #2d5a3d;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+
+        /* Certificates */
+        .certificate-item {
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .certificate-time {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .certificate-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Right Column */
+        .cv-right-column {
+            width: 65%;
+            background: #f5f0e8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .cv-header {
+            background: #2d5a3d;
+            color: white;
+            padding: 40px 30px;
+            margin-bottom: 0;
+        }
+
+        .cv-header h1 {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .cv-header .job-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+
+        .cv-header .career-objective {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* Content Sections */
+        .cv-content {
+            padding: 30px;
+            flex: 1;
+        }
+
+        .content-section {
+            margin-bottom: 30px;
+        }
+
+        .content-section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d5a3d;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2d5a3d;
+        }
+
+        /* Work Experience & Education Items */
+        .work-item,
+        .education-item,
+        .activity-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .work-item:last-child,
+        .education-item:last-child,
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .item-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .item-description {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        .date-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .date-btn {
+            background: #2d5a3d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Left Column -->
+        <div class="cv-left-column">
+            <!-- Profile Picture -->
+            <div class="profile-picture">
+                <img src="{{personalInfo.profileImageUrl}}" alt="Profile">
+                <div class="profile-picture-placeholder">👤</div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i>📞</i>
+                    <span>{{personalInfo.phoneNumber}}</span>
+                </div>
+                <div class="contact-item">
+                    <i>✉️</i>
+                    <span>{{personalInfo.email}}</span>
+                </div>
+                <div class="contact-item">
+                    <i>🌐</i>
+                    <span>{{personalInfo.website}}</span>
+                </div>
+                <div class="contact-item">
+                    <i>📍</i>
+                    <span>{{personalInfo.address}}</span>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="skills-section">
+                <div class="section-title">Kỹ năng</div>
+                <ul class="skills-list">
+                    {{#foreach skills}}
+                    <li class="skill-item">{{skill.skillName}}</li>
+                    {{/foreach}}
+                </ul>
+            </div>
+
+            <!-- Certificates -->
+            <div class="certificates-section">
+                <div class="section-title">Chứng chỉ</div>
+                {{#foreach certificates}}
+                <div class="certificate-item">
+                    <div class="certificate-time">{{certificate.issueDate}}</div>
+                    <div class="certificate-name">{{certificate.certificateName}}</div>
+                </div>
+                {{/foreach}}
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="cv-right-column">
+            <!-- Header -->
+            <div class="cv-header">
+                <h1>{{personalInfo.fullName}}</h1>
+                <div class="job-title">VỊ TRÍ ỨNG TUYỂN</div>
+                <div class="career-objective">{{careerObjective}}</div>
+            </div>
+
+            <!-- Content -->
+            <div class="cv-content">
+                <!-- Work Experience -->
+                <div class="content-section">
+                    <div class="content-section-title">Kinh nghiệm làm việc</div>
+                    {{#foreach workExperiences}}
+                    <div class="work-item">
+                        <div class="item-header">
+                            <div>
+                                <div class="item-title">{{workExperience.companyName}}</div>
+                                <div class="item-subtitle">{{workExperience.position}}</div>
+                            </div>
+                            <div class="date-buttons">
+                                <span class="date-btn">{{workExperience.startDate}}</span>
+                                <span class="date-btn">{{workExperience.endDate}}</span>
+                            </div>
+                        </div>
+                        <div class="item-description">{{workExperience.description}}</div>
+                    </div>
+                    {{/foreach}}
+                </div>
+
+                <!-- Education -->
+                <div class="content-section">
+                    <div class="content-section-title">Học vấn</div>
+                    {{#foreach educations}}
+                    <div class="education-item">
+                        <div class="item-header">
+                            <div>
+                                <div class="item-title">{{education.institutionName}}</div>
+                                <div class="item-subtitle">{{education.major}} - {{education.degree}}</div>
+                            </div>
+                            <div class="date-buttons">
+                                <span class="date-btn">{{education.startDate}}</span>
+                                <span class="date-btn">{{education.endDate}}</span>
+                            </div>
+                        </div>
+                        <div class="item-description">{{education.description}}</div>
+                    </div>
+                    {{/foreach}}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

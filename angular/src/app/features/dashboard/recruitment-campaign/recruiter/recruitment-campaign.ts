@@ -8,8 +8,9 @@ import {
   GenericModalComponent,
   ToastNotificationComponent,
   MultiSelectLocationComponent,
-  ToggleSwitchComponent,
   PaginationComponent,
+  SelectFieldComponent,
+  SelectOption,
 } from '../../../../shared/components';
 import { AuthService } from 'src/app/proxy/services/auth';
 import { RecruitmentCompainService } from 'src/app/proxy/services/job';
@@ -18,13 +19,10 @@ import {
   RecruimentCampainCreateDto,
   RecruimentCampainUpdateDto,
 } from 'src/app/proxy/dto/job-dto';
-import { ToasterService } from '@abp/ng.theme.shared';
 import { GeoService} from 'src/app/proxy/services/geo';
 import { ProvinceDto } from 'src/app/proxy/dto/geo-dto';
 
 interface Campaign extends RecruimentCampainViewDto {
-  appliedCvs?: number;
-  jobCount?: number;
   startDate?: string;
   endDate?: string;
 }
@@ -40,8 +38,8 @@ interface Campaign extends RecruimentCampainViewDto {
     GenericModalComponent,
     ToastNotificationComponent,
     MultiSelectLocationComponent,
-    ToggleSwitchComponent,
     PaginationComponent,
+    SelectFieldComponent,
   ],
   templateUrl: './recruitment-campaign.html',
   styleUrls: ['./recruitment-campaign.scss'],
@@ -67,6 +65,11 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Filters & Pagination
   searchQuery = '';
   filterType: 'all' | 'active' | 'inactive' = 'all';
+  filterOptions: SelectOption[] = [
+    { value: 'all', label: 'Tất cả chiến dịch' },
+    { value: 'active', label: 'Đang hoạt động' },
+    { value: 'inactive', label: 'Không hoạt động' },
+  ];
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
@@ -85,9 +88,9 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   // Loading state
   loading = true;
   showActionsMenu: string | null = null;
+  menuPosition: { top: number; left: number; maxWidth?: number } | null = null;
 
   // Khóa để ngăn double request
-  private isTogglingCampaign = false;
   private isSavingEdit = false;
   private isDeletingCampaign = false;
 
@@ -97,7 +100,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private campaignService: RecruitmentCompainService,
     private geoService: GeoService,
-    private toaster: ToasterService,
     private router: Router
   ) {}
 
@@ -131,7 +133,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
           value: p.code?.toString() || '',
         }));
       },
-      error: () => this.toaster.error('Không tải được danh sách tỉnh/thành'),
+      error: () => this.showToastMessage('Không tải được danh sách tỉnh/thành', 'error'),
     });
   }
 
@@ -139,15 +141,63 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
   private loadCampaigns() {
     this.loading = true;
 
-    const loadActive = this.campaignService.loadRecruitmentCompainByIsActive(true).toPromise().catch(() => []);
-    const loadInactive = this.campaignService.loadRecruitmentCompainByIsActive(false).toPromise().catch(() => []);
+    // 1. Lấy thông tin user hiện tại để biết role + userId
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        const roles = user.roles || [];
+        const isLeadRecruiter = roles.includes('lead_recruiter');
 
-    Promise.all([loadActive, loadInactive]).then(([active, inactive]) => {
-      const all = [...(active || []), ...(inactive || [])];
-      this.campaigns = this.mapToCampaign(all);
-      this.filterCampaigns();
-      this.viewMode = this.campaigns.length == 0 ? 'create' : 'manage';
-      this.loading = false;
+        // 2. Tùy theo role mà chọn API phù hợp
+        let loadActivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+        let loadInactivePromise: Promise<RecruimentCampainViewDto[] | undefined>;
+
+        if (isLeadRecruiter) {
+          // Leader recruiter: backend tự dùng companyId
+          loadActivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .loadRecruitmentCompainByIsActive(false)
+            .toPromise()
+            .catch(() => []);
+        } else {
+          // Recruiter thường: load theo recruiterId
+          const recruiterId = user.userId;
+
+          if (!recruiterId) {
+            this.showToastMessage('Không lấy được thông tin recruiter', 'error');
+            this.loading = false;
+            return;
+          }
+
+          loadActivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, true)
+            .toPromise()
+            .catch(() => []);
+
+          loadInactivePromise = this.campaignService
+            .getCompainsByRecruiterIdByRecruiterIdAndIsActive(recruiterId, false)
+            .toPromise()
+            .catch(() => []);
+        }
+
+        Promise.all([loadActivePromise, loadInactivePromise]).then(
+          ([active, inactive]) => {
+            const all = [...(active || []), ...(inactive || [])];
+            this.campaigns = this.mapToCampaign(all);
+            this.filterCampaigns();
+            this.viewMode =
+              this.campaigns.length == 0 ? 'create' : 'manage';
+            this.loading = false;
+          }
+        );
+      },
+      error: () => {
+        this.showToastMessage('Không lấy được thông tin người dùng', 'error');
+        this.loading = false;
+      },
     });
   }
 
@@ -155,10 +205,8 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     return dtos.map(dto => ({
       ...dto,
       id: dto.id.toString(),
-      appliedCvs: 0,
-      jobCount: 0,
       startDate: this.formatDate(dto.creationTime),
-      endDate: this.formatDate(dto.lastModificationTime || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)),
+    
     }));
   }
 
@@ -185,14 +233,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
     this.campaignService.createRecruitmentCompainByInput(input).subscribe({
       next: () => {
-        this.toaster.success('Tạo chiến dịch thành công!');
+        this.showToastMessage('Tạo chiến dịch thành công!', 'success');
         this.loadCampaigns();
         this.showActivityModal = true;
         this.resetForm();
       },
       error: (err) => {
         console.error(err);
-        this.toaster.error('Tạo chiến dịch thất bại');
+        this.showToastMessage('Tạo chiến dịch thất bại', 'error');
       },
       complete: () => {
         this.isCreating = false;
@@ -211,30 +259,6 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Bật/tắt chiến dịch
-  onToggleCampaign(campaign: Campaign, checked: boolean) {
-    // Ngăn double request
-    if (this.isTogglingCampaign) return;
-    
-    this.isTogglingCampaign = true;
-
-    this.campaignService
-      .setRecruitmentCompainStatusByCompainIdAndIsActive(campaign.id!, checked)
-      .subscribe({
-        next: () => {
-          campaign.isActive = checked;
-          this.toaster.success(checked ? 'Đã kích hoạt chiến dịch' : 'Đã tắt chiến dịch');
-        },
-        error: () => {
-          campaign.isActive = !checked;
-          this.toaster.error('Cập nhật trạng thái thất bại');
-        },
-        complete: () => {
-          this.isTogglingCampaign = false;
-        }
-      });
-  }
-
   // Sửa tên chiến dịch
   onEditCampaign(campaign: Campaign) {
     this.editingCampaign = campaign;
@@ -247,7 +271,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     if (this.isSavingEdit) return;
 
     if (!this.editCampaignName.trim()) {
-      this.toaster.error('Tên chiến dịch không được để trống');
+      this.showToastMessage('Tên chiến dịch không được để trống', 'error');
       return;
     }
 
@@ -263,10 +287,10 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       next: () => {
         this.editingCampaign!.name = this.editCampaignName.trim();
         this.showEditModal = false;
-        this.toaster.success('Cập nhật tên chiến dịch thành công');
+        this.showToastMessage('Cập nhật tên chiến dịch thành công', 'success');
       },
       error: () => {
-        this.toaster.error('Cập nhật thất bại');
+        this.showToastMessage('Cập nhật thất bại', 'error');
       },
       complete: () => {
         this.isSavingEdit = false;
@@ -363,7 +387,84 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
 
   toggleActionsMenu(campaignId: string, event: Event) {
     event.stopPropagation();
-    this.showActionsMenu = this.showActionsMenu === campaignId ? null : campaignId;
+    const isOpening = this.showActionsMenu !== campaignId;
+    this.showActionsMenu = isOpening ? campaignId : null;
+    
+    if (isOpening) {
+      const button = event.currentTarget as HTMLElement;
+      const rect = button.getBoundingClientRect();
+      this.updateMenuPosition(rect);
+    } else {
+      this.menuPosition = null;
+    }
+  }
+
+  private updateMenuPosition(buttonRect: DOMRect) {
+    // Đơn giản hóa: chỉ đặt menu ở vị trí mặc định bên phải button
+    const menuGap = 8;
+    const menuMinWidth = 180;
+    const menuMaxWidth = 300;
+    
+    // Vị trí mặc định: bên phải button
+    let menuLeft = buttonRect.right + menuGap;
+    let top = buttonRect.bottom + menuGap;
+    
+    // Nếu không đủ chỗ bên phải, đặt menu bên trái button
+    const viewportWidth = window.innerWidth;
+    if (menuLeft + menuMinWidth > viewportWidth) {
+      menuLeft = buttonRect.left - menuMaxWidth - menuGap;
+    }
+    
+    // Đảm bảo menu không vượt quá viewport
+    if (menuLeft < 0) {
+      menuLeft = 8;
+    }
+    if (menuLeft + menuMaxWidth > viewportWidth) {
+      menuLeft = viewportWidth - menuMaxWidth - 8;
+    }
+    
+    // Đảm bảo menu không vượt quá viewport phía dưới
+    const viewportHeight = window.innerHeight;
+    const menuHeight = 200;
+    if (top + menuHeight > viewportHeight) {
+      top = buttonRect.top - menuHeight - menuGap;
+    }
+    if (top < 0) {
+      top = 8;
+    }
+    
+    this.menuPosition = {
+      top: top,
+      left: menuLeft,
+      maxWidth: menuMaxWidth
+    };
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onWindowResize() {
+    if (this.showActionsMenu) {
+      this.updateMenuPositionFromButton();
+    }
+  }
+
+  private updateMenuPositionFromButton() {
+    if (!this.showActionsMenu) return;
+    
+    const container = document.querySelector(`[data-campaign-id="${this.showActionsMenu}"]`) as HTMLElement;
+    if (container) {
+      const button = container.querySelector('.actions-btn') as HTMLElement;
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        this.updateMenuPosition(rect);
+      }
+    }
   }
 
   onDeleteCampaign(campaign: Campaign) {
@@ -375,7 +476,7 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
       
       // TODO: Gọi API xóa nếu backend có
       setTimeout(() => {
-        this.toaster.success('Chức năng xóa sẽ được cập nhật sau');
+        this.showToastMessage('Chức năng xóa sẽ được cập nhật sau', 'success');
         this.showActionsMenu = null;
         this.isDeletingCampaign = false;
       }, 500);
@@ -387,12 +488,14 @@ export class RecruitmentCampaignComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.actions-menu-container')) {
       this.showActionsMenu = null;
+      this.menuPosition = null;
     }
   }
 
   // Post job
   onPostJob(campaign: Campaign) {
     this.showActionsMenu = null;
+    this.menuPosition = null;
     this.router.navigate(['/recruiter/job-posting'], {
       queryParams: { 
         campaignName: campaign.name,

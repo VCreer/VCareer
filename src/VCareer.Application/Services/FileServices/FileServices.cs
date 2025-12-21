@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,6 +15,7 @@ using VCareer.Dto.FileDto;
 using VCareer.Files.BlobContainers;
 using VCareer.IServices.IFileServices;
 using VCareer.Models.FileMetadata;
+using VCareer.Permission;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.AuditLogging;
@@ -41,6 +43,7 @@ namespace VCareer.Services.FileServices
             _fileDescriptorRepository = fileDescriptorRepository;
         }
         [UnitOfWork(IsDisabled = true)]
+        [Authorize(VCareerPermission.Files.Delete)]
         public async Task HardDeleteAsync(string fileId)
         {
             var file = await _fileDescriptorRepository.FirstOrDefaultAsync(f => f.Id.ToString() == fileId);
@@ -57,6 +60,7 @@ namespace VCareer.Services.FileServices
             }
         }
 
+        [Authorize(VCareerPermission.Files.Delete)]
         public async Task SoftDeleteAsync(string fileId)
         {
             var file = await _fileDescriptorRepository.FirstOrDefaultAsync(f => f.Id.ToString() == fileId);
@@ -100,6 +104,7 @@ namespace VCareer.Services.FileServices
         }
         #endregion
         // hàm này có trả dto chứa stream nên viết service hoặc controller phải để ý , nếu có lỗi thì check phần stream
+        [Authorize(VCareerPermission.Files.Download)]
         public async Task<FileStreamResultDto> DownloadAsync(string fileOriginName, string containerName, DateTime uploadTime)
         {
             if (string.IsNullOrEmpty(fileOriginName)) throw new ArgumentNullException("StorageName is null or empty");
@@ -125,6 +130,7 @@ namespace VCareer.Services.FileServices
 
         }
 
+        [Authorize(VCareerPermission.Files.Download)]
         public async Task<FileStreamResultDto> DownloadByStoragePathAsync(string storagePath)
         {
             if (string.IsNullOrWhiteSpace(storagePath))
@@ -159,6 +165,7 @@ namespace VCareer.Services.FileServices
                 FileName = file.OriginalName
             };
         }
+        [Authorize(VCareerPermission.Files.Upload)]
         public async Task<Guid> UploadAsync(UploadFileDto input)
         {
             using var stream = input.File.OpenReadStream();
@@ -239,8 +246,7 @@ namespace VCareer.Services.FileServices
             }
         }
         #endregion
-
-
+        [Authorize(VCareerPermission.Files.View)]
         public async Task<List<FileDescriptorDto>> GetListFileByContainer(string containerName)
         {
             List<FileDescriptor> listFileMetadata = new List<FileDescriptor>();
@@ -248,7 +254,7 @@ namespace VCareer.Services.FileServices
             listFileMetadata = await _fileDescriptorRepository.GetListAsync(f => f.ContainerName == containerName);
             return ObjectMapper.Map<List<FileDescriptor>, List<FileDescriptorDto>>(listFileMetadata);
         }
-
+        [Authorize(VCareerPermission.Files.View)]
         public async Task<List<FileDescriptorDto>> GetListFileByContainerType(string containerType)
         {
             List<FileDescriptor> listFileMetadata = new List<FileDescriptor>();

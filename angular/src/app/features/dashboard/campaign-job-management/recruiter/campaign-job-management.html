@@ -1,6 +1,10 @@
-<div class="campaign-job-management-page">
+<div class="campaign-job-management-page" 
+     [style.margin-left]="getPagePaddingLeft()"
+     [style.width]="getPageWidth()">
   <!-- Breadcrumb Box -->
-  <div class="breadcrumb-box">
+  <div class="breadcrumb-box"
+       [style.left]="getBreadcrumbLeft()"
+       [style.width]="getBreadcrumbWidth()">
     <div class="breadcrumb-container">
       <button class="back-btn" (click)="onBack()">
         <i class="fa fa-arrow-left"></i>
@@ -11,7 +15,7 @@
   </div>
 
   <!-- Main Content -->
-  <div class="main-content">
+  <div class="main-content" [style.max-width]="getContentMaxWidth()">
     <!-- Filter Bar -->
     <div class="filter-bar">
       <div class="search-group">
@@ -44,66 +48,53 @@
             <th>Địa điểm</th>
             <th>Số CV</th>
             <th>Trạng thái</th>
-            <th>Public/Private</th>
             <th>Gói tuyển dụng</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let job of paginatedJobs">
-            <!-- Tiêu đề công việc Column -->
             <td class="job-title-cell">
               <div class="job-title-content">
                 <div class="job-title">{{ job.title }}</div>
               </div>
             </td>
 
-            <!-- Vị trí Column -->
             <td class="position-cell">
               <span>{{ job.position }}</span>
             </td>
 
-            <!-- Địa điểm Column -->
             <td class="location-cell">
               <i class="fa fa-map-marker-alt"></i>
               <span>{{ job.location }}</span>
             </td>
 
-            <!-- Số CV Column -->
             <td class="cv-count-cell">
               <span>{{ job.appliedCount }}</span>
             </td>
 
-            <!-- Trạng thái Column -->
             <td class="status-cell">
               <span class="status-badge" [class]="getStatusClass(job.status)">
                 {{ getStatusLabel(job.status) }}
               </span>
             </td>
 
-            <!-- Public/Private Column -->
-            <td class="public-cell">
-              <span class="public-badge" [class.public]="job.isPublic" [class.private]="!job.isPublic">
-                {{ job.isPublic ? 'Public' : 'Private' }}
-              </span>
-            </td>
-
-            <!-- Gói tuyển dụng Column -->
             <td class="package-cell">
-              <div class="package-badges-container" *ngIf="job.packageTypes && job.packageTypes.length > 0">
+              <div class="package-badges-container" *ngIf="job.childServices && job.childServices.length > 0">
                 <span 
-                  *ngFor="let pkgType of job.packageTypes" 
+                  *ngFor="let service of job.childServices" 
                   class="package-badge" 
-                  [class]="getPackageClass(pkgType)">
-                  {{ getPackageLabel(pkgType) }}
+                  [class]="getChildServiceClass(service)"
+                  [title]="isChildServiceInactive(service) ? 'Dịch vụ không hoạt động' : service.name">
+                  {{ service.name }}
+                  <i *ngIf="isChildServiceInactive(service)" class="fa fa-exclamation-circle inactive-icon"></i>
                 </span>
               </div>
-              <span class="package-badge package-empty" *ngIf="!job.packageTypes || job.packageTypes.length === 0">
+              <span class="package-badge package-empty" *ngIf="!job.childServices || job.childServices.length === 0">
                 Chưa gắn gói
               </span>
             </td>
 
-            <!-- Thao tác Column -->
             <td class="actions-cell">
               <div class="actions-menu-container" [attr.data-job-id]="job.id">
                 <button
@@ -116,6 +107,9 @@
                 <div
                   class="actions-menu"
                   [class.show]="showActionsMenu === job.id"
+                  [style.top.px]="menuPosition?.top"
+                  [style.left.px]="menuPosition?.left"
+                  [style.max-width.px]="menuPosition?.maxWidth"
                   [attr.data-job-id]="job.id"
                   (click)="$event.stopPropagation()">
                   <div class="menu-item" (click)="onPostJob(job)">
@@ -123,7 +117,10 @@
                     <span>Đăng bài</span>
                   </div>
                   <div class="menu-separator"></div>
-                  <div class="menu-item" (click)="onEditJob(job)">
+                  <div class="menu-item" 
+                       [class.disabled]="!canEditJob(job)"
+                       [title]="!canEditJob(job) ? (job.status === JobStatus.Open ? 'Không thể sửa bài đăng đang tuyển' : 'Không thể sửa bài đăng đang chờ duyệt') : ''"
+                       (click)="onEditJob(job)">
                     <i class="fa fa-edit menu-icon"></i>
                     <span>Sửa</span>
                   </div>
@@ -132,13 +129,13 @@
                     <span>Xem các CV</span>
                   </div>
                   <div class="menu-separator"></div>
-                  <div class="menu-item" (click)="onChangeStatusAction(job)">
-                    <i class="fa fa-tag menu-icon"></i>
-                    <span>Đặt trạng thái</span>
+                  <div class="menu-item" (click)="onCloseJob(job)">
+                    <i class="fa fa-lock menu-icon"></i>
+                    <span>Đóng công việc</span>
                   </div>
-                  <div class="menu-item" (click)="onTogglePublicAction(job)">
-                    <i class="fa fa-eye menu-icon"></i>
-                    <span>{{ job.isPublic ? 'Đặt Private' : 'Đặt Public' }}</span>
+                  <div class="menu-item" (click)="onRecreateJob(job)">
+                    <i class="fa fa-redo menu-icon"></i>
+                    <span>Tạo lại công việc</span>
                   </div>
                   <div class="menu-item" (click)="onAssignPackage(job)">
                     <i class="fa fa-gift menu-icon"></i>
@@ -180,8 +177,8 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content" (click)="$event.stopPropagation()" [style.max-width]="getDeleteModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Xác nhận xóa</h3>
         <button class="modal-close" (click)="closeDeleteModal()">
@@ -193,44 +190,19 @@
         <p class="warning-text">Hành động này không thể hoàn tác.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeDeleteModal()">Hủy</button>
-        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Change Status Modal -->
-  <div class="modal-overlay" *ngIf="showStatusDropdownModal" (click)="closeStatusModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 class="modal-title">Đặt trạng thái</h3>
-        <button class="modal-close" (click)="closeStatusModal()">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Chọn trạng thái</label>
-          <div class="status-dropdown-list">
-            <div 
-              *ngFor="let status of statusOptions.slice(1)" 
-              class="status-option-item"
-              [class.active]="selectedStatusValue === status.value"
-              (click)="onSelectStatus(status.value)">
-              <div class="status-option-content">
-                <span class="status-option-label">{{ status.label }}</span>
-                <i class="fa fa-check status-check-icon" *ngIf="selectedStatusValue === status.value"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-button type="secondary" size="medium" (click)="closeDeleteModal()">
+          Hủy
+        </app-button>
+        <app-button type="danger" size="medium" (click)="confirmDelete()">
+          Xóa
+        </app-button>
       </div>
     </div>
   </div>
 
   <!-- Assign Package Modal -->
-  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()">
-    <div class="modal-content package-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="showPackageModal" (click)="closePackageModal()" [style.padding-left]="getModalPaddingLeft()">
+    <div class="modal-content package-modal" (click)="$event.stopPropagation()" [style.max-width]="getModalMaxWidth()">
       <div class="modal-header">
         <h3 class="modal-title">Gắn gói tuyển dụng</h3>
         <button class="modal-close" (click)="closePackageModal()">
@@ -239,67 +211,84 @@
       </div>
       <div class="modal-body">
         <div class="package-modal-content-wrapper">
-          <div class="form-group packages-selection-group">
-            <label class="form-label">Chọn gói tuyển dụng (có thể chọn nhiều)</label>
-            <div class="packages-list">
-              <div 
-                *ngFor="let pkg of packageOptions.slice(1)" 
-                class="package-item"
-                [class.selected]="isPackageSelected(pkg.value)"
-                [class.active]="activePackage === pkg.value">
-                <div class="package-content" (click)="onPackageContentClick(pkg.value, $event)">
-                  <div class="package-header">
-                    <span class="package-name">{{ pkg.label }}</span>
-                  </div>
-                  <div class="package-features" *ngIf="pkg.features && pkg.features.length > 0">
-                    <div class="features-list">
-                      <div *ngFor="let feature of pkg.features" class="feature-item">
-                        <i class="fa fa-check-circle"></i>
-                        <span>{{ feature }}</span>
+          <!-- Loading State -->
+          <div *ngIf="isLoadingServices" class="loading-state">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>Đang tải danh sách dịch vụ...</span>
+          </div>
+
+          <!-- Service Sections grouped by Action -->
+          <div *ngIf="!isLoadingServices && serviceSections.length > 0" class="service-sections-container">
+            <!-- Loop qua từng section (mỗi action một section) -->
+            <div *ngFor="let section of serviceSections; let sectionIndex = index" class="service-section">
+              <div class="section-header">
+                <div class="section-header-left">
+                  <h4 class="section-title">{{ section.label }}</h4>
+                  <span class="section-subtitle">Chọn 1 dịch vụ</span>
+                </div>
+                <div class="section-count-badge">
+                  <span class="count-text">{{ section.packages.length }} dịch vụ</span>
+                </div>
+              </div>
+              
+              <div class="service-items-grid">
+                <div 
+                  *ngFor="let service of section.packages; let serviceIndex = index" 
+                  class="service-item-card"
+                  [class.selected]="isChildServiceSelected(section.action, service.uniqueId)"
+                  (click)="selectChildService(section.action, service.uniqueId)">
+                  <div class="service-card-content">
+                    <div class="service-card-header">
+                      <div class="service-card-title-wrapper">
+                        <span class="service-card-name">{{ service.displayLabel }}</span>
+                        <span class="service-card-badge" *ngIf="service.isShared">🔗</span>
                       </div>
+                      <div class="service-radio-wrapper">
+                        <div class="radio-button" [class.checked]="isChildServiceSelected(section.action, service.uniqueId)">
+                          <div class="radio-inner"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Thông tin chi tiết về usage -->
+                    <div class="service-card-info" *ngIf="service.userChildService || service.description">
+                      <p *ngIf="service.userChildService && service.isLimitUsedTime" class="service-used-info">
+                        <i class="fa fa-chart-line"></i>
+                        Đã dùng: {{ service.usedTime }}/{{ service.totalUsageLimit || '∞' }}
+                      </p>
+                      <p *ngIf="service.description" class="service-card-description">
+                        <i class="fa fa-info-circle"></i>
+                        {{ service.description }}
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div class="package-check-icon" (click)="togglePackage(pkg.value, $event)">
-                  <div class="checkbox-icon" [class.checked]="isPackageSelected(pkg.value)">
-                    <i class="fa fa-check" *ngIf="isPackageSelected(pkg.value)"></i>
-                  </div>
-                </div>
               </div>
+
+              <!-- Divider between sections (không hiển thị sau section cuối) -->
+              <div *ngIf="sectionIndex < serviceSections.length - 1" class="section-divider"></div>
             </div>
           </div>
 
-          <!-- Package Options Selection for active package only -->
-          <div class="form-group package-options-section" *ngIf="activePackage && getPackageOptions(activePackage).length > 0">
-            <label class="form-label">Chọn các tùy chọn trong gói</label>
-            <div class="packages-options-container">
-              <div class="package-options-group">
-                <div class="package-options-title">
-                  <span class="package-title-name">{{ getPackageLabel(activePackage) }}</span>
-                </div>
-                <div class="package-options-list">
-                  <div 
-                    *ngFor="let option of getPackageOptions(activePackage)" 
-                    class="package-option-item"
-                    [class.selected]="isPackageOptionSelected(activePackage, option.id)"
-                    (click)="togglePackageOption(activePackage, option.id)">
-                    <div class="option-content">
-                      <div class="option-header">
-                        <span class="option-name">{{ option.name }}</span>
-                        <i class="fa fa-check option-selected-check" *ngIf="isPackageOptionSelected(activePackage, option.id)"></i>
-                      </div>
-                      <p class="option-description" *ngIf="option.description">{{ option.description }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <!-- Empty State -->
+          <div *ngIf="!isLoadingServices && serviceSections.length === 0" class="empty-services-state">
+            <i class="fa fa-inbox empty-icon"></i>
+            <p class="empty-message">Không có dịch vụ nào khả dụng</p>
+            <p class="empty-description">Vui lòng thử lại sau hoặc liên hệ hỗ trợ</p>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closePackageModal()">Hủy</button>
-        <button class="btn btn-primary" (click)="confirmAssignPackage()">Lưu</button>
+        <div class="modal-footer-info">
+          <i class="fa fa-info-circle"></i>
+          <span>Đã chọn: {{ getSelectedChildServiceIds().length }}/{{ serviceSections.length }} dịch vụ</span>
+        </div>
+        <div class="modal-footer-actions">
+          <button class="btn btn-secondary" (click)="closePackageModal()">Hủy</button>
+          <button class="btn btn-primary" (click)="confirmAssignPackage()" [disabled]="getSelectedChildServiceIds().length === 0">
+            Đăng Công Việc
+          </button>
+        </div>
       </div>
     </div>
   </div>

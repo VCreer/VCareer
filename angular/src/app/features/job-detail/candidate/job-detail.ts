@@ -4,8 +4,10 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
-import { SearchHeaderComponent } from '../../../shared/components/search-header/search-header';
+import { FilterBarComponent } from '../../../shared/components/filter-bar/filter-bar';
 import { ApplyJobModalComponent } from '../../../shared/components/apply-job-modal/apply-job-modal';
+import { JobListComponent } from '../../../shared/components/job-list/job-list';
+import { LoginModalComponent } from '../../../shared/components/login-modal/login-modal';
 
 import { CompanyService, CompanyInfoForJobDetailDto } from '../../../apiTest/api/company.service';
 import { environment } from '../../../../environments/environment';
@@ -19,7 +21,10 @@ import { PositionType } from 'src/app/proxy/constants/job-constant/position-type
 import { GeoService } from 'src/app/proxy/services/geo';
 import { JobCategoryService } from 'src/app/proxy/services/job';
 import { CategoryTreeDto } from 'src/app/proxy/dto/category';
-import { forkJoin } from 'rxjs';
+import { ProvinceDto } from 'src/app/proxy/dto/geo-dto/models';
+import { GeoService as CoreGeoService } from 'src/app/core/services/Geo.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-job-detail',
@@ -29,8 +34,10 @@ import { forkJoin } from 'rxjs';
     RouterLink,
     FormsModule,
     ToastNotificationComponent,
-    SearchHeaderComponent,
+    FilterBarComponent,
     ApplyJobModalComponent,
+    JobListComponent,
+    LoginModalComponent,
   ],
   templateUrl: './job-detail.html',
   styleUrls: ['./job-detail.scss'],
@@ -44,6 +51,9 @@ export class JobDetailComponent implements OnInit {
   selectedCategory: string = '';
   selectedLocation: string = '';
   searchPosition: string = '';
+  selectedCategoryIds: string[] = [];
+  selectedProvinceCodes: number[] = [];
+  selectedWardCodes: number[] = [];
   showApplyModal: boolean = false;
   showLoginModal: boolean = false;
   isAuthenticated: boolean = false;
@@ -71,6 +81,9 @@ export class JobDetailComponent implements OnInit {
   categoryTree: CategoryTreeDto[] = [];
   jobCategories: any[] = [];
 
+  // Provinces for search header
+  provinces: ProvinceDto[] = [];
+
   constructor(
     private translationService: TranslationService,
     private route: ActivatedRoute,
@@ -81,7 +94,8 @@ export class JobDetailComponent implements OnInit {
     private jobCategoryService: JobCategoryService,
     private navigationService: NavigationService,
     private applicationService: ApplicationService,
-    private geoService: GeoService
+    private geoService: GeoService,
+    private coreGeoService: CoreGeoService
   ) {}
 
   ngOnInit() {
@@ -89,15 +103,10 @@ export class JobDetailComponent implements OnInit {
       this.selectedLanguage = lang;
     });
 
-    // Load category tree once
-    this.loadCategoryTree();
-
-    // Check authentication status
+    // Check authentication status first
     this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isAuthenticated = isLoggedIn;
-      console.log('[JobDetail] isLoggedIn =', isLoggedIn);
       if (isLoggedIn && this.jobId) {
-        this.checkApplicationStatus();
         this.loadSavedStatus();
       } else {
         this.hasApplied = false;
@@ -105,19 +114,21 @@ export class JobDetailComponent implements OnInit {
       }
     });
 
+    // Load category tree and provinces once (should work without authentication)
+    this.loadCategoryTree();
+    this.loadProvinces();
+
     // Get job ID from route params
     this.route.params.subscribe(params => {
       this.jobId = params['id'];
-      console.log('[JobDetail] route jobId =', this.jobId);
       if (this.jobId) {
         this.loadJobDetail();
       } else {
         // Fallback: Lấy jobId từ URL nếu route params chưa có
         const urlPath = window.location.pathname;
-        const match = urlPath.match(/\/candidate\/job-detail\/([^\/]+)/);
+        const match = urlPath.match(/\/job-detail\/([^\/]+)/);
         if (match && match[1]) {
           this.jobId = match[1];
-          console.log('[JobDetail] Fallback: jobId from URL =', this.jobId);
           this.loadJobDetail();
         }
       }
@@ -130,11 +141,54 @@ export class JobDetailComponent implements OnInit {
   loadCategoryTree() {
     this.jobCategoryService.getCategoryTree().subscribe({
       next: (tree: CategoryTreeDto[]) => {
-        this.categoryTree = tree;
-        console.log('[JobDetail] Category tree loaded:', tree);
+        this.categoryTree = tree || [];
+        console.log('Category tree loaded successfully:', this.categoryTree.length, 'categories');
+        // Reload job categories if job detail is already loaded
+        if (this.jobDetail && this.jobDetail.jobCategoryId) {
+          this.loadJobCategories();
+        }
       },
       error: error => {
-        console.error('❌ Error loading category tree:', error);
+        // Error loading category tree - log but don't give up
+        console.error('Error loading category tree:', error);
+        this.categoryTree = [];
+        // Retry loading category tree after a delay (might be network issue or auth issue)
+        setTimeout(() => {
+          if (this.categoryTree.length === 0) {
+            console.log('Retrying to load category tree...');
+            this.jobCategoryService.getCategoryTree().subscribe({
+              next: (tree: CategoryTreeDto[]) => {
+                this.categoryTree = tree || [];
+                console.log('Category tree loaded on retry:', this.categoryTree.length, 'categories');
+                if (this.jobDetail && this.jobDetail.jobCategoryId) {
+                  this.loadJobCategories();
+                }
+              },
+              error: retryError => {
+                console.error('Retry failed to load category tree:', retryError);
+                // Even if retry fails, try to load categories if we have job detail
+                // Maybe the category info is available elsewhere
+                if (this.jobDetail && this.jobDetail.jobCategoryId) {
+                  this.loadJobCategories();
+                }
+              },
+            });
+          }
+        }, 1000);
+      },
+    });
+  }
+
+  /**
+   * Load provinces from API for search header
+   */
+  loadProvinces() {
+    this.coreGeoService.getProvinces().subscribe({
+      next: (provinces: ProvinceDto[]) => {
+        this.provinces = provinces;
+      },
+      error: error => {
+        // Error loading provinces
       },
     });
   }
@@ -145,9 +199,8 @@ export class JobDetailComponent implements OnInit {
   loadJobDetail() {
     this.isLoading = true;
 
-    this.jobSearchService.getJobById(this.jobId).subscribe({
+    this.jobSearchService.getJobById(this.jobId, { skipHandleError: true }).subscribe({
       next: (jobDetail: JobViewDetail) => {
-        console.log('[JobDetail] getJobById result =', jobDetail);
         this.jobDetail = jobDetail;
         this.isLoading = false;
 
@@ -170,11 +223,10 @@ export class JobDetailComponent implements OnInit {
 
         // Check application status if authenticated
         if (this.isAuthenticated && this.jobId) {
-          this.checkApplicationStatus();
+        //  this.checkApplicationStatus();
         }
       },
       error: error => {
-        console.error('❌ Error loading job detail:', error);
         this.isLoading = false;
         this.toastMessage = 'Không thể tải chi tiết công việc';
         this.toastType = 'error';
@@ -187,7 +239,11 @@ export class JobDetailComponent implements OnInit {
    * Load location names from provinceCode and wardCode
    */
   loadLocationNames() {
-    if (!this.jobDetail) return;
+    if (!this.jobDetail) {
+      this.provinceName = '';
+      this.wardName = '';
+      return;
+    }
 
     const requests: any = {};
 
@@ -195,6 +251,11 @@ export class JobDetailComponent implements OnInit {
     if (this.jobDetail.provinceCode) {
       requests.province = this.geoService.getProvinceNameByCodeByProvinceCode(
         this.jobDetail.provinceCode
+      ).pipe(
+        catchError(err => {
+          // Nếu API lỗi, trả về empty string
+          return of('');
+        })
       );
     }
 
@@ -203,6 +264,11 @@ export class JobDetailComponent implements OnInit {
       requests.ward = this.geoService.getWardNameByCodeByWardCodeAndProvinceCode(
         this.jobDetail.wardCode,
         this.jobDetail.provinceCode
+      ).pipe(
+        catchError(err => {
+          // Nếu API lỗi, trả về empty string
+          return of('');
+        })
       );
     }
 
@@ -211,13 +277,20 @@ export class JobDetailComponent implements OnInit {
         next: (results: any) => {
           this.provinceName = results.province || '';
           this.wardName = results.ward || '';
-          console.log('[JobDetail] Location names loaded:', { provinceName: this.provinceName, wardName: this.wardName });
           this.cdr.detectChanges();
         },
         error: error => {
-          console.error('❌ Error loading location names:', error);
+          // Nếu forkJoin lỗi, reset về empty và trigger change detection
+          this.provinceName = '';
+          this.wardName = '';
+          this.cdr.detectChanges();
         },
       });
+    } else {
+      // Nếu không có provinceCode, reset về empty
+      this.provinceName = '';
+      this.wardName = '';
+      this.cdr.detectChanges();
     }
   }
 
@@ -225,7 +298,26 @@ export class JobDetailComponent implements OnInit {
    * Load job categories from jobCategoryId
    */
   loadJobCategories() {
-    if (!this.jobDetail?.jobCategoryId || this.categoryTree.length === 0) {
+    if (!this.jobDetail?.jobCategoryId) {
+      this.jobCategories = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // If category tree is not loaded yet, wait for it with retry mechanism
+    if (this.categoryTree.length === 0) {
+      // Retry loading category tree if it failed before
+      // This handles the case when API call failed due to authentication or network issues
+      setTimeout(() => {
+        if (this.categoryTree.length === 0 && this.jobDetail?.jobCategoryId) {
+          // Try to reload category tree one more time
+          this.loadCategoryTree();
+          // Also retry loading categories after a delay
+          setTimeout(() => {
+            this.loadJobCategories();
+          }, 1000);
+        }
+      }, 500);
       return;
     }
 
@@ -233,18 +325,30 @@ export class JobDetailComponent implements OnInit {
     const category = this.findCategoryById(this.categoryTree, this.jobDetail.jobCategoryId);
     if (category) {
       // Build category path (from root to current)
-      this.jobCategories = this.buildCategoryPath(this.categoryTree, this.jobDetail.jobCategoryId);
-      console.log('[JobDetail] Job categories loaded:', this.jobCategories);
-      this.cdr.detectChanges();
+      const categoryPath = this.buildCategoryPath(this.categoryTree, this.jobDetail.jobCategoryId);
+      this.jobCategories = categoryPath;
+      console.log('Job categories loaded:', this.jobCategories);
+    } else {
+      // If category not found, log for debugging
+      console.warn('Category not found for jobCategoryId:', this.jobDetail.jobCategoryId, 'Available categories:', this.categoryTree.length);
+      this.jobCategories = [];
     }
+    this.cdr.detectChanges();
   }
 
   /**
    * Find category by ID in tree
    */
   findCategoryById(tree: CategoryTreeDto[], id: string): CategoryTreeDto | null {
+    if (!id) return null;
+    
+    // Convert both to string for comparison to handle type mismatches
+    const idStr = String(id).trim();
+    
     for (const node of tree) {
-      if (node.categoryId === id) return node;
+      const nodeIdStr = node.categoryId ? String(node.categoryId).trim() : '';
+      if (nodeIdStr === idStr) return node;
+      
       if (node.children && node.children.length > 0) {
         const found = this.findCategoryById(node.children, id);
         if (found) return found;
@@ -257,8 +361,14 @@ export class JobDetailComponent implements OnInit {
    * Build category path from root to target category
    */
   buildCategoryPath(tree: CategoryTreeDto[], targetId: string): CategoryTreeDto[] {
+    if (!targetId) return [];
+    
+    // Convert both to string for comparison
+    const targetIdStr = String(targetId).trim();
+    
     for (const node of tree) {
-      if (node.categoryId === targetId) {
+      const nodeIdStr = node.categoryId ? String(node.categoryId).trim() : '';
+      if (nodeIdStr === targetIdStr) {
         return [node];
       }
       if (node.children && node.children.length > 0) {
@@ -275,15 +385,26 @@ export class JobDetailComponent implements OnInit {
    * Get full location text (ward + province)
    */
   getFullLocation(): string {
-    if (this.jobDetail?.workLocation) {
-      return this.jobDetail.workLocation;
-    }
-    
     const parts: string[] = [];
     if (this.wardName) parts.push(this.wardName);
     if (this.provinceName) parts.push(this.provinceName);
-    
-    return parts.length > 0 ? parts.join(', ') : 'Không xác định';
+    if (parts.length > 0) {
+      return parts.join(', ');
+    }
+    // Fallback: workLocation (strip HTML for tag display)
+    if (this.jobDetail?.workLocation) {
+      return this.stripHtml(this.jobDetail.workLocation);
+    }
+    return 'Không xác định';
+  }
+
+  /**
+   * Strip HTML tags for plain text
+   */
+  private stripHtml(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
   }
 
   /**
@@ -296,80 +417,167 @@ export class JobDetailComponent implements OnInit {
 
     this.isLoadingCompany = true;
     this.companyError = false;
+    this.companyInfo = null; // Clear previous data
 
-    this.companyService.getCompanyByJobId(this.jobId).subscribe({
-      next: (companyInfo: CompanyInfoForJobDetailDto) => {
+    this.companyService.getCompanyByJobId(this.jobId).pipe(
+      catchError(err => {
+        this.isLoadingCompany = false;
+        this.companyError = true;
+        this.companyInfo = null;
+        this.cdr.detectChanges();
+        return of(null);
+      })
+    ).subscribe({
+      next: (companyInfo: CompanyInfoForJobDetailDto | null) => {
+        if (!companyInfo) {
+          this.isLoadingCompany = false;
+          this.companyError = true;
+          this.companyInfo = null;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        // API đã trả về đúng structure, nhưng các field có thể null
+        // Giữ nguyên dữ liệu từ API, chỉ clean up nếu cần
+        const mappedCompanyInfo: CompanyInfoForJobDetailDto = {
+          id: companyInfo.id,
+          companyName: companyInfo.companyName || null,
+          logoUrl: companyInfo.logoUrl || null,
+          companySize: companyInfo.companySize !== undefined && companyInfo.companySize !== null ? companyInfo.companySize : null,
+          headquartersAddress: companyInfo.headquartersAddress || null,
+          industries: companyInfo.industries && Array.isArray(companyInfo.industries) && companyInfo.industries.length > 0 ? companyInfo.industries : [],
+        };
+
         // Clean up data - remove single quotes if present
         if (
-          companyInfo.companyName &&
-          typeof companyInfo.companyName === 'string' &&
-          companyInfo.companyName.startsWith("'") &&
-          companyInfo.companyName.endsWith("'")
+          mappedCompanyInfo.companyName &&
+          typeof mappedCompanyInfo.companyName === 'string' &&
+          mappedCompanyInfo.companyName.startsWith("'") &&
+          mappedCompanyInfo.companyName.endsWith("'")
         ) {
-          companyInfo.companyName = companyInfo.companyName.slice(1, -1);
+          mappedCompanyInfo.companyName = mappedCompanyInfo.companyName.slice(1, -1);
         }
         if (
-          companyInfo.logoUrl &&
-          typeof companyInfo.logoUrl === 'string' &&
-          companyInfo.logoUrl.startsWith("'") &&
-          companyInfo.logoUrl.endsWith("'")
+          mappedCompanyInfo.logoUrl &&
+          typeof mappedCompanyInfo.logoUrl === 'string' &&
+          mappedCompanyInfo.logoUrl.startsWith("'") &&
+          mappedCompanyInfo.logoUrl.endsWith("'")
         ) {
-          companyInfo.logoUrl = companyInfo.logoUrl.slice(1, -1);
+          mappedCompanyInfo.logoUrl = mappedCompanyInfo.logoUrl.slice(1, -1);
         }
         if (
-          companyInfo.headquartersAddress &&
-          typeof companyInfo.headquartersAddress === 'string' &&
-          companyInfo.headquartersAddress.startsWith("'") &&
-          companyInfo.headquartersAddress.endsWith("'")
+          mappedCompanyInfo.headquartersAddress &&
+          typeof mappedCompanyInfo.headquartersAddress === 'string' &&
+          mappedCompanyInfo.headquartersAddress.startsWith("'") &&
+          mappedCompanyInfo.headquartersAddress.endsWith("'")
         ) {
-          companyInfo.headquartersAddress = companyInfo.headquartersAddress.slice(1, -1);
+          mappedCompanyInfo.headquartersAddress = mappedCompanyInfo.headquartersAddress.slice(1, -1);
         }
 
-        this.companyInfo = { ...companyInfo };
+        this.companyInfo = mappedCompanyInfo;
         this.isLoadingCompany = false;
         this.companyError = false;
         this.cdr.detectChanges();
       },
       error: error => {
-        console.error('❌ Error loading company info:', error);
+        // Fallback error handler (không nên vào đây nếu đã catch ở pipe)
         this.isLoadingCompany = false;
         this.companyError = true;
         this.companyInfo = null;
+        this.cdr.detectChanges();
       },
     });
   }
 
   /**
    * Load related jobs from API
+   * Nếu không có related jobs, fallback sang tìm jobs cùng category
    */
   loadRelatedJobs() {
     if (!this.jobId) {
+      this.relatedJobs = [];
+      this.isLoadingRelatedJobs = false;
       return;
     }
 
     this.isLoadingRelatedJobs = true;
+    this.relatedJobs = []; // Clear previous data
 
-    this.jobSearchService.getRelatedJobs(this.jobId, 6).subscribe({
+    this.jobSearchService.getRelatedJobs(this.jobId, 7, { skipHandleError: true }).pipe(
+      catchError(err => {
+        // Nếu API lỗi (401, 404, etc.), thử fallback sang search jobs cùng category
+        return this.loadJobsByCategoryFallback();
+      })
+    ).subscribe({
       next: (jobs: JobViewDto[]) => {
-        console.log('[JobDetail] getRelatedJobs result =', jobs);
-        this.relatedJobs = jobs;
+        if (jobs && jobs.length > 0) {
+          // Loại bỏ job hiện tại khỏi danh sách
+          this.relatedJobs = jobs.filter(job => job.id !== this.jobId).slice(0, 7);
+        } else {
+          // Nếu không có related jobs, thử fallback sang jobs cùng category
+          this.loadJobsByCategoryFallback().subscribe({
+            next: (fallbackJobs: JobViewDto[]) => {
+              this.relatedJobs = fallbackJobs || [];
+              this.isLoadingRelatedJobs = false;
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              this.relatedJobs = [];
+              this.isLoadingRelatedJobs = false;
+              this.cdr.detectChanges();
+            }
+          });
+          return; // Return early, sẽ set loading = false trong fallback
+        }
         this.isLoadingRelatedJobs = false;
         this.cdr.detectChanges();
       },
       error: error => {
-        console.error('❌ Error loading related jobs:', error);
+        // Fallback error handler (không nên vào đây nếu đã catch ở pipe)
         this.isLoadingRelatedJobs = false;
         this.relatedJobs = [];
+        this.cdr.detectChanges();
       },
     });
   }
 
   /**
+   * Fallback: Load jobs cùng category nếu không có related jobs
+   */
+  private loadJobsByCategoryFallback() {
+    if (!this.jobDetail?.jobCategoryId) {
+      return of([]);
+    }
+
+    const input: any = {
+      categoryIds: [this.jobDetail.jobCategoryId],
+      skipCount: 0,
+      maxResultCount: 8, // Lấy 8 để sau khi filter job hiện tại còn ~7
+    };
+
+    return this.jobSearchService.searchJobs(input, { skipHandleError: true }).pipe(
+      catchError(err => {
+        return of([]);
+      }),
+      // Map để loại bỏ job hiện tại và giới hạn số lượng
+      map((jobs: JobViewDto[]) => {
+        const filtered = jobs.filter(job => job.id !== this.jobId);
+        return filtered.slice(0, 7);
+      })
+    );
+  }
+
+  /**
    * Format company size to display text
    */
-  formatCompanySize(size: number): string {
+  formatCompanySize(size: number | null | undefined): string {
+    if (size === null || size === undefined) {
+      return 'Chưa cập nhật';
+    }
+
     const sizeMap: { [key: number]: string } = {
-      1: '1-10 nhân viên',
+      0: 'Dưới 10 nhân viên',
+      1: '10-24 nhân viên',
       2: '25-99 nhân viên',
       3: '100-499 nhân viên',
       4: '500-999 nhân viên',
@@ -385,11 +593,9 @@ export class JobDetailComponent implements OnInit {
 
   /**
    * Format salary text
+   * Ưu tiên hiển thị theo salaryMin/salaryMax; chỉ trả về "Thỏa thuận" khi không có số.
    */
   formatSalary(job: JobViewDetail): string {
-    if (job.salaryDeal) {
-      return 'Thỏa thuận';
-    }
     if (job.salaryMin && job.salaryMax) {
       return `${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()} VNĐ`;
     }
@@ -404,20 +610,28 @@ export class JobDetailComponent implements OnInit {
 
   /**
    * Format experience level
+   * Map ExperienceLevel enum values to Vietnamese text
    */
   getExperienceText(experience: number | undefined): string {
-    if (!experience) return 'Không yêu cầu';
+    if (experience === undefined || experience === null) return 'Không yêu cầu';
     
     const experienceMap: { [key: number]: string } = {
-      0: 'Không yêu cầu',
-      1: 'Dưới 1 năm',
-      2: '1-2 năm',
-      3: '2-5 năm',
-      4: '5-10 năm',
-      5: 'Trên 10 năm',
+      0: 'Không yêu cầu',      // None
+      1: 'Dưới 1 năm',         // Under1
+      2: '1-2 năm',            // Year1
+      3: '2-3 năm',             // Year2
+      4: '3-4 năm',             // Year3
+      5: '4-5 năm',             // Year4
+      6: '5-6 năm',             // Year5
+      7: '6-7 năm',             // Year6
+      8: '7-8 năm',             // Year7
+      9: '8-9 năm',             // Year8
+      10: '9-10 năm',           // Year9
+      11: '10 năm',              // Year10
+      12: 'Trên 10 năm',        // Over10
     };
 
-    return experienceMap[experience] || `${experience} năm`;
+    return experienceMap[experience] || 'Không yêu cầu';
   }
 
   // ===== Enum → Vietnamese helpers =====
@@ -485,34 +699,61 @@ export class JobDetailComponent implements OnInit {
   }
 
   /**
-   * Get full logo URL từ backend wwwroot
+   * Get full logo URL từ backend API endpoint
+   * Logo được lưu trong blob storage với StoragePath (ví dụ: recruiter/logos/xxx.jpg)
+   * Cần dùng endpoint API để serve file thay vì load trực tiếp từ blob storage
    */
-  getLogoUrl(logoUrl: string | undefined): string {
-    if (!logoUrl) {
-      return '/assets/images/default-company-logo.png';
+  getLogoUrl(logoUrl: string | undefined | null): string {
+    if (!logoUrl || logoUrl.trim() === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
-    let cleanUrl = logoUrl.trim();
-    if (cleanUrl.startsWith("'") && cleanUrl.endsWith("'")) {
-      cleanUrl = cleanUrl.slice(1, -1);
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    if (cleanUrl === '') {
+      return 'assets/images/home/company-placeholder.png';
     }
 
+    // Nếu đã là full URL (http/https), return as is
     if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
       return cleanUrl;
     }
 
-    if (cleanUrl.startsWith('/')) {
-      const backendBaseUrl = this.getBackendBaseUrl();
-      return `${backendBaseUrl}${cleanUrl}`;
-    }
-
-    const backendBaseUrl = this.getBackendBaseUrl();
-    return `${backendBaseUrl}/${cleanUrl}`;
+    // Sử dụng API endpoint để lấy logo từ blob storage
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
-  private getBackendBaseUrl(): string {
-    const backendUrl = environment.apis?.default?.url || 'https://localhost:44385';
-    return backendUrl.replace(/\/$/, '');
+  /**
+   * Get company initials for logo fallback
+   */
+  getCompanyInitials(companyName: string | null | undefined): string {
+    if (!companyName || !companyName.trim()) {
+      return 'SM';
+    }
+    
+    // Remove extra spaces and get first 2 characters
+    const cleaned = companyName.trim().replace(/\s+/g, ' ');
+    const words = cleaned.split(' ');
+    
+    if (words.length >= 2) {
+      // Lấy chữ cái đầu của 2 từ đầu tiên
+      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    } else {
+      // Nếu chỉ có 1 từ, lấy 2 ký tự đầu
+      return cleaned.substring(0, 2).toUpperCase();
+    }
+  }
+
+  /**
+   * Get industries text for display
+   */
+  getIndustriesText(industries: string[] | null | undefined): string {
+    if (!industries || industries.length === 0) {
+      return 'Chưa cập nhật';
+    }
+    return industries.join(', ');
   }
 
   // ================= Related Categories → Navigate to Job List =================
@@ -551,16 +792,17 @@ export class JobDetailComponent implements OnInit {
   loadSavedStatus() {
     if (!this.jobId || !this.isAuthenticated) return;
 
-    this.jobSearchService.getSavedJobStatus(this.jobId).subscribe({
-      next: status => {
-        this.isHeartActive = status.isSaved;
-        console.log('[JobDetail] loadSavedStatus ->', status);
-        this.cdr.detectChanges();
-      },
-      error: error => {
-        console.error('[JobDetail] Error loading saved status:', error);
-      },
-    });
+    this.jobSearchService
+      .getSavedJobStatus(this.jobId, { skipHandleError: true })
+      .subscribe({
+        next: status => {
+          this.isHeartActive = status.isSaved;
+          this.cdr.detectChanges();
+        },
+        error: error => {
+          // swallow error to avoid ABP modal
+        },
+      });
   }
 
   /**
@@ -575,24 +817,22 @@ export class JobDetailComponent implements OnInit {
     if (!this.jobId) return;
 
     if (this.isHeartActive) {
-      this.jobSearchService.unsaveJob(this.jobId).subscribe({
+      this.jobSearchService.unsaveJob(this.jobId, { skipHandleError: true }).subscribe({
         next: () => {
           this.isHeartActive = false;
           this.showToastMessage('Đã bỏ lưu công việc', 'success');
         },
         error: error => {
-          console.error('Error unsaving job:', error);
           this.showToastMessage('Không thể bỏ lưu công việc', 'error');
         },
       });
     } else {
-      this.jobSearchService.saveJob(this.jobId).subscribe({
+      this.jobSearchService.saveJob(this.jobId, { skipHandleError: true }).subscribe({
         next: () => {
           this.isHeartActive = true;
           this.showToastMessage('Đã lưu công việc thành công', 'success');
         },
         error: error => {
-          console.error('Error saving job:', error);
           this.showToastMessage('Không thể lưu công việc', 'error');
         },
       });
@@ -602,19 +842,15 @@ export class JobDetailComponent implements OnInit {
   onLoginSuccess() {
     this.showLoginModal = false;
     this.isAuthenticated = true;
-    setTimeout(() => {
-      if (this.jobId) {
-        this.checkApplicationStatus();
-        this.loadSavedStatus();
-      }
-      const currentUrl = window.location.href;
-      console.log('[JobDetail] Reloading page with URL:', currentUrl);
-      if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
-        window.location.reload();
-      } else {
-        console.error('[JobDetail] Cannot reload: jobId not found in URL');
-      }
-    }, 100);
+      setTimeout(() => {
+        if (this.jobId) {
+          this.loadSavedStatus();
+        }
+        const currentUrl = window.location.href;
+        if (this.jobId || currentUrl.includes('/candidate/job-detail/')) {
+          window.location.reload();
+        }
+      }, 100);
   }
 
   closeLoginModal() {
@@ -634,33 +870,45 @@ export class JobDetailComponent implements OnInit {
     this.showToast = false;
   }
 
-  onCategoryChange(event: any): void {
-    this.selectedCategory = event.target.value;
+  onCategorySelected(ids: string[]): void {
+    this.selectedCategoryIds = ids;
   }
 
-  onLocationChange(event: any): void {
-    this.selectedLocation = event.target.value;
+  onLocationSelected(loc: { provinceIds: number[]; districtIds: number[] }): void {
+    this.selectedProvinceCodes = loc.provinceIds;
+    this.selectedWardCodes = loc.districtIds;
   }
 
-  onPositionChange(event: any): void {
-    this.searchPosition = event.target.value;
-  }
-
-  onSearch(): void {
-    console.log('Search with params:', {
-      category: this.selectedCategory,
-      location: this.selectedLocation,
-      position: this.searchPosition,
-    });
-  }
-
-  onClearPosition(): void {
-    this.searchPosition = '';
+  onSearch(event?: Event): void {
+    // Ngăn chặn default behavior nếu có event
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // Navigate to job search page with filters
+    const queryParams: any = {};
+    if (this.searchPosition) {
+      queryParams.keyword = this.searchPosition;
+    }
+    if (this.selectedCategoryIds.length > 0) {
+      queryParams.categoryIds = this.selectedCategoryIds.join(',');
+    }
+    if (this.selectedProvinceCodes.length > 0) {
+      queryParams.provinceIds = this.selectedProvinceCodes.join(',');
+    }
+    if (this.selectedWardCodes.length > 0) {
+      queryParams.districtIds = this.selectedWardCodes.join(',');
+    }
+    
+    // Điều hướng về trang danh sách việc làm public (route: path 'job' ở root)
+    this.router.navigate(['/job'], { queryParams });
   }
 
   openApplyModal(): void {
     if (!this.isAuthenticated) {
       this.showLoginModal = true;
+      this.cdr.detectChanges();
       return;
     }
     this.showApplyModal = true;
@@ -677,7 +925,7 @@ export class JobDetailComponent implements OnInit {
       this.showToast = true;
       this.loadJobDetail();
       if (this.isAuthenticated && this.jobId) {
-        this.checkApplicationStatus();
+      //  this.checkApplicationStatus();
       }
     } else {
       this.toastType = 'error';
@@ -698,7 +946,6 @@ export class JobDetailComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('[JobDetail] Error checking application status:', error);
         this.hasApplied = false;
       },
     });
@@ -707,8 +954,12 @@ export class JobDetailComponent implements OnInit {
   /**
    * Navigate to related job detail
    */
-  navigateToJob(jobId: string): void {
-    this.router.navigate(['/candidate/job-detail', jobId]).then(() => {
+  navigateToJob(job: any): void {
+    // job có thể là string (jobId) hoặc object (JobViewDto)
+    const jobId = typeof job === 'string' ? job : job?.id;
+    if (!jobId) return;
+    
+    this.router.navigate(['/job-detail', jobId]).then(() => {
       window.scrollTo(0, 0);
     });
   }

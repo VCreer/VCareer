@@ -7,7 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using VCareer.Constants.PaymentVNPay;
 using VCareer.Dto.Order;
+using VCareer.Dto.Subcriptions;
+using VCareer.IServices.Cart;
 using VCareer.IServices.Order;
+using VCareer.IServices.Subcriptions;
 using VCareer.Services.Payment;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -28,6 +31,9 @@ namespace VCareer.Services.Order
         private readonly IConfiguration _configuration;
         private readonly ILogger<OrderAppService> _logger;
         private const decimal VAT_RATE = 0.08m; // 8% VAT
+        private readonly IUserSubcriptionService _userSubcriptionService;
+        private readonly ISubcriptionPriceService _subcriptionPriceService;
+        private readonly ICartAppService _cartService;
 
         public OrderAppService(
             IRepository<Models.Order.Order, Guid> orderRepository,
@@ -36,6 +42,9 @@ namespace VCareer.Services.Order
             IVnpayService vnpayService,
             ICurrentUser currentUser,
             IConfiguration configuration,
+            IUserSubcriptionService userSubcriptionService,
+            ISubcriptionPriceService subcriptionPriceService,
+            ICartAppService cartService,
             ILogger<OrderAppService> logger)
         {
             _orderRepository = orderRepository;
@@ -43,38 +52,44 @@ namespace VCareer.Services.Order
             _subcriptionServiceRepository = subcriptionServiceRepository;
             _vnpayService = vnpayService;
             _currentUser = currentUser;
+            _cartService = cartService;
             _configuration = configuration;
+            _userSubcriptionService = userSubcriptionService;
+            _subcriptionPriceService = subcriptionPriceService;
             _logger = logger;
         }
 
 
-        // đoạn code tạo order
-        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto input)
+
+        /*
+         
+            public class CreateOrderDto
+    {
+        public List<CreateOrderDetailDto> OrderDetails { get; set; } = new List<CreateOrderDetailDto>();
+        public string? DiscountCode { get; set; }
+        public string? Notes { get; set; }
+    }
+         
+         
+         */
+        //tạo order
+        public async Task<OrderViewDto> CreateOrderAsync(CreateOrderDto input)
         {
             try
             {
-                if (!_currentUser.Id.HasValue)
-                {
-                    throw new UserFriendlyException("User not authenticated");
-                }
+                if (!_currentUser.Id.HasValue) throw new UserFriendlyException("User not authenticated");
 
-                if (input == null || input.OrderDetails == null || input.OrderDetails.Count == 0)
-                {
-                    throw new UserFriendlyException("Order details cannot be empty");
-                }
+                if (input == null || input.OrderDetails == null || input.OrderDetails.Count == 0) throw new UserFriendlyException("Order details cannot be empty");
 
                 var userId = _currentUser.Id.Value;
 
-                // Validate and calculate order
                 var orderDetails = new List<Models.Order.OrderDetail>();
                 decimal subTotal = 0;
 
                 foreach (var detailDto in input.OrderDetails)
                 {
-                    if (detailDto.SubcriptionServiceId == Guid.Empty)
-                    {
-                        throw new UserFriendlyException("Invalid subscription service ID");
-                    }
+                    if (detailDto.SubcriptionServiceId == Guid.Empty) throw new UserFriendlyException("Invalid subscription service ID");
+                    if (detailDto.Quantity <= 0) throw new UserFriendlyException("Quantity must be greater than 0");
 
                     if (detailDto.Quantity <= 0)
                     {
@@ -82,18 +97,11 @@ namespace VCareer.Services.Order
                     }
 
                     var subscriptionService = await _subcriptionServiceRepository.GetAsync(detailDto.SubcriptionServiceId);
-                    
-                    if (subscriptionService == null)
-                    {
-                        throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
-                    }
 
-                    if (!subscriptionService.IsActive)
-                    {
-                        throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
-                    }
+                    if (subscriptionService == null) throw new UserFriendlyException($"Subscription service not found: {detailDto.SubcriptionServiceId}");
+                    if (!subscriptionService.IsActive) throw new UserFriendlyException($"Subscription service {subscriptionService.Title} is not active");
 
-                    var unitPrice = detailDto.UnitPrice ?? subscriptionService.OriginalPrice;
+                    var unitPrice = await _subcriptionPriceService.GetCurrentPriceOfSubcription(detailDto.SubcriptionServiceId);
                     var totalPrice = unitPrice * detailDto.Quantity;
 
                     var orderDetail = new Models.Order.OrderDetail
@@ -109,27 +117,28 @@ namespace VCareer.Services.Order
                 }
 
                 // Calculate VAT and total
-                var vatAmount = subTotal * VAT_RATE;
-                decimal? discountAmount = input.DiscountCode != null ? 0 : null; // TODO: Implement discount logic
-                var totalAmount = subTotal + vatAmount - (discountAmount ?? 0);
+                //var vatAmount = subTotal * VAT_RATE;
+                //decimal? discountAmount = input.DiscountCode != null ? 0 : null; // TODO: Implement discount logic
+                //var totalAmount = subTotal + vatAmount - (discountAmount ?? 0);
 
                 // Generate order code
                 var orderCode = $"ORD-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
-                // Create order
+                // tạo order
                 var order = new Models.Order.Order
                 {
                     UserId = userId,
                     OrderCode = orderCode,
                     SubTotal = subTotal,
-                    VATAmount = vatAmount,
-                    TotalAmount = totalAmount,
+                    VATAmount = 0,
+                    TotalAmount = subTotal,
                     DiscountCode = input.DiscountCode,
-                    DiscountAmount = discountAmount,
+                    DiscountAmount = 0,
                     Status = OrderStatus.Pending,
                     PaymentStatus = PaymentStatus.Pending,
                     PaymentMethod = PaymentMethod.VNPay,
-                    Notes = input.Notes
+                    Notes = input.Notes,
+                    PaidAt = DateTime.UtcNow
                 };
 
                 await _orderRepository.InsertAsync(order);
@@ -142,7 +151,7 @@ namespace VCareer.Services.Order
                 }
 
                 // Map to DTO
-                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
+                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
                 orderDto.OrderDetails = orderDetails.Select(d => new OrderDetailDto
                 {
                     Id = d.Id,
@@ -174,7 +183,9 @@ namespace VCareer.Services.Order
             }
         }
 
-        public async Task<OrderDto> GetOrderAsync(Guid id)
+
+
+        public async Task<OrderViewDto> GetOrderAsync(Guid id)
         {
             var order = await _orderRepository.GetAsync(id);
 
@@ -183,7 +194,7 @@ namespace VCareer.Services.Order
                 throw new UserFriendlyException("You don't have permission to view this order");
             }
 
-            var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
+            var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
 
             // Load order details
             var details = await _orderDetailRepository.GetListAsync(d => d.OrderId == id);
@@ -202,6 +213,14 @@ namespace VCareer.Services.Order
 
             return orderDto;
         }
+
+
+        /*
+         public class VnpayPaymentRequestDto
+  {
+      public Guid OrderId { get; set; }
+  }*/
+        //tạo đường dẫn url
 
         public async Task<VnpayPaymentResponseDto> CreateVnpayPaymentUrlAsync(VnpayPaymentRequestDto input)
         {
@@ -230,8 +249,8 @@ namespace VCareer.Services.Order
             // Note: VNPay may use PaymentId as vnp_TxnRef in callback, not the TxnRef we set
             order.VnpayPaymentId = paymentId;
             await _orderRepository.UpdateAsync(order);
-            
-            _logger.LogInformation("Payment URL created for Order {OrderId}, OrderCode: {OrderCode}, PaymentId: {PaymentId}", 
+
+            _logger.LogInformation("Payment URL created for Order {OrderId}, OrderCode: {OrderCode}, PaymentId: {PaymentId}",
                 order.Id, order.OrderCode, paymentId);
 
             return new VnpayPaymentResponseDto
@@ -242,8 +261,8 @@ namespace VCareer.Services.Order
         }
 
 
-        //xử li handle
-        public async Task<OrderDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
+        //xử li thanh toán call back
+        public async Task<OrderViewDto> HandleVnpayCallbackAsync(VnpayCallbackDto input, Dictionary<string, string>? vnpayParams = null)
         {
             if (input == null || string.IsNullOrEmpty(input.vnp_TxnRef))
             {
@@ -273,16 +292,16 @@ namespace VCareer.Services.Order
             // Try multiple methods: PaymentId (most likely), OrderId (Guid), or OrderCode
             Models.Order.Order? order = null;
             var orderQuery = await _orderRepository.GetQueryableAsync();
-            
+
             _logger.LogInformation("Looking for order with TxnRef: {TxnRef}", input.vnp_TxnRef);
-            
+
             // Method 1: Try to find by PaymentId first (VNPay returns PaymentId as TxnRef)
             order = orderQuery.FirstOrDefault(o => o.VnpayPaymentId == input.vnp_TxnRef);
             if (order != null)
             {
                 _logger.LogInformation("Order found by PaymentId: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
             }
-            
+
             // Method 2: Try to parse as Guid (OrderId) if not found by PaymentId
             if (order == null && Guid.TryParse(input.vnp_TxnRef, out Guid orderId))
             {
@@ -292,7 +311,7 @@ namespace VCareer.Services.Order
                     _logger.LogInformation("Order found by OrderId: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
                 }
             }
-            
+
             // Method 3: Try to find by OrderCode (backward compatibility)
             if (order == null)
             {
@@ -302,13 +321,13 @@ namespace VCareer.Services.Order
                     _logger.LogInformation("Order found by OrderCode: {OrderId}, OrderCode: {OrderCode}", order.Id, order.OrderCode);
                 }
             }
-            
+
             if (order == null)
             {
                 // Log all orders with PaymentId for debugging
                 var ordersWithPaymentId = orderQuery.Where(o => !string.IsNullOrEmpty(o.VnpayPaymentId)).ToList();
-                _logger.LogWarning("Order not found for TxnRef: {TxnRef}. Found {Count} orders with PaymentId. PaymentIds: {PaymentIds}", 
-                    input.vnp_TxnRef, 
+                _logger.LogWarning("Order not found for TxnRef: {TxnRef}. Found {Count} orders with PaymentId. PaymentIds: {PaymentIds}",
+                    input.vnp_TxnRef,
                     ordersWithPaymentId.Count,
                     string.Join(", ", ordersWithPaymentId.Select(o => o.VnpayPaymentId)));
                 throw new UserFriendlyException($"Order not found. TxnRef: {input.vnp_TxnRef}");
@@ -318,12 +337,21 @@ namespace VCareer.Services.Order
             if (input.vnp_ResponseCode == "00") // Success
             {
                 order.PaymentStatus = PaymentStatus.Paid;
-                order.Status = OrderStatus.Processing;
+                order.Status = OrderStatus.Completed;
                 order.VnpayTransactionId = input.vnp_TransactionNo;
                 order.VnpayResponseCode = input.vnp_ResponseCode;
                 order.PaidAt = DateTime.Now;
-
-                // TODO: Activate subscription services for the user
+                var orderDetails = await _orderDetailRepository.GetListAsync(x => x.OrderId == order.Id);
+                foreach (var detailDto in orderDetails)
+                {
+                    //tao user subcription
+                    await _userSubcriptionService.BuySubcription(new User_SubcirptionCreateDto
+                    {
+                        SubcriptionServiceId = detailDto.SubcriptionServiceId,
+                        UserId = _currentUser.Id.Value
+                    });
+                }
+                await _cartService.ClearCartAsync();
             }
             else
             {
@@ -337,6 +365,8 @@ namespace VCareer.Services.Order
             return await GetOrderAsync(order.Id);
         }
 
+
+        // 
         public async Task<OrderListDto> GetMyOrdersAsync()
         {
             if (!_currentUser.Id.HasValue)
@@ -347,11 +377,11 @@ namespace VCareer.Services.Order
             var userId = _currentUser.Id.Value;
             var orders = await _orderRepository.GetListAsync(o => o.UserId == userId);
 
-            var orderDtos = new List<OrderDto>();
+            var orderDtos = new List<OrderViewDto>();
             foreach (var order in orders.OrderByDescending(o => o.CreationTime))
             {
-                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderDto>(order);
-                
+                var orderDto = ObjectMapper.Map<Models.Order.Order, OrderViewDto>(order);
+
                 // Load order details
                 var details = await _orderDetailRepository.GetListAsync(d => d.OrderId == order.Id);
                 orderDto.OrderDetails = details.Select(d =>

@@ -1,7 +1,6 @@
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
-import type { SubcriptionContance_ChildServiceStatus } from '../../constants/job-constant/subcription-contance-child-service-status.enum';
-import type { EffectingJobServiceCreateDto, EffectingJobServiceUpdateDto, EffectingJobServiceViewDto } from '../../dto/subcriptions/models';
+import type { ChildServiceViewJobDto, EffectingJobServiceCreateDto, EffectingJobServiceUpdateDto, EffectingJobServiceViewDto } from '../../dto/subcriptions/models';
 import type { PagingDto } from '../../iservices/common/models';
 
 @Injectable({
@@ -9,6 +8,15 @@ import type { PagingDto } from '../../iservices/common/models';
 })
 export class JobAffectingService {
   apiName = 'Default';
+  
+
+  addJobBoostLogicByJobIdAndEffectingJobId = (jobId: string, effectingJobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: '/api/app/job-affecting/job-boost-logic',
+      params: { jobId, effectingJobId },
+    },
+    { apiName: this.apiName,...config });
   
 
   applyServiceToJobByJobAffectingDto = (jobAffectingDto: EffectingJobServiceCreateDto, config?: Partial<Rest.Config>) =>
@@ -29,6 +37,31 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
+  deactiveAllEffectingJobByChildServiceIdByChildServiceId = (childServiceId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-child-service-id/${childServiceId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  deactiveAllEffectingJobByJobIDByJobId = (JobId: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'POST',
+      url: `/api/app/job-affecting/deactive-all-effecting-job-by-job-iD/${JobId}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  getChildServiceByJobIdsByJobIds = (jobIds: string[], config?: Partial<Rest.Config>) =>
+    this.restService.request<any, Record<string, ChildServiceViewJobDto[]>>({
+      method: 'GET',
+      url: '/api/app/job-affecting/child-service-by-job-ids',
+      params: { jobIds },
+    },
+    { apiName: this.apiName,...config });
+  
+
   getEffectingJobServiceByEffectingJobServiceId = (effectingJobServiceId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto>({
       method: 'GET',
@@ -37,7 +70,7 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
-  getEffectingJobServicesByJobIdAndStatus = (JobId: string, status: enum, config?: Partial<Rest.Config>) =>
+  getEffectingJobServicesByJobIdAndStatus = (JobId: string, status: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto[]>({
       method: 'GET',
       url: `/api/app/job-affecting/effecting-job-services/${JobId}`,
@@ -46,10 +79,10 @@ export class JobAffectingService {
     { apiName: this.apiName,...config });
   
 
-  getEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto = (JobId: string, status: enum, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
+  getEffectingJobServicesWithPagingByJobIdAndStatusAndPagingDto = (jobId: string, status: number, pagingDto: PagingDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, EffectingJobServiceViewDto[]>({
       method: 'GET',
-      url: `/api/app/job-affecting/effecting-job-services-with-paging/${JobId}`,
+      url: `/api/app/job-affecting/effecting-job-services-with-paging/${jobId}`,
       params: { status, pageSize: pagingDto.pageSize, pageIndex: pagingDto.pageIndex },
     },
     { apiName: this.apiName,...config });
@@ -60,6 +93,14 @@ export class JobAffectingService {
       method: 'PUT',
       url: '/api/app/job-affecting/effecting-job-service',
       body: jobAffectingDto,
+    },
+    { apiName: this.apiName,...config });
+  
+
+  updateExpiredEffectingJobServiceBackgroundJob = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'PUT',
+      url: '/api/app/job-affecting/expired-effecting-job-service-background-job',
     },
     { apiName: this.apiName,...config });
 

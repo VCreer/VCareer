@@ -138,11 +138,37 @@ namespace VCareer.Profile
         }
 
         /// <summary>
+        /// Updates the profile visibility for the current candidate user
+        /// </summary>
+        /// <param name="isVisible">Whether the profile should be visible to recruiters</param>
+        /// <returns>No content</returns>
+        [HttpPut("profile-visibility")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> UpdateProfileVisibilityAsync([FromBody] bool isVisible)
+        {
+            await _profileAppService.UpdateProfileVisibilityAsync(isVisible);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Updates the job seeking status (Status) for the current candidate user
+        /// </summary>
+        /// <param name="isSeekingJob">true if candidate is actively seeking a job, false otherwise</param>
+        /// <returns>No content</returns>
+        [HttpPut("job-status")]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> UpdateJobStatusAsync([FromBody] bool isSeekingJob)
+        {
+            await _profileAppService.UpdateJobStatusAsync(isSeekingJob);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Soft deletes the current user's account
         /// </summary>
         /// <returns>No content</returns>
         [HttpDelete("account")]
-        [Authorize(VCareerPermission.Profile.DeleteAccount)]
+        /*[Authorize(VCareerPermission.Profile.DeleteAccount)]*/
         public async Task<IActionResult> DeleteAccountAsync()
         {
             await _profileAppService.DeleteAccountAsync();

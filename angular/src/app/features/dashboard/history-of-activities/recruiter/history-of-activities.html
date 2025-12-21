@@ -1,0 +1,86 @@
+<div class="history-of-activities-page" [class.sidebar-expanded]="sidebarExpanded">
+  <!-- Breadcrumb Box -->
+  <div class="breadcrumb-box" [class.sidebar-expanded]="sidebarExpanded">
+    <div class="breadcrumb-container">
+      <h1 class="page-title">Tất cả lịch sử</h1>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Filter Box -->
+    <div class="filter-box">
+      <!-- Search Box -->
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          placeholder="Tìm kiếm theo chi tiết hoạt động..."
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="onSearch()">
+        <button class="search-btn" (click)="onSearch()">Tìm kiếm</button>
+      </div>
+
+      <!-- Date Range Picker -->
+      <div class="date-filter-box">
+        <app-date-range-picker
+          placeholder="Lọc theo thời gian"
+          [startDate]="startDate"
+          [endDate]="endDate"
+          (dateRangeChange)="onDateRangeChange($event)">
+        </app-date-range-picker>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Đang tải lịch sử hoạt động...</p>
+    </div>
+
+    <!-- Activities Table -->
+    <div class="activities-table-wrapper" *ngIf="!loading">
+      <table class="activities-table">
+        <thead>
+          <tr>
+            <th>Mã nhân viên</th>
+            <th>Tên nhân viên</th>
+            <th>Thời gian</th>
+            <th>Chi tiết hoạt động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let activity of activities">
+            <td class="staff-id">{{ formatStaffId(activity.staffId) }}</td>
+            <td class="staff-name">{{ activity.staffName || '-' }}</td>
+            <td class="activity-time">
+              <div class="time-date">{{ formatDate(activity.creationTime || '') }}</div>
+              <div class="time-hour">{{ formatTime(activity.creationTime || '') }}</div>
+            </td>
+            <td class="activity-detail">
+              <div class="activity-type-badge">{{ getActivityTypeLabel(activity.activityTypeName || '') }}</div>
+              <div class="activity-description">{{ activity.description || activity.action || '-' }}</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading && activities.length === 0">
+        <i class="fa fa-history empty-icon"></i>
+        <p class="empty-message">Không có hoạt động nào</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="!loading && totalPages > 0">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalCount"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+

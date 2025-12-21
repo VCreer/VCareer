@@ -3,18 +3,28 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { HeaderWrapperComponent } from '../features/header/header-wrapper';
-import { FooterComponent } from '../features/footer/footer';
+import { FooterComponent } from '../features/footer/candidate/footer';
+import { RecruiterFooterComponent } from '../features/footer/recruiter/footer';
 import { NavigationService } from '../core/services/navigation.service';
+import { ToastContainerComponent } from '../shared/components/toast-container/toast-container';
 
 @Component({
   selector: 'app-candidate-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderWrapperComponent, FooterComponent],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    HeaderWrapperComponent,
+    FooterComponent,
+    RecruiterFooterComponent,
+    ToastContainerComponent,
+  ],
   templateUrl: './candidate-layout.html',
   styleUrls: ['./candidate-layout.scss']
 })
 export class CandidateLayoutComponent implements OnInit {
   showFooter: boolean = true;
+  useRecruiterFooter: boolean = false;
 
   constructor(
     private navigationService: NavigationService,
@@ -42,9 +52,23 @@ export class CandidateLayoutComponent implements OnInit {
     const isLoggedIn = this.navigationService.isLoggedIn();
     const currentUrl = this.router.url;
 
-    // Hide footer if recruiter is logged in and on recruiter routes
+    const recruiterMarketingRoutes = [
+      '/recruiter/about-us',
+      '/recruiter/service',
+      '/recruiter/service-price-list',
+      '/recruiter/terms-of-service',
+    ];
+
+    const isRecruiterMarketing = recruiterMarketingRoutes.some(route =>
+      currentUrl.startsWith(route)
+    );
+
+    // Choose footer type
+    this.useRecruiterFooter = isRecruiterMarketing || currentUrl.startsWith('/recruiter');
+
+    // Hide footer only for recruiter dashboards (authenticated, non-marketing)
     if (isLoggedIn && userRole === 'recruiter' && currentUrl.startsWith('/recruiter')) {
-      this.showFooter = false;
+      this.showFooter = isRecruiterMarketing;
     } else {
       this.showFooter = true;
     }

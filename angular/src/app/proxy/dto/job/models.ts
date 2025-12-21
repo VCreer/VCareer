@@ -1,6 +1,7 @@
 import type { EmploymentType } from '../../constants/job-constant/employment-type.enum';
 import type { PositionType } from '../../constants/job-constant/position-type.enum';
 import type { ExperienceLevel } from '../../constants/job-constant/experience-level.enum';
+import type { JobStatus } from '../../constants/job-constant/job-status.enum';
 import type { JobViewDto } from '../job-dto/models';
 
 export interface JobViewDetail {
@@ -19,10 +20,12 @@ export interface JobViewDetail {
   employmentType?: EmploymentType;
   positionType?: PositionType;
   experience?: ExperienceLevel;
+  status?: JobStatus;
   workTime?: string;
   provinceCode: number;
   wardCode?: number;
   workLocation?: string;
+  rejectedReason?: string;
   quantity: number;
   viewCount: number;
   postedAt?: string;

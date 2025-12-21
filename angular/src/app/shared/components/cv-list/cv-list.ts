@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { ButtonComponent } from '../button/button';
 import { TranslationService } from '../../../core/services/translation.service';
 import { DownloadCvModal } from '../download-cv-modal/download-cv-modal';
 import { ToastNotificationComponent } from '../toast-notification/toast-notification';
 import { ConfirmDeleteModal } from '../confirm-delete-modal/confirm-delete-modal';
 import { RenameCvModal } from '../rename-cv-modal/rename-cv-modal';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cv-list',
@@ -46,7 +48,10 @@ export class CvListComponent {
   currentCvName = '';
   private cvToDelete: string | null = null;
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private http: HttpClient
+  ) {}
 
   translate(key: string): string {
     return this.translationService.translate(key);
@@ -105,9 +110,49 @@ export class CvListComponent {
   private cvToDownloadId: string | null = null;
   
   onDownloadCv(cvId: string) { 
-    this.cvToDownloadId = cvId;
-    this.cvDownloaded.emit(cvId);
-    this.showDownloadModal = true;
+    // Download trực tiếp không hiển thị modal
+    const downloadUrl = `${environment.apis.default.url}/api/cv/candidates/${cvId}/download`;
+    
+    this.http.get(downloadUrl, {
+      responseType: 'blob',
+      withCredentials: true
+    }).subscribe({
+      next: (blob: Blob) => {
+        // Tạo blob URL và trigger download
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        
+        // Lấy tên file từ CV hoặc dùng tên mặc định
+        const cv = this.cvs.find(c => c.id === cvId);
+        const fileName = cv?.title ? `${cv.title}.pdf` : `CV_${cvId}.pdf`;
+        link.download = fileName;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Cleanup
+        URL.revokeObjectURL(blobUrl);
+        
+        // Hiển thị toast thông báo thành công
+        this.toastMessage = this.translate('cv_management.download') + ' thành công';
+        this.toastType = 'success';
+        this.showToast = true;
+        setTimeout(() => {
+          this.showToast = false;
+        }, 3000);
+      },
+      error: (error) => {
+        console.error('Error downloading CV:', error);
+        this.toastMessage = 'Không thể tải CV. Vui lòng thử lại.';
+        this.toastType = 'error';
+        this.showToast = true;
+        setTimeout(() => {
+          this.showToast = false;
+        }, 3000);
+      }
+    });
   }
   
   onCloseDownloadModal() { 

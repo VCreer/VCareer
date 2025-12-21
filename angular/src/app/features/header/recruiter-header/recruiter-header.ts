@@ -4,19 +4,18 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NavigationService } from '../../../core/services/navigation.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle/language-toggle';
 
 @Component({
   selector: 'app-recruiter-header',
   standalone: true,
-  imports: [CommonModule, LanguageToggleComponent],
+  imports: [CommonModule],
   templateUrl: './recruiter-header.html',
   styleUrls: ['./recruiter-header.scss']
 })
 export class RecruiterHeaderComponent implements OnInit {
   currentRoute = '';
   isMenuOpen = false;
-  selectedLanguage = 'vi';
+  isLoggedIn = false;
 
   constructor(
     private router: Router,
@@ -27,15 +26,32 @@ export class RecruiterHeaderComponent implements OnInit {
   ngOnInit() {
     this.currentRoute = this.router.url;
     
+    // Initialize isLoggedIn with current value
+    const serviceLoggedIn = this.navigationService.isLoggedIn();
+    const userRole = this.navigationService.getCurrentRole();
+    this.isLoggedIn = serviceLoggedIn && userRole === 'recruiter';
+    
+    // Subscribe to login state changes
+    this.navigationService.isLoggedIn$.subscribe(isLoggedIn => {
+      const userRole = this.navigationService.getCurrentRole();
+      this.isLoggedIn = isLoggedIn && userRole === 'recruiter';
+    });
+    
+    // Subscribe to role changes
+    this.navigationService.userRole$.subscribe(role => {
+      const serviceLoggedIn = this.navigationService.isLoggedIn();
+      this.isLoggedIn = serviceLoggedIn && role === 'recruiter';
+    });
+    
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.url;
+        // Update login state on route change
+        const serviceLoggedIn = this.navigationService.isLoggedIn();
+        const userRole = this.navigationService.getCurrentRole();
+        this.isLoggedIn = serviceLoggedIn && userRole === 'recruiter';
       });
-
-    this.translationService.currentLanguage$.subscribe(lang => {
-      this.selectedLanguage = lang;
-    });
   }
 
   navigateToHome() {
@@ -58,7 +74,7 @@ export class RecruiterHeaderComponent implements OnInit {
   }
 
   navigateToPricing() {
-    this.router.navigate(['/pricing']);
+    this.router.navigate(['/recruiter/service-quotation']);
     this.closeMobileMenu();
   }
 
@@ -86,15 +102,8 @@ export class RecruiterHeaderComponent implements OnInit {
     if (!this.navigationService.isLoggedIn()) {
       this.router.navigate(['/recruiter/login']);
     } else {
-      // Route post-job chưa được implement
-      // Nếu đã verified, không làm gì (hoặc có thể navigate đến home khi route được implement)
-      // Nếu chưa verified, navigate đến verify page
-      const isVerified = this.navigationService.isVerified();
-      if (!isVerified) {
-        this.router.navigate(['/recruiter/recruiter-verify']);
-      }
-      // TODO: Navigate to /recruiter/post-job when route is implemented
-      // For now, if already verified, do nothing or show message
+      // Navigate to recruitment-report page
+      this.router.navigate(['/recruiter/recruitment-report']);
     }
     this.closeMobileMenu();
   }
@@ -111,10 +120,6 @@ export class RecruiterHeaderComponent implements OnInit {
 
   closeMobileMenu() {
     this.isMenuOpen = false;
-  }
-
-  onLanguageChange(lang: string) {
-    this.selectedLanguage = lang;
   }
 
   translate(key: string): string {

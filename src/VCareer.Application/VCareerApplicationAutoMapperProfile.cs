@@ -1,34 +1,41 @@
 using AutoMapper;
-using VCareer.Books;
+using AutoMapper.Internal.Mappers;
 using VCareer.Application;
 using VCareer.Application.Contracts.CV;
-using VCareer.Models.Users;
+using VCareer.Books;
+using VCareer.CV;
+using VCareer.Dto;
+using VCareer.Dto.ActivityLogDto;
+using VCareer.Dto.Applications;
+using VCareer.Dto.Category;
+using VCareer.Dto.FileDto;
+using VCareer.Dto.Job;
+using VCareer.Dto.JobDto;
+using VCareer.Dto.Notification;
+using VCareer.Dto.Order;
+using VCareer.Dto.Profile;
+using VCareer.Dto.Subcriptions;
+using VCareer.Dto.UserDto;
+using VCareer.IServices.Books;
+using VCareer.Models;
+using VCareer.Models.Applications;
 using VCareer.Models.Companies;
 using VCareer.Models.CV;
 using VCareer.Models.FileMetadata;
-using VCareer.Models.Applications;
-using Volo.Abp.Data;
-using Volo.Abp.Identity;
-using VCareer.Dto;
-using VCareer.Dto.FileDto;
-using VCareer.Dto.ActivityLogDto;
-using VCareer.IServices.Books;
-using VCareer.Models;
-using VCareer.CV;
-using VCareer.Dto.Profile;
-using VCareer.Dto.Order;
+using VCareer.Models.Job;
+using VCareer.Models.JobCategory;
+using VCareer.Models.Notification;
 using VCareer.Models.Order;
 using VCareer.Models.Subcription;
-using VCareer.Models.Job;
-using VCareer.Dto.JobDto;
-using VCareer.Dto.Job;
-using VCareer.Models.JobCategory;
-using VCareer.Dto.Category;
-using VCareer.Dto.Applications;
+using VCareer.Models.Subcription_Payment;
+using VCareer.Models.Users;
+using Volo.Abp.Data;
+using Volo.Abp.Identity;
+using static Lucene.Net.Util.Fst.Util;
 
 namespace VCareer;
 
-public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
+public class VCareerApplicationAutoMapperProfile : Profile
 {
     public VCareerApplicationAutoMapperProfile()
     {
@@ -40,6 +47,7 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
             
         // Company Legal Info mappings (using Company entity)
         CreateMap<Company, CompanyLegalInfoDto>();
+        CreateMap<Company, CompanyVerificationViewDto>();
         CreateMap<SubmitCompanyLegalInfoDto, Company>();
         CreateMap<UpdateCompanyLegalInfoDto, Company>();
 
@@ -70,17 +78,32 @@ public class VCareerApplicationAutoMapperProfile : IdentityDomainMappingProfile
         CreateMap<JobApplication, ApplicationDto>();
 
         // Order mappings
-        CreateMap<Order, OrderDto>();
+        CreateMap<Order, OrderViewDto>();
         CreateMap<OrderDetail, OrderDetailDto>();
 
         CreateMap<Job_Post, JobViewDto>();
         CreateMap<Job_Post, JobViewDetail>();
         CreateMap<RecruitmentCampaign, RecruimentCampainViewDto>();
+        CreateMap<JobTag, JobTagViewDto>();
         CreateMap<Tag, TagViewDto>();
+        CreateMap<IdentityUser, UserViewDto>();
+        CreateMap<ChildService, ChildServiceViewDto>();
+        CreateMap<ChildServiceCreateDto, ChildService>();
+        CreateMap<SubcriptionPrice, SubcriptionPriceViewDto>();
+        CreateMap<User_SubcriptionService , User_SubcirptionViewDto>();
+        CreateMap<User_ChildService, User_ChildServiceViewDto>();
+        CreateMap<Job_Post, JobViewManageDetailDto>();
+        CreateMap<ChildService, ChildServiceViewJobDto>();
+      
+
+
 
 
         // Subscription Service mappings
         CreateMap<Models.Subcription.SubcriptionService, Dto.Subcriptions.SubcriptionsViewDto>();
+
+        // Notification mappings
+        CreateMap<Models.Notification.UserNotification, Dto.Notification.NotificationDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

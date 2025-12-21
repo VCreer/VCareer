@@ -12,11 +12,14 @@ namespace VCareer.Models.Subcription
 
     public class User_ChildService : FullAuditedAggregateRoot<Guid>
     {
-        public Guid UserId { get; set; }
+        public Guid OwnerId { get; set; }
+        public Guid UserActiveId { get; set; }
+        public Guid UserSubcriptionId { get; set; } // để phân biệt với các dịch vụ con cùng id , nhưng mua khác lần 
         public Guid ChildServiceId { get; set; }
         public ChildServiceStatus Status { get; set; }
         public bool IsLifeTime { get; set; } // có vĩnh viễn ko 
         public bool IsLimitUsedTime { get; set; }  //giới hạn số lần dùng
+        public bool IsPrimaryOwner { get; set; } // la thang nay mua hay là thằng dùng nhờ (dùng để hiện/tắt nút share và trace)
         public int? UsedTime { get; set; } //đã dùng bao nhiêu
         public int? TotalUsageLimit { get; set; }  //tổng lượt được phép dùng
         public DateTime? StartDate { get; set; }

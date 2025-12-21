@@ -67,15 +67,56 @@
 
     <!-- Main Content Area -->
     <div class="campaign-content">
-      <!-- Empty State -->
-      <div class="empty-state">
-      <div class="empty-state-illustration">
-        <div class="folder-icon">
-          <i class="fa fa-folder-open"></i>
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loading">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span>Đang tải danh sách CV...</span>
+      </div>
+
+      <!-- List -->
+      <div class="application-list" *ngIf="!loading && applications.length">
+        <div class="application-card" *ngFor="let app of applications">
+          <div class="application-main">
+            <div class="candidate-info">
+              <div class="candidate-name">{{ app.candidateName || 'Ứng viên ẩn danh' }}</div>
+              <div class="candidate-email" *ngIf="app.candidateEmail">{{ app.candidateEmail }}</div>
+              <div class="candidate-phone" *ngIf="app.candidatePhone">{{ app.candidatePhone }}</div>
+            </div>
+            <div class="job-info">
+              <div class="job-title">{{ app.jobTitle || 'Không rõ công việc' }}</div>
+              <div class="campaign-name" *ngIf="app.recruitmentCampaignName">Chiến dịch: {{ app.recruitmentCampaignName }}</div>
+            </div>
+          </div>
+          <div class="application-meta">
+            <span class="badge" [ngClass]="{ 'badge-online': app.cvType === 'Online', 'badge-uploaded': app.cvType === 'Uploaded' }">
+              {{ app.cvType === 'Online' ? 'CV online' : 'CV tải lên' }}
+            </span>
+            <span class="status-text">{{ app.status || 'Chờ xử lý' }}</span>
+            <span class="created-at" *ngIf="app.creationTime">Nộp: {{ app.creationTime | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
         </div>
       </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading && !applications.length">
+        <div class="empty-state-illustration">
+          <div class="folder-icon">
+            <i class="fa fa-folder-open"></i>
+          </div>
+        </div>
         <p class="empty-message">Chưa có CV ứng tuyển nào</p>
         <p class="empty-submessage">Hãy đăng tin tuyển dụng để nhận CV ứng tuyển</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="!loading && totalPages > 1">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+          <i class="fa fa-chevron-right"></i>
+        </button>
       </div>
     </div>
   </div>

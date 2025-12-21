@@ -9,6 +9,7 @@ import {
 } from '../../../shared/components';
 import { AuthService } from '../../../proxy/services/auth/auth.service';
 import { ResetPasswordDto } from '../../../proxy/dto/auth-dto/models';
+import { catchError, of, EMPTY } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
@@ -41,7 +42,7 @@ export class ResetPasswordComponent implements OnInit {
     this.resetPasswordForm = this.formBuilder.group({
       password: ['', [
         Validators.required,
-        Validators.minLength(8),
+        Validators.minLength(6),
         Validators.maxLength(100),
         this.passwordStrengthValidator
       ]],
@@ -115,9 +116,40 @@ export class ResetPasswordComponent implements OnInit {
         newPassword: formData.password
       };
 
-      // Gọi API ResetPassword
-      this.authService.resetPassword(input).subscribe({
-        next: () => {
+      // Kiểm tra route để gọi API phù hợp
+      const currentUrl = this.router.url;
+      const isCandidateRoute = currentUrl.includes('/candidate/');
+      const isRecruiterRoute = currentUrl.includes('/recruiter/');
+      
+      // Gọi API ResetPassword phù hợp với role
+      let apiCall;
+      if (isCandidateRoute) {
+        apiCall = this.authService.candidateResetPassword(input);
+      } else if (isRecruiterRoute) {
+        apiCall = this.authService.recruiterResetPassword(input);
+      } else {
+        apiCall = this.authService.resetPassword(input);
+      }
+      
+      // Interceptor đã xử lý error và return success response với error data
+      apiCall.subscribe({
+        next: (result: any) => {
+          // API trả về void khi thành công, nên result sẽ là undefined hoặc null
+          // Nếu result là object, có thể là error response từ interceptor
+          if (result != null && typeof result === 'object') {
+            // Kiểm tra nếu response có _error flag (từ interceptor)
+            const errorData = result?.body?._error === true ? result.body : 
+                             result?._error === true ? result : null;
+            
+            if (errorData) {
+              // Có error, đã được interceptor xử lý
+              this.isLoading = false;
+              this.handleResetPasswordError(errorData.error || result.body?.error || result.error);
+              return;
+            }
+          }
+          
+          // Thành công (result là undefined hoặc null)
           this.isLoading = false;
           this.showToastMessage('Mật khẩu đã được đặt lại thành công!', 'success');
           
@@ -132,24 +164,9 @@ export class ResetPasswordComponent implements OnInit {
           }, 2000);
         },
         error: (error) => {
+          // Fallback: nếu vẫn có error (không nên xảy ra)
           this.isLoading = false;
-          console.error('Reset password error:', error);
-          
-          // Xử lý lỗi
-          if (error.error?.error?.message) {
-            this.showToastMessage(error.error.error.message, 'error');
-          } else if (error.error?.error) {
-            const errorMessage = error.error.error;
-            if (typeof errorMessage === 'string') {
-              this.showToastMessage(errorMessage, 'error');
-            } else if (errorMessage.details) {
-              this.showToastMessage(errorMessage.details, 'error');
-            } else {
-              this.showToastMessage('Có lỗi xảy ra khi đặt lại mật khẩu.', 'error');
-            }
-          } else {
-            this.showToastMessage('Token không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu link mới.', 'error');
-          }
+          this.handleResetPasswordError(error);
         }
       });
     } else {
@@ -181,7 +198,7 @@ export class ResetPasswordComponent implements OnInit {
         return `${this.getFieldLabel(fieldName)} là bắt buộc`;
       }
       if (field.errors['minlength']) {
-        return `${this.getFieldLabel(fieldName)} phải có ít nhất 8 ký tự`;
+        return `${this.getFieldLabel(fieldName)} phải có ít nhất 6 ký tự`;
       }
       if (field.errors['maxlength']) {
         return `${this.getFieldLabel(fieldName)} không được vượt quá 100 ký tự`;
@@ -202,6 +219,64 @@ export class ResetPasswordComponent implements OnInit {
       confirmPassword: 'Xác nhận mật khẩu'
     };
     return labels[fieldName] || fieldName;
+  }
+
+  private handleResetPasswordError(error: any): void {
+    this.isLoading = false;
+    console.error('Reset password error:', error);
+    
+    // Xử lý lỗi và hiển thị toast tiếng Việt
+    let errorMessage = 'Có lỗi xảy ra khi đặt lại mật khẩu. Vui lòng thử lại.';
+    
+    // Kiểm tra các loại lỗi từ backend
+    if (error?.error?.error?.message) {
+      errorMessage = error.error.error.message;
+    } else if (error?.error?.error?.details) {
+      errorMessage = error.error.error.details;
+    } else if (error?.error?.error) {
+      const errorObj = error.error.error;
+      if (typeof errorObj === 'string') {
+        errorMessage = errorObj;
+      } else if (errorObj.message) {
+        errorMessage = errorObj.message;
+      } else if (errorObj.details) {
+        errorMessage = errorObj.details;
+      }
+    } else if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    } else if (error?.status === 500 || error?.status === 400) {
+      errorMessage = 'Không thành công !';
+    }
+    
+    // Xử lý lỗi "11" hoặc các error code khác
+    if (error?.error?.error?.code) {
+      const errorCode = error.error.error.code;
+      if (errorCode === '11' || errorCode === 11) {
+        // Backend trả về mã lỗi 11 (ví dụ: email/token không hợp lệ hoặc đã dùng)
+        // → hiển thị thông báo chung như yêu cầu
+        errorMessage = 'Không thành công !';
+      }
+    }
+
+    // Bất kỳ trường hợp nào message chứa "An internal error occurred during your request!"
+    // thì ép về thông điệp thân thiện hơn
+    if (
+      errorMessage &&
+      (errorMessage.includes('An internal error occurred during your request') ||
+       errorMessage.toLowerCase().includes('internal error'))
+    ) {
+      errorMessage = 'Không thành công !';
+    }
+
+    // Nếu sau cùng message vẫn là "11" (hoặc chỉ chứa số 11) thì cũng ép về thông báo chung
+    if (String(errorMessage).trim() === '11') {
+      errorMessage = 'Không thành công !';
+    }
+    
+    // Hiển thị toast thay vì modal
+    this.showToastMessage(errorMessage, 'error');
   }
 
 }

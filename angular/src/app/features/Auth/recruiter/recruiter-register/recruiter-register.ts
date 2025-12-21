@@ -1,9 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, AsyncValidatorFn } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Observable, of, timer } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
 import { GoogleAuthService } from '../../../../core/services/google-auth.service';
+import { AuthService } from '../../../../proxy/services/auth/auth.service';
+import { RecruiterRegisterDto } from '../../../../proxy/dto/auth-dto/models';
 import { 
   InputFieldComponent, 
   PasswordFieldComponent, 
@@ -30,6 +35,7 @@ export class RecruiterRegisterComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private googleAuthService = inject(GoogleAuthService);
+  private authService = inject(AuthService);
 
   registerForm!: FormGroup;
   isLoading = false;
@@ -49,11 +55,8 @@ export class RecruiterRegisterComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(25)]],
       confirmPassword: ['', [Validators.required]],
       fullName: ['', [Validators.required, Validators.minLength(2)]],
-      gender: ['', [Validators.required]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       companyName: ['', [Validators.required, Validators.minLength(2)]],
-      city: ['', [Validators.required]],
-      district: ['', [Validators.required]],
       agreeTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
   }
@@ -72,7 +75,10 @@ export class RecruiterRegisterComponent implements OnInit {
 
   getFieldError(fieldName: string): string {
     const field = this.registerForm.get(fieldName);
-    if (!field || !field.errors || !this.submitAttempted) return '';
+    if (!field || !field.errors) return '';
+
+    // Hiển thị lỗi nếu field đã được touch hoặc đã submit
+    if (!this.submitAttempted && !field.touched) return '';
 
     const errors = field.errors;
 
@@ -110,11 +116,8 @@ export class RecruiterRegisterComponent implements OnInit {
       password: 'Mật khẩu',
       confirmPassword: 'Xác nhận mật khẩu',
       fullName: 'Họ và tên',
-      gender: 'Giới tính',
       phone: 'Số điện thoại cá nhân',
-      companyName: 'Công ty',
-      city: 'Tỉnh/thành phố',
-      district: 'Quận/huyện',
+      companyName: 'Tên công ty',
       agreeTerms: 'Đồng ý điều khoản'
     };
     return labels[fieldName] || fieldName;
@@ -146,26 +149,30 @@ export class RecruiterRegisterComponent implements OnInit {
       this.isLoading = true;
       const formData = this.registerForm.value;
       
-      const { confirmPassword, ...apiData } = formData;
-      
-      const registerDto = {
-        userName: apiData.username,
-        emailAddress: apiData.email,
-        password: apiData.password,
-        appName: 'VCareer'
+      // Map form data sang RecruiterRegisterDto (backend)
+      const registerDto: RecruiterRegisterDto = {
+        email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
+        phoneNumber: formData.phone,
+        companyName: formData.companyName
       };
       
-      this.http.post('/api/account/register', registerDto).subscribe({
-        next: (response) => {
+      this.authService.recruiterRegister(registerDto).subscribe({
+        next: () => {
           this.isLoading = false;
           this.showToastMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
           setTimeout(() => {
-            this.router.navigate(['/recruiter/dashboard']);
+            this.router.navigate(['/recruiter/login']);
           }, 2000);
         },
         error: (error) => {
           this.isLoading = false;
-          this.showToastMessage(error.error?.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+          const errorMessage = error.error?.error?.message || 
+                             error.error?.message || 
+                             'Có lỗi xảy ra. Vui lòng thử lại.';
+          this.showToastMessage(errorMessage, 'error');
+          console.error('Registration error:', error);
         }
       });
     }
@@ -177,6 +184,11 @@ export class RecruiterRegisterComponent implements OnInit {
 
   goToLogin() {
     this.router.navigate(['/recruiter/login']);
+  }
+
+  navigateToTermsOfService(event: Event): void {
+    event.preventDefault();
+    window.open('/recruiter/terms-of-service', '_blank');
   }
 
   async signInWithGoogle() {
