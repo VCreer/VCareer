@@ -259,7 +259,18 @@ export class NotificationsComponent implements OnInit {
       const jobMap = new Map<string, any>();
       uniqueJobIds.forEach((jobId, index) => {
         if (jobs[index]) {
-          jobMap.set(jobId, jobs[index]);
+          // getJobById trả về JobViewDetail trực tiếp, không có wrapper result/data
+          const job = jobs[index];
+          if (job) {
+            console.log('[Notifications] Job loaded', {
+              jobId,
+              hasCompanyImageUrl: !!job.companyImageUrl,
+              companyImageUrl: job.companyImageUrl,
+              companyId: job.companyId,
+              companyName: job.companyName
+            });
+            jobMap.set(jobId, job);
+          }
         }
       });
 
@@ -270,6 +281,8 @@ export class NotificationsComponent implements OnInit {
           console.log('[Notifications] Updating notification with job data', {
             notificationId: notification.id,
             jobId,
+            companyImageUrl: job.companyImageUrl,
+            companyId: job.companyId,
             status: job.status,
             statusName: job.statusName,
             state: job.state,
@@ -295,10 +308,39 @@ export class NotificationsComponent implements OnInit {
           notification.jobTitle = job.title || notification.jobTitle;
           notification.companyName = job.companyName || notification.companyName;
           
-          // Lấy logo công ty từ job data (ưu tiên các trường có thể có)
-          const companyLogo = job.companyImageUrl || job.companyLogoUrl || job.logoUrl || job.company?.logoUrl;
-          if (companyLogo) {
-            notification.logo = this.formatCompanyLogoUrl(companyLogo);
+          // Lấy logo công ty từ job data - ưu tiên companyImageUrl (trường chuẩn trong JobViewDetail)
+          const companyLogo = job.companyImageUrl || job.companyLogoUrl || job.logoUrl || job.companyImage;
+          
+          console.log('[Notifications] Logo check', {
+            notificationId: notification.id,
+            jobId,
+            companyImageUrl: job.companyImageUrl,
+            companyLogoUrl: job.companyLogoUrl,
+            logoUrl: job.logoUrl,
+            companyImage: job.companyImage,
+            companyLogo,
+            currentNotificationLogo: notification.logo,
+            jobKeys: Object.keys(job || {})
+          });
+          
+          // Luôn ưu tiên logo từ job data, override logo từ metadata
+          if (companyLogo && companyLogo.trim() !== '') {
+            const formattedLogo = this.formatCompanyLogoUrl(companyLogo);
+            notification.logo = formattedLogo;
+            console.log('[Notifications] ✅ Set logo from job data', {
+              notificationId: notification.id,
+              originalLogo: companyLogo,
+              formattedLogo: formattedLogo,
+              previousLogo: notification.logo
+            });
+          } else {
+            // Nếu không có logo trong job data, dùng default
+            console.log('[Notifications] ⚠️ No logo in job data, using default', {
+              notificationId: notification.id,
+              jobId,
+              companyId: job.companyId
+            });
+            notification.logo = 'assets/images/vng.png';
           }
           // If backend marks a job as inactive/closed, treat as expired
           if (
@@ -369,11 +411,9 @@ export class NotificationsComponent implements OnInit {
             notification.salaryText = 'Thỏa thuận';
           }
 
-          // Location - Use workLocation or lookup province name from provinceCode
-          if (job.workLocation) {
-            notification.provinceName = job.workLocation;
-          } else if (job.provinceCode) {
-            // Lookup province name using GeoService
+          // Location - Chỉ hiển thị tên tỉnh/thành phố, không hiển thị địa chỉ chi tiết
+          if (job.provinceCode) {
+            // Ưu tiên lookup province name từ provinceCode
             this.geoService
               .getProvinceNameByCodeByProvinceCode(job.provinceCode)
               .pipe(
@@ -388,8 +428,14 @@ export class NotificationsComponent implements OnInit {
               .subscribe(provinceName => {
                 if (provinceName) {
                   notification.provinceName = provinceName;
+                } else if (job.workLocation) {
+                  // Fallback: nếu không lấy được province name thì dùng workLocation (đã strip HTML)
+                  notification.provinceName = this.stripHtml(job.workLocation);
                 }
               });
+          } else if (job.workLocation) {
+            // Nếu không có provinceCode thì mới dùng workLocation (đã strip HTML)
+            notification.provinceName = this.stripHtml(job.workLocation);
           }
 
           // Experience
@@ -734,5 +780,15 @@ export class NotificationsComponent implements OnInit {
     // Encode storagePath để tránh lỗi URL
     const encodedStoragePath = encodeURIComponent(cleanUrl);
     return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
+  }
+
+  /**
+   * Strip HTML tags để lấy text thuần
+   */
+  private stripHtml(html: string): string {
+    if (!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
   }
 }

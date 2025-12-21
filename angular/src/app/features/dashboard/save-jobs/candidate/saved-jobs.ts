@@ -8,6 +8,9 @@ import { NavigationService } from '../../../../core/services/navigation.service'
 import { take } from 'rxjs/operators';
 import { JobSearchService } from '../../../../proxy/services/job/job-search.service';
 import { SavedJobDto } from '../../../../proxy/dto/job/models';
+import { GeoService } from '../../../../proxy/services/geo/geo.service';
+import { catchError, of } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-saved-jobs',
@@ -23,12 +26,18 @@ export class SavedJobsComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' | 'info' = 'success';
   totalCount = 0;
+  // Map để lưu province name và logo cho mỗi job
+  jobProvinceNames: Map<string, string> = new Map();
+  jobLogos: Map<string, string> = new Map();
+  // Map để track logo load errors
+  logoLoadErrors: Set<string> = new Set();
 
   constructor(
     private router: Router,
     private translationService: TranslationService,
     private navigationService: NavigationService,
-    private jobSearchService: JobSearchService
+    private jobSearchService: JobSearchService,
+    private geoService: GeoService
   ) {}
 
   ngOnInit() {
@@ -66,6 +75,15 @@ export class SavedJobsComponent implements OnInit {
       next: (result) => {
         this.savedJobs = result.items || [];
         this.totalCount = result.totalCount || 0;
+        
+        // Load province names và logos cho tất cả jobs
+        this.savedJobs.forEach(job => {
+          if (job.jobId) {
+            this.loadProvinceName(job);
+            this.loadCompanyLogo(job);
+          }
+        });
+        
         this.loading = false;
       },
       error: (error) => {
@@ -74,6 +92,45 @@ export class SavedJobsComponent implements OnInit {
         this.showToastMessage('Không thể tải danh sách công việc đã lưu', 'error');
       }
     });
+  }
+
+  /**
+   * Load province name từ provinceCode
+   */
+  private loadProvinceName(job: SavedJobDto): void {
+    if (!job.jobId) return;
+    
+    const detail = job.jobDetail as any;
+    const provinceCode = detail?.provinceCode;
+    
+    if (provinceCode) {
+      this.geoService.getProvinceNameByCodeByProvinceCode(provinceCode)
+        .pipe(
+          catchError(error => {
+            console.error(`Error getting province name for code ${provinceCode}:`, error);
+            return of('');
+          })
+        )
+        .subscribe(provinceName => {
+          if (provinceName) {
+            this.jobProvinceNames.set(job.jobId!, provinceName);
+          }
+        });
+    }
+  }
+
+  /**
+   * Load company logo từ jobDetail
+   */
+  private loadCompanyLogo(job: SavedJobDto): void {
+    if (!job.jobId) return;
+    
+    const detail = job.jobDetail as any;
+    const companyImageUrl = detail?.companyImageUrl;
+    
+    if (companyImageUrl && companyImageUrl.trim() !== '') {
+      this.jobLogos.set(job.jobId!, this.formatCompanyLogoUrl(companyImageUrl));
+    }
   }
 
   onApplyJob(job: SavedJobDto) {
@@ -203,11 +260,86 @@ export class SavedJobsComponent implements OnInit {
   }
 
   /**
-   * Get province name from jobDetail hoặc location
+   * Get province name - chỉ hiển thị tên tỉnh/thành phố, không hiển thị địa chỉ chi tiết
    */
   getProvinceName(job: SavedJobDto): string {
+    if (!job.jobId) return 'N/A';
+    
+    // Ưu tiên lấy từ map (đã load từ provinceCode)
+    const provinceName = this.jobProvinceNames.get(job.jobId);
+    if (provinceName) {
+      return provinceName;
+    }
+    
+    // Fallback: nếu chưa load xong, thử lấy từ jobDetail
     const detail: any = job.jobDetail as any;
-    return detail?.provinceName || job.location || 'N/A';
+    if (detail?.provinceName) {
+      return detail.provinceName;
+    }
+    
+    return 'N/A';
+  }
+
+  /**
+   * Get company logo URL
+   */
+  getCompanyLogoUrl(job: SavedJobDto): string {
+    if (!job.jobId) return '';
+    
+    // Nếu logo đã bị lỗi khi load, không hiển thị
+    if (this.logoLoadErrors.has(job.jobId)) {
+      return '';
+    }
+    
+    // Lấy từ map nếu đã load
+    const logo = this.jobLogos.get(job.jobId);
+    if (logo) {
+      return logo;
+    }
+    
+    // Fallback: lấy từ jobDetail
+    const detail: any = job.jobDetail as any;
+    const companyImageUrl = detail?.companyImageUrl;
+    if (companyImageUrl && companyImageUrl.trim() !== '') {
+      return this.formatCompanyLogoUrl(companyImageUrl);
+    }
+    
+    return '';
+  }
+
+  /**
+   * Handle logo load error
+   */
+  onLogoError(job: SavedJobDto): void {
+    if (job.jobId) {
+      this.logoLoadErrors.add(job.jobId);
+    }
+  }
+
+  /**
+   * Format logo URL của công ty
+   */
+  private formatCompanyLogoUrl(logoUrl: string | undefined | null): string {
+    if (!logoUrl || logoUrl.trim() === '') {
+      return '';
+    }
+
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    if (cleanUrl === '') {
+      return '';
+    }
+
+    // Nếu đã là full URL (http/https), return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Logo được lưu trong blob storage với StoragePath
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   /**

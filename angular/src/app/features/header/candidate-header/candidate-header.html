@@ -128,7 +128,6 @@
             </div>
             <div class="profile-info">
               <h3 class="profile-name">{{ getFullName() }}</h3>
-              <p class="profile-status">{{ translate('profile.verified_account') }}</p>
               <p class="profile-details" *ngIf="currentUser?.email || profileData?.email">
                 <span>{{ currentUser?.email || profileData?.email }}</span>
               </p>

@@ -15,6 +15,10 @@ import { ProfilePictureEditModal } from '../../../../shared/components/profile-p
 import { AuthStateService } from '../../../../core/services/auth-Cookiebased/auth-state.service';
 import { AuthFacadeService } from '../../../../core/services/auth-Cookiebased/auth-facade.service';
 import { EnableJobSearchModalComponent } from '../../../../shared/components/enable-job-search-modal/enable-job-search-modal';
+import { JobSearchService } from '../../../../proxy/services/job/job-search.service';
+import { CompanyLegalInfoService } from '../../../../proxy/services/profile/company-legal-info.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 interface AppliedJob {
   id: string;
@@ -25,8 +29,12 @@ interface AppliedJob {
   appliedTime: string;
   cvType: string;
   cvName: string;
+  cvId?: string; // ID của CV để xem chi tiết
+  uploadedCvId?: string; // ID của CV upload (nếu có)
+  candidateCvId?: string; // ID của CV online (nếu có)
   salary: string;
   status: 'viewed' | 'suitable' | 'not-suitable' | 'pending';
+  jobId?: string; // Để load logo công ty
 }
 
 @Component({
@@ -89,7 +97,9 @@ export class AppliedJobsComponent implements OnInit {
     private http: HttpClient,
     private authStateService: AuthStateService,
     private authFacadeService: AuthFacadeService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private jobSearchService: JobSearchService,
+    private companyLegalInfoService: CompanyLegalInfoService
   ) {}
 
   ngOnInit(): void {
@@ -120,6 +130,10 @@ export class AppliedJobsComponent implements OnInit {
       next: (result) => {
         const items = result?.items ?? [];
         this.appliedJobs = items.map(app => this.mapApplicationToAppliedJob(app));
+        
+        // Load logo công ty cho tất cả jobs
+        this.loadCompanyLogos();
+        
         this.filteredJobs = this.appliedJobs;
         this.currentPage = 1;
         this.updateDisplayedJobs();
@@ -155,6 +169,11 @@ export class AppliedJobsComponent implements OnInit {
         ? app.candidateCvName || 'CV online'
         : app.uploadedCvName || 'CV tải lên';
 
+    // Lấy CV ID để link đến trang xem CV
+    const cvId = app.cvType === 'Online' 
+      ? app.candidateCvId 
+      : app.uploadedCvId;
+
     const salary = app.jobSalaryText || '';
 
     let status: AppliedJob['status'] = 'pending';
@@ -173,16 +192,96 @@ export class AppliedJobsComponent implements OnInit {
 
     return {
       id: app.id ?? '',
-      companyLogoImage: undefined,
+      companyLogoImage: 'assets/images/home/company-placeholder.png', // Default logo, sẽ được update nếu có logoUrl
       companyName: app.companyName || '',
       jobTitle: app.jobTitle || '',
       appliedDate,
       appliedTime,
       cvType: app.cvType || '',
       cvName,
+      cvId: cvId || undefined,
+      uploadedCvId: app.uploadedCvId || undefined,
+      candidateCvId: app.candidateCvId || undefined,
       salary,
-      status
+      status,
+      jobId: app.jobId // Lưu jobId để load logo
     };
+  }
+
+  /**
+   * Load company logos cho tất cả applied jobs từ logoUrl trong bảng Companies
+   */
+  private loadCompanyLogos(): void {
+    // Lấy danh sách jobId duy nhất
+    const uniqueJobIds = [...new Set(this.appliedJobs.map(job => (job as any).jobId).filter(id => id))];
+    
+    if (uniqueJobIds.length === 0) {
+      return;
+    }
+
+    // Load company info từ jobId để lấy logoUrl từ bảng Companies
+    const companyRequests = uniqueJobIds.map(jobId =>
+      this.companyLegalInfoService.getCompanyByJobId(jobId).pipe(
+        catchError(error => {
+          console.error(`Error loading company for job ${jobId}:`, error);
+          return of(null);
+        })
+      )
+    );
+
+    forkJoin(companyRequests).subscribe(companies => {
+      // Tạo map jobId -> logo
+      const logoMap = new Map<string, string>();
+      
+      uniqueJobIds.forEach((jobId, index) => {
+        const company = companies[index];
+        if (company && company.logoUrl && company.logoUrl.trim() !== '') {
+          // Format logoUrl từ bảng Companies
+          logoMap.set(jobId, this.formatCompanyLogoUrl(company.logoUrl));
+        }
+      });
+
+      // Cập nhật logo cho các applied jobs
+      this.appliedJobs.forEach(job => {
+        const jobId = (job as any).jobId;
+        if (jobId && logoMap.has(jobId)) {
+          job.companyLogoImage = logoMap.get(jobId);
+        } else {
+          // Nếu không có logo, set default từ assets/images/home/company-placeholder.png
+          job.companyLogoImage = 'assets/images/home/company-placeholder.png';
+        }
+      });
+
+      // Update lại filteredJobs và displayedJobs
+      this.filteredJobs = [...this.appliedJobs];
+      this.updateDisplayedJobs();
+    });
+  }
+
+  /**
+   * Format logo URL của công ty
+   */
+  private formatCompanyLogoUrl(logoUrl: string | undefined | null): string {
+    if (!logoUrl || logoUrl.trim() === '') {
+      return '';
+    }
+
+    let cleanUrl = logoUrl.trim().replace(/^'|'$/g, '');
+    
+    if (cleanUrl === '') {
+      return '';
+    }
+
+    // Nếu đã là full URL (http/https), return as is
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    // Logo được lưu trong blob storage với StoragePath
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const encodedStoragePath = encodeURIComponent(cleanUrl);
+    return `${normalizedBase}/api/profile/company-legal-info/company-logo?storagePath=${encodedStoragePath}`;
   }
 
   toggleStatusDropdown(): void {
@@ -265,7 +364,65 @@ export class AppliedJobsComponent implements OnInit {
   }
 
   onViewCV(job: AppliedJob): void {
-    this.showToastMessage('Đang mở CV...', 'info');
+    if (!job.cvId) {
+      this.showToastMessage('Không tìm thấy CV', 'error');
+      return;
+    }
+
+    // Debug: log để kiểm tra giá trị
+    console.log('onViewCV - cvType:', job.cvType, 'uploadedCvId:', job.uploadedCvId, 'candidateCvId:', job.candidateCvId, 'cvId:', job.cvId);
+
+    // Kiểm tra CV type: chỉ navigate nếu cvType === 'Online' và có candidateCvId
+    // Tất cả các trường hợp khác đều mở blob URL
+    const isOnlineCv = job.cvType === 'Online' && job.candidateCvId && job.candidateCvId === job.cvId;
+    
+    if (isOnlineCv) {
+      // CV online: navigate trong cùng tab
+      console.log('Navigating to CV online view');
+      this.router.navigate(['/candidate/cv-management/view', job.cvId]);
+    } else {
+      // CV upload: load PDF và mở blob URL trong tab mới (KHÔNG navigate)
+      console.log('Opening uploaded CV as blob URL');
+      this.loadAndOpenUploadedCv(job.cvId);
+    }
+  }
+
+  /**
+   * Load PDF từ API và mở blob URL trong tab mới
+   */
+  private loadAndOpenUploadedCv(cvId: string): void {
+    const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    const baseUrl = environment.apis?.default?.url || (window as any).environment?.apis?.default?.url || 'https://localhost:44385';
+    
+    // Download PDF từ API
+    this.http.get(`${baseUrl}/api/cv/uploaded/${cvId}/download`, {
+      responseType: 'blob',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    }).subscribe({
+      next: (blob: Blob) => {
+        // Tạo blob URL từ PDF
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Mở blob URL trong tab mới
+        window.open(blobUrl, '_blank');
+      },
+      error: (error) => {
+        console.error('Error loading uploaded CV:', error);
+        this.showToastMessage('Không thể tải CV', 'error');
+      }
+    });
+  }
+
+  /**
+   * Xử lý click vào cv-link
+   */
+  onCvLinkClick(job: AppliedJob, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
+    // Gọi hàm xem CV (sẽ tự động phân biệt CV online và CV upload)
+    this.onViewCV(job);
   }
 
   onJobSearchToggle(event: Event): void {

@@ -203,6 +203,8 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       status: status,
       startTime: this.startTime || undefined,
       endTime: this.endTime || undefined,
+      page: this.currentPage,
+      pageSize: this.itemsPerPage,
     };
 
     this.jobPostService.getJobPostManageByDto(requestDto).subscribe({
@@ -518,9 +520,37 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
 
   getLocationText(job: JobApproveViewDto | JobViewManageDetailDto): string {
     if ('provinceName' in job) {
-      return job.provinceName || job.workLocation || 'Chưa cập nhật';
+      // JobApproveViewDto có provinceName và wardName
+      const locations: string[] = [];
+      if (job.wardName) locations.push(job.wardName);
+      if (job.provinceName) locations.push(job.provinceName);
+      
+      if (locations.length > 0) {
+        return locations.join(', ');
+      }
+      
+      // Strip HTML từ workLocation nếu có
+      if (job.workLocation) {
+        return this.stripHtml(job.workLocation) || 'Chưa cập nhật';
+      }
+      
+      return 'Chưa cập nhật';
     }
-    return job.workLocation || 'Chưa cập nhật';
+    // JobViewManageDetailDto chỉ có workLocation - cần strip HTML
+    if (job.workLocation) {
+      return this.stripHtml(job.workLocation) || 'Chưa cập nhật';
+    }
+    return 'Chưa cập nhật';
+  }
+
+  /**
+   * Strip HTML tags để lấy text thuần
+   */
+  private stripHtml(html: string): string {
+    if (!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
   }
 
   // Type guard helpers

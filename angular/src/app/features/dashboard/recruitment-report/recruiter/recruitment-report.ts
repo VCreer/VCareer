@@ -60,35 +60,19 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
     { value: 'year', label: 'Năm nay' }
   ];
 
-  // Report metrics
+  // Report metrics - chỉ có 2 items: Tổng chiến dịch và Tổng ứng viên
   metrics: ReportMetric[] = [
     {
       label: 'Tổng chiến dịch',
-      value: 24,
+      value: 0,
       icon: 'fa-briefcase',
-      color: '#0F83BA',
-      trend: { value: 12, isPositive: true }
+      color: '#0F83BA'
     },
     {
       label: 'Tổng ứng viên',
-      value: '1,847',
+      value: 0,
       icon: 'fa-users',
-      color: '#10b981',
-      trend: { value: 23, isPositive: true }
-    },
-    {
-      label: 'Tổng CV đã duyệt',
-      value: 432,
-      icon: 'fa-check-circle',
-      color: '#10b981',
-      trend: { value: 18, isPositive: true }
-    },
-    {
-      label: 'Tổng CV từ chối',
-      value: 289,
-      icon: 'fa-times-circle',
-      color: '#ef4444',
-      trend: { value: 8, isPositive: false }
+      color: '#10b981'
     }
   ];
 
@@ -99,18 +83,11 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
     { status: 'Đã hoàn thành', count: 17, icon: 'fa-check', color: '#0F83BA' }
   ];
 
-  // Service overview
-  serviceOverview = {
-    description: 'Ghi nhận theo đơn hàng bạn đã thanh toán và những tin các dịch vụ được kích hoạt trong khoảng thời gian này',
-    costBreakdown: {
-      completed: { label: 'Chi phí đã thanh toán', value: 20000000, percentage: 71.4 },
-      inUse: { label: 'Đã sử dụng', value: 8000000, percentage: 28.6 }
-    },
-    valueBreakdown: {
-      activated: { label: 'Giá trị dịch vụ đã mua', value: 16000000, percentage: 76.2 },
-      inUse: { label: 'Đã sử dụng', value: 5000000, percentage: 23.8 }
-    }
-  };
+  // Filtered campaign status - chỉ hiển thị "Đang hoạt động"
+  get filteredCampaignStatus() {
+    return this.campaignStatus.filter(item => item.status === 'Đang hoạt động');
+  }
+
 
   // HR Staff performance data
   hrStaffPerformance = [
@@ -371,23 +348,11 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
         const dashboard: CompanyDashboardDto = response?.result || response?.data || response;
         
         if (dashboard) {
-          // Update metrics
-          this.metrics = [
-            {
-              label: 'Tổng chiến dịch',
-              value: dashboard.totalJobsPosted || 0,
-              icon: 'fa-briefcase',
-              color: '#0F83BA',
-              trend: { value: 0, isPositive: true } // TODO: Calculate trend if needed
-            },
-            {
-              label: 'Tổng ứng viên',
-              value: this.formatNumber(dashboard.totalCandidatesEvaluated || 0),
-              icon: 'fa-users',
-              color: '#10b981',
-              trend: { value: 0, isPositive: true }
-            }
-          ];
+          // Chỉ cập nhật giá trị của 2 metric cards đầu tiên, không ghi đè
+          if (this.metrics && this.metrics.length >= 2) {
+            this.metrics[0].value = dashboard.totalJobsPosted || 0;
+            this.metrics[1].value = this.formatNumber(dashboard.totalCandidatesEvaluated || 0);
+          }
         }
         
         this.isLoadingMetrics = false;
@@ -458,22 +423,11 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
 
         const totalCandidates = uniqueCandidates.size;
 
-        this.metrics = [
-          {
-            label: 'Tổng chiến dịch',
-            value: totalCampaigns,
-            icon: 'fa-briefcase',
-            color: '#0F83BA',
-            trend: { value: 0, isPositive: true }
-          },
-          {
-            label: 'Tổng ứng viên',
-            value: this.formatNumber(totalCandidates),
-            icon: 'fa-users',
-            color: '#10b981',
-            trend: { value: 0, isPositive: true }
-          }
-        ];
+        // Chỉ cập nhật giá trị của 2 metric cards đầu tiên, không ghi đè
+        if (this.metrics && this.metrics.length >= 2) {
+          this.metrics[0].value = totalCampaigns;
+          this.metrics[1].value = this.formatNumber(totalCandidates);
+        }
 
         this.isLoadingMetrics = false;
       },
@@ -506,16 +460,10 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
             
             // Calculate status counts
             const activeCount = activeCampaigns.length;
-            const completedCount = inactiveCampaigns.length;
             
-            // For "Sắp diễn ra", we might need additional logic or use a different field
-            // For now, we'll use a placeholder or calculate based on dates
-            const upcomingCount = 0; // TODO: Calculate based on campaign start dates if available
-            
+            // Chỉ giữ lại "Đang hoạt động"
             this.campaignStatus = [
-              { status: 'Đang hoạt động', count: activeCount, icon: 'fa-bolt', color: '#10b981' },
-              { status: 'Sắp diễn ra', count: upcomingCount, icon: 'fa-clock', color: '#f59e0b' },
-              { status: 'Đã hoàn thành', count: completedCount, icon: 'fa-check', color: '#0F83BA' }
+              { status: 'Đang hoạt động', count: activeCount, icon: 'fa-bolt', color: '#10b981' }
             ];
             
             this.isLoadingCampaigns = false;
@@ -642,6 +590,7 @@ export class RecruitmentReportComponent implements OnInit, OnDestroy {
         };
 
         // Đảm bảo metrics có đủ 2 items (Tổng chiến dịch và Tổng ứng viên)
+        // Chỉ khởi tạo nếu chưa có, không ghi đè nếu đã có
         if (!this.metrics || this.metrics.length < 2) {
           this.metrics = [
             { label: 'Tổng chiến dịch', value: 0, icon: 'fa-briefcase', color: '#0F83BA' },

@@ -889,4 +889,3 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     return periodMap[period] || period;
   }
 }
-

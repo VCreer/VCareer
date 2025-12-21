@@ -23,13 +23,6 @@
     <!-- Jobs List -->
     <div class="jobs-list" *ngIf="!loading && savedJobs.length > 0">
       <div class="job-card" *ngFor="let job of savedJobs; trackBy: trackByJobId" [class.expired]="isJobExpired(job)">
-        <!-- Company Logo -->
-        <div class="company-logo">
-          <div class="logo-content">
-            <h3 class="logo-text">{{ getCompanyLogoText(job.companyName) }}</h3>
-          </div>
-        </div>
-
         <!-- Job Details -->
         <div class="job-details">
           <h2 class="job-title clickable" (click)="onJobTitleClick(job)">{{ job.jobTitle }}</h2>

@@ -54,10 +54,10 @@
               <!-- Company Logo -->
               <div class="company-logo">
                 <img 
-                  [src]="job.companyLogoImage || 'assets/images/companies/default-logo.png'" 
+                  [src]="job.companyLogoImage || 'assets/images/home/company-placeholder.png'" 
                   [alt]="job.companyName"
                   class="logo-image"
-                  (error)="$event.target.src='assets/images/companies/default-logo.png'">
+                  (error)="job.companyLogoImage = 'assets/images/home/company-placeholder.png'; $event.target.src='assets/images/home/company-placeholder.png'">
               </div>
 
               <!-- Job Details -->
@@ -76,13 +76,21 @@
                 <div class="cv-info-row">
                   <p class="cv-info">
                     CV đã ứng tuyển: 
-                    <a href="#" class="cv-link">{{ job.cvName }}</a>
+                    <a 
+                      href="javascript:void(0)" 
+                      class="cv-link"
+                      (click)="onCvLinkClick(job, $event)"
+                      *ngIf="job.cvId">
+                      {{ job.cvName }}
+                    </a>
+                    <span *ngIf="!job.cvId">{{ job.cvName }}</span>
                   </p>
                   <div class="action-buttons">
                     <app-button 
                       [type]="'primary'"
                       [size]="'small'"
-                      (click)="onViewCV(job)">
+                      (click)="onViewCV(job)"
+                      [disabled]="!job.cvId">
                       Xem CV
                     </app-button>
                   </div>
@@ -165,10 +173,6 @@
               <div class="profile-info">
                 <span class="profile-label">Profile</span>
                 <h3>Chào bạn trở lại, {{ profileData.fullName || 'User' }}</h3>
-              </div>
-              
-              <div class="account-status">
-                <span class="verified-badge">Tài khoản đã xác thực</span>
               </div>
             </div>
           </div>
