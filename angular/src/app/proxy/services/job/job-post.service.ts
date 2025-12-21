@@ -90,7 +90,7 @@ export class JobPostService {
     this.restService.request<any, JobViewManageDetailDto[]>({
       method: 'GET',
       url: '/api/app/job-post/job-post-manage',
-      params: { searchField: dto.searchField, status: dto.status, startTime: dto.startTime, endTime: dto.endTime, page: dto.page, pageSize: dto.pageSize },
+      params: { searchField: dto.searchField, status: dto.status, startTime: dto.startTime, endTime: dto.endTime },
     },
     { apiName: this.apiName,...config });
   

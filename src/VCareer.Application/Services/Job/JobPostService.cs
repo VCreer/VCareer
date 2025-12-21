@@ -517,8 +517,6 @@ namespace VCareer.Services.Job
             }
             var result = await query
                 .OrderByDescending(x => x.ApproveAt)
-                .Skip((dto.Page - 1) * dto.PageSize)
-                .Take(dto.PageSize)
                 .ToListAsync();
 
             return ObjectMapper.Map<List<Job_Post>, List<JobViewManageDetailDto>>(result);
