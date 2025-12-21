@@ -175,6 +175,45 @@ namespace VCareer.Services.LuceneService.JobSearch
 
             return Task.FromResult(pagingJobIds);
         }
+
+        /// <summary>
+        /// Tìm kiếm jobs theo category ID (bao gồm tất cả subcategories)
+        /// </summary>
+        /// <param name="categoryId">ID của category cha</param>
+        /// <param name="input">JobSearchInputDto với các filter khác (nếu có). Nếu null, sẽ tạo mới với default values.</param>
+        /// <returns>Danh sách Job IDs</returns>
+        public async Task<List<Guid>> SearchJobIdsByCategoryIdAsync(Guid categoryId, JobSearchInputDto input = null)
+        {
+            // Lấy tất cả category con (bao gồm cả chính nó nếu cần)
+            var categoryIds = await _jobCategoryRepository.GetAllChildrenCategoryIdsAsync(categoryId);
+            
+            // Nếu không có category con, thêm chính categoryId vào
+            if (!categoryIds.Contains(categoryId))
+            {
+                categoryIds.Add(categoryId);
+            }
+
+            // Tạo JobSearchInputDto mới với categoryIds
+            var searchInput = input ?? new JobSearchInputDto
+            {
+                SkipCount = 0,
+                MaxResultCount = 20
+            };
+            
+            // Merge categoryIds: nếu input đã có CategoryIds, merge với categoryIds mới
+            if (searchInput.CategoryIds != null && searchInput.CategoryIds.Any())
+            {
+                var mergedCategoryIds = categoryIds.Union(searchInput.CategoryIds).ToList();
+                searchInput.CategoryIds = mergedCategoryIds;
+            }
+            else
+            {
+                searchInput.CategoryIds = categoryIds;
+            }
+
+            // Gọi hàm SearchJobIdsAsync với input đã được cập nhật
+            return await SearchJobIdsAsync(searchInput);
+        }
         public List<Guid> GetExpiredJobIds()
         {
             using var reader = DirectoryReader.Open(_directory);
@@ -247,7 +286,7 @@ namespace VCareer.Services.LuceneService.JobSearch
             {
                 // User chọn range lương cụ thể → chỉ tìm jobs có SalaryDeal = 0 (không phải thỏa thuận)
                 AddSalaryDealFilter(boolQuery, false);
-                AddSalaryRangeFilter(boolQuery, input.MinSalary, input.MaxSalary);
+            AddSalaryRangeFilter(boolQuery, input.MinSalary, input.MaxSalary);
             }
 
             // Return query (nếu không có clause nào, return match all)

@@ -25,6 +25,15 @@ namespace VCareer.Services.LuceneService.JobSearch
         
         //tìm kiếm job theo input , trả về list các id của job
         Task<List<Guid>> SearchJobIdsAsync(JobSearchInputDto searchInput);
+        
+        /// <summary>
+        /// Tìm kiếm jobs theo category ID (bao gồm tất cả subcategories)
+        /// </summary>
+        /// <param name="categoryId">ID của category cha</param>
+        /// <param name="input">JobSearchInputDto với các filter khác (nếu có)</param>
+        /// <returns>Danh sách Job IDs</returns>
+        Task<List<Guid>> SearchJobIdsByCategoryIdAsync(Guid categoryId, JobSearchInputDto input = null);
+        
         List<Guid> GetExpiredJobIds();
     }
 }
