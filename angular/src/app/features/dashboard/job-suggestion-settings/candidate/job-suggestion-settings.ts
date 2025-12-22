@@ -236,9 +236,11 @@ export class JobSuggestionSettingsComponent implements OnInit {
     }
 
     // Convert experience level từ string sang number
+    // Form value = số năm, cần convert sang enum value để lưu vào DB
     let experienceValue: number | undefined = undefined;
     if (this.jobPreference.experienceLevel) {
-      experienceValue = parseInt(this.jobPreference.experienceLevel, 10);
+      const formValue = parseInt(this.jobPreference.experienceLevel, 10);
+      experienceValue = this.convertYearsToExperienceEnum(formValue);
     }
 
     // Build UpdatePersonalInfoDto
@@ -427,8 +429,28 @@ export class JobSuggestionSettingsComponent implements OnInit {
     // Sẽ được xử lý sau khi updateSkillOptions được gọi
 
     // Experience
+    // Profile.experience là enum value, cần convert ngược lại sang số năm để hiển thị trong form
     if (profile.experience !== null && profile.experience !== undefined) {
-      this.jobPreference.experienceLevel = profile.experience.toString();
+      const enumValue = profile.experience;
+      // Convert enum value sang số năm (ngược lại với convertYearsToExperienceEnum)
+      // Enum: None=0, Under1=1, Year1=2, Year2=3, Year3=4, Year4=5, Year5=6, Year6=7, Year7=8, Year8=9, Year9=10, Year10=11, Over10=12
+      const reverseMapping: { [key: number]: number } = {
+        0: 0,   // None = 0 -> 0 năm
+        1: 1,   // Under1 = 1 -> 1 năm (dưới 1 năm)
+        2: 2,   // Year1 = 2 -> 1 năm
+        3: 3,   // Year2 = 3 -> 2 năm
+        4: 4,   // Year3 = 4 -> 3 năm
+        5: 5,   // Year4 = 5 -> 4 năm
+        6: 6,   // Year5 = 6 -> 5 năm
+        7: 7,   // Year6 = 7 -> 6 năm
+        8: 8,   // Year7 = 8 -> 7 năm
+        9: 9,   // Year8 = 9 -> 8 năm
+        10: 10, // Year9 = 10 -> 9 năm
+        11: 11, // Year10 = 11 -> 10 năm
+        12: 12  // Over10 = 12 -> >10 năm
+      };
+      const formValue = reverseMapping[enumValue] ?? 0;
+      this.jobPreference.experienceLevel = formValue.toString();
     }
 
     // Salary
@@ -588,23 +610,75 @@ export class JobSuggestionSettingsComponent implements OnInit {
 
   /**
    * Tạo options cho kinh nghiệm từ ExperienceLevel enum
+   * Mapping: value = số năm tương ứng (để dễ hiểu), sau đó convert sang enum khi save
+   * Note: Enum ExperienceLevel: None=0, Under1=1, Year1=2, Year2=3, Year3=4, Year4=5, Year5=6, Year6=7, Year7=8, Year8=9, Year9=10, Year10=11, Over10=12
+   * 
+   * User muốn: chọn "6 năm" -> lưu 6 vào DB (không phải 7)
+   * Vậy cần mapping: value = số năm, sau đó convert sang enum khi save
    */
   loadExperienceOptions(): void {
+    // ✅ FIX: value = số năm tương ứng (để user chọn "6 năm" thì value = '6')
+    // Khi save sẽ convert sang enum value (6 -> enum 7 = Year6)
+    // Note: Enum ExperienceLevel: None=0, Under1=1, Year1=2, Year2=3, Year3=4, Year4=5, Year5=6, Year6=7, Year7=8, Year8=9, Year9=10, Year10=11, Over10=12
     this.experienceOptions = [
-      { value: '0', label: 'Không yêu cầu kinh nghiệm' },
-      { value: '1', label: 'Dưới 1 năm' },
-      { value: '2', label: '1 năm' },
-      { value: '3', label: '2 năm' },
-      { value: '4', label: '3 năm' },
-      { value: '5', label: '4 năm' },
-      { value: '6', label: '5 năm' },
-      { value: '7', label: '6 năm' },
-      { value: '8', label: '7 năm' },
-      { value: '9', label: '8 năm' },
-      { value: '10', label: '9 năm' },
-      { value: '11', label: '10 năm' },
-      { value: '12', label: 'Trên 10 năm' }
+      { value: '0', label: 'Không yêu cầu kinh nghiệm' },  // 0 năm -> enum 0 (None)
+      { value: '1', label: 'Dưới 1 năm' },                 // 1 năm (dưới) -> enum 1 (Under1)
+      { value: '2', label: '1 năm' },                      // 1 năm -> enum 2 (Year1)
+      { value: '3', label: '2 năm' },                      // 2 năm -> enum 3 (Year2)
+      { value: '4', label: '3 năm' },                      // 3 năm -> enum 4 (Year3)
+      { value: '5', label: '4 năm' },                      // 4 năm -> enum 5 (Year4)
+      { value: '6', label: '5 năm' },                      // 5 năm -> enum 6 (Year5)
+      { value: '7', label: '6 năm' },                      // 6 năm -> enum 7 (Year6)
+      { value: '8', label: '7 năm' },                      // 7 năm -> enum 8 (Year7)
+      { value: '9', label: '8 năm' },                      // 8 năm -> enum 9 (Year8)
+      { value: '10', label: '9 năm' },                     // 9 năm -> enum 10 (Year9)
+      { value: '11', label: '10 năm' },                    // 10 năm -> enum 11 (Year10)
+      { value: '12', label: 'Trên 10 năm' }                // >10 năm -> enum 12 (Over10)
     ];
+  }
+
+  /**
+   * Convert số năm (từ form value) sang ExperienceLevel enum value
+   * Form value = số năm hiển thị, cần convert sang enum value để lưu vào DB
+   * Mapping: 
+   *   0 năm -> 0 (None)
+   *   1 năm -> 1 (Under1) hoặc 2 (Year1) - dùng 1 cho "Dưới 1 năm", 2 cho "1 năm"
+   *   2 năm -> 3 (Year2)
+   *   3 năm -> 4 (Year3)
+   *   4 năm -> 5 (Year4)
+   *   5 năm -> 6 (Year5)
+   *   6 năm -> 7 (Year6)
+   *   7 năm -> 8 (Year7)
+   *   8 năm -> 9 (Year8)
+   *   9 năm -> 10 (Year9)
+   *   10 năm -> 11 (Year10)
+   *   >10 năm -> 12 (Over10)
+   */
+  private convertYearsToExperienceEnum(formValue: number): number {
+    // Mapping từ số năm (form value) sang enum value
+    // formValue = số năm hiển thị trong form (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    // enum value = ExperienceLevel enum (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    // Enum: None=0, Under1=1, Year1=2, Year2=3, Year3=4, Year4=5, Year5=6, Year6=7, Year7=8, Year8=9, Year9=10, Year10=11, Over10=12
+    const mapping: { [key: number]: number } = {
+      0: 0,   // 0 năm -> None = 0
+      1: 1,   // 1 năm (dưới 1 năm) -> Under1 = 1
+      2: 2,   // 1 năm -> Year1 = 2
+      3: 3,   // 2 năm -> Year2 = 3
+      4: 4,   // 3 năm -> Year3 = 4
+      5: 5,   // 4 năm -> Year4 = 5
+      6: 6,   // 5 năm -> Year5 = 6
+      7: 7,   // 6 năm -> Year6 = 7
+      8: 8,   // 7 năm -> Year7 = 8
+      9: 9,   // 8 năm -> Year8 = 9
+      10: 10, // 9 năm -> Year9 = 10
+      11: 11, // 10 năm -> Year10 = 11
+      12: 12  // >10 năm -> Over10 = 12
+    };
+    
+    if (formValue >= 0 && formValue <= 12) {
+      return mapping[formValue] ?? 0;
+    }
+    return 0; // Default
   }
 
   /**

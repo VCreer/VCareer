@@ -221,6 +221,10 @@ export class JobComponent implements OnInit {
     this.isSearching = true; // bắt đầu loading
     this.jobs = []; // clear cũ (tùy chọn, tránh flash)
 
+    const minSalary = this.getMinSalary();
+    const maxSalary = this.getMaxSalary();
+    const salaryDeal = this.selectedSalaryFilter === 7 ? true : undefined;
+
     const input: any = {
       keyword: this.searchKeyword || undefined,
       categoryIds: this.selectedCategoryIds.length ? this.selectedCategoryIds : undefined,
@@ -230,9 +234,9 @@ export class JobComponent implements OnInit {
         this.selectedExperienceLevel !== null && this.selectedExperienceLevel !== undefined
           ? Number(this.selectedExperienceLevel)
           : undefined,
-      minSalary: this.getMinSalary(),
-      maxSalary: this.getMaxSalary(),
-      salaryDeal: this.selectedSalaryFilter === 7 ? true : undefined,
+      minSalary: minSalary,
+      maxSalary: maxSalary,
+      salaryDeal: salaryDeal,
       employmentTypes: this.selectedEmploymentTypes.length
         ? this.selectedEmploymentTypes
         : undefined,
@@ -241,6 +245,15 @@ export class JobComponent implements OnInit {
       skipCount: 0,
       maxResultCount: this.apiPageSize,
     };
+
+    // ✅ DEBUG: Log để kiểm tra data được gửi
+    console.log('🔍 Job Search Input:', {
+      selectedSalaryFilter: this.selectedSalaryFilter,
+      minSalary: minSalary,
+      maxSalary: maxSalary,
+      salaryDeal: salaryDeal,
+      fullInput: input
+    });
 
     this.jobSearchService.searchJobs(input, { skipHandleError: true }).pipe(
       catchError(err => {

@@ -136,7 +136,8 @@
       <!-- Recruiter Menu -->
       <ng-container *ngIf="!isEmployeeRoute">
         <!-- First Group -->
-        <li class="sidebar-nav-item">
+        <!-- Ẩn "Báo cáo tuyển dụng" cho HR Staff -->
+        <li class="sidebar-nav-item" *ngIf="!isHRStaff">
           <a (click)="navigateTo('/recruiter/recruitment-report')" class="sidebar-link" [class.active]="isActive('/recruiter/recruitment-report')">
             <i class="fa fa-chart-line sidebar-icon"></i>
             <span class="sidebar-link-text">Báo cáo tuyển dụng</span>

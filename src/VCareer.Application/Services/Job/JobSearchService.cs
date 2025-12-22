@@ -9,6 +9,7 @@ using VCareer.Dto.Job;
 using VCareer.Dto.JobDto;
 using VCareer.IRepositories.Job;
 using VCareer.IRepositories.ICompanyRepository;
+using VCareer.IRepositories.Category;
 using VCareer.Job.JobPosting.ISerices;
 using VCareer.Models.Companies;
 using VCareer.Models.Job;
@@ -36,6 +37,7 @@ namespace VCareer.Services.Job
         private readonly ICurrentUser _currentUser;
         private readonly IdentityUserManager _userManager;
         private readonly ICompanyRepository _companyRepository;
+        private readonly IJobCategoryRepository _jobCategoryRepository;
 
         public JobSearchService(
                 IJobPostRepository jobPostingRepository,
@@ -45,7 +47,8 @@ namespace VCareer.Services.Job
                 IRepository<CandidateProfile, Guid> candidateProfileRepository,
                 ICurrentUser currentUser,
                 IdentityUserManager userManager,
-                ICompanyRepository companyRepository)
+                ICompanyRepository companyRepository,
+                IJobCategoryRepository jobCategoryRepository)
         {
             _jobPostingRepository = jobPostingRepository;
             _luceneIndexer = luceneIndexer;
@@ -55,10 +58,30 @@ namespace VCareer.Services.Job
             _userManager = userManager;
               _savedJobRepository = savedJobRepository;
             _companyRepository = companyRepository;
+            _jobCategoryRepository = jobCategoryRepository;
         }
         [DisableAuditing]
         public async Task<List<JobViewDto>> SearchJobsAsync(JobSearchInputDto input)
         {
+            // Expand categoryIds để bao gồm tất cả subcategories
+            if (input.CategoryIds != null && input.CategoryIds.Any())
+            {
+                var expandedCategoryIds = new List<Guid>();
+                foreach (var categoryId in input.CategoryIds)
+                {
+                    // Lấy tất cả subcategories của category này
+                    var subCategoryIds = await _jobCategoryRepository.GetAllChildrenCategoryIdsAsync(categoryId);
+                    // Thêm chính categoryId vào nếu chưa có
+                    if (!subCategoryIds.Contains(categoryId))
+                    {
+                        subCategoryIds.Add(categoryId);
+                    }
+                    expandedCategoryIds.AddRange(subCategoryIds);
+                }
+                // Loại bỏ duplicate và cập nhật lại input
+                input.CategoryIds = expandedCategoryIds.Distinct().ToList();
+            }
+            
             var jobIds = await _luceneIndexer.SearchJobIdsAsync(input);
             if (!jobIds.Any())
                 return new List<JobViewDto>();

@@ -175,6 +175,45 @@ namespace VCareer.Services.LuceneService.JobSearch
 
             return Task.FromResult(pagingJobIds);
         }
+
+        /// <summary>
+        /// Tìm kiếm jobs theo category ID (bao gồm tất cả subcategories)
+        /// </summary>
+        /// <param name="categoryId">ID của category cha</param>
+        /// <param name="input">JobSearchInputDto với các filter khác (nếu có). Nếu null, sẽ tạo mới với default values.</param>
+        /// <returns>Danh sách Job IDs</returns>
+        public async Task<List<Guid>> SearchJobIdsByCategoryIdAsync(Guid categoryId, JobSearchInputDto input = null)
+        {
+            // Lấy tất cả category con (bao gồm cả chính nó nếu cần)
+            var categoryIds = await _jobCategoryRepository.GetAllChildrenCategoryIdsAsync(categoryId);
+            
+            // Nếu không có category con, thêm chính categoryId vào
+            if (!categoryIds.Contains(categoryId))
+            {
+                categoryIds.Add(categoryId);
+            }
+
+            // Tạo JobSearchInputDto mới với categoryIds
+            var searchInput = input ?? new JobSearchInputDto
+            {
+                SkipCount = 0,
+                MaxResultCount = 20
+            };
+            
+            // Merge categoryIds: nếu input đã có CategoryIds, merge với categoryIds mới
+            if (searchInput.CategoryIds != null && searchInput.CategoryIds.Any())
+            {
+                var mergedCategoryIds = categoryIds.Union(searchInput.CategoryIds).ToList();
+                searchInput.CategoryIds = mergedCategoryIds;
+            }
+            else
+            {
+                searchInput.CategoryIds = categoryIds;
+            }
+
+            // Gọi hàm SearchJobIdsAsync với input đã được cập nhật
+            return await SearchJobIdsAsync(searchInput);
+        }
         public List<Guid> GetExpiredJobIds()
         {
             using var reader = DirectoryReader.Open(_directory);
@@ -234,8 +273,21 @@ namespace VCareer.Services.LuceneService.JobSearch
             AddPositionFilter(boolQuery, input.PositionTypes);
             AddEmployeeTypeFilter(boolQuery, input.EmploymentTypes);
             AddExperienceFilter(boolQuery, input.ExperienceFilter);
-            AddSalaryDealFilter(boolQuery, input.SalaryDeal);
+            
+            // ✅ FIX: Xử lý salary filter với logic SalaryDeal
+            // Nếu có SalaryDeal = true → chỉ tìm jobs có SalaryDeal = 1 (lương thỏa thuận)
+            // Nếu có MinSalary/MaxSalary → chỉ tìm jobs có SalaryDeal = 0 (không phải thỏa thuận) VÀ range overlap
+            if (input.SalaryDeal.HasValue && input.SalaryDeal.Value)
+            {
+                // User chọn "Thỏa thuận" → chỉ tìm jobs có SalaryDeal = 1
+                AddSalaryDealFilter(boolQuery, true);
+            }
+            else if (input.MinSalary.HasValue || input.MaxSalary.HasValue)
+            {
+                // User chọn range lương cụ thể → chỉ tìm jobs có SalaryDeal = 0 (không phải thỏa thuận)
+                AddSalaryDealFilter(boolQuery, false);
             AddSalaryRangeFilter(boolQuery, input.MinSalary, input.MaxSalary);
+            }
 
             // Return query (nếu không có clause nào, return match all)
             return boolQuery.Clauses.Count == 0 ? new MatchAllDocsQuery() : boolQuery;
@@ -272,7 +324,10 @@ namespace VCareer.Services.LuceneService.JobSearch
         {
             if (!experienceFilter.HasValue)
                 return;
-            boolQuery.Add(new TermQuery(new Term("Experience", ((int)experienceFilter.Value).ToString())), Occur.MUST);
+            // ✅ FIX: Dùng NumericRangeQuery thay vì TermQuery vì field được index là Int32Field
+            var experienceValue = (int)experienceFilter.Value;
+            var experienceQuery = NumericRangeQuery.NewInt32Range("Experience", experienceValue, experienceValue, true, true);
+            boolQuery.Add(experienceQuery, Occur.MUST);
         }
         private void AddProvinceFilter(BooleanQuery boolQuery, List<int> provinceCodes)
         {
@@ -340,21 +395,45 @@ namespace VCareer.Services.LuceneService.JobSearch
             if (!salaryDeal.HasValue)
                 return;
 
-            boolQuery.Add(
-                new TermQuery(new Term("SalaryDeal", salaryDeal.Value ? "1" : "0")),
-                Occur.MUST
-            );
+            // ✅ FIX: Dùng NumericRangeQuery thay vì TermQuery vì field được index là Int32Field
+            var salaryDealValue = salaryDeal.Value ? 1 : 0;
+            var salaryDealQuery = NumericRangeQuery.NewInt32Range("SalaryDeal", salaryDealValue, salaryDealValue, true, true);
+            boolQuery.Add(salaryDealQuery, Occur.MUST);
         }
         private void AddSalaryRangeFilter(BooleanQuery boolQuery, double? salaryFrom, double? salaryTo)
         {
-            if (salaryTo.HasValue)
+            // ✅ FIX: Logic tìm jobs có salary range overlap với range được chọn
+            // Lưu ý: Chỉ áp dụng cho jobs có SalaryDeal = 0 (đã được filter ở BuildSearchQuery)
+            // Job match nếu: (MinSalary <= salaryTo) AND (MaxSalary >= salaryFrom)
+            // Range overlap: job's range [MinSalary, MaxSalary] overlap với user's range [salaryFrom, salaryTo]
+            
+            if (salaryFrom.HasValue && salaryTo.HasValue)
             {
+                // Có cả min và max: tìm jobs có range overlap
+                // MinSalary <= salaryTo (job's min <= user's max) - job bắt đầu trước khi user range kết thúc
                 var minSalaryQuery = NumericRangeQuery.NewDoubleRange("MinSalary", null, salaryTo.Value, true, true);
                 boolQuery.Add(minSalaryQuery, Occur.MUST);
-            }
-            if (salaryFrom.HasValue)
-            {
+                
+                // MaxSalary >= salaryFrom (job's max >= user's min) - job kết thúc sau khi user range bắt đầu
+                // Nếu salaryFrom = 0, vẫn cho phép MaxSalary >= 0 (vì đã filter SalaryDeal = 0 rồi)
                 var maxSalaryQuery = NumericRangeQuery.NewDoubleRange("MaxSalary", salaryFrom.Value, null, true, true);
+                boolQuery.Add(maxSalaryQuery, Occur.MUST);
+            }
+            else if (salaryFrom.HasValue)
+            {
+                // Chỉ có min: tìm jobs có MaxSalary >= salaryFrom
+                var maxSalaryQuery = NumericRangeQuery.NewDoubleRange("MaxSalary", salaryFrom.Value, null, true, true);
+                boolQuery.Add(maxSalaryQuery, Occur.MUST);
+            }
+            else if (salaryTo.HasValue)
+            {
+                // Chỉ có max: tìm jobs có MinSalary <= salaryTo
+                var minSalaryQuery = NumericRangeQuery.NewDoubleRange("MinSalary", null, salaryTo.Value, true, true);
+                boolQuery.Add(minSalaryQuery, Occur.MUST);
+                
+                // Đảm bảo MaxSalary > 0 (không phải SalaryDeal = true với MinSalary = 0, MaxSalary = 0)
+                // Vì đã filter SalaryDeal = 0 ở BuildSearchQuery, nhưng để chắc chắn vẫn check
+                var maxSalaryQuery = NumericRangeQuery.NewDoubleRange("MaxSalary", 0.01, null, false, true);
                 boolQuery.Add(maxSalaryQuery, Occur.MUST);
             }
         }
