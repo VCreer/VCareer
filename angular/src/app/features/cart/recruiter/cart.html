@@ -64,15 +64,54 @@
                 </div>
               </td>
               <td class="price-col">
-                <span class="unit-price">{{ formatCurrency(item.subscriptionServicePrice) }}</span>
+                <div class="price-wrapper">
+                  <span class="unit-price" *ngIf="!item.isLoadingPrice">
+                    {{ formatCurrency(getEffectivePrice(item)) }}
+                  </span>
+                  <span class="loading-price" *ngIf="item.isLoadingPrice">
+                    <i class="fa fa-spinner fa-spin"></i>
+                  </span>
+                  <!-- Show price change indicator if different from original -->
+                  <span class="original-price" *ngIf="!item.isLoadingPrice && item.currentPrice !== undefined && item.currentPrice !== item.subscriptionServicePrice">
+                    <del>{{ formatCurrency(item.subscriptionServicePrice) }}</del>
+                  </span>
+                </div>
               </td>
               <td class="quantity-col">
-                <div class="quantity-display">
-                  <span class="quantity-text">1</span>
+                <div class="quantity-controls">
+                  <button 
+                    type="button" 
+                    class="quantity-btn decrease-btn"
+                    (click)="decreaseQuantity(item.id, item.quantity)"
+                    [disabled]="item.quantity <= 1 || isProcessing"
+                    aria-label="Giảm số lượng">
+                    <i class="fa fa-minus"></i>
+                  </button>
+                  <input 
+                    type="number" 
+                    class="quantity-input"
+                    [value]="item.quantity"
+                    (change)="onQuantityChange(item.id, $event)"
+                    [disabled]="isProcessing"
+                    min="1"
+                    aria-label="Số lượng">
+                  <button 
+                    type="button" 
+                    class="quantity-btn increase-btn"
+                    (click)="increaseQuantity(item.id, item.quantity)"
+                    [disabled]="isProcessing"
+                    aria-label="Tăng số lượng">
+                    <i class="fa fa-plus"></i>
+                  </button>
                 </div>
               </td>
               <td class="amount-col">
-                <span class="item-amount">{{ formatCurrency(getItemAmount(item)) }}</span>
+                <span class="item-amount" *ngIf="!item.isLoadingPrice">
+                  {{ formatCurrency(getItemAmount(item)) }}
+                </span>
+                <span class="loading-price" *ngIf="item.isLoadingPrice">
+                  <i class="fa fa-spinner fa-spin"></i>
+                </span>
               </td>
               <td class="action-col">
                 <button 
@@ -136,8 +175,12 @@
           <button 
             type="button" 
             class="create-order-btn"
-            (click)="onCreateOrder()">
-            Thanh toán
+            (click)="onCreateOrder()"
+            [disabled]="isProcessing">
+            <span *ngIf="!isProcessing">Thanh toán</span>
+            <span *ngIf="isProcessing">
+              <i class="fa fa-spinner fa-spin"></i> Đang xử lý...
+            </span>
           </button>
         </div>
       </div>

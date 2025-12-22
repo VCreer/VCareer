@@ -130,7 +130,7 @@ namespace VCareer.Services.FileServices
 
         }
 
-        [Authorize(VCareerPermission.Files.Download)]
+        //[Authorize(VCareerPermission.Files.Download)]
         public async Task<FileStreamResultDto> DownloadByStoragePathAsync(string storagePath)
         {
             if (string.IsNullOrWhiteSpace(storagePath))

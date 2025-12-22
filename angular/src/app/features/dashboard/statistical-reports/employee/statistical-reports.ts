@@ -291,8 +291,7 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     // Lấy job Open (đã duyệt)
     const openRequest: JobRequestViewDto = {
       status: JobStatus.Open,
-      page: 1,
-      pageSize: 10000
+
     };
     this.jobPostService.getJobPostManageByDto(openRequest).subscribe({
       next: (jobs: JobViewManageDetailDto[]) => {
@@ -308,8 +307,6 @@ export class StatisticalReportsComponent implements OnInit, OnDestroy {
     // Lấy job Rejected
     const rejectedRequest: JobRequestViewDto = {
       status: JobStatus.Rejected,
-      page: 1,
-      pageSize: 10000
     };
     this.jobPostService.getJobPostManageByDto(rejectedRequest).subscribe({
       next: (jobs: JobViewManageDetailDto[]) => {

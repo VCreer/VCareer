@@ -136,6 +136,7 @@ namespace VCareer.DataSeedContributers
             .Concat(RecruimentCampaignPermissions)
             .Concat(Common_JobCategoryPermissions)
             .Concat(Common_TagPermissions)
+            .Concat( Common_SubcriptionServicePermissions)
             .ToArray()
     },
 
