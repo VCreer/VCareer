@@ -559,55 +559,7 @@ export class CvManagementComponent implements OnInit {
   }
 
   onCvToggleStar(cv: any) {
-    // Tìm CV trong uploadedCvs để lấy ID
-    const uploadedCv = this.uploadedCvs.find(ucv => ucv.name === cv.name);
-    if (!uploadedCv || !(uploadedCv as any).id) {
-      this.showToastMessage('Không thể đặt CV mặc định. Vui lòng thử lại.', 'error');
-      return;
-    }
-
-    const cvId = (uploadedCv as any).id;
-    const currentIsDefault = cv.isStarred;
-    const newIsDefault = !currentIsDefault;
-
-    // Nếu đang bỏ default (từ true -> false), không làm gì vì backend không hỗ trợ bỏ default
-    // Chỉ cho phép set default khi toggle từ false -> true
-    if (currentIsDefault && !newIsDefault) {
-      // Đang cố bỏ default - không hỗ trợ, revert lại
-      cv.isStarred = true;
-      this.showToastMessage('Không thể bỏ đặt CV mặc định. Vui lòng đặt CV khác làm mặc định.', 'info');
-      return;
-    }
-
-    // Chỉ set default khi toggle từ false -> true
-    if (!currentIsDefault && newIsDefault) {
-      // Optimistic update
-      cv.isStarred = true;
-      uploadedCv.isStarred = true;
-
-      // Gọi API để set default
-      this.uploadedCvService.setDefault(cvId).subscribe({
-        next: () => {
-          this.showToastMessage('Đã đặt CV làm mặc định thành công!', 'success');
-          // Reload danh sách để đồng bộ với backend và cập nhật trạng thái các CV khác
-          this.loadUploadedCvs();
-        },
-        error: (error) => {
-          console.error('Error setting default uploaded CV:', error);
-          // Revert optimistic update
-          cv.isStarred = false;
-          uploadedCv.isStarred = false;
-          
-          let errorMessage = 'Không thể đặt CV mặc định. Vui lòng thử lại.';
-          if (error.error?.error?.message) {
-            errorMessage = error.error.error.message;
-          } else if (error.error?.message) {
-            errorMessage = error.error.message;
-          }
-          this.showToastMessage(errorMessage, 'error');
-        }
-      });
-    }
+    cv.isStarred = !cv.isStarred;
   }
 
   onCvCopyLink() {

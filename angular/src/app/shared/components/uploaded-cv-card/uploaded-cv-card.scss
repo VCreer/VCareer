@@ -44,13 +44,8 @@
     transition: color 0.2s ease;
   }
   
-  // Luôn hiển thị ngôi sao khi được set làm mặc định (active)
-  &.active {
-    opacity: 1;
-    
-    .star-icon {
-      color: #fbbf24;
-    }
+  &.active .star-icon {
+    color: #fbbf24;
   }
   
   &:hover .star-icon {
