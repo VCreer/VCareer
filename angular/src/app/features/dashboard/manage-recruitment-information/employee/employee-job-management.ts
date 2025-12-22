@@ -203,7 +203,8 @@ export class EmployeeJobManagementComponent implements OnInit, OnDestroy {
       status: status,
       startTime: this.startTime || undefined,
       endTime: this.endTime || undefined,
-
+      page: this.currentPage,
+      pageSize: this.itemsPerPage,
     };
 
     this.jobPostService.getJobPostManageByDto(requestDto).subscribe({

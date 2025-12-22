@@ -100,6 +100,8 @@ export interface JobRequestViewDto {
   status?: JobStatus;
   startTime?: string;
   endTime?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface JobSearchInputDto {
