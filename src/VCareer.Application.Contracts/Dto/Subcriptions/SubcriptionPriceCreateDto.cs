@@ -36,4 +36,5 @@ namespace VCareer.Dto.Subcriptions
         public DateTime EffectiveFrom { get; set; }
         public DateTime EffectiveTo { get; set; }
     }
+
 }

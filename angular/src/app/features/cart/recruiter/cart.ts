@@ -8,6 +8,12 @@ import { CartService, CartItem } from '../../../core/services/cart.service';
 import { OrderService, CreateOrderDto } from '../../../core/services/order.service';
 import { ToastNotificationComponent } from '../../../shared/components/toast-notification/toast-notification';
 import { VnpayPaymentModalComponent, PaymentInfo } from '../../../shared/components/vnpay-payment-modal/vnpay-payment-modal';
+import { SubcriptionPriceService } from 'src/app/proxy/services/subcription';
+
+interface CartItemWithCurrentPrice extends CartItem {
+  currentPrice?: number;
+  isLoadingPrice?: boolean;
+}
 
 @Component({
   selector: 'app-cart',
@@ -19,7 +25,7 @@ import { VnpayPaymentModalComponent, PaymentInfo } from '../../../shared/compone
 export class CartComponent implements OnInit, OnDestroy {
   selectedLanguage = 'vi';
   sidebarExpanded: boolean = false;
-  cartItems: CartItem[] = [];
+  cartItems: CartItemWithCurrentPrice[] = [];
   selectedItems: Set<string> = new Set();
   agreeToTerms: boolean = false;
   showToast = false;
@@ -38,7 +44,8 @@ export class CartComponent implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService,
     private cartService: CartService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private subcriptionPriceService: SubcriptionPriceService
   ) {}
 
   ngOnInit() {
@@ -52,6 +59,8 @@ export class CartComponent implements OnInit, OnDestroy {
     // Subscribe to cart changes
     this.cartSubscription = this.cartService.cartItems$.subscribe((items) => {
       this.cartItems = items;
+      // Load current prices for all items
+      this.loadCurrentPrices();
       // Auto-select all items
       this.selectedItems = new Set(this.cartItems.map(item => item.id));
     });
@@ -78,8 +87,39 @@ export class CartComponent implements OnInit, OnDestroy {
     
     // Get current items (may be empty initially, will update via subscription)
     this.cartItems = this.cartService.getCartItems();
+    // Load current prices
+    this.loadCurrentPrices();
     // Auto-select all items
     this.selectedItems = new Set(this.cartItems.map(item => item.id));
+  }
+
+  /**
+   * Load current prices for all cart items from API
+   */
+  loadCurrentPrices() {
+    this.cartItems.forEach(item => {
+      item.isLoadingPrice = true;
+      this.subcriptionPriceService.getCurrentPriceOfSubcriptionBySubcriptionId(item.subscriptionServiceId)
+        .subscribe({
+          next: (currentPrice) => {
+            item.currentPrice = currentPrice;
+            item.isLoadingPrice = false;
+          },
+          error: (error) => {
+            console.error('Error loading current price for item:', item.id, error);
+            // Fallback to original price if API fails
+            item.currentPrice = item.subscriptionServicePrice;
+            item.isLoadingPrice = false;
+          }
+        });
+    });
+  }
+
+  /**
+   * Get the effective price for an item (current price if loaded, otherwise original price)
+   */
+  getEffectivePrice(item: CartItemWithCurrentPrice): number {
+    return item.currentPrice !== undefined ? item.currentPrice : item.subscriptionServicePrice;
   }
 
   checkSidebarState(): void {
@@ -156,6 +196,7 @@ export class CartComponent implements OnInit, OnDestroy {
     this.cartService.updateQuantity(cartId, newQuantity).subscribe({
       next: () => {
         this.isProcessing = false;
+        this.showToastMessage('success', 'Đã cập nhật số lượng');
       },
       error: (error) => {
         console.error('Error updating quantity:', error);
@@ -177,6 +218,7 @@ export class CartComponent implements OnInit, OnDestroy {
     this.cartService.updateQuantity(cartId, newQuantity).subscribe({
       next: () => {
         this.isProcessing = false;
+        this.showToastMessage('success', 'Đã cập nhật số lượng');
       },
       error: (error) => {
         console.error('Error updating quantity:', error);
@@ -209,6 +251,7 @@ export class CartComponent implements OnInit, OnDestroy {
     this.cartService.updateQuantity(cartId, newQuantity).subscribe({
       next: () => {
         this.isProcessing = false;
+        this.showToastMessage('success', 'Đã cập nhật số lượng');
       },
       error: (error) => {
         console.error('Error updating quantity:', error);
@@ -225,13 +268,14 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   // Calculations
-  getSelectedItems(): CartItem[] {
+  getSelectedItems(): CartItemWithCurrentPrice[] {
     return this.cartItems.filter(item => this.selectedItems.has(item.id));
   }
 
   getSubtotal(): number {
     return this.getSelectedItems().reduce((total, item) => {
-      return total + (item.subscriptionServicePrice * item.quantity);
+      const effectivePrice = this.getEffectivePrice(item);
+      return total + (effectivePrice * item.quantity);
     }, 0);
   }
 
@@ -240,15 +284,16 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   getTotal(): number {
-    return this.getSubtotal() ;
+    return this.getSubtotal();
   }
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('vi-VN').format(amount);
   }
 
-  getItemAmount(item: CartItem): number {
-    return item.subscriptionServicePrice * item.quantity;
+  getItemAmount(item: CartItemWithCurrentPrice): number {
+    const effectivePrice = this.getEffectivePrice(item);
+    return effectivePrice * item.quantity;
   }
 
   /**
@@ -302,12 +347,12 @@ export class CartComponent implements OnInit, OnDestroy {
     this.isProcessing = true;
     const selectedItems = this.getSelectedItems();
 
-    // Create order DTO
+    // Create order DTO using current prices
     const createOrderDto: CreateOrderDto = {
       orderDetails: selectedItems.map(item => ({
         subcriptionServiceId: item.subscriptionServiceId,
         quantity: item.quantity,
-        unitPrice: item.subscriptionServicePrice
+        unitPrice: this.getEffectivePrice(item) // Use current price for order
       }))
     };
 
