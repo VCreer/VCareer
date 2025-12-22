@@ -178,8 +178,8 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
     this.actionOptions = [
       { value: '', label: 'Tất cả hành động' },
       { value: String(SubcriptionContance_ServiceAction.BoostScoreJob), label: 'Tăng điểm Job' },
-      { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
-      { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' },
+  //    { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
+    //  { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' },
     //  { value: String(SubcriptionContance_ServiceAction.ThemeCompany), label: 'Theme công ty' }
     ];
   }
@@ -354,8 +354,8 @@ export class ManageSubServicePackagesComponent implements OnInit, OnDestroy {
       this.formActionOptions = [
         { value: '', label: 'Chọn hành động' },
         { value: String(SubcriptionContance_ServiceAction.BoostScoreJob), label: 'Tăng điểm Job' },
-        { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
-        { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' }
+      //  { value: String(SubcriptionContance_ServiceAction.TopList), label: 'Top danh sách' },
+     //   { value: String(SubcriptionContance_ServiceAction.JobBadge), label: 'Badge Job' }
       ];
     } else if (target === SubcriptionContance_ServiceTarget.Company) {
       this.formActionOptions = [
