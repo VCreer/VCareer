@@ -307,23 +307,23 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLifeTimeChange(): void {
-    if (this.packageForm.isLifeTime) {
-      this.packageForm.dayDuration = undefined;
-      this.packageForm.isBuyLimited = true;
-      this.packageForm.totalBuyEachUser = 1;
-    } else {
-      this.packageForm.dayDuration = undefined;
-      this.packageForm.isBuyLimited = false;
-      this.packageForm.totalBuyEachUser = 0;
-    }
-  }
+  // onLifeTimeChange(): void {
+  //   if (this.packageForm.isLifeTime) {
+  //     this.packageForm.dayDuration = undefined;
+  //     this.packageForm.isBuyLimited = true;
+  //     this.packageForm.totalBuyEachUser = 1;
+  //   } else {
+  //     this.packageForm.dayDuration = undefined;
+  //     this.packageForm.isBuyLimited = false;
+  //     this.packageForm.totalBuyEachUser = 0;
+  //   }
+  // }
 
-  onIsLimitedChange(): void {
-    if (!this.packageForm.isLimited) {
-      this.packageForm.totalLimitpackage = undefined;
-    }
-  }
+  // onIsLimitedChange(): void {
+  //   if (!this.packageForm.isLimited) {
+  //     this.packageForm.totalLimitpackage = undefined;
+  //   }
+  // }
 
   resetPackageForm(): void {
     this.packageForm = this.getDefaultPackageForm();
@@ -854,5 +854,50 @@ export class ManageServicePackagesComponent implements OnInit, OnDestroy {
     const padding = 32;
     const availableWidth = viewportWidth - this.sidebarWidth - padding;
     return `${Math.max(0, availableWidth)}px`;
+  }
+
+  // Các phương thức cần cập nhật/thêm vào component
+
+  onLifeTimeChange(): void {
+    if (this.packageForm.isLifeTime) {
+      this.showToastMessage('Tính năng đang được phát triển', 'info');
+      // Reset lại trạng thái
+      setTimeout(() => {
+        this.packageForm.isLifeTime = false;
+        this.packageForm.dayDuration = undefined;
+        this.packageForm.isBuyLimited = false;
+        this.packageForm.totalBuyEachUser = 0;
+      }, 100);
+    } else {
+      this.packageForm.dayDuration = undefined;
+      this.packageForm.isBuyLimited = false;
+      this.packageForm.totalBuyEachUser = 0;
+    }
+  }
+
+  onIsLimitedChange(): void {
+    if (this.packageForm.isLimited) {
+      this.showToastMessage('Tính năng đang được phát triển', 'info');
+      // Reset lại trạng thái
+      setTimeout(() => {
+        this.packageForm.isLimited = false;
+        this.packageForm.totalLimitpackage = undefined;
+      }, 100);
+    } else {
+      this.packageForm.totalLimitpackage = undefined;
+    }
+  }
+
+  onIsBuyLimitedChange(): void {
+    if (this.packageForm.isBuyLimited) {
+      this.showToastMessage('Tính năng đang được phát triển', 'info');
+      // Reset lại trạng thái
+      setTimeout(() => {
+        this.packageForm.isBuyLimited = false;
+        this.packageForm.totalBuyEachUser = 0;
+      }, 100);
+    } else {
+      this.packageForm.totalBuyEachUser = 0;
+    }
   }
 }

@@ -421,10 +421,11 @@
         <span class="section-label">Thông tin người sử dụng</span>
       </div>
       <div class="user-info-content">
-        <div class="user-info-item">
+        <!-- User ID field temporarily hidden -->
+        <!-- <div class="user-info-item">
           <label><i class="fa fa-id-card"></i> User ID:</label>
           <span class="user-id">{{ item.userChildService?.userId || 'N/A' }}</span>
-        </div>
+        </div> -->
         <div class="user-info-item">
           <label><i class="fa fa-user-tag"></i> Loại người dùng:</label>
           <span class="user-type-badge" [class.owner]="item.userChildService?.isPrimaryOwner" [class.employee]="!item.userChildService?.isPrimaryOwner">
